@@ -1,5 +1,5 @@
-name: "GaoXinyang's blog"
-description: "GaoXinyang的个人博客"
+name: "GaoXinyang的个人网站"
+description: "这里面到底有什么好东西呢……？"
 
 avatar: https://xinyang-gao.github.io/images/avatar.png
 favicon: https://xinyang-gao.github.io/images/favicon.ico
@@ -25,7 +25,7 @@ footer-links:
   twitter: 
   youtube:
 
-footer-text: Copyright (c) 2024 GaoXinyang
+footer-text: Copyright © 2024 GaoXinyang
 
 url: https://Xinyang-Gao.github.io
 
@@ -33,7 +33,7 @@ permalink: /:title/
 paginate_path: /page:num/
 
 # The release of Jekyll Now
-version: v1.0.0
+version: v1.0.1
 
 # Jekyll 3 now only supports Kramdown for Markdown
 kramdown:
