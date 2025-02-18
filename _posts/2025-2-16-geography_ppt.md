@@ -13,7 +13,7 @@ author: GaoXinyang
 
 **[【12-16】地理默写-七年级上期第二章-第一节.pptx](https://xinyang-gao.github.io/documents/【12-16】地理默写-七年级上期第二章-第一节.pptx)**
 
-**[【12-23】地理默写-七年级上册P40-100.pptx](https://xinyang-gao.github.io/documents/【12-23】地理默写-七年级上册P40-100)**  *做这个ppt是真的费时费精力*
+**[【12-23】地理默写-七年级上册P40-100.pptx](https://xinyang-gao.github.io/documents/【12-23】地理默写-七年级上册P40-100.pptx)**  *做这个ppt是真的费时费精力*
 
 
 
