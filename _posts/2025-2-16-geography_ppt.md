@@ -15,10 +15,8 @@ author: GaoXinyang
 
 **[【12-23】地理默写-七年级上册P40-100.pptx](https://xinyang-gao.github.io/documents/【12-23】地理默写-七年级上册P40-100)**  *做这个ppt是真的费时费精力*
 
- 
+
 
 # 八年级上册
 
 **[【12-02】地理默写-八年级上册中国主要铁路干线.pptx](https://xinyang-gao.github.io/documents/【12-02】地理默写-八年级上册中国主要铁路干线.pptx)**
-
-
