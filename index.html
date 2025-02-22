@@ -232,7 +232,7 @@
 <body>
     <!-- 导航栏 -->
     <nav class="navbar">
-        <a href="#" class="logo">CYBERSPACE</a>
+        <a href="#" class="logo">GXY</a>
         <div class="hamburger" id="hamburger">
             <div class="line"></div>
             <div class="line"></div>
@@ -257,158 +257,193 @@
         <div class="hero-content">
             <h1 class="hero-title" id="title"></h1>
             <p class="hero-subtitle" id="subtitle"></p>
-            <button class="cta-button" id="startButton">探索宇宙</button>
+            <button class="cta-button" id="startButton">探索网站</button>
         </div>
     </section>
 
     <!-- 主内容区 -->
     <main class="main-content" id="mainContent">
         <section id="portfolio">
-            <h2 class="section-title">精选作品</h2>
+            <h2 class="section-title">大标题</h2>
             <div class="portfolio-grid">
                 <div class="portfolio-card">
-                    <h3>星际导航系统</h3>
-                    <p>基于WebGL的宇宙可视化项目</p>
+                    <h3>标题1</h3>
+                    <p>内容1</p>
                 </div>
                 <div class="portfolio-card">
-                    <h3>量子博客引擎</h3>
-                    <p>分布式内容管理系统</p>
+                    <h3>标题2</h3>
+                    <p>内容2</p>
                 </div>
                 <!-- 更多作品卡片... -->
             </div>
         </section>
     </main>
+<script>
+    // 视差控制参数
+    const parallaxConfig = {
+        sensitivity: 0.03, // 灵敏度系数
+        layers: [
+            { element: null, depth: 500 },  // 近景层
+            { element: null, depth: 1000 }, // 中景层
+            { element: null, depth: 1500 }  // 远景层
+        ]
+    };
 
-    <script>
-        // 视差控制参数
-        const parallaxConfig = {
-            sensitivity: 0.03, // 灵敏度系数
-            layers: [
-                { element: null, depth: 500 },  // 近景层
-                { element: null, depth: 1000 }, // 中景层
-                { element: null, depth: 1500 }  // 远景层
-            ]
-        };
+    // 初始化视差层
+    function initParallaxLayers() {
+        parallaxConfig.layers.forEach((layer, index) => {
+            const layerElement = document.getElementById(`layer${index + 1}`);
+            layer.element = layerElement;
+            createStars(layerElement, 200, index + 1); // 每层200颗星星
+        });
+    }
 
-        // 初始化视差层
-        function initParallaxLayers() {
-            parallaxConfig.layers.forEach((layer, index) => {
-                const layerElement = document.getElementById(`layer${index + 1}`);
-                layer.element = layerElement;
-                createStars(layerElement, 200, index + 1); // 每层200颗星星
-            });
-        }
+    // 改进的鼠标移动处理
+    function handleMouseMove(e) {
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight / 2;
+        const offsetX = (centerX - e.clientX) * parallaxConfig.sensitivity;
+        const offsetY = (centerY - e.clientY) * parallaxConfig.sensitivity;
 
-        // 改进的鼠标移动处理
-        function handleMouseMove(e) {
-            const centerX = window.innerWidth / 2;
-            const centerY = window.innerHeight / 2;
-            const offsetX = (centerX - e.clientX) * parallaxConfig.sensitivity;
-            const offsetY = (centerY - e.clientY) * parallaxConfig.sensitivity;
+        parallaxConfig.layers.forEach(layer => {
+            const depthFactor = layer.depth / 1500;
+            layer.element.style.transform = `
+                translateX(${offsetX * depthFactor}px)
+                translateY(${offsetY * depthFactor}px)
+                translateZ(-${layer.depth}px)
+            `;
+        });
+    }
 
-            parallaxConfig.layers.forEach(layer => {
-                const depthFactor = layer.depth / 1500;
-                layer.element.style.transform = `
-                    translateX(${offsetX * depthFactor}px)
-                    translateY(${offsetY * depthFactor}px)
-                    translateZ(-${layer.depth}px)
-                `;
-            });
-        }
-
-        // 生成带视差的星星
-        function createStars(container, count, layer) {
-            for (let i = 0; i < count; i++) {
-                const star = document.createElement('div');
-                star.className = 'star';
-                
-                // 随机位置和动画参数
-                star.style.left = Math.random() * 100 + '%';
-                star.style.top = Math.random() * 100 + '%';
-                star.style.animation = `
-                    star-flow ${Math.random() * 8 + 6}s linear ${Math.random() * 7}s infinite
-                `;
-
-                // 根据层级设置属性
-                star.style.width = `${0.5 + layer * 0.3}px`;
-                star.style.height = star.style.width;
-                star.style.opacity = 0; // 初始隐藏
-
-                container.appendChild(star);
-            }
-        }
-
-        // 文字动画
-        function typeWriter(text, element, speed, callback) {
-            let i = 0;
-            element.innerHTML = '';
-            element.style.opacity = 1;
+    // 生成带视差的星星
+    function createStars(container, count, layer) {
+        for (let i = 0; i < count; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
             
-            function type() {
-                if (i < text.length) {
-                    element.innerHTML += text.charAt(i);
-                    i++;
-                    setTimeout(type, speed);
-                } else if (callback) {
-                    callback();
-                }
-            }
-            type();
+            // 随机位置和动画参数
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.animation = `
+                star-flow ${Math.random() * 8 + 6}s linear ${Math.random() * 7}s infinite
+            `;
+
+            // 根据层级设置属性
+            star.style.width = `${0.5 + layer * 0.3}px`;
+            star.style.height = star.style.width;
+            star.style.opacity = 0; // 初始隐藏
+
+            container.appendChild(star);
         }
+    }
 
-        // 初始化
-        window.addEventListener('DOMContentLoaded', () => {
-            initParallaxLayers();
-            document.addEventListener('mousemove', handleMouseMove);
+    // 文字动画
+    function typeWriter(text, element, speed, callback) {
+        let i = 0;
+        element.innerHTML = '';
+        element.style.opacity = 1;
+        
+        function type() {
+            if (i < text.length) {
+                element.innerHTML += text.charAt(i);
+                i++;
+                setTimeout(type, speed);
+            } else if (callback) {
+                callback();
+            }
+        }
+        type();
+    }
 
-            typeWriter('欢迎来到我的个人网站', document.getElementById('title'), 50, () => {
-                typeWriter('这里有我的个人作品和文章等等......还有其他一些稀奇古怪的东西', document.getElementById('subtitle'), 40, () => {
-                    document.getElementById('startButton').style.opacity = 1;
-                });
+    // 初始化
+    window.addEventListener('DOMContentLoaded', () => {
+        initParallaxLayers();
+        document.addEventListener('mousemove', handleMouseMove);
+
+        typeWriter('欢迎来到我的个人网站', document.getElementById('title'), 50, () => {
+            typeWriter('这里有我的个人作品和文章等等......还有其他一些稀奇古怪的东西', document.getElementById('subtitle'), 40, () => {
+                document.getElementById('startButton').style.opacity = 1;
             });
         });
+    });
 
-        // 点击事件
-        document.getElementById('startButton').addEventListener('click', function() {
-            const content = document.querySelector('.hero-section');
-            const mainContent = document.getElementById('mainContent');
+    // 修改后的点击事件
+    document.getElementById('startButton').addEventListener('click', function() {
+        const content = document.querySelector('.hero-section');
+        const mainContent = document.getElementById('mainContent');
+        let isScrolled = false;
 
-            content.style.animation = 'content-expand 3s linear forwards';
-            content.addEventListener('animationend', () => {
-                mainContent.style.display = 'block';
+        // 隐藏hero-section
+        content.style.opacity = '0';
+        content.style.pointerEvents = 'none';
+        
+        // 显示主内容并滚动
+        mainContent.style.display = 'block';
+        window.scrollTo({
+            top: mainContent.offsetTop,
+            behavior: 'smooth'
+        });
+
+        // 锁定滚动控制
+        window.addEventListener('scroll', function scrollHandler() {
+            // 获取当前滚动位置
+            const currentScroll = window.pageYOffset;
+            
+            // 如果试图向上滚动且已经滚动过
+            if (currentScroll < mainContent.offsetTop && isScrolled) {
                 window.scrollTo({
-                    top: mainContent.offsetTop - 80,
-                    behavior: 'smooth'
+                    top: mainContent.offsetTop,
+                    behavior: 'auto'
                 });
-            });
+            }
+            
+            // 标记是否已完成初始滚动
+            if (currentScroll >= mainContent.offsetTop) {
+                isScrolled = true;
+            }
         });
 
-        // 汉堡菜单交互
-        const hamburger = document.getElementById('hamburger');
-        const navLinks = document.getElementById('navLinks');
+        // 禁用鼠标滚轮（可选）
+        window.addEventListener('wheel', function(e) {
+            if (e.deltaY < 0 && isScrolled) {
+                e.preventDefault();
+            }
+        }, { passive: false });
 
-        hamburger.addEventListener('click', () => {
-            navLinks.classList.toggle('active');
-            hamburger.classList.toggle('active');
-        });
+        // 禁用触摸滑动（移动端）
+        window.addEventListener('touchmove', function(e) {
+            if (window.pageYOffset < mainContent.offsetTop && isScrolled) {
+                e.preventDefault();
+            }
+        }, { passive: false });
+    });
 
-        // 点击链接后关闭菜单（移动端）
-        navLinks.querySelectorAll('a').forEach(link => {
-            link.addEventListener('click', () => {
-                if (window.innerWidth <= 768) {
-                    navLinks.classList.remove('active');
-                    hamburger.classList.remove('active');
-                }
-            });
-        });
+    // 汉堡菜单交互
+    const hamburger = document.getElementById('hamburger');
+    const navLinks = document.getElementById('navLinks');
 
-        // 窗口调整时重置
-        window.addEventListener('resize', () => {
-            parallaxConfig.layers.forEach(layer => {
-                layer.element.innerHTML = '';
-                createStars(layer.element, 200, layer.depth / 500);
-            });
+    hamburger.addEventListener('click', () => {
+        navLinks.classList.toggle('active');
+        hamburger.classList.toggle('active');
+    });
+
+    // 点击链接后关闭菜单（移动端）
+    navLinks.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', () => {
+            if (window.innerWidth <= 768) {
+                navLinks.classList.remove('active');
+                hamburger.classList.remove('active');
+            }
         });
-    </script>
+    });
+
+    // 窗口调整时重置
+    window.addEventListener('resize', () => {
+        parallaxConfig.layers.forEach(layer => {
+            layer.element.innerHTML = '';
+            createStars(layer.element, 200, layer.depth / 500);
+        });
+    });
+</script>
 </body>
 </html>
