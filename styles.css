@@ -238,9 +238,9 @@ body {
     background: rgba(255, 255, 255, 0.05);
     border-radius: 15px;
     padding: 2rem;
-    transition: transform 0.3s;
+    transition: transform 0.3s, opacity 0.3s;
     opacity: 0;
-    animation: fadeIn 0.5s ease forwards;
+    animation: cardFadeIn 0.5s ease forwards;
     animation-delay: var(--animation-delay);
 }
 
@@ -248,24 +248,29 @@ body {
     transform: translateY(-5px);
 }
 
-@keyframes star-flow {
-    0% { 
-        transform: translateZ(-2000px); 
+@keyframes fadeIn {
+    from {
         opacity: 0;
+        transform: translateY(-20px);
     }
-    20% { 
+    to {
         opacity: 1;
-    }
-    90% { 
-        opacity: 1;
-    }
-    100% { 
-        transform: translateZ(1000px); 
-        opacity: 0;
+        transform: translateY(0);
     }
 }
 
-@keyframes fadeIn {
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes cardFadeIn {
     from {
         opacity: 0;
         transform: translateY(20px);
@@ -284,4 +289,22 @@ body {
 .visible {
     opacity: 1;
     transition: opacity 0.5s ease;
+}
+
+.title-container {
+    position: fixed;
+    top: 150px; /* 调整位置以避免与卡片重合 */
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    width: 100%;
+    z-index: 1000;
+}
+
+.animate-title {
+    animation: fadeIn 1s ease-out;
+}
+
+.animate-subtitle {
+    animation: fadeIn 1.5s ease-out;
 }

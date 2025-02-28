@@ -84,10 +84,10 @@ function handleExploreClick() {
     const newSubtitle = document.createElement('p');
     const titleContainer = document.createElement('div');
 
-    newTitle.className = 'hero-title visible';
-    newSubtitle.className = 'hero-subtitle visible';
-    newTitle.innerText = '新的标题';
-    newSubtitle.innerText = '新的副标题';
+    newTitle.className = 'hero-title visible animate-title';
+    newSubtitle.className = 'hero-subtitle visible animate-subtitle';
+    newTitle.innerText = '内容区';
+    newSubtitle.innerText = '你可以在这里进入一些界面';
 
     // 设置容器样式
     titleContainer.className = 'title-container';
@@ -112,6 +112,7 @@ function handleExploreClick() {
     const cards = document.querySelectorAll('.portfolio-card');
     cards.forEach((card, index) => {
         card.style.setProperty('--animation-delay', `${index * 0.1}s`);
+        card.style.opacity = 1; // 确保卡片可见
     });
 
     // 锁定滚动控制
@@ -153,7 +154,7 @@ function init() {
 
     // 文字动画
     typeWriter('欢迎来到高新炀的个人网站', document.getElementById('title'), 50, () => {
-        typeWriter('{ 正在施工……快写完主页了…… }', 
+        typeWriter('正在施工……快写完主页了……', 
             document.getElementById('subtitle'), 40, () => {
                 document.getElementById('startButton').style.opacity = 1;
             });
