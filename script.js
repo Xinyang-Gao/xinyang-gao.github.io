@@ -80,12 +80,27 @@ function typeWriter(text, element, speed, callback) {
 function handleExploreClick() {
     const content = document.querySelector('.hero-section');
     const mainContent = document.getElementById('mainContent');
-    let isScrolled = false;
+    const newTitle = document.createElement('h1');
+    const newSubtitle = document.createElement('p');
+    const titleContainer = document.createElement('div');
+
+    newTitle.className = 'hero-title visible';
+    newSubtitle.className = 'hero-subtitle visible';
+    newTitle.innerText = '新的标题';
+    newSubtitle.innerText = '新的副标题';
+
+    // 设置容器样式
+    titleContainer.className = 'title-container';
+    titleContainer.appendChild(newTitle);
+    titleContainer.appendChild(newSubtitle);
 
     // 隐藏hero-section
-    content.style.opacity = '0';
-    content.style.pointerEvents = 'none';
-    
+    content.classList.add('hidden');
+    setTimeout(() => {
+        content.style.display = 'none';
+        document.body.appendChild(titleContainer);
+    }, 500);
+
     // 显示主内容并滚动
     mainContent.style.display = 'block';
     window.scrollTo({
@@ -93,9 +108,15 @@ function handleExploreClick() {
         behavior: 'smooth'
     });
 
+    // 设置瀑布流卡片的动画延迟
+    const cards = document.querySelectorAll('.portfolio-card');
+    cards.forEach((card, index) => {
+        card.style.setProperty('--animation-delay', `${index * 0.1}s`);
+    });
+
     // 锁定滚动控制
     window.addEventListener('scroll', function scrollHandler() {
-        const currentScroll = window.pageYOffset;
+        const currentScroll = window.scrollY;
         
         if (currentScroll < mainContent.offsetTop && isScrolled) {
             window.scrollTo({
@@ -118,7 +139,7 @@ function handleExploreClick() {
 
     // 禁用触摸滑动（移动端）
     window.addEventListener('touchmove', function(e) {
-        if (window.pageYOffset < mainContent.offsetTop && isScrolled) {
+        if (window.scrollY < mainContent.offsetTop && isScrolled) {
             e.preventDefault();
         }
     }, { passive: false });
@@ -132,7 +153,7 @@ function init() {
 
     // 文字动画
     typeWriter('欢迎来到高新炀的个人网站', document.getElementById('title'), 50, () => {
-        typeWriter('{正在施工……快写完主页了……}', 
+        typeWriter('{ 正在施工……快写完主页了…… }', 
             document.getElementById('subtitle'), 40, () => {
                 document.getElementById('startButton').style.opacity = 1;
             });
