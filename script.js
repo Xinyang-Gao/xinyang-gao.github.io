@@ -131,8 +131,8 @@ function init() {
     document.addEventListener('mousemove', handleMouseMove);
 
     // 文字动画
-    typeWriter('欢迎来到我的个人网站', document.getElementById('title'), 50, () => {
-        typeWriter('这里有我的个人作品和文章等等......还有其他一些稀奇古怪的东西', 
+    typeWriter('欢迎来到高新炀的个人网站', document.getElementById('title'), 50, () => {
+        typeWriter('{正在施工……快写完主页了……}', 
             document.getElementById('subtitle'), 40, () => {
                 document.getElementById('startButton').style.opacity = 1;
             });
