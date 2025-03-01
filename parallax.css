@@ -1,0 +1,41 @@
+/* –«ø’ ”≤Ó≤„ */
+.parallax-layer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    transform-style: preserve-3d;
+    pointer-events: none;
+}
+
+.layer-1 { transform: translateZ(-500px); }
+.layer-2 { transform: translateZ(-1000px); }
+.layer-3 { transform: translateZ(-1500px); }
+
+.star {
+    position: absolute;
+    width: 2px;
+    height: 2px;
+    background: white;
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+@keyframes star-flow {
+    0% { 
+        transform: translateZ(-2000px); 
+        opacity: 0;
+    }
+    20% { 
+        opacity: 1;
+    }
+    90% { 
+        opacity: 1;
+    }
+    100% { 
+        transform: translateZ(1000px); 
+        opacity: 0;
+    }
+}
