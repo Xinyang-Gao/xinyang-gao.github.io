@@ -1,7 +1,8 @@
 ---
-title: 我的第一篇技术文章
-date: 2023-10-01
+title: 一篇测试文章
+date: 2025-2-28
 author: GaoXinyang
+tag: 测试
 image: 
 ---
 
