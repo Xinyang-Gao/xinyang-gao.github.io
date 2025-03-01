@@ -1,18 +1,18 @@
-// ¥”URL≤Œ ˝ªÒ»°mdŒƒº˛¬∑æ∂
+// ‰ªéURLÂèÇÊï∞Ëé∑ÂèñmdÊñá‰ª∂Ë∑ØÂæÑ
 const urlParams = new URLSearchParams(window.location.search);
-const mdFile = urlParams.get('md') || './404.md';  // ƒ¨»œ÷µ
+const mdFile = urlParams.get('md') || './404.md';  // ÈªòËÆ§ÂÄº
 
-// ≥ı ºªØmarked≈‰÷√
+// ÂàùÂßãÂåñmarkedÈÖçÁΩÆ
 marked.setOptions({
     highlight: function(code, lang) {
         return hljs.highlightAuto(code).value;
     }
 });
 
-// Õº∆¨º”‘ÿ¬ﬂº≠
+// ÂõæÁâáÂä†ËΩΩÈÄªËæë
 fetch(mdFile)
     .then(response => {
-        if (!response.ok) throw new Error(`HTTP¥ÌŒÛ ${response.status}`);
+        if (!response.ok) throw new Error(`HTTPÈîôËØØ ${response.status}`);
         return response.text();
     })
     .then(text => {
@@ -24,47 +24,47 @@ fetch(mdFile)
                 return acc;
             }, {});
 
-            // …Ë÷√CSS±‰¡ø◊˜Œ™±≥æ∞Õº
+            // ËÆæÁΩÆCSSÂèòÈáè‰Ωú‰∏∫ËÉåÊôØÂõæ
             document.querySelector('.header').style.setProperty(
                 '--cover-image', 
                 `url('${meta.image}')`
             );
             
             document.getElementById('title').textContent = meta.title;
-            document.getElementById('date').textContent = `¥¥◊˜ ±º‰: ${meta.date}`;
-            document.getElementById('author').textContent = `◊˜’ﬂ: ${meta.author}`;
-            document.getElementById('tag').textContent = `±Í«©: ${meta.tag}`;
+            document.getElementById('date').textContent = `Âàõ‰ΩúÊó∂Èó¥: ${meta.date}`;
+            document.getElementById('author').textContent = `‰ΩúËÄÖ: ${meta.author}`;
+            document.getElementById('tag').textContent = `Ê†áÁ≠æ: ${meta.tag}`;
         }
 
-        // ‰÷»æƒ⁄»›
+        // Ê∏≤ÊüìÂÜÖÂÆπ
         const content = text.replace(/^---\n[\s\S]*?---/, '');
         document.getElementById('content').innerHTML = marked.parse(content);
 
-        // …˙≥…ƒø¬º
+        // ÁîüÊàêÁõÆÂΩï
         generateTOC();
     })
     .catch(error => {
-        console.error('º”‘ÿ ß∞‹:', error);
-        document.getElementById('content').innerHTML = `<p style="color:red">Œƒº˛º”‘ÿ ß∞‹£∫${error}</p>`;
+        console.error('Âä†ËΩΩÂ§±Ë¥•:', error);
+        document.getElementById('content').innerHTML = `<p style="color:red">Êñá‰ª∂Âä†ËΩΩÂ§±Ë¥•Ôºö${error}</p>`;
     });
 
-// …˙≥…ƒø¬º∫Ø ˝
+// ÁîüÊàêÁõÆÂΩïÂáΩÊï∞
 function generateTOC() {
     const headings = document.querySelectorAll('.content h2, .content h3');
     const toc = document.getElementById('toc');
     
     headings.forEach(heading => {
-        // ÃÌº”√™µ„
+        // Ê∑ªÂä†ÈîöÁÇπ
         const id = heading.textContent.toLowerCase().replace(/\s+/g, '-');
         heading.id = id;
 
-        // ¥¥Ω®ƒø¬ºœÓ
+        // ÂàõÂª∫ÁõÆÂΩïÈ°π
         const tocItem = document.createElement('div');
         tocItem.className = `toc-item ${heading.tagName.toLowerCase()}`;
         tocItem.textContent = heading.textContent;
         tocItem.dataset.target = id;
         
-        // µ„ª˜πˆ∂Ø
+        // ÁÇπÂáªÊªöÂä®
         tocItem.addEventListener('click', () => {
             heading.scrollIntoView({ 
                 behavior: 'smooth',
@@ -75,7 +75,7 @@ function generateTOC() {
         toc.appendChild(tocItem);
     });
 
-    // ≥ı ºªØπˆ∂Øπ€≤Ï∆˜
+    // ÂàùÂßãÂåñÊªöÂä®ËßÇÂØüÂô®
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             const id = entry.target.id;
@@ -91,18 +91,18 @@ function generateTOC() {
     headings.forEach(heading => observer.observe(heading));
 }
 
-// ‘⁄πˆ∂Ø ±Õ¨≤Ωƒø¬ºŒª÷√
+// Âú®ÊªöÂä®Êó∂ÂêåÊ≠•ÁõÆÂΩï‰ΩçÁΩÆ
 document.querySelector('.content').addEventListener('scroll', () => {
     const sidebar = document.getElementById('toc');
     sidebar.scrollTop = document.querySelector('.content').scrollTop;
 });
 
-// –¬‘ˆΩªª•π¶ƒ‹¥˙¬Î
+// Êñ∞Â¢û‰∫§‰∫íÂäüËÉΩ‰ª£Á†Å
 let isDragging = false;
 let startX;
 let startWidth;
 
-// Õœ∂Øµ˜Ω⁄øÌ∂»π¶ƒ‹
+// ÊãñÂä®Ë∞ÉËäÇÂÆΩÂ∫¶ÂäüËÉΩ
 document.getElementById('resizer').addEventListener('mousedown', (e) => {
     isDragging = true;
     startX = e.clientX;
@@ -123,7 +123,7 @@ document.addEventListener('mouseup', () => {
     document.body.style.cursor = 'default';
 });
 
-// «–ªªœ‘ æ/“˛≤ÿπ¶ƒ‹
+// ÂàáÊç¢ÊòæÁ§∫/ÈöêËóèÂäüËÉΩ
 document.getElementById('toggleBtn').addEventListener('click', () => {
     const sidebar = document.getElementById('toc');
     const button = document.getElementById('toggleBtn');
@@ -133,10 +133,10 @@ document.getElementById('toggleBtn').addEventListener('click', () => {
     button.style.left = sidebar.classList.contains('collapsed') ? '8px' : (sidebar.offsetWidth + 8) + 'px';
 });
 
-// ≥ı ºªØ≤‡±ﬂ¿∏øÌ∂»
+// ÂàùÂßãÂåñ‰æßËæπÊ†èÂÆΩÂ∫¶
 document.getElementById('toc').style.width = '300px';
 
-// ÃÌº”¥∞ø⁄resizeº‡Ã˝
+// Ê∑ªÂä†Á™óÂè£resizeÁõëÂê¨
 window.addEventListener('resize', () => {
     document.querySelector('.sidebar').style.height = 
         `${window.innerHeight}px`;
@@ -144,13 +144,13 @@ window.addEventListener('resize', () => {
         `${window.innerHeight + 200}px`;
 });
 
-// ≥ı º…Ë÷√
+// ÂàùÂßãËÆæÁΩÆ
 document.querySelector('.sidebar').style.height = 
     `${window.innerHeight}px`;
 document.querySelector('.content').style.minHeight = 
     `${window.innerHeight + 200}px`;
 
-// ºÏ≤È≤¢”¶”√ ◊—°—’…´ƒ£ Ω
+// Ê£ÄÊü•Âπ∂Â∫îÁî®È¶ñÈÄâÈ¢úËâ≤Ê®°Âºè
 const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)");
 const currentTheme = localStorage.getItem("theme");
 
@@ -164,7 +164,7 @@ if (currentTheme == "dark") {
     document.body.classList.add("light-mode");
 }
 
-// «–ªªƒ£ Ω∞¥≈• ¬º˛
+// ÂàáÊç¢Ê®°ÂºèÊåâÈíÆ‰∫ã‰ª∂
 document.getElementById("modeToggle").addEventListener("click", () => {
     if (document.body.classList.contains("dark-mode")) {
         document.body.classList.remove("dark-mode");

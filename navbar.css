@@ -1,4 +1,4 @@
-/* µ¼º½À¸ÑùÊ½ */
+/* å¯¼èˆªæ æ ·å¼ */
 .navbar {
     position: fixed;
     top: 0;
@@ -43,7 +43,7 @@
     transform: translateY(-2px);
 }
 
-/* ºº±¤²Ëµ¥£¨ÒÆ¶¯¶Ë£© */
+/* æ±‰å ¡èœå•ï¼ˆç§»åŠ¨ç«¯ï¼‰ */
 .hamburger {
     display: none;
     flex-direction: column;
@@ -58,7 +58,7 @@
     transition: all 0.3s;
 }
 
-/* ÏìÓ¦Ê½Éè¼Æ */
+/* å“åº”å¼è®¾è®¡ */
 @media (max-width: 768px) {
     .navbar {
         padding: 1rem 3%;
