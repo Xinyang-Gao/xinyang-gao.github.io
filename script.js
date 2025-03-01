@@ -8,6 +8,9 @@ const parallaxConfig = {
     ]
 };
 
+// 定义 isScrolled 变量
+let isScrolled = false;
+
 // 初始化视差层
 function initParallaxLayers() {
     parallaxConfig.layers.forEach((layer, index) => {
@@ -153,8 +156,8 @@ function init() {
     document.addEventListener('mousemove', handleMouseMove);
 
     // 文字动画
-    typeWriter('欢迎来到高新炀的个人网站', document.getElementById('title'), 50, () => {
-        typeWriter('正在施工……快写完主页了……', 
+    typeWriter('Hi ！我是高新炀', document.getElementById('title'), 50, () => {
+        typeWriter('欢迎来到我的个人网站',
             document.getElementById('subtitle'), 40, () => {
                 document.getElementById('startButton').style.opacity = 1;
             });
