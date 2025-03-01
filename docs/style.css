@@ -165,3 +165,63 @@ pre {
 code {
     font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
 }
+
+/* 日间模式 */
+body.light-mode {
+    background-color: #ffffff;
+    color: #000000;
+}
+
+body.light-mode .header::before {
+    filter: brightness(0.7);
+}
+
+body.light-mode .toggle-button {
+    background: #fff;
+    border: 1px solid #ddd;
+}
+
+body.light-mode .resize-handle {
+    background: #ddd;
+}
+
+/* 夜间模式 */
+body.dark-mode {
+    background-color: #121212;
+    color: #ffffff;
+}
+
+body.dark-mode .header::before {
+    filter: brightness(0.5);
+}
+
+body.dark-mode .toggle-button {
+    background: #333;
+    border: 1px solid #555;
+}
+
+body.dark-mode .resize-handle {
+    background: #555;
+}
+
+.mode-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    z-index: 3;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s;
+}
+
+.mode-toggle:hover {
+    background: #f8f9fa;
+}

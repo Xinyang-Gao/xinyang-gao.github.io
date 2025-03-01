@@ -149,3 +149,30 @@ document.querySelector('.sidebar').style.height =
     `${window.innerHeight}px`;
 document.querySelector('.content').style.minHeight = 
     `${window.innerHeight + 200}px`;
+
+// 检查并应用首选颜色模式
+const prefersDarkScheme = window.matchMedia("(prefers-color-scheme: dark)");
+const currentTheme = localStorage.getItem("theme");
+
+if (currentTheme == "dark") {
+    document.body.classList.add("dark-mode");
+} else if (currentTheme == "light") {
+    document.body.classList.add("light-mode");
+} else if (prefersDarkScheme.matches) {
+    document.body.classList.add("dark-mode");
+} else {
+    document.body.classList.add("light-mode");
+}
+
+// 切换模式按钮事件
+document.getElementById("modeToggle").addEventListener("click", () => {
+    if (document.body.classList.contains("dark-mode")) {
+        document.body.classList.remove("dark-mode");
+        document.body.classList.add("light-mode");
+        localStorage.setItem("theme", "light");
+    } else {
+        document.body.classList.remove("light-mode");
+        document.body.classList.add("dark-mode");
+        localStorage.setItem("theme", "dark");
+    }
+});
