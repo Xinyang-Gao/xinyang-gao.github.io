@@ -83,19 +83,10 @@ function typeWriter(text, element, speed, callback) {
 function handleExploreClick() {
     const content = document.querySelector('.hero-section');
     const mainContent = document.getElementById('mainContent');
-    const newTitle = document.createElement('h1');
-    const newSubtitle = document.createElement('p');
     const titleContainer = document.createElement('div');
-
-    newTitle.className = 'hero-title visible animate-title';
-    newSubtitle.className = 'hero-subtitle visible animate-subtitle';
-    newTitle.innerText = '内容区';
-    newSubtitle.innerText = '你可以在这里进入一些界面';
 
     // 设置容器样式
     titleContainer.className = 'title-container';
-    titleContainer.appendChild(newTitle);
-    titleContainer.appendChild(newSubtitle);
 
     // 隐藏hero-section
     content.classList.add('hidden');
@@ -111,12 +102,13 @@ function handleExploreClick() {
         behavior: 'smooth'
     });
 
-    // 设置瀑布流卡片的动画延迟
-    const cards = document.querySelectorAll('.portfolio-card');
-    cards.forEach((card, index) => {
-        card.style.setProperty('--animation-delay', `${index * 0.1}s`);
-        card.style.opacity = 1; // 确保卡片可见
-    });
+    // 延迟显示瀑布流卡片动画
+        const cards = document.querySelectorAll('.portfolio-card');
+        cards.forEach((card, index) => {
+            card.style.setProperty('--animation-delay', `${index * 0.1}s`);
+            card.style.opacity = 1; // 确保卡片可见
+            card.style.animation = 'cardFadeIn 0.5s ease forwards, cardZoomIn 0.5s ease forwards'; // 添加动画
+        });
 
     // 锁定滚动控制
     window.addEventListener('scroll', function scrollHandler() {

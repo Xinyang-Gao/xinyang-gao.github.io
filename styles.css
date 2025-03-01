@@ -198,7 +198,7 @@ body {
     padding: 2rem;
     transition: transform 0.3s, opacity 0.3s;
     opacity: 0;
-    animation: cardFadeIn 0.5s ease forwards;
+    animation: cardFadeIn 0.5s ease forwards, cardZoomIn 0.5s ease forwards;
     animation-delay: var(--animation-delay);
 }
 
@@ -236,6 +236,15 @@ body {
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+@keyframes cardZoomIn {
+    from {
+        transform: scale(0.8);
+    }
+    to {
+        transform: scale(1);
     }
 }
 
