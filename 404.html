@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>这是？！</title>
+    <link rel="stylesheet" href="parallax.css">
     <style>
         * {
             margin: 0;
@@ -12,7 +13,7 @@
         }
 
         body {
-            background: #0a0a2e;
+            background: #000000;
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -29,16 +30,18 @@
 
         .glitch-text {
             font-size: 8em;
-            color: #ff8e8e;
-            text-shadow: 0 0 10px #ff0000;
+            color: #ff0000;
+            text-shadow: 0 0 10px #000000;
             position: relative;
             animation: glitch 2s infinite;
         }
 
-        .astronaut {
-            width: 200px;
+        .blackhole {
+            width: 500px;
             position: absolute;
+            left: -70%;
             animation: float 4s ease-in-out infinite;
+            z-index: -5; /* 将图层移到最底部 */
         }
 
         .message {
@@ -85,49 +88,24 @@
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-20px); }
         }
+
+        .parallax-layer {
+            animation: float 4s ease-in-out infinite;
+        }
     </style>
 </head>
 <body>
-    <div class="stars" id="stars"></div>
+    <div class="parallax-layer layer" id="layer1"></div>
+    <div class="parallax-layer layer-2" id="layer2"></div>
+    <div class="parallax-layer layer-3" id="layer3"></div>
     
     <div class="container">
-        <img src="https://example.com/astronaut.png" alt="astronaut" class="astronaut">
-        <h1 class="glitch-text">发生错误！404</h1>
+        <img src="./Image/黑洞.gif" alt="黑洞" class="blackhole">
+        <h1 class="glitch-text">404</h1>
         <p class="message">无法找到这个界面...</p>
         <button class="neon-btn" onclick="window.location.href='/'">返回</button>
     </div>
 
-    <script>
-        // 创建星空背景
-        function createStars() {
-            const stars = document.getElementById('stars');
-            for (let i = 0; i < 200; i++) {
-                const star = document.createElement('div');
-                star.style.position = 'absolute';
-                star.style.left = Math.random() * 100 + '%';
-                star.style.top = Math.random() * 100 + '%';
-                star.style.width = Math.random() * 3 + 'px';
-                star.style.height = star.style.width;
-                star.style.backgroundColor = '#fff';
-                star.style.borderRadius = '50%';
-                star.style.opacity = Math.random();
-                star.style.animation = `twinkle ${Math.random() * 3 + 2}s infinite`;
-                stars.appendChild(star);
-            }
-        }
-
-        // 添加鼠标跟随特效
-        document.addEventListener('mousemove', (e) => {
-            const container = document.querySelector('.container');
-            const x = e.clientX / window.innerWidth;
-            const y = e.clientY / window.innerHeight;
-            container.style.transform = `perspective(1000px) rotateX(${y * 10}deg) rotateY(${x * 10}deg)`;
-        });
-
-        // 初始化
-        window.onload = () => {
-            createStars();
-        };
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
