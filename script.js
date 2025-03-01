@@ -90,6 +90,10 @@
         });
     };
 
+    const handleCardClick = (url) => {
+        window.location.href = './docs/index.html?md=./posts/' + url + '.md'; // 跳转到文章页面
+    };
+
     // 合并滚动及滚轮、触摸监听
     const preventScrollHandler = (e) => {
         if (window.scrollY < mainContent.offsetTop && isScrolled) {
@@ -154,6 +158,16 @@
                 if (layer.element) {
                     layer.element.innerHTML = '';
                     createStars(layer.element, 200, layer.depth / 500);
+                }
+            });
+        });
+
+        const cards = document.querySelectorAll('.portfolio-card');
+        cards.forEach((card, index) => {
+            card.addEventListener('click', () => {
+                const url = card.getAttribute('data-url');
+                if (url) {
+                    handleCardClick(url);
                 }
             });
         });

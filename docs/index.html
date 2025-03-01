@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>文章</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/styles/default.min.css">
+    <link rel="stylesheet" href="style.css">
+
+</head>
+<body>
+    <!-- 修改后的标题区域结构 -->
+    <div class="header">
+        <div class="meta-info">
+            <h1 id="title"></h1>
+            <p id="date"></p>
+            <p id="author"></p>
+            <p id="tag"></p>
+        </div>
+    </div>
+
+    <!-- 在容器中添加切换按钮 -->
+    <div class="container">
+        <div class="sidebar" id="toc"></div>
+        <div class="resize-handle" id="resizer"></div>
+        <button class="toggle-button" id="toggleBtn">?</button>
+        <div class="content" id="content"></div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/4.0.2/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/highlight.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
