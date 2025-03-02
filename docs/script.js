@@ -2,6 +2,8 @@
 const urlParams = new URLSearchParams(window.location.search);
 const mdFile = urlParams.get('md') || './404.md';  // 默认值
 
+console.log('请求的Markdown文件路径:', mdFile); // 调试输出
+
 // 初始化marked配置
 marked.setOptions({
     highlight: function(code, lang) {
