@@ -2,7 +2,10 @@
 const urlParams = new URLSearchParams(window.location.search);
 const mdFile = urlParams.get('md') || './404.md';  // 默认值
 
-console.log('请求的Markdown文件路径:', mdFile); // 调试输出
+// 对文件路径进行URL编码
+const encodedMdFile = encodeURI(mdFile);
+
+console.log('请求的Markdown文件路径:', encodedMdFile); // 调试输出
 
 // 初始化marked配置
 marked.setOptions({
@@ -12,7 +15,7 @@ marked.setOptions({
 });
 
 // 图片加载逻辑
-fetch(mdFile)
+fetch(encodedMdFile)
     .then(response => {
         if (!response.ok) throw new Error(`HTTP错误 ${response.status}`);
         return response.text();
@@ -173,8 +176,8 @@ document.getElementById("modeToggle").addEventListener("click", () => {
         document.body.classList.add("light-mode");
         localStorage.setItem("theme", "light");
     } else {
-        document.body.classList.remove("light-mode");
-        document.body.classList.add("dark-mode");
+        document.body.classList.remove("dark-mode");
+        document.body.classList.add("light-mode");
         localStorage.setItem("theme", "dark");
     }
 });
