@@ -129,7 +129,7 @@ document.getElementById('toggleBtn').addEventListener('click', () => {
     const button = document.getElementById('toggleBtn');
     
     sidebar.classList.toggle('collapsed');
-    button.textContent = sidebar.classList.contains('collapsed') ? '?' : '?';
+    button.textContent = sidebar.classList.contains('collapsed') ? '展开' : '收起';
     button.style.left = sidebar.classList.contains('collapsed') ? '8px' : (sidebar.offsetWidth + 8) + 'px';
 });
 
