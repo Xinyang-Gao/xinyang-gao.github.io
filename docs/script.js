@@ -1,6 +1,7 @@
 // 从URL参数获取md文件路径
 const urlParams = new URLSearchParams(window.location.search);
-const mdFile = urlParams.get('md') || './404.md';  // 默认值
+const mdFileParam = urlParams.get('md') || '404.md';  // 默认值
+const mdFile = `./posts/${mdFileParam}`;
 
 // 对文件路径进行URL编码
 const encodedMdFile = encodeURI(mdFile);
@@ -14,13 +15,14 @@ marked.setOptions({
     }
 });
 
-// 图片加载逻辑
+// 加载并解析Markdown文件
 fetch(encodedMdFile)
     .then(response => {
         if (!response.ok) throw new Error(`HTTP错误 ${response.status}`);
         return response.text();
     })
     .then(text => {
+        // 提取元数据
         const metaMatch = text.match(/^---\n([\s\S]*?)\n---/);
         if (metaMatch) {
             const meta = metaMatch[1].split('\n').reduce((acc, line) => {
@@ -35,13 +37,14 @@ fetch(encodedMdFile)
                 `url('${meta.image}')`
             );
             
+            // 设置页面元素内容
             document.getElementById('title').textContent = meta.title;
             document.getElementById('date').textContent = `创作时间: ${meta.date}`;
             document.getElementById('author').textContent = `作者: ${meta.author}`;
             document.getElementById('tag').textContent = `标签: ${meta.tag}`;
         }
 
-        // 渲染内容
+        // 渲染Markdown内容
         const content = text.replace(/^---\n[\s\S]*?---/, '');
         document.getElementById('content').innerHTML = marked.parse(content);
 
@@ -50,7 +53,7 @@ fetch(encodedMdFile)
     })
     .catch(error => {
         console.error('加载失败:', error);
-        document.getElementById('content').innerHTML = `<p style="color:red">文件加载失败：${error}</p>`;
+        document.getElementById('content').innerHTML = `<p style="color:red">文件加载失败：${error.message}</p>`;
     });
 
 // 生成目录函数
@@ -102,12 +105,11 @@ document.querySelector('.content').addEventListener('scroll', () => {
     sidebar.scrollTop = document.querySelector('.content').scrollTop;
 });
 
-// 新增交互功能代码
+// 拖动调节宽度功能
 let isDragging = false;
 let startX;
 let startWidth;
 
-// 拖动调节宽度功能
 document.getElementById('resizer').addEventListener('mousedown', (e) => {
     isDragging = true;
     startX = e.clientX;
@@ -177,7 +179,7 @@ document.getElementById("modeToggle").addEventListener("click", () => {
         localStorage.setItem("theme", "light");
     } else {
         document.body.classList.remove("dark-mode");
-        document.body.classList.add("light-mode");
+        document.body.classList.add("dark-mode");
         localStorage.setItem("theme", "dark");
     }
 });
