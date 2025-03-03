@@ -91,7 +91,7 @@
     };
 
     const handleCardClick = (url) => {
-        window.location.href = './docs/index.html?md=./docs/posts/' + url + '.md'; // 跳转到文章页面
+        window.open('./docs/index.html?md=./docs/posts/' + url + '.md', '_blank'); // 在新窗口中打开文章页面
     };
 
     // 合并滚动及滚轮、触摸监听
