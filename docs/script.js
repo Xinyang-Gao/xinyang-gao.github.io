@@ -1,7 +1,7 @@
 // 从URL参数获取md文件路径
 const urlParams = new URLSearchParams(window.location.search);
 const mdFileParam = urlParams.get('md') || '404.md';  // 默认值
-const mdFile = `./posts/${mdFileParam}`;
+const mdFile = `../posts/${mdFileParam}`;  // 修改前: './posts/${mdFileParam}'
 
 // 对文件路径进行URL编码
 const encodedMdFile = encodeURI(mdFile);
