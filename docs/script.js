@@ -15,46 +15,44 @@ marked.setOptions({
     }
 });
 
-// 加载并解析Markdown文件
-fetch(encodedMdFile)
+// 替换 JSONP 请求为 fetch 获取 Markdown 文件，并配置 CORS
+fetch(encodedMdFile, { mode: 'cors' })
     .then(response => {
-        if (!response.ok) throw new Error(`HTTP错误 ${response.status}`);
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
         return response.text();
     })
-    .then(text => {
-        // 提取元数据
-        const metaMatch = text.match(/^---\n([\s\S]*?)\n---/);
-        if (metaMatch) {
-            const meta = metaMatch[1].split('\n').reduce((acc, line) => {
-                const [key, ...values] = line.split(':');
-                acc[key.trim()] = values.join(':').trim();
-                return acc;
-            }, {});
-
-            // 设置CSS变量作为背景图
-            document.querySelector('.header').style.setProperty(
-                '--cover-image', 
-                `url('${meta.image}')`
-            );
-            
-            // 设置页面元素内容
-            document.getElementById('title').textContent = meta.title;
-            document.getElementById('date').textContent = `创作时间: ${meta.date}`;
-            document.getElementById('author').textContent = `作者: ${meta.author}`;
-            document.getElementById('tag').textContent = `标签: ${meta.tag}`;
-        }
-
-        // 渲染Markdown内容
-        const content = text.replace(/^---\n[\s\S]*?---/, '');
-        document.getElementById('content').innerHTML = marked.parse(content);
-
-        // 生成目录
-        generateTOC();
-    })
+    .then(text => handleResponse(text))
     .catch(error => {
-        console.error('加载失败:', error);
-        document.getElementById('content').innerHTML = `<p style="color:red">文件加载失败：${error.message}</p>`;
+        console.error("CORS fetch failed:", error);
+        document.getElementById('content').innerHTML = `<p style="color:red">文件加载失败</p>`;
     });
+
+// 将原 handleJsonpResponse 的逻辑改为普通函数处理响应
+function handleResponse(text) {
+    // 提取元数据
+    const metaMatch = text.match(/^---\n([\s\S]*?)\n---/);
+    if (metaMatch) {
+        const meta = metaMatch[1].split('\n').reduce((acc, line) => {
+            const [key, ...values] = line.split(':');
+            acc[key.trim()] = values.join(':').trim();
+            return acc;
+        }, {});
+        // 设置CSS变量作为背景图
+        document.querySelector('.header').style.setProperty('--cover-image', `url('${meta.image}')`);
+        // 设置页面元素内容
+        document.getElementById('title').textContent = meta.title;
+        document.getElementById('date').textContent = `创作时间: ${meta.date}`;
+        document.getElementById('author').textContent = `作者: ${meta.author}`;
+        document.getElementById('tag').textContent = `标签: ${meta.tag}`;
+    }
+    // 渲染Markdown内容
+    const content = text.replace(/^---\n[\s\S]*?---/, '');
+    document.getElementById('content').innerHTML = marked.parse(content);
+    // 生成目录
+    generateTOC();
+}
 
 // 生成目录函数
 function generateTOC() {
