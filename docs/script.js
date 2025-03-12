@@ -19,7 +19,8 @@ marked.setOptions({
 fetch(encodedMdFile, { mode: 'cors' })
     .then(response => {
         if (!response.ok) {
-            throw new Error('Network response was not ok');
+            // 如果文件不存在则加载默认的404.md文件
+            return fetch('../posts/404.md', { mode: 'cors' }).then(res => res.text());
         }
         return response.text();
     })
