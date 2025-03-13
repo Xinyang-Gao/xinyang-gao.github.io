@@ -1,7 +1,7 @@
 // 从URL参数获取md文件路径
 const urlParams = new URLSearchParams(window.location.search);
 const mdFileParam = urlParams.get('md') || '404.md';  // 默认值
-const mdFile = `../posts/${mdFileParam}`;  // 修改前: './posts/${mdFileParam}'
+const mdFile = `../docs/posts/${mdFileParam}`;  // 修改前: './posts/${mdFileParam}'
 
 // 对文件路径进行URL编码
 const encodedMdFile = encodeURI(mdFile);
@@ -32,8 +32,9 @@ fetch(encodedMdFile, { mode: 'cors' })
 
 // 将原 handleJsonpResponse 的逻辑改为普通函数处理响应
 function handleResponse(text) {
-    // 提取元数据
-    const metaMatch = text.match(/^---\n([\s\S]*?)\n---/);
+    // 使用正则表达式匹配YAML元数据
+    const metaRegex = /^---\s*[\r\n]+([\s\S]*?)[\r\n]+---\s*[\r\n]+/;
+    const metaMatch = text.match(metaRegex);
     if (metaMatch) {
         const meta = metaMatch[1].split('\n').reduce((acc, line) => {
             const [key, ...values] = line.split(':');
@@ -48,8 +49,8 @@ function handleResponse(text) {
         document.getElementById('author').textContent = `作者: ${meta.author}`;
         document.getElementById('tag').textContent = `标签: ${meta.tag}`;
     }
-    // 渲染Markdown内容
-    const content = text.replace(/^---\n[\s\S]*?---/, '');
+    // 当存在元数据时，去除YAML头部；否则原样处理文本
+    const content = metaMatch ? text.replace(metaRegex, '') : text;
     document.getElementById('content').innerHTML = marked.parse(content);
     // 生成目录
     generateTOC();
