@@ -53,6 +53,12 @@ function handleResponse(text) {
     const content = metaMatch ? text.replace(metaRegex, '') : text;
     // 直接注入已转换好的HTML内容，不再调用 marked.parse
     document.getElementById('content').innerHTML = content;
+    // 新增：移除内容区的第一个 <h1>
+    const contentElement = document.getElementById('content');
+    const firstH1 = contentElement.querySelector('h1');
+    if (firstH1) {
+        firstH1.remove();
+    }
     // 生成目录
     generateTOC();
 }
