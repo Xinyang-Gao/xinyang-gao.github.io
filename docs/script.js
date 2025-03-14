@@ -51,7 +51,8 @@ function handleResponse(text) {
     }
     // 当存在元数据时，去除YAML头部；否则原样处理文本
     const content = metaMatch ? text.replace(metaRegex, '') : text;
-    document.getElementById('content').innerHTML = marked.parse(content);
+    // 直接注入已转换好的HTML内容，不再调用 marked.parse
+    document.getElementById('content').innerHTML = content;
     // 生成目录
     generateTOC();
 }
