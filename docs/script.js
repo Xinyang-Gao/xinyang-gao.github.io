@@ -32,35 +32,35 @@ fetch(encodedMdFile, { mode: 'cors' })
 
 // 将原 handleJsonpResponse 的逻辑改为普通函数处理响应
 function handleResponse(text) {
-    // 使用正则表达式匹配YAML元数据
-    const metaRegex = /^---\s*[\r\n]+([\s\S]*?)[\r\n]+---\s*[\r\n]+/;
+    // 优化YAML元数据正则，使用非贪婪匹配
+    const metaRegex = /^---\s*[\r\n]+([\s\S]+?)[\r\n]+---/;
     const metaMatch = text.match(metaRegex);
     if (metaMatch) {
-        const meta = metaMatch[1].split('\n').reduce((acc, line) => {
-            const [key, ...values] = line.split(':');
-            acc[key.trim()] = values.join(':').trim();
+        const metaContent = metaMatch[1];
+        // 增加健壮性，忽略空行
+        const meta = metaContent.split('\n').reduce((acc, line) => {
+            if(line.trim()) {
+                const [key, ...values] = line.split(':');
+                if(key) {
+                    acc[key.trim()] = values.join(':').trim();
+                }
+            }
             return acc;
         }, {});
-        // 设置CSS变量作为背景图
-        document.querySelector('.header').style.setProperty('--cover-image', `url('${meta.image}')`);
-        // 设置页面元素内容
-        document.getElementById('title').textContent = meta.title;
-        document.getElementById('date').textContent = `创作时间: ${meta.date}`;
-        document.getElementById('author').textContent = `作者: ${meta.author}`;
-        document.getElementById('tag').textContent = `标签: ${meta.tag}`;
+        // 设置头部数据（提供默认值）
+        if(meta.image) {
+            document.querySelector('.header').style.setProperty('--cover-image', `url('${meta.image}')`);
+        }
+        document.getElementById('title').textContent = meta.title || '';
+        document.getElementById('date').textContent = meta.date ? `创作时间: ${meta.date}` : '';
+        document.getElementById('author').textContent = meta.author ? `作者: ${meta.author}` : '';
+        document.getElementById('tag').textContent = meta.tag ? `标签: ${meta.tag}` : '';
     }
     // 当存在元数据时，去除YAML头部；否则原样处理文本
     const content = metaMatch ? text.replace(metaRegex, '') : text;
     // 使用 marked.parse 将 Markdown 转换为 HTML
     const htmlContent = marked.parse(content);
     document.getElementById('content').innerHTML = htmlContent;
-    // 移除内容区的第一个 <h1>
-    const contentElement = document.getElementById('content');
-    const firstH1 = contentElement.querySelector('h1');
-    if (firstH1) {
-        firstH1.remove();
-    }
-    // 生成目录
     generateTOC();
 }
 
@@ -119,11 +119,20 @@ let startX;
 let startWidth;
 
 document.getElementById('resizer').addEventListener('mousedown', (e) => {
+    e.preventDefault();  // 禁止选中文本
     isDragging = true;
     startX = e.clientX;
     startWidth = document.getElementById('toc').offsetWidth;
     document.body.style.cursor = 'col-resize';
+    document.body.style.userSelect = 'none';  // 禁用文本选中
 });
+
+// 新增辅助函数更新按钮位置，使其始终贴近分割线
+function updateToggleBtnPosition() {
+    const sidebar = document.getElementById('toc');
+    const button = document.getElementById('toggleBtn');
+    button.style.left = sidebar.offsetWidth + "px";
+}
 
 document.addEventListener('mousemove', (e) => {
     if (!isDragging) return;
@@ -131,21 +140,24 @@ document.addEventListener('mousemove', (e) => {
     const sidebar = document.getElementById('toc');
     const newWidth = startWidth + (e.clientX - startX);
     sidebar.style.width = Math.max(200, Math.min(400, newWidth)) + 'px';
+    updateToggleBtnPosition();
 });
 
 document.addEventListener('mouseup', () => {
-    isDragging = false;
-    document.body.style.cursor = 'default';
+    if (isDragging) {
+        isDragging = false;
+        document.body.style.cursor = 'default';
+        document.body.style.userSelect = '';  // 恢复文本选中
+    }
 });
 
-// 切换显示/隐藏功能
+// 修改切换显示/隐藏功能，移除硬编码的偏移值，调用辅助函数更新位置
 document.getElementById('toggleBtn').addEventListener('click', () => {
     const sidebar = document.getElementById('toc');
-    const button = document.getElementById('toggleBtn');
     
     sidebar.classList.toggle('collapsed');
-    button.textContent = sidebar.classList.contains('collapsed') ? '展开' : '收起';
-    button.style.left = sidebar.classList.contains('collapsed') ? '8px' : (sidebar.offsetWidth + 8) + 'px';
+    document.getElementById('toggleBtn').textContent = sidebar.classList.contains('collapsed') ? '▶' : '◀';
+    updateToggleBtnPosition();
 });
 
 // 初始化侧边栏宽度
