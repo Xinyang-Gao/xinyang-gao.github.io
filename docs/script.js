@@ -144,13 +144,20 @@ document.getElementById('toggleBtn').addEventListener('click', () => {
 // 初始化侧边栏宽度
 document.getElementById('toc').style.width = '300px';
 
-// 添加窗口resize监听
-window.addEventListener('resize', () => {
-    document.querySelector('.sidebar').style.height = 
-        `${window.innerHeight}px`;
-    document.querySelector('.content').style.minHeight = 
-        `${window.innerHeight + 200}px`;
-});
+// 添加防抖函数，用于优化resize事件性能
+function debounce(func, delay) {
+  let timer;
+  return function(...args) {
+    clearTimeout(timer);
+    timer = setTimeout(() => func.apply(this, args), delay);
+  };
+}
+
+// 替换原resize监听，使用防抖包装
+window.addEventListener('resize', debounce(() => {
+    document.querySelector('.sidebar').style.height = `${window.innerHeight}px`;
+    document.querySelector('.content').style.minHeight = `${window.innerHeight + 200}px`;
+}, 200));
 
 // 初始设置
 document.querySelector('.sidebar').style.height = 
