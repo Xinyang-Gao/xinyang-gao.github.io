@@ -64,7 +64,7 @@ body {
 
 .toggle-button {
     position: absolute;
-    left: 310px;
+    left: 260px;  /* 原为310px，确保紧靠目录栏 */
     top: 50%;
     transform: translateY(-50%);
     background: #fff;
@@ -118,7 +118,7 @@ body {
 
 /* 左侧目录 */
 .sidebar {
-    width: 300px;
+    width: 250px;  /* 原为300px */
     padding: 20px;
     overflow-y: auto;
     border-right: 1px solid #eee;

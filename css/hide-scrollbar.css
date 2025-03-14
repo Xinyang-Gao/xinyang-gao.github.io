@@ -1,8 +1,0 @@
-#content 滚动条隐藏的样式 */
-#content {
-  -ms-overflow-style: none;  /* IE and Edge */
-  scrollbar-width: none;  /* Firefox */
-}
-#content::-webkit-scrollbar {
-  display: none;  /* Chrome, Safari, Opera */
-}
