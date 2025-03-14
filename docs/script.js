@@ -51,9 +51,10 @@ function handleResponse(text) {
     }
     // 当存在元数据时，去除YAML头部；否则原样处理文本
     const content = metaMatch ? text.replace(metaRegex, '') : text;
-    // 直接注入已转换好的HTML内容，不再调用 marked.parse
-    document.getElementById('content').innerHTML = content;
-    // 新增：移除内容区的第一个 <h1>
+    // 使用 marked.parse 将 Markdown 转换为 HTML
+    const htmlContent = marked.parse(content);
+    document.getElementById('content').innerHTML = htmlContent;
+    // 移除内容区的第一个 <h1>
     const contentElement = document.getElementById('content');
     const firstH1 = contentElement.querySelector('h1');
     if (firstH1) {
