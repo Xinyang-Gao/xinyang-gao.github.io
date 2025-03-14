@@ -157,7 +157,8 @@ document.getElementById('toggleBtn').addEventListener('click', () => {
     
     sidebar.classList.toggle('collapsed');
     document.getElementById('toggleBtn').textContent = sidebar.classList.contains('collapsed') ? '▶' : '◀';
-    updateToggleBtnPosition();
+    // 延迟调用更新以等待分割线的动画开始，确保按钮能同步动画
+    setTimeout(() => updateToggleBtnPosition(), 0);
 });
 
 // 初始化侧边栏宽度
