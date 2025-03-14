@@ -1,7 +1,7 @@
 // 从URL参数获取md文件路径
 const urlParams = new URLSearchParams(window.location.search);
 const mdFileParam = urlParams.get('md') || '404.md';  // 默认值
-const mdFile = `../docs/posts/${mdFileParam}`;  // 修改前: './posts/${mdFileParam}'
+const mdFile = `/docs/posts/${mdFileParam}`;  // 修改前: './posts/${mdFileParam}'
 
 // 对文件路径进行URL编码
 const encodedMdFile = encodeURI(mdFile);
@@ -20,7 +20,7 @@ fetch(encodedMdFile, { mode: 'cors' })
     .then(response => {
         if (!response.ok) {
             // 如果文件不存在则加载默认的404.md文件
-            return fetch('../posts/404.md', { mode: 'cors' }).then(res => res.text());
+            return fetch('/docs/posts/404.md', { mode: 'cors' }).then(res => res.text());
         }
         return response.text();
     })
