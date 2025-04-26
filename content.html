@@ -57,9 +57,11 @@
 <style>
     /* 首页样式 */
     .hero-section {
+        margin: 0;
+        padding: 0;
+        width: 100vw; /* 使用视口宽度 */
+        height: 100vh; /* 使用视口高度 */
         position: relative;
-        height: 100vh;
-        width: 100%;
         background-color: #000;
         overflow: hidden;
         display: flex;
@@ -68,7 +70,14 @@
         padding-left: 10%;
         box-sizing: border-box;
     }
-    
+
+    /* 确保其他内容也填满宽度 */
+    #home, #about, #portfolio, #blog, #contact {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    }
+
     .hero-content {
         position: relative;
         z-index: 2;
@@ -105,9 +114,11 @@
     
     /* 原有样式保持不变... */
     section {
+        margin: 0;
+        width: 100%;
         margin-bottom: 3rem;
-        padding: 1rem;
-        border-radius: 5px;
+        padding: 0;
+        border-radius: 0;
         background-color: rgba(0,0,0,0.05);
     }
     
@@ -428,3 +439,6 @@ animateParticles();
         animate();
     });
 </script>
+<style>
+    html { overflow-x:hidden; }
+    </style>
