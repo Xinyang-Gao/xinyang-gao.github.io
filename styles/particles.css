@@ -1,0 +1,97 @@
+/* 首页样式 */
+.hero-section {
+    position: relative;
+    height: 100vh;
+    width: 100%;
+    background-color: #000;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding-left: 10%;
+    box-sizing: border-box;
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    color: white;
+    max-width: 600px;
+}
+
+.hero-title {
+    font-size: 2.0rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
+}
+
+.hero-title2 {
+    font-size: 3.5rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
+}
+
+.hero-subtitle {
+    font-size: 1.8rem;
+    font-weight: 300;
+    opacity: 0.8;
+}
+
+#particles {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+/* 原有样式保持不变... */
+section {
+    margin-bottom: 3rem;
+    padding: 1rem;
+    border-radius: 5px;
+    background-color: rgba(0,0,0,0.05);
+}
+
+h1, h2, h3 {
+    color: var(--text-color);
+}
+
+.project, article {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background-color: rgba(0,0,0,0.03);
+    border-radius: 4px;
+}
+
+form div {
+    margin-bottom: 1rem;
+}
+
+label {
+    display: block;
+    margin-bottom: 0.5rem;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+}
+
+button {
+    padding: 0.5rem 1rem;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
