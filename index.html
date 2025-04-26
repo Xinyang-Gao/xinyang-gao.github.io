@@ -1,58 +1,274 @@
-<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>高新炀的个人网站</title>
-    <!-- 主样式 -->
-    <link rel="stylesheet" href="styles/main.css">
-    <!-- 粒子效果样式 -->
-    <link rel="stylesheet" href="styles/particles.css">
+<style>
+    :root {
+        --bg-color: #ffffff;
+        --text-color: #333333;
+        --nav-bg: #f8f9fa;
+        --footer-bg: #343a40;
+        --footer-text: #ffffff;
+    }
+    
+    .dark-mode {
+        --bg-color: #1a1a1a;
+        --text-color: #f8f9fa;
+        --nav-bg: #343a40;
+    }
+    
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: Arial, sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+    
+    .navbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 2rem;
+        background-color: var(--nav-bg);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .nav-left {
+        display: flex;
+        align-items: center;
+    }
+    
+    .logo {
+        font-weight: bold;
+        font-size: 1.5rem;
+        margin-right: 2rem;
+        color: var(--text-color);
+        text-decoration: none;
+    }
+    
+    .nav-buttons {
+        display: flex;
+        gap: 1rem;
+    }
+    
+    .nav-buttons a {
+        color: var(--text-color);
+        text-decoration: none;
+        padding: 0.5rem 1rem;
+        border-radius: 4px;
+        transition: background-color 0.3s;
+    }
+    
+    .nav-buttons a:hover {
+        background-color: rgba(0,0,0,0.1);
+    }
+    
+    .nav-right {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .theme-toggle, .language-toggle {
+        cursor: pointer;
+        padding: 0.5rem;
+        border-radius: 50%;
+        transition: background-color 0.3s;
+    }
+    
+    .theme-toggle:hover, .language-toggle:hover {
+        background-color: rgba(0,0,0,0.1);
+    }
+    
+    .hamburger {
+        display: none;
+        cursor: pointer;
+        padding: 0.5rem;
+    }
+    
+    .hamburger-menu {
+        display: none;
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background-color: var(--nav-bg);
+        width: 200px;
+        box-shadow: -2px 2px 5px rgba(0,0,0,0.1);
+        z-index: 100;
+    }
+    
+    .hamburger-menu.show {
+        display: block;
+    }
+    
+    .hamburger-menu a {
+        display: block;
+        padding: 1rem;
+        color: var(--text-color);
+        text-decoration: none;
+    }
+    
+    .hamburger-menu a:hover {
+        background-color: rgba(0,0,0,0.1);
+    }
+    
+    .content {
+        flex: 1;
+        padding: 2rem;
+    }
+    
+    footer {
+        background-color: var(--footer-bg);
+        color: var(--footer-text);
+        text-align: center;
+        padding: 1.5rem;
+        margin-top: auto;
+    }
+    
+    @media (max-width: 768px) {
+        .nav-buttons {
+            display: none;
+        }
+        
+        .hamburger {
+            display: block;
+        }
+    }
+</style>
 </head>
 <body>
-    <header>
-        <nav class="navbar">
-            <div class="nav-left">
-                <a href="#" class="logo">GaoXinyang</a>
-                <div class="nav-buttons">
-                    <a href="#home">首页</a>
-                    <a href="#about">关于</a>
-                    <a href="#portfolio">作品集</a>
-                    <a href="#blog">博客</a>
-                    <a href="#contact">联系</a>
-                </div>
-            </div>
-            <div class="nav-right">
-                <div class="theme-toggle" title="切换白天/夜晚模式">🌓</div>
-                <div class="language-toggle" title="切换语言">🌐</div>
-                <div class="hamburger">☰</div>
-            </div>
-            <div class="hamburger-menu">
+<header>
+    <nav class="navbar">
+        <div class="nav-left">
+            <a href="#" class="logo">GaoXinyang</a>
+            <div class="nav-buttons">
                 <a href="#home">首页</a>
                 <a href="#about">关于</a>
                 <a href="#portfolio">作品集</a>
                 <a href="#blog">博客</a>
                 <a href="#contact">联系</a>
             </div>
-        </nav>
-    </header>
+        </div>
+        <div class="nav-right">
+            <div class="theme-toggle" title="切换白天/夜晚模式">🌓</div>
+            <div class="language-toggle" title="切换语言">🌐</div>
+            <div class="hamburger">☰</div>
+        </div>
+        <div class="hamburger-menu">
+            <a href="#home">首页</a>
+            <a href="#about">关于</a>
+            <a href="#portfolio">作品集</a>
+            <a href="#blog">博客</a>
+            <a href="#contact">联系</a>
+        </div>
+    </nav>
+</header>
 
-    <main class="content">
-        <!-- 内容将通过JavaScript动态加载 -->
-    </main>
+<main class="content">
+    <!-- 内容将通过JavaScript动态加载 -->
+</main>
 
-    <footer>
-        <p>&copy; 2025 GaoXinyang的个人网站 版权所有</p>
-    </footer>
+<footer>
+    <p>&copy; 2025 GaoXinyang的个人网站 版权所有</p>
+</footer>
 
-    <!-- 返回顶部按钮 -->
-    <button id="back-to-top" title="返回顶部">↑</button>
- 
-    <!-- 主脚本 -->
-    <script src="scripts/main.js"></script>
-    <!-- 文字动画效果 -->
-    <script src="scripts/text-animation.js"></script>
-    <!-- 粒子效果 -->
-    <script src="scripts/particles.js"></script>
+<!-- 返回顶部按钮 -->
+<button id="back-to-top" title="返回顶部">↑</button>
+
+<style>
+    #back-to-top {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-size: 20px;
+        display: none;
+        opacity: 0;
+        transition: opacity 0.3s, background-color 0.3s;
+        z-index: 99;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    }
+    
+    #back-to-top:hover {
+        background-color: #0056b3;
+    }
+    
+    #back-to-top.show {
+        display: block;
+        opacity: 1;
+    }
+</style>
+
+<script>
+    // 返回顶部按钮功能
+    const backToTopButton = document.getElementById('back-to-top');
+    
+    // 监听滚动事件
+    window.addEventListener('scroll', () => {
+        if (window.pageYOffset > 300) {
+            backToTopButton.classList.add('show');
+        } else {
+            backToTopButton.classList.remove('show');
+        }
+    });
+    
+    // 点击按钮平滑滚动到顶部
+    backToTopButton.addEventListener('click', () => {
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'
+        });
+    });
+</script>
+
+<script>
+    // 主题切换功能
+    const themeToggle = document.querySelector('.theme-toggle');
+    themeToggle.addEventListener('click', () => {
+        document.body.classList.toggle('dark-mode');
+        // 可以添加本地存储来记住用户偏好
+    });
+    
+    // 语言切换功能
+    const languageToggle = document.querySelector('.language-toggle');
+    languageToggle.addEventListener('click', () => {
+        // 这里可以添加语言切换逻辑
+        alert('语言切换功能正在开发中！');
+    // 例如，使用本地存储来记住用户的语言偏好
+    });
+    
+    // 汉堡菜单功能
+    const hamburger = document.querySelector('.hamburger');
+    const hamburgerMenu = document.querySelector('.hamburger-menu');
+    hamburger.addEventListener('click', () => {
+        hamburgerMenu.classList.toggle('show');
+    });
+    
+    // 点击菜单外区域关闭菜单
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.hamburger') && !e.target.closest('.hamburger-menu')) {
+            hamburgerMenu.classList.remove('show');
+        }
+    });
+    
+    // 加载内容
+    window.addEventListener('DOMContentLoaded', () => {
+        fetch('content.html')
+            .then(response => response.text())
+            .then(html => {
+                document.querySelector('.content').innerHTML = html;
+            })
+            .catch(err => {
+                console.error('加载内容失败:', err);
+                document.querySelector('.content').innerHTML = '<h1>欢迎来到我的网站</h1><p>……数据丢失了，试试刷新能否找到它们吧！</p>';
+            });
+    });
+</script>
 </body>
 </html>
