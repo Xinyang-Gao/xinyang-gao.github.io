@@ -1,16 +1,22 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>高新炀的个人网站</title>
 <style>
     :root {
-        --bg-color: #ffffff;
-        --text-color: #333333;
-        --nav-bg: #f8f9fa;
+        --bg-color: #1a1a1a;
+        --text-color: #f8f9fa;
+        --nav-bg: #343a40;
         --footer-bg: #343a40;
         --footer-text: #ffffff;
     }
     
-    .dark-mode {
-        --bg-color: #1a1a1a;
-        --text-color: #f8f9fa;
-        --nav-bg: #343a40;
+    .light-mode {
+        --bg-color: #ffffff;
+        --text-color: #333333;
+        --nav-bg: #f8f9fa;
     }
     
     body {
@@ -28,9 +34,15 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 1rem 2rem;
+        padding: 0.5rem 2rem;
         background-color: var(--nav-bg);
         box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        height: 50px;
     }
     
     .nav-left {
@@ -115,13 +127,14 @@
     .content {
         flex: 1;
         padding: 0;
+        margin-top: 50px;
     }
     
     footer {
         background-color: var(--footer-bg);
         color: var(--footer-text);
         text-align: center;
-        padding: 1.5rem; 
+        padding: 1.5rem;
         margin-top: auto;
     }
     
@@ -136,7 +149,7 @@
     }
 </style>
 </head>
-<body>
+<body class="dark-mode">
 <header>
     <nav class="navbar">
         <div class="nav-left">
@@ -231,16 +244,14 @@
     // 主题切换功能
     const themeToggle = document.querySelector('.theme-toggle');
     themeToggle.addEventListener('click', () => {
-        document.body.classList.toggle('dark-mode');
+        document.body.classList.toggle('light-mode');
         // 可以添加本地存储来记住用户偏好
     });
     
     // 语言切换功能
     const languageToggle = document.querySelector('.language-toggle');
     languageToggle.addEventListener('click', () => {
-        // 这里可以添加语言切换逻辑
         alert('语言切换功能正在开发中！');
-    // 例如，使用本地存储来记住用户的语言偏好
     });
     
     // 汉堡菜单功能
@@ -266,7 +277,7 @@
             })
             .catch(err => {
                 console.error('加载内容失败:', err);
-                document.querySelector('.content').innerHTML = '<h1>欢迎来到我的网站</h1><p>……数据丢失了，试试刷新能否找到它们吧！</p>';
+                document.querySelector('.content').innerHTML = '<h1>欢迎来到我的网站</h1><p>数据加载失败，请刷新重试</p>';
             });
     });
 </script>
