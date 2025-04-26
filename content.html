@@ -1,0 +1,424 @@
+<!-- 首页部分 -->
+<section id="hero" class="hero-section">
+    <div class="hero-content">
+        <h1 class="hero-title"></h1>
+        <h1 class="hero-title2"></h1>
+        <h2 class="hero-subtitle"></h2>
+    </div>
+    <canvas id="particles"></canvas>
+</section>
+
+<section id="home">
+    <h2>首页</h2>
+    <p>---</p>
+</section>
+
+<!-- 其余部分保持不变... -->
+<section id="about">
+    <h2>关于我</h2>
+    <p>---</p>
+</section>
+
+<section id="portfolio">
+    <h2>作品集</h2>
+    <p>---</p>
+    <div class="projects">
+        <!-- 项目 -->
+        <div class="project">
+            <h3>项目1</h3>
+            <p>项目描述...</p>
+        </div>
+    </div>
+</section>
+
+<section id="blog">
+    <h2>博客</h2>
+    <p>---</p>
+    <div class="articles">
+        <!-- 文章 -->
+        <article>
+            <h3>文章标题</h3>
+            <p>文章摘要...</p>
+        </article>
+    </div>
+</section>
+
+<section id="contact">
+    <h2>联系我</h2>
+    <p>---</p>
+</section>
+
+<style>
+    /* 首页样式 */
+    .hero-section {
+        position: relative;
+        height: 100vh;
+        width: 100%;
+        background-color: #000;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+        padding-left: 10%;
+        box-sizing: border-box;
+    }
+    
+    .hero-content {
+        position: relative;
+        z-index: 2;
+        color: white;
+        max-width: 600px;
+    }
+    
+    .hero-title {
+        font-size: 2.0rem;
+        margin-bottom: 1.5rem;
+        line-height: 1.2;
+    }
+
+    .hero-title2 {
+        font-size: 3.5rem;
+        margin-bottom: 1.5rem;
+        line-height: 1.2;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.8rem;
+        font-weight: 300;
+        opacity: 0.8;
+    }
+    
+    #particles {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+    }
+    
+    /* 原有样式保持不变... */
+    section {
+        margin-bottom: 3rem;
+        padding: 1rem;
+        border-radius: 5px;
+        background-color: rgba(0,0,0,0.05);
+    }
+    
+    h1, h2, h3 {
+        color: var(--text-color);
+    }
+    
+    .project, article {
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        background-color: rgba(0,0,0,0.03);
+        border-radius: 4px;
+    }
+    
+    form div {
+        margin-bottom: 1rem;
+    }
+    
+    label {
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+    
+    input, textarea {
+        width: 100%;
+        padding: 0.5rem;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background-color: var(--bg-color);
+        color: var(--text-color);
+    }
+    
+    button {
+        padding: 0.5rem 1rem;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+    }
+    
+    button:hover {
+        background-color: #0056b3;
+    }
+</style>
+
+<script>
+    // 文字动画效果
+    document.addEventListener('DOMContentLoaded', function() {
+        // 标题和副标题文本
+        const titleText = "欢迎访问!";
+        const titleText2 = "我的个人网站";
+        const subtitleText = "GaoXinyang";
+        
+        // 获取元素
+        const heroTitle = document.querySelector('.hero-title');
+        const heroTitle2 = document.querySelector('.hero-title2');
+        const heroSubtitle = document.querySelector('.hero-subtitle');
+        
+        // 文字动画函数
+        function animateText(element, text, delay = 0) {
+            setTimeout(() => {
+                // 初始随机字符
+                let randomChars = '欢迎访问我的个人网站GaoXinyang';// 随机字符集
+                let currentText = '';// 当前显示的文本
+                let iterations = 0;// 当前迭代次数
+                const maxIterations = 20;// 最大迭代次数
+                
+                // 创建间隔
+                const interval = setInterval(() => {
+                    // 生成随机文本
+                    currentText = '';
+                    for (let i = 0; i < text.length; i++) {
+                        if (iterations > i * maxIterations / text.length) {
+                            currentText += text[i];
+                        } else {
+                            currentText += randomChars[Math.floor(Math.random() * randomChars.length)];
+                        }
+                    }
+                    
+                    element.textContent = currentText;
+                    
+                    iterations++;
+                    if (iterations >= maxIterations) {
+                        clearInterval(interval);
+                        element.textContent = text;
+                    }
+                }, 40);
+            }, delay);
+        }
+        
+        // 执行动画
+        animateText(heroTitle, titleText);
+        animateText(heroTitle2, titleText2, 400);
+        animateText(heroSubtitle, subtitleText, 800);
+        
+        // 粒子效果 - 改进版
+const canvas = document.getElementById('particles');
+const ctx = canvas.getContext('2d');
+
+// 设置canvas尺寸
+canvas.width = canvas.offsetWidth;
+canvas.height = canvas.offsetHeight;
+
+// 粒子系统参数
+const particleSystem = {
+    maxParticles: 20,// 最大粒子数
+    spawnRate: 2, // 每帧生成粒子数
+    particles: [],
+    mouse: {
+        x: null,
+        y: null,
+        radius: 100
+    }
+};
+
+// 粒子类
+class Particle {
+    constructor() {
+        this.reset();
+        // 初始位置随机分布在屏幕边缘
+        const edge = Math.floor(Math.random() * 4);// 随机选择边缘
+        switch(edge) {
+            case 0: // 上边缘
+                this.x = Math.random() * canvas.width;
+                this.y = 100;
+                break;
+            case 1: // 右边缘
+                this.x = canvas.width;
+                this.y = Math.random() * canvas.height;
+                break;
+            case 2: // 下边缘
+                this.x = Math.random() * canvas.width;
+                this.y = canvas.height;
+                break;
+            case 3: // 左边缘
+                this.x = 100;
+                this.y = Math.random() * canvas.height;
+                break;
+        }
+    }
+    
+    reset() {
+        this.life = 100 + Math.random() * 500; // 生命周期(帧数)
+        this.age = 0;
+        this.size = Math.random() * 1 + 1;// 粒子大小
+        this.color = `hsl(${Math.random() * 360}, 80%, 60%)`;
+        this.speed = 0.5 + Math.random() * 0.1;// 粒子速度
+        this.angle = Math.random() * Math.PI * 2;
+        this.vx = Math.cos(this.angle) * this.speed;
+        this.vy = Math.sin(this.angle) * this.speed;
+        this.opacity = 0; // 初始透明
+        this.fadeIn = 20; // 淡入帧数
+    }
+    
+    update() {
+        // 移动粒子
+        this.x += this.vx;
+        this.y += this.vy;
+        
+        // 生命周期
+        this.age++;
+        
+        // 淡入效果
+        if (this.age < this.fadeIn) {
+            this.opacity = this.age / this.fadeIn;
+        }
+        // 淡出效果
+        else if (this.age > this.life - this.fadeIn) {
+            this.opacity = (this.life - this.age) / this.fadeIn;
+        } else {
+            this.opacity = 1;
+        }
+        
+        // 鼠标交互
+        const dx = particleSystem.mouse.x - this.x;
+        const dy = particleSystem.mouse.y - this.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        
+        if (distance < particleSystem.mouse.radius) {
+            const forceDirectionX = dx / distance;
+            const forceDirectionY = dy / distance;
+            const force = (particleSystem.mouse.radius - distance) / particleSystem.mouse.radius * 0.6;
+            
+            this.x -= forceDirectionX * force * 5;
+            this.y -= forceDirectionY * force * 5;
+        }
+        
+        // 检查是否超出边界
+        if (this.x < -50 || this.x > canvas.width + 50 || 
+            this.y < -50 || this.y > canvas.height + 50) {
+            return false; // 标记为可移除
+        }
+        
+        // 检查生命周期是否结束
+        if (this.age >= this.life) {
+            return false; // 标记为可移除
+        }
+        
+        return true; // 粒子仍然活跃
+    }
+    
+    draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.fillStyle = this.color.replace(')', `, ${this.opacity})`).replace('hsl', 'hsla');
+        ctx.fill();
+    }
+}
+
+// 初始化粒子系统
+function initParticles() {
+    particleSystem.particles = [];
+    for (let i = 0; i < particleSystem.maxParticles * 0.5; i++) {
+        particleSystem.particles.push(new Particle());
+    }
+}
+
+// 生成新粒子
+function spawnParticles() {
+    for (let i = 0; i < particleSystem.spawnRate; i++) {
+        if (particleSystem.particles.length < particleSystem.maxParticles) {
+            particleSystem.particles.push(new Particle());
+        }
+    }
+}
+
+// 连接粒子
+function connectParticles() {
+    const maxDistance = 100;
+    
+    for (let i = 0; i < particleSystem.particles.length; i++) {
+        const p1 = particleSystem.particles[i];
+        
+        for (let j = i + 1; j < particleSystem.particles.length; j++) {
+            const p2 = particleSystem.particles[j];
+            const dx = p1.x - p2.x;
+            const dy = p1.y - p2.y;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            
+            if (distance < maxDistance) {
+                const opacity = 0.7 * (1 - distance / maxDistance) * Math.min(p1.opacity, p2.opacity);
+                ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(p1.x, p1.y);
+                ctx.lineTo(p2.x, p2.y);
+                ctx.stroke();
+            }
+        }
+    }
+}
+
+// 动画循环
+function animateParticles() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // 生成新粒子
+    spawnParticles();
+    
+    // 更新和绘制粒子
+    for (let i = particleSystem.particles.length - 1; i >= 0; i--) {
+        const particle = particleSystem.particles[i];
+        const isAlive = particle.update();
+        
+        if (isAlive) {
+            particle.draw();
+        } else {
+            particleSystem.particles.splice(i, 1);
+        }
+    }
+    
+    // 连接粒子
+    connectParticles();
+    
+    requestAnimationFrame(animateParticles);
+}
+
+// 监听鼠标移动
+window.addEventListener('mousemove', function(event) {
+    particleSystem.mouse.x = event.x;
+    particleSystem.mouse.y = event.y;
+});
+
+// 窗口大小调整
+window.addEventListener('resize', function() {
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+});
+
+// 初始化并启动粒子系统
+initParticles();
+animateParticles();
+        
+        // 动画循环
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+            }
+            
+            connect();
+            
+            requestAnimationFrame(animate);
+        }
+        
+        // 窗口大小调整
+        window.addEventListener('resize', function() {
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            init();
+        });
+        
+        // 开始动画
+        init();
+        animate();
+    });
+</script>
