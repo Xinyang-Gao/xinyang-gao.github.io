@@ -11,23 +11,39 @@
             --nav-bg: #343a40;
             --footer-bg: #343a40;
             --footer-text: #ffffff;
+            --primary-color: #007bff;
+            --primary-hover: #0056b3;
         }
         
         .light-mode {
             --bg-color: #ffffff;
             --text-color: #333333;
             --nav-bg: #f8f9fa;
+            --footer-bg: #f8f9fa;
+            --footer-text: #333333;
         }
         
         body {
             margin: 0;
             padding: 0;
-            font-family: Arial, sans-serif;
-            background-color: var(--bg-color);
+            font-family: 'Arial', sans-serif;
             color: var(--text-color);
             display: flex;
             flex-direction: column;
             min-height: 100vh;
+            position: relative;
+            line-height: 1.6;
+        }
+        
+        /* 全屏粒子背景 */
+        #particles-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
         }
         
         .navbar {
@@ -36,13 +52,14 @@
             align-items: center;
             padding: 0.5rem 2rem;
             background-color: var(--nav-bg);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
             z-index: 1000;
-            height: 50px;
+            height: 60px;
+            transition: all 0.3s ease;
         }
         
         .nav-left {
@@ -56,11 +73,16 @@
             margin-right: 2rem;
             color: var(--text-color);
             text-decoration: none;
+            transition: color 0.3s;
+        }
+        
+        .logo:hover {
+            color: var(--primary-color);
         }
         
         .nav-buttons {
             display: flex;
-            gap: 1rem;
+            gap: 1.5rem;
         }
         
         .nav-buttons a {
@@ -68,34 +90,39 @@
             text-decoration: none;
             padding: 0.5rem 1rem;
             border-radius: 4px;
-            transition: background-color 0.3s;
+            transition: all 0.3s;
+            font-weight: 500;
         }
         
         .nav-buttons a:hover {
-            background-color: rgba(0,0,0,0.1);
+            color: var(--primary-color);
+            transform: translateY(-2px);
         }
         
         .nav-right {
             display: flex;
             align-items: center;
-            gap: 1rem;
+            gap: 1.5rem;
         }
         
         .theme-toggle, .language-toggle {
             cursor: pointer;
             padding: 0.5rem;
             border-radius: 50%;
-            transition: background-color 0.3s;
+            transition: all 0.3s;
+            font-size: 1.2rem;
         }
         
         .theme-toggle:hover, .language-toggle:hover {
             background-color: rgba(0,0,0,0.1);
+            transform: scale(1.1);
         }
         
         .hamburger {
             display: none;
             cursor: pointer;
             padding: 0.5rem;
+            font-size: 1.5rem;
         }
         
         .hamburger-menu {
@@ -105,12 +132,19 @@
             right: 0;
             background-color: var(--nav-bg);
             width: 200px;
-            box-shadow: -2px 2px 5px rgba(0,0,0,0.1);
+            box-shadow: -2px 5px 10px rgba(0,0,0,0.1);
+            border-radius: 0 0 0 10px;
+            overflow: hidden;
             z-index: 100;
+            transform: translateY(-20px);
+            opacity: 0;
+            transition: all 0.3s ease;
         }
         
         .hamburger-menu.show {
             display: block;
+            transform: translateY(0);
+            opacity: 1;
         }
         
         .hamburger-menu a {
@@ -118,136 +152,261 @@
             padding: 1rem;
             color: var(--text-color);
             text-decoration: none;
+            transition: all 0.3s;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
         
         .hamburger-menu a:hover {
             background-color: rgba(0,0,0,0.1);
+            padding-left: 1.5rem;
+            color: var(--primary-color);
         }
         
         .content {
             flex: 1;
             padding: 0;
-            margin-top: 50px;
+            margin-top: 60px;
         }
         
-        footer {
-            background-color: var(--footer-bg);
-            color: var(--footer-text);
-            text-align: center;
-            padding: 1.5rem;
-            margin-top: auto;
-        }
-        
-        /* 首页样式 */
+        /* 英雄区域 */
         .hero-section {
-            margin: 0;
-            padding: 0;
             width: 100vw;
-            height: calc(100vh - 50px);
-            position: relative;
-            background-color: #000;
-            overflow: hidden;
+            height: calc(100vh - 60px);
             display: flex;
             align-items: center;
             justify-content: flex-start;
-            padding-left: 10%;
+            padding: 0 10%;
             box-sizing: border-box;
-            margin-top: 50px;
-        }
-
-        /* 确保其他内容也填满宽度 */
-        #home, #about, #portfolio, #blog, #contact {
-            width: 100%;
-            margin: 0;
-            padding: 20px;
+            position: relative;
+            overflow: hidden;
+            background-color: transparent;
         }
 
         .hero-content {
             position: relative;
             z-index: 2;
             color: white;
-            max-width: 600px;
+            max-width: 800px;
+            backdrop-filter: blur(5px);
+            padding: 2rem;
+            border-radius: 10px;
+            background-color: rgba(0,0,0,0.3);
+            animation: fadeIn 1.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
         
         .hero-title {
-            font-size: 2.0rem;
-            margin-bottom: 1.5rem;
+            font-size: 2.2rem;
+            margin-bottom: 1rem;
             line-height: 1.2;
+            color: #fff;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.3);
         }
 
         .hero-title2 {
-            font-size: 3.5rem;
+            font-size: 4rem;
             margin-bottom: 1.5rem;
-            line-height: 1.2;
+            line-height: 1.1;
+            color: #fff;
+            text-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            font-weight: 700;
         }
         
         .hero-subtitle {
             font-size: 1.8rem;
             font-weight: 300;
-            opacity: 0.8;
+            opacity: 0.9;
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 2rem;
         }
         
-        #particles {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1;
+        .hero-cta {
+            display: inline-block;
+            padding: 0.8rem 2rem;
+            background-color: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 50px;
+            font-weight: 500;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            box-shadow: 0 4px 15px rgba(0,123,255,0.3);
         }
         
-        /* 原有样式保持不变... */
+        .hero-cta:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,123,255,0.4);
+        }
+        
+        /* 内容区域 */
         section {
-            margin: 0;
             width: 100%;
-            margin-bottom: 3rem;
-            padding: 20px;
-            border-radius: 0;
-            background-color: rgba(0,0,0,0.05);
+            margin: 0 auto 4rem;
+            padding: 4rem 10%;
+            background-color: rgba(0,0,0,0.7);
+            position: relative;
         }
         
-        h1, h2, h3 {
-            color: var(--text-color);
+        section h2 {
+            font-size: 2.5rem;
+            margin-bottom: 2rem;
+            color: #fff;
+            position: relative;
+            display: inline-block;
+        }
+        
+        section h2::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            width: 60px;
+            height: 4px;
+            background-color: var(--primary-color);
+            border-radius: 2px;
         }
         
         .project, article {
-            margin-bottom: 1.5rem;
-            padding: 1rem;
-            background-color: rgba(0,0,0,0.03);
-            border-radius: 4px;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background-color: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
         }
         
-        form div {
+        .project:hover, article:hover {
+            background-color: rgba(255,255,255,0.1);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .project h3, article h3 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
+        
+        .project p, article p {
+            color: rgba(255,255,255,0.8);
             margin-bottom: 1rem;
+        }
+        
+        .project-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+        
+        .project-tag {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            background-color: rgba(0,123,255,0.2);
+            color: #4dabff;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        
+        /* 联系表单 
+        .contact-form {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
         }
         
         label {
             display: block;
             margin-bottom: 0.5rem;
+            color: rgba(255,255,255,0.9);
+            font-weight: 500;
         }
         
         input, textarea {
             width: 100%;
-            padding: 0.5rem;
-            border: 1px solid #ddd;
+            padding: 0.8rem;
+            border: 1px solid rgba(255,255,255,0.1);
             border-radius: 4px;
-            background-color: var(--bg-color);
+            background-color: rgba(255,255,255,0.05);
             color: var(--text-color);
+            font-family: inherit;
+            font-size: 1rem;
+            transition: all 0.3s;
         }
         
-        button {
-            padding: 0.5rem 1rem;
-            background-color: #007bff;
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            background-color: rgba(255,255,255,0.1);
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.2);
+        }
+        
+        textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+        
+        .submit-btn {
+            padding: 0.8rem 2rem;
+            background-color: var(--primary-color);
             color: white;
             border: none;
             border-radius: 4px;
             cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s;
         }
         
-        button:hover {
-            background-color: #0056b3;
+        .submit-btn:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,123,255,0.3);
+        }
+        */
+        
+        /* 页脚 */
+        footer {
+            background-color: var(--footer-bg);
+            color: var(--footer-text);
+            text-align: center;
+            padding: 2rem;
+            margin-top: auto;
+            position: relative;
+            z-index: 1;
         }
         
+        .social-links {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+        
+        .social-link {
+            color: var(--footer-text);
+            font-size: 1.5rem;
+            transition: all 0.3s;
+        }
+        
+        .social-link:hover {
+            color: var(--primary-color);
+            transform: translateY(-3px);
+        }
+        
+        /* 返回顶部按钮 */
         #back-to-top {
             position: fixed;
             bottom: 30px;
@@ -255,25 +414,40 @@
             width: 50px;
             height: 50px;
             border-radius: 50%;
-            background-color: #007bff;
+            background-color: var(--primary-color);
             color: white;
             border: none;
             cursor: pointer;
             font-size: 20px;
             display: none;
             opacity: 0;
-            transition: opacity 0.3s, background-color 0.3s;
+            transition: all 0.3s;
             z-index: 99;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
         
         #back-to-top:hover {
-            background-color: #0056b3;
+            background-color: var(--primary-hover);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
         
         #back-to-top.show {
-            display: block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             opacity: 1;
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 992px) {
+            section {
+                padding: 3rem 5%;
+            }
+            
+            .hero-content {
+                max-width: 100%;
+            }
         }
         
         @media (max-width: 768px) {
@@ -284,390 +458,515 @@
             .hamburger {
                 display: block;
             }
+            
+            .hero-section {
+                padding: 0 5%;
+                text-align: center;
+                justify-content: center;
+            }
+            
+            .hero-title {
+                font-size: 1.8rem;
+            }
+            
+            .hero-title2 {
+                font-size: 3rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.4rem;
+            }
+            
+            section h2 {
+                font-size: 2rem;
+            }
         }
         
-        html { overflow-x:hidden; }
+        @media (max-width: 576px) {
+            .navbar {
+                padding: 0.5rem 1rem;
+            }
+            
+            .hero-title {
+                font-size: 1.5rem;
+            }
+            
+            .hero-title2 {
+                font-size: 2.2rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.2rem;
+            }
+            
+            section {
+                padding: 2rem 1rem;
+            }
+        }
+        
+        html { 
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
     </style>
 </head>
 <body class="dark-mode">
-<header>
-    <nav class="navbar">
-        <div class="nav-left">
-            <a href="#" class="logo">GaoXinyang</a>
-            <div class="nav-buttons">
+    <!-- 全屏粒子背景 -->
+    <canvas id="particles-background"></canvas>
+
+    <header>
+        <nav class="navbar">
+            <div class="nav-left">
+                <a href="#" class="logo">GaoXinyang</a>
+                <div class="nav-buttons">
+                    <a href="#home">首页</a>
+                    <a href="#about">关于</a>
+                    <a href="#portfolio">作品集</a>
+                    <a href="#blog">博客</a>
+<!--                <a href="#contact">联系</a> -->
+                </div>
+            </div>
+            <div class="nav-right">
+                <div class="theme-toggle" title="切换白天/夜晚模式">🌓</div>
+                <div class="language-toggle" title="切换语言">🌐</div>
+                <div class="hamburger">☰</div>
+            </div>
+            <div class="hamburger-menu">
                 <a href="#home">首页</a>
                 <a href="#about">关于</a>
                 <a href="#portfolio">作品集</a>
+                <a href="#blog">博客</a>
                 <a href="#contact">联系</a>
             </div>
-        </div>
-        <div class="nav-right">
-            <div class="theme-toggle" title="切换白天/夜晚模式">🌓</div>
-            <div class="language-toggle" title="切换语言">🌐</div>
-            <div class="hamburger">☰</div>
-        </div>
-        <div class="hamburger-menu">
-            <a href="#home">首页</a>
-            <a href="#about">关于</a>
-            <a href="#portfolio">作品集</a>
-            <a href="#contact">联系</a>
-        </div>
-    </nav>
-</header>
+        </nav>
+    </header>
 
-<main class="content">
-    <!-- 首页部分 -->
-    <section id="hero" class="hero-section">
-        <div class="hero-content">
-            <h1 class="hero-title"></h1>
-            <h1 class="hero-title2"></h1>
-            <h2 class="hero-subtitle"></h2>
-        </div>
-        <canvas id="particles"></canvas>
-    </section>
-
-    <section id="home">
-        <h2>首页</h2>
-        <p>---</p>
-    </section>
-
-    <!-- 其余部分保持不变... -->
-    <section id="about">
-        <h2>关于我</h2>
-        <p>---</p>
-    </section>
-
-    <section id="portfolio">
-        <h2>作品集</h2>
-        <p>---</p>
-        <div class="projects">
-            <!-- 项目 -->
-            <div class="project">
-                <h3>项目1</h3>
-                <p>项目描述...</p>
+    <main class="content">
+        <!-- 首页部分 -->
+        <section id="home">
+            <div class="hero-section">
+                <div class="hero-content">
+                    <h1 class="hero-title">欢迎访问!</h1>
+                    <h1 class="hero-title2">我的个人网站</h1>
+                    <h2 class="hero-subtitle">高新炀 · 爱好编程的初中生</h2>
+                    <a href="#about" class="hero-cta">进入网站！</a>
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <section id="blog">
-        <h2>博客</h2>
-        <p>---</p>
-        <div class="articles">
-            <!-- 文章 -->
-            <article>
-                <h3>文章标题</h3>
-                <p>文章摘要...</p>
-            </article>
-        </div>
-    </section>
+        <!-- 关于我 -->
+        <section id="about">
+            <h2>关于我</h2>
+            <p>---</p>
+            
+            <h3 style="margin-top: 2rem;">技能:</h3>
+            <div class="project-tags">
+                <span class="project-tag">HTML5</span>
+                <span class="project-tag">CSS3</span>
+                <span class="project-tag">Java</span>
+                <span class="project-tag">JavaScript</span>
+                <span class="project-tag">图形化</span>
+                <span class="project-tag">GaoXinyang</span>
+            </div>
+        </section>
 
-    <section id="contact">
-        <h2>联系我</h2>
-        <p>---</p>
-    </section>
-</main>
-
-<footer>
-    <p>&copy; 2025 GaoXinyang的个人网站 版权所有</p>
-</footer>
-
-<!-- 返回顶部按钮 -->
-<button id="back-to-top" title="返回顶部">↑</button>
-
-<script>
-    // 返回顶部按钮功能
-    const backToTopButton = document.getElementById('back-to-top');
-    
-    // 监听滚动事件
-    window.addEventListener('scroll', () => {
-        if (window.pageYOffset > 300) {
-            backToTopButton.classList.add('show');
-        } else {
-            backToTopButton.classList.remove('show');
-        }
-    });
-    
-    // 点击按钮平滑滚动到顶部
-    backToTopButton.addEventListener('click', () => {
-        window.scrollTo({
-            top: 0,
-            behavior: 'smooth'
-        });
-    });
-
-    // 主题切换功能
-    const themeToggle = document.querySelector('.theme-toggle');
-    themeToggle.addEventListener('click', () => {
-        document.body.classList.toggle('light-mode');
-        // 可以添加本地存储来记住用户偏好
-    });
-    
-    // 语言切换功能
-    const languageToggle = document.querySelector('.language-toggle');
-    languageToggle.addEventListener('click', () => {
-        alert('语言切换功能正在开发中！');
-    });
-    
-    // 汉堡菜单功能
-    const hamburger = document.querySelector('.hamburger');
-    const hamburgerMenu = document.querySelector('.hamburger-menu');
-    hamburger.addEventListener('click', () => {
-        hamburgerMenu.classList.toggle('show');
-    });
-    
-    // 点击菜单外区域关闭菜单
-    document.addEventListener('click', (e) => {
-        if (!e.target.closest('.hamburger') && !e.target.closest('.hamburger-menu')) {
-            hamburgerMenu.classList.remove('show');
-        }
-    });
-
-    // 文字动画效果
-    document.addEventListener('DOMContentLoaded', function() {
-        // 标题和副标题文本
-        const titleText = "欢迎访问!";
-        const titleText2 = "我的个人网站";
-        const subtitleText = "GaoXinyang";
-        
-        // 获取元素
-        const heroTitle = document.querySelector('.hero-title');
-        const heroTitle2 = document.querySelector('.hero-title2');
-        const heroSubtitle = document.querySelector('.hero-subtitle');
-        
-        // 文字动画函数
-        function animateText(element, text, delay = 0) {
-            setTimeout(() => {
-                // 初始随机字符
-                let randomChars = '欢迎访问我的个人网站GaoXinyang';
-                let currentText = '';
-                let iterations = 0;
-                const maxIterations = 20;
+        <!-- 作品集 -->
+        <section id="portfolio">
+            <h2>作品集</h2>
+            <p>以下是我的一些精选项目：</p>
+            <div class="projects">
+                <div class="project">
+                    <h3>001</h3>
+                    <p>---</p>
+                    <div class="project-tags">
+                        <span class="project-tag">占位</span>
+                    </div>
+                </div>
                 
-                const interval = setInterval(() => {
-                    currentText = '';
-                    for (let i = 0; i < text.length; i++) {
-                        if (iterations > i * maxIterations / text.length) {
-                            currentText += text[i];
-                        } else {
-                            currentText += randomChars[Math.floor(Math.random() * randomChars.length)];
+                <div class="project">
+                    <h3>002</h3>
+                    <p>---</p>
+                    <div class="project-tags">
+                        <span class="project-tag">占位</span>
+                    </div>
+                </div>
+                
+                <div class="project">
+                    <h3>003</h3>
+                    <p>----</p>
+                    <div class="project-tags">
+                        <span class="project-tag">占位</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 博客 -->
+        <section id="blog">
+            <h2>博客</h2>
+            <p>我的一些文章和思考：</p>
+            <div class="articles">
+                <article>
+                    <h3>---</h3>
+                    <p>暂时还没有东西呀</p>
+                </article>
+                
+                <article>
+                    <h3>---</h3>
+                    <p>---</p>
+                </article>
+            </div>
+        </section>
+
+<!--         !--联系我 --
+        <section id="contact">
+            <h2>联系我</h2>
+            <p>如果你想和我一起讨论或交流，可以联系我</p>
+            
+            <div class="contact-form">
+                <form>
+                    <div class="form-group">
+                        <label for="name">姓名</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">邮箱</label>
+                        <input type="email" id="email" name="email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="message">消息</label>
+                        <textarea id="message" name="message" required></textarea>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn">发送消息</button>
+                </form>
+            </div>
+        </section>
+    -->
+    </main>
+
+    <footer>
+        <div class="social-links">
+            <a href="https://github.com/Xinyang-Gao" class="social-link" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <a href="https://space.bilibili.com/1064600697" class="social-link" target="_blank" rel="noopener noreferrer">Bilibili</a>
+        </div>
+        <p>&copy; 2025 高新炀的个人网站 版权所有</p>
+    </footer>
+
+    <!-- 返回顶部按钮 -->
+    <button id="back-to-top" title="返回顶部">↑</button>
+
+    <script>
+        // 粒子效果 - 全屏背景
+        document.addEventListener('DOMContentLoaded', function() {
+            const canvas = document.getElementById('particles-background');
+            const ctx = canvas.getContext('2d');
+
+            // 设置canvas尺寸
+            function resizeCanvas() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+
+            // 粒子系统
+            const particleSystem = {
+                maxParticles: 150,
+                spawnRate: 3,
+                particles: [],
+                mouse: {
+                    x: null,
+                    y: null,
+                    radius: 120
+                }
+            };
+
+            // 粒子类
+            class Particle {
+                constructor() {
+                    this.reset();
+                    // 初始位置随机分布在屏幕边缘
+                    const edge = Math.floor(Math.random() * 4);
+                    switch(edge) {
+                        case 0: // 上边缘
+                            this.x = Math.random() * canvas.width;
+                            this.y = 0;
+                            break;
+                        case 1: // 右边缘
+                            this.x = canvas.width;
+                            this.y = Math.random() * canvas.height;
+                            break;
+                        case 2: // 下边缘
+                            this.x = Math.random() * canvas.width;
+                            this.y = canvas.height;
+                            break;
+                        case 3: // 左边缘
+                            this.x = 0;
+                            this.y = Math.random() * canvas.height;
+                            break;
+                    }
+                }
+                
+                reset() {
+                    this.life = 800 + Math.random() * 1000;
+                    this.age = 0;
+                    this.size = Math.random() * 2 + 1;
+                    this.color = `hsl(${Math.random() * 60 + 200}, 80%, 60%)`;
+                    this.speed = 0.2 + Math.random() * 0.2;
+                    this.angle = Math.random() * Math.PI * 2;
+                    this.vx = Math.cos(this.angle) * this.speed;
+                    this.vy = Math.sin(this.angle) * this.speed;
+                    this.opacity = 0;
+                    this.fadeIn = 40;
+                }
+                
+                update() {
+                    this.x += this.vx;
+                    this.y += this.vy;
+                    this.age++;
+                    
+                    // 淡入淡出效果
+                    if (this.age < this.fadeIn) {
+                        this.opacity = this.age / this.fadeIn;
+                    }
+                    else if (this.age > this.life - this.fadeIn) {
+                        this.opacity = (this.life - this.age) / this.fadeIn;
+                    } else {
+                        this.opacity = 1;
+                    }
+                    
+                    // 鼠标交互
+                    if (particleSystem.mouse.x && particleSystem.mouse.y) {
+                        const dx = particleSystem.mouse.x - this.x;
+                        const dy = particleSystem.mouse.y - this.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (distance < particleSystem.mouse.radius) {
+                            const forceDirectionX = dx / distance;
+                            const forceDirectionY = dy / distance;
+                            const force = (particleSystem.mouse.radius - distance) / particleSystem.mouse.radius * 0.6;
+                            
+                            this.x -= forceDirectionX * force * 6;
+                            this.y -= forceDirectionY * force * 6;
                         }
                     }
                     
-                    element.textContent = currentText;
-                    
-                    iterations++;
-                    if (iterations >= maxIterations) {
-                        clearInterval(interval);
-                        element.textContent = text;
+                    // 边界检查
+                    if (this.x < -50 || this.x > canvas.width + 50 || 
+                        this.y < -50 || this.y > canvas.height + 50) {
+                        return false;
                     }
-                }, 40);
-            }, delay);
-        }
-        
-        // 执行动画
-        animateText(heroTitle, titleText);
-        animateText(heroTitle2, titleText2, 400);
-        animateText(heroSubtitle, subtitleText, 800);
-        
-        // 粒子效果 - 改进版
-        const canvas = document.getElementById('particles');
-        const ctx = canvas.getContext('2d');
-
-        // 设置canvas尺寸
-        canvas.width = canvas.offsetWidth;
-        canvas.height = canvas.offsetHeight;
-
-        // 粒子系统参数
-        const particleSystem = {
-            maxParticles: 150,// 最大粒子数
-            spawnRate: 50, // 每帧生成粒子数
-            particles: [],
-            mouse: {
-                x: null,
-                y: null,
-                radius: 200// 鼠标交互半径
-            }
-        };
-
-        // 粒子类
-        class Particle {
-            constructor() {
-                this.reset();
-                // 初始位置随机分布在屏幕边缘
-                const edge = Math.floor(Math.random() * 4);// 随机选择边缘
-                switch(edge) {
-                    case 0: // 上边缘
-                        this.x = Math.random() * canvas.width;
-                        this.y = 0;
-                        break;
-                    case 1: // 右边缘
-                        this.x = canvas.width;
-                        this.y = Math.random() * canvas.height;
-                        break;
-                    case 2: // 下边缘
-                        this.x = Math.random() * canvas.width;
-                        this.y = canvas.height;
-                        break;
-                    case 3: // 左边缘
-                        this.x = 0;
-                        this.y = Math.random() * canvas.height;
-                        break;
-                }
-            }
-            
-            reset() {
-                this.life = 500 + Math.random() * 1000; // 生命周期(帧数)
-                this.age = 0;
-                this.size = Math.random() * 1 + 1;// 粒子大小
-                this.color = `hsl(${Math.random() * 360}, 80%, 60%)`;
-                this.speed = 0.5 + Math.random() * 0.1;// 粒子速度
-                this.angle = Math.random() * Math.PI * 2;
-                this.vx = Math.cos(this.angle) * this.speed;
-                this.vy = Math.sin(this.angle) * this.speed;
-                this.opacity = 0; // 初始透明
-                this.fadeIn = 20; // 淡入帧数
-            }
-            
-            update() {
-                // 移动粒子
-                this.x += this.vx;
-                this.y += this.vy;
-                
-                // 生命周期
-                this.age++;
-                
-                // 淡入效果
-                if (this.age < this.fadeIn) {
-                    this.opacity = this.age / this.fadeIn;
-                }
-                // 淡出效果
-                else if (this.age > this.life - this.fadeIn) {
-                    this.opacity = (this.life - this.age) / this.fadeIn;
-                } else {
-                    this.opacity = 1;
-                }
-                
-                // 鼠标交互
-                const dx = particleSystem.mouse.x - this.x;
-                const dy = particleSystem.mouse.y - this.y;
-                const distance = Math.sqrt(dx * dx + dy * dy);
-                
-                if (distance < particleSystem.mouse.radius) {
-                    const forceDirectionX = dx / distance;
-                    const forceDirectionY = dy / distance;
-                    const force = (particleSystem.mouse.radius - distance) / particleSystem.mouse.radius * 0.6;
                     
-                    this.x -= forceDirectionX * force * 5;
-                    this.y -= forceDirectionY * force * 5;
+                    // 生命周期检查
+                    if (this.age >= this.life) {
+                        return false;
+                    }
+                    
+                    return true;
                 }
                 
-                // 检查是否超出边界
-                if (this.x < -50 || this.x > canvas.width + 50 || 
-                    this.y < -50 || this.y > canvas.height + 50) {
-                    return false; // 标记为可移除
+                draw() {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                    ctx.closePath();
+                    ctx.fillStyle = this.color.replace(')', `, ${this.opacity * 0.6})`).replace('hsl', 'hsla');
+                    ctx.fill();
                 }
-                
-                // 检查生命周期是否结束
-                if (this.age >= this.life) {
-                    return false; // 标记为可移除
-                }
-                
-                return true; // 粒子仍然活跃
             }
-            
-            draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.closePath();
-                ctx.fillStyle = this.color.replace(')', `, ${this.opacity})`).replace('hsl', 'hsla');
-                ctx.fill();
-            }
-        }
 
-        // 初始化粒子系统
-        function initParticles() {
-            particleSystem.particles = [];
-            for (let i = 0; i < particleSystem.maxParticles * 0.5; i++) {
-                particleSystem.particles.push(new Particle());
-            }
-        }
-
-        // 生成新粒子
-        function spawnParticles() {
-            for (let i = 0; i < particleSystem.spawnRate; i++) {
-                if (particleSystem.particles.length < particleSystem.maxParticles) {
+            // 初始化粒子
+            function initParticles() {
+                for (let i = 0; i < particleSystem.maxParticles * 0.5; i++) {
                     particleSystem.particles.push(new Particle());
                 }
             }
-        }
 
-        // 连接粒子
-        function connectParticles() {
-            const maxDistance = 100;
-            
-            for (let i = 0; i < particleSystem.particles.length; i++) {
-                const p1 = particleSystem.particles[i];
-                
-                for (let j = i + 1; j < particleSystem.particles.length; j++) {
-                    const p2 = particleSystem.particles[j];
-                    const dx = p1.x - p2.x;
-                    const dy = p1.y - p2.y;
-                    const distance = Math.sqrt(dx * dx + dy * dy);
-                    
-                    if (distance < maxDistance) {
-                        const opacity = 0.7 * (1 - distance / maxDistance) * Math.min(p1.opacity, p2.opacity);
-                        ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
-                        ctx.lineWidth = 1;
-                        ctx.beginPath();
-                        ctx.moveTo(p1.x, p1.y);
-                        ctx.lineTo(p2.x, p2.y);
-                        ctx.stroke();
+            // 生成新粒子
+            function spawnParticles() {
+                for (let i = 0; i < particleSystem.spawnRate; i++) {
+                    if (particleSystem.particles.length < particleSystem.maxParticles) {
+                        particleSystem.particles.push(new Particle());
                     }
                 }
             }
-        }
 
-        // 动画循环
-        function animateParticles() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // 生成新粒子
-            spawnParticles();
-            
-            // 更新和绘制粒子
-            for (let i = particleSystem.particles.length - 1; i >= 0; i--) {
-                const particle = particleSystem.particles[i];
-                const isAlive = particle.update();
+            // 连接粒子
+            function connectParticles() {
+                const maxDistance = 150;
                 
-                if (isAlive) {
-                    particle.draw();
-                } else {
-                    particleSystem.particles.splice(i, 1);
+                for (let i = 0; i < particleSystem.particles.length; i++) {
+                    const p1 = particleSystem.particles[i];
+                    
+                    for (let j = i + 1; j < particleSystem.particles.length; j++) {
+                        const p2 = particleSystem.particles[j];
+                        const dx = p1.x - p2.x;
+                        const dy = p1.y - p2.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        
+                        if (distance < maxDistance) {
+                            const opacity = 0.4 * (1 - distance / maxDistance) * Math.min(p1.opacity, p2.opacity);
+                            ctx.strokeStyle = `rgba(100, 200, 255, ${opacity})`;
+                            ctx.lineWidth = 0.7;
+                            ctx.beginPath();
+                            ctx.moveTo(p1.x, p1.y);
+                            ctx.lineTo(p2.x, p2.y);
+                            ctx.stroke();
+                        }
+                    }
                 }
             }
+
+            // 动画循环
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                spawnParticles();
+                
+                // 更新和绘制粒子
+                for (let i = particleSystem.particles.length - 1; i >= 0; i--) {
+                    const particle = particleSystem.particles[i];
+                    const isAlive = particle.update();
+                    
+                    if (isAlive) {
+                        particle.draw();
+                    } else {
+                        particleSystem.particles.splice(i, 1);
+                    }
+                }
+                
+                connectParticles();
+                
+                requestAnimationFrame(animate);
+            }
+
+            // 鼠标交互
+            window.addEventListener('mousemove', function(event) {
+                particleSystem.mouse.x = event.clientX;
+                particleSystem.mouse.y = event.clientY;
+            });
+
+            window.addEventListener('mouseout', function() {
+                particleSystem.mouse.x = null;
+                particleSystem.mouse.y = null;
+            });
+
+            // 初始化并启动粒子系统
+            initParticles();
+            animate();
+
+            // 文字动画效果
+            const heroTitle = document.querySelector('.hero-title');
+            const heroTitle2 = document.querySelector('.hero-title2');
+            const heroSubtitle = document.querySelector('.hero-subtitle');
             
-            // 连接粒子
-            connectParticles();
+            function animateText(element, text, delay = 0) {
+                setTimeout(() => {
+                    let currentText = '';
+                    let iterations = 0;
+                    const maxIterations = 20;
+                    const randomChars = '欢迎访问我的个人网站高新炀爱好编程的初中生进入网站';//随机字符集
+                    
+                    const interval = setInterval(() => {
+                        currentText = '';
+                        for (let i = 0; i < text.length; i++) {
+                            if (iterations > i * maxIterations / text.length) {
+                                currentText += text[i];
+                            } else {
+                                currentText += randomChars[Math.floor(Math.random() * randomChars.length)];
+                            }
+                        }
+                        
+                        element.textContent = currentText;
+                        
+                        iterations++;
+                        if (iterations >= maxIterations) {
+                            clearInterval(interval);
+                            element.textContent = text;
+                        }
+                    }, 50);
+                }, delay);
+            }
             
-            requestAnimationFrame(animateParticles);
+            animateText(heroTitle, heroTitle.textContent);
+            animateText(heroTitle2, heroTitle2.textContent, 400);
+            animateText(heroSubtitle, heroSubtitle.textContent, 800);
+        });
+
+        // 返回顶部按钮功能
+        const backToTopButton = document.getElementById('back-to-top');
+        
+        window.addEventListener('scroll', () => {
+            if (window.pageYOffset > 300) {
+                backToTopButton.classList.add('show');
+            } else {
+                backToTopButton.classList.remove('show');
+            }
+        });
+        
+        backToTopButton.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        // 主题切换功能
+        const themeToggle = document.querySelector('.theme-toggle');
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('light-mode');
+            // 保存用户偏好到本地存储
+            localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
+        });
+        
+        // 检查本地存储中的主题偏好
+        if (localStorage.getItem('theme') === 'light') {
+            document.body.classList.add('light-mode');
         }
-
-        // 监听鼠标移动
-        window.addEventListener('mousemove', function(event) {
-            particleSystem.mouse.x = event.x;
-            particleSystem.mouse.y = event.y;
+        
+        // 语言切换功能
+        const languageToggle = document.querySelector('.language-toggle');
+        languageToggle.addEventListener('click', () => {
+            alert('语言切换功能正在开发中！');
         });
-
-        // 窗口大小调整
-        window.addEventListener('resize', function() {
-            canvas.width = canvas.offsetWidth;
-            canvas.height = canvas.offsetHeight;
+        
+        // 汉堡菜单功能
+        const hamburger = document.querySelector('.hamburger');
+        const hamburgerMenu = document.querySelector('.hamburger-menu');
+        hamburger.addEventListener('click', (e) => {
+            e.stopPropagation();
+            hamburgerMenu.classList.toggle('show');
         });
-
-        // 初始化并启动粒子系统
-        initParticles();
-        animateParticles();
-    });
-</script>
+        
+        // 点击菜单外区域关闭菜单
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.hamburger') && !e.target.closest('.hamburger-menu')) {
+                hamburgerMenu.classList.remove('show');
+            }
+        });
+        
+        // 平滑滚动
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 60,
+                        behavior: 'smooth'
+                    });
+                    
+                    // 关闭汉堡菜单
+                    hamburgerMenu.classList.remove('show');
+                }
+            });
+        });
+    </script>
 </body>
 </html>
