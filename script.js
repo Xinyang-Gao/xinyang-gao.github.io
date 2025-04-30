@@ -1,3 +1,29 @@
+// 加载公共组件
+function loadCommonComponents() {
+    // 加载导航栏
+    fetch('navbar.html')
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('navbar-container').innerHTML = data;
+            // 重新初始化导航相关功能
+            setupThemeToggle();
+            setupLanguageToggle();
+            setupHamburgerMenu();
+            setupSmoothScrolling();
+        })
+        .catch(error => console.error('加载导航栏失败:', error));
+    
+    // 加载底部
+    fetch('footer.html')
+        .then(response => response.text())
+        .then(data => {
+            document.getElementById('footer-container').innerHTML = data;
+            // 重新初始化返回顶部按钮
+            setupBackToTopButton();
+        })
+        .catch(error => console.error('加载底部失败:', error));
+}
+
 // 粒子系统全局变量
 const particleSystem = {
     maxParticles: 150,
@@ -331,11 +357,7 @@ function initHeroTextAnimation() {
 
 // 主初始化函数
 document.addEventListener('DOMContentLoaded', function() {
+    loadCommonComponents();
     initParticleEffect();
-    setupBackToTopButton();
-    setupThemeToggle();
-    setupLanguageToggle();
-    setupHamburgerMenu();
-    setupSmoothScrolling();
     initHeroTextAnimation();
 });
