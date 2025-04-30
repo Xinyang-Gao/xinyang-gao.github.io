@@ -319,6 +319,19 @@ section h2::after {
     font-weight: 500;
 }
 
+/* 文章列表 */
+.section-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+
+.section-link:hover section {
+    background-color: rgba(255, 255, 255, 0.1); /* 悬停时的背景色变化 */
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+}
+
 /* 页脚 */
 footer {
     background-color: var(--footer-bg);
