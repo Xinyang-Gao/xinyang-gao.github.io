@@ -13,6 +13,7 @@
             padding: 2rem 10%;
             background-color: rgba(0,0,0,0.7);
             min-height: calc(100vh - 40px);
+            box-sizing: border-box;
         }
         
         .file-header {
@@ -25,6 +26,7 @@
             margin-bottom: 1rem;
             position: relative;
             display: inline-block;
+            word-break: break-word;
         }
         
         .file-header h1::after {
@@ -73,12 +75,14 @@
             padding: 1rem;
             background-color: rgba(0,0,0,0.3);
             border-radius: 6px;
+            white-space: pre-line;
         }
         
         .file-actions {
             margin-top: 2rem;
             display: flex;
             gap: 1rem;
+            flex-wrap: wrap;
         }
         
         .file-download {
@@ -115,6 +119,22 @@
             color: rgba(255,255,255,0.6);
         }
         
+        .error-message {
+            text-align: center;
+            padding: 3rem;
+            color: #ff6b6b;
+        }
+        
+        .error-message button {
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
         /* 响应式设计 */
         @media (max-width: 992px) {
             .file-detail-container {
@@ -125,6 +145,10 @@
         @media (max-width: 576px) {
             .file-detail-container {
                 padding: 1.5rem 1rem;
+            }
+            
+            .file-header h1 {
+                font-size: 1.8rem;
             }
             
             .file-meta {
@@ -138,6 +162,7 @@
             
             .file-download {
                 justify-content: center;
+                width: 100%;
             }
         }
     </style>
@@ -158,29 +183,39 @@
     <!-- 底部占位 -->
     <div id="footer-container"></div>
 
-    <script src="/script.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // 从URL获取文件名
+            // 显示加载状态
+            const container = document.getElementById('file-content');
+            container.innerHTML = '<div class="loading">加载中...</div>';
+            
+            // 从URL获取文件名并验证
             const urlParams = new URLSearchParams(window.location.search);
             const fileName = urlParams.get('file');
             
-            if (!fileName) {
-                document.getElementById('file-content').innerHTML = 
-                    '<div class="no-results">未指定文件</div>';
+            if (!fileName || !isValidFileName(fileName)) {
+                showError('未指定文件或文件名无效');
                 return;
             }
             
             // 加载文件数据
             fetch('/file/files.json')
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('网络响应不正常');
+                    }
+                    return response.json();
+                })
                 .then(data => {
+                    if (!Array.isArray(data)) {
+                        throw new Error('文件数据格式不正确');
+                    }
+                    
                     // 查找当前文件信息
                     const fileInfo = data.find(file => file.file === fileName);
                     
                     if (!fileInfo) {
-                        document.getElementById('file-content').innerHTML = 
-                            '<div class="no-results">找不到指定的文件信息</div>';
+                        showError('找不到指定的文件信息');
                         return;
                     }
                     
@@ -189,26 +224,56 @@
                 })
                 .catch(error => {
                     console.error('加载文件数据失败:', error);
-                    document.getElementById('file-content').innerHTML = 
-                        '<div class="no-results">加载文件信息失败，请稍后再试</div>';
+                    showError(`加载失败: ${error.message}`);
                 });
         });
+        
+        function isValidFileName(name) {
+            // 简单的文件名验证
+            return typeof name === 'string' && name.length > 0 && name.length < 256;
+        }
+        
+        function showError(message) {
+            const container = document.getElementById('file-content');
+            container.innerHTML = `
+                <div class="error-message">
+                    <p>${escapeHtml(message)}</p>
+                    <button onclick="window.location.href='/file/file.html'">返回文件列表</button>
+                </div>
+            `;
+        }
+        
+        function escapeHtml(unsafe) {
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
         
         function renderFileInfo(fileInfo) {
             const container = document.getElementById('file-content');
             
+            // 安全地渲染内容
+            const safeFileName = escapeHtml(fileInfo.file || '未命名文件');
+            const safeAuthor = escapeHtml(fileInfo.author || '未知');
+            const safeDate = escapeHtml(fileInfo.date || '未知日期');
+            const safeOverview = escapeHtml(fileInfo.overview || '暂无文件描述');
+            const safeFileUrl = escapeHtml(fileInfo.url || `/file/file/${fileInfo.file}`);
+            
             const html = `
                 <div class="file-header">
-                    <h1>${fileInfo.file || '未命名文件'}</h1>
+                    <h1>${safeFileName}</h1>
                 </div>
                 
                 <div class="file-info">
                     <div class="file-meta">
                         <span class="meta-item">
-                            作者: ${fileInfo.author || '未知'}
+                            作者: ${safeAuthor}
                         </span>
                         <span class="meta-item">
-                            日期: ${fileInfo.date || '未知日期'}
+                            日期: ${safeDate}
                         </span>
                         <span class="meta-item">
                             大小: ${formatFileSize(fileInfo.size)}
@@ -216,11 +281,11 @@
                     </div>
                     
                     <div class="file-overview">
-                        ${fileInfo.overview || '暂无文件描述'}
+                        ${safeOverview}
                     </div>
                     
                     <div class="file-actions">
-                        <button class="file-download" onclick="downloadFile('${fileInfo.url || `/file/file/${fileInfo.file}`}', '${fileInfo.file}')">
+                        <button class="file-download" onclick="downloadFile('${safeFileUrl}', '${safeFileName}')">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
                                 <polyline points="7 10 12 15 17 10"></polyline>
@@ -236,7 +301,7 @@
         }
         
         function formatFileSize(bytes) {
-            if (!bytes) return '未知大小';
+            if (typeof bytes !== 'number') return '未知大小';
             if (bytes < 1024) return bytes + ' B';
             if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
             if (bytes < 1073741824) return (bytes / 1048576).toFixed(1) + ' MB';
@@ -244,18 +309,23 @@
         }
         
         function downloadFile(url, fileName) {
-            // 创建一个隐藏的<a>标签用于下载
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = fileName || 'download';
-            a.style.display = 'none';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+            try {
+                // 创建一个隐藏的<a>标签用于下载
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = fileName || 'download';
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            } catch (error) {
+                console.error('下载失败:', error);
+                alert('下载文件时出错，请稍后再试');
+            }
         }
     </script>
 
-<!-- 加载通用脚本 -->
-<script src="/load-components.js"></script>
+    <!-- 加载通用脚本 -->
+    <script src="/load-components.js"></script>
 </body>
 </html>

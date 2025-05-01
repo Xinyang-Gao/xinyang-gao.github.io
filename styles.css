@@ -486,3 +486,44 @@ html {
     border-left: 3px solid var(--primary-color);
 }
 
+/* 防止水平滚动 */
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+/* 确保所有容器不会导致溢出 */
+.container, section, .hero-section, .content {
+    max-width: 100%;
+    box-sizing: border-box;
+}
+
+/* 调整粒子画布 */
+#particles-background {
+    width: 100%;
+    min-width: 100%;
+}
+
+/* 优化导航栏 */
+.navbar {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* 调整内容区域padding */
+section {
+    padding: 4rem 5%;
+}
+
+@media (max-width: 768px) {
+    section {
+        padding: 3rem 2rem;
+    }
+}
+
+/* 确保英雄区域不会导致溢出 */
+.hero-section {
+    width: 100%;
+    padding: 0 5%;
+    box-sizing: border-box;
+}

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>页面未找到 - 高新炀的个人网站</title>
+    <link rel="icon" href="/image/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        /* 404页面特有样式 */
+        .error-container {
+            width: 100%;
+            padding: 4rem 10%;
+            min-height: calc(100vh - 120px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            background-color: rgba(0,0,0,0.7);
+        }
+        
+        .error-code {
+            font-size: 6rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            line-height: 1;
+        }
+        
+        .error-message {
+            font-size: 2rem;
+            color: #fff;
+            margin-bottom: 2rem;
+        }
+        
+        .error-description {
+            color: rgba(255,255,255,0.8);
+            max-width: 600px;
+            margin-bottom: 3rem;
+            line-height: 1.6;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .home-button {
+            padding: 0.8rem 2rem;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .home-button:hover {
+            background-color: var(--primary-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,123,255,0.3);
+        }
+        
+        .back-button {
+            padding: 0.8rem 2rem;
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+        
+        .back-button:hover {
+            background-color: rgba(255,255,255,0.2);
+            transform: translateY(-2px);
+        }
+        
+        .search-box {
+            margin-top: 3rem;
+            max-width: 500px;
+            width: 100%;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 0.8rem 1rem;
+            border: none;
+            border-radius: 4px;
+            background-color: rgba(255,255,255,0.1);
+            color: white;
+            font-size: 1rem;
+        }
+        
+        @media (max-width: 768px) {
+            .error-code {
+                font-size: 4rem;
+            }
+            
+            .error-message {
+                font-size: 1.5rem;
+            }
+            
+            .error-container {
+                padding: 3rem 5%;
+            }
+        }
+    </style>
+</head>
+<body class="dark-mode">
+    <!-- 全屏粒子背景 -->
+    <canvas id="particles-background"></canvas>
+
+    <!-- 导航栏占位 -->
+    <div id="navbar-container"></div>
+
+    <!-- 404内容 -->
+    <div class="error-container">
+        <div class="error-code">404</div>
+        <h1 class="error-message">页面未找到</h1>
+        <p class="error-description">
+            您访问的页面可能已被移除、暂时不可用或地址输入错误。
+            请检查URL是否正确，或使用下方按钮返回首页。
+        </p>
+        
+        <div class="action-buttons">
+            <a href="/" class="home-button">返回首页</a>
+            <a href="javascript:history.back()" class="back-button">返回上一页</a>
+        </div>
+    </div>
+
+    <!-- 页脚占位 -->
+    <div id="footer-container"></div>
+
+    <!-- 加载通用脚本 -->
+    <script src="/load-components.js"></script>
+    <script src="/script.js"></script>
+    <script>
+        // 初始化粒子效果（如果不需要可以移除）
+        document.addEventListener('DOMContentLoaded', function() {
+            initParticleEffect();
+        });
+    </script>
+</body>
+</html>

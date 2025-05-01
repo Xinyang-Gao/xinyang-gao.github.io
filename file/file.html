@@ -12,6 +12,7 @@
             width: 100%;
             padding: 2rem 10%;
             background-color: rgba(0,0,0,0.7);
+            box-sizing: border-box;
         }
         
         .file-header {
@@ -41,6 +42,7 @@
             display: flex;
             margin-bottom: 2rem;
             max-width: 800px;
+            width: 100%;
         }
         
         #search-input {
@@ -69,6 +71,7 @@
             cursor: pointer;
             font-size: 1rem;
             transition: all 0.3s;
+            min-width: 80px;
         }
         
         #search-button:hover {
@@ -78,6 +81,7 @@
         .file-list {
             list-style: none;
             padding: 0;
+            margin: 0;
         }
         
         .file-item {
@@ -101,7 +105,7 @@
             font-size: 1.3rem;
             color: #fff;
             margin-bottom: 0.5rem;
-            word-break: break-all;
+            word-break: break-word;
         }
         
         .file-meta {
@@ -131,9 +135,19 @@
             color: rgba(255,255,255,0.6);
         }
         
+        .error-message {
+            text-align: center;
+            padding: 3rem;
+            color: #ff6b6b;
+        }
+        
         @media (max-width: 768px) {
             .file-list-container {
                 padding: 2rem 5%;
+            }
+            
+            .file-header h1 {
+                font-size: 2rem;
             }
         }
         
@@ -153,11 +167,20 @@
             #search-button {
                 border-radius: 0 0 4px 4px;
                 padding: 0.8rem;
+                width: 100%;
             }
             
             .file-meta {
                 flex-direction: column;
                 gap: 0.3rem;
+            }
+            
+            .file-item {
+                padding: 1rem;
+            }
+            
+            .file-name {
+                font-size: 1.1rem;
             }
         }
     </style>
@@ -177,7 +200,7 @@
             </div>
             
             <div class="search-container">
-                <input type="text" id="search-input" placeholder="搜索文件名、描述或作者...">
+                <input type="text" id="search-input" placeholder="搜索文件名、描述或作者..." aria-label="搜索文件">
                 <button id="search-button">搜索</button>
             </div>
             
@@ -190,22 +213,45 @@
     <!-- 底部占位 -->
     <div id="footer-container"></div>
 
-    <script src="/script.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // 显示加载状态
+            const container = document.getElementById('file-list-container');
+            container.innerHTML = '<div class="loading">加载中...</div>';
+            
             // 加载文件数据
             fetch('/file/files.json')
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('网络响应不正常');
+                    }
+                    return response.json();
+                })
                 .then(data => {
+                    if (!Array.isArray(data)) {
+                        throw new Error('文件数据格式不正确');
+                    }
+                    
                     // 过滤只显示show为1的文件
                     const visibleFiles = data.filter(file => file.show !== 0);
+                    
+                    if (visibleFiles.length === 0) {
+                        container.innerHTML = '<div class="no-results">暂无公开文件</div>';
+                        return;
+                    }
+                    
                     displayFiles(visibleFiles);
                     setupSearch(visibleFiles);
                 })
                 .catch(error => {
                     console.error('加载文件数据失败:', error);
-                    document.getElementById('file-list-container').innerHTML = 
-                        '<div class="no-results">无法加载文件列表，请稍后再试</div>';
+                    container.innerHTML = `
+                        <div class="error-message">
+                            <p>无法加载文件列表</p>
+                            <p>${error.message}</p>
+                            <button onclick="window.location.reload()">重试</button>
+                        </div>
+                    `;
                 });
         });
         
@@ -220,11 +266,15 @@
             let filteredFiles = files;
             if (filterText) {
                 const searchText = filterText.toLowerCase();
-                filteredFiles = files.filter(file => 
-                    (file.file && file.file.toLowerCase().includes(searchText)) || 
-                    (file.overview && file.overview.toLowerCase().includes(searchText)) || 
-                    (file.author && file.author.toLowerCase().includes(searchText))
-                );
+                filteredFiles = files.filter(file => {
+                    const fileText = file.file ? file.file.toLowerCase() : '';
+                    const overviewText = file.overview ? file.overview.toLowerCase() : '';
+                    const authorText = file.author ? file.author.toLowerCase() : '';
+                    
+                    return fileText.includes(searchText) || 
+                           overviewText.includes(searchText) || 
+                           authorText.includes(searchText);
+                });
             }
             
             if (filteredFiles.length === 0) {
@@ -235,8 +285,8 @@
             let html = '<ul class="file-list">';
             
             filteredFiles.forEach(file => {
-                // 再次确认show为1（双重保险）
                 if (file.show !== 0) {
+                    const filePath = encodeURIComponent(file.file || '');
                     html += `
                         <li class="file-item" data-file="${file.file}">
                             <div class="file-info">
@@ -260,13 +310,15 @@
             document.querySelectorAll('.file-item').forEach(item => {
                 item.addEventListener('click', function() {
                     const fileName = this.getAttribute('data-file');
-                    window.location.href = `/file/file/file.html?file=${fileName}`;
+                    if (fileName) {
+                        window.location.href = `/file/file/file.html?file=${encodeURIComponent(fileName)}`;
+                    }
                 });
             });
         }
         
         function formatFileSize(bytes) {
-            if (!bytes) return '未知大小';
+            if (typeof bytes !== 'number') return '未知大小';
             if (bytes < 1024) return bytes + ' B';
             if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
             if (bytes < 1073741824) return (bytes / 1048576).toFixed(1) + ' MB';
@@ -277,12 +329,19 @@
             const searchInput = document.getElementById('search-input');
             const searchButton = document.getElementById('search-button');
             
+            // 防抖函数优化搜索性能
+            let searchTimeout;
             function performSearch() {
-                const searchText = searchInput.value.trim();
-                displayFiles(files, searchText);
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    const searchText = searchInput.value.trim();
+                    displayFiles(files, searchText);
+                }, 300);
             }
             
             searchButton.addEventListener('click', performSearch);
+            
+            searchInput.addEventListener('input', performSearch);
             
             searchInput.addEventListener('keyup', function(event) {
                 if (event.key === 'Enter') {
@@ -292,7 +351,7 @@
         }
     </script>
 
-<!-- 加载通用脚本 -->
-<script src="/load-components.js"></script>
+    <!-- 加载通用脚本 -->
+    <script src="/load-components.js"></script>
 </body>
 </html>
