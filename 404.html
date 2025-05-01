@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
     <title>页面未找到 - 高新炀的个人网站</title>
     <link rel="icon" href="/image/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="/styles.css">
@@ -18,6 +19,7 @@
             justify-content: center;
             text-align: center;
             background-color: rgba(0,0,0,0.7);
+            box-sizing: border-box;
         }
         
         .error-code {
@@ -26,6 +28,7 @@
             color: var(--primary-color);
             margin-bottom: 1rem;
             line-height: 1;
+            text-shadow: 0 2px 10px rgba(0,123,255,0.3);
         }
         
         .error-message {
@@ -46,15 +49,23 @@
             gap: 1.5rem;
             flex-wrap: wrap;
             justify-content: center;
+            margin-bottom: 2rem;
         }
         
-        .home-button {
+        .error-button {
             padding: 0.8rem 2rem;
-            background-color: var(--primary-color);
-            color: white;
             border-radius: 4px;
             text-decoration: none;
             transition: all 0.3s;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .home-button {
+            background-color: var(--primary-color);
+            color: white;
         }
         
         .home-button:hover {
@@ -64,12 +75,8 @@
         }
         
         .back-button {
-            padding: 0.8rem 2rem;
             background-color: rgba(255,255,255,0.1);
             color: white;
-            border-radius: 4px;
-            text-decoration: none;
-            transition: all 0.3s;
         }
         
         .back-button:hover {
@@ -77,20 +84,19 @@
             transform: translateY(-2px);
         }
         
-        .search-box {
-            margin-top: 3rem;
+        .suggestions {
+            margin-top: 2rem;
+            color: rgba(255,255,255,0.6);
             max-width: 500px;
-            width: 100%;
         }
         
-        .search-input {
-            width: 100%;
-            padding: 0.8rem 1rem;
-            border: none;
-            border-radius: 4px;
-            background-color: rgba(255,255,255,0.1);
-            color: white;
-            font-size: 1rem;
+        .suggestions a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+        
+        .suggestions a:hover {
+            text-decoration: underline;
         }
         
         @media (max-width: 768px) {
@@ -104,6 +110,17 @@
             
             .error-container {
                 padding: 3rem 5%;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            .error-button {
+                width: 100%;
+                justify-content: center;
             }
         }
     </style>
@@ -121,12 +138,27 @@
         <h1 class="error-message">页面未找到</h1>
         <p class="error-description">
             您访问的页面可能已被移除、暂时不可用或地址输入错误。
-            请检查URL是否正确，或使用下方按钮返回首页。
+            请检查URL是否正确，或尝试以下操作：
         </p>
         
         <div class="action-buttons">
-            <a href="/" class="home-button">返回首页</a>
-            <a href="javascript:history.back()" class="back-button">返回上一页</a>
+            <a href="/" class="error-button home-button">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                返回首页
+            </a>
+            <a href="javascript:history.back()" class="error-button back-button">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5M12 19l-7-7 7-7"></path>
+                </svg>
+                返回上一页
+            </a>
+        </div>
+        
+        <div class="suggestions">
+            <p>或者尝试访问：<a href="/blog/blog.html">博客</a> | <a href="/file/file.html">文件</a></p>
         </div>
     </div>
 
