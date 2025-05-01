@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>文章阅读 - 高新炀的个人网站</title>
+    <link rel="icon" href="/image/favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="/styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/styles/github-dark.min.css">
+    <style>
+        /* 文章阅读器主体样式 */
+        .article-viewer {
+            display: flex;
+            width: 100%;
+            min-height: calc(100vh - 40px);
+            background-color: rgba(0,0,0,0.7);
+            padding: 0;
+        }
+        
+        /* 目录侧边栏 */
+        .toc-sidebar {
+            width: 280px;
+            padding: 2rem 1rem;
+            border-right: 1px solid rgba(255,255,255,0.1);
+            overflow-y: auto;
+            position: sticky;
+            top: 40px;
+            height: calc(100vh - 40px);
+            flex-shrink: 0;
+        }
+        
+        .toc-header {
+            font-size: 1.5rem;
+            margin-bottom: 1.5rem;
+            color: #fff;
+            padding: 0 1rem;
+        }
+        
+        .toc-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        
+        .toc-item {
+            margin-bottom: 0.3rem;
+            position: relative;
+        }
+        
+        .toc-link {
+            display: block;
+            padding: 0.5rem 1rem;
+            color: rgba(255,255,255,0.8);
+            text-decoration: none;
+            border-radius: 4px;
+            transition: all 0.3s;
+            font-size: 0.95rem;
+        }
+        
+        .toc-link:hover, .toc-link.active {
+            background-color: rgba(0,123,255,0.2);
+            color: #4dabff;
+        }
+        
+        .toc-link-h1 {
+            padding-left: 1rem;
+            font-weight: 600;
+        }
+        
+        .toc-link-h2 {
+            padding-left: 2rem;
+            font-size: 0.9rem;
+        }
+        
+        .toc-link-h3 {
+            padding-left: 3rem;
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.7);
+        }
+        
+        /* 文章内容区域 */
+        .article-content {
+            flex: 1;
+            padding: 2rem 3rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .article-meta {
+            background-color: rgba(255,255,255,0.05);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .article-title {
+            font-size: 2.2rem;
+            margin-bottom: 0.5rem;
+            color: #fff;
+        }
+        
+        .meta-info {
+            display: flex;
+            gap: 1.5rem;
+            color: rgba(255,255,255,0.7);
+            margin-top: 1rem;
+            font-size: 0.95rem;
+        }
+        
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .meta-item i {
+            font-size: 1.1rem;
+            color: var(--primary-color);
+        }
+        
+        .article-overview {
+            color: rgba(255,255,255,0.8);
+            margin: 1rem 0;
+            line-height: 1.6;
+        }
+        
+        /* Markdown内容样式 */
+        .markdown-body {
+            color: rgba(255,255,255,0.85);
+            line-height: 1.7;
+            font-size: 1.05rem;
+        }
+        
+        .markdown-body h1,
+        .markdown-body h2,
+        .markdown-body h3,
+        .markdown-body h4,
+        .markdown-body h5,
+        .markdown-body h6 {
+            color: #fff;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            position: relative;
+            padding-bottom: 0.3rem;
+            scroll-margin-top: 80px;
+        }
+        
+        .markdown-body h1 {
+            font-size: 1.8rem;
+            border-bottom: 2px solid rgba(255,255,255,0.1);
+        }
+        
+        .markdown-body h2 {
+            font-size: 1.6rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .markdown-body h3 {
+            font-size: 1.4rem;
+        }
+        
+        .markdown-body p {
+            margin-bottom: 1.2rem;
+        }
+        
+        .markdown-body a {
+            color: #4dabff;
+            text-decoration: none;
+        }
+        
+        .markdown-body a:hover {
+            text-decoration: underline;
+        }
+        
+        .markdown-body code {
+            font-family: 'Courier New', monospace;
+            background-color: rgba(0,0,0,0.3);
+            padding: 0.2rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.9rem;
+        }
+        
+        .markdown-body pre {
+            background-color: rgba(0,0,0,0.3);
+            border-radius: 6px;
+            padding: 1rem;
+            overflow-x: auto;
+            margin: 1.5rem 0;
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .markdown-body pre code {
+            background: none;
+            padding: 0;
+        }
+        
+        .markdown-body blockquote {
+            border-left: 4px solid var(--primary-color);
+            padding: 0 1rem;
+            margin: 1.5rem 0;
+            color: rgba(255,255,255,0.7);
+        }
+        
+        .markdown-body img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 6px;
+            margin: 1rem 0;
+        }
+        
+        .markdown-body table {
+            border-collapse: collapse;
+            width: 100%;
+            margin: 1.5rem 0;
+        }
+        
+        .markdown-body th,
+        .markdown-body td {
+            padding: 0.6rem 1rem;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .markdown-body th {
+            background-color: rgba(0,123,255,0.1);
+        }
+        
+        /* 文件按钮样式 */
+        .file-button {
+            display: inline-block;
+            padding: 1rem 1.5rem;
+            margin: 1rem 0;
+            background-color: rgba(0,123,255,0.15);
+            border-radius: 8px;
+            border-left: 3px solid var(--primary-color);
+            transition: all 0.3s;
+            text-decoration: none;
+            color: inherit;
+            max-width: 100%;
+            cursor: pointer;
+        }
+        
+        .file-button:hover {
+            background-color: rgba(0,123,255,0.25);
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .file-title {
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 0.3rem;
+        }
+        
+        .file-type {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.6);
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 992px) {
+            .article-viewer {
+                flex-direction: column;
+            }
+            
+            .toc-sidebar {
+                width: 100%;
+                height: auto;
+                max-height: 300px;
+                position: static;
+                border-right: none;
+                border-bottom: 1px solid rgba(255,255,255,0.1);
+                padding: 1rem;
+            }
+            
+            .article-content {
+                padding: 2rem;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .article-content {
+                padding: 1.5rem 1rem;
+            }
+            
+            .article-title {
+                font-size: 1.8rem;
+            }
+            
+            .meta-info {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .file-button {
+                padding: 0.8rem 1rem;
+            }
+        }
+    </style>
+</head>
+<body class="dark-mode">
+    <!-- 全屏粒子背景 -->
+    <canvas id="particles-background"></canvas>
+
+    <!-- 导航栏占位 -->
+    <div id="navbar-container"></div>
+
+    <div class="article-viewer">
+        <!-- 目录侧边栏 -->
+        <div class="toc-sidebar">
+            <h3 class="toc-header">文章目录</h3>
+            <ul class="toc-list" id="toc-container">
+                <li class="toc-item"><a href="#" class="toc-link">加载中...</a></li>
+            </ul>
+        </div>
+        
+        <!-- 文章内容区域 -->
+        <div class="article-content">
+            <div class="article-meta">
+                <h1 class="article-title" id="article-title">文章标题加载中...</h1>
+                <p class="article-overview" id="article-overview">文章摘要加载中...</p>
+                <div class="meta-info">
+                    <span class="meta-item" id="article-author">作者: 加载中...</span>
+                    <span class="meta-item" id="article-date">日期: 加载中...</span>
+                </div>
+            </div>
+            
+            <div class="markdown-body" id="article-body">
+                <p>文章内容加载中...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部占位 -->
+    <div id="footer-container"></div>
+
+    <script src="/script.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked@4.0.0/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/highlight.min.js"></script>
+    <script>
+        // 自定义渲染器处理<file>标签
+        const renderer = {
+            html(html) {
+                const fileTagRegex = /<file\s+src="([^"]*)"(?:\s+title="([^"]*)")?(?:\s+type="([^"]*)")?(?:\s+url="([^"]*)")?\s*>/g;
+                return html.replace(fileTagRegex, (match, src, title, type, url) => {
+                    const displayTitle = title || '下载文件';
+                    const displayType = type || '文件';
+                    const targetUrl = url || src || '#';
+                    return `
+                        <a href="${targetUrl}" class="file-button" target="_blank">
+                            <div class="file-title">${displayTitle}</div>
+                            <div class="file-type">${displayType}</div>
+                        </a>
+                    `;
+                });
+            }
+        };
+
+        // 配置marked
+        marked.use({ renderer });
+        marked.setOptions({
+            highlight: function(code, lang) {
+                if (lang && hljs.getLanguage(lang)) {
+                    return hljs.highlight(code, { language: lang }).value;
+                }
+                return hljs.highlightAuto(code).value;
+            },
+            langPrefix: 'hljs language-',
+            breaks: true,
+            gfm: true
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // 从URL获取文章文件名
+            const urlParams = new URLSearchParams(window.location.search);
+            const articleFile = urlParams.get('md');
+            
+            if (!articleFile) {
+                document.getElementById('article-body').innerHTML = 
+                    '<div class="no-results">正在查找文件……诶？空的？！</div>';
+                return;
+            }
+            
+            // 加载文章列表数据获取元信息
+            fetch('../articles.json')
+                .then(response => response.json())
+                .then(articles => {
+                    // 查找当前文章信息
+                    const currentArticle = articles.find(a => a.file === articleFile);
+                    if (currentArticle) {
+                        document.getElementById('article-title').textContent = currentArticle.title || '无标题';
+                        document.getElementById('article-overview').textContent = currentArticle.overview || '暂无摘要';
+                        document.getElementById('article-author').innerHTML = `作者: ${currentArticle.author || '未知'}`;
+                        document.getElementById('article-date').innerHTML = `日期: ${currentArticle.date || '未知日期'}`;
+                    }
+                    
+                    // 加载文章内容
+                    return fetch(`../article/${articleFile}`)
+                        .then(response => response.text())
+                        .then(markdown => {
+                            // 渲染Markdown内容
+                            document.getElementById('article-body').innerHTML = marked.parse(markdown);
+                            
+                            // 生成目录
+                            generateTOCFromMarkdown(markdown);
+                            
+                            // 设置目录点击事件
+                            setupTOCNavigation();
+                            
+                            // 设置滚动监听高亮当前章节
+                            setupTOCHighlight();
+                        });
+                })
+                .catch(error => {
+                    console.error('加载失败:', error);
+                    document.getElementById('article-body').innerHTML = 
+                        '<div class="no-results">加载文章失败，请稍后再试</div>';
+                });
+        });
+
+        // 从Markdown内容生成目录
+        function generateTOCFromMarkdown(markdown) {
+            const tocContainer = document.getElementById('toc-container');
+            const headings = [];
+            
+            // 提取所有标题
+            const lines = markdown.split('\n');
+            const headingRegex = /^(#{1,6})\s+(.+)/;
+            
+            lines.forEach(line => {
+                const match = line.match(headingRegex);
+                if (match) {
+                    const level = match[1].length;
+                    const text = match[2].trim();
+                    const id = text.toLowerCase().replace(/[^\w\u4e00-\u9fa5]+/g, '-');
+                    headings.push({ level, text, id });
+                }
+            });
+            
+            if (headings.length === 0) {
+                tocContainer.innerHTML = '<li class="toc-item"><a href="#" class="toc-link">本文章没有标题，无法生成文章目录……</a></li>';
+                return;
+            }
+            
+            let html = '';
+            headings.forEach(heading => {
+                const levelClass = `toc-link-h${heading.level}`;
+                html += `
+                    <li class="toc-item">
+                        <a href="#${heading.id}" class="toc-link ${levelClass}" data-id="${heading.id}">
+                            ${heading.text}
+                        </a>
+                    </li>
+                `;
+            });
+            
+            tocContainer.innerHTML = html;
+            
+            // 为文章中的标题添加ID
+            const articleBody = document.getElementById('article-body');
+            headings.forEach(heading => {
+                const headingElements = articleBody.querySelectorAll(`h${heading.level}`);
+                for (const element of headingElements) {
+                    if (element.textContent.trim() === heading.text && !element.id) {
+                        element.id = heading.id;
+                        break;
+                    }
+                }
+            });
+        }
+        
+        // 设置目录导航
+        function setupTOCNavigation() {
+            const tocLinks = document.querySelectorAll('.toc-link[href^="#"]');
+            
+            tocLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = link.getAttribute('href').substring(1);
+                    const targetElement = document.getElementById(targetId);
+                    
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 70,
+                            behavior: 'smooth'
+                        });
+                        
+                        // 更新活动状态
+                        tocLinks.forEach(l => l.classList.remove('active'));
+                        link.classList.add('active');
+                    }
+                });
+            });
+        }
+        
+        // 设置滚动时高亮当前章节
+        function setupTOCHighlight() {
+            const tocLinks = document.querySelectorAll('.toc-link[href^="#"]');
+            const headings = Array.from(document.querySelectorAll('#article-body h1, #article-body h2, #article-body h3'));
+            
+            if (headings.length === 0) return;
+            
+            // 初始高亮第一个标题
+            const firstHeadingId = headings[0].id;
+            if (firstHeadingId) {
+                const firstLink = document.querySelector(`.toc-link[href="#${firstHeadingId}"]`);
+                if (firstLink) firstLink.classList.add('active');
+            }
+            
+            // 监听滚动事件
+            window.addEventListener('scroll', () => {
+                let currentActiveId = null;
+                const scrollPosition = window.scrollY + 100;
+                
+                // 找出当前可见的标题
+                for (const heading of headings) {
+                    if (heading.offsetTop <= scrollPosition) {
+                        currentActiveId = heading.id;
+                    } else {
+                        break;
+                    }
+                }
+                
+                // 更新目录高亮
+                if (currentActiveId) {
+                    tocLinks.forEach(link => {
+                        const linkId = link.getAttribute('href').substring(1);
+                        link.classList.toggle('active', linkId === currentActiveId);
+                    });
+                }
+            });
+        }
+    </script>
+</body>
+</html>

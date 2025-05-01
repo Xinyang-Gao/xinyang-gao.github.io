@@ -1,16 +1,9 @@
 [
     {
-        "file": "article1",
-        "title": "文章标题1",
-        "author": "作者名",
-        "date": "2023-01-01",
-        "overview": "文章摘要..."
-    },
-    {
-        "file": "article2",
-        "title": "文章标题2",
-        "author": "作者名",
-        "date": "2023-01-02",
-        "overview": "文章摘要..."
+        "file": "dilimoxieppt",
+        "title": "地理默写PPT",
+        "author": "GaoXinyang",
+        "date": "2025-05-01",
+        "overview": "一些PPT的地理默写内容，包含了地理知识点和相关图片。"
     }
 ]

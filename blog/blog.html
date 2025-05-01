@@ -299,7 +299,7 @@
                             <span>日期: ${article.date || '未知日期'}</span>
                         </div>
                         <p class="article-overview">${article.overview || '暂无摘要'}</p>
-                        <a href="article/${article.file}" class="read-more">阅读全文</a>
+                        <a href="/blog/article/article.html?md=${article.file}" class="read-more">阅读全文</a>
                     </li>
                 `;
             });
