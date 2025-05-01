@@ -350,14 +350,24 @@ function initHeroTextAnimation() {
     const heroTitle2 = document.querySelector('.hero-title2');
     const heroSubtitle = document.querySelector('.hero-subtitle');
     
+     // 元素存在性检查
+    if (!heroTitle || !heroTitle2 || !heroSubtitle) {
+         console.debug('Hero section elements not found - skipping animation');
+         return;
+     }
+
     animateText(heroTitle, heroTitle.textContent);
     animateText(heroTitle2, heroTitle2.textContent, 400);
     animateText(heroSubtitle, heroSubtitle.textContent, 800);
 }
 
-// 主初始化函数
+// 修改主初始化函数，添加页面类型判断
 document.addEventListener('DOMContentLoaded', function() {
     loadCommonComponents();
     initParticleEffect();
-    initHeroTextAnimation();
+    
+    // 只在有英雄区域的页面初始化文本动画
+    if (document.querySelector('.hero-section')) {
+        initHeroTextAnimation();
+    }
 });
