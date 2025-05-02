@@ -83,7 +83,7 @@
             flex: 1;
             padding: 2rem 3rem;
             max-width: 900px;
-            margin: 0 auto;
+            margin: 3rem auto 0 auto;
         }
         
         .article-meta {
@@ -334,220 +334,200 @@
     <!-- 底部占位 -->
     <div id="footer-container"></div>
 
-    <!-- Load highlight.js first -->
-    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/highlight.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked@4.0.0/marked.min.js"></script>
     <script src="/script.js"></script>
-    
+    <script src="https://cdn.jsdelivr.net/npm/marked@4.0.0/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.7.0/highlight.min.js"></script>
     <script>
-        // 等待两个库加载完毕
-        function initializeMarked() {
-            // 自定义渲染器处理<file>标签
-            const renderer = {
-                html(html) {
-                    const fileTagRegex = /<file\s+src="([^"]*)"(?:\s+title="([^"]*)")?(?:\s+type="([^"]*)")?(?:\s+url="([^"]*)")?\s*>/g;
-                    return html.replace(fileTagRegex, (match, src, title, type, url) => {
-                        const displayTitle = title || '下载文件';
-                        const displayType = type || '文件';
-                        const targetUrl = url || src || '#';
-                        return `
-                            <a href="${targetUrl}" class="file-button" target="_blank">
-                                <div class="file-title">${displayTitle}</div>
-                                <div class="file-type">${displayType}</div>
-                            </a>
-                        `;
-                    });
-                }
-            };
-
-            // 配置标记为错误处理
-            marked.use({ renderer });
-            marked.setOptions({
-                highlight: function(code, lang) {
-                    if (typeof hljs !== 'undefined') {
-                        if (lang && hljs.getLanguage(lang)) {
-                            return hljs.highlight(code, { language: lang }).value;
-                        }
-                        return hljs.highlightAuto(code).value;
-                    }
-                    // 如果 hljs 不可用，则回退
-                    return code;
-                },
-                langPrefix: 'hljs language-',
-                breaks: true,
-                gfm: true
-            });
-
-            document.addEventListener('DOMContentLoaded', function() {
-                // 从URL获取文章文件名
-                const urlParams = new URLSearchParams(window.location.search);
-                const articleFile = urlParams.get('md');
-                
-                if (!articleFile) {
-                    document.getElementById('article-body').innerHTML = 
-                        '<div class="no-results">正在查找文件……诶？空的？！</div>';
-                    return;
-                }
-                
-                // 加载文章列表数据获取元信息
-                fetch('../articles.json')
-                    .then(response => response.json())
-                    .then(articles => {
-                        // 查找当前文章信息
-                        const currentArticle = articles.find(a => a.file === articleFile);
-                        if (currentArticle) {
-                            document.getElementById('article-title').textContent = currentArticle.title || '无标题';
-                            document.getElementById('article-overview').textContent = currentArticle.overview || '暂无摘要';
-                            document.getElementById('article-author').innerHTML = `作者: ${currentArticle.author || '未知'}`;
-                            document.getElementById('article-date').innerHTML = `日期: ${currentArticle.date || '未知日期'}`;
-                        }
-                        
-                        // 加载文章内容
-                        return fetch(`../article/${articleFile}`)
-                            .then(response => response.text())
-                            .then(markdown => {
-                                // 渲染Markdown内容
-                                document.getElementById('article-body').innerHTML = marked.parse(markdown);
-                                
-                                // 生成目录
-                                generateTOCFromMarkdown(markdown);
-                                
-                                // 设置目录点击事件
-                                setupTOCNavigation();
-                                
-                                // 设置滚动监听高亮当前章节
-                                setupTOCHighlight();
-                            });
-                    })
-                    .catch(error => {
-                        console.error('加载失败:', error);
-                        document.getElementById('article-body').innerHTML = 
-                            '<div class="no-results">加载文章失败，请稍后再试</div>';
-                    });
-            });
-
-            // 从Markdown内容生成目录
-            function generateTOCFromMarkdown(markdown) {
-                const tocContainer = document.getElementById('toc-container');
-                const headings = [];
-                
-                // 提取所有标题
-                const lines = markdown.split('\n');
-                const headingRegex = /^(#{1,6})\s+(.+)/;
-                
-                lines.forEach(line => {
-                    const match = line.match(headingRegex);
-                    if (match) {
-                        const level = match[1].length;
-                        const text = match[2].trim();
-                        const id = text.toLowerCase().replace(/[^\w\u4e00-\u9fa5]+/g, '-');
-                        headings.push({ level, text, id });
-                    }
-                });
-                
-                if (headings.length === 0) {
-                    tocContainer.innerHTML = '<li class="toc-item"><a href="#" class="toc-link">本文章没有标题，无法生成文章目录……</a></li>';
-                    return;
-                }
-                
-                let html = '';
-                headings.forEach(heading => {
-                    const levelClass = `toc-link-h${heading.level}`;
-                    html += `
-                        <li class="toc-item">
-                            <a href="#${heading.id}" class="toc-link ${levelClass}" data-id="${heading.id}">
-                                ${heading.text}
-                            </a>
-                        </li>
+        // 自定义渲染器处理<file>标签
+        const renderer = {
+            html(html) {
+                const fileTagRegex = /<file\s+src="([^"]*)"(?:\s+title="([^"]*)")?(?:\s+type="([^"]*)")?(?:\s+url="([^"]*)")?\s*>/g;
+                return html.replace(fileTagRegex, (match, src, title, type, url) => {
+                    const displayTitle = title || '下载文件';
+                    const displayType = type || '文件';
+                    const targetUrl = url || src || '#';
+                    return `
+                        <a href="${targetUrl}" class="file-button" target="_blank">
+                            <div class="file-title">${displayTitle}</div>
+                            <div class="file-type">${displayType}</div>
+                        </a>
                     `;
                 });
-                
-                tocContainer.innerHTML = html;
-                
-                // 为文章中的标题添加ID
-                const articleBody = document.getElementById('article-body');
-                headings.forEach(heading => {
-                    const headingElements = articleBody.querySelectorAll(`h${heading.level}`);
-                    for (const element of headingElements) {
-                        if (element.textContent.trim() === heading.text && !element.id) {
-                            element.id = heading.id;
-                            break;
-                        }
+            }
+        };
+
+        // 配置marked
+        marked.use({ renderer });
+        marked.setOptions({
+            highlight: function(code, lang) {
+                if (lang && hljs.getLanguage(lang)) {
+                    return hljs.highlight(code, { language: lang }).value;
+                }
+                return hljs.highlightAuto(code).value;
+            },
+            langPrefix: 'hljs language-',
+            breaks: true,
+            gfm: true
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // 从URL获取文章文件名
+            const urlParams = new URLSearchParams(window.location.search);
+            const articleFile = urlParams.get('md');
+            
+            if (!articleFile) {
+                document.getElementById('article-body').innerHTML = 
+                    '<div class="no-results">正在查找文件……诶？空的？！</div>';
+                return;
+            }
+            
+            // 加载文章列表数据获取元信息
+            fetch('../articles.json')
+                .then(response => response.json())
+                .then(articles => {
+                    // 查找当前文章信息
+                    const currentArticle = articles.find(a => a.file === articleFile);
+                    if (currentArticle) {
+                        document.getElementById('article-title').textContent = currentArticle.title || '无标题';
+                        document.getElementById('article-overview').textContent = currentArticle.overview || '暂无摘要';
+                        document.getElementById('article-author').innerHTML = `作者: ${currentArticle.author || '未知'}`;
+                        document.getElementById('article-date').innerHTML = `日期: ${currentArticle.date || '未知日期'}`;
+                    }
+                    
+                    // 加载文章内容
+                    return fetch(`../article/${articleFile}`)
+                        .then(response => response.text())
+                        .then(markdown => {
+                            // 渲染Markdown内容
+                            document.getElementById('article-body').innerHTML = marked.parse(markdown);
+                            
+                            // 生成目录
+                            generateTOCFromMarkdown(markdown);
+                            
+                            // 设置目录点击事件
+                            setupTOCNavigation();
+                            
+                            // 设置滚动监听高亮当前章节
+                            setupTOCHighlight();
+                        });
+                })
+                .catch(error => {
+                    console.error('加载失败:', error);
+                    document.getElementById('article-body').innerHTML = 
+                        '<div class="no-results">加载文章失败，请稍后再试</div>';
+                });
+        });
+
+        // 从Markdown内容生成目录
+        function generateTOCFromMarkdown(markdown) {
+            const tocContainer = document.getElementById('toc-container');
+            const headings = [];
+            
+            // 提取所有标题
+            const lines = markdown.split('\n');
+            const headingRegex = /^(#{1,6})\s+(.+)/;
+            
+            lines.forEach(line => {
+                const match = line.match(headingRegex);
+                if (match) {
+                    const level = match[1].length;
+                    const text = match[2].trim();
+                    const id = text.toLowerCase().replace(/[^\w\u4e00-\u9fa5]+/g, '-');
+                    headings.push({ level, text, id });
+                }
+            });
+            
+            if (headings.length === 0) {
+                tocContainer.innerHTML = '<li class="toc-item"><a href="#" class="toc-link">本文章没有标题，无法生成文章目录……</a></li>';
+                return;
+            }
+            
+            let html = '';
+            headings.forEach(heading => {
+                const levelClass = `toc-link-h${heading.level}`;
+                html += `
+                    <li class="toc-item">
+                        <a href="#${heading.id}" class="toc-link ${levelClass}" data-id="${heading.id}">
+                            ${heading.text}
+                        </a>
+                    </li>
+                `;
+            });
+            
+            tocContainer.innerHTML = html;
+            
+            // 为文章中的标题添加ID
+            const articleBody = document.getElementById('article-body');
+            headings.forEach(heading => {
+                const headingElements = articleBody.querySelectorAll(`h${heading.level}`);
+                for (const element of headingElements) {
+                    if (element.textContent.trim() === heading.text && !element.id) {
+                        element.id = heading.id;
+                        break;
+                    }
+                }
+            });
+        }
+        
+        // 设置目录导航
+        function setupTOCNavigation() {
+            const tocLinks = document.querySelectorAll('.toc-link[href^="#"]');
+            
+            tocLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = link.getAttribute('href').substring(1);
+                    const targetElement = document.getElementById(targetId);
+                    
+                    if (targetElement) {
+                        window.scrollTo({
+                            top: targetElement.offsetTop - 70,
+                            behavior: 'smooth'
+                        });
+                        
+                        // 更新活动状态
+                        tocLinks.forEach(l => l.classList.remove('active'));
+                        link.classList.add('active');
                     }
                 });
+            });
+        }
+        
+        // 设置滚动时高亮当前章节
+        function setupTOCHighlight() {
+            const tocLinks = document.querySelectorAll('.toc-link[href^="#"]');
+            const headings = Array.from(document.querySelectorAll('#article-body h1, #article-body h2, #article-body h3'));
+            
+            if (headings.length === 0) return;
+            
+            // 初始高亮第一个标题
+            const firstHeadingId = headings[0].id;
+            if (firstHeadingId) {
+                const firstLink = document.querySelector(`.toc-link[href="#${firstHeadingId}"]`);
+                if (firstLink) firstLink.classList.add('active');
             }
             
-            // 设置目录导航
-            function setupTOCNavigation() {
-                const tocLinks = document.querySelectorAll('.toc-link[href^="#"]');
+            // 监听滚动事件
+            window.addEventListener('scroll', () => {
+                let currentActiveId = null;
+                const scrollPosition = window.scrollY + 100;
                 
-                tocLinks.forEach(link => {
-                    link.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        const targetId = link.getAttribute('href').substring(1);
-                        const targetElement = document.getElementById(targetId);
-                        
-                        if (targetElement) {
-                            window.scrollTo({
-                                top: targetElement.offsetTop - 70,
-                                behavior: 'smooth'
-                            });
-                            
-                            // 更新活动状态
-                            tocLinks.forEach(l => l.classList.remove('active'));
-                            link.classList.add('active');
-                        }
-                    });
-                });
-            }
-            
-            // 设置滚动时高亮当前章节
-            function setupTOCHighlight() {
-                const tocLinks = document.querySelectorAll('.toc-link[href^="#"]');
-                const headings = Array.from(document.querySelectorAll('#article-body h1, #article-body h2, #article-body h3'));
-                
-                if (headings.length === 0) return;
-                
-                // 初始高亮第一个标题
-                const firstHeadingId = headings[0].id;
-                if (firstHeadingId) {
-                    const firstLink = document.querySelector(`.toc-link[href="#${firstHeadingId}"]`);
-                    if (firstLink) firstLink.classList.add('active');
+                // 找出当前可见的标题
+                for (const heading of headings) {
+                    if (heading.offsetTop <= scrollPosition) {
+                        currentActiveId = heading.id;
+                    } else {
+                        break;
+                    }
                 }
                 
-                // 监听滚动事件
-                window.addEventListener('scroll', () => {
-                    let currentActiveId = null;
-                    const scrollPosition = window.scrollY + 100;
-                    
-                    // 找出当前可见的标题
-                    for (const heading of headings) {
-                        if (heading.offsetTop <= scrollPosition) {
-                            currentActiveId = heading.id;
-                        } else {
-                            break;
-                        }
-                    }
-                    
-                    // 更新目录高亮
-                    if (currentActiveId) {
-                        tocLinks.forEach(link => {
-                            const linkId = link.getAttribute('href').substring(1);
-                            link.classList.toggle('active', linkId === currentActiveId);
-                        });
-                    }
-                });
-            }
-        }
-
-        // Initialize when both libraries are loaded
-        if (typeof marked !== 'undefined' && typeof hljs !== 'undefined') {
-            initializeMarked();
-        } else {
-            // Fallback if libraries don't load
-            document.addEventListener('DOMContentLoaded', function() {
-                document.getElementById('article-body').innerHTML = 
-                    '<div class="no-results">正在加载文章内容...</div>';
+                // 更新目录高亮
+                if (currentActiveId) {
+                    tocLinks.forEach(link => {
+                        const linkId = link.getAttribute('href').substring(1);
+                        link.classList.toggle('active', linkId === currentActiveId);
+                    });
+                }
             });
         }
     </script>

@@ -23,10 +23,7 @@ function loadCommonComponents() {
 
 // 高亮当前页面
 function highlightCurrentPage() {
-    // 获取当前页面路径
     const currentPath = window.location.pathname;
-    
-    // 定义页面匹配规则
     const pageMap = {
         '/': 'home',
         '/index.html': 'home',
@@ -34,16 +31,13 @@ function highlightCurrentPage() {
         '/file/file.html': 'file'
     };
     
-    // 获取当前页面标识
     let currentPage = pageMap[currentPath] || '';
     
-    // 如果没有匹配到，尝试从路径推断
     if (!currentPage) {
         if (currentPath.includes('blog')) currentPage = 'blog';
         if (currentPath.includes('file')) currentPage = 'file';
     }
     
-    // 高亮对应的导航链接
     if (currentPage) {
         const activeLinks = document.querySelectorAll(`.nav-link[data-page="${currentPage}"]`);
         activeLinks.forEach(link => {
@@ -69,7 +63,7 @@ function initNavbar() {
 
 function toggleTheme() {
     document.body.classList.toggle('light-mode');
-    // 可以添加本地存储逻辑保存主题偏好
+    localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
 }
 
 function toggleHamburgerMenu() {

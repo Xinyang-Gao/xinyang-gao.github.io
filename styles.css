@@ -437,7 +437,7 @@ footer {
     overflow: hidden;
     margin-top: auto;
     padding-top: 3rem;
-    transition: background-color 1.5s ease, color 1.5s ease;
+    transition: background-color 0s ease, color 0s ease;
 }
 
 .footer-content {
