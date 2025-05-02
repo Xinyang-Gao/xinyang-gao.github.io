@@ -10,6 +10,7 @@ function loadCommonComponents() {
             setupLanguageToggle();
             setupHamburgerMenu();
             setupSmoothScrolling();
+            highlightCurrentPage();
         })
         .catch(error => console.error('加载导航栏失败:', error));
     
@@ -279,20 +280,69 @@ function setupBackToTopButton() {
 // 主题切换功能
 function setupThemeToggle() {
     const themeToggle = document.querySelector('.theme-toggle');
-    themeToggle.addEventListener('click', () => {
-        document.body.classList.toggle('light-mode');
-        localStorage.setItem('theme', document.body.classList.contains('light-mode') ? 'light' : 'dark');
+    if (!themeToggle) return;
+
+    themeToggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isLightMode = document.body.classList.contains('light-mode');
+        const overlay = document.createElement('div');
+        overlay.className = 'theme-switch-overlay';
         
-        // 强制重新创建粒子以应用新颜色
-        particleSystem.particles = [];
-        const canvas = document.getElementById('particles-background');
-        initParticles(canvas);
+        // 获取鼠标点击位置
+        overlay.style.left = `${e.clientX}px`;
+        overlay.style.top = `${e.clientY}px`;
+        overlay.style.transformOrigin = 'center';
+        
+        // 设置初始颜色
+        overlay.style.backgroundColor = isLightMode ? '#1a1a1a' : '#ffffff';
+        
+        document.body.appendChild(overlay);
+        
+        // 计算确保覆盖屏幕所需缩放比例，初始圆半径为20px
+        const bodyRect = document.body.getBoundingClientRect();
+        const maxDimension = Math.max(
+            Math.max(e.clientX, bodyRect.width - e.clientX),
+            Math.max(e.clientY, bodyRect.height - e.clientY)
+        );
+        const scaleNeeded = (maxDimension / 20) * 2; 
+        
+        // 开始扩散动画
+        requestAnimationFrame(() => {
+            overlay.style.transform = `scale(${scaleNeeded})`;
+            overlay.style.transition = `transform 1s cubic-bezier(0.77, 0, 0.175, 1), background-color 0.8s ease`;
+            
+            // 动画中途切换主题
+            setTimeout(() => {
+                document.body.classList.toggle('light-mode');
+                overlay.style.backgroundColor = isLightMode ? '#ffffff' : '#1a1a1a';
+                localStorage.setItem('theme', isLightMode ? 'dark' : 'light');
+                updateParticleColors();
+                
+                // 开始收缩动画
+                overlay.style.transform = 'scale(0)';
+                overlay.style.transition = `transform 0.8s cubic-bezier(0.165, 0.84, 0.44, 1)`;
+                
+                // 移除覆盖层
+                setTimeout(() => {
+                    overlay.remove();
+                }, 800);
+            }, 600);
+        });
     });
-    
-    // 检查本地存储中的主题偏好
+
+    // 初始化主题
     if (localStorage.getItem('theme') === 'light') {
         document.body.classList.add('light-mode');
     }
+}
+
+function updateParticleColors() {
+    const isLightMode = document.body.classList.contains('light-mode');
+    particleSystem.particles.forEach(particle => {
+        particle.color = isLightMode 
+            ? `hsl(${Math.random() * 60 + 200}, 50%, 50%)` 
+            : `hsl(${Math.random() * 60 + 200}, 80%, 60%)`;
+    });
 }
 
 // 语言切换功能
@@ -307,16 +357,32 @@ function setupLanguageToggle() {
 function setupHamburgerMenu() {
     const hamburger = document.querySelector('.hamburger');
     const hamburgerMenu = document.querySelector('.hamburger-menu');
+    
     hamburger.addEventListener('click', (e) => {
         e.stopPropagation();
+        hamburger.classList.toggle('active');
         hamburgerMenu.classList.toggle('show');
+        
+        // 禁用/启用页面滚动
+        document.body.style.overflow = hamburgerMenu.classList.contains('show') ? 'hidden' : '';
     });
     
     // 点击菜单外区域关闭菜单
     document.addEventListener('click', (e) => {
         if (!e.target.closest('.hamburger') && !e.target.closest('.hamburger-menu')) {
+            hamburger.classList.remove('active');
             hamburgerMenu.classList.remove('show');
+            document.body.style.overflow = '';
         }
+    });
+    
+    // 点击菜单项关闭菜单
+    hamburgerMenu.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', () => {
+            hamburger.classList.remove('active');
+            hamburgerMenu.classList.remove('show');
+            document.body.style.overflow = '';
+        });
     });
 }
 
@@ -339,9 +405,40 @@ function setupSmoothScrolling() {
                 // 关闭汉堡菜单
                 const hamburgerMenu = document.querySelector('.hamburger-menu');
                 hamburgerMenu.classList.remove('show');
+                document.querySelector('.hamburger').classList.remove('active');
+                document.body.style.overflow = '';
             }
         });
     });
+}
+
+// 高亮当前页面
+function highlightCurrentPage() {
+    const currentPath = window.location.pathname;
+    const pageMap = {
+        '/': 'home',
+        '/index.html': 'home',
+        '/blog/blog.html': 'blog',
+        '/file/file.html': 'file'
+    };
+    
+    let currentPage = pageMap[currentPath] || '';
+    
+    if (!currentPage) {
+        if (currentPath.includes('blog')) currentPage = 'blog';
+        if (currentPath.includes('file')) currentPage = 'file';
+    }
+    
+    if (currentPage) {
+        document.querySelectorAll(`.nav-link[data-page="${currentPage}"]`).forEach(link => {
+            link.classList.add('active');
+            
+            // 为汉堡菜单添加活动状态
+            if (link.closest('.hamburger-menu')) {
+                link.style.backgroundColor = 'rgba(0, 123, 255, 0.1)';
+            }
+        });
+    }
 }
 
 // 初始化英雄区域文本动画
