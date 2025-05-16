@@ -2,13 +2,20 @@
 function loadCommonComponents() {
     // 加载导航栏
     fetch('navbar.html')
-        .then(response => response.text())
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.text();
+        })
         .then(data => {
-            document.getElementById('navbar-container').innerHTML = data;
-            // 重新初始化导航相关功能
-            setupThemeToggle();
-            setupLanguageToggle();
-            setupHamburgerMenu();
+            const container = document.getElementById('navbar-container');
+            if (!container) return;
+            
+            container.innerHTML = data;
+            
+            // 检查元素是否存在再初始化
+            if (document.querySelector('.theme-toggle')) setupThemeToggle();
+            if (document.querySelector('.language-toggle')) setupLanguageToggle();
+            if (document.querySelector('.hamburger')) setupHamburgerMenu();
             setupSmoothScrolling();
             highlightCurrentPage();
         })
@@ -16,11 +23,20 @@ function loadCommonComponents() {
     
     // 加载底部
     fetch('footer.html')
-        .then(response => response.text())
+        .then(response => {
+            if (!response.ok) throw new Error('Network response was not ok');
+            return response.text();
+        })
         .then(data => {
-            document.getElementById('footer-container').innerHTML = data;
-            // 重新初始化返回顶部按钮
-            setupBackToTopButton();
+            const container = document.getElementById('footer-container');
+            if (!container) return;
+            
+            container.innerHTML = data;
+            
+            // 检查按钮是否存在再初始化
+            if (document.getElementById('back-to-top')) {
+                setupBackToTopButton();
+            }
         })
         .catch(error => console.error('加载底部失败:', error));
 }
@@ -458,10 +474,15 @@ function initHeroTextAnimation() {
     animateText(heroSubtitle, heroSubtitle.textContent, 800);
 }
 
-// 修改主初始化函数，添加页面类型判断
+// 修改主初始化函数
 document.addEventListener('DOMContentLoaded', function() {
+    // 先加载公共组件
     loadCommonComponents();
-    initParticleEffect();
+    
+    // 检查canvas元素是否存在
+    if (document.getElementById('particles-background')) {
+        initParticleEffect();
+    }
     
     // 只在有英雄区域的页面初始化文本动画
     if (document.querySelector('.hero-section')) {
