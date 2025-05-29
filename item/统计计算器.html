@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark-mode">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>统计计算器</title>
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        .calculator-container {
+            background-color: var(--card-bg-color);
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.664);
+            width: 90%;
+            max-width: 600px;
+            margin: 2rem auto;
+            color: var(--text-color);
+        }
+        
+        .input-group {
+            display: flex;
+            margin-bottom: 1.5rem;
+        }
+        
+        #numberInput {
+            flex: 1;
+            padding: 0.75rem;
+            font-size: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 4px 0 0 4px;
+            background-color: var(--input-bg-color);
+            color: var(--text-color);
+        }
+        
+        #calculateBtn {
+            padding: 0.75rem 1.5rem;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 0 4px 4px 0;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+        
+        #calculateBtn:hover {
+            background-color: var(--primary-hover);
+        }
+        
+        .result {
+            margin-top: 1.5rem;
+            display: none;
+        }
+        
+        .result-item {
+            margin: 0.75rem 0;
+            padding: 0.75rem;
+            background-color: var(--card-secondary-bg);
+            border-radius: 4px;
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .error {
+            color: var(--error-color);
+            margin-top: 0.75rem;
+            padding: 0.5rem;
+            background-color: var(--error-bg);
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <!-- 全屏粒子背景 -->
+    <canvas id="particles-background"></canvas>
+    
+    <!-- 导航栏占位 -->
+    <div id="navbar-container"></div>
+    
+    <main class="content">
+        <div class="calculator-container">
+            <h2>数字统计计算器</h2>
+            <p>输入数字，用空格分隔（例如：1 2 5.3 8.21 10）</p>
+            
+            <div class="input-group">
+                <input type="text" id="numberInput" placeholder="输入数字，用空格分隔">
+                <button id="calculateBtn">计算</button>
+            </div>
+            
+            <div id="error" class="error"></div>
+            
+            <div id="result" class="result">
+                <h3>计算结果</h3>
+                <div class="result-item">和: <span id="sum"></span></div>
+                <div class="result-item">平均值: <span id="mean"></span></div>
+                <div class="result-item">中位数: <span id="median"></span></div>
+                <div class="result-item">众数: <span id="mode"></span></div>
+                <div class="result-item">方差: <span id="variance"></span></div>
+                <div class="result-item">标准差: <span id="stdDeviation"></span></div>
+                <div class="result-item">极差: <span id="rangeDifference"></span></div>
+                <div class="result-item">极值(最小/最大): <span id="range"></span></div>
+            </div>
+        </div>
+    </main>
+    
+    <!-- 页脚占位 -->
+    <div id="footer-container"></div>
+    
+    <!-- 加载通用脚本 -->
+    <script src="/script.js"></script>
+    <script src="/load-components.js"></script>
+    
+    <script>
+        document.getElementById('calculateBtn').addEventListener('click', function() {
+            const input = document.getElementById('numberInput').value.trim();
+            const errorElement = document.getElementById('error');
+            const resultElement = document.getElementById('result');
+            
+            errorElement.textContent = '';
+            resultElement.style.display = 'none';
+            
+            if (!input) {
+                errorElement.textContent = '请输入...数字！';
+                return;
+            }
+            
+            const numbers = input.split(/\s+/).map(num => parseFloat(num));
+            
+            if (numbers.some(isNaN)) {
+                errorElement.textContent = '咦？这里面有些似乎不是数字呀...请确保输入的是有效的数字！';
+                return;
+            }
+            
+            if (numbers.length === 0) {
+                errorElement.textContent = '没有可计算的数字！';
+                return;
+            }
+            
+            // 计算结果
+            const sum = numbers.reduce((a, b) => a + b, 0);
+            const mean = sum / numbers.length;
+            
+            // 计算中位数
+            const sorted = [...numbers].sort((a, b) => a - b);
+            let median;
+            const mid = Math.floor(sorted.length / 2);
+            if (sorted.length % 2 === 0) {
+                median = (sorted[mid - 1] + sorted[mid]) / 2;
+            } else {
+                median = sorted[mid];
+            }
+            
+            // 计算众数
+            const frequencyMap = {};
+            numbers.forEach(num => {
+                frequencyMap[num] = (frequencyMap[num] || 0) + 1;
+            });
+            let maxFrequency = 0;
+            let modes = [];
+            for (const num in frequencyMap) {
+                if (frequencyMap[num] > maxFrequency) {
+                    modes = [parseFloat(num)];
+                    maxFrequency = frequencyMap[num];
+                } else if (frequencyMap[num] === maxFrequency) {
+                    modes.push(parseFloat(num));
+                }
+            }
+            const modeText = modes.length === numbers.length ? "无法计算（所有数字出现的频率相同）" : modes.join(", ");
+            
+            // 计算方差和标准差
+            const variance = numbers.reduce((acc, num) => acc + Math.pow(num - mean, 2), 0) / numbers.length;
+            const stdDeviation = Math.sqrt(variance);
+            
+            // 计算极值
+            const min = Math.min(...numbers);
+            const max = Math.max(...numbers);
+            
+            function formatNumber(num) {
+                return parseFloat(num.toFixed(4)).toString();
+            }
+            
+            // 显示结果
+            document.getElementById('sum').textContent = formatNumber(sum);
+            document.getElementById('mean').textContent = formatNumber(mean);
+            document.getElementById('median').textContent = formatNumber(median);
+            document.getElementById('mode').textContent = modeText;
+            document.getElementById('variance').textContent = formatNumber(variance);
+            document.getElementById('stdDeviation').textContent = formatNumber(stdDeviation);
+            document.getElementById('range').textContent = `${formatNumber(min)} / ${formatNumber(max)}`;
+            document.getElementById('rangeDifference').textContent = formatNumber(max - min);
+            
+            resultElement.style.display = 'block';
+        });
+    </script>
+</body>
+</html>
