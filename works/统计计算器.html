@@ -4,77 +4,441 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>统计计算器</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary-color: #00f7ff;
+            --primary-hover: #00d0ff;
+            --text-color: rgba(200, 220, 255, 0.9);
+            --bg-dark: #0a0a16;
+            --card-bg-color: rgba(15, 15, 35, 0.7);
+            --card-secondary-bg: rgba(20, 20, 40, 0.5);
+            --input-bg-color: rgba(0, 0, 0, 0.2);
+            --border-color: rgba(0, 247, 255, 0.2);
+            --error-color: #ff4d7a;
+            --error-bg: rgba(255, 77, 122, 0.1);
+            --navbar-height: 70px;
+            --transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #0a0a16 0%, #141428 100%);
+            color: var(--text-color);
+            min-height: 100vh;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* 网格背景 */
+        .grid-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(rgba(20, 20, 40, 0.7) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(20, 20, 40, 0.7) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        .grid-back {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(rgba(15, 15, 35, 0.5) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(15, 15, 35, 0.5) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        /* 导航栏样式 */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--navbar-height);
+            display: flex;
+            align-items: center;
+            padding: 0 5%;
+            z-index: 30;
+            background: rgba(10, 10, 22, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 247, 255, 0.1);
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            margin-right: 40px;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--primary-color);
+            border-radius: 8px;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 15px var(--primary-color);
+        }
+
+        .logo-icon i {
+            color: var(--bg-dark);
+            font-size: 18px;
+        }
+
+        .logo-text {
+            color: var(--primary-color);
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-shadow: 0 0 10px var(--primary-color);
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .nav-items {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+
+        .nav-item {
+            color: rgba(200, 220, 255, 0.8);
+            margin: 0 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+            letter-spacing: 0.05em;
+            position: relative;
+            padding: 10px 0;
+            font-weight: 500;
+        }
+
+        .nav-item::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: var(--primary-color);
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px var(--primary-color);
+            border-radius: 3px;
+        }
+
+        .nav-item:hover {
+            color: var(--primary-color);
+            text-shadow: 0 0 10px var(--primary-color);
+        }
+
+        .nav-item.active {
+            color: var(--primary-color);
+            text-shadow: 0 0 10px var(--primary-color);
+        }
+
+        .nav-item.active::after,
+        .nav-item:hover::after {
+            width: 100%;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            margin-left: 20px;
+        }
+
+        .action-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(0, 247, 255, 0.2);
+            color: var(--primary-color);
+            margin-left: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            background: rgba(0, 247, 255, 0.1);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 15px rgba(0, 247, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* 主内容区域 */
+        .content {
+            padding-top: calc(var(--navbar-height) + 2rem);
+            padding-bottom: 2rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
         .calculator-container {
-            background-color: var(--card-bg-color);
-            padding: 2rem;
-            border-radius: 10px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.664);
+            background: var(--card-bg-color);
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             width: 90%;
-            max-width: 600px;
+            max-width: 700px;
             margin: 2rem auto;
             color: var(--text-color);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
         }
-        
+
+        .calculator-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+            animation: scanline 3s linear infinite;
+        }
+
+        @keyframes scanline {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .calculator-container h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 1rem;
+            text-shadow: 0 0 10px var(--primary-color);
+            font-size: 2.2rem;
+            letter-spacing: 1px;
+        }
+
+        .calculator-container > p {
+            text-align: center;
+            margin-bottom: 2rem;
+            opacity: 0.8;
+            font-size: 1.1rem;
+        }
+
         .input-group {
             display: flex;
             margin-bottom: 1.5rem;
+            position: relative;
         }
-        
+
         #numberInput {
             flex: 1;
-            padding: 0.75rem;
-            font-size: 1rem;
+            padding: 1rem 1.2rem;
+            font-size: 1.1rem;
             border: 1px solid var(--border-color);
-            border-radius: 4px 0 0 4px;
+            border-radius: 8px 0 0 8px;
             background-color: var(--input-bg-color);
             color: var(--text-color);
+            font-family: 'Roboto', sans-serif;
+            transition: all 0.3s ease;
         }
-        
+
+        #numberInput:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 15px rgba(0, 247, 255, 0.3);
+        }
+
+        #numberInput::placeholder {
+            color: rgba(200, 220, 255, 0.5);
+        }
+
         #calculateBtn {
-            padding: 0.75rem 1.5rem;
-            background-color: var(--primary-color);
-            color: rgb(0, 132, 255);
+            padding: 0 1.8rem;
+            background: linear-gradient(135deg, var(--primary-color), #00b3ff);
+            color: #0a0a16;
             border: none;
-            border-radius: 0 4px 4px 0;
+            border-radius: 0 8px 8px 0;
             cursor: pointer;
             font-size: 1rem;
-            transition: background-color 0.3s;
+            font-weight: 600;
+            font-family: 'Orbitron', sans-serif;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
-        
+
         #calculateBtn:hover {
-            background-color: var(--primary-hover);
+            background: linear-gradient(135deg, #00d0ff, var(--primary-color));
+            box-shadow: 0 0 15px rgba(0, 247, 255, 0.5);
         }
-        
-        .result {
-            margin-top: 1.5rem;
-            display: none;
+
+        #calculateBtn:active {
+            transform: translateY(1px);
         }
-        
-        .result-item {
-            margin: 0.75rem 0;
-            padding: 0.75rem;
-            background-color: var(--card-secondary-bg);
-            border-radius: 4px;
-            border-left: 3px solid var(--primary-color);
-        }
-        
+
         .error {
             color: var(--error-color);
             margin-top: 0.75rem;
-            padding: 0.5rem;
+            padding: 1rem;
             background-color: var(--error-bg);
-            border-radius: 4px;
+            border-radius: 8px;
+            border-left: 3px solid var(--error-color);
+            display: none;
+        }
+
+        .error.show {
+            display: block;
+        }
+
+        .result {
+            margin-top: 2rem;
+            display: none;
+        }
+
+        .result.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result h3 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--primary-color);
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-size: 1.5rem;
+            text-shadow: 0 0 8px var(--primary-color);
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.2rem;
+            margin-top: 1.5rem;
+        }
+
+        .result-item {
+            padding: 1.2rem;
+            background: var(--card-secondary-bg);
+            border-radius: 10px;
+            border-left: 3px solid var(--primary-color);
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .result-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .result-item span {
+            display: block;
+            font-weight: 500;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+            margin-top: 0.5rem;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .calculator-container {
+                padding: 1.8rem;
+                width: 95%;
+            }
+            
+            .calculator-container h2 {
+                font-size: 1.8rem;
+            }
+            
+            .result-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .nav-items {
+                display: none;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .input-group {
+                flex-direction: column;
+            }
+            
+            #numberInput {
+                border-radius: 8px;
+                margin-bottom: 1rem;
+            }
+            
+            #calculateBtn {
+                border-radius: 8px;
+                padding: 0.9rem;
+            }
+            
+            .calculator-container {
+                padding: 1.5rem;
+            }
         }
     </style>
 </head>
 <body>
-    <!-- 全屏粒子背景 -->
-    <canvas id="particles-background"></canvas>
-    
-    <!-- 导航栏占位 -->
-    <div id="navbar-container"></div>
-    
+    <!-- 网格背景 -->
+    <div class="grid-container">
+        <div class="grid"></div>
+        <div class="grid-back"></div>
+    </div>
+
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="nav-logo">
+            <div class="logo-icon">
+                <i class="fas fa-calculator"></i>
+            </div>
+            <div class="logo-text">GXY</div>
+        </div>
+        
+        <div class="nav-items">
+            <div class="nav-item active">统计计算器</div>
+        </div>
+    </nav>
+
+    <!-- 主内容 -->
     <main class="content">
         <div class="calculator-container">
             <h2>数字统计计算器</h2>
@@ -89,48 +453,48 @@
             
             <div id="result" class="result">
                 <h3>计算结果</h3>
-                <div class="result-item">和: <span id="sum"></span></div>
-                <div class="result-item">平均值: <span id="mean"></span></div>
-                <div class="result-item">中位数: <span id="median"></span></div>
-                <div class="result-item">众数: <span id="mode"></span></div>
-                <div class="result-item">方差: <span id="variance"></span></div>
-                <div class="result-item">标准差: <span id="stdDeviation"></span></div>
-                <div class="result-item">极差: <span id="rangeDifference"></span></div>
-                <div class="result-item">极值(最小/最大): <span id="range"></span></div>
+                <div class="result-grid">
+                    <div class="result-item">和: <span id="sum"></span></div>
+                    <div class="result-item">平均值: <span id="mean"></span></div>
+                    <div class="result-item">中位数: <span id="median"></span></div>
+                    <div class="result-item">众数: <span id="mode"></span></div>
+                    <div class="result-item">方差: <span id="variance"></span></div>
+                    <div class="result-item">标准差: <span id="stdDeviation"></span></div>
+                    <div class="result-item">极差: <span id="rangeDifference"></span></div>
+                    <div class="result-item">极值(最小/最大): <span id="range"></span></div>
+                </div>
             </div>
         </div>
     </main>
-    
-    <!-- 页脚占位 -->
-    <div id="footer-container"></div>
-    
-    <!-- 加载通用脚本 -->
-    <script src="/script.js"></script>
-    <script src="/load-components.js"></script>
-    
+
     <script>
+        // 计算按钮事件
         document.getElementById('calculateBtn').addEventListener('click', function() {
             const input = document.getElementById('numberInput').value.trim();
             const errorElement = document.getElementById('error');
             const resultElement = document.getElementById('result');
             
             errorElement.textContent = '';
-            resultElement.style.display = 'none';
+            errorElement.classList.remove('show');
+            resultElement.classList.remove('show');
             
             if (!input) {
-                errorElement.textContent = '请输入...数字！';
+                errorElement.textContent = 'bur？你不输入数字你让我算什么？！';
+                errorElement.classList.add('show');
                 return;
             }
             
             const numbers = input.split(/\s+/).map(num => parseFloat(num));
             
             if (numbers.some(isNaN)) {
-                errorElement.textContent = '咦？这里面有些似乎不是数字呀...请确保输入的是有效的数字！';
+                errorElement.textContent = '嗯……有几个字符应该不是数字吧……？要不你在检查一下？';
+                errorElement.classList.add('show');
                 return;
             }
             
             if (numbers.length === 0) {
                 errorElement.textContent = '没有可计算的数字！';
+                errorElement.classList.add('show');
                 return;
             }
             
@@ -187,7 +551,23 @@
             document.getElementById('range').textContent = `${formatNumber(min)} / ${formatNumber(max)}`;
             document.getElementById('rangeDifference').textContent = formatNumber(max - min);
             
-            resultElement.style.display = 'block';
+            resultElement.classList.add('show');
+        });
+
+        // 添加Enter键支持
+        document.getElementById('numberInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('calculateBtn').click();
+            }
+        });
+
+        // 简单的视差效果
+        document.addEventListener('mousemove', function(e) {
+            const mx = (e.clientX / window.innerWidth - 0.5) * 20;
+            const my = (e.clientY / window.innerHeight - 0.5) * 20;
+            
+            document.querySelector('.grid').style.transform = `translate(${mx * 0.7}px, ${my * 0.7}px)`;
+            document.querySelector('.grid-back').style.transform = `translate(${mx * 0.3}px, ${my * 0.3}px)`;
         });
     </script>
 </body>
