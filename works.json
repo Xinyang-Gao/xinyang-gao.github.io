@@ -1,0 +1,15 @@
+{
+  "works": [
+    {
+      "id": 1,
+      "title": "数字统计计算器",
+      "description": "计算一些数据",
+      "image": "",
+      "category": "开发",
+      "date": "2025-05-30",
+      "details": "计算一些数据的和、平均值、中位数、众数、方差、标准差、极差、极值",
+      "technologies": ["HTML", "CSS", "JavaScript"],
+      "link": "../works/统计计算器.html"
+    }
+  ]
+}
