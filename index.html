@@ -3,87 +3,1005 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>高新炀的个人网站</title>
-    <link rel="icon" href="/image/favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="/styles.css">
-</head>
-<body class="dark-mode">
-    <!-- 全屏粒子背景 -->
-    <canvas id="particles-background"></canvas>
-
-    <!-- 导航栏占位 -->
-    <div id="navbar-container"></div>
-
-    <main class="content">
-        <!-- 首页部分 -->
-        <section id="home">
-            <div class="hero-section">
-                <div class="hero-content">
-                    <h1 class="hero-title">欢迎访问!</h1>
-                    <h1 class="hero-title2">我的个人网站</h1>
-                    <h2 class="hero-subtitle">高新炀 · 爱好编程的初中生</h2>
-                    <a href="#about" class="hero-cta">进入网站！</a>
-                </div>
-            </div>
-        </section>
-
-        <!-- 关于我 -->
-        <section id="about">
-            <h2>关于我</h2>
-            <p>暂时还没想到写些什么……</p>
+    <title>GXY's website - SPA优化版</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #00f7ff;
+            --secondary-color: #7b61ff;
+            --bg-dark: #0a0a16;
+            --bg-gradient: linear-gradient(135deg, #0a0a16 0%, #0e1a2b 100%);
+            --transition-timing: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --navbar-height: 80px;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: var(--bg-gradient);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+            font-family: 'Orbitron', sans-serif;
+            cursor: none;
+            color: rgba(200, 220, 255, 0.8);
+        }
+        
+        /* 自定义光标 */
+        .cursor {
+            position: fixed;
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--primary-color);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1000;
+            transform: translate(-50%, -50%);
+            transition: transform 0.2s, opacity 0.3s ease;
+            box-shadow: 0 0 10px var(--primary-color), 0 0 20px var(--primary-color);
+            opacity: 0;
+            mix-blend-mode: difference;
+        }
+        
+        .cursor.visible {
+            opacity: 1;
+        }
+        
+        .cursor.click {
+            transform: translate(-50%, -50%) scale(0.8);
+            background-color: rgba(0, 247, 255, 0.5);
+        }
+        
+        /* 现代化导航栏 */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--navbar-height);
+            display: flex;
+            align-items: center;
+            padding: 0 5%;
+            z-index: 30;
+            opacity: 0;
+            transform: translateY(-20px);
+            transition: all 0.8s var(--transition-timing);
+            background: rgba(10, 10, 22, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 247, 255, 0.1);
+        }
+        
+        .navbar.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            margin-right: 40px;
+        }
+        
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--primary-color);
+            border-radius: 8px;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 15px var(--primary-color);
+        }
+        
+        .logo-icon i {
+            color: var(--bg-dark);
+            font-size: 18px;
+        }
+        
+        .logo-text {
+            color: var(--primary-color);
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-shadow: 0 0 10px var(--primary-color);
+        }
+        
+        .nav-items {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+        
+        .nav-item {
+            color: rgba(200, 220, 255, 0.8);
+            margin: 0 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+            letter-spacing: 0.05em;
+            position: relative;
+            padding: 10px 0;
+            font-weight: 500;
+        }
+        
+        .nav-item::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: var(--primary-color);
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px var(--primary-color);
+            border-radius: 3px;
+        }
+        
+        .nav-item:hover {
+            color: var(--primary-color);
+            text-shadow: 0 0 10px var(--primary-color);
+        }
+        
+        .nav-item.active {
+            color: var(--primary-color);
+            text-shadow: 0 0 10px var(--primary-color);
+        }
+        
+        .nav-item.active::after,
+        .nav-item:hover::after {
+            width: 100%;
+        }
+        
+        .nav-search {
+            display: flex;
+            align-items: center;
+            margin-left: auto;
+            position: relative;
+        }
+        
+        .search-input {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(0, 247, 255, 0.2);
+            border-radius: 20px;
+            padding: 8px 15px 8px 40px;
+            color: var(--primary-color);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.9rem;
+            width: 220px;
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 15px rgba(0, 247, 255, 0.3);
+            width: 260px;
+        }
+        
+        .search-icon {
+            position: absolute;
+            left: 15px;
+            color: rgba(0, 247, 255, 0.7);
+            font-size: 0.9rem;
+        }
+        
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            margin-left: 20px;
+        }
+        
+        .action-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(0, 247, 255, 0.2);
+            color: var(--primary-color);
+            margin-left: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .action-btn:hover {
+            background: rgba(0, 247, 255, 0.1);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 15px rgba(0, 247, 255, 0.3);
+            transform: translateY(-2px);
+        }
+        
+        .mobile-toggle {
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            margin-left: 15px;
+        }
+        
+        .mobile-toggle span {
+            width: 22px;
+            height: 2px;
+            background: var(--primary-color);
+            margin: 2px 0;
+            transition: all 0.3s ease;
+            border-radius: 2px;
+            box-shadow: 0 0 5px var(--primary-color);
+        }
+        
+        /* 网格背景 */
+        .grid-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+        
+        .grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(rgba(20, 20, 40, 0.7) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(20, 20, 40, 0.7) 1px, transparent 1px);
+            background-size: 30px 30px;
+            transition: transform 0.8s var(--transition-timing);
+        }
+        
+        .grid-back {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(rgba(15, 15, 35, 0.5) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(15, 15, 35, 0.5) 1px, transparent 1px);
+            background-size: 50px 50px;
+            transition: transform 1.2s var(--transition-timing);
+        }
+        
+        /* 容器 */
+        .container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        
+        /* 中央点 */
+        .dot {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            opacity: 0;
+            z-index: 10;
+            animation: dot-appear 1.5s forwards;
+            box-shadow: 0 0 15px var(--primary-color), 0 0 30px var(--primary-color);
+            transition: all 1.2s var(--transition-timing);
+            transform-origin: center;
+        }
+        
+        /* 滑轮状态 */
+        .dot.wheel {
+            width: 70px;
+            height: 70px;
+            right: 40px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: 2px solid rgba(0, 247, 255, 0.5);
+            background-color: rgba(10, 10, 22, 0.8);
+            box-shadow: 0 0 20px var(--primary-color), 0 0 40px var(--primary-color), 
+                        inset 0 0 20px rgba(0, 247, 255, 0.2);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+        
+        .wheel-line {
+            width: 40%;
+            height: 2px;
+            background-color: var(--primary-color);
+            margin: 4px 0;
+            border-radius: 2px;
+            box-shadow: 0 0 5px var(--primary-color);
+            opacity: 0.8;
+        }
+        
+        /* 线条 */
+        .line {
+            position: absolute;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+            opacity: 0;
+            z-index: 5;
+            transition: all 1s var(--transition-timing);
+        }
+        
+        .line-left {
+            width: 0;
+            right: 50%;
+            animation: draw-left 2s 1.5s forwards;
+        }
+        
+        .line-right {
+            width: 0;
+            left: 50%;
+            animation: draw-right 2s 1.5s forwards;
+        }
+        
+        .line.hidden {
+            opacity: 0 !important;
+            width: 0 !important;
+        }
+        
+        /* 文字 */
+        .text {
+            position: absolute;
+            color: var(--primary-color);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.8rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            opacity: 0;
+            z-index: 15;
+            animation: text-fall 3s 3.5s forwards;
+            text-shadow: 0 0 10px var(--primary-color), 0 0 20px var(--primary-color);
+            transition: all 1.2s var(--transition-timing);
+        }
+        
+        /* 内容区域 */
+        .content {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 120px 5% 40px;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 1s var(--transition-timing);
+            overflow-y: auto;
+            z-index: 8;
+            visibility: hidden; /* 初始隐藏内容区域 */
+        }
+        
+        .content.visible {
+            opacity: 1;
+            transform: translateY(0);
+            visibility: visible; /* 显示内容区域 */
+        }
+        
+        .content h2 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 2rem;
+            text-shadow: 0 0 10px rgba(0, 247, 255, 0.5);
+        }
+        
+        .content p {
+            margin-bottom: 15px;
+            line-height: 1.6;
+            font-size: 1.1rem;
+        }
+        
+        /* 浮动元素 */
+        .floating-element {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background-color: rgba(0, 247, 255, 0.6);
+            border-radius: 50%;
+            box-shadow: 0 0 10px rgba(0, 247, 255, 0.5);
+            z-index: 3;
+            opacity: 0.7;
+            transition: transform 0.6s var(--transition-timing);
+        }
+        
+        /* 涟漪效果 */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(0, 247, 255, 0.3) 0%, transparent 70%);
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 20;
+            box-shadow: 0 0 30px rgba(0, 247, 255, 0.5);
+        }
+        
+        /* 粒子效果 */
+        .particles {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            z-index: 25;
+            pointer-events: none;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0;
+            box-shadow: 0 0 5px var(--primary-color);
+            transition: transform 0.3s ease-out;
+        }
+        
+        /* 提示信息 */
+        .scroll-hint {
+            position: absolute;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: rgba(0, 247, 255, 0.7);
+            font-size: 0.9rem;
+            letter-spacing: 0.1em;
+            opacity: 0.8;
+            animation: pulse 2s infinite;
+            z-index: 15;
+        }
+        
+        .back-hint {
+            position: absolute;
+            bottom: 30px;
+            right: 30px;
+            color: rgba(0, 247, 255, 0.7);
+            font-size: 0.9rem;
+            letter-spacing: 0.1em;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+            z-index: 15;
+            cursor: pointer;
+        }
+        
+        .back-hint.visible {
+            opacity: 0.8;
+        }
+        
+        /* 新添加的隐藏样式 */
+        .hidden-element {
+            opacity: 0 !important;
+            visibility: hidden !important;
+            transition: all 0.8s var(--transition-timing);
+        }
+        
+        /* 页面过渡效果 */
+        .page-transition {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-dark);
+            z-index: 9999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s ease;
+        }
+        
+        .page-transition.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        /* 动画定义 */
+        @keyframes dot-appear {
+            0% { opacity: 0; transform: scale(0); }
+            70% { opacity: 1; transform: scale(1.2); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        
+        @keyframes draw-left {
+            0% { width: 0; opacity: 0.5; }
+            100% { width: 45vw; opacity: 1; }
+        }
+        
+        @keyframes draw-right {
+            0% { width: 0; opacity: 0.5; }
+            100% { width: 45vw; opacity: 1; }
+        }
+        
+        @keyframes text-fall {
+            0% { opacity: 0; transform: translateY(-160px); }
+            70% { opacity: 1; transform: translateY(-50px); }
+            100% { opacity: 1; transform: translateY(-50px); }
+        }
+        
+        @keyframes ripple-effect {
+            0% { width: 0; height: 0; opacity: 0.7; }
+            50% { opacity: 0.4; }
+            100% { width: 400px; height: 400px; opacity: 0; }
+        }
+        
+        @keyframes particle-float {
+            0% { transform: translateY(0) translateX(0); opacity: 0.8; }
+            100% { transform: translateY(var(--y)) translateX(var(--x)); opacity: 0; }
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0) translateX(0); }
+            50% { transform: translateY(-20px) translateX(15px); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        
+        /* 响应式设计 */
+        @media (max-width: 992px) {
+            .nav-items {
+                display: none;
+                position: absolute;
+                top: var(--navbar-height);
+                left: 0;
+                width: 100%;
+                background: rgba(10, 10, 22, 0.95);
+                backdrop-filter: blur(10px);
+                flex-direction: column;
+                padding: 20px;
+                border-top: 1px solid rgba(0, 247, 255, 0.1);
+            }
             
-            <h3 style="margin-top: 2rem;"></h3>
-            <div class="project-tags">
-                <span class="project-tag">HTML5</span>
-                <span class="project-tag">CSS3</span>
-                <span class="project-tag">Java</span>
-                <span class="project-tag">JavaScript</span>
-                <span class="project-tag">图形化</span>
+            .nav-items.active {
+                display: flex;
+            }
+            
+            .nav-item {
+                margin: 10px 0;
+                width: 100%;
+                text-align: center;
+            }
+            
+            .nav-search {
+                margin-left: 0;
+                width: 100%;
+                max-width: 300px;
+            }
+            
+            .mobile-toggle {
+                display: flex;
+            }
+            
+            .nav-actions {
+                margin-left: auto;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .navbar {
+                padding: 0 20px;
+            }
+            
+            .logo-text {
+                font-size: 1.2rem;
+            }
+            
+            .search-input {
+                width: 180px;
+            }
+            
+            .search-input:focus {
+                width: 200px;
+            }
+            
+            .text {
+                font-size: 2rem;
+                letter-spacing: 0.2em;
+            }
+            
+            .content {
+                padding: 100px 5% 40px;
+            }
+            
+            .dot.wheel {
+                right: 20px;
+                width: 60px;
+                height: 60px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .text {
+                font-size: 1.5rem;
+            }
+            
+            .content h2 {
+                font-size: 1.5rem;
+            }
+            
+            .nav-search {
+                display: none;
+            }
+            
+            .logo-text {
+                font-size: 1.1rem;
+            }
+            
+            .action-btn {
+                width: 34px;
+                height: 34px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 页面过渡层 -->
+    <div class="page-transition" id="pageTransition"></div>
+    
+    <div class="container">
+        <!-- 现代化导航栏 -->
+        <div class="navbar">
+            <div class="nav-logo">
+                <div class="logo-icon">
+                    <i class="fas fa-atom"></i>
+                </div>
+                <div class="logo-text">GXY</div>
             </div>
-        </section>
-
-        <!-- 博客 -->
-        <a href="/blog/blog.html" target="_blank" class="section-link">
-            <section id="blog">
-                <h2>博客</h2>
-                <p>我的文章：</p>
-                <div class="articles">
-                    <article>
-                        <h3>关于此网站</h3>
-                        <p>网站介绍</p>
-                    </article>
+            
+            <div class="nav-items">
+                <div class="nav-item active" data-page="index">首页</div>
+                <div class="nav-item" data-page="about">关于</div>
+                <div class="nav-item" data-page="articles">文章</div>
+                <div class="nav-item" data-page="works">作品</div>
+                <div class="nav-item" data-page="contact">联系</div>
+            </div>
+            
+            <div class="nav-search">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" class="search-input" placeholder="搜索...">
+            </div>
+            
+            <div class="nav-actions">
+                <div class="action-btn">
+                    <i class="fas fa-user"></i>
                 </div>
-                <div class="articles">
-                    <article>
-                        <h3>地理默写PPT</h3>
-                        <p>一些PPT的地理默写内容，包含了地理知识点和相关图片。</p>
-                    </article>
+                <div class="action-btn">
+                    <i class="fas fa-cog"></i>
                 </div>
-            </section>
-        </a>
-
-        <!-- 作品集 
-        <a href="/portfolio/portfolio.html" target="_blank" class="section-link">
-            <section id="portfolio">
-                <h2>作品集（此版块还在制作中……）</h2>
-                <p>以下是我的一些项目：</p>
-                <div class="projects">
-                    <div class="project">
-                        <h3>001</h3>
-                        <p>---</p>
-                        <div class="project-tags">
-                            <span class="project-tag">占位</span>
-                        </div>
-                    </div>
+                
+                <div class="mobile-toggle">
+                    <span></span>
+                    <span></span>
+                    <span></span>
                 </div>
-            </section>
-        </a>
-    </main> -->
+            </div>
+        </div>
+        
+        <!-- 背景层 -->
+        <div class="grid-container">
+            <div class="grid-back"></div>
+            <div class="grid"></div>
+        </div>
+        
+        <!-- 主要内容层 -->
+        <div class="line line-left"></div>
+        <div class="line line-right"></div>
+        <div class="dot"></div>
+        <div class="text">Gao xinyang</div>
+        
+        <!-- 浮动元素 -->
+        <div class="floating-elements">
+            <!-- 由JS动态生成 -->
+        </div>
+        
+        <!-- 内容区域 -->
+        <div class="content" id="mainContent"></div>
+        
+        <!-- 提示信息 -->
+        <div class="scroll-hint">滚轮下滑滚动</div>
+        <div class="back-hint">滚轮上滑以返回</div>
+        
+        <!-- 效果层 -->
+        <div class="particles"></div>
+        <div class="cursor"></div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 缓存DOM元素
+            const $ = sel => document.querySelector(sel);
+            const $$ = sel => document.querySelectorAll(sel);
+            const elements = {
+                body: document.body,
+                cursor: $('.cursor'),
+                grid: $('.grid'),
+                gridBack: $('.grid-back'),
+                dot: $('.dot'),
+                lines: $$('.line'),
+                text: $('.text'),
+                particlesContainer: $('.particles'),
+                content: $('#mainContent'),
+                scrollHint: $('.scroll-hint'),
+                backHint: $('.back-hint'),
+                floatingElementsContainer: $('.floating-elements'),
+                navbar: $('.navbar'),
+                navItems: $$('.nav-item'),
+                mobileToggle: $('.mobile-toggle'),
+                navItemsContainer: $('.nav-items'),
+                pageTransition: $('#pageTransition')
+            };
 
-    <!-- 页脚占位 -->
-    <div id="footer-container"></div>
-    <!-- 加载通用脚本 -->
-    <script src="/load-components.js"></script>
-    <script src="/script.js"></script>
+            let isWheelMode = false, isAnimating = false, lastMouseMoveTime = 0, parallaxId = null, scrollDelta = 0, scrollTimeout = null;
+
+            function init() {
+                createFloatingElements();
+                setupEventListeners();
+                setupSPANavigation();
+                // 首次加载时根据URL参数或默认加载首页内容
+                let page = (new URLSearchParams(location.search).get('page')) || 'index';
+                loadPage(page, false);
+            }
+
+            function createFloatingElements() {
+                for (let i = 0; i < 12; i++) {
+                    const el = document.createElement('div');
+                    el.className = 'floating-element';
+                    const size = Math.random() * 4 + 2;
+                    Object.assign(el.style, {
+                        left: `${Math.random() * window.innerWidth}px`,
+                        top: `${Math.random() * window.innerHeight}px`,
+                        width: `${size}px`,
+                        height: `${size}px`,
+                        animation: `float ${Math.random() * 10000 + 10000}ms infinite ease-in-out`,
+                        animationDelay: `${Math.random() * 2000}ms`,
+                        opacity: Math.random() * 0.5 + 0.2
+                    });
+                    elements.floatingElementsContainer.appendChild(el);
+                }
+            }
+
+            function setupEventListeners() {
+                document.addEventListener('mouseenter', () => elements.cursor.classList.add('visible'));
+                document.addEventListener('mouseleave', () => elements.cursor.classList.remove('visible'));
+                document.addEventListener('mousemove', handleMouseMove);
+                window.addEventListener('wheel', handleScroll, { passive: true });
+                window.addEventListener('DOMMouseScroll', handleScroll, { passive: true });
+                document.addEventListener('click', createRipple);
+                elements.dot.addEventListener('click', e => isWheelMode && createRipple(e));
+                elements.backHint.addEventListener('click', deactivateWheelMode);
+                elements.navItems.forEach(item => item.addEventListener('click', function() {
+                    elements.navItems.forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                }));
+                elements.mobileToggle.addEventListener('click', () => elements.navItemsContainer.classList.toggle('active'));
+            }
+
+            // SPA导航功能
+            function setupSPANavigation() {
+                // 拦截导航项点击事件
+                elements.navItems.forEach(item => {
+                    item.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const page = this.getAttribute('data-page');
+                        if (page) {
+                            loadPage(page);
+                        }
+                    });
+                });
+
+                // 处理浏览器前进后退
+                window.addEventListener('popstate', function(e) {
+                    if (e.state && e.state.page) {
+                        loadPage(e.state.page, false);
+                    }
+                });
+            }
+
+            // 加载页面内容
+            function loadPage(pageName, pushState = true) {
+                // 显示页面过渡动画
+                elements.pageTransition.classList.add('active');
+                
+                // 模拟加载延迟
+                setTimeout(() => {
+                    // 这里应该是实际的AJAX请求，获取页面内容
+                    // 为了演示，我们使用模拟内容
+                    let content = '';
+                    let pageTitle = 'GXY\'s website';
+                    
+                    switch(pageName) {
+                        case 'about':
+                            content = `<h2>关于我</h2><p>我是Gao xinyang，一名爱好探索和创新的学生。</p>`
+                            pageTitle = '关于 - GXY\'s website';
+                            break;
+                        case 'articles':
+                            content = '<h2>我的文章</h2><p>这里将展示我的最新文章和思考。</p>';
+                            pageTitle = '文章 - GXY\'s website';
+                            break;
+                        case 'works':
+                            content = '<h2>作品集</h2><p>展示我最近完成的项目和作品。</p>';
+                            pageTitle = '作品 - GXY\'s website';
+                            break;
+                        case 'contact':
+                            content = `<h2>欢迎联系我</h2>
+                            <p>QQ:  2489083744</p>
+                            <p>E-mail:  gao_xinyang@foxmail.com</p>
+                            <p>Bilibili:  <a href="https://space.bilibili.com/1064600697" target="_blank" title="Bilibili">https://space.bilibili.com/1064600697</a></p>
+                            <p>Github:  <a href="https://github.com/Xinyang-Gao" target="_blank" title="Github">https://github.com/Xinyang-Gao</a></p>
+                            <p>由于学业等原因，我可能无法及时回复你。</p>`
+                            pageTitle = '联系 - GXY\'s website';
+                            break;
+                        default:
+                            content = `
+                                <h2>欢迎你，来到Gao xinyang的个人网站</h2>
+                                <p>这是一个由我和AI共同编写的一个网站</p>
+                                <p>我会在此网站上分享一些文章、作品、以及一些其他的小玩意 :)</p>
+                                <p>尽情探索吧！</p>
+                                <p>Copyright ©2025 Xinyang Gao, All Rights Reserved.</p>
+                            `;
+                            pageTitle = 'GXY\'s website';
+                            pageName = 'index';
+                    }
+                    
+                    // 更新页面内容
+                    elements.content.innerHTML = content;
+                    document.title = pageTitle;
+                    
+                    // 更新URL历史记录
+                    if (pushState) {
+                        window.history.pushState({page: pageName}, pageTitle, `?page=${pageName}`);
+                    }
+                    
+                    // 隐藏页面过渡动画
+                    elements.pageTransition.classList.remove('active');
+                    
+                    // 激活当前导航项
+                    elements.navItems.forEach(item => {
+                        if (item.getAttribute('data-page') === pageName) {
+                            item.classList.add('active');
+                        } else {
+                            item.classList.remove('active');
+                        }
+                    });
+                }, 600); // 模拟网络延迟
+            }
+
+            function handleMouseMove(e) {
+                const { clientX: x, clientY: y } = e;
+                lastMouseMoveTime = Date.now();
+                Object.assign(elements.cursor.style, { left: x + 'px', top: y + 'px' });
+                if (!parallaxId) updateParallax(x, y);
+            }
+
+            function updateParallax(x, y) {
+                if (Date.now() - lastMouseMoveTime > 1000) return parallaxId = null;
+                const mx = (x / window.innerWidth - 0.5) * 40, my = (y / window.innerHeight - 0.5) * 40;
+                elements.grid.style.transform = `translate(${mx * 0.7}px,${my * 0.7}px)`;
+                elements.gridBack.style.transform = `translate(${mx * 0.3}px,${my * 0.3}px)`;
+                if (!isWheelMode) elements.dot.style.transform = `translate(${mx * 0.4}px,${my * 0.4}px)`;
+                $$('.floating-element').forEach(el => {
+                    const speed = parseFloat(el.style.width) * 0.1;
+                    el.style.transform = `translate(${mx * speed * 0.3}px,${my * speed * 0.3}px)`;
+                });
+                parallaxId = requestAnimationFrame(() => updateParallax(x, y));
+            }
+
+            function handleScroll(e) {
+                if (isAnimating) return;
+                if (scrollTimeout) clearTimeout(scrollTimeout);
+                const delta = e.deltaY || e.detail || (-e.wheelDelta);
+                scrollDelta += delta;
+                if (scrollDelta > 50 && !isWheelMode) {
+                    activateWheelMode();
+                    scrollDelta = 0;
+                }
+                if (scrollDelta < -50 && isWheelMode && elements.content.scrollTop <= 0) {
+                    deactivateWheelMode();
+                    scrollDelta = 0;
+                    e.preventDefault && e.preventDefault();
+                    return;
+                }
+                scrollTimeout = setTimeout(() => { scrollDelta = 0; }, 200);
+            }
+
+            function activateWheelMode() {
+                if (isWheelMode || isAnimating) return;
+                isAnimating = true; isWheelMode = true;
+                elements.scrollHint.style.opacity = '0';
+                elements.lines.forEach(line => line.classList.add('hidden'));
+                elements.navbar.classList.add('visible');
+                
+                // 隐藏文字和中心点
+                elements.text.classList.add('hidden-element');
+                elements.dot.classList.add('hidden-element');
+                
+                setTimeout(() => {
+                    elements.content.classList.add('visible');
+                    isAnimating = false;
+                }, 800);
+                setTimeout(() => elements.backHint.classList.add('visible'), 1500);
+            }
+
+            function deactivateWheelMode() {
+                if (!isWheelMode || isAnimating) return;
+                isAnimating = true; isWheelMode = false;
+                elements.backHint.classList.remove('visible');
+                elements.content.classList.remove('visible');
+                elements.navbar.classList.remove('visible');
+                elements.dot.classList.remove('wheel');
+                while (elements.dot.firstChild) elements.dot.removeChild(elements.dot.firstChild);
+                elements.lines.forEach(line => line.classList.remove('hidden'));
+                
+                // 显示文字和中心点
+                elements.text.classList.remove('hidden-element');
+                elements.dot.classList.remove('hidden-element');
+                
+                setTimeout(() => {
+                    elements.scrollHint.style.opacity = '0.8';
+                    isAnimating = false;
+                }, 1000);
+            }
+
+            function createRipple(e) {
+                elements.cursor.classList.add('click');
+                setTimeout(() => elements.cursor.classList.remove('click'), 200);
+                const ripple = document.createElement('div');
+                ripple.className = 'ripple';
+                Object.assign(ripple.style, {
+                    left: e.clientX + 'px',
+                    top: e.clientY + 'px',
+                    width: '0',
+                    height: '0',
+                    animation: 'ripple-effect 1500ms forwards'
+                });
+                elements.body.appendChild(ripple);
+                createParticles(e.clientX, e.clientY);
+                setTimeout(() => ripple.remove(), 1500);
+            }
+
+            function createParticles(x, y) {
+                for (let i = 0; i < 20; i++) {
+                    const p = document.createElement('div');
+                    p.className = 'particle';
+                    const size = Math.random() * 3 + 2, angle = Math.random() * Math.PI * 2, dist = Math.random() * 100 + 50;
+                    Object.assign(p.style, {
+                        width: `${size}px`,
+                        height: `${size}px`,
+                        left: `${x}px`,
+                        top: `${y}px`,
+                        backgroundColor: `hsl(${Math.random() * 60 + 180},100%,70%)`,
+                        boxShadow: `0 0 5px hsl(${Math.random() * 60 + 180},100%,70%)`,
+                        animation: `particle-float ${Math.random() * 1000 + 500}ms forwards`
+                    });
+                    p.style.setProperty('--x', `${Math.cos(angle) * dist}px`);
+                    p.style.setProperty('--y', `${Math.sin(angle) * dist}px`);
+                    elements.particlesContainer.appendChild(p);
+                    setTimeout(() => p.remove(), 1500);
+                }
+            }
+
+            init();
+        });
+    </script>
 </body>
 </html>
