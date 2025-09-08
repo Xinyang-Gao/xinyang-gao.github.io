@@ -1007,6 +1007,36 @@
                     this.classList.add('active');
                 }));
                 elements.mobileToggle.addEventListener('click', () => elements.navItemsContainer.classList.toggle('active'));
+
+                // 触屏端适配：下滑进入界面
+                let touchStartY = 0, touchMoveY = 0, touchDelta = 0, touchActive = false;
+                const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+                if (isTouchDevice) {
+                    window.addEventListener('touchstart', function(e) {
+                        if (e.touches.length === 1) {
+                            touchStartY = e.touches[0].clientY;
+                            touchMoveY = touchStartY;
+                            touchActive = true;
+                        }
+                    }, { passive: true });
+                    window.addEventListener('touchmove', function(e) {
+                        if (!touchActive) return;
+                        touchMoveY = e.touches[0].clientY;
+                    }, { passive: true });
+                    window.addEventListener('touchend', function(e) {
+                        if (!touchActive) return;
+                        touchDelta = touchMoveY - touchStartY;
+                        // 向上滑动（页面下滑）进入界面
+                        if (touchDelta < -60 && !isWheelMode) {
+                            activateWheelMode();
+                        }
+                        // 向下滑动（页面上滑）返回
+                        if (touchDelta > 60 && isWheelMode && elements.content.scrollTop <= 0) {
+                            deactivateWheelMode();
+                        }
+                        touchActive = false;
+                    }, { passive: true });
+                }
             }
 
             // SPA导航功能
@@ -1082,7 +1112,7 @@
                                 </br>
                                 </br>
                                 <p>版权声明：©2025 Xinyang Gao, All Rights Reserved.</p>
-                                <p>更新于：2025年9月7日</p>
+                                <p>更新最后时间：2025年9月8日</p>
                             `;
                             pageTitle = 'GXY\'s website';
                             pageName = 'index';
