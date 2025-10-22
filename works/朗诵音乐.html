@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="zh-CN" class="dark-mode">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>音乐播放器</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #00f7ff;
+            --primary-hover: #00d0ff;
+            --text-color: rgba(200, 220, 255, 0.9);
+            --bg-dark: #0a0a16;
+            --card-bg-color: rgba(15, 15, 35, 0.7);
+            --card-secondary-bg: rgba(20, 20, 40, 0.5);
+            --input-bg-color: rgba(0, 0, 0, 0.2);
+            --border-color: rgba(0, 247, 255, 0.2);
+            --error-color: #ff4d7a;
+            --error-bg: rgba(255, 77, 122, 0.1);
+            --navbar-height: 70px;
+            --transition-timing: cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #0a0a16 0%, #141428 100%);
+            color: var(--text-color);
+            min-height: 100vh;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+
+        /* 网格背景 */
+        .grid-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .grid {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(rgba(20, 20, 40, 0.7) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(20, 20, 40, 0.7) 1px, transparent 1px);
+            background-size: 30px 30px;
+        }
+
+        .grid-back {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                linear-gradient(rgba(15, 15, 35, 0.5) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(15, 15, 35, 0.5) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        /* 导航栏样式 */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--navbar-height);
+            display: flex;
+            align-items: center;
+            padding: 0 5%;
+            z-index: 30;
+            background: rgba(10, 10, 22, 0.7);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0, 247, 255, 0.1);
+        }
+
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            margin-right: 40px;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--primary-color);
+            border-radius: 8px;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 15px var(--primary-color);
+        }
+
+        .logo-icon i {
+            color: var(--bg-dark);
+            font-size: 18px;
+        }
+
+        .logo-text {
+            color: var(--primary-color);
+            font-size: 1.4rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-shadow: 0 0 10px var(--primary-color);
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .nav-items {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+
+        .nav-item {
+            color: rgba(200, 220, 255, 0.8);
+            margin: 0 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+            letter-spacing: 0.05em;
+            position: relative;
+            padding: 10px 0;
+            font-weight: 500;
+        }
+
+        .nav-item::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 3px;
+            background: var(--primary-color);
+            transition: width 0.3s ease;
+            box-shadow: 0 0 10px var(--primary-color);
+            border-radius: 3px;
+        }
+
+        .nav-item:hover {
+            color: var(--primary-color);
+            text-shadow: 0 0 10px var(--primary-color);
+        }
+
+        .nav-item.active {
+            color: var(--primary-color);
+            text-shadow: 0 0 10px var(--primary-color);
+        }
+
+        .nav-item.active::after,
+        .nav-item:hover::after {
+            width: 100%;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            margin-left: 20px;
+        }
+
+        .action-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(0, 247, 255, 0.2);
+            color: var(--primary-color);
+            margin-left: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .action-btn:hover {
+            background: rgba(0, 247, 255, 0.1);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 15px rgba(0, 247, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* 主内容区域 */
+        .content {
+            padding-top: calc(var(--navbar-height) + 2rem);
+            padding-bottom: 2rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .player-container {
+            background: var(--card-bg-color);
+            padding: 2.5rem;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            width: 90%;
+            max-width: 600px;
+            margin: 2rem auto;
+            color: var(--text-color);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .player-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+            animation: scanline 3s linear infinite;
+        }
+
+        @keyframes scanline {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .player-container h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 0 10px var(--primary-color);
+            font-size: 2.2rem;
+            letter-spacing: 1px;
+        }
+
+        .song-info {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .song-title {
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--primary-color);
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .song-artist {
+            font-size: 1.1rem;
+            opacity: 0.8;
+        }
+
+        .album-art {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto 2rem;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--border-color);
+            background: var(--card-secondary-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .album-art i {
+            font-size: 4rem;
+            color: var(--primary-color);
+            opacity: 0.7;
+        }
+
+        .progress-container {
+            margin-bottom: 1.5rem;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 0.5rem;
+            cursor: pointer;
+        }
+
+        .progress {
+            height: 100%;
+            background: var(--primary-color);
+            width: 0%;
+            border-radius: 3px;
+            transition: width 0.1s ease;
+            box-shadow: 0 0 10px var(--primary-color);
+        }
+
+        .time-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .control-btn {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(0, 247, 255, 0.2);
+            color: var(--primary-color);
+            margin: 0 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+        }
+
+        .control-btn:hover {
+            background: rgba(0, 247, 255, 0.1);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 15px rgba(0, 247, 255, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .play-btn {
+            width: 60px;
+            height: 60px;
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, var(--primary-color), #00b3ff);
+            color: #0a0a16;
+            border: none;
+        }
+
+        .play-btn:hover {
+            background: linear-gradient(135deg, #00d0ff, var(--primary-color));
+        }
+
+        .volume-container {
+            display: flex;
+            align-items: center;
+            margin-top: 1rem;
+        }
+
+        .volume-icon {
+            margin-right: 10px;
+            color: var(--primary-color);
+            font-size: 1.2rem;
+        }
+
+        .volume-bar {
+            flex: 1;
+            height: 4px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 2px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .volume-level {
+            height: 100%;
+            background: var(--primary-color);
+            width: 70%;
+            border-radius: 2px;
+            transition: width 0.1s ease;
+            box-shadow: 0 0 5px var(--primary-color);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .player-container {
+                padding: 1.8rem;
+                width: 95%;
+            }
+            
+            .player-container h2 {
+                font-size: 1.8rem;
+            }
+            
+            .album-art {
+                width: 180px;
+                height: 180px;
+            }
+            
+            .control-btn {
+                width: 45px;
+                height: 45px;
+                margin: 0 8px;
+            }
+            
+            .play-btn {
+                width: 55px;
+                height: 55px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .player-container {
+                padding: 1.5rem;
+            }
+            
+            .album-art {
+                width: 150px;
+                height: 150px;
+            }
+            
+            .album-art i {
+                font-size: 3rem;
+            }
+            
+            .song-title {
+                font-size: 1.3rem;
+            }
+            
+            .song-artist {
+                font-size: 1rem;
+            }
+            
+            .control-btn {
+                width: 40px;
+                height: 40px;
+                margin: 0 5px;
+                font-size: 1rem;
+            }
+            
+            .play-btn {
+                width: 50px;
+                height: 50px;
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 网格背景 -->
+    <div class="grid-container">
+        <div class="grid"></div>
+        <div class="grid-back"></div>
+    </div>
+
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="nav-logo">
+            <div class="logo-icon">
+                <i class="fas fa-music"></i>
+            </div>
+            <div class="logo-text">GXY</div>
+        </div>
+        
+        <div class="nav-items">
+            <div class="nav-item active">音乐播放器</div>
+        </div>
+    </nav>
+
+    <!-- 主内容 -->
+    <main class="content">
+        <div class="player-container">
+            <h2>音乐播放器</h2>
+            
+            <div class="song-info">
+                <div class="song-title">Song From A Secret Garden</div>
+                <div class="song-artist">Secret Garden</div>
+            </div>
+            
+            <div class="album-art">
+                <i class="fas fa-music"></i>
+            </div>
+            
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar">
+                    <div class="progress" id="progress"></div>
+                </div>
+                <div class="time-info">
+                    <span id="currentTime">0:00</span>
+                    <span id="duration">0:00</span>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <button class="control-btn" id="prevBtn">
+                    <i class="fas fa-step-backward"></i>
+                </button>
+                <button class="control-btn play-btn" id="playBtn">
+                    <i class="fas fa-play"></i>
+                </button>
+                <button class="control-btn" id="nextBtn">
+                    <i class="fas fa-step-forward"></i>
+                </button>
+            </div>
+            
+            <div class="volume-container">
+                <div class="volume-icon">
+                    <i class="fas fa-volume-up"></i>
+                </div>
+                <div class="volume-bar" id="volumeBar">
+                    <div class="volume-level" id="volumeLevel"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <audio id="audioPlayer" src="Song From A Secret Garden - Secret Garden.mp3"></audio>
+
+    <script>
+        // 获取DOM元素
+        const audioPlayer = document.getElementById('audioPlayer');
+        const playBtn = document.getElementById('playBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const progressBar = document.getElementById('progressBar');
+        const progress = document.getElementById('progress');
+        const currentTimeEl = document.getElementById('currentTime');
+        const durationEl = document.getElementById('duration');
+        const volumeBar = document.getElementById('volumeBar');
+        const volumeLevel = document.getElementById('volumeLevel');
+
+        // 播放/暂停功能
+        playBtn.addEventListener('click', () => {
+            if (audioPlayer.paused) {
+                audioPlayer.play();
+                playBtn.innerHTML = '<i class="fas fa-pause"></i>';
+            } else {
+                audioPlayer.pause();
+                playBtn.innerHTML = '<i class="fas fa-play"></i>';
+            }
+        });
+
+        // 更新进度条
+        audioPlayer.addEventListener('timeupdate', () => {
+            const currentTime = audioPlayer.currentTime;
+            const duration = audioPlayer.duration;
+            
+            // 更新进度条宽度
+            const progressPercent = (currentTime / duration) * 100;
+            progress.style.width = `${progressPercent}%`;
+            
+            // 更新时间显示
+            currentTimeEl.textContent = formatTime(currentTime);
+            
+            if (duration) {
+                durationEl.textContent = formatTime(duration);
+            }
+        });
+
+        // 点击进度条跳转
+        progressBar.addEventListener('click', (e) => {
+            const rect = progressBar.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            audioPlayer.currentTime = percent * audioPlayer.duration;
+        });
+
+        // 音量控制
+        volumeBar.addEventListener('click', (e) => {
+            const rect = volumeBar.getBoundingClientRect();
+            const percent = (e.clientX - rect.left) / rect.width;
+            audioPlayer.volume = percent;
+            volumeLevel.style.width = `${percent * 100}%`;
+        });
+
+        // 格式化时间显示
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+
+        // 音频加载完成后更新总时长
+        audioPlayer.addEventListener('loadedmetadata', () => {
+            durationEl.textContent = formatTime(audioPlayer.duration);
+        });
+
+        // 音频结束时重置播放按钮
+        audioPlayer.addEventListener('ended', () => {
+            playBtn.innerHTML = '<i class="fas fa-play"></i>';
+            audioPlayer.currentTime = 0;
+        });
+
+        // 简单的视差效果
+        document.addEventListener('mousemove', function(e) {
+            const mx = (e.clientX / window.innerWidth - 0.5) * 20;
+            const my = (e.clientY / window.innerHeight - 0.5) * 20;
+            
+            document.querySelector('.grid').style.transform = `translate(${mx * 0.7}px, ${my * 0.7}px)`;
+            document.querySelector('.grid-back').style.transform = `translate(${mx * 0.3}px, ${my * 0.3}px)`;
+        });
+    </script>
+</body>
+</html>
