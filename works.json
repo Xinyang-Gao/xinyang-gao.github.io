@@ -1,4 +1,4 @@
-{
+﻿{
   "works": [
     {
       "id": 1,
@@ -11,5 +11,16 @@
       "technologies": ["HTML", "CSS", "JavaScript"],
       "link": "../works/统计计算器.html"
     }
-  ]
+，
+{
+      "id": 2,
+      "title": "朗诵音乐",
+      "description": "朗诵音乐",
+      "image": "",
+      "category": "学习",
+      "date": "2025-10-22",
+      "details": "如题",
+      "technologies": ["MP4"],
+      "link": "../works/朗诵音乐.html"
+    }  ]
 }
