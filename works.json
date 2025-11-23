@@ -1,4 +1,4 @@
-﻿{
+{
   "works": [
     {
       "id": 1,
@@ -12,7 +12,6 @@
       "link": "../works/统计计算器.html"
     }
 ,
-
 {
       "id": 2,
       "title": "朗诵音乐",
@@ -23,5 +22,16 @@
       "details": "如题",
       "technologies": ["MP4"],
       "link": "../works/朗诵1.html"
-    }  ]
+    },
+{
+      "id": 3,
+      "title": "车轮模拟",
+      "description": "模拟车轮运动",
+      "image": "",
+      "category": "学习",
+      "date": "2025-11-23",
+      "details": "如题",
+      "technologies": ["Scratch","HTML"],
+      "link": "../works/朗诵1.html"
+    } ]
 }
