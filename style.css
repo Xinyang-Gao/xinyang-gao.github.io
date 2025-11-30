@@ -283,7 +283,7 @@ body {
     overflow: hidden;
 }
 
-/* 中央点 */
+/* 中心点 */
 .dot {
     position: absolute;
     width: 12px;
@@ -296,34 +296,6 @@ body {
     box-shadow: 0 0 15px var(--primary-color), 0 0 30px var(--primary-color);
     transition: all 1.2s var(--transition-timing);
     transform-origin: center;
-}
-
-/* 滑轮状态 */
-.dot.wheel {
-    width: 70px;
-    height: 70px;
-    right: 40px;
-    top: 50%;
-    transform: translateY(-50%);
-    border: 2px solid rgba(0, 247, 255, 0.5);
-    background-color: rgba(10, 10, 22, 0.8);
-    box-shadow: 0 0 20px var(--primary-color), 0 0 40px var(--primary-color), 
-                inset 0 0 20px rgba(0, 247, 255, 0.2);
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-}
-
-.wheel-line {
-    width: 40%;
-    height: 2px;
-    background-color: var(--primary-color);
-    margin: 4px 0;
-    border-radius: 2px;
-    box-shadow: 0 0 5px var(--primary-color);
-    opacity: 0.8;
 }
 
 /* 线条 */
@@ -403,6 +375,35 @@ body {
     font-size: 1.1rem;
 }
 
+/* 联系页面图标样式优化 */
+.contact-info p {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 18px;
+    font-size: 1.1rem;
+}
+
+.contact-info i {
+    width: 24px;
+    text-align: center;
+    color: var(--primary-color);
+    font-size: 1.2rem;
+    text-shadow: 0 0 8px var(--primary-color);
+}
+
+.contact-info a {
+    color: var(--primary-color);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    border-bottom: 1px solid transparent;
+}
+
+.contact-info a:hover {
+    text-shadow: 0 0 10px var(--primary-color);
+    border-bottom: 1px solid var(--primary-color);
+}
+
 /* 浮动元素 */
 .floating-element {
     position: absolute;
@@ -446,37 +447,6 @@ body {
     opacity: 0;
     box-shadow: 0 0 5px var(--primary-color);
     transition: transform 0.3s ease-out;
-}
-
-/* 提示信息 */
-.scroll-hint {
-    position: absolute;
-    bottom: 30px;
-    left: 50%;
-    transform: translateX(-50%);
-    color: rgba(0, 247, 255, 0.7);
-    font-size: 0.9rem;
-    letter-spacing: 0.1em;
-    opacity: 0.8;
-    animation: pulse 2s infinite;
-    z-index: 15;
-}
-
-.back-hint {
-    position: absolute;
-    bottom: 30px;
-    right: 30px;
-    color: rgba(0, 247, 255, 0.7);
-    font-size: 0.9rem;
-    letter-spacing: 0.1em;
-    opacity: 0;
-    transition: opacity 0.5s ease;
-    z-index: 15;
-    cursor: pointer;
-}
-
-.back-hint.visible {
-    opacity: 0.8;
 }
 
 /* 新添加的隐藏样式 */
@@ -527,7 +497,7 @@ body {
     position: relative;
     display: flex;
     flex-direction: column;
-    /* 让卡片高度自适应内容，不影响同一行其它卡片 */
+    /* 让卡片高度自适应内容，不影响同一行其他卡片 */
     align-self: start;
 }
 
@@ -542,7 +512,7 @@ body {
     z-index: 1000;
     min-height: unset;
     height: auto;
-    /* 让expanded卡片内容撑开自身高度，不影响其它卡片 */
+    /* 让expanded卡片内容撑开自身高度，不影响其他卡片 */
     grid-row-end: span 2;
 }
 
@@ -756,11 +726,6 @@ body {
     50% { transform: translateY(-20px) translateX(15px); }
 }
 
-@keyframes pulse {
-    0%, 100% { opacity: 0.5; }
-    50% { opacity: 1; }
-}
-
 /* 响应式设计 */
 @media (max-width: 992px) {
     .nav-items {
@@ -825,12 +790,6 @@ body {
     
     .content {
         padding: 100px 5% 40px;
-    }
-    
-    .dot.wheel {
-        right: 20px;
-        width: 60px;
-        height: 60px;
     }
 }
 
