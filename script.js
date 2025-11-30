@@ -229,7 +229,7 @@ function loadPage(pageName, pushState = true) {
                             </div>
                             <div class="work-card-back">
                                 <h3>${work.title}</h3>
-                                <p class="work-details">${work.details}</p>
+                                <p class="work-details">${work.description}</p>
                                 ${work.technologies && work.technologies.length ? `
                                     <div class="work-technologies">
                                         <strong>技术栈:</strong>
