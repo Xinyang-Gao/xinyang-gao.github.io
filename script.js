@@ -1,4 +1,4 @@
-﻿﻿document.addEventListener('DOMContentLoaded', function() {
+﻿document.addEventListener('DOMContentLoaded', function() {
     // 使用更现代的DOM缓存方法
     const $ = sel => document.querySelector(sel);
     const $$ = sel => document.querySelectorAll(sel);
@@ -29,8 +29,6 @@
         text: $('.text'),
         particlesContainer: $('.particles'),
         content: $('#mainContent'),
-        scrollHint: $('.scroll-hint'),
-        backHint: $('.back-hint'),
         floatingElementsContainer: $('.floating-elements'),
         navbar: $('.navbar'),
         navItems: $$('.nav-item'),
@@ -154,7 +152,6 @@
         });
         
         elements.dot.addEventListener('click', e => state.isWheelMode && createRipple(e));
-        elements.backHint.addEventListener('click', deactivateWheelMode);
         
         // 优化导航项点击事件
         elements.navItems.forEach(item => {
@@ -493,7 +490,6 @@
         state.isAnimating = true;
         state.isWheelMode = true;
         
-        elements.scrollHint.style.opacity = '0';
         elements.lines.forEach(line => line.classList.add('hidden'));
         elements.navbar.classList.add('visible');
         
@@ -506,8 +502,6 @@
             state.isAnimating = false;
             perf.end('activateWheelMode');
         }, 800);
-        
-        setTimeout(() => elements.backHint.classList.add('visible'), 1500);
     }
 
     function deactivateWheelMode() {
@@ -518,7 +512,6 @@
         state.isAnimating = true;
         state.isWheelMode = false;
         
-        elements.backHint.classList.remove('visible');
         elements.content.classList.remove('visible');
         elements.navbar.classList.remove('visible');
         elements.dot.classList.remove('wheel');
@@ -535,7 +528,6 @@
         elements.dot.classList.remove('hidden-element');
         
         setTimeout(() => {
-            elements.scrollHint.style.opacity = '0.8';
             state.isAnimating = false;
             perf.end('deactivateWheelMode');
         }, 1000);
