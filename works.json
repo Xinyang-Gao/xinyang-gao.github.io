@@ -3,11 +3,10 @@
     {
       "id": 1,
       "title": "数字统计计算器",
-      "description": "计算一些数据",
+      "description": "计算一些数据的和、平均值、中位数、众数、方差、标准差、极差、极值",
       "image": "",
       "category": "开发",
       "date": "2025-05-30",
-      "details": "计算一些数据的和、平均值、中位数、众数、方差、标准差、极差、极值",
       "technologies": ["HTML", "CSS", "JavaScript"],
       "link": "../works/统计计算器.html"
     }
@@ -19,8 +18,7 @@
       "image": "",
       "category": "学习",
       "date": "2025-10-22",
-      "details": "如题",
-      "technologies": ["MP4"],
+      "technologies": ["HTML", "CSS", "JavaScript"],
       "link": "../works/朗诵1.html"
     },
 {
@@ -30,7 +28,6 @@
       "image": "",
       "category": "学习",
       "date": "2025-11-23",
-      "details": "如题",
       "technologies": ["Scratch","HTML"],
       "link": "../works/车轮模拟.html"
     } ]
