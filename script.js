@@ -1,4 +1,4 @@
-﻿document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function() {
     // 使用更现代的DOM缓存方法
     const $ = sel => document.querySelector(sel);
     const $$ = sel => document.querySelectorAll(sel);
