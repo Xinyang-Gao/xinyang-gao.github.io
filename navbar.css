@@ -1,4 +1,4 @@
-/* ÏÖ´ú»¯µ¼º½À¸ */
+ï»¿/* ç°ä»£åŒ–å¯¼èˆªæ  */
 .navbar {
     position: fixed;
     top: 0;
@@ -58,7 +58,7 @@
     display: flex;
     align-items: center;
     flex: 1;
-    justify-content: center; /* ¾ÓÖĞµ¼º½Ïî */
+    justify-content: center; /* å±…ä¸­å¯¼èˆªé¡¹ */
 }
 
 .nav-item {
@@ -127,7 +127,7 @@
     box-shadow: 0 0 5px var(--primary-color);
 }
 
-/* ÏìÓ¦Ê½Éè¼Æ */
+/* å“åº”å¼è®¾è®¡ */
 @media (max-width: 992px) {
     .nav-items {
         display: none;

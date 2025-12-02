@@ -1,19 +1,19 @@
-// µ¼º½À¸Ïà¹Ø¹¦ÄÜ
+ï»¿// å¯¼èˆªæ ç›¸å…³åŠŸèƒ½
 function setupNavbar() {
-    // Ê¹ÓÃ¸üÏÖ´úµÄDOM»º´æ·½·¨
+    // ä½¿ç”¨æ›´ç°ä»£çš„DOMç¼“å­˜æ–¹æ³•
     const $ = sel => document.querySelector(sel);
     const $$ = sel => document.querySelectorAll(sel);
 
-    // »º´æµ¼º½À¸Ïà¹ØDOMÔªËØ
+    // ç¼“å­˜å¯¼èˆªæ ç›¸å…³DOMå…ƒç´ 
     const navbarElements = {
         navItems: $$('.nav-item'),
         mobileToggle: $('.mobile-toggle'),
         navItemsContainer: $('.nav-items')
     };
 
-    // SPAµ¼º½¹¦ÄÜ
+    // SPAå¯¼èˆªåŠŸèƒ½
     function setupSPANavigation() {
-        // À¹½Øµ¼º½Ïîµã»÷ÊÂ¼ş
+        // æ‹¦æˆªå¯¼èˆªé¡¹ç‚¹å‡»äº‹ä»¶
         navbarElements.navItems.forEach(item => {
             item.addEventListener('click', function(e) {
                 e.preventDefault();
@@ -24,7 +24,7 @@ function setupNavbar() {
             });
         });
 
-        // ´¦Àíä¯ÀÀÆ÷Ç°½øºóÍË
+        // å¤„ç†æµè§ˆå™¨å‰è¿›åé€€
         window.addEventListener('popstate', function(e) {
             if (e.state && e.state.page) {
                 loadPage(e.state.page, false);
@@ -32,9 +32,9 @@ function setupNavbar() {
         });
     }
 
-    // ³õÊ¼»¯µ¼º½À¸¹¦ÄÜ
+    // åˆå§‹åŒ–å¯¼èˆªæ åŠŸèƒ½
     function initNavbar() {
-        // µ¼º½Ïîµã»÷ÊÂ¼ş
+        // å¯¼èˆªé¡¹ç‚¹å‡»äº‹ä»¶
         navbarElements.navItems.forEach(item => {
             item.addEventListener('click', function() {
                 navbarElements.navItems.forEach(i => i.classList.remove('active'));
@@ -42,16 +42,16 @@ function setupNavbar() {
             });
         });
 
-        // ÒÆ¶¯¶Ë²Ëµ¥ÇĞ»»
+        // ç§»åŠ¨ç«¯èœå•åˆ‡æ¢
         navbarElements.mobileToggle.addEventListener('click', () => {
             navbarElements.navItemsContainer.classList.toggle('active');
         });
 
-        // ³õÊ¼»¯SPAµ¼º½
+        // åˆå§‹åŒ–SPAå¯¼èˆª
         setupSPANavigation();
     }
 
-    // ±©Â¶¹«¹²·½·¨
+    // æš´éœ²å…¬å…±æ–¹æ³•
     window.navbar = {
         init: initNavbar,
         setActivePage: function(pageName) {
@@ -65,11 +65,11 @@ function setupNavbar() {
         }
     };
 
-    // ³õÊ¼»¯µ¼º½À¸
+    // åˆå§‹åŒ–å¯¼èˆªæ 
     initNavbar();
 }
 
-// È·±£DOM¼ÓÔØÍê³ÉºóÔÙ³õÊ¼»¯
+// ç¡®ä¿DOMåŠ è½½å®Œæˆåå†åˆå§‹åŒ–
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', setupNavbar);
 } else {
