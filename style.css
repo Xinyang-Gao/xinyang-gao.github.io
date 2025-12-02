@@ -26,7 +26,7 @@ body {
     color: rgba(200, 220, 255, 0.8);
 }
 
-/* ×Ô¶¨Òå¹â±ê */
+/* è‡ªå®šä¹‰å…‰æ ‡ */
 .cursor {
     position: fixed;
     width: 20px;
@@ -51,7 +51,7 @@ body {
     background-color: rgba(0, 247, 255, 0.5);
 }
 
-/* ÏÖ´ú»¯µ¼º½À¸ */
+/* ç°ä»£åŒ–å¯¼èˆªæ  */
 .navbar {
     position: fixed;
     top: 0;
@@ -111,6 +111,7 @@ body {
     display: flex;
     align-items: center;
     flex: 1;
+    justify-content: center; /* å±…ä¸­å¯¼èˆªé¡¹ */
 }
 
 .nav-item {
@@ -153,65 +154,10 @@ body {
     width: 100%;
 }
 
-.nav-search {
-    display: flex;
-    align-items: center;
-    margin-left: auto;
-    position: relative;
-}
-
-.search-input {
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(0, 247, 255, 0.2);
-    border-radius: 20px;
-    padding: 8px 15px 8px 40px;
-    color: var(--primary-color);
-    font-family: 'Orbitron', sans-serif;
-    font-size: 0.9rem;
-    width: 220px;
-    transition: all 0.3s ease;
-}
-
-.search-input:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 15px rgba(0, 247, 255, 0.3);
-    width: 260px;
-}
-
-.search-icon {
-    position: absolute;
-    left: 15px;
-    color: rgba(0, 247, 255, 0.7);
-    font-size: 0.9rem;
-}
-
 .nav-actions {
     display: flex;
     align-items: center;
-    margin-left: 20px;
-}
-
-.action-btn {
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(0, 247, 255, 0.2);
-    color: var(--primary-color);
-    margin-left: 10px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.action-btn:hover {
-    background: rgba(0, 247, 255, 0.1);
-    border-color: var(--primary-color);
-    box-shadow: 0 0 15px rgba(0, 247, 255, 0.3);
-    transform: translateY(-2px);
+    margin-left: auto;
 }
 
 .mobile-toggle {
@@ -222,7 +168,6 @@ body {
     width: 30px;
     height: 30px;
     cursor: pointer;
-    margin-left: 15px;
 }
 
 .mobile-toggle span {
@@ -235,7 +180,7 @@ body {
     box-shadow: 0 0 5px var(--primary-color);
 }
 
-/* Íø¸ñ±³¾° */
+/* ç½‘æ ¼èƒŒæ™¯ */
 .grid-container {
     position: absolute;
     top: 0;
@@ -272,7 +217,7 @@ body {
     transition: transform 1.2s var(--transition-timing);
 }
 
-/* ÈİÆ÷ */
+/* å®¹å™¨ */
 .container {
     position: relative;
     width: 100%;
@@ -283,7 +228,7 @@ body {
     overflow: hidden;
 }
 
-/* ÖĞĞÄµã */
+/* ä¸­å¿ƒç‚¹ */
 .dot {
     position: absolute;
     width: 12px;
@@ -298,7 +243,7 @@ body {
     transform-origin: center;
 }
 
-/* ÏßÌõ */
+/* çº¿æ¡ */
 .line {
     position: absolute;
     height: 2px;
@@ -325,7 +270,7 @@ body {
     width: 0 !important;
 }
 
-/* ÎÄ×Ö */
+/* æ–‡å­— */
 .text {
     position: absolute;
     color: var(--primary-color);
@@ -340,7 +285,7 @@ body {
     transition: all 1.2s var(--transition-timing);
 }
 
-/* ÄÚÈİÇøÓò */
+/* å†…å®¹åŒºåŸŸ */
 .content {
     position: absolute;
     top: 0;
@@ -353,13 +298,13 @@ body {
     transition: all 1s var(--transition-timing);
     overflow-y: auto;
     z-index: 8;
-    visibility: hidden; /* ³õÊ¼Òş²ØÄÚÈİÇøÓò */
+    visibility: hidden; /* åˆå§‹éšè—å†…å®¹åŒºåŸŸ */
 }
 
 .content.visible {
     opacity: 1;
     transform: translateY(0);
-    visibility: visible; /* ÏÔÊ¾ÄÚÈİÇøÓò */
+    visibility: visible; /* æ˜¾ç¤ºå†…å®¹åŒºåŸŸ */
 }
 
 .content h2 {
@@ -375,7 +320,7 @@ body {
     font-size: 1.1rem;
 }
 
-/* ÁªÏµÒ³ÃæÍ¼±êÑùÊ½ÓÅ»¯ */
+/* è”ç³»é¡µé¢å›¾æ ‡æ ·å¼ä¼˜åŒ– */
 .contact-info p {
     display: flex;
     align-items: center;
@@ -404,7 +349,7 @@ body {
     border-bottom: 1px solid var(--primary-color);
 }
 
-/* ¸¡¶¯ÔªËØ */
+/* æµ®åŠ¨å…ƒç´  */
 .floating-element {
     position: absolute;
     width: 8px;
@@ -417,7 +362,7 @@ body {
     transition: transform 0.6s var(--transition-timing);
 }
 
-/* Á°äôĞ§¹û */
+/* æ¶Ÿæ¼ªæ•ˆæœ */
 .ripple {
     position: absolute;
     border-radius: 50%;
@@ -428,7 +373,7 @@ body {
     box-shadow: 0 0 30px rgba(0, 247, 255, 0.5);
 }
 
-/* Á£×ÓĞ§¹û */
+/* ç²’å­æ•ˆæœ */
 .particles {
     position: absolute;
     width: 100%;
@@ -449,14 +394,14 @@ body {
     transition: transform 0.3s ease-out;
 }
 
-/* ĞÂÌí¼ÓµÄÒş²ØÑùÊ½ */
+/* æ–°æ·»åŠ çš„éšè—æ ·å¼ */
 .hidden-element {
     opacity: 0 !important;
     visibility: hidden !important;
     transition: all 0.8s var(--transition-timing);
 }
 
-/* Ò³Ãæ¹ı¶ÉĞ§¹û */
+/* é¡µé¢è¿‡æ¸¡æ•ˆæœ */
 .page-transition {
     position: fixed;
     top: 0;
@@ -475,13 +420,13 @@ body {
     pointer-events: all;
 }
 
-/* ×÷Æ·Íø¸ñ²¼¾Ö */
+/* ä½œå“ç½‘æ ¼å¸ƒå±€ */
 .works-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 24px;
     margin-top: 20px;
-    align-items: start; /* ÈÃÃ¿¸ö¿¨Æ¬¶ÀÁ¢×ÔÊÊÓ¦¸ß¶È */
+    align-items: start; /* è®©æ¯ä¸ªå¡ç‰‡ç‹¬ç«‹è‡ªé€‚åº”é«˜åº¦ */
 }
 
 .work-card {
@@ -497,7 +442,7 @@ body {
     position: relative;
     display: flex;
     flex-direction: column;
-    /* ÈÃ¿¨Æ¬¸ß¶È×ÔÊÊÓ¦ÄÚÈİ£¬²»Ó°ÏìÍ¬Ò»ĞĞÆäËû¿¨Æ¬ */
+    /* è®©å¡ç‰‡é«˜åº¦è‡ªé€‚åº”å†…å®¹ï¼Œä¸å½±å“åŒä¸€è¡Œå…¶ä»–å¡ç‰‡ */
     align-self: start;
 }
 
@@ -512,7 +457,7 @@ body {
     z-index: 1000;
     min-height: unset;
     height: auto;
-    /* ÈÃexpanded¿¨Æ¬ÄÚÈİ³Å¿ª×ÔÉí¸ß¶È£¬²»Ó°ÏìÆäËû¿¨Æ¬ */
+    /* è®©expandedå¡ç‰‡å†…å®¹æ’‘å¼€è‡ªèº«é«˜åº¦ï¼Œä¸å½±å“å…¶ä»–å¡ç‰‡ */
     grid-row-end: span 2;
 }
 
@@ -586,7 +531,7 @@ body {
     font-size: 0.93rem;
 }
 
-/* ÏêÏ¸ĞÅÏ¢¸²¸Ç¿¨Æ¬£¬ÇÒ×ÔÊÊÓ¦ÄÚÈİ¸ß¶È */
+/* è¯¦ç»†ä¿¡æ¯è¦†ç›–å¡ç‰‡ï¼Œä¸”è‡ªé€‚åº”å†…å®¹é«˜åº¦ */
 .work-card-back {
     position: absolute;
     top: 0;
@@ -687,7 +632,7 @@ body {
     background: rgba(0,247,255,0.18);
 }
 
-/* ¶¯»­¶¨Òå */
+/* åŠ¨ç”»å®šä¹‰ */
 @keyframes dot-appear {
     0% { opacity: 0; transform: scale(0); }
     70% { opacity: 1; transform: scale(1.2); }
@@ -726,7 +671,7 @@ body {
     50% { transform: translateY(-20px) translateX(15px); }
 }
 
-/* ÏìÓ¦Ê½Éè¼Æ */
+/* å“åº”å¼è®¾è®¡ */
 @media (max-width: 992px) {
     .nav-items {
         display: none;
@@ -751,18 +696,8 @@ body {
         text-align: center;
     }
     
-    .nav-search {
-        margin-left: 0;
-        width: 100%;
-        max-width: 300px;
-    }
-    
     .mobile-toggle {
         display: flex;
-    }
-    
-    .nav-actions {
-        margin-left: auto;
     }
 }
 
@@ -773,14 +708,6 @@ body {
     
     .logo-text {
         font-size: 1.2rem;
-    }
-    
-    .search-input {
-        width: 180px;
-    }
-    
-    .search-input:focus {
-        width: 200px;
     }
     
     .text {
@@ -802,16 +729,7 @@ body {
         font-size: 1.5rem;
     }
     
-    .nav-search {
-        display: none;
-    }
-    
     .logo-text {
         font-size: 1.1rem;
-    }
-    
-    .action-btn {
-        width: 34px;
-        height: 34px;
     }
 }
