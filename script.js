@@ -67,7 +67,7 @@ document.addEventListener('DOMContentLoaded', function () {
                   ${work.image ? `<img src="${work.image}" alt="${work.title}" class="work-image" loading="lazy">` : ''}
                   <div class="work-info">
                     <h3 class="work-title">${work.title}</h3>
-                    <p class="work-description">${work.description}</p>
+                    <p class="work-description">${work.description.length > 80 ? work.description.substring(0, 80) + '...' : work.description}</p>
                     <div class="work-meta">
                       <span class="work-category">${work.category}</span>
                       <span class="work-date">${work.date}</span>
