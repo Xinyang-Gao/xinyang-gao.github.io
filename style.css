@@ -538,25 +538,47 @@ li {
 }
 
 /* --- 动画与过渡 --- */
-/* 抽纸动画关键帧 */
+/* 优化后的抽纸入场动画 */
 @keyframes drawPaperIn {
     0% {
-        transform: translateY(100%) scale(0.98);
+        transform: translateY(100%) scale(0.95); /* 入场初始状态：屏幕外下方，略小 */
         opacity: 0;
     }
-
+    70% {
+       /* 可选：在中间点添加一点过冲效果 */
+       transform: translateY(-10px) scale(1.01);
+       opacity: 1;
+    }
     100% {
-        transform: translateY(0) scale(1);
+        transform: translateY(0) scale(1); /* 最终状态：就位，正常大小 */
         opacity: 1;
     }
 }
 
-/* 抽纸动画元素 */
+/* 旧内容离场动画 */
+@keyframes fadeOutAndShrink {
+    0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(20px) scale(0.98); /* 离场：轻微上移并缩小 */
+        opacity: 0;
+    }
+}
+
+/* 应用于旧内容的离场动画类 */
+.fade-out-shrink {
+    animation: fadeOutAndShrink 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards; /* 使用 Material Design 推荐的缓动 */
+}
+
+/* 抽纸动画元素 (保持不变，但动画行为已通过 @keyframes 更新) */
 .draw-animation-paper {
     position: fixed;
     z-index: 1001;
     opacity: 0;
-    animation: drawPaperIn 1s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+    /* 使用更新后的动画 */
+    animation: drawPaperIn 0.7s cubic-bezier(0.25, 0.8, 0.25, 1) forwards; /* 可以微调持续时间和缓动 */
     overflow: hidden;
     box-sizing: border-box;
     /* 样式将在 JS 中动态设置以匹配 .container */
@@ -570,12 +592,12 @@ li {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(253, 245, 230, 0.5);
-    /* 使用背景色半透明 */
+    background-color: rgba(253, 245, 230, 0.3); /* 稍微降低不透明度 */
     z-index: 1000;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.3s ease;
+    /* 添加过渡效果 */
+    transition: opacity 0.3s ease-in-out; /* 使用 ease-in-out 缓动 */
 }
 
 .page-transition.active {

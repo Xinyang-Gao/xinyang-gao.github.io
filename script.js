@@ -180,66 +180,83 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 
-    /**
-     * 执行抽纸动画的核心函数
-     * @param {string} content - 要显示的新页面内容 HTML 字符串
-     * @param {string} pageName - 当前加载的页面名称
-     * @param {string} pageTitle - 当前加载的页面标题
-     * @param {boolean} pushState - 是否更新浏览器历史记录
-     */
-    function performDrawAnimation(content, pageName, pageTitle, pushState) {
-        elements.pageTransition.classList.add('active');
+/**
+ * 执行优化后的页面切换动画
+ * @param {string} content - 要显示的新页面内容 HTML 字符串
+ * @param {string} pageName - 当前加载的页面名称
+ * @param {string} pageTitle - 当前加载的页面标题
+ * @param {boolean} pushState - 是否更新浏览器历史记录
+ */
+ function performDrawAnimation(content, pageName, pageTitle, pushState) {
+    perf.start('performDrawAnimation');
 
-        const containerRect = elements.container.getBoundingClientRect();
-        const computedStyle = window.getComputedStyle(elements.container);
-        const paddingTop = parseFloat(computedStyle.paddingTop);
-        const paddingRight = parseFloat(computedStyle.paddingRight);
-        const paddingBottom = parseFloat(computedStyle.paddingBottom);
-        const paddingLeft = parseFloat(computedStyle.paddingLeft);
+    // 显示页面切换遮罩
+    elements.pageTransition.classList.add('active');
 
-        const paperElement = document.createElement('div');
-        paperElement.className = 'draw-animation-paper container'; // 添加 container 类以复用样式
+    // 获取容器尺寸和样式
+    const containerRect = elements.container.getBoundingClientRect();
+    const computedStyle = window.getComputedStyle(elements.container);
+    const paddingTop = parseFloat(computedStyle.paddingTop);
+    const paddingRight = parseFloat(computedStyle.paddingRight);
+    const paddingBottom = parseFloat(computedStyle.paddingBottom);
+    const paddingLeft = parseFloat(computedStyle.paddingLeft);
 
-        paperElement.style.cssText = `
-            top: ${containerRect.top + window.scrollY}px;
-            left: ${containerRect.left + window.scrollX}px;
-            width: ${containerRect.width}px;
-            height: ${containerRect.height}px;
-            padding: ${paddingTop}px ${paddingRight}px ${paddingBottom}px ${paddingLeft}px;
-            /* 初始变换由 CSS 动画 keyframes 定义 */
-        `;
+    // 创建用于入场动画的“纸张”元素
+    const paperElement = document.createElement('div');
+    paperElement.className = 'draw-animation-paper container'; // 添加 container 类以复用样式
+    paperElement.style.cssText = `
+        top: ${containerRect.top + window.scrollY}px;
+        left: ${containerRect.left + window.scrollX}px;
+        width: ${containerRect.width}px;
+        height: ${containerRect.height}px;
+        padding: ${paddingTop}px ${paddingRight}px ${paddingBottom}px ${paddingLeft}px;
+        /* 初始变换由 CSS 动画 keyframes 定义 */
+    `;
+    paperElement.innerHTML = content;
 
-        paperElement.innerHTML = content;
+    // 将“纸张”元素添加到 body
+    document.body.appendChild(paperElement);
 
-        // 使用 animationend 事件确保动画完成后才更新内容
-        paperElement.addEventListener('animationend', () => {
-            elements.content.innerHTML = content;
-            document.title = pageTitle;
-            if (pushState) {
-                window.history.pushState({ page: pageName }, pageTitle, `?page=${pageName}`);
+    // 给当前内容区域添加离场动画类
+    elements.content.classList.add('fade-out-shrink');
+
+    // 监听“纸张”入场动画结束事件
+    paperElement.addEventListener('animationend', () => {
+        // 动画结束后，更新主内容区域的内容
+        elements.content.innerHTML = content;
+        elements.content.classList.remove('fade-out-shrink'); // 清除离场动画类
+
+        // 更新页面标题和历史记录
+        document.title = pageTitle;
+        if (pushState) {
+            window.history.pushState({ page: pageName }, pageTitle, `?page=${pageName}`);
+        }
+
+        // 更新导航栏活动状态
+        elements.navItems.forEach(item => {
+            if (item.getAttribute('data-page') === pageName) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
             }
+        });
 
-            elements.navItems.forEach(item => {
-                if (item.getAttribute('data-page') === pageName) {
-                    item.classList.add('active');
-                } else {
-                    item.classList.remove('active');
-                }
-            });
+        // 移除临时“纸张”元素
+        if (paperElement.parentNode) {
+            paperElement.parentNode.removeChild(paperElement);
+        }
 
-            if (paperElement.parentNode) {
-                paperElement.parentNode.removeChild(paperElement);
-            }
-            elements.pageTransition.classList.remove('active');
+        // 隐藏页面切换遮罩
+        elements.pageTransition.classList.remove('active');
 
-            if (pageName === 'works') {
-                setupWorkCardsInteraction();
-            }
+        // 如果是作品页面，重新设置交互
+        if (pageName === 'works') {
+            setupWorkCardsInteraction();
+        }
 
-        }, { once: true }); // 确保只触发一次
-
-        document.body.appendChild(paperElement);
-    }
+        perf.end('performDrawAnimation');
+    }, { once: true }); // 确保只触发一次
+}
 
 
     async function fetchWorksData() {
