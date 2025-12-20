@@ -7,15 +7,15 @@
     --header-bg: #f5f5dc;
     --link-color: #8b4513;
     --link-hover: #a0522d;
-}
-
-* {
+  }
+  
+  * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-}
-
-body {
+  }
+  
+  body {
     background-color: var(--bg-color);
     font-family: "Georgia", serif;
     color: var(--text-color);
@@ -23,175 +23,197 @@ body {
     padding: 20px;
     min-height: 100vh;
     overflow-x: hidden; /* 防止横向滚动条 */
-}
-
-/* --- 导航栏样式 (来自原 navbar.css) --- */
-
-.navbar {
+  }
+  
+  /* --- 导航栏样式 (来自原 navbar.css 并优化) --- */
+  .navbar {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
-    height: 60px;
+    /* 优化: 增大导航栏高度 */
+    height: 70px;
     display: flex;
     align-items: center;
-    padding: 0 20px;
+    /* 优化: 增大左右内边距 */
+    padding: 0 30px;
     z-index: 30;
     background: rgba(253, 245, 230, 0.95);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid #d2b48c;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.nav-logo {
+  }
+  
+  .nav-logo {
     display: flex;
     align-items: center;
-    margin-right: 30px;
-}
-
-.logo-text {
+    /* 优化: 增大 logo 与菜单项的间距 */
+    margin-right: 40px;
+  }
+  
+  .logo-text {
     color: #8b4513;
     font-family: "Georgia", serif;
-    font-size: 1.4rem;
+    /* 优化: 增大字体并加强样式 */
+    font-size: 1.6rem;
     font-weight: bold;
-    letter-spacing: normal;
-}
-
-.nav-items {
+    letter-spacing: 1px;
+  }
+  
+  .nav-items {
     display: flex;
     align-items: center;
     flex: 1;
     justify-content: center;
-}
-
-.nav-item {
+  }
+  
+  .nav-item {
     color: #8b4513;
-    margin: 0 15px;
+    /* 优化: 增大菜单项间距 */
+    margin: 0 20px;
     cursor: pointer;
+    /* 优化: 增加过渡效果和平滑度 */
     transition: all 0.3s ease;
     font-family: "Georgia", serif;
     font-size: 1rem;
     letter-spacing: normal;
     position: relative;
-    padding: 8px 12px;
+    /* 优化: 增大点击区域并增加圆角 */
+    padding: 10px 15px;
     text-decoration: none; /* 默认无下划线 */
-}
-
-.nav-item::after {
-    content: '';
-    position: absolute;
-    bottom: -2px;
-    left: 12px;
-    right: 12px;
-    height: 1px;
-    background: #8b4513;
-    transform: scaleX(0);
-    transition: transform 0.3s ease;
-}
-
-.nav-item:hover {
+    border-radius: 4px; /* 增加圆角 */
+  }
+  
+  /* 优化: 为菜单项添加悬停背景色 */
+  .nav-item:hover {
     color: #a0522d;
-}
-
-.nav-item:hover::after {
-    transform: scaleX(1);
-}
-
-.nav-item.active {
+    background-color: rgba(139, 69, 19, 0.05); /* 微妙的背景色变化 */
+  }
+  
+  /* 优化: 为菜单项添加激活态背景色 */
+  .nav-item.active {
     color: #a0522d;
     font-weight: bold;
-}
-
-.nav-item.active::after {
+    background-color: rgba(139, 69, 19, 0.1); /* 更明显的激活态背景 */
+  }
+  
+  /* 下划线动画 */
+  .nav-item::after {
+    content: '';
+    position: absolute;
+    /* 优化: 调整下划线位置 */
+    bottom: 8px;
+    left: 15px; /* 匹配 padding-left */
+    right: 15px; /* 匹配 padding-right */
+    height: 2px; /* 稍粗一点 */
+    background: #8b4513;
+    transform: scaleX(0);
+    /* 优化: 增加过渡并应用圆角 */
+    transition: transform 0.3s ease, background-color 0.3s ease;
+    border-radius: 1px; /* 为下划线增加圆角 */
+  }
+  
+  .nav-item:hover::after {
     transform: scaleX(1);
-}
-
-.nav-actions {
+    background-color: #a0522d; /* 悬停时下划线变色 */
+  }
+  
+  .nav-item.active::after {
+    transform: scaleX(1);
+    background-color: #a0522d; /* 激活时下划线变色 */
+  }
+  
+  .nav-actions {
     display: flex;
     align-items: center;
     margin-left: auto;
-}
-
-.mobile-toggle {
+  }
+  
+  .mobile-toggle {
     display: none;
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    width: 24px;
-    height: 24px;
+    /* 优化: 增大触摸区域 */
+    width: 30px;
+    height: 30px;
     cursor: pointer;
-}
-
-.mobile-toggle span {
-    width: 20px;
-    height: 2px;
+  }
+  
+  /* 优化: 增加汉堡线条的厚度和圆角 */
+  .mobile-toggle span {
+    width: 22px;
+    height: 3px;
     background: #8b4513;
-    margin: 2px 0;
+    margin: 3px 0;
     transition: all 0.3s ease;
-    border-radius: 1px;
-}
-
-/* 移动端响应式 */
-@media (max-width: 768px) {
+    border-radius: 2px; /* 增加线条圆角 */
+  }
+  
+  /* 移动端响应式 */
+  @media (max-width: 768px) {
     .navbar {
-        padding: 0 15px;
-        height: 50px;
+      padding: 0 20px;
+      /* 优化: 减小移动端导航栏高度 */
+      height: 60px;
     }
-
     .logo-text {
-        font-size: 1.2rem;
+      font-size: 1.4rem;
     }
-
     .nav-items {
-        display: none;
-        position: absolute;
-        top: 50px;
-        left: 0;
-        width: 100%;
-        background: rgba(253, 245, 230, 0.98);
-        flex-direction: column;
-        padding: 15px;
-        border-top: 1px solid #d2b48c;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      display: none;
+      position: absolute;
+      top: 60px; /* 匹配新的 navbar 高度 */
+      left: 0;
+      width: 100%;
+      background: rgba(253, 245, 230, 0.98);
+      flex-direction: column;
+      padding: 20px;
+      border-top: 1px solid #d2b48c;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); /* 增强阴影 */
     }
-
     .nav-items.active {
-        display: flex;
+      display: flex;
     }
-
     .nav-item {
-        margin: 8px 0;
-        width: 100%;
-        text-align: center;
-        padding: 10px 0;
+      margin: 10px 0;
+      width: 100%;
+      text-align: center;
+      padding: 12px 0;
+      border-radius: 6px; /* 增加移动端菜单项圆角 */
     }
-
+    /* 优化: 调整移动端下划线宽度 */
     .nav-item::after {
-        left: 25%;
-        right: 25%;
+      left: 25%;
+      right: 25%;
     }
-
     .mobile-toggle {
-        display: flex;
+      display: flex;
     }
-}
-
-@media (max-width: 480px) {
+  }
+  
+  @media (max-width: 480px) {
+    .navbar {
+       padding: 0 15px;
+       height: 55px;
+    }
     .logo-text {
-        font-size: 1.1rem;
+      font-size: 1.2rem;
     }
-
     .nav-item {
-        font-size: 0.95rem;
+      font-size: 0.95rem;
+      margin: 8px 0;
+      padding: 10px 0;
     }
-}
-
-
-/* --- 主体内容样式 --- */
-
-
-/* 主容器 */
-.container {
+    .nav-items {
+      top: 55px; /* 匹配新的 navbar 高度 */
+      padding: 15px;
+    }
+  }
+  /* --- 主体内容样式 --- */
+  
+  /* 主容器 */
+  .container {
     max-width: 800px;
     margin: 80px auto 40px auto; /* 添加顶部边距以避开固定导航栏 */
     background: white;
@@ -200,10 +222,10 @@ body {
     padding: 40px;
     position: relative;
     border-radius: 4px; /* 微调圆角 */
-}
-
-/* 信纸装饰边框 */
-.container::before {
+  }
+  
+  /* 信纸装饰边框 */
+  .container::before {
     content: "";
     position: absolute;
     top: 10px;
@@ -213,24 +235,26 @@ body {
     border: 1px solid var(--border-color);
     pointer-events: none;
     opacity: 0.6;
-}
-
-/* 标题样式 - 信件抬头 */
-h1, h2, h3 {
+  }
+  
+  /* 标题样式 - 信件抬头 */
+  h1,
+  h2,
+  h3 {
     font-family: "Georgia", serif;
     color: var(--accent-color);
     margin-bottom: 20px;
     position: relative;
     padding-bottom: 10px;
-}
-
-h1 {
+  }
+  
+  h1 {
     font-size: 2.2rem;
     text-align: center;
     margin-bottom: 30px;
-}
-
-h1::after {
+  }
+  
+  h1::after {
     content: "";
     position: absolute;
     bottom: 0;
@@ -239,52 +263,55 @@ h1::after {
     width: 80px;
     height: 2px;
     background: var(--accent-color);
-}
-
-h2 {
+  }
+  
+  h2 {
     font-size: 1.6rem;
     border-bottom: 1px solid var(--border-color);
     padding-bottom: 8px;
     margin-top: 30px;
-}
-
-h3 {
+  }
+  
+  h3 {
     font-size: 1.3rem;
     margin-top: 25px;
-}
-
-/* 段落样式 */
-p {
+  }
+  
+  /* 段落样式 */
+  p {
     margin-bottom: 16px;
     text-indent: 2em;
     font-size: 1.1rem;
     line-height: 1.6;
-}
-
-/* 首段无缩进 */
-#mainContent > p:first-of-type,
-.content > p:first-of-type {
+  }
+  
+  /* 首段无缩进 */
+  #mainContent > p:first-of-type,
+  .content > p:first-of-type {
     text-indent: 0;
-}
-
-/* 链接样式 */
-a {
+  }
+  
+  /* 链接样式 */
+  a {
     color: var(--link-color);
     text-decoration: none;
     border-bottom: 1px solid var(--link-color);
     transition: all 0.3s ease;
     padding: 2px 4px;
     border-radius: 2px;
-}
-
-a:hover {
+  }
+  
+  a:hover {
     color: var(--link-hover);
     background-color: rgba(139, 69, 19, 0.1);
     border-bottom-color: var(--link-hover);
-}
-
-/* 按钮样式 */
-button, .nav-item, .work-link, .work-close-btn {
+  }
+  
+  /* 按钮样式 */
+  button,
+  .nav-item,
+  .work-link,
+  .work-close-btn {
     background: transparent;
     border: 2px solid var(--accent-color);
     color: var(--accent-color);
@@ -297,55 +324,59 @@ button, .nav-item, .work-link, .work-close-btn {
     text-decoration: none;
     display: inline-block;
     margin: 4px 0;
-}
-
-button:hover, .nav-item:hover, .work-link:hover, .work-close-btn:hover {
+  }
+  
+  button:hover,
+  .nav-item:hover,
+  .work-link:hover,
+  .work-close-btn:hover {
     background-color: var(--accent-color);
     color: white;
     transform: translateY(-1px);
-}
-
-/* 列表样式 */
-ul, ol {
+  }
+  
+  /* 列表样式 */
+  ul,
+  ol {
     margin-left: 2em;
     margin-bottom: 16px;
     padding-left: 20px;
-}
-
-li {
+  }
+  
+  li {
     margin-bottom: 8px;
     line-height: 1.5;
-}
-
-/* 联系信息样式 */
-.contact-info {
+  }
+  
+  /* 联系信息样式 */
+  .contact-info {
     margin-top: 20px;
-}
-
-.contact-info p {
+  }
+  
+  .contact-info p {
     display: flex;
     align-items: center;
     gap: 12px;
     margin-bottom: 12px;
     text-indent: 0;
-}
-
-.contact-info i {
+  }
+  
+  .contact-info i {
     color: var(--accent-color);
     font-size: 1.1rem;
     width: auto;
     text-align: left;
-}
-
-/* 作品卡片样式 */
-.works-grid {
+  }
+  
+  /* 作品卡片样式 */
+  .works-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 24px;
     margin-top: 20px;
-}
-
-.work-card {
+  }
+  
+  .work-card {
     background: white;
     border: 1px solid var(--border-color);
     border-radius: 8px;
@@ -356,30 +387,31 @@ li {
     min-height: 200px; /* 防止塌陷 */
     position: relative;
     overflow: hidden; /* 隐藏溢出内容 */
-}
-
-.work-card:hover {
+  }
+  
+  .work-card:hover {
     border-color: var(--accent-color);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-}
-
-/* 作品卡片内部容器 - 用于翻转 */
-.work-card-inner {
+  }
+  
+  /* 作品卡片内部容器 - 用于翻转 */
+  .work-card-inner {
     position: relative;
     width: 100%;
     height: 100%;
     text-align: center;
     transition: transform 0.6s;
     transform-style: preserve-3d;
-}
-
-/* 展开时翻转 */
-.work-card.expanded .work-card-inner {
+  }
+  
+  /* 展开时翻转 */
+  .work-card.expanded .work-card-inner {
     transform: rotateY(180deg);
-}
-
-/* 正面和背面卡片 */
-.work-card-front, .work-card-back {
+  }
+  
+  /* 正面和背面卡片 */
+  .work-card-front,
+  .work-card-back {
     position: absolute;
     width: 100%;
     height: 100%;
@@ -388,56 +420,56 @@ li {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-}
-
-/* 背面默认隐藏 */
-.work-card-back {
+  }
+  
+  /* 背面默认隐藏 */
+  .work-card-back {
     transform: rotateY(180deg);
     overflow-y: auto; /* 如果内容多，允许滚动 */
     padding: 15px;
     box-sizing: border-box;
     text-align: left; /* 背面文字左对齐 */
-}
-
-.work-image {
+  }
+  
+  .work-image {
     max-width: 100%;
     height: auto;
     border-radius: 4px;
     margin-bottom: 15px;
-}
-
-.work-info {
+  }
+  
+  .work-info {
     text-align: left;
-}
-
-.work-title {
+  }
+  
+  .work-title {
     margin: 0 0 10px 0;
     font-size: 1.4rem;
-}
-
-.work-description {
+  }
+  
+  .work-description {
     margin: 0 0 10px 0;
     font-size: 1rem;
-}
-
-.work-meta {
+  }
+  
+  .work-meta {
     display: flex;
     justify-content: space-between;
     font-size: 0.9rem;
     color: #666;
-}
-
-.work-details {
+  }
+  
+  .work-details {
     margin-bottom: 15px;
     text-indent: 0; /* 背面段落无缩进 */
-}
-
-.work-technologies {
+  }
+  
+  .work-technologies {
     margin-bottom: 15px;
     text-align: left;
-}
-
-.tech-tag {
+  }
+  
+  .tech-tag {
     display: inline-block;
     background-color: #eee;
     color: var(--text-color);
@@ -445,55 +477,54 @@ li {
     margin: 4px 4px 0 0;
     border-radius: 4px;
     font-size: 0.85rem;
-}
-
-.work-links {
+  }
+  
+  .work-links {
     margin-top: auto; /* 推到底部 */
-}
-
-.work-link {
+  }
+  
+  .work-link {
     margin-top: 10px;
     display: inline-flex; /* 使图标和文字水平居中 */
     align-items: center;
     gap: 5px; /* 图标和文字间距 */
-}
-
-.work-close-btn {
+  }
+  
+  .work-close-btn {
     margin-top: 15px;
     align-self: flex-end; /* 关闭按钮靠右 */
     display: inline-flex; /* 使图标和文字水平居中 */
     align-items: center;
     gap: 5px; /* 图标和文字间距 */
-}
-
-/* --- 动画与过渡 --- */
-
-/* 抽纸动画关键帧 */
-@keyframes drawPaperIn {
+  }
+  
+  /* --- 动画与过渡 --- */
+  
+  /* 抽纸动画关键帧 */
+  @keyframes drawPaperIn {
     0% {
-        transform: translateY(100%) scale(0.98);
-        opacity: 0;
+      transform: translateY(100%) scale(0.98);
+      opacity: 0;
     }
     100% {
-        transform: translateY(0) scale(1);
-        opacity: 1;
+      transform: translateY(0) scale(1);
+      opacity: 1;
     }
-}
-
-/* 抽纸动画元素 */
-.draw-animation-paper {
+  }
+  
+  /* 抽纸动画元素 */
+  .draw-animation-paper {
     position: fixed;
     z-index: 1001;
     opacity: 0;
     animation: drawPaperIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
     overflow: hidden;
-    box-sizing: border-box;
-    /* 样式将在 JS 中动态设置以匹配 .container */
+    box-sizing: border-box; /* 样式将在 JS 中动态设置以匹配 .container */
     /* background, border, shadow, padding 等 */
-}
-
-/* 页面切换遮罩 */
-.page-transition {
+  }
+  
+  /* 页面切换遮罩 */
+  .page-transition {
     position: fixed;
     top: 0;
     left: 0;
@@ -504,14 +535,15 @@ li {
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s ease;
-}
-.page-transition.active {
+  }
+  
+  .page-transition.active {
     opacity: 1;
     pointer-events: auto;
-}
-
-/* 波纹点击效果 */
-.ripple {
+  }
+  
+  /* 波纹点击效果 */
+  .ripple {
     position: fixed;
     border-radius: 50%;
     background-color: rgba(139, 69, 19, 0.3);
@@ -519,16 +551,17 @@ li {
     pointer-events: none;
     z-index: 9999;
     animation: ripple-effect 0.6s linear forwards;
-}
-@keyframes ripple-effect {
+  }
+  
+  @keyframes ripple-effect {
     0% {
-        width: 0;
-        height: 0;
-        opacity: 0.7;
+      width: 0;
+      height: 0;
+      opacity: 0.7;
     }
     100% {
-        width: 500px;
-        height: 500px;
-        opacity: 0;
+      width: 500px;
+      height: 500px;
+      opacity: 0;
     }
-}
+  }
