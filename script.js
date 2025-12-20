@@ -255,17 +255,34 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function showWorkDetails(work) {
         // 检查是否已经存在详情页
-        if (document.querySelector('.work-details-overlay.active')) {
+        if (document.querySelector('.work-details-envelope.active')) {
             return;
         }
         
-        const overlay = document.createElement('div');
-        overlay.className = 'work-details-overlay';
+        // 获取点击的作品项元素
+        const workItem = document.querySelector(`.work-item[data-id="${work.id}"]`);
+        if (!workItem) {
+            console.error('未找到对应的作品项元素');
+            return;
+        }
         
-        const container = document.createElement('div');
-        container.className = 'work-details-container';
-        container.innerHTML = `
-            <div class="work-details-close" id="closeDetails">✕</div>
+        // 获取作品项的尺寸和位置
+        const workItemRect = workItem.getBoundingClientRect();
+        
+        // 创建信封元素
+        const envelope = document.createElement('div');
+        envelope.className = 'work-details-envelope';
+        
+        // 设置初始大小和位置（与作品项一致）
+        envelope.style.top = `${workItemRect.top + window.scrollY}px`;
+        envelope.style.left = `${workItemRect.left + window.scrollX}px`;
+        envelope.style.width = `${workItemRect.width}px`;
+        envelope.style.height = `${workItemRect.height}px`;
+        
+        // 创建详情内容
+        const detailsContent = document.createElement('div');
+        detailsContent.className = 'work-details-content';
+        detailsContent.innerHTML = `
             <h2 class="work-details-title">${work.title}</h2>
             <p class="work-details-description">${work.description}</p>
             ${work.technologies && work.technologies.length ? `
@@ -278,26 +295,47 @@ document.addEventListener('DOMContentLoaded', function () {
             ` : ''}
         `;
         
-        overlay.appendChild(container);
-        document.body.appendChild(overlay);
-        
-        // 添加进入动画
-        overlay.classList.add('active');
-        
-        // 添加关闭事件
-        const closeBtn = container.querySelector('.work-details-close');
+        // 添加关闭按钮
+        const closeBtn = document.createElement('div');
+        closeBtn.className = 'work-details-close';
+        closeBtn.innerHTML = '✕';
         closeBtn.addEventListener('click', function() {
-            // 添加退出动画
-            overlay.classList.remove('active');
-            overlay.classList.add('slide-out');
-            
-            // 监听动画结束
-            overlay.addEventListener('animationend', function() {
-                if (overlay.parentNode) {
-                    overlay.parentNode.removeChild(overlay);
+            // 退出动画
+            envelope.classList.remove('active');
+            // 300ms后移除元素
+            setTimeout(() => {
+                if (envelope.parentNode) {
+                    envelope.parentNode.removeChild(envelope);
                 }
-            }, { once: true });
+            }, 300);
         });
+        
+        // 将内容添加到信封
+        envelope.appendChild(detailsContent);
+        envelope.appendChild(closeBtn);
+        
+        // 添加到页面
+        document.body.appendChild(envelope);
+        
+        // 等待页面渲染
+        setTimeout(() => {
+            // 计算详情页的最终位置和大小
+            const container = document.querySelector('.container');
+            const containerRect = container.getBoundingClientRect();
+            const finalTop = containerRect.top + window.scrollY + 20;
+            const finalLeft = containerRect.left + window.scrollX + 20;
+            const finalWidth = containerRect.width - 40;
+            const finalHeight = containerRect.height - 40;
+            
+            // 设置最终样式
+            envelope.style.top = `${finalTop}px`;
+            envelope.style.left = `${finalLeft}px`;
+            envelope.style.width = `${finalWidth}px`;
+            envelope.style.height = `${finalHeight}px`;
+            
+            // 添加active类，触发动画
+            envelope.classList.add('active');
+        }, 10);
     }
 
     /** 
