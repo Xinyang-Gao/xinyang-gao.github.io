@@ -22,64 +22,173 @@ body {
     line-height: 1.5;
     padding: 20px;
     min-height: 100vh;
+    overflow-x: hidden; /* 防止横向滚动条 */
 }
 
-/* 导航栏样式 */
+/* --- 导航栏样式 (来自原 navbar.css) --- */
+
 .navbar {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
-    background: var(--header-bg);
-    padding: 15px 20px;
+    height: 60px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    z-index: 999;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    border-bottom: 1px solid var(--border-color);
+    padding: 0 20px;
+    z-index: 30;
+    background: rgba(253, 245, 230, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid #d2b48c;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
-.logo {
-    font-size: 1.5rem;
+.nav-logo {
+    display: flex;
+    align-items: center;
+    margin-right: 30px;
+}
+
+.logo-text {
+    color: #8b4513;
+    font-family: "Georgia", serif;
+    font-size: 1.4rem;
     font-weight: bold;
-    color: var(--accent-color);
+    letter-spacing: normal;
 }
 
 .nav-items {
     display: flex;
-    list-style: none;
-    gap: 20px;
+    align-items: center;
+    flex: 1;
+    justify-content: center;
 }
 
-.nav-item a {
-    text-decoration: none;
-    color: var(--text-color);
-    font-weight: 500;
-    transition: color 0.3s ease;
-    padding: 5px 10px;
-    border-radius: 4px;
+.nav-item {
+    color: #8b4513;
+    margin: 0 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: "Georgia", serif;
+    font-size: 1rem;
+    letter-spacing: normal;
+    position: relative;
+    padding: 8px 12px;
+    text-decoration: none; /* 默认无下划线 */
 }
 
-.nav-item a:hover,
-.nav-item.active a {
-    color: var(--accent-color);
-    background-color: rgba(139, 69, 19, 0.1);
+.nav-item::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 12px;
+    right: 12px;
+    height: 1px;
+    background: #8b4513;
+    transform: scaleX(0);
+    transition: transform 0.3s ease;
+}
+
+.nav-item:hover {
+    color: #a0522d;
+}
+
+.nav-item:hover::after {
+    transform: scaleX(1);
+}
+
+.nav-item.active {
+    color: #a0522d;
+    font-weight: bold;
+}
+
+.nav-item.active::after {
+    transform: scaleX(1);
+}
+
+.nav-actions {
+    display: flex;
+    align-items: center;
+    margin-left: auto;
 }
 
 .mobile-toggle {
     display: none;
     flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 24px;
+    height: 24px;
     cursor: pointer;
 }
 
 .mobile-toggle span {
-    width: 25px;
-    height: 3px;
-    background: var(--accent-color);
-    margin: 3px 0;
-    transition: 0.3s;
+    width: 20px;
+    height: 2px;
+    background: #8b4513;
+    margin: 2px 0;
+    transition: all 0.3s ease;
+    border-radius: 1px;
 }
+
+/* 移动端响应式 */
+@media (max-width: 768px) {
+    .navbar {
+        padding: 0 15px;
+        height: 50px;
+    }
+
+    .logo-text {
+        font-size: 1.2rem;
+    }
+
+    .nav-items {
+        display: none;
+        position: absolute;
+        top: 50px;
+        left: 0;
+        width: 100%;
+        background: rgba(253, 245, 230, 0.98);
+        flex-direction: column;
+        padding: 15px;
+        border-top: 1px solid #d2b48c;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .nav-items.active {
+        display: flex;
+    }
+
+    .nav-item {
+        margin: 8px 0;
+        width: 100%;
+        text-align: center;
+        padding: 10px 0;
+    }
+
+    .nav-item::after {
+        left: 25%;
+        right: 25%;
+    }
+
+    .mobile-toggle {
+        display: flex;
+    }
+}
+
+@media (max-width: 480px) {
+    .logo-text {
+        font-size: 1.1rem;
+    }
+
+    .nav-item {
+        font-size: 0.95rem;
+    }
+}
+
+
+/* --- 主体内容样式 --- */
+
 
 /* 主容器 */
 .container {
@@ -90,6 +199,7 @@ body {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     padding: 40px;
     position: relative;
+    border-radius: 4px; /* 微调圆角 */
 }
 
 /* 信纸装饰边框 */
@@ -152,7 +262,7 @@ p {
 }
 
 /* 首段无缩进 */
-.container > p:first-of-type,
+#mainContent > p:first-of-type,
 .content > p:first-of-type {
     text-indent: 0;
 }
@@ -242,23 +352,71 @@ li {
     padding: 20px;
     transition: all 0.3s ease;
     cursor: pointer;
+    perspective: 1000px; /* 为翻转效果做准备 */
+    min-height: 200px; /* 防止塌陷 */
+    position: relative;
+    overflow: hidden; /* 隐藏溢出内容 */
 }
 
 .work-card:hover {
     border-color: var(--accent-color);
-    box-shadow: 0 4px 8px rgba(139, 69, 19, 0.2);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* 作品卡片内部容器 - 用于翻转 */
+.work-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.6s;
+    transform-style: preserve-3d;
+}
+
+/* 展开时翻转 */
+.work-card.expanded .work-card-inner {
+    transform: rotateY(180deg);
+}
+
+/* 正面和背面卡片 */
+.work-card-front, .work-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* 背面默认隐藏 */
+.work-card-back {
+    transform: rotateY(180deg);
+    overflow-y: auto; /* 如果内容多，允许滚动 */
+    padding: 15px;
+    box-sizing: border-box;
+    text-align: left; /* 背面文字左对齐 */
+}
+
+.work-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+
+.work-info {
+    text-align: left;
 }
 
 .work-title {
-    color: var(--accent-color);
-    font-size: 1.2rem;
-    margin-bottom: 8px;
-    font-weight: bold;
+    margin: 0 0 10px 0;
+    font-size: 1.4rem;
 }
 
 .work-description {
-    color: var(--text-color);
-    margin-bottom: 12px;
+    margin: 0 0 10px 0;
     font-size: 1rem;
 }
 
@@ -267,195 +425,110 @@ li {
     justify-content: space-between;
     font-size: 0.9rem;
     color: #666;
-    margin-top: 10px;
+}
+
+.work-details {
+    margin-bottom: 15px;
+    text-indent: 0; /* 背面段落无缩进 */
+}
+
+.work-technologies {
+    margin-bottom: 15px;
+    text-align: left;
 }
 
 .tech-tag {
-    background: rgba(139, 69, 19, 0.1);
-    color: var(--accent-color);
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 0.85rem;
-    margin-right: 6px;
-    margin-bottom: 4px;
     display: inline-block;
+    background-color: #eee;
+    color: var(--text-color);
+    padding: 4px 8px;
+    margin: 4px 4px 0 0;
+    border-radius: 4px;
+    font-size: 0.85rem;
 }
 
+.work-links {
+    margin-top: auto; /* 推到底部 */
+}
 
-/* 响应式设计 */
-@media (max-width: 768px) {
-    .navbar {
-        padding: 15px;
-    }
-    .nav-items {
-        position: fixed;
-        right: -100%;
-        top: 70px;
-        flex-direction: column;
-        background-color: var(--header-bg);
-        width: 100%;
-        text-align: center;
-        transition: 0.3s;
-        box-shadow: 0 10px 27px rgba(0,0,0,0.05);
-        gap: 0;
-        border-bottom: 1px solid var(--border-color);
-    }
+.work-link {
+    margin-top: 10px;
+    display: inline-flex; /* 使图标和文字水平居中 */
+    align-items: center;
+    gap: 5px; /* 图标和文字间距 */
+}
 
-    .nav-items.active {
-        right: 0;
-    }
+.work-close-btn {
+    margin-top: 15px;
+    align-self: flex-end; /* 关闭按钮靠右 */
+    display: inline-flex; /* 使图标和文字水平居中 */
+    align-items: center;
+    gap: 5px; /* 图标和文字间距 */
+}
 
-    .nav-item {
-        margin: 0;
-    }
+/* --- 动画与过渡 --- */
 
-    .nav-item a {
-        display: block;
-        padding: 15px 20px;
-        border-bottom: 1px solid var(--border-color);
+/* 抽纸动画关键帧 */
+@keyframes drawPaperIn {
+    0% {
+        transform: translateY(100%) scale(0.98);
+        opacity: 0;
     }
-
-    .mobile-toggle {
-        display: flex;
-    }
-
-    .container {
-        padding: 25px;
-        margin: 70px 10px 20px 10px; /* 调整顶部和左右边距 */
-    }
-
-    h1 {
-        font-size: 1.8rem;
-    }
-
-    h2 {
-        font-size: 1.4rem;
-    }
-
-    .works-grid {
-        grid-template-columns: 1fr;
-    }
-
-    p {
-        font-size: 1rem;
+    100% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
     }
 }
 
-@media (max-width: 480px) {
-    body {
-        padding: 10px;
-    }
-
-    .container {
-        padding: 20px;
-    }
-
-    h1 {
-        font-size: 1.6rem;
-    }
+/* 抽纸动画元素 */
+.draw-animation-paper {
+    position: fixed;
+    z-index: 1001;
+    opacity: 0;
+    animation: drawPaperIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+    overflow: hidden;
+    box-sizing: border-box;
+    /* 样式将在 JS 中动态设置以匹配 .container */
+    /* background, border, shadow, padding 等 */
 }
 
-/* 页面过渡遮罩层 */
-#pageTransition {
+/* 页面切换遮罩 */
+.page-transition {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(253, 245, 230, 0.5); /* 加深一点遮罩色 */
+    background-color: rgba(253, 245, 230, 0.5); /* 使用背景色半透明 */
     z-index: 1000;
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.2s ease; /* 缩短遮罩出现时间 */
+    transition: opacity 0.3s ease;
 }
-
-#pageTransition.active {
+.page-transition.active {
     opacity: 1;
     pointer-events: auto;
 }
 
-/* 抽纸动画关键帧 - 微调起点和中间点 */
-@keyframes drawPaperIn {
-    0% {
-        /* 初始位置在下方，略微缩小 */
-        transform: translateY(100%) scale(0.98);
-        opacity: 0.7; /* 初始透明度稍低 */
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-    }
-
-    70% {
-        /* 快速向上移动并轻微放大，带有一点弹跳感 */
-        transform: translateY(-10px) scale(1.01);
-        opacity: 0.95;
-        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12); /* 增强阴影 */
-    }
-
-    100% {
-        /* 最终位置，与原容器对齐 */
-        transform: translateY(0) scale(1);
-        opacity: 1;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); /* 最终阴影 */
-    }
-}
-
-/* 临时抽纸容器样式 - 重大修改：使用绝对定位相对于 body */
-.draw-animation-paper {
-    /* 关键：使用固定定位，并动态设置 top, left, width, height */
+/* 波纹点击效果 */
+.ripple {
     position: fixed;
-    /* top, left, width, height 将由 JavaScript 动态计算和设置 */
-    /* 默认样式，会被 JS 覆盖 */
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    /* 复用容器样式 */
-    background: white;
-    border: 2px solid var(--border-color);
-    /* padding 也由 JS 动态设置以匹配原容器 */
-    padding: 40px;
-    z-index: 1001; /* 确保高于内容和导航栏 */
-    opacity: 0; /* 初始隐藏 */
-    animation: drawPaperIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; /* 应用动画 */
-    overflow: hidden; /* 防止内部内容溢出 */
-    box-sizing: border-box; /* 确保尺寸计算包含边框和内边距 */
-}
-
-/* 确保新纸张内的装饰边框样式正确 */
-.draw-animation-paper::before {
-    content: "";
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    right: 10px;
-    bottom: 10px;
-    border: 1px solid var(--border-color);
+    border-radius: 50%;
+    background-color: rgba(139, 69, 19, 0.3);
+    transform: translate(-50%, -50%);
     pointer-events: none;
-    opacity: 0.6;
+    z-index: 9999;
+    animation: ripple-effect 0.6s linear forwards;
 }
-
-/* 确保新纸张内的内容样式正确，并添加淡入动画 */
-.draw-animation-paper > * {
-    opacity: 0;
-    animation: fadeInContent 0.3s ease-in-out 0.4s forwards; /* 内容淡入，在纸张动画后开始 */
-}
-
-@keyframes fadeInContent {
-    to {
-        opacity: 1;
+@keyframes ripple-effect {
+    0% {
+        width: 0;
+        height: 0;
+        opacity: 0.7;
     }
-}
-
-/* 响应式调整 */
-@media (max-width: 768px) {
-    .draw-animation-paper {
-        width: calc(100% - 20px); /* 对应移动端的 margin */
-        padding: 25px;
-    }
-}
-
-@media (max-width: 480px) {
-    .draw-animation-paper {
-        width: calc(100% - 20px); /* 保持一致 */
-        padding: 20px;
+    100% {
+        width: 500px;
+        height: 500px;
+        opacity: 0;
     }
 }

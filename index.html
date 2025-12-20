@@ -5,65 +5,68 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GXY's website</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Font Awesome CDN -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
 
-    <!-- 导航栏 -->
+    <div class="particles"></div>
+
+    <div id="pageTransition" class="page-transition"></div>
+
     <nav class="navbar">
-        <div class="logo">GaoXinYang</div>
-        <div class="mobile-toggle">
-            <span></span>
-            <span></span>
-            <span></span>
+        <div class="nav-logo">
+            <span class="logo-text">GXY's website</span>
         </div>
-        <ul class="nav-items">
-            <li class="nav-item active" data-page="index"><a href="?page=index">首页</a></li>
-            <li class="nav-item" data-page="about"><a href="?page=about">关于</a></li>
-            <li class="nav-item" data-page="articles"><a href="?page=articles">文章</a></li>
-            <li class="nav-item" data-page="works"><a href="?page=works">作品</a></li>
-            <li class="nav-item" data-page="contact"><a href="?page=contact">联系</a></li>
-        </ul>
+        <div class="nav-items">
+            <a href="?page=index" class="nav-item active" data-page="index">首页</a>
+            <a href="?page=about" class="nav-item" data-page="about">关于</a>
+            <a href="?page=articles" class="nav-item" data-page="articles">文章</a>
+            <a href="?page=works" class="nav-item" data-page="works">作品</a>
+            <a href="?page=contact" class="nav-item" data-page="contact">联系</a>
+        </div>
+        <div class="nav-actions">
+            <div class="mobile-toggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
     </nav>
 
-    <!-- 主容器 -->
     <div class="container">
-        <div id="mainContent" class="content">
-            <!-- 默认内容将通过JS加载 -->
+        <div id="mainContent">
+            <!-- 默认加载首页内容 -->
+            <h1>欢迎来到 Gao XinYang 的个人网站</h1>
+            <p>由于我不是专业前端开发者，一些部分是一边查资料一边编写的。所以这个网站仍有很多不完美之处，请见谅。</p>
+            <p>我会在此网站上分享一些文章、作品、以及一些其他的小玩意 :)</p>
+            <p>尽情探索吧！</p>
+            <p style="text-align: right;">©2025 Xinyang Gao, All Rights Reserved.<br>最后更新于：2025年12月20日</p>
         </div>
     </div>
 
-    <!-- 页面切换过渡遮罩 -->
-    <div id="pageTransition"></div>
-
-    <!-- 内容模板 -->
-    <div id="index-content" style="display:none;">
+    <!-- 首页内容模板 -->
+    <script type="text/template" id="index-content">
         <h1>欢迎来到 Gao XinYang 的个人网站</h1>
         <p>由于我不是专业前端开发者，一些部分是一边查资料一边编写的。所以这个网站仍有很多不完美之处，请见谅。</p>
         <p>我会在此网站上分享一些文章、作品、以及一些其他的小玩意 :)</p>
         <p>尽情探索吧！</p>
-        <footer style="margin-top: 40px; text-align: center; font-size: 0.9rem; color: #666;">
-            &copy;2025 Xinyang Gao, All Rights Reserved.<br>
-            最后更新于：2025年12月19日
-        </footer>
-    </div>
+        <p style="text-align: right;">©2025 Xinyang Gao, All Rights Reserved.<br>最后更新于：2025年12月20日</p>
+    </script>
 
-    <div id="about-content" style="display:none;">
+    <!-- 关于页面内容模板 -->
+    <script type="text/template" id="about-content">
         <h2>关于我</h2>
         <p>我是 Gao XinYang ，一名爱好探索和创新的学生。</p>
-    </div>
+    </script>
 
-    <div id="articles-content" style="display:none;">
+    <!-- 文章页面内容模板 -->
+    <script type="text/template" id="articles-content">
         <h2>我的文章</h2>
         <p>这里将展示我的最新文章和思考。</p>
-    </div>
+    </script>
 
-    <div id="works-content" style="display:none;">
-        <!-- Works content will be loaded dynamically -->
-    </div>
-
-    <div id="contact-content" style="display:none;">
+    <!-- 联系页面内容模板 -->
+    <script type="text/template" id="contact-content">
         <h2>欢迎联系我</h2>
         <div class="contact-info">
             <p><i class="fab fa-qq"></i> QQ: 2489083744</p>
@@ -71,7 +74,7 @@
             <p><i class="fab fa-bilibili"></i> Bilibili: <a href="https://space.bilibili.com/1064600697" target="_blank">前往</a></p>
             <p><i class="fab fa-github"></i> Github: <a href="https://github.com/Xinyang-Gao" target="_blank">前往</a></p>
         </div>
-    </div>
+    </script>
 
     <script src="script.js"></script>
 </body>
