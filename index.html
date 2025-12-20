@@ -1,99 +1,78 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>GXY's website</title>
-  <link rel="stylesheet" href="style.css" />
-  <link rel="stylesheet" href="navbar.css" />
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous" defer></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GXY's website</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Font Awesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-  <!-- 页面过渡遮罩 -->
-  <div id="pageTransition" class="page-transition"></div>
 
-  <!-- 自定义光标 -->
-  <div class="cursor"></div>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="logo">GaoXinYang</div>
+        <div class="mobile-toggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <ul class="nav-items">
+            <li class="nav-item active" data-page="index"><a href="?page=index">首页</a></li>
+            <li class="nav-item" data-page="about"><a href="?page=about">关于</a></li>
+            <li class="nav-item" data-page="articles"><a href="?page=articles">文章</a></li>
+            <li class="nav-item" data-page="works"><a href="?page=works">作品</a></li>
+            <li class="nav-item" data-page="contact"><a href="?page=contact">联系</a></li>
+        </ul>
+    </nav>
 
-  <!-- 粒子容器 -->
-  <div class="particles"></div>
-
-  <!-- 浮动元素容器 -->
-  <div class="floating-elements"></div>
-
-  <!-- 网格背景 -->
-  <div class="grid-container">
-    <div class="grid"></div>
-    <div class="grid-back"></div>
-  </div>
-
-  <!-- 主容器 -->
-  <div class="container">
-    <!-- 中心点 -->
-    <div class="dot"></div>
-    <!-- 横线 -->
-    <div class="line line-left"></div>
-    <div class="line line-right"></div>
-    <!-- 标题文字 -->
-    <div class="text">GaoXinYang</div>
-
-    <!-- 内容区域（初始隐藏） -->
-    <div id="mainContent" class="content"></div>
-  </div>
-
-  <!-- 导航栏 -->
-  <nav class="navbar">
-    <div class="nav-logo">
-      <div class="logo-icon"><i class="fas fa-code"></i></div>
-      <div class="logo-text">GaoXinYang</div>
+    <!-- 主容器 -->
+    <div class="container">
+        <div id="mainContent" class="content">
+            <!-- 默认内容将通过JS加载 -->
+        </div>
     </div>
-    <div class="nav-items">
-      <div class="nav-item active" data-page="index">首页</div>
-      <div class="nav-item" data-page="about">关于</div>
-      <div class="nav-item" data-page="articles">文章</div>
-      <div class="nav-item" data-page="works">作品</div>
-      <div class="nav-item" data-page="contact">联系</div>
+
+    <!-- 页面切换过渡遮罩 -->
+    <div id="pageTransition"></div>
+
+    <!-- 内容模板 -->
+    <div id="index-content" style="display:none;">
+        <h1>欢迎来到 Gao XinYang 的个人网站</h1>
+        <p>由于我不是专业前端开发者，一些部分是一边查资料一边编写的。所以这个网站仍有很多不完美之处，请见谅。</p>
+        <p>我会在此网站上分享一些文章、作品、以及一些其他的小玩意 :)</p>
+        <p>尽情探索吧！</p>
+        <footer style="margin-top: 40px; text-align: center; font-size: 0.9rem; color: #666;">
+            &copy;2025 Xinyang Gao, All Rights Reserved.<br>
+            最后更新于：2025年12月19日
+        </footer>
     </div>
-    <div class="mobile-toggle">
-      <span></span>
-      <span></span>
-      <span></span>
+
+    <div id="about-content" style="display:none;">
+        <h2>关于我</h2>
+        <p>我是 Gao XinYang ，一名爱好探索和创新的学生。</p>
     </div>
-  </nav>
 
-  <!-- 内容模板（隐藏） -->
-  <template id="index-content">
-    <h2>欢迎来到 Gao XinYang 的个人网站</h2>
-    <p>由于我不是专业前端开发者，一些部分是一边查资料一边编写的。</p>
-    <p>所以这个网站仍有很多不完美之处，请见谅。</p>
-    <p>我会在此网站上分享一些文章、作品、以及一些其他的小玩意 :)</p>
-    <p>尽情探索吧！</p>
-    <p>©2025 Xinyang Gao, All Rights Reserved.</p>
-    <p>最后更新于：2025年12月19日</p>
-  </template>
-
-  <template id="about-content">
-    <h2>关于我</h2>
-    <p>我是 Gao XinYang ，一名爱好探索和创新的学生。</p>
-  </template>
-
-  <template id="articles-content">
-    <h2>我的文章</h2>
-    <p>这里将展示我的最新文章和思考。</p>
-  </template>
-
-  <template id="contact-content">
-    <h2>欢迎联系我</h2>
-    <div class="contact-info">
-      <p><i class="fab fa-qq"></i> QQ: 2489083744</p>
-      <p><i class="fas fa-envelope"></i> E-mail: <a href="mailto:gao_xinyang@foxmail.com">gao_xinyang@foxmail.com</a></p>
-      <p><i class="fab fa-bilibili"></i> Bilibili: <a href="https://space.bilibili.com/1064600697" target="_blank">前往</a></p>
-      <p><i class="fab fa-github"></i> Github: <a href="https://github.com/Xinyang-Gao" target="_blank">前往</a></p>
+    <div id="articles-content" style="display:none;">
+        <h2>我的文章</h2>
+        <p>这里将展示我的最新文章和思考。</p>
     </div>
-  </template>
 
-  <!-- 脚本 -->
-  <script src="script.js" defer></script>
+    <div id="works-content" style="display:none;">
+        <!-- Works content will be loaded dynamically -->
+    </div>
+
+    <div id="contact-content" style="display:none;">
+        <h2>欢迎联系我</h2>
+        <div class="contact-info">
+            <p><i class="fab fa-qq"></i> QQ: 2489083744</p>
+            <p><i class="fas fa-envelope"></i> E-mail: <a href="mailto:gao_xinyang@foxmail.com">gao_xinyang@foxmail.com</a></p>
+            <p><i class="fab fa-bilibili"></i> Bilibili: <a href="https://space.bilibili.com/1064600697" target="_blank">前往</a></p>
+            <p><i class="fab fa-github"></i> Github: <a href="https://github.com/Xinyang-Gao" target="_blank">前往</a></p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>

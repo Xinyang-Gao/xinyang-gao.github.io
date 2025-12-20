@@ -7,36 +7,93 @@
     --header-bg: #f5f5dc;
     --link-color: #8b4513;
     --link-hover: #a0522d;
-  }
-  
-  * {
+}
+
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-  }
-  
-  body {
+}
+
+body {
     background-color: var(--bg-color);
     font-family: "Georgia", serif;
     color: var(--text-color);
     line-height: 1.5;
     padding: 20px;
     min-height: 100vh;
-  }
-  
-  /* 信纸容器 */
-  .container {
+}
+
+/* 导航栏样式 */
+.navbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: var(--header-bg);
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 999;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: var(--accent-color);
+}
+
+.nav-items {
+    display: flex;
+    list-style: none;
+    gap: 20px;
+}
+
+.nav-item a {
+    text-decoration: none;
+    color: var(--text-color);
+    font-weight: 500;
+    transition: color 0.3s ease;
+    padding: 5px 10px;
+    border-radius: 4px;
+}
+
+.nav-item a:hover,
+.nav-item.active a {
+    color: var(--accent-color);
+    background-color: rgba(139, 69, 19, 0.1);
+}
+
+.mobile-toggle {
+    display: none;
+    flex-direction: column;
+    cursor: pointer;
+}
+
+.mobile-toggle span {
+    width: 25px;
+    height: 3px;
+    background: var(--accent-color);
+    margin: 3px 0;
+    transition: 0.3s;
+}
+
+/* 主容器 */
+.container {
     max-width: 800px;
-    margin: 0 auto;
+    margin: 80px auto 40px auto; /* 添加顶部边距以避开固定导航栏 */
     background: white;
     border: 2px solid var(--border-color);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     padding: 40px;
     position: relative;
-  }
-  
-  /* 信纸装饰边框 */
-  .container::before {
+}
+
+/* 信纸装饰边框 */
+.container::before {
     content: "";
     position: absolute;
     top: 10px;
@@ -46,24 +103,24 @@
     border: 1px solid var(--border-color);
     pointer-events: none;
     opacity: 0.6;
-  }
-  
-  /* 标题样式 - 信件抬头 */
-  h1, h2, h3 {
+}
+
+/* 标题样式 - 信件抬头 */
+h1, h2, h3 {
     font-family: "Georgia", serif;
     color: var(--accent-color);
     margin-bottom: 20px;
     position: relative;
     padding-bottom: 10px;
-  }
-  
-  h1 {
+}
+
+h1 {
     font-size: 2.2rem;
     text-align: center;
     margin-bottom: 30px;
-  }
-  
-  h1::after {
+}
+
+h1::after {
     content: "";
     position: absolute;
     bottom: 0;
@@ -72,55 +129,52 @@
     width: 80px;
     height: 2px;
     background: var(--accent-color);
-  }
-  
-  h2 {
+}
+
+h2 {
     font-size: 1.6rem;
     border-bottom: 1px solid var(--border-color);
     padding-bottom: 8px;
     margin-top: 30px;
-  }
-  
-  h3 {
+}
+
+h3 {
     font-size: 1.3rem;
     margin-top: 25px;
-  }
-  
-  /* 段落样式 */
-  p {
+}
+
+/* 段落样式 */
+p {
     margin-bottom: 16px;
     text-indent: 2em;
     font-size: 1.1rem;
     line-height: 1.6;
-  }
-  
-  /* 首段无缩进 */
-  .container > p:first-of-type,
-  .content > p:first-of-type {
+}
+
+/* 首段无缩进 */
+.container > p:first-of-type,
+.content > p:first-of-type {
     text-indent: 0;
-  }
-  
-  /* 链接样式 */
-  a {
+}
+
+/* 链接样式 */
+a {
     color: var(--link-color);
     text-decoration: none;
     border-bottom: 1px solid var(--link-color);
     transition: all 0.3s ease;
     padding: 2px 4px;
     border-radius: 2px;
-  }
-  
-  a:hover {
+}
+
+a:hover {
     color: var(--link-hover);
     background-color: rgba(139, 69, 19, 0.1);
     border-bottom-color: var(--link-hover);
-  }
-  
-  /* 按钮样式 */
-  button,
-  .nav-item,
-  .work-link,
-  .work-close-btn {
+}
+
+/* 按钮样式 */
+button, .nav-item, .work-link, .work-close-btn {
     background: transparent;
     border: 2px solid var(--accent-color);
     color: var(--accent-color);
@@ -133,93 +187,90 @@
     text-decoration: none;
     display: inline-block;
     margin: 4px 0;
-  }
-  
-  button:hover,
-  .nav-item:hover,
-  .work-link:hover,
-  .work-close-btn:hover {
+}
+
+button:hover, .nav-item:hover, .work-link:hover, .work-close-btn:hover {
     background-color: var(--accent-color);
     color: white;
     transform: translateY(-1px);
-  }
-  
-  /* 列表样式 */
-  ul, ol {
+}
+
+/* 列表样式 */
+ul, ol {
     margin-left: 2em;
     margin-bottom: 16px;
     padding-left: 20px;
-  }
-  
-  li {
+}
+
+li {
     margin-bottom: 8px;
     line-height: 1.5;
-  }
-  
-  /* 联系信息样式 */
-  .contact-info {
+}
+
+/* 联系信息样式 */
+.contact-info {
     margin-top: 20px;
-  }
-  
-  .contact-info p {
+}
+
+.contact-info p {
     display: flex;
     align-items: center;
     gap: 12px;
     margin-bottom: 12px;
     text-indent: 0;
-  }
-  
-  .contact-info i {
+}
+
+.contact-info i {
     color: var(--accent-color);
     font-size: 1.1rem;
     width: auto;
     text-align: left;
-  }
-  
-  /* 作品卡片样式 */
-  .works-grid {
+}
+
+/* 作品卡片样式 */
+.works-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 24px;
     margin-top: 20px;
-  }
-  
-  .work-card {
+}
+
+.work-card {
     background: white;
     border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 20px;
     transition: all 0.3s ease;
     cursor: pointer;
-  }
-  
-  .work-card:hover {
+}
+
+.work-card:hover {
     border-color: var(--accent-color);
     box-shadow: 0 4px 8px rgba(139, 69, 19, 0.2);
-  }
-  
-  .work-title {
+}
+
+.work-title {
     color: var(--accent-color);
     font-size: 1.2rem;
     margin-bottom: 8px;
     font-weight: bold;
-  }
-  
-  .work-description {
+}
+
+.work-description {
     color: var(--text-color);
     margin-bottom: 12px;
     font-size: 1rem;
-  }
-  
-  .work-meta {
+}
+
+.work-meta {
     display: flex;
     justify-content: space-between;
     font-size: 0.9rem;
     color: #666;
     margin-top: 10px;
-  }
-  
-  .tech-tag {
+}
+
+.tech-tag {
     background: rgba(139, 69, 19, 0.1);
     color: var(--accent-color);
     padding: 4px 8px;
@@ -228,48 +279,84 @@
     margin-right: 6px;
     margin-bottom: 4px;
     display: inline-block;
-  }
-  
-  /* 响应式设计 */
-  @media (max-width: 768px) {
-    .container {
-      padding: 25px;
-      margin: 10px;
-    }
-    
-    h1 {
-      font-size: 1.8rem;
-    }
-    
-    h2 {
-      font-size: 1.4rem;
-    }
-    
-    .works-grid {
-      grid-template-columns: 1fr;
-    }
-    
-    p {
-      font-size: 1rem;
-    }
-  }
-  
-  @media (max-width: 480px) {
-    body {
-      padding: 10px;
-    }
-    
-    .container {
-      padding: 20px;
-    }
-    
-    h1 {
-      font-size: 1.6rem;
-    }
-  }
+}
 
-  /* 页面过渡遮罩层 */
-  #pageTransition {
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .navbar {
+        padding: 15px;
+    }
+    .nav-items {
+        position: fixed;
+        right: -100%;
+        top: 70px;
+        flex-direction: column;
+        background-color: var(--header-bg);
+        width: 100%;
+        text-align: center;
+        transition: 0.3s;
+        box-shadow: 0 10px 27px rgba(0,0,0,0.05);
+        gap: 0;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .nav-items.active {
+        right: 0;
+    }
+
+    .nav-item {
+        margin: 0;
+    }
+
+    .nav-item a {
+        display: block;
+        padding: 15px 20px;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .mobile-toggle {
+        display: flex;
+    }
+
+    .container {
+        padding: 25px;
+        margin: 70px 10px 20px 10px; /* 调整顶部和左右边距 */
+    }
+
+    h1 {
+        font-size: 1.8rem;
+    }
+
+    h2 {
+        font-size: 1.4rem;
+    }
+
+    .works-grid {
+        grid-template-columns: 1fr;
+    }
+
+    p {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 10px;
+    }
+
+    .container {
+        padding: 20px;
+    }
+
+    h1 {
+        font-size: 1.6rem;
+    }
+}
+
+/* 页面过渡遮罩层 */
+#pageTransition {
     position: fixed;
     top: 0;
     left: 0;
@@ -287,7 +374,6 @@
     pointer-events: auto;
 }
 
-
 /* 抽纸动画关键帧 - 微调起点和中间点 */
 @keyframes drawPaperIn {
     0% {
@@ -296,12 +382,14 @@
         opacity: 0.7; /* 初始透明度稍低 */
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
     }
+
     70% {
         /* 快速向上移动并轻微放大，带有一点弹跳感 */
         transform: translateY(-10px) scale(1.01);
         opacity: 0.95;
         box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12); /* 增强阴影 */
     }
+
     100% {
         /* 最终位置，与原容器对齐 */
         transform: translateY(0) scale(1);
