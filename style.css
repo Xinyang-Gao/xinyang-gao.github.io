@@ -481,17 +481,17 @@ hr {
     color: #444;
 }
 
-.work-details-technologies {
+.work-details-tag {
     margin-bottom: 25px;
 }
 
-.work-details-technologies strong {
+.work-details-tag strong {
     display: block;
     margin-bottom: 5px;
     color: var(--accent-color);
 }
 
-.work-details-technologies .tech-tag {
+.work-details-tag .tech-tag {
     display: inline-block;
     background-color: #eee;
     color: var(--text-color);

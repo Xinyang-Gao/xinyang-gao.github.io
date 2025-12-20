@@ -61,7 +61,6 @@ document.addEventListener('DOMContentLoaded', function () {
                         <div class="work-item-header">
                             <h3 class="work-title">${work.title}</h3>
                             <div class="work-meta">
-                                <span class="work-category">${work.category}</span>
                                 <span class="work-date">${work.date}</span>
                             </div>
                         </div>
@@ -295,9 +294,9 @@ document.addEventListener('DOMContentLoaded', function () {
     detailsContent.innerHTML = `
         <h2 class="work-details-title">${work.title}</h2>
         <p class="work-details-description">${work.description}</p>
-        ${work.technologies && work.technologies.length ? `
-            <div class="work-details-technologies">
-                <strong>技术栈:</strong> ${work.technologies.map(tech => `<span class="tech-tag">${tech}</span>`).join('')}
+        ${work.tag && work.tag.length ? `
+            <div class="work-details-tag">
+                <strong>标签:</strong> ${work.tag.map(tech => `<span class="tech-tag">${tech}</span>`).join('')}
             </div>
         ` : ''}
         ${work.link ? `
