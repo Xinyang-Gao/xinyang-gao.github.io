@@ -186,61 +186,75 @@ document.addEventListener('DOMContentLoaded', function () {
      * @param {string} pageTitle - 当前加载的页面标题
      * @param {boolean} pushState - 是否更新浏览器历史记录
      */
-    function performDrawAnimation(content, pageName, pageTitle, pushState) {
-      perf.start('performDrawAnimation');
-      elements.pageTransition.classList.add('active');
-      
-      const containerRect = elements.container.getBoundingClientRect();
-      const computedStyle = window.getComputedStyle(elements.container);
-      const paddingTop = parseFloat(computedStyle.paddingTop);
-      const paddingRight = parseFloat(computedStyle.paddingRight);
-      const paddingBottom = parseFloat(computedStyle.paddingBottom);
-      const paddingLeft = parseFloat(computedStyle.paddingLeft);
-      
-      const paperElement = document.createElement('div');
-      paperElement.className = 'draw-animation-paper container';
-      paperElement.style.cssText = `
-        top: ${containerRect.top + window.scrollY}px;
-        left: ${containerRect.left + window.scrollX}px;
-        width: ${containerRect.width}px;
-        height: ${containerRect.height}px;
-        padding: ${paddingTop}px ${paddingRight}px ${paddingBottom}px ${paddingLeft}px;
-      `;
-      paperElement.innerHTML = content;
-      document.body.appendChild(paperElement);
-      
-      elements.content.classList.add('fade-out-shrink');
-      
-      paperElement.addEventListener('animationend', () => {
+     function performDrawAnimation(content, pageName, pageTitle, pushState) {
+        perf.start('performDrawAnimation');
+        
+        // 显示页面切换遮罩
+        elements.pageTransition.classList.add('active');
+    
+        // 获取容器尺寸和样式
+        const containerRect = elements.container.getBoundingClientRect();
+        const computedStyle = window.getComputedStyle(elements.container);
+        const paddingTop = parseFloat(computedStyle.paddingTop);
+        const paddingRight = parseFloat(computedStyle.paddingRight);
+        const paddingBottom = parseFloat(computedStyle.paddingBottom);
+        const paddingLeft = parseFloat(computedStyle.paddingLeft);
+    
+        // 创建用于入场动画的“纸张”元素
+        const paperElement = document.createElement('div');
+        paperElement.className = 'draw-animation-paper container'; // 添加 container 类以复用样式
+        paperElement.style.cssText = `
+            top: ${containerRect.top + window.scrollY - paddingTop}px; /* 考虑到padding-top */
+            left: ${containerRect.left + window.scrollX}px;
+            width: ${containerRect.width}px;
+            height: ${containerRect.height + paddingTop + paddingBottom}px; /* 考虑到padding-top和padding-bottom */
+            padding: ${paddingTop}px ${paddingRight}px ${paddingBottom}px ${paddingLeft}px;
+        `;
+        paperElement.innerHTML = content;
+    
+        // 将“纸张”元素添加到 body
+        document.body.appendChild(paperElement);
+
+    // 给当前内容区域添加离场动画类
+    elements.content.classList.add('fade-out-shrink');
+
+    // 监听“纸张”入场动画结束事件
+    paperElement.addEventListener('animationend', () => {
+        // 动画结束后，更新主内容区域的内容
         elements.content.innerHTML = content;
-        elements.content.classList.remove('fade-out-shrink');
+        elements.content.classList.remove('fade-out-shrink'); // 清除离场动画类
+
+        // 更新页面标题和历史记录
         document.title = pageTitle;
-        
         if (pushState) {
-          window.history.pushState({ page: pageName }, pageTitle, `?page=${pageName}`);
+            window.history.pushState({ page: pageName }, pageTitle, `?page=${pageName}`);
         }
-        
+
+        // 更新导航栏活动状态
         elements.navItems.forEach(item => {
-          if (item.getAttribute('data-page') === pageName) {
-            item.classList.add('active');
-          } else {
-            item.classList.remove('active');
-          }
+            if (item.getAttribute('data-page') === pageName) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
         });
-        
+
+        // 移除临时“纸张”元素
         if (paperElement.parentNode) {
-          paperElement.parentNode.removeChild(paperElement);
+            paperElement.parentNode.removeChild(paperElement);
         }
-        
+
+        // 隐藏页面切换遮罩
         elements.pageTransition.classList.remove('active');
-        
+
+        // 如果是作品页面，重新设置交互 (事件委托)
         if (pageName === 'works') {
-          setupWorkCardsInteraction();
+            setupWorkCardsInteraction();
         }
-        
+
         perf.end('performDrawAnimation');
-      }, { once: true });
-    }
+    }, { once: true }); // 确保只触发一次
+}
   
     /**
      * 为工作卡片交互设置事件委托
