@@ -522,6 +522,22 @@ hr {
     background: var(--link-hover);
 }
 
+/* --- 作品列表中的标签样式 --- */
+.work-tags {
+    margin-top: 10px; /* 标签与描述之间的间距 */
+  }
+  
+/* 与 .tech-tag 样式一样 */
+  .work-tag {
+    display: inline-block;
+    background-color: #eee;
+    color: var(--text-color);
+    padding: 4px 8px;
+    margin: 4px 4px 0 0;
+    border-radius: 4px;
+    font-size: 0.85rem;
+  }
+
 /* --- 动画与过渡 --- */
 @keyframes drawPaperIn {
     0% {

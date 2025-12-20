@@ -40,25 +40,44 @@ document.addEventListener('DOMContentLoaded', function () {
         perf.end('generateWorksHTML');
         return '<div class="works-list"><h2>作品集</h2><p>暂无作品数据</p></div>';
       }
-  
+    
+      // --- 新增：定义一个函数来生成标签 HTML ---
+      function generateTagsHTML(tags) {
+        if (!tags || !Array.isArray(tags) || tags.length === 0) {
+          return '';
+        }
+        return `
+          <div class="work-tags">
+            ${tags.map(tag => `<span class="work-tag tech-tag">${tag}</span>`).join('')}
+          </div>
+        `;
+      }
+    
       const html = `
         <div class="works-list">
-          ${data.works.map(work => `
-            <div class="work-item" data-id="${work.id}">
-              <div class="work-item-header">
-                <h3 class="work-title">${work.title}</h3>
-                <div class="work-meta">
-                  <span class="work-date">${work.date}</span>
+          ${data.works.map(work => {
+            // --- 使用新函数生成标签 HTML ---
+            const tagsHtml = generateTagsHTML(work.tag);
+            return `
+              <div class="work-item" data-id="${work.id}">
+                <div class="work-item-header">
+                  <h3 class="work-title">${work.title}</h3>
+                  <div class="work-meta">
+                    <span class="work-date">${work.date}</span>
+                  </div>
                 </div>
+                <p class="work-description">${work.description}</p>
+                ${tagsHtml} <!-- 插入标签 -->
               </div>
-              <p class="work-description">${work.description}</p>
-            </div>
-          `).join('')}
+            `;
+          }).join('')}
         </div>
       `;
+    
       perf.end('generateWorksHTML');
       return html;
     }
+    
   
     // --- 页面加载与切换逻辑 ---
     async function loadPage(pageName, pushState = true) {
