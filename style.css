@@ -1,33 +1,35 @@
+/* --- styles.css --- */
+
 /* 信件风格主样式 */
-:root { 
-    --bg-color: #fdf5e6; 
-    --text-color: #333333; 
-    --accent-color: #8b4513; 
-    --border-color: #d2b48c; 
-    --header-bg: #f5f5dc; 
-    --link-color: #8b4513; 
+:root {
+    --bg-color: #fdf5e6;
+    --text-color: #333333;
+    --accent-color: #8b4513;
+    --border-color: #d2b48c;
+    --header-bg: #f5f5dc;
+    --link-color: #8b4513;
     --link-hover: #a0522d;
   }
   
-  * { 
-    margin: 0; 
-    padding: 0; 
+  * {
+    margin: 0;
+    padding: 0;
     box-sizing: border-box;
   }
   
-  body { 
-    background-color: var(--bg-color); 
-    font-family: "Georgia", serif; 
-    color: var(--text-color); 
-    line-height: 1.5; 
-    padding: 20px; 
-    min-height: 100vh; 
+  body {
+    background-color: var(--bg-color);
+    font-family: "Georgia", serif;
+    color: var(--text-color);
+    line-height: 1.5;
+    padding: 20px;
+    min-height: 100vh;
     overflow-x: hidden;
   }
   
   /* --- 导航栏样式 --- */
-/* --- 优化后的导航栏样式 --- */
-.navbar {
+  /* --- 优化后的导航栏样式 --- */
+  .navbar {
     position: fixed;
     top: 0;
     left: 0;
@@ -64,9 +66,8 @@
   }
   
   .logo-text:hover {
-      color: var(--link-hover); /* 鼠标悬停 logo 文字颜色变化 */
+    color: var(--link-hover); /* 鼠标悬停 logo 文字颜色变化 */
   }
-  
   
   .nav-items {
     display: flex;
@@ -114,8 +115,6 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   }
   
-  /* 移除了旧的 ::after 下划线动画 */
-  
   .nav-actions {
     display: flex;
     align-items: center;
@@ -137,7 +136,7 @@
     transition: background-color 0.3s ease;
   }
   .mobile-toggle:hover {
-      background-color: rgba(139, 69, 19, 0.1);
+    background-color: rgba(139, 69, 19, 0.1);
   }
   
   .mobile-toggle span {
@@ -191,13 +190,12 @@
   
     /* 移动端悬停和激活状态可以更明显 */
     .nav-item:hover {
-        background-color: rgba(139, 69, 19, 0.12);
+      background-color: rgba(139, 69, 19, 0.12);
     }
     .nav-item.active {
-        background-color: rgba(139, 69, 19, 0.15);
-        border-color: rgba(139, 69, 19, 0.3);
+      background-color: rgba(139, 69, 19, 0.15);
+      border-color: rgba(139, 69, 19, 0.3);
     }
-  
   
     /* 显示汉堡菜单按钮 */
     .mobile-toggle {
@@ -240,348 +238,363 @@
   }
   
   /* --- 主体内容样式 --- */
-  .container { 
-    max-width: 800px; 
-    margin: 80px auto 40px auto; 
-    background: white; 
-    border: 2px solid var(--border-color); 
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); 
-    padding: 40px; 
-    position: relative; 
-    border-radius: 4px;
+  .container {
+    max-width: 800px;
+    margin: 80px auto 40px auto; /* 顶部留出导航栏空间 */
+    background: white;
+    border: 2px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 40px; /* 内边距保持，提供呼吸感 */
+    position: relative;
+    border-radius: 6px; /* 稍微增加圆角，更现代 */
   }
   
-  .container::before { 
-    content: ""; 
-    position: absolute; 
-    top: 10px; 
-    left: 10px; 
-    right: 10px; 
-    bottom: 10px; 
-    border: 1px solid var(--border-color); 
-    pointer-events: none; 
-    opacity: 0.6;
+  /* 标题样式优化 */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "Georgia", serif; /* 保留衬线字体 */
+    color: var(--accent-color); /* 保留主题色 */
+    margin-top: 1.2em; /* 统一上边距 */
+    margin-bottom: 0.8em; /* 减少下边距，更紧凑 */
+    line-height: 1.2; /* 标题行高更紧凑 */
   }
   
-  h1, h2, h3 { 
-    font-family: "Georgia", serif; 
-    color: var(--accent-color); 
-    margin-bottom: 20px; 
-    position: relative; 
-    padding-bottom: 10px;
+  h1 {
+    font-size: 2.2rem;
+    text-align: center;
+    margin-top: 0.5em; /* H1 通常在页面顶部，减少上边距 */
+    margin-bottom: 1.2em; /* 底部留白大一些 */
   }
   
-  h1 { 
-    font-size: 2.2rem; 
-    text-align: center; 
-    margin-bottom: 30px;
+  h2 {
+    font-size: 1.8rem; /* 稍微增大 */
+    padding-bottom: 0.3em; /* 保留一点底部填充 */
+    border-bottom: 2px dotted var(--border-color); /* 改为点线或虚线，更柔和 */
   }
   
-  h1::after { 
-    content: ""; 
-    position: absolute; 
-    bottom: 0; 
-    left: 50%; 
-    transform: translateX(-50%); 
-    width: 80px; 
-    height: 2px; 
-    background: var(--accent-color);
+  h3 {
+    font-size: 1.5rem; /* 稍微增大 */
   }
   
-  h2 { 
-    font-size: 1.6rem; 
-    border-bottom: 1px solid var(--border-color); 
-    padding-bottom: 8px; 
-    margin-top: 30px;
+  /* 段落样式优化 */
+  p {
+    margin-bottom: 1.2em; /* 使用 em 单位，相对于字体大小 */
+    font-size: 1.1rem; /* 字号可以接受 */
+    line-height: 1.7; /* 增加行高，提高可读性 */
+    color: #444;
   }
   
-  h3 { 
-    font-size: 1.3rem; 
-    margin-top: 25px;
+  #mainContent > p:first-of-type,
+  .content > p:first-of-type {
+    margin-top: 0; /* 确保第一个段落顶格 */
+  }
+  /* 如果需要区分连续段落，可以给非首段加一点上边距 */
+  #mainContent > p:not(:first-of-type),
+  .content > p:not(:first-of-type) {
+    margin-top: 0.8em; /* 给后续段落一点上间距 */
   }
   
-  p { 
-    margin-bottom: 16px; 
-    text-indent: 2em; 
-    font-size: 1.1rem; 
-    line-height: 1.6;
-  }
-  
-  #mainContent>p:first-of-type, .content>p:first-of-type { 
-    text-indent: 0;
-  }
-  
-  a { 
-    color: var(--link-color); 
-    text-decoration: none; 
-    border-bottom: 1px solid var(--link-color); 
-    transition: all 0.3s ease; 
-    padding: 2px 4px; 
+  /* 链接样式优化 */
+  a {
+    color: var(--link-color);
+    text-decoration: underline; /* 改回标准下划线，更明确 */
+    text-decoration-thickness: from-font; /* 使用字体推荐的线条粗细 */
+    text-underline-offset: 2px; /* 下划线与文字距离 */
+    transition: all 0.2s ease; /* 缩短过渡时间，更灵敏 */
+    padding: 2px 4px;
     border-radius: 2px;
+    background-color: transparent; /* 确保背景透明 */
   }
   
-  a:hover { 
-    color: var(--link-hover); 
-    background-color: rgba(139, 69, 19, 0.1); 
-    border-bottom-color: var(--link-hover);
-  }
-  
-  button, .nav-item, .work-link, .work-close-btn { 
-    background: transparent; 
-    border: 2px solid var(--accent-color); 
-    color: var(--accent-color); 
-    padding: 8px 16px; 
-    font-family: "Georgia", serif; 
-    font-size: 1rem; 
-    cursor: pointer; 
-    border-radius: 4px; 
-    transition: all 0.3s ease; 
-    text-decoration: none; 
-    display: inline-block; 
-    margin: 4px 0;
-  }
-  
-  button:hover, .nav-item:hover, .work-link:hover, .work-close-btn:hover { 
-    background-color: var(--accent-color); 
-    color: white; 
+  a:hover {
+    color: var(--link-hover);
+    text-decoration: underline; /* 确保悬停时仍有下划线 */
+    text-decoration-thickness: from-font;
+    background-color: rgba(139, 69, 19, 0.08); /* 微弱背景色增强反馈 */
     transform: translateY(-1px);
   }
   
-  ul, ol { 
-    margin-left: 2em; 
-    margin-bottom: 16px; 
-    padding-left: 20px;
+  /* 列表样式优化 */
+  ul,
+  ol {
+    margin-left: 0; /* 移除外边距 */
+    margin-bottom: 1.2em; /* 使用 em */
+    padding-left: 1.5em; /* 内边距控制缩进 */
   }
   
-  li { 
-    margin-bottom: 8px; 
-    line-height: 1.5;
+  li {
+    margin-bottom: 0.5em; /* 列表项间距 */
+    line-height: 1.6; /* 行高 */
   }
   
-  .contact-info { 
-    margin-top: 20px;
+  /* 引用块 (如果用到) */
+  blockquote {
+    margin: 1.5em 0;
+    padding: 0.8em 1.2em;
+    border-left: 4px solid var(--accent-color);
+    background-color: var(--header-bg);
+    font-style: italic;
+    color: #555;
   }
   
-  .contact-info p { 
-    display: flex; 
-    align-items: center; 
-    gap: 12px; 
-    margin-bottom: 12px; 
-    text-indent: 0;
+  blockquote p {
+    margin: 0; /* 引用内段落无外边距 */
+    font-size: 1rem; 
   }
   
-  .contact-info i { 
-    color: var(--accent-color); 
-    font-size: 1.1rem; 
-    width: auto; 
+  /* 强调文本 */
+  strong {
+    font-weight: bold;
+    color: var(--accent-color); /* 可选：给粗体也加点颜色 */
+  }
+  em {
+    font-style: italic;
+  }
+  
+  /* 分隔线 */
+  hr {
+    border: 0;
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 2em 0; /* 上下留白 */
+  }
+  
+  /* --- 特定内容区域样式 (如联系信息) --- */
+  .contact-info {
+    margin-top: 2em; /* 增大顶部间距 */
+  }
+  
+  .contact-info p {
+    display: flex;
+    align-items: flex-start; /* 顶部对齐，适应不同高度图标 */
+    gap: 12px;
+    margin-bottom: 1em; /* 使用 em */
+    text-indent: 0; /* 必须 */
+    font-size: 1.05rem; /* 可以稍小一点 */
+  }
+  
+  .contact-info i {
+    color: var(--accent-color);
+    font-size: 1.1rem;
+    width: auto;
     text-align: left;
+    flex-shrink: 0; /* 图标不收缩 */
+    padding-top: 0.1em; /* 微调垂直对齐 */
   }
   
-  .works-grid { 
-    display: grid; 
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); 
-    gap: 24px; 
+  /* --- 作品网格样式 (保留原有良好结构) --- */
+  .works-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
     margin-top: 20px;
   }
   
-  .work-card { 
-    background: white; 
-    border: 1px solid var(--border-color); 
-    border-radius: 8px; 
-    padding: 20px; 
-    transition: all 0.3s ease; 
-    cursor: pointer; 
-    perspective: 1000px; 
-    min-height: 200px; 
-    position: relative; 
+  .work-card {
+    background: white;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 20px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    perspective: 1000px;
+    min-height: 200px;
+    position: relative;
     overflow: hidden;
   }
   
-  .work-card:hover { 
-    border-color: var(--accent-color); 
+  .work-card:hover {
+    border-color: var(--accent-color);
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
   }
   
-  .work-card-inner { 
-    position: relative; 
-    width: 100%; 
-    height: 100%; 
-    text-align: center; 
-    transition: transform 0.6s; 
+  .work-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.6s;
     transform-style: preserve-3d;
   }
   
-  .work-card.expanded .work-card-inner { 
+  .work-card.expanded .work-card-inner {
     transform: rotateY(180deg);
   }
   
-  .work-card-front, .work-card-back { 
-    position: absolute; 
-    width: 100%; 
-    height: 100%; 
-    -webkit-backface-visibility: hidden; 
-    backface-visibility: hidden; 
-    display: flex; 
-    flex-direction: column; 
+  .work-card-front,
+  .work-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    display: flex;
+    flex-direction: column;
     justify-content: space-between;
   }
   
-  .work-card-back { 
-    transform: rotateY(180deg); 
-    overflow-y: auto; 
-    padding: 15px; 
-    box-sizing: border-box; 
+  .work-card-back {
+    transform: rotateY(180deg);
+    overflow-y: auto;
+    padding: 15px;
+    box-sizing: border-box;
     text-align: left;
   }
   
-  .work-image { 
-    max-width: 100%; 
-    height: auto; 
-    border-radius: 4px; 
+  .work-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
     margin-bottom: 15px;
   }
   
-  .work-info { 
+  .work-info {
     text-align: left;
   }
   
-  .work-title { 
-    margin: 0 0 10px 0; 
+  .work-title {
+    margin: 0 0 10px 0;
     font-size: 1.4rem;
   }
   
-  .work-description { 
-    margin: 0 0 10px 0; 
+  .work-description {
+    margin: 0 0 10px 0;
     font-size: 1rem;
   }
   
-  .work-meta { 
-    display: flex; 
-    justify-content: space-between; 
-    font-size: 0.9rem; 
+  .work-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
     color: #666;
   }
   
-  .work-details { 
-    margin-bottom: 15px; 
+  .work-details {
+    margin-bottom: 15px;
     text-indent: 0;
   }
   
-  .work-technologies { 
-    margin-bottom: 15px; 
+  .work-technologies {
+    margin-bottom: 15px;
     text-align: left;
   }
   
-  .tech-tag { 
-    display: inline-block; 
-    background-color: #eee; 
-    color: var(--text-color); 
-    padding: 4px 8px; 
-    margin: 4px 4px 0 0; 
-    border-radius: 4px; 
+  .tech-tag {
+    display: inline-block;
+    background-color: #eee;
+    color: var(--text-color);
+    padding: 4px 8px;
+    margin: 4px 4px 0 0;
+    border-radius: 4px;
     font-size: 0.85rem;
   }
   
-  .work-links { 
+  .work-links {
     margin-top: auto;
   }
   
-  .work-link { 
-    margin-top: 10px; 
-    display: inline-flex; 
-    align-items: center; 
+  .work-link {
+    margin-top: 10px;
+    display: inline-flex;
+    align-items: center;
     gap: 5px;
   }
   
-  .work-close-btn { 
-    margin-top: 15px; 
-    align-self: flex-end; 
-    display: inline-flex; 
-    align-items: center; 
+  .work-close-btn {
+    margin-top: 15px;
+    align-self: flex-end;
+    display: inline-flex;
+    align-items: center;
     gap: 5px;
   }
   
   /* --- 动画与过渡 --- */
-  @keyframes drawPaperIn { 
-    0% { 
-      transform: translateY(100%) scale(0.95); 
-      opacity: 0; 
-    } 
-    70% { 
-      transform: translateY(-10px) scale(1.01); 
-      opacity: 1; 
-    } 
-    100% { 
-      transform: translateY(0) scale(1); 
-      opacity: 1; 
+  @keyframes drawPaperIn {
+    0% {
+      transform: translateY(100%) scale(0.95);
+      opacity: 0;
+    }
+    70% {
+      transform: translateY(-10px) scale(1.01);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(0) scale(1);
+      opacity: 1;
     }
   }
   
-  @keyframes fadeOutAndShrink { 
-    0% { 
-      transform: translateY(0) scale(1); 
-      opacity: 1; 
-    } 
-    100% { 
-      transform: translateY(20px) scale(0.98); 
-      opacity: 0; 
+  @keyframes fadeOutAndShrink {
+    0% {
+      transform: translateY(0) scale(1);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(20px) scale(0.98);
+      opacity: 0;
     }
   }
   
-  .fade-out-shrink { 
+  .fade-out-shrink {
     animation: fadeOutAndShrink 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   }
   
-  .draw-animation-paper { 
-    position: fixed; 
-    z-index: 1001; 
-    opacity: 0; 
-    animation: drawPaperIn 0.7s cubic-bezier(0.25, 0.8, 0.25, 1) forwards; 
-    overflow: hidden; 
-    box-sizing: border-box; 
-    background: white; 
-    border: 2px solid var(--border-color); 
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); 
+  .draw-animation-paper {
+    position: fixed;
+    z-index: 1001;
+    opacity: 0;
+    animation: drawPaperIn 0.7s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+    overflow: hidden;
+    box-sizing: border-box;
+    background: white;
+    border: 2px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     padding: 40px;
   }
   
-  .page-transition { 
-    position: fixed; 
-    top: 0; 
-    left: 0; 
-    width: 100%; 
-    height: 100%; 
-    background-color: rgba(253, 245, 230, 0.3); 
-    z-index: 1000; 
-    opacity: 0; 
-    pointer-events: none; 
+  .page-transition {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(253, 245, 230, 0.3);
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
     transition: opacity 0.3s ease-in-out;
   }
   
-  .page-transition.active { 
-    opacity: 1; 
+  .page-transition.active {
+    opacity: 1;
     pointer-events: auto;
   }
   
-  .ripple { 
-    position: fixed; 
-    border-radius: 50%; 
-    background-color: rgba(139, 69, 19, 0.3); 
-    transform: translate(-50%, -50%); 
-    pointer-events: none; 
-    z-index: 9999; 
+  .ripple {
+    position: fixed;
+    border-radius: 50%;
+    background-color: rgba(139, 69, 19, 0.3);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 9999;
     animation: ripple-effect 0.6s linear forwards;
   }
   
-  @keyframes ripple-effect { 
-    0% { 
-      width: 0; 
-      height: 0; 
-      opacity: 0.7; 
-    } 
-    100% { 
-      width: 500px; 
-      height: 500px; 
-      opacity: 0; 
+  @keyframes ripple-effect {
+    0% {
+      width: 0;
+      height: 0;
+      opacity: 0.7;
+    }
+    100% {
+      width: 500px;
+      height: 500px;
+      opacity: 0;
     }
   }
+  
+  /* --- 结束 --- */

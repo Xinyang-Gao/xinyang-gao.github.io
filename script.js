@@ -59,7 +59,6 @@ document.addEventListener('DOMContentLoaded', function () {
       }
   
       const html = `
-        <h2>我的作品</h2>
         <div class="works-grid">
           ${data.works.map(work => `
             <div class="work-card" data-id="${work.id}">
