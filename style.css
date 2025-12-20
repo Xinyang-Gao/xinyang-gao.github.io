@@ -1,5 +1,3 @@
-/* --- styles.css --- */
-
 /* 信件风格主样式 */
 :root {
     --bg-color: #fdf5e6;
@@ -28,7 +26,6 @@
   }
   
   /* --- 导航栏样式 --- */
-  /* --- 优化后的导航栏样式 --- */
   .navbar {
     position: fixed;
     top: 0;
@@ -53,7 +50,6 @@
   .nav-logo {
     display: flex;
     align-items: center;
-    /* 移除固定的 margin-right，利用 justify-content 控制间距 */
   }
   
   .logo-text {
@@ -73,10 +69,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    list-style: none; /* 确保没有默认列表样式 */
-    /* 移除固定宽度，让 Flex 自动分配空间 */
-    margin: 0; /* 重置默认 margin */
-    padding: 0; /* 重置默认 padding */
+    list-style: none;
+    margin: 0;
+    padding: 0;
   }
   
   .nav-item {
@@ -91,8 +86,6 @@
     text-decoration: none;
     border-radius: 6px; /* 稍大一点的圆角 */
     position: relative;
-    /* 移除了原来的 ::after 下划线，改用更现代的方式 */
-    /* 新增：使用背景色作为主要悬停和激活指示器 */
     background-color: transparent;
     border: 2px solid transparent; /* 透明边框占位，避免 hover 时跳动 */
   }
@@ -596,5 +589,3 @@
       opacity: 0;
     }
   }
-  
-  /* --- 结束 --- */
