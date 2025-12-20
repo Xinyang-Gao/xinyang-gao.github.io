@@ -1,312 +1,143 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>页面未找到 - 404</title>
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700&display=swap">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        :root {
-            --primary-color: #00f7ff;
-            --secondary-color: #7b61ff;
-            --bg-dark: #0a0a16;
-            --bg-gradient: linear-gradient(135deg, #0a0a16 0%, #0e1a2b 100%);
-            --transition-timing: cubic-bezier(0.34, 1.56, 0.64, 1);
-            --navbar-height: 80px;
-        }
-    
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            background: var(--bg-gradient);
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            overflow: hidden;
-            position: relative;
-            font-family: 'Orbitron', sans-serif;
-            color: rgba(200, 220, 255, 0.8);
-        }
-        
-        /* 网格背景 */
-        .grid-container {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            overflow: hidden;
-            opacity: 0;
-            transition: opacity 1.5s ease 4s;
-        }
-        
-        .grid-container.visible {
-            opacity: 1;
-        }
-        
-        .grid {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                linear-gradient(rgba(20, 20, 40, 0.7) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(20, 20, 40, 0.7) 1px, transparent 1px);
-            background-size: 30px 30px;
-        }
-        
-        .grid-back {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                linear-gradient(rgba(15, 15, 35, 0.5) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(15, 15, 35, 0.5) 1px, transparent 1px);
-            background-size: 50px 50px;
-        }
-        
-        /* 内容容器 */
-        .container {
-            position: relative;
-            z-index: 10;
-            text-align: center;
-            padding: 2rem;
-            max-width: 800px;
-            opacity: 0;
-            transform: translateY(20px);
-            transition: all 1.2s ease 4.5s;
-        }
-        
-        .container.visible {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        
-        /* 错误代码 */
-        .error-code {
-            font-size: 8rem;
-            font-weight: 700;
-            color: var(--primary-color);
-            text-shadow: 0 0 20px var(--primary-color), 0 0 40px var(--primary-color);
-            margin-bottom: 1rem;
-            line-height: 1;
-            letter-spacing: 0.5rem;
-            animation: glitch 5s infinite;
-        }
-        
-        @keyframes glitch {
-            0%, 100% { transform: translateX(0); text-shadow: 0 0 20px var(--primary-color), 0 0 40px var(--primary-color); }
-            5% { transform: translateX(-3px); text-shadow: -5px 0 #ff0000, 5px 0 #00ffff; }
-            10% { transform: translateX(3px); text-shadow: -5px 0 #ff0000, 5px 0 #00ffff; }
-            15% { transform: translateX(-3px); text-shadow: -5px 0 #ff0000, 5px 0 #00ffff; }
-            20% { transform: translateX(0); text-shadow: 0 0 20px var(--primary-color), 0 0 40px var(--primary-color); }
-        }
-        
-        /* 错误消息 */
-        .error-message {
-            font-size: 1.8rem;
-            margin-bottom: 2rem;
-            color: rgba(200, 220, 255, 0.9);
-            text-shadow: 0 0 10px rgba(0, 247, 255, 0.5);
-        }
-        
-        /* 描述文本 */
-        .error-description {
-            font-size: 1.1rem;
-            margin-bottom: 3rem;
-            line-height: 1.6;
-            max-width: 600px;
-            margin-left: auto;
-            margin-right: auto;
-        }
-        
-        /* 操作按钮 */
-        .action-buttons {
-            display: flex;
-            justify-content: center;
-            gap: 1.5rem;
-            flex-wrap: wrap;
-        }
-        
-        .btn {
-            padding: 0.8rem 2rem;
-            border: 1px solid var(--primary-color);
-            border-radius: 30px;
-            background: rgba(0, 0, 0, 0.2);
-            color: var(--primary-color);
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            text-decoration: none;
-        }
-        
-        .btn:hover {
-            background: rgba(0, 247, 255, 0.1);
-            box-shadow: 0 0 15px rgba(0, 247, 255, 0.3);
-            transform: translateY(-2px);
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary-color), #00b3ff);
-            color: #0a0a16;
-            border: none;
-        }
-        
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #00d0ff, var(--primary-color));
-            box-shadow: 0 0 20px rgba(0, 247, 255, 0.5);
-        }
-        
-        /* 浮动元素 */
-        .floating-element {
-            position: absolute;
-            width: 8px;
-            height: 8px;
-            background-color: rgba(0, 247, 255, 0.6);
-            border-radius: 50%;
-            box-shadow: 0 0 10px rgba(0, 247, 255, 0.5);
-            z-index: 3;
-            opacity: 0.7;
-            animation: float 15s infinite ease-in-out;
-        }
-        
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0) rotate(0deg); }
-            25% { transform: translate(100px, -50px) rotate(90deg); }
-            50% { transform: translate(0, -100px) rotate(180deg); }
-            75% { transform: translate(-100px, -50px) rotate(270deg); }
-        }
-        
-        /* 响应式设计 */
-        @media (max-width: 768px) {
-            .error-code {
-                font-size: 6rem;
-            }
-            
-            .error-message {
-                font-size: 1.5rem;
-            }
-            
-            .error-description {
-                font-size: 1rem;
-            }
-            
-            .action-buttons {
-                flex-direction: column;
-                align-items: center;
-            }
-            
-            .btn {
-                width: 100%;
-                max-width: 250px;
-                justify-content: center;
-            }
-            
-            .loader-text {
-                font-size: 2rem;
-                letter-spacing: 0.2em;
-            }
-        }
-        
-        @media (max-width: 480px) {
-            .error-code {
-                font-size: 4rem;
-            }
-            
-            .error-message {
-                font-size: 1.2rem;
-            }
-            
-            .container {
-                padding: 1rem;
-            }
-            
-            .loader-text {
-                font-size: 1.5rem;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>页面未找到 - GXY's website</title>
+  <style>
+    /* 信件风格主样式 */
+    :root {
+        --bg-color: #fdf5e6;
+        --text-color: #333333;
+        --accent-color: #8b4513;
+        --border-color: #d2b48c;
+        --header-bg: #f5f5dc;
+        --link-color: #8b4513;
+        --link-hover: #a0522d;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        background-color: var(--bg-color);
+        font-family: "Georgia", "Times New Roman", "FangSong", "仿宋", "STFangSong", "华文仿宋", serif;
+        color: var(--text-color);
+        line-height: 1.6;
+        padding: 20px;
+        min-height: 100vh;
+        overflow-x: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        border: 2px solid var(--border-color);
+        box-shadow: 
+            0 4px 12px rgba(0, 0, 0, 0.1),
+            6px 6px 0 -2px rgba(210, 180, 140, 0.3),
+            -6px 6px 0 -2px rgba(210, 180, 140, 0.3);
+        padding: 40px;
+        position: relative;
+        border-radius: 6px;
+        text-align: center;
+    }
+
+    h1 {
+        font-size: 4rem;
+        color: var(--accent-color);
+        margin: 20px 0;
+        font-family: "Georgia", serif;
+    }
+
+    h2 {
+        font-size: 2rem;
+        color: var(--accent-color);
+        margin: 20px 0;
+        font-family: "Georgia", serif;
+    }
+
+    p {
+        font-size: 1.2rem;
+        margin: 20px 0;
+        color: #444;
+        line-height: 1.7;
+    }
+
+    .home-link {
+        display: inline-block;
+        background: var(--accent-color);
+        color: white;
+        padding: 12px 24px;
+        text-decoration: none;
+        border-radius: 6px;
+        transition: all 0.3s ease;
+        font-weight: bold;
+        font-size: 1.1rem;
+        margin-top: 20px;
+        border: 2px solid var(--accent-color);
+    }
+
+    .home-link:hover {
+        background: var(--link-hover);
+        border-color: var(--link-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .decoration {
+        position: absolute;
+        font-size: 6rem;
+        color: rgba(139, 69, 19, 0.1);
+        z-index: 0;
+        user-select: none;
+    }
+
+    .decoration.tl {
+        top: 20px;
+        left: 20px;
+        transform: rotate(-10deg);
+    }
+
+    .decoration.tr {
+        top: 20px;
+        right: 20px;
+        transform: rotate(10deg);
+    }
+
+    .decoration.bl {
+        bottom: 20px;
+        left: 20px;
+        transform: rotate(-5deg);
+    }
+
+    .decoration.br {
+        bottom: 20px;
+        right: 20px;
+        transform: rotate(5deg);
+    }
+  </style>
 </head>
 <body>
-    <!-- 网格背景 -->
-    <div class="grid-container" id="gridContainer">
-        <div class="grid-back"></div>
-        <div class="grid"></div>
-    </div>
+  <div class="container">
+    <div class="decoration tl">✉</div>
+    <div class="decoration tr">Gxy</div>
+    <div class="decoration bl">ERROR</div>
+    <div class="decoration br">？</div>
     
-    <!-- 浮动元素 -->
-    <div class="floating-elements">
-        <!-- 由JS动态生成 -->
-    </div>
-    
-    <!-- 内容容器 -->
-    <div class="container" id="contentContainer">
-        <h1 class="error-code">404</h1>
-        <h2 class="error-message">页面未找到</h2>
-        <p class="error-description">
-            嗯……看起来你访问的页面不存在或者已被移除了。这有可能是链接错误，或者页面已被移动到新的位置去了。
-        </p>
-        <div class="action-buttons">
-            <a href="/" class="btn btn-primary">
-                <i class="fas fa-home"></i> 返回首页
-            </a>
-            <a href="javascript:history.back()" class="btn">
-                <i class="fas fa-arrow-left"></i> 返回上一页
-            </a>
-            <button onclick="location.reload()" class="btn">
-                <i class="fas fa-sync-alt"></i> 重新加载
-            </button>
-        </div>
-    </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // 创建浮动元素
-            const floatingContainer = document.querySelector('.floating-elements');
-            for (let i = 0; i < 15; i++) {
-                const el = document.createElement('div');
-                el.className = 'floating-element';
-                const size = Math.random() * 6 + 2;
-                Object.assign(el.style, {
-                    left: `${Math.random() * 100}%`,
-                    top: `${Math.random() * 100}%`,
-                    width: `${size}px`,
-                    height: `${size}px`,
-                    animationDelay: `${Math.random() * 5}s`,
-                    animationDuration: `${Math.random() * 10 + 15}s`,
-                    opacity: Math.random() * 0.5 + 0.2
-                });
-                floatingContainer.appendChild(el);
-            }
-            // 简单的视差效果
-            document.addEventListener('mousemove', function(e) {
-                const mx = (e.clientX / window.innerWidth - 0.5) * 20;
-                const my = (e.clientY / window.innerHeight - 0.5) * 20;
-                document.querySelector('.grid').style.transform = `translate(${mx * 0.7}px, ${my * 0.7}px)`;
-                document.querySelector('.grid-back').style.transform = `translate(${mx * 0.3}px, ${my * 0.3}px)`;
-            });
-            // 进入动画
-            setTimeout(function() {
-                document.getElementById('gridContainer').classList.add('visible');
-            }, 200);
-            setTimeout(function() {
-                document.getElementById('contentContainer').classList.add('visible');
-            }, 700);
-        });
-    </script>
+    <h1>404</h1>
+    <h2>——————页面未找到——————</h2>
+    <p>诶呀……没找到这个页面呀，也许是网址输错了？（或者我不小心写错代码了）</p>
+    <p>或者，不妨回到首页，重新开始您的探索之旅。</p>
+    <a href="index.html" class="home-link">返回首页</a>
+    <a href="https://github.com/Xinyang-Gao/xinyang-gao.github.io/issues/new" class="home-link">反馈</a>
+  </div>
 </body>
 </html>
