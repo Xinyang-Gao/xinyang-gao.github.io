@@ -258,8 +258,10 @@ document.addEventListener('DOMContentLoaded', function () {
         if (document.querySelector('.work-details-overlay.active')) {
             return;
         }
+        
         const overlay = document.createElement('div');
         overlay.className = 'work-details-overlay';
+        
         const container = document.createElement('div');
         container.className = 'work-details-container';
         container.innerHTML = `
@@ -275,17 +277,26 @@ document.addEventListener('DOMContentLoaded', function () {
                 <a href="${work.link}" target="_blank" class="work-details-link">查看项目</a>
             ` : ''}
         `;
+        
         overlay.appendChild(container);
         document.body.appendChild(overlay);
+        
+        // 添加进入动画
         overlay.classList.add('active');
         
         // 添加关闭事件
         const closeBtn = container.querySelector('.work-details-close');
         closeBtn.addEventListener('click', function() {
+            // 添加退出动画
             overlay.classList.remove('active');
-            setTimeout(() => {
-                document.body.removeChild(overlay);
-            }, 300);
+            overlay.classList.add('slide-out');
+            
+            // 监听动画结束
+            overlay.addEventListener('animationend', function() {
+                if (overlay.parentNode) {
+                    overlay.parentNode.removeChild(overlay);
+                }
+            }, { once: true });
         });
     }
 
