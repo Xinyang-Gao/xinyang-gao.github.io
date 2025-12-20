@@ -1,80 +1,83 @@
 /* 信件风格主样式 */
 :root {
-    --bg-color: #fdf5e6;
-    --text-color: #333333;
-    --accent-color: #8b4513;
-    --border-color: #d2b48c;
-    --header-bg: #f5f5dc;
+    --bg-color: #fdf5e6; /* 信纸米黄色 */
+    --text-color: #333333; /* 深灰色文字 */
+    --accent-color: #8b4513; /* 棕褐色，模拟墨水 */
+    --border-color: #d2b48c; /* 浅棕褐色，模拟信纸边缘或折痕 */
+    --header-bg: #f5f5dc; /* 略浅的米黄，用于标题背景 */
     --link-color: #8b4513;
-    --link-hover: #a0522d;
-  }
-  
-  * {
+    --link-hover: #a0522d; /* 略深的棕色 */
+}
+
+* {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-  }
-  
-  body {
+}
+
+body {
     background-color: var(--bg-color);
-    font-family: "Georgia", serif;
+    /* 使用更接近手写/打印字体的衬线字体，并提供良好的备选 */
+    font-family: "Georgia", "Times New Roman", "FangSong", "仿宋", "STFangSong", "华文仿宋", serif;
     color: var(--text-color);
-    line-height: 1.5;
+    line-height: 1.6; /* 提高行高，模拟手写或打字机行间距 */
     padding: 20px;
     min-height: 100vh;
-    overflow-x: hidden;
-  }
-  
-  /* --- 导航栏样式 --- */
-  .navbar {
+    overflow-x: hidden; /* 防止内容过宽导致水平滚动条 */
+}
+
+/* --- 导航栏样式 --- */
+.navbar {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
-    /* 使用更现代的背景和模糊效果 */
-    background: rgba(253, 245, 230, 0.92);
+    /* 使用半透明背景和模糊效果，模拟覆盖在信纸上 */
+    background: rgba(253, 245, 230, 0.92); /* var(--bg-color) 的 RGBA 形式 */
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px); /* Safari 兼容 */
-    border-bottom: 1px solid rgba(210, 180, 140, 0.5);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    border-bottom: 1px solid rgba(210, 180, 140, 0.5); /* var(--border-color) 的半透形式 */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08); /* 轻微阴影 */
+
     /* 使用 Flexbox 简化布局和对齐 */
     display: flex;
     align-items: center;
     justify-content: space-between; /* Logo 左，Items 居中，Actions 右 */
+
     padding: 0 30px;
     height: 70px;
     z-index: 30;
+
     transition: all 0.3s ease; /* 平滑过渡背景等变化 */
-  }
-  
-  .nav-logo {
+}
+
+.nav-logo {
     display: flex;
     align-items: center;
-  }
-  
-  .logo-text {
+}
+.logo-text {
     color: var(--accent-color);
     font-family: "Georgia", serif;
     font-size: 1.7rem; /* 稍微增大 */
     font-weight: bold;
-    letter-spacing: 1px;
+    letter-spacing: 1px; /* 轻微字间距 */
     transition: color 0.3s ease;
-  }
-  
-  .logo-text:hover {
+}
+.logo-text:hover {
     color: var(--link-hover); /* 鼠标悬停 logo 文字颜色变化 */
-  }
-  
-  .nav-items {
+}
+
+
+.nav-items {
     display: flex;
     align-items: center;
     justify-content: center;
     list-style: none;
     margin: 0;
     padding: 0;
-  }
-  
-  .nav-item {
+}
+
+.nav-item {
     color: var(--text-color); /* 默认文字颜色稍淡 */
     padding: 10px 20px; /* 调整内边距增加点击区域 */
     margin: 0 5px; /* 减小左右 margin，依靠 padding 控制间距 */
@@ -82,41 +85,42 @@
     transition: all 0.3s ease;
     font-family: "Georgia", serif;
     font-size: 1.05rem; /* 稍微增大 */
-    letter-spacing: normal;
-    text-decoration: none;
+    letter-spacing: normal; /* 重置可能从父级继承的 letter-spacing */
+    text-decoration: none; /* 移除默认链接下划线 */
     border-radius: 6px; /* 稍大一点的圆角 */
     position: relative;
     background-color: transparent;
     border: 2px solid transparent; /* 透明边框占位，避免 hover 时跳动 */
-  }
-  
-  /* 悬停状态 */
-  .nav-item:hover {
+}
+
+/* 悬停状态 */
+.nav-item:hover {
     color: var(--accent-color);
     background-color: rgba(139, 69, 19, 0.08); /* 更柔和的背景色 */
     transform: translateY(-2px); /* 轻微上移效果 */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); /* 轻微阴影 */
-  }
-  
-  /* 激活/当前页面状态 */
-  .nav-item.active {
+}
+
+/* 激活/当前页面状态 */
+.nav-item.active {
     color: var(--accent-color);
     font-weight: bold;
     background-color: rgba(139, 69, 19, 0.12); /* 比 hover 稍深的背景 */
     border-color: rgba(139, 69, 19, 0.2); /* 添加轻微边框 */
     transform: translateY(-1px); /* 比 hover 上移少一点 */
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  }
-  
-  .nav-actions {
+}
+
+.nav-actions {
     display: flex;
     align-items: center;
     margin-left: auto; /* 确保它靠右 */
     /* 可在此处添加如搜索图标、用户头像等动作按钮 */
-  }
-  
-  /* 移动端汉堡菜单按钮 */
-  .mobile-toggle {
+}
+
+
+/* 移动端汉堡菜单按钮 */
+.mobile-toggle {
     display: none; /* 默认隐藏 */
     flex-direction: column;
     justify-content: center;
@@ -127,299 +131,311 @@
     padding: 4px;
     border-radius: 6px;
     transition: background-color 0.3s ease;
-  }
-  .mobile-toggle:hover {
+}
+.mobile-toggle:hover {
     background-color: rgba(139, 69, 19, 0.1);
-  }
-  
-  .mobile-toggle span {
+}
+.mobile-toggle span {
     width: 24px;
     height: 3px;
     background: var(--accent-color);
     margin: 3px 0;
     transition: all 0.3s ease;
     border-radius: 2px;
-  }
-  
-  /* --- 响应式断点 --- */
-  @media (max-width: 768px) {
+}
+
+/* --- 响应式断点 --- */
+@media (max-width: 768px) {
     .navbar {
-      padding: 0 20px;
-      height: 60px;
+        padding: 0 20px;
+        height: 60px;
     }
-  
+
     .logo-text {
-      font-size: 1.5rem;
+        font-size: 1.5rem;
     }
-  
+
+
     /* 在移动端，导航项变为垂直下拉菜单 */
     .nav-items {
-      display: none; /* 默认隐藏 */
-      position: absolute;
-      top: 100%; /* 紧跟在 navbar 下方 */
-      left: 0;
-      width: 100%;
-      background: rgba(253, 245, 230, 0.98);
-      flex-direction: column;
-      align-items: stretch; /* 子项拉伸填满宽度 */
-      padding: 15px 0;
-      border-top: 1px solid var(--border-color);
-      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
-      z-index: 29; /* 略低于 navbar */
+        display: none; /* 默认隐藏 */
+        position: absolute;
+        top: 100%; /* 紧跟在 navbar 下方 */
+        left: 0;
+        width: 100%;
+        background: rgba(253, 245, 230, 0.98);
+        flex-direction: column;
+        align-items: stretch; /* 子项拉伸填满宽度 */
+        padding: 15px 0;
+        border-top: 1px solid var(--border-color);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+        z-index: 29; /* 略低于 navbar */
     }
-  
+
     /* 当 .nav-items 有 .active 类时显示 */
     .nav-items.active {
-      display: flex;
+        display: flex;
     }
-  
+
     .nav-item {
-      margin: 5px 15px; /* 垂直间距 */
-      padding: 12px 20px; /* 增加垂直内边距 */
-      text-align: center;
-      border-radius: 8px;
-      font-size: 1.1rem;
+        margin: 5px 15px; /* 垂直间距 */
+        padding: 12px 20px; /* 增加垂直内边距 */
+        text-align: center;
+        border-radius: 8px;
+        font-size: 1.1rem;
     }
-  
+
     /* 移动端悬停和激活状态可以更明显 */
     .nav-item:hover {
-      background-color: rgba(139, 69, 19, 0.12);
+        background-color: rgba(139, 69, 19, 0.12);
     }
     .nav-item.active {
-      background-color: rgba(139, 69, 19, 0.15);
-      border-color: rgba(139, 69, 19, 0.3);
+        background-color: rgba(139, 69, 19, 0.15);
+        border-color: rgba(139, 69, 19, 0.3);
     }
-  
+
     /* 显示汉堡菜单按钮 */
     .mobile-toggle {
-      display: flex;
+        display: flex;
     }
-  
+
     /* 汉堡菜单动画 (可选) */
     .mobile-toggle.active span:nth-child(1) {
-      transform: translateY(8px) rotate(45deg);
+        transform: translateY(8px) rotate(45deg);
     }
-  
     .mobile-toggle.active span:nth-child(2) {
-      opacity: 0;
+        opacity: 0;
     }
-  
     .mobile-toggle.active span:nth-child(3) {
-      transform: translateY(-8px) rotate(-45deg);
+        transform: translateY(-8px) rotate(-45deg);
     }
-  }
-  
-  @media (max-width: 480px) {
+}
+
+@media (max-width: 480px) {
     .navbar {
-      padding: 0 15px;
-      height: 55px;
+        padding: 0 15px;
+        height: 55px;
     }
-  
+
     .logo-text {
-      font-size: 1.3rem;
+        font-size: 1.3rem;
     }
-  
+
     .nav-item {
-      font-size: 1rem;
-      margin: 4px 10px;
-      padding: 10px 15px;
+        font-size: 1rem;
+        margin: 4px 10px;
+        padding: 10px 15px;
     }
-  
+
     .nav-items {
-      padding: 10px 0;
+       padding: 10px 0;
     }
-  }
-  
-  /* --- 主体内容样式 --- */
-  .container {
+}
+
+
+/* --- 主体内容样式 --- */
+/* 容器模拟一张放在桌上的信纸 */
+.container {
     max-width: 800px;
     margin: 80px auto 40px auto; /* 顶部留出导航栏空间 */
-    background: white;
+    background: white; /* 信纸主体为白色 */
+    /* 模拟信纸边缘和阴影 */
     border: 2px solid var(--border-color);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow:
+        /* 主阴影，模拟纸张厚度 */
+        0 4px 12px rgba(0, 0, 0, 0.1),
+        /* 右下角轻微上翘的效果 */
+        6px 6px 0 -2px rgba(210, 180, 140, 0.3),
+        /* 左下角轻微上翘的效果 */
+        -6px 6px 0 -2px rgba(210, 180, 140, 0.3);
+
     padding: 40px; /* 内边距保持，提供呼吸感 */
     position: relative;
-    border-radius: 6px; /* 稍微增加圆角，更现代 */
-  }
-  
-  /* 标题样式优化 */
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
+    /* 圆角让信纸看起来更自然 */
+    border-radius: 6px;
+}
+
+/* 标题样式优化，使其看起来像是手写或打印在信纸上 */
+h1, h2, h3, h4, h5, h6 {
     font-family: "Georgia", serif; /* 保留衬线字体 */
     color: var(--accent-color); /* 保留主题色 */
     margin-top: 1.2em; /* 统一上边距 */
     margin-bottom: 0.8em; /* 减少下边距，更紧凑 */
     line-height: 1.2; /* 标题行高更紧凑 */
-  }
-  
-  h1 {
+}
+
+h1 {
     font-size: 2.2rem;
     text-align: center;
     margin-top: 0.5em; /* H1 通常在页面顶部，减少上边距 */
     margin-bottom: 1.2em; /* 底部留白大一些 */
-  }
-  
-  h2 {
+}
+h2 {
     font-size: 1.8rem; /* 稍微增大 */
     padding-bottom: 0.3em; /* 保留一点底部填充 */
-    border-bottom: 2px dotted var(--border-color); /* 改为点线或虚线，更柔和 */
-  }
-  
-  h3 {
+    /* 改为点线或虚线，更柔和，像手写分隔线 */
+    border-bottom: 2px dotted var(--border-color);
+}
+h3 {
     font-size: 1.5rem; /* 稍微增大 */
-  }
-  
-  /* 段落样式优化 */
-  p {
+}
+
+/* 段落样式优化，提高可读性 */
+p {
     margin-bottom: 1.2em; /* 使用 em 单位，相对于字体大小 */
     font-size: 1.1rem; /* 字号可以接受 */
-    line-height: 1.7; /* 增加行高，提高可读性 */
-    color: #444;
-  }
-  
-  #mainContent > p:first-of-type,
-  .content > p:first-of-type {
-    margin-top: 0; /* 确保第一个段落顶格 */
-  }
-  /* 如果需要区分连续段落，可以给非首段加一点上边距 */
-  #mainContent > p:not(:first-of-type),
-  .content > p:not(:first-of-type) {
+    line-height: 1.7; /* 增加行高，提高可读性，模拟手写或打字机行间距 */
+    color: #444; /* 比默认文字稍深一点，但不是纯黑 */
+}
+
+/* 确保主要内容区的第一个段落顶格 */
+#mainContent > p:first-of-type,
+.content > p:first-of-type {
+    margin-top: 0;
+}
+
+/* 如果需要区分连续段落，可以给非首段加一点上边距 */
+#mainContent > p:not(:first-of-type),
+.content > p:not(:first-of-type) {
     margin-top: 0.8em; /* 给后续段落一点上间距 */
-  }
-  
-  /* 链接样式优化 */
-  a {
+}
+
+
+/* 链接样式优化，使其更符合信件风格 */
+a {
     color: var(--link-color);
-    text-decoration: underline; /* 改回标准下划线，更明确 */
+    /* 改回标准下划线，更明确 */
+    text-decoration: underline;
     text-decoration-thickness: from-font; /* 使用字体推荐的线条粗细 */
     text-underline-offset: 2px; /* 下划线与文字距离 */
+
     transition: all 0.2s ease; /* 缩短过渡时间，更灵敏 */
     padding: 2px 4px;
     border-radius: 2px;
     background-color: transparent; /* 确保背景透明 */
-  }
-  
-  a:hover {
+}
+a:hover {
     color: var(--link-hover);
     text-decoration: underline; /* 确保悬停时仍有下划线 */
     text-decoration-thickness: from-font;
-    background-color: rgba(139, 69, 19, 0.08); /* 微弱背景色增强反馈 */
-    transform: translateY(-1px);
-  }
-  
-  /* 列表样式优化 */
-  ul,
-  ol {
+    /* 微弱背景色增强反馈，模拟荧光笔效果 */
+    background-color: rgba(139, 69, 19, 0.08);
+    transform: translateY(-1px); /* 轻微上移 */
+}
+
+
+/* 列表样式优化 */
+ul, ol {
     margin-left: 0; /* 移除外边距 */
     margin-bottom: 1.2em; /* 使用 em */
     padding-left: 1.5em; /* 内边距控制缩进 */
-  }
-  
-  li {
+}
+li {
     margin-bottom: 0.5em; /* 列表项间距 */
     line-height: 1.6; /* 行高 */
-  }
-  
-  /* 引用块 (如果用到) */
-  blockquote {
+}
+
+
+/* 引用块 (如果用到)，模拟引用段落 */
+blockquote {
     margin: 1.5em 0;
     padding: 0.8em 1.2em;
-    border-left: 4px solid var(--accent-color);
-    background-color: var(--header-bg);
-    font-style: italic;
+    border-left: 4px solid var(--accent-color); /* 左侧粗线 */
+    background-color: var(--header-bg); /* 浅色背景 */
+    font-style: italic; /* 斜体表示引用 */
     color: #555;
-  }
-  
-  blockquote p {
+}
+blockquote p {
     margin: 0; /* 引用内段落无外边距 */
-    font-size: 1rem; 
-  }
-  
-  /* 强调文本 */
-  strong {
+    font-size: 1rem;
+}
+
+/* 强调文本 */
+strong {
     font-weight: bold;
     color: var(--accent-color); /* 可选：给粗体也加点颜色 */
-  }
-  em {
+}
+em {
     font-style: italic;
-  }
-  
-  /* 分隔线 */
-  hr {
+}
+
+/* 分隔线 */
+hr {
     border: 0;
     height: 1px;
     background-color: var(--border-color);
     margin: 2em 0; /* 上下留白 */
-  }
-  
-  /* --- 特定内容区域样式 (如联系信息) --- */
-  .contact-info {
+}
+
+
+/* --- 特定内容区域样式 (如联系信息) --- */
+.contact-info {
     margin-top: 2em; /* 增大顶部间距 */
-  }
-  
-  .contact-info p {
+}
+
+.contact-info p {
     display: flex;
     align-items: flex-start; /* 顶部对齐，适应不同高度图标 */
-    gap: 12px;
+    gap: 12px; /* 元素间间距 */
     margin-bottom: 1em; /* 使用 em */
     text-indent: 0; /* 必须 */
     font-size: 1.05rem; /* 可以稍小一点 */
-  }
-  
-  .contact-info i {
+}
+.contact-info i {
     color: var(--accent-color);
     font-size: 1.1rem;
     width: auto;
     text-align: left;
     flex-shrink: 0; /* 图标不收缩 */
     padding-top: 0.1em; /* 微调垂直对齐 */
-  }
-  
-  /* --- 作品网格样式 (保留原有良好结构) --- */
-  .works-grid {
+}
+
+
+/* --- 作品网格样式 (保留原有良好结构) --- */
+.works-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 24px;
     margin-top: 20px;
-  }
-  
-  .work-card {
+}
+
+.work-card {
     background: white;
     border: 1px solid var(--border-color);
     border-radius: 8px;
     padding: 20px;
     transition: all 0.3s ease;
     cursor: pointer;
-    perspective: 1000px;
+    perspective: 1000px; /* 为翻转动画做准备 */
     min-height: 200px;
     position: relative;
-    overflow: hidden;
-  }
-  
-  .work-card:hover {
+    overflow: hidden; /* 隐藏溢出内容 */
+    /* 模拟小卡片阴影 */
+     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+.work-card:hover {
     border-color: var(--accent-color);
+    /* 悬停时增强阴影 */
     box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-  }
-  
-  .work-card-inner {
+}
+
+/* 翻转卡片内部容器 */
+.work-card-inner {
     position: relative;
     width: 100%;
     height: 100%;
     text-align: center;
     transition: transform 0.6s;
     transform-style: preserve-3d;
-  }
-  
-  .work-card.expanded .work-card-inner {
+}
+/* 展开时翻转 */
+.work-card.expanded .work-card-inner {
     transform: rotateY(180deg);
-  }
-  
-  .work-card-front,
-  .work-card-back {
+}
+
+/* 卡片正面和背面通用样式 */
+.work-card-front,
+.work-card-back {
     position: absolute;
     width: 100%;
     height: 100%;
@@ -428,115 +444,109 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-  }
-  
-  .work-card-back {
+}
+/* 背面初始旋转180度 */
+.work-card-back {
     transform: rotateY(180deg);
-    overflow-y: auto;
+    overflow-y: auto; /* 背面内容可能溢出，允许滚动 */
     padding: 15px;
     box-sizing: border-box;
-    text-align: left;
-  }
-  
-  .work-image {
+    text-align: left; /* 背面文字左对齐 */
+}
+
+.work-image {
     max-width: 100%;
     height: auto;
     border-radius: 4px;
     margin-bottom: 15px;
-  }
-  
-  .work-info {
-    text-align: left;
-  }
-  
-  .work-title {
+}
+
+.work-info {
+    text-align: left; /* 信息左对齐 */
+}
+.work-title {
     margin: 0 0 10px 0;
     font-size: 1.4rem;
-  }
-  
-  .work-description {
+}
+.work-description {
     margin: 0 0 10px 0;
     font-size: 1rem;
-  }
-  
-  .work-meta {
+}
+.work-meta {
     display: flex;
     justify-content: space-between;
     font-size: 0.9rem;
     color: #666;
-  }
-  
-  .work-details {
+}
+
+.work-details {
     margin-bottom: 15px;
-    text-indent: 0;
-  }
-  
-  .work-technologies {
+    text-indent: 0; /* 重置缩进 */
+}
+.work-technologies {
     margin-bottom: 15px;
-    text-align: left;
-  }
-  
-  .tech-tag {
+    text-align: left; /* 技术栈左对齐 */
+}
+.tech-tag {
     display: inline-block;
-    background-color: #eee;
+    background-color: #eee; /* 浅灰色标签背景 */
     color: var(--text-color);
     padding: 4px 8px;
-    margin: 4px 4px 0 0;
+    margin: 4px 4px 0 0; /* 标签间距 */
     border-radius: 4px;
     font-size: 0.85rem;
-  }
-  
-  .work-links {
-    margin-top: auto;
-  }
-  
-  .work-link {
+}
+
+.work-links {
+    margin-top: auto; /* 推到底部 */
+}
+.work-link {
     margin-top: 10px;
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-  }
-  
-  .work-close-btn {
+    gap: 5px; /* 图标和文字间距 */
+}
+.work-close-btn {
     margin-top: 15px;
-    align-self: flex-end;
+    align-self: flex-end; /* 关闭按钮靠右 */
     display: inline-flex;
     align-items: center;
-    gap: 5px;
-  }
-  
-  /* --- 动画与过渡 --- */
-  @keyframes drawPaperIn {
+    gap: 5px; /* 图标和文字间距 */
+}
+
+
+/* --- 动画与过渡 --- */
+@keyframes drawPaperIn {
     0% {
-      transform: translateY(100%) scale(0.95);
-      opacity: 0;
+        transform: translateY(100%) scale(0.95);
+        opacity: 0;
     }
     70% {
-      transform: translateY(-10px) scale(1.01);
-      opacity: 1;
+        transform: translateY(-10px) scale(1.01);
+        opacity: 1;
     }
     100% {
-      transform: translateY(0) scale(1);
-      opacity: 1;
+        transform: translateY(0) scale(1);
+        opacity: 1;
     }
-  }
-  
-  @keyframes fadeOutAndShrink {
+}
+
+@keyframes fadeOutAndShrink {
     0% {
-      transform: translateY(0) scale(1);
-      opacity: 1;
+        transform: translateY(0) scale(1);
+        opacity: 1;
     }
     100% {
-      transform: translateY(20px) scale(0.98);
-      opacity: 0;
+        transform: translateY(20px) scale(0.98);
+        opacity: 0;
     }
-  }
-  
-  .fade-out-shrink {
+}
+
+.fade-out-shrink {
     animation: fadeOutAndShrink 0.6s cubic-bezier(0.4, 0, 0.2, 1) forwards;
-  }
-  
-  .draw-animation-paper {
+}
+
+.draw-animation-paper {
     position: fixed;
     z-index: 1001;
     opacity: 0;
@@ -545,47 +555,49 @@
     box-sizing: border-box;
     background: white;
     border: 2px solid var(--border-color);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.1),
+        6px 6px 0 -2px rgba(210, 180, 140, 0.3),
+        -6px 6px 0 -2px rgba(210, 180, 140, 0.3);
     padding: 40px;
-  }
-  
-  .page-transition {
+    border-radius: 6px;
+}
+
+.page-transition {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(253, 245, 230, 0.3);
+    background-color: rgba(253, 245, 230, 0.3); /* var(--bg-color) 的半透形式 */
     z-index: 1000;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s ease-in-out;
-  }
-  
-  .page-transition.active {
+}
+.page-transition.active {
     opacity: 1;
     pointer-events: auto;
-  }
-  
-  .ripple {
+}
+
+.ripple {
     position: fixed;
     border-radius: 50%;
-    background-color: rgba(139, 69, 19, 0.3);
+    background-color: rgba(139, 69, 19, 0.3); /* var(--accent-color) 的半透形式 */
     transform: translate(-50%, -50%);
     pointer-events: none;
     z-index: 9999;
     animation: ripple-effect 0.6s linear forwards;
-  }
-  
-  @keyframes ripple-effect {
+}
+@keyframes ripple-effect {
     0% {
-      width: 0;
-      height: 0;
-      opacity: 0.7;
+        width: 0;
+        height: 0;
+        opacity: 0.7;
     }
     100% {
-      width: 500px;
-      height: 500px;
-      opacity: 0;
+        width: 500px;
+        height: 500px;
+        opacity: 0;
     }
-  }
+}
