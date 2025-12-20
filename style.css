@@ -1,12 +1,18 @@
 /* 信件风格主样式 */
 :root {
-    --bg-color: #fdf5e6; /* 信纸米黄色 */
-    --text-color: #333333; /* 深灰色文字 */
-    --accent-color: #8b4513; /* 棕褐色，模拟墨水 */
-    --border-color: #d2b48c; /* 浅棕褐色，模拟信纸边缘或折痕 */
-    --header-bg: #f5f5dc; /* 略浅的米黄，用于标题背景 */
+    --bg-color: #fdf5e6;
+    /* 信纸米黄色 */
+    --text-color: #333333;
+    /* 深灰色文字 */
+    --accent-color: #8b4513;
+    /* 棕褐色，模拟墨水 */
+    --border-color: #d2b48c;
+    /* 浅棕褐色，模拟信纸边缘或折痕 */
+    --header-bg: #f5f5dc;
+    /* 略浅的米黄，用于标题背景 */
     --link-color: #8b4513;
-    --link-hover: #a0522d; /* 略深的棕色 */
+    --link-hover: #a0522d;
+    /* 略深的棕色 */
 }
 
 * {
@@ -143,11 +149,11 @@ body {
         padding: 0 20px;
         height: 60px;
     }
-    
+
     .logo-text {
         font-size: 1.5rem;
     }
-    
+
     .nav-items {
         display: none;
         position: absolute;
@@ -162,11 +168,11 @@ body {
         box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
         z-index: 29;
     }
-    
+
     .nav-items.active {
         display: flex;
     }
-    
+
     .nav-item {
         margin: 5px 15px;
         padding: 12px 20px;
@@ -174,28 +180,28 @@ body {
         border-radius: 8px;
         font-size: 1.1rem;
     }
-    
+
     .nav-item:hover {
         background-color: rgba(139, 69, 19, 0.12);
     }
-    
+
     .nav-item.active {
         background-color: rgba(139, 69, 19, 0.15);
         border-color: rgba(139, 69, 19, 0.3);
     }
-    
+
     .mobile-toggle {
         display: flex;
     }
-    
+
     .mobile-toggle.active span:nth-child(1) {
         transform: translateY(8px) rotate(45deg);
     }
-    
+
     .mobile-toggle.active span:nth-child(2) {
         opacity: 0;
     }
-    
+
     .mobile-toggle.active span:nth-child(3) {
         transform: translateY(-8px) rotate(-45deg);
     }
@@ -206,17 +212,17 @@ body {
         padding: 0 15px;
         height: 55px;
     }
-    
+
     .logo-text {
         font-size: 1.3rem;
     }
-    
+
     .nav-item {
         font-size: 1rem;
         margin: 4px 10px;
         padding: 10px 15px;
     }
-    
+
     .nav-items {
         padding: 10px 0;
     }
@@ -228,7 +234,7 @@ body {
     margin: 80px auto 40px auto;
     background: white;
     border: 2px solid var(--border-color);
-    box-shadow: 
+    box-shadow:
         0 4px 12px rgba(0, 0, 0, 0.1),
         6px 6px 0 -2px rgba(210, 180, 140, 0.3),
         -6px 6px 0 -2px rgba(210, 180, 140, 0.3);
@@ -237,7 +243,12 @@ body {
     border-radius: 6px;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
     font-family: "Georgia", serif;
     color: var(--accent-color);
     margin-top: 1.2em;
@@ -269,13 +280,13 @@ p {
     color: #444;
 }
 
-#mainContent > p:first-of-type,
-.content > p:first-of-type {
+#mainContent>p:first-of-type,
+.content>p:first-of-type {
     margin-top: 0;
 }
 
-#mainContent > p:not(:first-of-type),
-.content > p:not(:first-of-type) {
+#mainContent>p:not(:first-of-type),
+.content>p:not(:first-of-type) {
     margin-top: 0.8em;
 }
 
@@ -298,7 +309,8 @@ a:hover {
     transform: translateY(-1px);
 }
 
-ul, ol {
+ul,
+ol {
     margin-left: 0;
     margin-bottom: 1.2em;
     padding-left: 1.5em;
@@ -522,10 +534,12 @@ hr {
         transform: translateY(100%) scale(0.95);
         opacity: 0;
     }
+
     70% {
         transform: translateY(-10px) scale(1.01);
         opacity: 1;
     }
+
     100% {
         transform: translateY(0) scale(1);
         opacity: 1;
@@ -537,6 +551,7 @@ hr {
         transform: translateY(0) scale(1);
         opacity: 1;
     }
+
     100% {
         transform: translateY(20px) scale(0.98);
         opacity: 0;
@@ -595,6 +610,7 @@ hr {
         height: 0;
         opacity: 0.7;
     }
+
     100% {
         width: 500px;
         height: 500px;
