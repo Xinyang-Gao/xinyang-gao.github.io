@@ -177,57 +177,138 @@ document.addEventListener('DOMContentLoaded', function() {
   }
 
   function loadPage(pageName, pushState = true) {
+    // 使用性能监控开始标记
     perf.start('loadPage');
-    elements.pageTransition.classList.add('active');
-    setTimeout(() => {
-      let content = '';
-      let pageTitle = 'GXY\'s website';
-      const templateId = pageName + '-content';
-      const template = document.getElementById(templateId);
-      if (template) {
+
+    // 获取目标页面内容
+    let content = '';
+    let pageTitle = 'GXY\'s website';
+    const templateId = pageName + '-content';
+    const template = document.getElementById(templateId);
+
+    if (template) {
         content = template.innerHTML;
-      }
+    }
 
-      switch(pageName) {
-        case 'about': pageTitle = '关于 - GXY\'s website'; break;
-        case 'articles': pageTitle = '文章 - GXY\'s website'; break;
-        case 'works': 
-          pageTitle = '作品 - GXY\'s website';
-          fetchWorksData().then(worksData => {
-            elements.content.innerHTML = generateWorksHTML(worksData);
-          }).catch(error => {
-            console.error('Failed to load works data:', error);
-            elements.content.innerHTML = '<h2>作品集</h2><p>哎呀！加载失败了……要不重新试试？</p>';
-          });
-          break;
-        case 'contact': pageTitle = '联系 - GXY\'s website'; break;
-        default: 
-          pageTitle = 'GXY\'s website';
-          pageName = 'index';
-          if (template) content = template.innerHTML;
-      }
+    // 设置页面标题
+    switch(pageName) {
+        case 'about':
+            pageTitle = '关于 - GXY\'s website';
+            break;
+        case 'articles':
+            pageTitle = '文章 - GXY\'s website';
+            break;
+        case 'works':
+            pageTitle = '作品 - GXY\'s website';
+            // 特殊处理 works 页面，需要异步加载数据
+            fetchWorksData().then(worksData => {
+                // 注意：这里不再直接操作 elements.content，而是交给动画处理
+                const worksHTML = generateWorksHTML(worksData);
+                performDrawAnimation(worksHTML, pageName, pageTitle, pushState);
+            }).catch(error => {
+                console.error('Failed to load works data:', error);
+                const errorHTML = '<h2>作品集</h2><p>哎呀！加载失败了……要不重新试试？</p>';
+                performDrawAnimation(errorHTML, pageName, pageTitle, pushState);
+            });
+            // 提前返回，因为是异步操作
+            return;
+        case 'contact':
+            pageTitle = '联系 - GXY\'s website';
+            break;
+        default:
+            pageTitle = 'GXY\'s website';
+            pageName = 'index';
+            if (template) content = template.innerHTML;
+    }
 
-      if (pageName !== 'works') {
+    // 对于非 'works' 页面，执行动画
+    performDrawAnimation(content, pageName, pageTitle, pushState);
+
+    // 结束性能监控
+    perf.end('loadPage');
+}
+
+/**
+ * 执行抽纸动画的核心函数
+ * @param {string} content - 要显示的新页面内容 HTML 字符串
+ * @param {string} pageName - 当前加载的页面名称
+ * @param {string} pageTitle - 当前加载的页面标题
+ * @param {boolean} pushState - 是否更新浏览器历史记录
+ */
+function performDrawAnimation(content, pageName, pageTitle, pushState) {
+    // 1. 显示全局过渡遮罩（可选，增加视觉反馈）
+    elements.pageTransition.classList.add('active');
+
+    // 2. 获取当前主容器 (.container) 的几何信息
+    const containerRect = elements.container.getBoundingClientRect();
+    const computedStyle = window.getComputedStyle(elements.container);
+    const paddingTop = parseFloat(computedStyle.paddingTop);
+    const paddingRight = parseFloat(computedStyle.paddingRight);
+    const paddingBottom = parseFloat(computedStyle.paddingBottom);
+    const paddingLeft = parseFloat(computedStyle.paddingLeft);
+
+    // 3. 创建临时的抽纸动画容器
+    const paperElement = document.createElement('div');
+    paperElement.className = 'draw-animation-paper';
+
+    // 4. 动态设置临时容器的位置、尺寸和内边距，使其精确匹配当前 .container
+    //    并设置初始动画偏移量
+    paperElement.style.cssText = `
+        top: ${containerRect.top + window.scrollY}px;
+        left: ${containerRect.left + window.scrollX}px;
+        width: ${containerRect.width}px;
+        height: ${containerRect.height}px;
+        padding: ${paddingTop}px ${paddingRight}px ${paddingBottom}px ${paddingLeft}px;
+        /* 初始变换：从自身高度的下方开始 */
+        transform: translateY(${containerRect.height}px) scale(0.98);
+    `;
+
+    // 5. 注入新内容
+    paperElement.innerHTML = content;
+
+    // 6. 将临时容器添加到 body 中，触发动画
+    document.body.appendChild(paperElement);
+
+    // 7. 等待动画完成 (匹配 CSS 动画时长)
+    setTimeout(() => {
+        // 8. 动画结束后，更新原始容器的内容
         elements.content.innerHTML = content;
-      }
-      document.title = pageTitle;
 
-      if (pushState) {
-        window.history.pushState({page: pageName}, pageTitle, `?page=${pageName}`);
-      }
+        // 9. 更新文档标题
+        document.title = pageTitle;
 
-      elements.pageTransition.classList.remove('active');
-
-      elements.navItems.forEach(item => {
-        if (item.getAttribute('data-page') === pageName) {
-          item.classList.add('active');
-        } else {
-          item.classList.remove('active');
+        // 10. 更新浏览器历史记录
+        if (pushState) {
+            window.history.pushState({page: pageName}, pageTitle, `?page=${pageName}`);
         }
-      });
-      perf.end('loadPage');
-    }, 100);
-  }
+
+        // 11. 更新导航栏激活状态
+        elements.navItems.forEach(item => {
+            if (item.getAttribute('data-page') === pageName) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
+
+        // 12. 移除临时动画元素
+        if (paperElement.parentNode) {
+            paperElement.parentNode.removeChild(paperElement);
+        }
+
+        // 13. 隐藏全局过渡遮罩
+        elements.pageTransition.classList.remove('active');
+
+        // 14. 可选：为新内容中的交互元素重新绑定事件（如果有的话）
+        if (pageName === 'works') {
+             setupWorkCardsInteraction();
+        }
+
+
+    }, 600); // 动画时长 0.6s
+}
+
+
 
 async function fetchWorksData() {
         perf.start('fetchWorksData');
