@@ -239,7 +239,12 @@ document.addEventListener('DOMContentLoaded', function () {
     function handleWorkItemClick(e) {
         const workItem = e.target.closest('.work-item');
         if (workItem) {
-            const workId = workItem.getAttribute('data-id');
+            const workIdStr = workItem.getAttribute('data-id');
+            const workId = parseInt(workIdStr, 10);
+            if (isNaN(workId)) {
+                console.error('无效的作品ID:', workIdStr);
+                return;
+            }
             const worksData = JSON.parse(localStorage.getItem('worksData'));
             const work = worksData.works.find(w => w.id === workId);
             if (work) {
