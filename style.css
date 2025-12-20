@@ -422,12 +422,13 @@ hr {
     background-color: white;
     border: 2px solid var(--border-color);
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 6px 6px 0 -2px rgba(210, 180, 140, 0.3), -6px 6px 0 -2px rgba(210, 180, 140, 0.3);
     z-index: 1000;
     overflow: hidden;
     transform-origin: top left;
     opacity: 0;
-    transition: all 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
+    transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+    box-sizing: border-box;
 }
 
 .work-details-envelope.active {
@@ -459,6 +460,7 @@ hr {
     cursor: pointer;
     color: var(--text-color);
     transition: color 0.3s ease;
+    z-index: 10;
 }
 
 .work-details-close:hover {
@@ -516,14 +518,29 @@ hr {
 
 /* --- 动画与过渡 --- */
 @keyframes drawPaperIn {
-    0% { transform: translateY(100%) scale(0.95); opacity: 0; }
-    70% { transform: translateY(-10px) scale(1.01); opacity: 1; }
-    100% { transform: translateY(0) scale(1); opacity: 1; }
+    0% {
+        transform: translateY(100%) scale(0.95);
+        opacity: 0;
+    }
+    70% {
+        transform: translateY(-10px) scale(1.01);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
 }
 
 @keyframes fadeOutAndShrink {
-    0% { transform: translateY(0) scale(1); opacity: 1; }
-    100% { transform: translateY(20px) scale(0.98); opacity: 0; }
+    0% {
+        transform: translateY(0) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(20px) scale(0.98);
+        opacity: 0;
+    }
 }
 
 .fade-out-shrink {
@@ -573,6 +590,14 @@ hr {
 }
 
 @keyframes ripple-effect {
-    0% { width: 0; height: 0; opacity: 0.7; }
-    100% { width: 500px; height: 500px; opacity: 0; }
+    0% {
+        width: 0;
+        height: 0;
+        opacity: 0.7;
+    }
+    100% {
+        width: 500px;
+        height: 500px;
+        opacity: 0;
+    }
 }
