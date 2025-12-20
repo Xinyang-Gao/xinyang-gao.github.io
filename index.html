@@ -1,46 +1,42 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GXY's website</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GXY's website</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 </head>
 <body>
-    <!-- 导航栏 -->
-    <nav class="navbar">
-        <div class="nav-logo">
-            <a href="?page=index" class="logo-text">GXY's website</a>
-        </div>
-        <div class="nav-items">
-            <a href="?page=index" class="nav-item active" data-page="index">首页</a>
-            <a href="?page=about" class="nav-item" data-page="about">关于</a>
-            <a href="?page=articles" class="nav-item" data-page="articles">文章</a>
-            <a href="?page=works" class="nav-item" data-page="works">作品</a>
-            <a href="?page=contact" class="nav-item" data-page="contact">联系</a>
-        </div>
-        <div class="nav-actions">
-            <div class="mobile-toggle">
-                <span></span>
-                <span></span>
-                <span></span>
-            </div>
-        </div>
-    </nav>
-
-    <!-- 主体内容容器 -->
-    <div class="container">
-        <div id="mainContent">
-            <!-- 内容将在这里动态加载 -->
-            <!-- 默认加载指示器 -->
-            <p style="text-align:center;">正在加载...</p>
-        </div>
+  <div class="navbar">
+    <div class="nav-logo">
+      <span class="logo-text">GXY's website</span>
     </div>
+    <div class="nav-items">
+      <a href="?page=index" class="nav-item active" data-page="index">首页</a>
+      <a href="?page=about" class="nav-item" data-page="about">关于</a>
+      <a href="?page=articles" class="nav-item" data-page="articles">文章</a>
+      <a href="?page=works" class="nav-item" data-page="works">作品</a>
+      <a href="?page=contact" class="nav-item" data-page="contact">联系</a>
+    </div>
+    <div class="nav-actions">
+      <div class="mobile-toggle">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  </div>
 
-    <!-- 页面切换遮罩 -->
-    <div id="pageTransition" class="page-transition"></div>
+  <div class="container">
+    <div id="mainContent">
+      <!-- 页面内容将通过 JavaScript 动态加载 -->
+      正在加载...
+    </div>
+  </div>
 
-    <!-- 引入脚本 -->
-    <script src="script.js"></script>
+  <div id="pageTransition" class="page-transition"></div>
+
+  <script src="script.js"></script>
 </body>
 </html>
