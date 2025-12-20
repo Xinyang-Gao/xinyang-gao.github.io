@@ -1,18 +1,12 @@
 /* 信件风格主样式 */
 :root {
     --bg-color: #fdf5e6;
-    /* 信纸米黄色 */
     --text-color: #333333;
-    /* 深灰色文字 */
     --accent-color: #8b4513;
-    /* 棕褐色，模拟墨水 */
     --border-color: #d2b48c;
-    /* 浅棕褐色，模拟信纸边缘或折痕 */
     --header-bg: #f5f5dc;
-    /* 略浅的米黄，用于标题背景 */
     --link-color: #8b4513;
     --link-hover: #a0522d;
-    /* 略深的棕色 */
 }
 
 * {
