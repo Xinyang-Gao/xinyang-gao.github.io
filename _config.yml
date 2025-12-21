@@ -1,3 +1,2 @@
 headers:
   Access-Control-Allow-Origin: "*"
-  markdown: Kramdown
