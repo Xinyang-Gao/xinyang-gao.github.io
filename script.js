@@ -26,20 +26,53 @@ function generateTagsHTML(tags, classNamePrefix = "tag") {
   `;
 }
 
-async function fetchWorksData() {
+// --- 辅助函数 ---
+// 检查数据是否过期 (设置缓存时间为 5 分钟)
+function isDataExpired(storedDataString) {
+  if (!storedDataString) return true;
+  try {
+      const storedData = JSON.parse(storedDataString);
+      const timestamp = storedData._timestamp; // 假设我们在存储时加入了时间戳
+      const tenMinutesAgo = Date.now() - 5 * 60 * 1000; // 10分钟毫秒数
+      return !timestamp || timestamp < tenMinutesAgo;
+  } catch (e) {
+      console.error("Error parsing stored data:", e);
+      return true; // 解析失败也认为过期
+  }
+}
+
+async function fetchWorksData(useCache = true) { // 添加 useCache 参数，默认启用缓存
   perf.start('fetchWorksData');
   try {
-    const response = await fetch('works.json');
-    if (!response.ok) {
-      throw new Error(`Network error fetching works: ${response.statusText}`);
-    }
-    const data = await response.json();
-    perf.end('fetchWorksData');
-    return data;
+      if (useCache) {
+          const cachedDataString = localStorage.getItem('worksData');
+          if (cachedDataString && !isDataExpired(cachedDataString)) {
+              console.log("Using cached works data");
+              const cachedData = JSON.parse(cachedDataString);
+              delete cachedData._timestamp; // 返回时移除内部使用的 _timestamp
+              perf.end('fetchWorksData');
+              return cachedData;
+          }
+      }
+
+      // 如果没启用缓存、没有缓存、或缓存过期，则请求网络
+      console.log("Fetching fresh works data");
+      const response = await fetch('works.json');
+      if (!response.ok) {
+          throw new Error(`Network error fetching works: ${response.statusText}`);
+      }
+      const data = await response.json();
+      
+      // 存储带时间戳的数据
+      const dataToStore = {...data, _timestamp: Date.now()};
+      localStorage.setItem('worksData', JSON.stringify(dataToStore));
+      
+      perf.end('fetchWorksData');
+      return data;
   } catch (error) {
-    console.error('Failed to fetch works data:', error);
-    perf.end('fetchWorksData');
-    throw error;
+      console.error('Failed to fetch or use cached works data:', error);
+      perf.end('fetchWorksData');
+      throw error;
   }
 }
 
@@ -74,20 +107,36 @@ function generateWorksHTML(data) {
   return html;
 }
 
-async function fetchArticlesData() {
+async function fetchArticlesData(useCache = true) { // 添加 useCache 参数
   perf.start('fetchArticlesData');
   try {
-    const response = await fetch('articles.json');
-    if (!response.ok) {
-      throw new Error(`Network error fetching articles: ${response.statusText}`);
-    }
-    const data = await response.json();
-    perf.end('fetchArticlesData');
-    return data;
+      if (useCache) {
+          const cachedDataString = localStorage.getItem('articlesData');
+          if (cachedDataString && !isDataExpired(cachedDataString)) {
+              console.log("Using cached articles data");
+              const cachedData = JSON.parse(cachedDataString);
+              delete cachedData._timestamp;
+              perf.end('fetchArticlesData');
+              return cachedData;
+          }
+      }
+
+      console.log("Fetching fresh articles data");
+      const response = await fetch('articles.json');
+      if (!response.ok) {
+          throw new Error(`Network error fetching articles: ${response.statusText}`);
+      }
+      const data = await response.json();
+      
+      const dataToStore = {...data, _timestamp: Date.now()};
+      localStorage.setItem('articlesData', JSON.stringify(dataToStore));
+      
+      perf.end('fetchArticlesData');
+      return data;
   } catch (error) {
-    console.error('Failed to fetch articles data:', error);
-    perf.end('fetchArticlesData');
-    throw error;
+      console.error('Failed to fetch or use cached articles data:', error);
+      perf.end('fetchArticlesData');
+      throw error;
   }
 }
 
@@ -450,11 +499,34 @@ function initPopstate() {
   });
 }
 
+function initBackToTopButton() {
+  const backToTopButton = document.getElementById("backToTopBtn");
+  if (!backToTopButton) return;
+
+  const scrollThreshold = 300; // 滚动多少像素后显示按钮
+
+  window.addEventListener('scroll', function() {
+      if (window.scrollY > scrollThreshold) {
+          backToTopButton.classList.add('show');
+      } else {
+          backToTopButton.classList.remove('show');
+      }
+  });
+
+  backToTopButton.addEventListener('click', function() {
+      window.scrollTo({
+          top: 0,
+          behavior: 'smooth' // 平滑滚动
+      });
+  });
+}
+
 // --- 主执行逻辑 ---
 document.addEventListener('DOMContentLoaded', function () {
   initNavigation();
   initPopstate();
   initMobileMenuToggle(); 
+  initBackToTopButton();
   const initialPage = getUrlParameter('page') || 'index';
   loadPage(initialPage);
 });
