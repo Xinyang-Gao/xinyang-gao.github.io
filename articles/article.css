@@ -24,22 +24,21 @@ body {
     font-family: "Georgia", "Times New Roman", "FangSong", "仿宋", "STFangSong", "华文仿宋", serif;
     color: var(--text-color);
     line-height: 1.6;
-    padding: 0; /* 移除 body 的默认 padding */
+    padding: 0;
     min-height: 100vh;
     overflow-x: hidden;
 }
 
-/* 从 style.css 复制容器样式并稍作调整 */
 .article-page-container {
-    max-width: 1200px; /* 扩大容器宽度以容纳固定目录 */
+    max-width: 1200px;
     margin: 90px auto 40px auto; /* 顶部留出导航栏空间 */
     padding: 0 20px; /* 左右内边距 */
-    display: flex; /* 使用 Flexbox 布局 */
+    display: flex;
     gap: 20px; /* 目录和内容之间的间距 */
-    position: relative; /* 作为定位上下文 */
+    position: relative;
 }
 
-/* --- 固定 TOC 容器样式 (模仿 style.css 的信件风格) --- */
+/* --- 固定 TOC 容器样式 --- */
 .toc-container {
     width: 25%; /* 占据容器的 25% 宽度 */
     background: white;
@@ -232,7 +231,7 @@ body {
 
 /* 从 style.css 复制代码块样式 (简化) */
 .article-content-wrapper pre {
-    background: #f5f5f5;
+    background: #e6d5b4;
     padding: 15px;
     border-radius: 4px;
     overflow-x: auto;
@@ -241,7 +240,7 @@ body {
 }
 
 .article-content-wrapper code {
-    background: #f5f5f5;
+    background: #e6d5b4;
     padding: 2px 4px;
     border-radius: 3px;
     font-family: monospace; /* 确保代码字体 */
