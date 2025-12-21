@@ -121,17 +121,15 @@ function generateArticlesHTML(data) {
   return html;
 }
 
-function fetchPageContent(url) {
-  return fetch(url)
-    .then(response => {
-      if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error('404');
-        }
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-      return response.text();
-    });
+async function fetchPageContent(url) {
+  const response = await fetch(url);
+  if (!response.ok) {
+    if (response.status === 404) {
+      throw new Error('404');
+    }
+    throw new Error(`HTTP error! Status: ${response.status}`);
+  }
+  return await response.text();
 }
 
 function replaceWorkListContainer(baseHtml, worksListHtml) {
@@ -270,6 +268,20 @@ function performDrawAnimation(content, pageName, pageTitle, pushState) {
   }, { once: true });
 
   perf.end('performDrawAnimation');
+}
+
+function initMobileMenuToggle() {
+  const toggleButton = document.querySelector('.mobile-toggle');
+  const navbarNav = document.getElementById('navbarNav'); // 使用上面添加的 ID
+
+  if (toggleButton && navbarNav) {
+      toggleButton.addEventListener('click', function () {
+          // 切换导航菜单的显示状态
+          navbarNav.classList.toggle('active');
+          // 切换汉堡按钮本身的样式（用于动画）
+          this.classList.toggle('active');
+      });
+  }
 }
 
 function setupWorkItemsInteraction() {
@@ -442,6 +454,7 @@ function initPopstate() {
 document.addEventListener('DOMContentLoaded', function () {
   initNavigation();
   initPopstate();
+  initMobileMenuToggle(); 
   const initialPage = getUrlParameter('page') || 'index';
   loadPage(initialPage);
 });

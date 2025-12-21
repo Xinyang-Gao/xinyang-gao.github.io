@@ -12,13 +12,15 @@
     <div class="nav-logo">
       <span class="logo-text">GaoXinYang</span>
     </div>
-    <div class="nav-items">
-      <a href="?page=index" class="nav-item active" data-page="index">首页</a>
-      <a href="?page=about" class="nav-item" data-page="about">关于</a>
-      <a href="?page=articles" class="nav-item" data-page="articles">文章</a>
-      <a href="?page=works" class="nav-item" data-page="works">作品</a>
-      <a href="?page=contact" class="nav-item" data-page="contact">联系</a>
-    </div>
+    <nav aria-label="主导航">
+      <div class="nav-items" id="navbarNav"> 
+          <a href="?page=index" class="nav-item active" data-page="index">首页</a>
+          <a href="?page=about" class="nav-item" data-page="about">关于</a>
+          <a href="?page=articles" class="nav-item" data-page="articles">文章</a>
+          <a href="?page=works" class="nav-item" data-page="works">作品</a>
+          <a href="?page=contact" class="nav-item" data-page="contact">联系</a>
+      </div>
+  </nav>
     <div class="nav-actions">
       <div class="mobile-toggle">
         <span></span>
@@ -29,10 +31,9 @@
   </div>
 
   <div class="container">
-    <div id="mainContent">
-      <!-- 页面内容将通过 JavaScript 动态加载 -->
+    <main id="mainContent" role="main" aria-live="polite" aria-busy="false">
       加载中...
-    </div>
+ </main>
   </div>
 
   <div id="pageTransition" class="page-transition"></div>
