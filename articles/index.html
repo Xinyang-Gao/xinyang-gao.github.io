@@ -4,82 +4,89 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>文章 - GXY's website</title>
-    <link rel="stylesheet" href="../style.css">
-    <!-- 引入文章页特定的样式 -->
+
+    <!-- 引入 article.css 文件以应用目录样式 -->
     <link rel="stylesheet" href="article.css">
-    <!-- 引入 Markdown 解析库 -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    <!-- 引入文章页的脚本 -->
-    <script defer src="article.js"></script>
+    <link rel="stylesheet" href="../style.css">
+
     <style>
-        /* 可以在这里添加一些额外的样式来微调布局 */
-        .main-layout {
-            display: flex;
-            max-width: 1200px;
-            margin: 0 auto;
+        /* 自定义样式以实现固定目录效果 */
+        body {
+            /* 确保页面有基本的样式 */
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* --- 固定 TOC 容器 --- */
+        .toc-container {
+            position: fixed; /* 关键：固定定位 */
+            top: 20px;       /* 距离顶部的距离 */
+            left: 20px;      /* 距离左侧的距离 */
+            width: 220px;    /* 固定宽度 */
+            max-height: calc(100vh - 40px); /* 最大高度为视口高度减去上下边距 */
+            overflow-y: auto; /* 内容过多时允许垂直滚动 */
+            z-index: 1000;   /* 确保目录在其他内容之上 */
+            /* article.css 中的样式 (background, border, padding, shadow) 会生效 */
+        }
+
+        /* --- 调整主内容区以避开固定目录 --- */
+        .article-content {
+            margin-left: 270px; /* 220px (目录宽度) + 20px (目录左间距) + 30px (预留间隙) */
+            margin-right: 20px; /* 右侧边距 */
+            margin-top: 20px;   /* 顶部边距 */
+            margin-bottom: 20px; /* 底部边距 */
             padding: 20px;
-            gap: 20px; /* 在toc和content之间添加间距 */
+            background-color: #fff; /* 主内容区背景色 */
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* 简单阴影 */
+            min-height: calc(100vh - 40px); /* 至少占满视口高度减去上下边距 */
         }
 
-        .toc-wrapper {
-             flex: 0 0 25%; /* 占据25%宽度，不伸缩 */
-             /* 复用 article.css 中 .toc-container 的核心样式 */
-             background: white;
-             border: 1px solid var(--border-color);
-             border-radius: 8px;
-             padding: 15px;
-             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-             overflow-y: auto;
-             max-height: 80vh;
-        }
-
-        .article-wrapper {
-            flex: 1; /* 占据剩余空间 */
-            /* 复用 article.css 中 .article-content 的核心样式 */
-            background: white;
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        }
-
+        /* --- 响应式设计：小屏幕下取消固定 --- */
         @media (max-width: 768px) {
-            .main-layout {
-                flex-direction: column;
+            .toc-container {
+                position: static; /* 恢复为普通定位 */
+                width: 100%;      /* 占满容器宽度 */
+                max-height: none; /* 取消最大高度限制 */
+                margin-bottom: 20px; /* 下方留空 */
             }
-            .toc-wrapper {
-                 flex: none;
-                 width: 100%;
-                 margin-bottom: 20px;
+            .article-content {
+                margin-left: 20px; /* 恢复默认边距 */
+                margin-right: 20px;
+                min-height: auto; /* 取消最小高度 */
             }
-            .article-wrapper {
-                 flex: none;
-            }
+        }
+
+        /* --- 修复标题样式 --- */
+        .article-title {
+            margin-top: 0; /* 重置标题顶部边距 */
         }
     </style>
 </head>
 <body>
 
-<div class="main-layout">
-    <!-- 新的左侧导航容器 -->
-    <aside class="toc-wrapper">
+    <!-- 固定的 TOC 容器 -->
+    <div class="toc-container">
         <h2 class="toc-title">目录</h2>
-        <ul id="tocList" class="toc-list">
-            <!-- 目录内容将由 JavaScript 动态生成 -->
+        <ul class="toc-list" id="tocList">
+            <!-- 目录项将由 JavaScript 动态生成 -->
         </ul>
-    </aside>
+    </div>
 
-    <!-- 新的右侧正文容器 -->
-    <main class="article-wrapper">
-        <div id="articleContent">
-            <h1 id="articleTitle" class="article-title">GaoXinYang——${meta.title}（读取元数据中的title，代办）</h1>
-            <div id="articleMeta" class="article-meta">日期: ...</div>
-            <div id="articleBody" class="article-body">
-                <!-- 文章内容将由 JavaScript 动态加载和解析 -->
-            </div>
+    <!-- 主文章内容区 -->
+    <div class="article-content">
+        <h1 class="article-title" id="articleTitle">GaoXinYang——${meta.title}</h1> <!-- 这里的 ${meta.title} 是占位符，实际由 JS 替换 -->
+        <div class="article-meta" id="articleMeta">日期: ...</div>
+        <div class="article-body" id="articleBody">
+            <!-- 文章正文内容将由 JavaScript 动态加载 -->
         </div>
-    </main>
-</div>
+    </div>
+
+    <!-- 引入必要的脚本 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script> <!-- 确保引入了 marked 库 -->
+    <script src="article.js"></script> <!-- 加载文章处理脚本 -->
 
 </body>
 </html>
