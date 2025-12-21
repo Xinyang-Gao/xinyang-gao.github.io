@@ -156,6 +156,7 @@ document.addEventListener('DOMContentLoaded', function () {
         localStorage.setItem('articlesData', JSON.stringify(articlesData));
         const articlesListHtml = generateArticlesHTML(articlesData);
         content = replaceArticlesListContainer(baseHtml, articlesListHtml);
+        setupArticleItemsInteraction();
       }
       else {
         pageTitle = pageConfig[pageName]
@@ -274,6 +275,11 @@ document.addEventListener('DOMContentLoaded', function () {
     elements.content.addEventListener('click', handleWorkItemClick);
   }
 
+function setupArticleItemsInteraction() {
+  elements.content.removeEventListener('click', handleArticleItemClick);
+  elements.content.addEventListener('click', handleArticleItemClick);
+}
+
   function handleWorkItemClick(e) {
     const workItem = e.target.closest('.work-item');
     if (!workItem) return;
@@ -285,6 +291,22 @@ document.addEventListener('DOMContentLoaded', function () {
     const work = worksData?.works?.find(w => w.id === workId);
     if (work) showWorkDetails(work);
   }
+
+  function handleArticleItemClick(e) {
+    const articleItem = e.target.closest('.article-item');
+    if (!articleItem) return;
+    const articleId = parseInt(articleItem.dataset.id, 10); // 假设是ID
+    if (isNaN(articleId)) return;
+    const articlesData = JSON.parse(localStorage.getItem('articlesData'));
+    const article = articlesData?.articles?.find(a => a.id === articleId);
+    if (article) {
+        // 原先可能是 showArticleDetails(article); 或者 navigateToArticle(article);
+        // 现在改为跳转到新页面
+        // 注意：这里的 article.title 应该是唯一的标识符，可能需要转换成 URL 安全的格式
+        const articleTitle = encodeURIComponent(article.title); // URL 编码标题
+        window.open(`../articles/?article=${articleTitle}`, '_blank'); // 在新标签页打开
+    }
+}
 
   function showWorkDetails(work) {
     if (document.querySelector('.work-details-envelope.active')) return;
