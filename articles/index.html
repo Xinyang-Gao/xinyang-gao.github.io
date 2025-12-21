@@ -3,90 +3,47 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 动态标题将由 article.js 设置 -->
     <title>文章 - GXY's website</title>
-
-    <!-- 引入 article.css 文件以应用目录样式 -->
     <link rel="stylesheet" href="article.css">
-    <link rel="stylesheet" href="../style.css">
-
-    <style>
-        /* 自定义样式以实现固定目录效果 */
-        body {
-            /* 确保页面有基本的样式 */
-            font-family: Arial, sans-serif;
-            line-height: 1.6;
-            margin: 0;
-            padding: 0;
-        }
-
-        /* --- 固定 TOC 容器 --- */
-        .toc-container {
-            position: fixed; /* 关键：固定定位 */
-            top: 20px;       /* 距离顶部的距离 */
-            left: 20px;      /* 距离左侧的距离 */
-            width: 220px;    /* 固定宽度 */
-            max-height: calc(100vh - 40px); /* 最大高度为视口高度减去上下边距 */
-            overflow-y: auto; /* 内容过多时允许垂直滚动 */
-            z-index: 1000;   /* 确保目录在其他内容之上 */
-            /* article.css 中的样式 (background, border, padding, shadow) 会生效 */
-        }
-
-        /* --- 调整主内容区以避开固定目录 --- */
-        .article-content {
-            margin-left: 270px; /* 220px (目录宽度) + 20px (目录左间距) + 30px (预留间隙) */
-            margin-right: 20px; /* 右侧边距 */
-            margin-top: 20px;   /* 顶部边距 */
-            margin-bottom: 20px; /* 底部边距 */
-            padding: 20px;
-            background-color: #fff; /* 主内容区背景色 */
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* 简单阴影 */
-            min-height: calc(100vh - 40px); /* 至少占满视口高度减去上下边距 */
-        }
-
-        /* --- 响应式设计：小屏幕下取消固定 --- */
-        @media (max-width: 768px) {
-            .toc-container {
-                position: static; /* 恢复为普通定位 */
-                width: 100%;      /* 占满容器宽度 */
-                max-height: none; /* 取消最大高度限制 */
-                margin-bottom: 20px; /* 下方留空 */
-            }
-            .article-content {
-                margin-left: 20px; /* 恢复默认边距 */
-                margin-right: 20px;
-                min-height: auto; /* 取消最小高度 */
-            }
-        }
-
-        /* --- 修复标题样式 --- */
-        .article-title {
-            margin-top: 0; /* 重置标题顶部边距 */
-        }
-    </style>
 </head>
 <body>
 
-    <!-- 固定的 TOC 容器 -->
-    <div class="toc-container">
-        <h2 class="toc-title">目录</h2>
-        <ul class="toc-list" id="tocList">
-            <!-- 目录项将由 JavaScript 动态生成 -->
-        </ul>
-    </div>
+    <!-- 包含导航栏的占位符，模拟主站结构 -->
+    <!-- 实际项目中，这部分可能通过服务端渲染或前端框架动态插入 -->
+    <!-- 或者你可以将导航栏的 HTML/CSS 也复制到这里 -->
+    <!-- 这里仅示意 -->
+    <!--
+    <nav class="navbar"> ... </nav>
+    -->
 
-    <!-- 主文章内容区 -->
-    <div class="article-content">
-        <h1 class="article-title" id="articleTitle">GaoXinYang——${meta.title}</h1> <!-- 这里的 ${meta.title} 是占位符，实际由 JS 替换 -->
-        <div class="article-meta" id="articleMeta">日期: ...</div>
-        <div class="article-body" id="articleBody">
-            <!-- 文章正文内容将由 JavaScript 动态加载 -->
+    <!-- 主内容区域：Flex 布局包含目录和文章内容 -->
+    <div class="article-page-container">
+
+        <!-- 固定/粘性定位的 TOC 容器 -->
+        <div class="toc-container">
+            <h2 class="toc-title">目录</h2>
+            <ul class="toc-list" id="tocList">
+                <!-- 目录项将由 JavaScript 动态生成 -->
+            </ul>
         </div>
+
+        <!-- 主文章内容区 -->
+        <div class="article-content-wrapper">
+            <h1 class="article-title" id="articleTitle">GaoXinYang——加载中...</h1> <!-- 占位符 -->
+            <div class="article-meta" id="articleMeta">日期: 加载中...</div> <!-- 占位符 -->
+            <div class="article-body" id="articleBody">
+                <!-- 文章正文内容将由 JavaScript 动态加载和解析 -->
+                <p>正在加载文章内容...</p>
+            </div>
+        </div>
+
     </div>
 
     <!-- 引入必要的脚本 -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script> <!-- 确保引入了 marked 库 -->
-    <script src="article.js"></script> <!-- 加载文章处理脚本 -->
+    <!-- 注意：marked 库必须在 article.js 之前加载 -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="article.js"></script>
 
 </body>
 </html>

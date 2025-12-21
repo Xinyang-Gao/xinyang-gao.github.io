@@ -1,68 +1,253 @@
-.content-container {
-    display: flex;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 20px;
+:root {
+    --bg-color: #fdf5e6;
+    --text-color: #333333;
+    --accent-color: #8b4513;
+    --border-color: #d2b48c;
+    --header-bg: #f5f5dc;
+    --link-color: #8b4513;
+    --link-hover: #a0522d;
 }
+
+/* 从 style.css 复制基础样式 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html, body {
+    height: 100%;
+}
+
+body {
+    background-color: var(--bg-color);
+    font-family: "Georgia", "Times New Roman", "FangSong", "仿宋", "STFangSong", "华文仿宋", serif;
+    color: var(--text-color);
+    line-height: 1.6;
+    padding: 0; /* 移除 body 的默认 padding */
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+/* 从 style.css 复制容器样式并稍作调整 */
+.article-page-container {
+    max-width: 1200px; /* 扩大容器宽度以容纳固定目录 */
+    margin: 90px auto 40px auto; /* 顶部留出导航栏空间 */
+    padding: 0 20px; /* 左右内边距 */
+    display: flex; /* 使用 Flexbox 布局 */
+    gap: 20px; /* 目录和内容之间的间距 */
+    position: relative; /* 作为定位上下文 */
+}
+
+/* --- 固定 TOC 容器样式 (模仿 style.css 的信件风格) --- */
 .toc-container {
-    width: 25%;
-    margin-right: 20px;
+    width: 25%; /* 占据容器的 25% 宽度 */
     background: white;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    padding: 15px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    overflow-y: auto;
-    max-height: 80vh;
+    border: 2px solid var(--border-color);
+    border-radius: 6px;
+    padding: 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 6px 6px 0 -2px rgba(210, 180, 140, 0.3), -6px 6px 0 -2px rgba(210, 180, 140, 0.3);
+    position: sticky; /* 使用 sticky 定位，在父容器内固定 */
+    top: 90px; /* 距离 viewport 顶部的距离，略大于导航栏高度 */
+    align-self: flex-start; /* 防止目录随内容拉伸 */
+    max-height: calc(100vh - 120px); /* 限制最大高度，防止溢出 */
+    overflow-y: auto; /* 内容溢出时滚动 */
 }
+
 .toc-title {
-    font-size: 1.4rem;
+    font-family: "Georgia", serif;
     color: var(--accent-color);
+    margin-top: 0;
     margin-bottom: 15px;
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 8px;
+    font-size: 1.4rem;
+    text-align: center;
+    border-bottom: 2px dotted var(--border-color);
+    padding-bottom: 0.3em;
 }
+
 .toc-list {
     list-style: none;
     padding-left: 0;
 }
-.toc-list li h2 {
-    margin: 0;
-    padding: 0;
-    font-size: 1.1rem;
-}
-.toc-list li h3 {
-    margin: 0;
-    padding: 0;
-    font-size: 1.0rem;
-    margin-left: 15px;
-}
-.toc-list li h4 {
-    margin: 0;
-    padding: 0;
-    font-size: 0.95rem;
-    margin-left: 30px;
+.toc-list li {
+    margin-bottom: 8px;
+    padding-left: 10px;
+    position: relative;
 }
 .toc-list a {
     color: var(--text-color);
     text-decoration: none;
     transition: color 0.3s ease;
     display: block;
-    padding: 4px 0;
+    font-size: 1rem; /* 调整字体大小 */
 }
+
 .toc-list a:hover {
     color: var(--accent-color);
 }
-.article-content {
-    width: 75%;
+
+/* 根据标题级别添加缩进 */
+.toc-list li h2,
+.toc-list li h3,
+.toc-list li h4 {
+     margin: 0;
+     padding: 0;
+     font-size: 1; /* 继承父级字体大小 */
+     font-weight: normal; /* 避免加粗 */
 }
-.article-title {
-    font-size: 3.2rem;
+.toc-list li h2 {
+    margin-left: 10px;
+}
+.toc-list li h3 {
+    margin-left: 20px;
+}
+.toc-list li h4 {
+    margin-left: 30px;
+}
+
+
+/* --- 主文章内容区域样式 (模仿 style.css 的 container 和内容样式) --- */
+.article-content-wrapper {
+    width: 75%; /* 占据容器的 75% 宽度 */
+    background: white;
+    border: 2px solid var(--border-color);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 6px 6px 0 -2px rgba(210, 180, 140, 0.3), -6px 6px 0 -2px rgba(210, 180, 140, 0.3);
+    padding: 40px;
+    position: relative;
+    border-radius: 6px;
+}
+
+/* 从 style.css 复制标题样式 */
+.article-content-wrapper h1,
+.article-content-wrapper h2,
+.article-content-wrapper h3,
+.article-content-wrapper h4,
+.article-content-wrapper h5,
+.article-content-wrapper h6 {
+    font-family: "Georgia", serif;
     color: var(--accent-color);
+    margin-top: 1.2em;
+    margin-bottom: 0.8em;
+    line-height: 1.2;
+}
+
+.article-content-wrapper h1 {
+    font-size: 2.2rem;
     text-align: center;
-    margin-bottom: 20px;
+    margin-top: 0.5em;
+    margin-bottom: 1.2em;
+}
+
+.article-content-wrapper h2 {
+    font-size: 1.8rem;
+    padding-bottom: 0.3em;
+    border-bottom: 2px dotted var(--border-color);
+}
+
+.article-content-wrapper h3 {
+    font-size: 1.5rem;
+}
+
+/* 从 style.css 复制段落样式 */
+.article-content-wrapper p {
+    margin-bottom: 1.2em;
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: #444;
+}
+
+.article-content-wrapper > p:first-of-type {
     margin-top: 0;
 }
+
+.article-content-wrapper > p:not(:first-of-type) {
+    margin-top: 0.8em;
+}
+
+/* 从 style.css 复制链接样式 */
+.article-content-wrapper a {
+    color: var(--link-color);
+    text-decoration: underline;
+    text-decoration-thickness: from-font;
+    text-underline-offset: 2px;
+    transition: all 0.2s ease;
+    padding: 2px 4px;
+    border-radius: 2px;
+    background-color: transparent;
+}
+
+.article-content-wrapper a:hover {
+    color: var(--link-hover);
+    text-decoration: underline;
+    text-decoration-thickness: from-font;
+    background-color: rgba(139, 69, 19, 0.08);
+    transform: translateY(-1px);
+}
+
+/* 从 style.css 复制列表样式 */
+.article-content-wrapper ul,
+.article-content-wrapper ol {
+    margin-left: 0;
+    margin-bottom: 1.2em;
+    padding-left: 1.5em;
+}
+
+.article-content-wrapper li {
+    margin-bottom: 0.5em;
+    line-height: 1.6;
+}
+
+/* 从 style.css 复制引用块样式 */
+.article-content-wrapper blockquote {
+    margin: 1.5em 0;
+    padding: 0.8em 1.2em;
+    border-left: 4px solid var(--accent-color);
+    background-color: var(--header-bg);
+    font-style: italic;
+    color: #555;
+}
+
+.article-content-wrapper blockquote p {
+    margin: 0;
+    font-size: 1rem;
+}
+
+/* 从 style.css 复制强调样式 */
+.article-content-wrapper strong {
+    font-weight: bold;
+    color: var(--accent-color);
+}
+
+.article-content-wrapper em {
+    font-style: italic;
+}
+
+/* 从 style.css 复制分割线样式 */
+.article-content-wrapper hr {
+    border: 0;
+    height: 1px;
+    background-color: var(--border-color);
+    margin: 2em 0;
+}
+
+/* 从 style.css 复制代码块样式 (简化) */
+.article-content-wrapper pre {
+    background: #f5f5f5;
+    padding: 15px;
+    border-radius: 4px;
+    overflow-x: auto;
+    margin: 1.5em 0;
+    font-family: monospace; /* 确保代码字体 */
+}
+
+.article-content-wrapper code {
+    background: #f5f5f5;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-family: monospace; /* 确保代码字体 */
+}
+
+/* --- 文章元数据样式 --- */
 .article-meta {
     text-align: center;
     color: #666;
@@ -73,37 +258,45 @@
     border-radius: 4px;
     border-left: 4px solid var(--accent-color);
 }
-.article-content h2, .article-content h3, .article-content h4 {
-    margin-top: 2.5em;
-    margin-bottom: 1.2em;
-    padding-bottom: 0.3em;
-    border-bottom: 1px dotted var(--border-color);
-}
-.article-content p {
-    margin-bottom: 1.2em;
-    line-height: 1.7;
-    word-break: break-word;
-    overflow-wrap: break-word;
-}
-.article-content pre {
-    background: #f5f5f5;
-    padding: 15px;
-    border-radius: 4px;
-    overflow-x: auto;
-    margin: 1.5em 0;
-}
-.article-content code {
-    background: #f5f5f5;
-    padding: 2px 4px;
-    border-radius: 3px;
-}
+
+/* --- 响应式设计 --- */
 @media (max-width: 768px) {
-    .content-container {
-        flex-direction: column;
+    .article-page-container {
+        flex-direction: column; /* 小屏幕下垂直排列 */
+        padding: 20px 10px; /* 调整内边距 */
+        margin-top: 70px; /* 调整顶部边距 */
     }
+
+    .toc-container,
+    .article-content-wrapper {
+        width: 100%; /* 宽度变为 100% */
+        position: static; /* 取消 sticky/fixed */
+        top: auto;
+        max-height: none; /* 取消最大高度 */
+        margin-bottom: 20px; /* 添加底部间距 */
+    }
+
     .toc-container {
-        width: 100%;
-        margin-right: 0;
-        margin-bottom: 20px;
+         padding: 15px;
     }
+
+    .article-content-wrapper {
+         padding: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+     .article-page-container {
+         padding: 15px 5px;
+         margin-top: 65px;
+     }
+     .article-content-wrapper h1 {
+          font-size: 1.8rem;
+     }
+     .article-content-wrapper h2 {
+          font-size: 1.5rem;
+     }
+     .article-content-wrapper p {
+          font-size: 1rem;
+     }
 }
