@@ -5,303 +5,81 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>文章 - GXY's website</title>
     <link rel="stylesheet" href="../style.css">
+    <!-- 引入文章页特定的样式 -->
+    <link rel="stylesheet" href="article.css">
+    <!-- 引入 Markdown 解析库 -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- 引入文章页的脚本 -->
+    <script defer src="article.js"></script>
     <style>
-        /* 添加样式，解决长文本换行和导航层次问题 */
-        .content-container {
+        /* 可以在这里添加一些额外的样式来微调布局 */
+        .main-layout {
             display: flex;
             max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
+            gap: 20px; /* 在toc和content之间添加间距 */
         }
-        .toc-container {
-            width: 25%;
-            margin-right: 20px;
+
+        .toc-wrapper {
+             flex: 0 0 25%; /* 占据25%宽度，不伸缩 */
+             /* 复用 article.css 中 .toc-container 的核心样式 */
+             background: white;
+             border: 1px solid var(--border-color);
+             border-radius: 8px;
+             padding: 15px;
+             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+             overflow-y: auto;
+             max-height: 80vh;
+        }
+
+        .article-wrapper {
+            flex: 1; /* 占据剩余空间 */
+            /* 复用 article.css 中 .article-content 的核心样式 */
             background: white;
             border: 1px solid var(--border-color);
             border-radius: 8px;
-            padding: 15px;
+            padding: 20px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-            overflow-y: auto;
-            max-height: 80vh;
         }
-        .toc-title {
-            font-size: 1.4rem;
-            color: var(--accent-color);
-            margin-bottom: 15px;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 8px;
-        }
-        .toc-list {
-            list-style: none;
-            padding-left: 0;
-        }
-        .toc-list li {
-            margin-bottom: 8px;
-            padding-left: 15px;
-            position: relative;
-        }
-        .toc-list li:before {
-            content: "";
-            position: absolute;
-            left: 0;
-            top: 10px;
-            width: 6px;
-            height: 6px;
-            background: var(--accent-color);
-            border-radius: 50%;
-        }
-        .toc-list li h2 {
-            margin: 0;
-            padding: 0;
-            font-size: 1.1rem;
-        }
-        .toc-list li h3 {
-            margin: 0;
-            padding: 0;
-            font-size: 1.0rem;
-            margin-left: 15px;
-        }
-        .toc-list li h4 {
-            margin: 0;
-            padding: 0;
-            font-size: 0.95rem;
-            margin-left: 30px;
-        }
-        .toc-list a {
-            color: var(--text-color);
-            text-decoration: none;
-            transition: color 0.3s ease;
-            display: block;
-            padding: 4px 0;
-        }
-        .toc-list a:hover {
-            color: var(--accent-color);
-        }
-        .article-content {
-            width: 75%;
-        }
-        .article-title {
-            font-size: 2.2rem;
-            color: var(--accent-color);
-            text-align: center;
-            margin-bottom: 20px;
-            margin-top: 0;
-        }
-        .article-meta {
-            text-align: center;
-            color: #666;
-            margin-bottom: 30px;
-            font-size: 0.9rem;
-            padding: 10px;
-            background: var(--header-bg);
-            border-radius: 4px;
-            border-left: 4px solid var(--accent-color);
-        }
-        .article-content h2, .article-content h3, .article-content h4 {
-            margin-top: 2.5em;
-            margin-bottom: 1.2em;
-            padding-bottom: 0.3em;
-            border-bottom: 1px dotted var(--border-color);
-        }
-        .article-content p {
-            margin-bottom: 1.2em;
-            line-height: 1.7;
-            word-break: break-word;
-            overflow-wrap: break-word;
-        }
-        .article-content pre {
-            background: #f5f5f5;
-            padding: 15px;
-            border-radius: 4px;
-            overflow-x: auto;
-            margin: 1.5em 0;
-        }
-        .article-content code {
-            background: #f5f5f5;
-            padding: 2px 4px;
-            border-radius: 3px;
-        }
+
         @media (max-width: 768px) {
-            .content-container {
+            .main-layout {
                 flex-direction: column;
             }
-            .toc-container {
-                width: 100%;
-                margin-right: 0;
-                margin-bottom: 20px;
+            .toc-wrapper {
+                 flex: none;
+                 width: 100%;
+                 margin-bottom: 20px;
+            }
+            .article-wrapper {
+                 flex: none;
             }
         }
     </style>
 </head>
 <body>
-    <div class="navbar">
-        <div class="nav-logo">
-            <span class="logo-text">GaoXinYang</span>
-        </div>
-        <div class="nav-logo">
-            <span class="logo-text">——标题（读取元数据中的title，代办）</span>
-        </div>
-        <div class="nav-actions">
-            <!-- 一些操作按钮，如主题切换等，代办 -->
-        </div>
-    </div>
-    
-    <div class="container" id="mainContent">
-        <div class="content-container">
-            <div class="toc-container">
-                <h3 class="toc-title">目录</h3>
-                <ul class="toc-list" id="tocList"></ul>
-            </div>
-            <div class="article-content" id="articleContent">
-                <div class="article-title" id="articleTitle"></div>
-                <div class="article-meta" id="articleMeta"></div>
-                <div id="articleBody"></div>
+
+<div class="main-layout">
+    <!-- 新的左侧导航容器 -->
+    <aside class="toc-wrapper">
+        <h2 class="toc-title">目录</h2>
+        <ul id="tocList" class="toc-list">
+            <!-- 目录内容将由 JavaScript 动态生成 -->
+        </ul>
+    </aside>
+
+    <!-- 新的右侧正文容器 -->
+    <main class="article-wrapper">
+        <div id="articleContent">
+            <h1 id="articleTitle" class="article-title">GaoXinYang——${meta.title}（读取元数据中的title，代办）</h1>
+            <div id="articleMeta" class="article-meta">日期: ...</div>
+            <div id="articleBody" class="article-body">
+                <!-- 文章内容将由 JavaScript 动态加载和解析 -->
             </div>
         </div>
-    </div>
-    
-    <div id="pageTransition" class="page-transition"></div>
-    
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // 从URL获取文章标识
-            const articleId = getUrlParameter('article');
-            
-            if (!articleId) {
-                document.getElementById('articleContent').innerHTML = `
-                    <h2>无法定位文章！</h2>
-                    <p>请提供有效的文章标识！</p>
-                `;
-                return;
-            }
-            
-            // 构建文章路径
-            const articlePath = `../articles/${articleId}`;
-            
-            // 加载并解析Markdown文件
-            fetch(articlePath)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error(`找不到文章！: ${response.status}`);
-                    }
-                    return response.text();
-                })
-                .then(markdown => {
-                    // 提取元数据并清理Markdown
-                    const { meta, cleanedMarkdown } = extractMetaAndCleanMarkdown(markdown);
-                    
-                    // 解析Markdown
-                    const html = marked.parse(cleanedMarkdown);
-                    
-                    // 设置文章标题
-                    const title = meta.title || '未命名的文章';
-                    document.getElementById('articleTitle').textContent = title;
-                    
-                    // 设置文章元数据
-                    if (meta.date) {
-                        document.getElementById('articleMeta').textContent = `日期: ${meta.date}`;
-                    } else {
-                        document.getElementById('articleMeta').textContent = '日期: 未提供';
-                    }
-                    
-                    // 设置文章内容
-                    document.getElementById('articleBody').innerHTML = html;
-                    
-                    // 生成TOC
-                    generateTOC();
-                })
-                .catch(error => {
-                    console.error('加载文章失败:', error);
-                    document.getElementById('articleContent').innerHTML = `
-                        <h2>加载失败</h2>
-                        <p> ${error.message}</p>
-                    `;
-                });
-            
-            // 从Markdown中提取元数据并清理
-            function extractMetaAndCleanMarkdown(markdown) {
-                const lines = markdown.split('\n');
-                const meta = {};
-                let inMeta = false;
-                let metaEndIndex = -1;
-                
-                // 查找元数据部分
-                for (let i = 0; i < lines.length; i++) {
-                    if (lines[i].trim() === '---') {
-                        if (inMeta) {
-                            metaEndIndex = i;
-                            break;
-                        } else {
-                            inMeta = true;
-                        }
-                    } else if (inMeta && lines[i].includes(':')) {
-                        const [key, value] = lines[i].split(':').map(s => s.trim());
-                        meta[key] = value;
-                    }
-                }
-                
-                // 如果找到元数据部分，移除元数据部分
-                if (metaEndIndex !== -1) {
-                    const cleanedLines = lines.slice(metaEndIndex + 1);
-                    return { 
-                        meta, 
-                        cleanedMarkdown: cleanedLines.join('\n') 
-                    };
-                } else {
-                    return { meta, cleanedMarkdown: markdown };
-                }
-            }
-            
-            // 生成TOC (包含所有标题级别，有层次结构)
-            function generateTOC() {
-                const tocList = document.getElementById('tocList');
-                tocList.innerHTML = '';
-                
-                // 获取所有标题
-                const headings = document.querySelectorAll('#articleBody h1, #articleBody h2, #articleBody h3, #articleBody h4');
-                
-                // 为每个标题生成链接
-                headings.forEach((heading, index) => {
-                    const level = parseInt(heading.tagName.substring(1));
-                    const id = `heading-${index}`;
-                    heading.id = id;
-                    
-                    // 创建导航项
-                    const link = document.createElement('a');
-                    link.href = `#${id}`;
-                    link.textContent = heading.textContent;
-                    
-                    // 创建列表项
-                    const listItem = document.createElement('li');
-                    
-                    // 根据标题级别添加缩进和样式
-                    if (level === 1) {
-                        listItem.appendChild(link);
-                    } else if (level === 2) {
-                        const h2 = document.createElement('h2');
-                        h2.appendChild(link);
-                        listItem.appendChild(h2);
-                    } else if (level === 3) {
-                        const h3 = document.createElement('h3');
-                        h3.appendChild(link);
-                        listItem.appendChild(h3);
-                    } else if (level === 4) {
-                        const h4 = document.createElement('h4');
-                        h4.appendChild(link);
-                        listItem.appendChild(h4);
-                    }
-                    
-                    tocList.appendChild(listItem);
-                });
-            }
-            
-            // 从URL获取参数
-            function getUrlParameter(name) {
-                const urlParams = new URLSearchParams(window.location.search);
-                return urlParams.get(name);
-            }
-        });
-    </script>
+    </main>
+</div>
+
 </body>
 </html>
