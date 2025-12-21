@@ -33,11 +33,11 @@ document.addEventListener('DOMContentLoaded', function () {
             const html = marked.parse(cleanedMarkdown);
 
             // 设置文章标题
-            const title = meta.title || 'ERROR:未命名的文章';
-            document.getElementById('articleTitle').textContent = `═════ ${title} ═════`;
+            const title = meta.title || 'ERROR:标题获取失败！';
+            document.getElementById('articleTitle').textContent = `═══ ${title} ═══`;
 
              // 设置文章标题
-            const date = meta.date || 'ERROR:未知时间';
+            const date = meta.date || 'ERROR:时间获取失败！';
             document.getElementById('articleMeta').textContent = date;
 
             // 设置文章内容
