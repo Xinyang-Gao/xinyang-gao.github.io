@@ -59,7 +59,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 从Markdown中提取元数据并清理
     function extractMetaAndCleanMarkdown(markdown) {
-        const lines = markdown.split(/\r?\n/);
+        if (markdown.charCodeAt(0) === 0xFEFF) {
+            markdown = markdown.substring(1);
+        }
+        
+        const lines = markdown.split(/\r\n|\n/);
         const meta = {};
         let inMeta = false;
         let metaEndIndex = -1;
@@ -79,15 +83,9 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         // 如果找到元数据，移除元数据部分
         if (metaEndIndex !== -1) {
-            return {
-                meta,
-                cleanedMarkdown: lines.slice(metaEndIndex + 1).join('\n')
-            };
+            return { meta, cleanedMarkdown: lines.slice(metaEndIndex + 1).join('\n') };
         } else {
-            return {
-                meta: { title: '未命名文章', date: '未指定' },
-                cleanedMarkdown: markdown
-            };
+            return { meta: { title: '未命名文章', date: '未指定' }, cleanedMarkdown: markdown };
         }
     }
 
