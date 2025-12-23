@@ -78,7 +78,7 @@ function generateWorksHTML(data) {
     perf.start('generateWorksHTML');
     if (!data?.works || data.works.length === 0) {
         perf.end('generateWorksHTML');
-        return '<div class="works-list"><h2>作品集</h2><p>暂无作品数据</p></div>';
+        return '<div class="works-list"><p>没有找到相关作品！ >-<</p></div>';
     }
     const html = ` 
     <div class="works-list">
@@ -139,7 +139,7 @@ function generateArticlesHTML(data) {
     perf.start('generateArticlesHTML');
     if (!data?.articles || data.articles.length === 0) {
         perf.end('generateArticlesHTML');
-        return '<div class="articles-list"><h2>文章</h2><p>暂无文章数据</p></div>';
+        return '<div class="articles-list"><p>没有找到相关文章！ >-<</p></div>';
     }
     const html = ` 
     <div class="articles-list">
