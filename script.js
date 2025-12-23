@@ -501,7 +501,7 @@ function handleArticleItemClick(e) {
     const article = articlesData.articles.find(a => a.id === articleId);
     if (article) {
         const articleTitle = encodeURIComponent(article.title); // URL 编码标题
-        window.open(`../articles/?article=${articleTitle}`, '_blank'); // 在新标签页打开
+        window.open(`/articles/?article=${articleTitle}`, '_blank'); // 在新标签页打开
     }
 }
 

@@ -6,7 +6,7 @@
       "description": "计算一些数据的和、平均值、中位数、众数、方差、标准差、极差、极值",
       "date": "2025-05-30",
       "tag": ["HTML", "CSS", "JavaScript","编程"],
-      "link": "../works/统计计算器.html"
+      "link": "/works/统计计算器.html"
     }
 ,
 {
@@ -15,7 +15,7 @@
       "description": "朗诵音乐",
       "date": "2025-10-22",
       "tag": ["HTML", "CSS", "JavaScript","学习"],
-      "link": "../works/朗诵1.html"
+      "link": "/works/朗诵1.html"
     },
 {
       "id": 3,
@@ -23,6 +23,6 @@
       "description": "模拟车轮运动",
       "date": "2025-11-23",
       "tag": ["Scratch","HTML","学习"],
-      "link": "../works/车轮模拟.html"
+      "link": "/works/车轮模拟.html"
     } ]
 }
