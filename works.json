@@ -4,7 +4,6 @@
       "id": 1,
       "title": "数字统计计算器",
       "description": "计算一些数据的和、平均值、中位数、众数、方差、标准差、极差、极值",
-      "image": "",
       "date": "2025-05-30",
       "tag": ["HTML", "CSS", "JavaScript","编程"],
       "link": "../works/统计计算器.html"
@@ -14,7 +13,6 @@
       "id": 2,
       "title": "朗诵音乐",
       "description": "朗诵音乐",
-      "image": "",
       "date": "2025-10-22",
       "tag": ["HTML", "CSS", "JavaScript","学习"],
       "link": "../works/朗诵1.html"
@@ -23,7 +21,6 @@
       "id": 3,
       "title": "车轮模拟",
       "description": "模拟车轮运动",
-      "image": "",
       "date": "2025-11-23",
       "tag": ["Scratch","HTML","学习"],
       "link": "../works/车轮模拟.html"
