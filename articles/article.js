@@ -59,33 +59,53 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 从Markdown中提取元数据并清理
     function extractMetaAndCleanMarkdown(markdown) {
+        // 1. 移除可能的 BOM（以防万一）
         if (markdown.charCodeAt(0) === 0xFEFF) {
             markdown = markdown.substring(1);
         }
-        
+    
+        // 2. 跳过所有前导空行
         const lines = markdown.split(/\r\n|\n/);
+        let i = 0;
+        while (i < lines.length && lines[i].trim() === '') {
+            i++;
+        }
+    
+        // 3. 从第一个非空行开始查找元数据
         const meta = {};
         let inMeta = false;
         let metaEndIndex = -1;
-        // 查找元数据部分
-        for (let i = 0; i < lines.length; i++) {
-            if (lines[i].trim() === '---') {
-                if (inMeta) {
+    
+        // 如果第一个非空行是 '---'，则开始解析元数据
+        if (i < lines.length && lines[i].trim() === '---') {
+            inMeta = true;
+            i++; // 跳过第一个 '---'
+    
+            // 读取元数据内容，直到遇到第二个 '---'
+            while (i < lines.length) {
+                if (lines[i].trim() === '---') {
                     metaEndIndex = i;
                     break;
-                } else {
-                    inMeta = true;
                 }
-            } else if (inMeta && lines[i].includes(':')) {
-                const [key, value] = lines[i].split(':').map(s => s.trim());
-                meta[key] = value;
+                if (inMeta && lines[i].includes(':')) {
+                    const [key, value] = lines[i].split(':').map(s => s.trim());
+                    meta[key] = value;
+                }
+                i++;
             }
         }
-        // 如果找到元数据，移除元数据部分
+    
+        // 4. 返回结果（如果没找到元数据，用默认值）
         if (metaEndIndex !== -1) {
-            return { meta, cleanedMarkdown: lines.slice(metaEndIndex + 1).join('\n') };
+            return { 
+                meta, 
+                cleanedMarkdown: lines.slice(metaEndIndex + 1).join('\n') 
+            };
         } else {
-            return { meta: { title: '未命名文章', date: '未指定' }, cleanedMarkdown: markdown };
+            return { 
+                meta: { title: '未命名文章', date: '未指定' }, 
+                cleanedMarkdown: markdown 
+            };
         }
     }
 
