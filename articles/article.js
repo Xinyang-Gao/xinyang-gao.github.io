@@ -59,54 +59,77 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 从Markdown中提取元数据并清理
     function extractMetaAndCleanMarkdown(markdown) {
-        // 1. 移除可能的 BOM（以防万一）
-        if (markdown.charCodeAt(0) === 0xFEFF) {
-            markdown = markdown.substring(1);
-        }
-    
-        // 2. 跳过所有前导空行
-        const lines = markdown.split(/\r\n|\n/);
-        let i = 0;
-        while (i < lines.length && lines[i].trim() === '') {
-            i++;
-        }
-    
-        // 3. 从第一个非空行开始查找元数据
-        const meta = {};
-        let inMeta = false;
-        let metaEndIndex = -1;
-    
-        // 如果第一个非空行是 '---'，则开始解析元数据
-        if (i < lines.length && lines[i].trim() === '---') {
-            inMeta = true;
-            i++; // 跳过第一个 '---'
-    
-            // 读取元数据内容，直到遇到第二个 '---'
-            while (i < lines.length) {
-                if (lines[i].trim() === '---') {
-                    metaEndIndex = i;
-                    break;
-                }
-                if (inMeta && lines[i].includes(':')) {
-                    const [key, value] = lines[i].split(':').map(s => s.trim());
+        // 调试：打印文件开头内容
+        console.log("DEBUG: Markdown开头内容:", JSON.stringify(markdown.substring(0, 50)));
+        
+        // 使用正则表达式匹配元数据块（忽略空格和换行差异）
+        const metaRegex = /^[\s\uFEFF]*---[\s\uFEFF]*\n([\s\S]+?)\n[\s\uFEFF]*---[\s\uFEFF]*\n([\s\S]*)$/m;
+        const match = markdown.match(metaRegex);
+        
+        if (match) {
+            // 解析元数据部分
+            const metaContent = match[1];
+            const cleanedMarkdown = match[2];
+            const meta = {};
+            
+            // 按行解析元数据
+            metaContent.split(/\r?\n/).forEach(line => {
+                line = line.trim();
+                if (!line) return;
+                
+                const colonIndex = line.indexOf(':');
+                if (colonIndex !== -1) {
+                    const key = line.substring(0, colonIndex).trim();
+                    const value = line.substring(colonIndex + 1).trim();
                     meta[key] = value;
                 }
-                i++;
+            });
+            
+            return { meta, cleanedMarkdown };
+        }
+        
+        // 备用方案（如果正则匹配失败）
+        console.warn("WARN: 正则匹配失败，使用备用解析方法");
+        const lines = markdown.split(/\r?\n/);
+        let metaStart = -1;
+        let metaEnd = -1;
+        
+        // 寻找元数据边界
+        for (let i = 0; i < lines.length; i++) {
+            // 允许行首尾有空格/不可见字符
+            const trimmed = lines[i].replace(/^[\s\uFEFF]+|[\s\uFEFF]+$/g, '');
+            
+            if (trimmed === '---') {
+                if (metaStart === -1) {
+                    metaStart = i;
+                } else {
+                    metaEnd = i;
+                    break;
+                }
             }
         }
-    
-        // 4. 返回结果（如果没找到元数据，用默认值）
-        if (metaEndIndex !== -1) {
-            return { 
-                meta, 
-                cleanedMarkdown: lines.slice(metaEndIndex + 1).join('\n') 
-            };
-        } else {
-            return { 
-                meta: { title: '未命名文章', date: '未指定' }, 
-                cleanedMarkdown: markdown 
+        
+        if (metaStart !== -1 && metaEnd !== -1 && metaEnd > metaStart) {
+            const meta = {};
+            for (let i = metaStart + 1; i < metaEnd; i++) {
+                const line = lines[i];
+                if (line.includes(':')) {
+                    const [key, value] = line.split(':').map(s => s.trim());
+                    meta[key] = value;
+                }
+            }
+            return {
+                meta,
+                cleanedMarkdown: lines.slice(metaEnd + 1).join('\n')
             };
         }
+        
+        // 最终Fallback
+        console.error("ERROR: 无法解析元数据，使用默认值");
+        return {
+            meta: { title: '═══ 未命名文章 ═══', date: '未指定' },
+            cleanedMarkdown: markdown
+        };
     }
 
     // 生成TOC (包含所有标题级别)
