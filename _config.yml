@@ -1,3 +1,4 @@
 headers:
   Access-Control-Allow-Origin: "*"
-  theme: none
+  exclude:
+  - articles/
