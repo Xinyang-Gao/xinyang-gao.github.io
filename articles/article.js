@@ -14,7 +14,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     // 构建文章路径
-    const articlePath = `/articles/articles/${articleId}.txt`;
+    const articlePath = `/articles/articles/${articleId}.md`;
 
     // 加载并解析Markdown文件
     fetch(articlePath)
