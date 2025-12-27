@@ -1,510 +1,596 @@
 // --- 辅助函数 ---
+class PerformanceMonitor {
+    constructor() {
+        this.timers = new Map();
+    }
+    
+    start(label) {
+        if (this.timers.has(label)) {
+            console.warn(`Timer "${label}" already running`);
+            return;
+        }
+        this.timers.set(label, performance.now());
+    }
+    
+    end(label) {
+        if (!this.timers.has(label)) {
+            console.warn(`Timer "${label}" not found`);
+            return;
+        }
+        const startTime = this.timers.get(label);
+        const duration = performance.now() - startTime;
+        console.log(`⏱️ ${label}: ${duration.toFixed(2)}ms`);
+        this.timers.delete(label);
+        return duration;
+    }
+}
+
+const perf = new PerformanceMonitor();
+
+// URL参数获取
 function getUrlParameter(name) {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get(name);
 }
 
-// --- 性能监控 (可选) ---
-const perf = {
-    start(label) {
-        console.time(label);
-    },
-    end(label) {
-        console.timeEnd(label);
-    }
-};
-
-// --- 公共辅助函数 ---
-function generateTagsHTML(tags, classNamePrefix = "tag") {
-    if (!tags || !Array.isArray(tags) || tags.length === 0) {
-        return '';
-    }
-    return ` 
-    <div class="${classNamePrefix}-tags">
-        ${tags.map(tag => `<span class="${classNamePrefix}-tag tech-tag">${tag}</span>`).join('')}
-    </div> 
-    `;
-}
-
-// --- 辅助函数 ---
-// 检查数据是否过期 (设置缓存时间为 5 分钟)
+// 数据过期检查 (5分钟缓存)
 function isDataExpired(storedDataString) {
     if (!storedDataString) return true;
     try {
         const storedData = JSON.parse(storedDataString);
-        const timestamp = storedData._timestamp; // 假设我们在存储时加入了时间戳
-        const tenMinutesAgo = Date.now() - 5 * 60 * 1000; // 10分钟毫秒数
-        return !timestamp || timestamp < tenMinutesAgo;
+        const timestamp = storedData._timestamp;
+        const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
+        return !timestamp || timestamp < fiveMinutesAgo;
     } catch (e) {
-        console.error("Error parsing stored data:", e);
-        return true; // 解析失败也认为过期
+        console.error("解析缓存数据失败:", e);
+        return true;
     }
 }
 
+// 验证数据格式
+function validateData(data, type) {
+    if (!data) return false;
+    
+    if (type === 'works') {
+        return Array.isArray(data.works) && data.works.length > 0;
+    } else if (type === 'articles') {
+        return Array.isArray(data.articles) && data.articles.length > 0;
+    }
+    return false;
+}
+
+// 获取作品数据
 async function fetchWorksData(useCache = true) {
-    // 优化：添加更详细的错误处理
+    perf.start('获取作品数据');
+    
     if (useCache) {
-      const cachedDataString = localStorage.getItem('worksData');
-      if (cachedDataString) {
-        try {
-          const cachedData = JSON.parse(cachedDataString);
-          if (cachedData && !isDataExpired(cachedData)) {
-            delete cachedData._timestamp;
-            return cachedData;
-          }
-        } catch (e) {
-          console.error('Error parsing cached works data:', e);
+        const cachedDataString = localStorage.getItem('worksData');
+        if (cachedDataString && !isDataExpired(cachedDataString)) {
+            try {
+                const cachedData = JSON.parse(cachedDataString);
+                delete cachedData._timestamp;
+                if (validateData(cachedData, 'works')) {
+                    perf.end('获取作品数据');
+                    return cachedData;
+                }
+            } catch (e) {
+                console.warn('缓存数据无效，重新获取');
+            }
         }
-      }
     }
     
     try {
-      console.log("Fetching fresh works data");
-      const response = await fetch('works.json', { cache: 'no-store' }); // 确保不使用缓存
-      if (!response.ok) {
-        throw new Error(`Network error fetching works: ${response.statusText}`);
-      }
-      const data = await response.json();
-      
-      // 优化：添加数据验证
-      if (!data.works || !Array.isArray(data.works) || data.works.length === 0) {
-        throw new Error('Invalid works data format');
-      }
-      
-      const dataToStore = { ...data, _timestamp: Date.now() };
-      localStorage.setItem('worksData', JSON.stringify(dataToStore));
-      return data;
-    } catch (error) {
-      console.error('Failed to fetch works data:', error);
-      throw error;
-    }
-  }
-  
-function generateWorksHTML(data) {
-    perf.start('generateWorksHTML');
-    if (!data?.works || data.works.length === 0) {
-        perf.end('generateWorksHTML');
-        return '<div class="works-list"><p>没有找到相关作品！ >-<</p></div>';
-    }
-    const html = ` 
-    <div class="works-list">
-        ${data.works.map(work => {
-            // --- 使用公共函数生成标签 HTML ---
-            const tagsHtml = generateTagsHTML(work.tag, "work");
-            return ` 
-            <div class="work-item" data-id="${work.id}">
-                <div class="work-item-header">
-                    <h3 class="work-title">${work.title}</h3>
-                    <div class="work-meta">
-                        <span class="work-date">${work.date}</span>
-                    </div>
-                </div>
-                <p class="work-description">${work.description}</p>
-                ${tagsHtml} <!-- 插入标签 -->
-            </div> 
-            `;
-        }).join('')}
-    </div> 
-    `;
-    perf.end('generateWorksHTML');
-    return html;
-}
-
-async function fetchArticlesData(useCache = true) {
-    // 添加 useCache 参数
-    perf.start('fetchArticlesData');
-    try {
-        if (useCache) {
-            const cachedDataString = localStorage.getItem('articlesData');
-            if (cachedDataString && !isDataExpired(cachedDataString)) {
-                console.log("Using cached articles data");
-                const cachedData = JSON.parse(cachedDataString);
-                delete cachedData._timestamp;
-                perf.end('fetchArticlesData');
-                return cachedData;
+        console.log("📥 从服务器获取作品数据");
+        const response = await fetch('works.json', { 
+            cache: 'no-store',
+            headers: {
+                'Cache-Control': 'no-cache'
             }
-        }
-        console.log("Fetching fresh articles data");
-        const response = await fetch('articles.json');
+        });
+        
         if (!response.ok) {
-            throw new Error(`Network error fetching articles: ${response.statusText}`);
+            throw new Error(`网络错误: ${response.statusText}`);
         }
+        
         const data = await response.json();
-        const dataToStore = {...data, _timestamp: Date.now()};
-        localStorage.setItem('articlesData', JSON.stringify(dataToStore));
-        perf.end('fetchArticlesData');
+        
+        if (!validateData(data, 'works')) {
+            throw new Error('数据格式无效');
+        }
+        
+        // 缓存数据
+        const dataToStore = { ...data, _timestamp: Date.now() };
+        localStorage.setItem('worksData', JSON.stringify(dataToStore));
+        
+        perf.end('获取作品数据');
         return data;
     } catch (error) {
-        console.error('Failed to fetch or use cached articles data:', error);
-        perf.end('fetchArticlesData');
+        console.error('获取作品数据失败:', error);
+        perf.end('获取作品数据');
         throw error;
     }
 }
 
-function generateArticlesHTML(data) {
-    perf.start('generateArticlesHTML');
-    if (!data?.articles || data.articles.length === 0) {
-        perf.end('generateArticlesHTML');
-        return '<div class="articles-list"><p>没有找到相关文章！ >-<</p></div>';
+// 获取文章数据
+async function fetchArticlesData(useCache = true) {
+    perf.start('获取文章数据');
+    
+    if (useCache) {
+        const cachedDataString = localStorage.getItem('articlesData');
+        if (cachedDataString && !isDataExpired(cachedDataString)) {
+            try {
+                const cachedData = JSON.parse(cachedDataString);
+                delete cachedData._timestamp;
+                if (validateData(cachedData, 'articles')) {
+                    perf.end('获取文章数据');
+                    return cachedData;
+                }
+            } catch (e) {
+                console.warn('缓存文章数据无效，重新获取');
+            }
+        }
     }
-    const html = ` 
-    <div class="articles-list">
-        ${data.articles.map(article => {
-            const tagsHtml = generateTagsHTML(article.tag, "article");
-            return ` 
-            <div class="article-item" data-id="${article.id}">
-                <div class="article-item-header">
-                    <h3 class="article-title">${article.title}</h3>
-                    <div class="article-meta">
-                        <span class="article-date">${article.date}</span>
-                    </div>
-                </div>
-                <p class="article-description">${article.description}</p>
-                ${tagsHtml}
-            </div> 
-            `;
-        }).join('')}
+    
+    try {
+        console.log("📥 从服务器获取文章数据");
+        const response = await fetch('articles.json');
+        
+        if (!response.ok) {
+            throw new Error(`网络错误: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (!validateData(data, 'articles')) {
+            throw new Error('文章数据格式无效');
+        }
+        
+        // 缓存数据
+        const dataToStore = { ...data, _timestamp: Date.now() };
+        localStorage.setItem('articlesData', JSON.stringify(dataToStore));
+        
+        perf.end('获取文章数据');
+        return data;
+    } catch (error) {
+        console.error('获取文章数据失败:', error);
+        perf.end('获取文章数据');
+        throw error;
+    }
+}
+
+// 生成标签HTML
+function generateTagsHTML(tags, classNamePrefix = "tag") {
+    if (!tags || !Array.isArray(tags) || tags.length === 0) {
+        return '';
+    }
+    
+    const tagsHTML = tags
+        .map(tag => `<span class="${classNamePrefix}-tag tech-tag">${tag}</span>`)
+        .join('');
+    
+    return ` 
+    <div class="${classNamePrefix}-tags">
+        ${tagsHTML}
     </div> 
     `;
-    perf.end('generateArticlesHTML');
+}
+
+// 生成作品HTML
+function generateWorksHTML(data) {
+    perf.start('生成作品HTML');
+    
+    if (!validateData(data, 'works')) {
+        perf.end('生成作品HTML');
+        return '<div class="works-list"><p>没有找到相关作品！ >-<</p></div>';
+    }
+    
+    const worksHTML = data.works.map(work => {
+        const tagsHtml = generateTagsHTML(work.tag, "work");
+        
+        return ` 
+        <div class="work-item" data-id="${work.id}">
+            <div class="work-item-header">
+                <h3 class="work-title">${work.title}</h3>
+                <div class="work-meta">
+                    <span class="work-date">${work.date}</span>
+                </div>
+            </div>
+            <p class="work-description">${work.description}</p>
+            ${tagsHtml}
+        </div> 
+        `;
+    }).join('');
+    
+    const html = ` 
+    <div class="works-list">
+        ${worksHTML}
+    </div> 
+    `;
+    
+    perf.end('生成作品HTML');
     return html;
 }
 
+// 生成文章HTML
+function generateArticlesHTML(data) {
+    perf.start('生成文章HTML');
+    
+    if (!validateData(data, 'articles')) {
+        perf.end('生成文章HTML');
+        return '<div class="articles-list"><p>没有找到相关文章！ >-<</p></div>';
+    }
+    
+    const articlesHTML = data.articles.map(article => {
+        const tagsHtml = generateTagsHTML(article.tag, "article");
+        
+        return ` 
+        <div class="article-item" data-id="${article.id}">
+            <div class="article-item-header">
+                <h3 class="article-title">${article.title}</h3>
+                <div class="article-meta">
+                    <span class="article-date">${article.date}</span>
+                </div>
+            </div>
+            <p class="article-description">${article.description}</p>
+            ${tagsHtml}
+        </div> 
+        `;
+    }).join('');
+    
+    const html = ` 
+    <div class="articles-list">
+        ${articlesHTML}
+    </div> 
+    `;
+    
+    perf.end('生成文章HTML');
+    return html;
+}
+
+// 获取页面内容
 async function fetchPageContent(url) {
-    const response = await fetch(url);
-    if (!response.ok) {
-        if (response.status === 404) {
-            throw new Error('404');
-        }
-        throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-    return await response.text();
-}
-
-function replaceWorkListContainer(baseHtml, worksListHtml) {
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = baseHtml;
-    const container = tempDiv.querySelector('#works-list-container');
-    if (container) {
-        container.innerHTML = worksListHtml;
-        return tempDiv.innerHTML;
-    }
-    console.warn('Warning: #works-list-container not found in works.html. Appending works list to end.');
-    return baseHtml + worksListHtml;
-}
-
-function replaceArticlesListContainer(baseHtml, articlesListHtml) {
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = baseHtml;
-    const container = tempDiv.querySelector('#articles-list-container');
-    if (container) {
-        container.innerHTML = articlesListHtml;
-        return tempDiv.innerHTML;
-    }
-    console.warn('Warning: #articles-list-container not found in articles.html. Appending articles list to end.');
-    return baseHtml + articlesListHtml;
-}
-
-// --- 搜索功能修复 ---
-// 添加文章搜索过滤函数
-function filterArticles(articles, query, field) {
-    if (!query) return articles;
-    
-    const lowerQuery = query.toLowerCase();
-    return articles.filter(article => {
-        switch(field) {
-            case 'title':
-                return article.title.toLowerCase().includes(lowerQuery);
-            case 'description':
-                return article.description.toLowerCase().includes(lowerQuery);
-            case 'tag':
-                return article.tag.some(tag => tag.toLowerCase().includes(lowerQuery));
-            case 'date':
-                return article.date.includes(query);
-            default: // 'all'
-                return article.title.toLowerCase().includes(lowerQuery) ||
-                       article.description.toLowerCase().includes(lowerQuery) ||
-                       article.tag.some(tag => tag.toLowerCase().includes(lowerQuery)) ||
-                       article.date.includes(query);
-        }
-    });
-}
-
-// 添加作品搜索过滤函数
-function filterWorks(works, query, field) {
-    if (!query) return works;
-    
-    const lowerQuery = query.toLowerCase();
-    return works.filter(work => {
-        switch(field) {
-            case 'title':
-                return work.title.toLowerCase().includes(lowerQuery);
-            case 'description':
-                return work.description.toLowerCase().includes(lowerQuery);
-            case 'tag':
-                return work.tag.some(tag => tag.toLowerCase().includes(lowerQuery));
-            case 'date':
-                return work.date.includes(query);
-            default: // 'all'
-                return work.title.toLowerCase().includes(lowerQuery) ||
-                       work.description.toLowerCase().includes(lowerQuery) ||
-                       work.tag.some(tag => tag.toLowerCase().includes(lowerQuery)) ||
-                       work.date.includes(query);
-        }
-    });
-}
-
-// 初始化搜索功能
-function initSearch(pageName) {
-    // 使用 requestAnimationFrame 确保在下一帧渲染后执行
-    requestAnimationFrame(() => {
-        const searchInput = document.getElementById('search-input');
-        const searchField = document.getElementById('search-field');
-        
-        if (!searchInput || !searchField) {
-            console.error('Search elements not found in', pageName);
-            return;
-        }
-        
-        // 移除可能存在的旧监听器 (防止重复绑定)
-        const inputListener = searchInput._searchListener;
-        const fieldListener = searchField._searchListener;
-        
-        if (inputListener) {
-            searchInput.removeEventListener('input', inputListener);
-        }
-        if (fieldListener) {
-            searchField.removeEventListener('change', fieldListener);
-        }
-
-        // 定义处理函数
-        function handleSearch() {
-            const query = searchInput.value.trim();
-            const field = searchField.value;
-            
-            if (pageName === 'articles') {
-                // 处理文章搜索
-                try {
-                    const articlesDataString = localStorage.getItem('articlesData');
-                    if (!articlesDataString) {
-                        console.error('No articles data found in localStorage');
-                        return;
-                    }
-                    const articlesData = JSON.parse(articlesDataString);
-                    if (!articlesData || !articlesData.articles) {
-                        console.error('Invalid articles data format');
-                        return;
-                    }
-                    const filteredArticles = filterArticles(articlesData.articles, query, field);
-                    const filteredHtml = generateArticlesHTML({ articles: filteredArticles });
-                    const container = document.getElementById('articles-list-container');
-                    if (container) {
-                        container.innerHTML = filteredHtml;
-                    }
-                } catch (e) {
-                    console.error('Error during articles search:', e);
-                }
-            } else if (pageName === 'works') {
-                // 处理作品搜索
-                try {
-                    const worksDataString = localStorage.getItem('worksData');
-                    if (!worksDataString) {
-                        console.error('No works data found in localStorage');
-                        return;
-                    }
-                    const worksData = JSON.parse(worksDataString);
-                    if (!worksData || !worksData.works) {
-                        console.error('Invalid works data format');
-                        return;
-                    }
-                    const filteredWorks = filterWorks(worksData.works, query, field);
-                    const filteredHtml = generateWorksHTML({ works: filteredWorks });
-                    const container = document.getElementById('works-list-container');
-                    if (container) {
-                        container.innerHTML = filteredHtml;
-                    }
-                } catch (e) {
-                    console.error('Error during works search:', e);
-                }
+    try {
+        const response = await fetch(url);
+        if (!response.ok) {
+            if (response.status === 404) {
+                throw new Error('404');
             }
+            throw new Error(`HTTP错误! 状态码: ${response.status}`);
         }
-        
-        // 绑定新的监听器
-        searchInput.addEventListener('input', handleSearch);
-        searchField.addEventListener('change', handleSearch);
-        
-        // 保存引用以便后续移除
-        searchInput._searchListener = handleSearch;
-        searchField._searchListener = handleSearch;
-        
-        // 初始化时触发一次搜索 (显示全部)
-        handleSearch();
-    });
+        return await response.text();
+    } catch (error) {
+        console.error(`获取页面内容失败: ${url}`, error);
+        throw error;
+    }
 }
 
-// --- 页面加载与切换逻辑 ---
+// 替换容器内容
+function replaceContainerContent(baseHtml, containerId, newHtml) {
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = baseHtml;
+    const container = tempDiv.querySelector(containerId);
+    
+    if (container) {
+        container.innerHTML = newHtml;
+        return tempDiv.innerHTML;
+    }
+    
+    console.warn(`警告: ${containerId} 未在页面中找到。将内容追加到末尾。`);
+    return baseHtml + newHtml;
+}
+
+// 搜索功能
+class SearchManager {
+    constructor(pageName) {
+        this.pageName = pageName;
+        this.searchInput = null;
+        this.searchField = null;
+        this.init();
+    }
+    
+    init() {
+        requestAnimationFrame(() => {
+            this.searchInput = document.getElementById('search-input');
+            this.searchField = document.getElementById('search-field');
+            
+            if (!this.searchInput || !this.searchField) {
+                console.error(`搜索元素未在 ${this.pageName} 页面中找到`);
+                return;
+            }
+            
+            // 移除旧监听器
+            this.removeListeners();
+            
+            // 绑定新监听器
+            this.searchInput.addEventListener('input', this.handleSearch.bind(this));
+            this.searchField.addEventListener('change', this.handleSearch.bind(this));
+            
+            // 初始化搜索
+            this.handleSearch();
+        });
+    }
+    
+    removeListeners() {
+        if (this.searchInput && this.searchInput._searchListener) {
+            this.searchInput.removeEventListener('input', this.searchInput._searchListener);
+        }
+        if (this.searchField && this.searchField._searchListener) {
+            this.searchField.removeEventListener('change', this.searchField._searchListener);
+        }
+    }
+    
+    handleSearch() {
+        const query = this.searchInput.value.trim();
+        const field = this.searchField.value;
+        
+        try {
+            if (this.pageName === 'articles') {
+                this.filterArticles(query, field);
+            } else if (this.pageName === 'works') {
+                this.filterWorks(query, field);
+            }
+        } catch (e) {
+            console.error('搜索过程中出错:', e);
+        }
+    }
+    
+    filterArticles(query, field) {
+        const articlesDataString = localStorage.getItem('articlesData');
+        if (!articlesDataString) return;
+        
+        const articlesData = JSON.parse(articlesDataString);
+        if (!validateData(articlesData, 'articles')) return;
+        
+        const filteredArticles = this.applyFilter(articlesData.articles, query, field);
+        const filteredHtml = generateArticlesHTML({ articles: filteredArticles });
+        
+        const container = document.getElementById('articles-list-container');
+        if (container) {
+            container.innerHTML = filteredHtml;
+            this.setupArticleItemsInteraction();
+        }
+    }
+    
+    filterWorks(query, field) {
+        const worksDataString = localStorage.getItem('worksData');
+        if (!worksDataString) return;
+        
+        const worksData = JSON.parse(worksDataString);
+        if (!validateData(worksData, 'works')) return;
+        
+        const filteredWorks = this.applyFilter(worksData.works, query, field);
+        const filteredHtml = generateWorksHTML({ works: filteredWorks });
+        
+        const container = document.getElementById('works-list-container');
+        if (container) {
+            container.innerHTML = filteredHtml;
+            this.setupWorkItemsInteraction();
+        }
+    }
+    
+    applyFilter(items, query, field) {
+        if (!query) return items;
+        
+        const lowerQuery = query.toLowerCase();
+        
+        return items.filter(item => {
+            if (field === 'title') {
+                return item.title.toLowerCase().includes(lowerQuery);
+            } else if (field === 'description') {
+                return item.description.toLowerCase().includes(lowerQuery);
+            } else if (field === 'tag') {
+                return item.tag.some(tag => tag.toLowerCase().includes(lowerQuery));
+            } else if (field === 'date') {
+                return item.date.includes(query);
+            } else { // 'all'
+                return (
+                    item.title.toLowerCase().includes(lowerQuery) ||
+                    item.description.toLowerCase().includes(lowerQuery) ||
+                    item.tag.some(tag => tag.toLowerCase().includes(lowerQuery)) ||
+                    item.date.includes(query)
+                );
+            }
+        });
+    }
+    
+    setupArticleItemsInteraction() {
+        const content = document.getElementById('mainContent');
+        content.removeEventListener('click', handleArticleItemClick);
+        content.addEventListener('click', handleArticleItemClick);
+    }
+    
+    setupWorkItemsInteraction() {
+        const content = document.getElementById('mainContent');
+        content.removeEventListener('click', handleWorkItemClick);
+        content.addEventListener('click', handleWorkItemClick);
+    }
+}
+
+// 页面加载与切换
 async function loadPage(pageName, pushState = true) {
-    perf.start('loadPage');
+    perf.start(`加载页面: ${pageName}`);
+    
     let content = '';
     let pageTitle = 'GXY\'s website';
+    
     const pageConfig = {
         'about': '关于',
         'articles': '文章',
         'contact': '联系',
         'works': '作品'
     };
-
+    
     try {
         if (pageName === 'works') {
             pageTitle = '作品 - GXY\'s website';
             const baseHtml = await fetchPageContent(`pages/${pageName}.html`);
             const worksData = await fetchWorksData();
-            localStorage.setItem('worksData', JSON.stringify(worksData));
             const worksListHtml = generateWorksHTML(worksData);
-            content = replaceWorkListContainer(baseHtml, worksListHtml);
-            setupWorkItemsInteraction();
+            content = replaceContainerContent(baseHtml, '#works-list-container', worksListHtml);
         } else if (pageName === 'articles') {
             pageTitle = '文章 - GXY\'s website';
             const baseHtml = await fetchPageContent(`pages/${pageName}.html`);
             const articlesData = await fetchArticlesData();
-            localStorage.setItem('articlesData', JSON.stringify(articlesData));
             const articlesListHtml = generateArticlesHTML(articlesData);
-            content = replaceArticlesListContainer(baseHtml, articlesListHtml);
-            setupArticleItemsInteraction();
+            content = replaceContainerContent(baseHtml, '#articles-list-container', articlesListHtml);
         } else {
-            pageTitle = pageConfig[pageName] ? `${pageConfig[pageName]} - GXY\'s website` : pageTitle;
+            pageTitle = pageConfig[pageName] ? `${pageConfig[pageName]} - GXY's website` : pageTitle;
             if (pageName === '404') {
                 content = '<h2>页面未找到</h2><p>抱歉，您访问的页面不存在。</p>';
             } else {
                 content = await fetchPageContent(`pages/${pageName}.html`);
             }
         }
-        performDrawAnimation(content, pageName, pageTitle, pushState);
+        
+        await performDrawAnimation(content, pageName, pageTitle, pushState);
     } catch (error) {
-        console.error('Page load failed:', error);
+        console.error('页面加载失败:', error);
         const errorContent = '<h2>加载失败</h2><p>哎呀！加载页面时出了点问题……要不刷新试试？</p>';
-        performDrawAnimation(errorContent, 'error', '加载失败 - GXY\'s website', pushState);
+        await performDrawAnimation(errorContent, 'error', '加载失败 - GXY\'s website', pushState);
     } finally {
-        perf.end('loadPage');
+        perf.end(`加载页面: ${pageName}`);
     }
 }
 
-function performDrawAnimation(content, pageName, pageTitle, pushState) {
+// 执行绘制动画
+async function performDrawAnimation(content, pageName, pageTitle, pushState) {
     const elements = {
-      navItems: document.querySelectorAll('.nav-item'),
-      content: document.getElementById('mainContent'),
-      pageTransition: document.getElementById('pageTransition'),
-      container: document.querySelector('.container')
+        navItems: document.querySelectorAll('.nav-item'),
+        content: document.getElementById('mainContent'),
+        pageTransition: document.getElementById('pageTransition'),
+        container: document.querySelector('.container')
     };
-    
+
+    // 触发页面过渡遮罩
     elements.pageTransition.classList.add('active');
-    
-    // 优化：使用 requestAnimationFrame 优化动画
-    requestAnimationFrame(() => {
-      const containerRect = elements.container.getBoundingClientRect();
-      const computedStyle = window.getComputedStyle(elements.container);
-      const padding = {
+
+    // 获取容器的边界信息和样式
+    const containerRect = elements.container.getBoundingClientRect();
+    const computedStyle = window.getComputedStyle(elements.container);
+    const padding = {
         top: parseFloat(computedStyle.paddingTop),
         right: parseFloat(computedStyle.paddingRight),
         bottom: parseFloat(computedStyle.paddingBottom),
         left: parseFloat(computedStyle.paddingLeft)
-      };
-      
-      // 优化：避免重复创建元素
-      let paperElement = document.querySelector('.draw-animation-paper');
-      if (!paperElement) {
+    };
+
+    // 创建并设置纸张元素
+    let paperElement = document.querySelector('.draw-animation-paper');
+    if (!paperElement) {
         paperElement = document.createElement('div');
         paperElement.className = 'draw-animation-paper container';
         document.body.appendChild(paperElement);
-      }
-      
-      paperElement.style.cssText = `
+    }
+
+    // 关键修复：使用 fixed 定位和视口坐标
+    paperElement.style.cssText = `
+        position: fixed;
         top: ${containerRect.top}px;
         left: ${containerRect.left}px;
         width: ${containerRect.width}px;
         height: ${containerRect.height}px;
         padding: ${padding.top}px ${padding.right}px ${padding.bottom}px ${padding.left}px;
-      `;
-      paperElement.innerHTML = content;
-      
-      // 优化：使用 transform 而不是直接修改位置
-      paperElement.style.transform = 'translate(0, 0) scale(1)';
-      paperElement.style.opacity = '1';
-      
-      // 触发内容区域退出动画
-      elements.content.classList.add('fade-out-shrink');
-      
-      // 动画结束后处理
-      paperElement.addEventListener('animationend', () => {
-        elements.content.innerHTML = content;
-        elements.content.classList.remove('fade-out-shrink');
-        document.title = pageTitle;
-        
-        if (pushState) {
-          window.history.pushState({ page: pageName }, pageTitle, `?page=${pageName}`);
-        }
-        
-        // 更新导航状态
-        elements.navItems.forEach(item => {
-          item.classList.toggle('active', item.getAttribute('data-page') === pageName);
-        });
-        
-        // 清理临时元素
-        if (paperElement.parentNode) {
-          paperElement.parentNode.removeChild(paperElement);
-        }
-        
-        elements.pageTransition.classList.remove('active');
-        
-        // 初始化搜索功能
-        initSearch(pageName);
-        
-        // 初始化作品交互
-        if (pageName === 'works') {
-          setupWorkItemsInteraction();
-        }
-      }, { once: true });
-    });
-  }
+        border: var(--border-width) solid var(--border-color);
+        box-shadow: var(--shadow-main), var(--shadow-offset), -var(--shadow-offset);
+        border-radius: var(--border-radius-container);
+        background: white;
+        box-sizing: border-box;
+        z-index: var(--z-index-animation-paper);
+        opacity: 0;
+        transform: translateY(100%) scale(0.95);
+    `;
+    
+    paperElement.innerHTML = content;
 
-function initMobileMenuToggle() {
-    const toggleButton = document.querySelector('.mobile-toggle');
-    const navbarNav = document.getElementById('navbarNav');
-    // 使用上面添加的 ID
-    if (toggleButton && navbarNav) {
-        toggleButton.addEventListener('click', function () {
-            // 切换导航菜单的显示状态
-            navbarNav.classList.toggle('active');
-            // 切换汉堡按钮本身的样式（用于动画）
-            this.classList.toggle('active');
+    // 启动旧内容的"退出"动画
+    elements.content.classList.add('fade-out-shrink');
+
+    return new Promise(resolve => {
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                // 触发新内容动画
+                paperElement.style.transform = 'translate(0, 0) scale(1)';
+                paperElement.style.opacity = '1';
+
+                // 监听动画结束
+                paperElement.addEventListener('animationend', function animationEndHandler() {
+                    // 将新内容放入原容器
+                    elements.content.innerHTML = content;
+                    elements.content.classList.remove('fade-out-shrink');
+
+                    // 更新页面标题和导航
+                    document.title = pageTitle;
+                    if (pushState) {
+                        window.history.pushState({ page: pageName }, pageTitle, `?page=${pageName}`);
+                    }
+
+                    // 更新导航状态
+                    elements.navItems.forEach(item => {
+                        item.classList.toggle('active', item.getAttribute('data-page') === pageName);
+                    });
+
+                    // 清理临时元素
+                    if (paperElement.parentNode) {
+                        paperElement.parentNode.removeChild(paperElement);
+                    }
+
+                    // 隐藏过渡遮罩
+                    elements.pageTransition.classList.remove('active');
+
+                    // 初始化页面特定功能
+                    initializePageFeatures(pageName);
+
+                    // 移除监听器
+                    this.removeEventListener('animationend', animationEndHandler);
+                    
+                    resolve();
+                }, { once: true });
+            });
         });
+    });
+}
+
+// 初始化页面特定功能
+function initializePageFeatures(pageName) {
+    // 初始化搜索功能
+    if (pageName === 'works' || pageName === 'articles') {
+        new SearchManager(pageName);
+    }
+    
+    // 初始化交互功能
+    if (pageName === 'works') {
+        setupWorkItemsInteraction();
+    } else if (pageName === 'articles') {
+        setupArticleItemsInteraction();
     }
 }
 
+// 交互功能
 function setupWorkItemsInteraction() {
-    const elements = { content: document.getElementById('mainContent') };
-    // 移除旧监听器
-    elements.content.removeEventListener('click', handleWorkItemClick);
-    // 添加新监听器
-    elements.content.addEventListener('click', handleWorkItemClick);
+    const content = document.getElementById('mainContent');
+    content.removeEventListener('click', handleWorkItemClick);
+    content.addEventListener('click', handleWorkItemClick);
 }
 
 function setupArticleItemsInteraction() {
-    const elements = { content: document.getElementById('mainContent') };
-    // 移除旧监听器
-    elements.content.removeEventListener('click', handleArticleItemClick);
-    // 添加新监听器
-    elements.content.addEventListener('click', handleArticleItemClick);
+    const content = document.getElementById('mainContent');
+    content.removeEventListener('click', handleArticleItemClick);
+    content.addEventListener('click', handleArticleItemClick);
 }
 
 function handleWorkItemClick(e) {
-    const elements = { content: document.getElementById('mainContent') };
     const workItem = e.target.closest('.work-item');
     if (!workItem) return;
+    
     const workId = parseInt(workItem.dataset.id, 10);
     if (isNaN(workId)) return;
-    const worksData = JSON.parse(localStorage.getItem('worksData'));
-    if (!worksData || !worksData.works) return; // 检查数据是否存在
+    
+    const worksDataString = localStorage.getItem('worksData');
+    if (!worksDataString) return;
+    
+    const worksData = JSON.parse(worksDataString);
+    if (!validateData(worksData, 'works')) return;
+    
     const work = worksData.works.find(w => w.id === workId);
     if (work) {
         showWorkDetails(work);
@@ -512,24 +598,30 @@ function handleWorkItemClick(e) {
 }
 
 function handleArticleItemClick(e) {
-    const elements = { content: document.getElementById('mainContent') };
     const articleItem = e.target.closest('.article-item');
     if (!articleItem) return;
-    const articleId = parseInt(articleItem.dataset.id, 10); // 假设是ID
+    
+    const articleId = parseInt(articleItem.dataset.id, 10);
     if (isNaN(articleId)) return;
-    const articlesData = JSON.parse(localStorage.getItem('articlesData'));
-    if (!articlesData || !articlesData.articles) return; // 检查数据是否存在
+    
+    const articlesDataString = localStorage.getItem('articlesData');
+    if (!articlesDataString) return;
+    
+    const articlesData = JSON.parse(articlesDataString);
+    if (!validateData(articlesData, 'articles')) return;
+    
     const article = articlesData.articles.find(a => a.id === articleId);
     if (article) {
-        const articleTitle = encodeURIComponent(article.title); // URL 编码标题
-        window.open(`/articles/?article=${articleTitle}`, '_blank'); // 在新标签页打开
+        const articleTitle = encodeURIComponent(article.title);
+        window.open(`/articles/?article=${articleTitle}`, '_blank');
     }
 }
 
+// 显示作品详情
 function showWorkDetails(work) {
-    // 优化：检查是否已经存在活动的详情弹窗
+    // 检查是否已存在活动的详情弹窗
     if (document.querySelector('.work-details-envelope.active')) {
-      return;
+        return;
     }
     
     const workItem = document.querySelector(`.work-item[data-id="${work.id}"]`);
@@ -537,93 +629,108 @@ function showWorkDetails(work) {
     
     const workItemRect = workItem.getBoundingClientRect();
     
-    // 优化：避免重复创建元素
+    // 创建或获取信封元素
     let envelope = document.querySelector('.work-details-envelope');
     if (!envelope) {
-      envelope = document.createElement('div');
-      envelope.className = 'work-details-envelope';
-      document.body.appendChild(envelope);
+        envelope = document.createElement('div');
+        envelope.className = 'work-details-envelope';
+        document.body.appendChild(envelope);
     }
     
-    // 优化：存储初始位置
+    // 存储初始位置
     envelope.dataset.initialTop = workItemRect.top;
     envelope.dataset.initialLeft = workItemRect.left;
     envelope.dataset.initialWidth = workItemRect.width;
     envelope.dataset.initialHeight = workItemRect.height;
     
     envelope.style.cssText = `
-      top: ${workItemRect.top}px;
-      left: ${workItemRect.left}px;
-      width: ${workItemRect.width}px;
-      height: ${workItemRect.height}px;
+        top: ${workItemRect.top}px;
+        left: ${workItemRect.left}px;
+        width: ${workItemRect.width}px;
+        height: ${workItemRect.height}px;
     `;
     
-    // 优化：避免重复创建内容
-    const detailsContent = envelope.querySelector('.work-details-content') || document.createElement('div');
-    detailsContent.className = 'work-details-content';
-    detailsContent.innerHTML = `
-      <h2 class="work-details-title">${work.title}</h2>
-      <p class="work-details-description">${work.description}</p>
-      ${work.tag && work.tag.length ? `
-        <div class="work-details-tag">
-          <strong>标签:</strong> ${work.tag.map(tech => `<span class="tech-tag">${tech}</span>`).join('')}
+    // 创建详情内容
+    envelope.innerHTML = `
+        <div class="work-details-close">✕</div>
+        <div class="work-details-content">
+            <h2 class="work-details-title">${work.title}</h2>
+            <p class="work-details-description">${work.description}</p>
+            ${work.tag && work.tag.length ? `
+                <div class="work-details-tag">
+                    <strong>标签:</strong> ${work.tag.map(tech => `<span class="tech-tag">${tech}</span>`).join('')}
+                </div>
+            ` : ''}
+            ${work.link ? `<a href="${work.link}" target="_blank" class="work-details-link">查看</a>` : ''}
         </div>
-      ` : ''}
-      ${work.link ? `<a href="${work.link}" target="_blank" class="work-details-link">查看</a>` : ''}
     `;
     
-    // 优化：避免重复创建关闭按钮
-    const closeBtn = envelope.querySelector('.work-details-close') || document.createElement('div');
-    closeBtn.className = 'work-details-close';
-    closeBtn.innerHTML = '✕';
+    const closeBtn = envelope.querySelector('.work-details-close');
     
-    // 优化：确保只绑定一次关闭事件
+    // 关闭函数
+    function closeWorkDetails() {
+        envelope.style.top = `${envelope.dataset.initialTop}px`;
+        envelope.style.left = `${envelope.dataset.initialLeft}px`;
+        envelope.style.width = `${envelope.dataset.initialWidth}px`;
+        envelope.style.height = `${envelope.dataset.initialHeight}px`;
+        envelope.classList.remove('active');
+        
+        setTimeout(() => {
+            if (envelope.parentNode) {
+                envelope.parentNode.removeChild(envelope);
+            }
+        }, 300);
+    }
+    
+    // 绑定关闭事件
     closeBtn.addEventListener('click', closeWorkDetails);
-    
-    // 清理旧内容
-    envelope.innerHTML = '';
-    envelope.appendChild(detailsContent);
-    envelope.appendChild(closeBtn);
     
     // 触发动画
     requestAnimationFrame(() => {
-      const containerRect = document.querySelector('.container').getBoundingClientRect();
-      envelope.style.cssText = `
-        top: ${containerRect.top}px;
-        left: ${containerRect.left}px;
-        width: ${containerRect.width}px;
-        height: ${containerRect.height}px;
-      `;
-      envelope.classList.add('active');
-      
-      // 点击外部关闭
-      document.body.addEventListener('click', function closeOnBodyClick(e) {
-        if (!envelope.contains(e.target)) {
-          closeWorkDetails();
-          document.body.removeEventListener('click', closeOnBodyClick);
-        }
-      }, { once: true });
+        const containerRect = document.querySelector('.container').getBoundingClientRect();
+        envelope.style.cssText = `
+            top: ${containerRect.top}px;
+            left: ${containerRect.left}px;
+            width: ${containerRect.width}px;
+            height: ${containerRect.height}px;
+        `;
+        envelope.classList.add('active');
+        
+        // 点击外部关闭
+        document.body.addEventListener('click', function closeOnBodyClick(e) {
+            if (!envelope.contains(e.target)) {
+                closeWorkDetails();
+                document.body.removeEventListener('click', closeOnBodyClick);
+            }
+        }, { once: true });
     });
-    
-    function closeWorkDetails() {
-      envelope.style.top = `${envelope.dataset.initialTop}px`;
-      envelope.style.left = `${envelope.dataset.initialLeft}px`;
-      envelope.style.width = `${envelope.dataset.initialWidth}px`;
-      envelope.style.height = `${envelope.dataset.initialHeight}px`;
-      envelope.classList.remove('active');
-      
-      setTimeout(() => {
-        if (envelope.parentNode) {
-          envelope.parentNode.removeChild(envelope);
-        }
-      }, 300);
-    }
-  }
+}
 
-// --- 初始化 ---
+// 移动端菜单切换
+function initMobileMenuToggle() {
+    const toggleButton = document.querySelector('.mobile-toggle');
+    const navbarNav = document.getElementById('navbarNav');
+    
+    if (toggleButton && navbarNav) {
+        toggleButton.addEventListener('click', function () {
+            navbarNav.classList.toggle('active');
+            this.classList.toggle('active');
+        });
+        
+        // 点击导航项后关闭菜单
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                navbarNav.classList.remove('active');
+                toggleButton.classList.remove('active');
+            });
+        });
+    }
+}
+
+// 初始化导航
 function initNavigation() {
-    const elements = { navItems: document.querySelectorAll('.nav-item') };
-    elements.navItems.forEach(item => {
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
         item.addEventListener('click', (e) => {
             e.preventDefault();
             const page = item.getAttribute('data-page');
@@ -632,6 +739,7 @@ function initNavigation() {
     });
 }
 
+// 初始化历史记录
 function initPopstate() {
     window.addEventListener('popstate', (e) => {
         const page = e.state?.page || 'index';
@@ -639,10 +747,12 @@ function initPopstate() {
     });
 }
 
+// 返回顶部按钮
 function initBackToTopButton() {
     const backToTopButton = document.getElementById("backToTopBtn");
     if (!backToTopButton) return;
-    const scrollThreshold = 300; // 滚动多少像素后显示按钮
+    
+    const scrollThreshold = 300;
     
     window.addEventListener('scroll', function() {
         if (window.scrollY > scrollThreshold) {
@@ -657,12 +767,21 @@ function initBackToTopButton() {
     });
 }
 
-// --- 主执行逻辑 ---
+// 主初始化
 document.addEventListener('DOMContentLoaded', function () {
+    console.log('🚀 初始化网站...');
+    
+    // 初始化所有组件
     initNavigation();
     initPopstate();
     initMobileMenuToggle();
     initBackToTopButton();
+    
+    // 加载初始页面
     const initialPage = getUrlParameter('page') || 'index';
     loadPage(initialPage);
+    
+    // 添加加载完成标志
+    document.body.setAttribute('data-loaded', 'true');
+    console.log('✅ 网站初始化完成');
 });

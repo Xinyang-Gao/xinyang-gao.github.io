@@ -676,43 +676,43 @@
   
   /* --- 动画与过渡 --- */
 @keyframes drawPaperIn {
-  0% { 
+  0% {
     transform: translateY(100%) scale(0.95);
     opacity: 0;
   }
-  40% { 
+  40% {
     transform: translateY(-10px) scale(1.01);
     opacity: 1;
   }
-  100% { 
+  100% {
     transform: translateY(0) scale(1);
     opacity: 1;
   }
 }
 
 @keyframes fadeOutAndShrink {
-  0% { 
+  0% {
     transform: translateY(0) scale(1);
     opacity: 1;
   }
-  70% { 
-    transform: translateY(-40PX) scale(1.02);
+  70% {
+    transform: translateY(-40px) scale(1.02);
     opacity: 1;
   }
-  100% { 
+  100% {
     transform: translateY(0) scale(0.98);
     opacity: 0;
   }
 }
 
-/* 优化动画过渡，使用更平滑的缓动 */
+/* 优化过渡缓动 */
 .draw-animation-paper, .work-details-envelope {
   transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
 }
-  
-  .fade-out-shrink {
-    animation: fadeOutAndShrink 0.6s var(--transition-ease-in-out) forwards;
-  }
+
+.fade-out-shrink {
+  animation: fadeOutAndShrink 0.6s cubic-bezier(0.25, 0.8, 0.25, 1) forwards;
+}
   
   .draw-animation-paper {
     position: fixed;
