@@ -3,12 +3,15 @@
 <div id="search-container">
   <input type="text" id="search-input" placeholder="搜索文章...">
   <select id="search-field">
-    <option value="all">所有</option>
+    <option value="all">全部</option>
     <option value="title">标题</option>
-    <option value="description">描述</option>
     <option value="tag">标签</option>
     <option value="date">日期</option>
   </select>
+</div>
+<div id="article-tags-filter" class="tags-filter">
+  <!-- 标签按钮将在这里动态生成 -->
+  <span class="filter-label">按标签筛选:</span>
 </div>
 <div id="articles-list-container"></div>
 <div class="articles-list">
