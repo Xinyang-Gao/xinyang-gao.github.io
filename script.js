@@ -42,38 +42,44 @@ function isDataExpired(storedDataString) {
 }
 
 async function fetchWorksData(useCache = true) {
-    // 添加 useCache 参数，默认启用缓存
-    perf.start('fetchWorksData');
-    try {
-        if (useCache) {
-            const cachedDataString = localStorage.getItem('worksData');
-            if (cachedDataString && !isDataExpired(cachedDataString)) {
-                console.log("Using cached works data");
-                const cachedData = JSON.parse(cachedDataString);
-                delete cachedData._timestamp; // 返回时移除内部使用的 _timestamp
-                perf.end('fetchWorksData');
-                return cachedData;
-            }
+    // 优化：添加更详细的错误处理
+    if (useCache) {
+      const cachedDataString = localStorage.getItem('worksData');
+      if (cachedDataString) {
+        try {
+          const cachedData = JSON.parse(cachedDataString);
+          if (cachedData && !isDataExpired(cachedData)) {
+            delete cachedData._timestamp;
+            return cachedData;
+          }
+        } catch (e) {
+          console.error('Error parsing cached works data:', e);
         }
-        // 如果没启用缓存、没有缓存、或缓存过期，则请求网络
-        console.log("Fetching fresh works data");
-        const response = await fetch('works.json');
-        if (!response.ok) {
-            throw new Error(`Network error fetching works: ${response.statusText}`);
-        }
-        const data = await response.json();
-        // 存储带时间戳的数据
-        const dataToStore = {...data, _timestamp: Date.now()};
-        localStorage.setItem('worksData', JSON.stringify(dataToStore));
-        perf.end('fetchWorksData');
-        return data;
-    } catch (error) {
-        console.error('Failed to fetch or use cached works data:', error);
-        perf.end('fetchWorksData');
-        throw error;
+      }
     }
-}
-
+    
+    try {
+      console.log("Fetching fresh works data");
+      const response = await fetch('works.json', { cache: 'no-store' }); // 确保不使用缓存
+      if (!response.ok) {
+        throw new Error(`Network error fetching works: ${response.statusText}`);
+      }
+      const data = await response.json();
+      
+      // 优化：添加数据验证
+      if (!data.works || !Array.isArray(data.works) || data.works.length === 0) {
+        throw new Error('Invalid works data format');
+      }
+      
+      const dataToStore = { ...data, _timestamp: Date.now() };
+      localStorage.setItem('worksData', JSON.stringify(dataToStore));
+      return data;
+    } catch (error) {
+      console.error('Failed to fetch works data:', error);
+      throw error;
+    }
+  }
+  
 function generateWorksHTML(data) {
     perf.start('generateWorksHTML');
     if (!data?.works || data.works.length === 0) {
@@ -384,67 +390,82 @@ async function loadPage(pageName, pushState = true) {
 }
 
 function performDrawAnimation(content, pageName, pageTitle, pushState) {
-    perf.start('performDrawAnimation');
     const elements = {
-        navItems: document.querySelectorAll('.nav-item'),
-        content: document.getElementById('mainContent'),
-        pageTransition: document.getElementById('pageTransition'),
-        container: document.querySelector('.container')
+      navItems: document.querySelectorAll('.nav-item'),
+      content: document.getElementById('mainContent'),
+      pageTransition: document.getElementById('pageTransition'),
+      container: document.querySelector('.container')
     };
-
+    
     elements.pageTransition.classList.add('active');
-    const containerRect = elements.container.getBoundingClientRect();
-    const computedStyle = window.getComputedStyle(elements.container);
-    const padding = {
+    
+    // 优化：使用 requestAnimationFrame 优化动画
+    requestAnimationFrame(() => {
+      const containerRect = elements.container.getBoundingClientRect();
+      const computedStyle = window.getComputedStyle(elements.container);
+      const padding = {
         top: parseFloat(computedStyle.paddingTop),
         right: parseFloat(computedStyle.paddingRight),
         bottom: parseFloat(computedStyle.paddingBottom),
         left: parseFloat(computedStyle.paddingLeft)
-    };
-
-    // 创建动画元素 (使用容器实际尺寸)
-    const paperElement = document.createElement('div');
-    paperElement.className = 'draw-animation-paper container';
-    paperElement.style.cssText = ` 
-        top: ${containerRect.top}px; 
-        left: ${containerRect.left}px; 
-        width: ${containerRect.width}px; 
-        height: ${containerRect.height}px; 
-        padding: ${padding.top}px ${padding.right}px ${padding.bottom}px ${padding.left}px; 
-    `;
-    paperElement.innerHTML = content;
-    document.body.appendChild(paperElement);
-
-    // 触发内容区域退出动画
-    elements.content.classList.add('fade-out-shrink');
-
-    // 动画结束后处理
-    paperElement.addEventListener('animationend', () => {
+      };
+      
+      // 优化：避免重复创建元素
+      let paperElement = document.querySelector('.draw-animation-paper');
+      if (!paperElement) {
+        paperElement = document.createElement('div');
+        paperElement.className = 'draw-animation-paper container';
+        document.body.appendChild(paperElement);
+      }
+      
+      paperElement.style.cssText = `
+        top: ${containerRect.top}px;
+        left: ${containerRect.left}px;
+        width: ${containerRect.width}px;
+        height: ${containerRect.height}px;
+        padding: ${padding.top}px ${padding.right}px ${padding.bottom}px ${padding.left}px;
+      `;
+      paperElement.innerHTML = content;
+      
+      // 优化：使用 transform 而不是直接修改位置
+      paperElement.style.transform = 'translate(0, 0) scale(1)';
+      paperElement.style.opacity = '1';
+      
+      // 触发内容区域退出动画
+      elements.content.classList.add('fade-out-shrink');
+      
+      // 动画结束后处理
+      paperElement.addEventListener('animationend', () => {
         elements.content.innerHTML = content;
         elements.content.classList.remove('fade-out-shrink');
         document.title = pageTitle;
+        
         if (pushState) {
-            window.history.pushState({ page: pageName }, pageTitle, `?page=${pageName}`);
+          window.history.pushState({ page: pageName }, pageTitle, `?page=${pageName}`);
         }
+        
         // 更新导航状态
         elements.navItems.forEach(item => {
-            item.classList.toggle('active', item.getAttribute('data-page') === pageName);
+          item.classList.toggle('active', item.getAttribute('data-page') === pageName);
         });
+        
         // 清理临时元素
         if (paperElement.parentNode) {
-            paperElement.parentNode.removeChild(paperElement);
+          paperElement.parentNode.removeChild(paperElement);
         }
+        
         elements.pageTransition.classList.remove('active');
-        // 初始化搜索功能 (关键修复点)
+        
+        // 初始化搜索功能
         initSearch(pageName);
-        // 初始化作品交互 (如果当前是作品页)
+        
+        // 初始化作品交互
         if (pageName === 'works') {
-            setupWorkItemsInteraction();
+          setupWorkItemsInteraction();
         }
-    }, { once: true });
-
-    perf.end('performDrawAnimation');
-}
+      }, { once: true });
+    });
+  }
 
 function initMobileMenuToggle() {
     const toggleButton = document.querySelector('.mobile-toggle');
@@ -506,84 +527,98 @@ function handleArticleItemClick(e) {
 }
 
 function showWorkDetails(work) {
-    // 检查是否已经存在活动的详情弹窗
+    // 优化：检查是否已经存在活动的详情弹窗
     if (document.querySelector('.work-details-envelope.active')) {
-        return;
+      return;
     }
-    const elements = { container: document.querySelector('.container') };
+    
     const workItem = document.querySelector(`.work-item[data-id="${work.id}"]`);
     if (!workItem) return;
+    
     const workItemRect = workItem.getBoundingClientRect();
-    const envelope = document.createElement('div');
-    envelope.className = 'work-details-envelope';
-    Object.assign(envelope.dataset, {
-        initialTop: workItemRect.top,
-        initialLeft: workItemRect.left,
-        initialWidth: workItemRect.width,
-        initialHeight: workItemRect.height
-    });
-    envelope.style.cssText = ` 
-        top: ${workItemRect.top}px; 
-        left: ${workItemRect.left}px; 
-        width: ${workItemRect.width}px; 
-        height: ${workItemRect.height}px; 
+    
+    // 优化：避免重复创建元素
+    let envelope = document.querySelector('.work-details-envelope');
+    if (!envelope) {
+      envelope = document.createElement('div');
+      envelope.className = 'work-details-envelope';
+      document.body.appendChild(envelope);
+    }
+    
+    // 优化：存储初始位置
+    envelope.dataset.initialTop = workItemRect.top;
+    envelope.dataset.initialLeft = workItemRect.left;
+    envelope.dataset.initialWidth = workItemRect.width;
+    envelope.dataset.initialHeight = workItemRect.height;
+    
+    envelope.style.cssText = `
+      top: ${workItemRect.top}px;
+      left: ${workItemRect.left}px;
+      width: ${workItemRect.width}px;
+      height: ${workItemRect.height}px;
     `;
     
-    const detailsContent = document.createElement('div');
+    // 优化：避免重复创建内容
+    const detailsContent = envelope.querySelector('.work-details-content') || document.createElement('div');
     detailsContent.className = 'work-details-content';
-    detailsContent.innerHTML = ` 
-        <h2 class="work-details-title">${work.title}</h2> 
-        <p class="work-details-description">${work.description}</p> 
-        ${work.tag && work.tag.length ? ` 
-            <div class="work-details-tag"> 
-                <strong>标签:</strong> ${work.tag.map(tech => `<span class="tech-tag">${tech}</span>`).join('')} 
-            </div> 
-        ` : ''} 
-        ${work.link ? `<a href="${work.link}" target="_blank" class="work-details-link">查看</a>` : ''}
+    detailsContent.innerHTML = `
+      <h2 class="work-details-title">${work.title}</h2>
+      <p class="work-details-description">${work.description}</p>
+      ${work.tag && work.tag.length ? `
+        <div class="work-details-tag">
+          <strong>标签:</strong> ${work.tag.map(tech => `<span class="tech-tag">${tech}</span>`).join('')}
+        </div>
+      ` : ''}
+      ${work.link ? `<a href="${work.link}" target="_blank" class="work-details-link">查看</a>` : ''}
     `;
     
-    const closeBtn = document.createElement('div');
+    // 优化：避免重复创建关闭按钮
+    const closeBtn = envelope.querySelector('.work-details-close') || document.createElement('div');
     closeBtn.className = 'work-details-close';
     closeBtn.innerHTML = '✕';
     
-    function closeWorkDetails() {
-        envelope.style.top = `${envelope.dataset.initialTop}px`;
-        envelope.style.left = `${envelope.dataset.initialLeft}px`;
-        envelope.style.width = `${envelope.dataset.initialWidth}px`;
-        envelope.style.height = `${envelope.dataset.initialHeight}px`;
-        envelope.classList.remove('active');
-        setTimeout(() => {
-            if (envelope.parentNode) {
-                envelope.parentNode.removeChild(envelope);
-            }
-        }, 300);
-    }
-    
+    // 优化：确保只绑定一次关闭事件
     closeBtn.addEventListener('click', closeWorkDetails);
+    
+    // 清理旧内容
+    envelope.innerHTML = '';
     envelope.appendChild(detailsContent);
     envelope.appendChild(closeBtn);
-    document.body.appendChild(envelope);
     
-    // 动画过渡
+    // 触发动画
     requestAnimationFrame(() => {
-        const containerRect = elements.container.getBoundingClientRect();
-        envelope.style.cssText = ` 
-            top: ${containerRect.top}px; 
-            left: ${containerRect.left}px; 
-            width: ${containerRect.width}px; 
-            height: ${containerRect.height}px; 
-        `;
-        envelope.classList.add('active');
-        
-        // 点击外部关闭
-        document.body.addEventListener('click', function closeOnBodyClick(e) {
-            if (!envelope.contains(e.target)) {
-                closeWorkDetails();
-                document.body.removeEventListener('click', closeOnBodyClick);
-            }
-        }, { once: true });
+      const containerRect = document.querySelector('.container').getBoundingClientRect();
+      envelope.style.cssText = `
+        top: ${containerRect.top}px;
+        left: ${containerRect.left}px;
+        width: ${containerRect.width}px;
+        height: ${containerRect.height}px;
+      `;
+      envelope.classList.add('active');
+      
+      // 点击外部关闭
+      document.body.addEventListener('click', function closeOnBodyClick(e) {
+        if (!envelope.contains(e.target)) {
+          closeWorkDetails();
+          document.body.removeEventListener('click', closeOnBodyClick);
+        }
+      }, { once: true });
     });
-}
+    
+    function closeWorkDetails() {
+      envelope.style.top = `${envelope.dataset.initialTop}px`;
+      envelope.style.left = `${envelope.dataset.initialLeft}px`;
+      envelope.style.width = `${envelope.dataset.initialWidth}px`;
+      envelope.style.height = `${envelope.dataset.initialHeight}px`;
+      envelope.classList.remove('active');
+      
+      setTimeout(() => {
+        if (envelope.parentNode) {
+          envelope.parentNode.removeChild(envelope);
+        }
+      }, 300);
+    }
+  }
 
 // --- 初始化 ---
 function initNavigation() {
