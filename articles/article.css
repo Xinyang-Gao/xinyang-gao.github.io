@@ -299,3 +299,55 @@ body {
           font-size: 1rem;
      }
 }
+
+.toc-list li {
+    transition: all 0.3s ease;
+    border-left: 2px solid transparent;
+    margin-left: -2px;
+}
+
+.toc-list li.active {
+    border-left: 2px solid var(--accent-color);
+    background-color: rgba(255, 214, 125, 0.288);
+}
+
+.toc-list li.active a {
+    color: var(--accent-color);
+    font-weight: bold;
+}
+
+.toc-list a {
+    padding: 4px 8px;
+    border-radius: 3px;
+    transition: all 0.2s ease;
+}
+
+.toc-list a:hover {
+    background-color: rgba(139, 69, 19, 0.05);
+}
+
+/* 平滑滚动 */
+html {
+    scroll-behavior: smooth;
+}
+
+/* 为正文标题添加目标滚动时的样式 */
+.article-content-wrapper h1,
+.article-content-wrapper h2,
+.article-content-wrapper h3,
+.article-content-wrapper h4 {
+    scroll-margin-top: 100px; /* 考虑到固定导航栏 */
+    position: relative;
+}
+
+.article-content-wrapper h1:target,
+.article-content-wrapper h2:target,
+.article-content-wrapper h3:target,
+.article-content-wrapper h4:target {
+    animation: highlight 2s ease;
+}
+
+@keyframes highlight {
+    0% { background-color: rgba(139, 69, 19, 0.1); }
+    100% { background-color: transparent; }
+}

@@ -3,7 +3,6 @@ document.addEventListener('DOMContentLoaded', function () {
     marked.setOptions({ breaks: true });
     // --- 配置结束 ---
 
-    // 从URL获取文章标识
     const articleId = getUrlParameter('article');
     if (!articleId) {
         document.getElementById('articleContent').innerHTML = `
@@ -13,10 +12,8 @@ document.addEventListener('DOMContentLoaded', function () {
         return;
     }
 
-    // 构建文章路径
     const articlePath = `/articles/articles/${articleId}.md`;
 
-    // 加载并解析Markdown文件
     fetch(articlePath)
         .then(response => {
             if (!response.ok) {
@@ -25,24 +22,20 @@ document.addEventListener('DOMContentLoaded', function () {
             return response.text();
         })
         .then(markdown => {
-            // 提取元数据并清理Markdown
             const { meta, cleanedMarkdown } = extractMetaAndCleanMarkdown(markdown);
             if (!meta.title) {
                 throw new Error("元数据缺失：标题未定义");
             }
             const html = marked.parse(cleanedMarkdown);
 
-            // 设置文章标题
             document.getElementById('articleTitle').textContent = `═══ ${meta.title} ═══`;
-            
-            // 设置文章元数据
             document.getElementById('articleMeta').textContent = meta.date || '未指定日期';
-            
-            // 设置文章内容
             document.getElementById('articleBody').innerHTML = html;
 
-            // 生成TOC
             generateTOC();
+            
+            // 初始化滚动监听和高亮功能
+            initScrollSpy();
         })
         .catch(error => {
             console.error('加载文章失败:', error);
@@ -56,111 +49,169 @@ document.addEventListener('DOMContentLoaded', function () {
             `;
         });
 
+    function extractMetaAndCleanMarkdown(markdown) {
+        const metaRegex = /^[\s\uFEFF]*\+\+\+[\s\uFEFF]*\n([\s\S]+?)\n[\s\uFEFF]*\+\+\+[\s\uFEFF]*\n([\s\S]*)$/m;
+        const match = markdown.match(metaRegex);
 
-    // 从Markdown中提取元数据并清理
-function extractMetaAndCleanMarkdown(markdown) {
-    // 调试：打印文件开头内容
-    console.log("DEBUG: Markdown开头内容:", JSON.stringify(markdown.substring(0, 50)));
+        if (match) {
+            const metaContent = match[1];
+            const cleanedMarkdown = match[2];
+            const meta = {};
 
-    // 使用正则表达式匹配元数据块
-    const metaRegex = /^[\s\uFEFF]*\+\+\+[\s\uFEFF]*\n([\s\S]+?)\n[\s\uFEFF]*\+\+\+[\s\uFEFF]*\n([\s\S]*)$/m;
-    const match = markdown.match(metaRegex);
+            metaContent.split(/\r?\n/).forEach(line => {
+                line = line.trim();
+                if (!line) return;
 
-    if (match) {
-        // 解析元数据部分
-        const metaContent = match[1];
-        const cleanedMarkdown = match[2];
-        const meta = {};
+                const colonIndex = line.indexOf(':');
+                if (colonIndex !== -1) {
+                    const key = line.substring(0, colonIndex).trim();
+                    const value = line.substring(colonIndex + 1).trim();
+                    meta[key] = value;
+                }
+            });
 
-        // 按行解析元数据
-        metaContent.split(/\r?\n/).forEach(line => {
-            line = line.trim();
-            if (!line) return;
+            return { meta, cleanedMarkdown };
+        }
 
-            const colonIndex = line.indexOf(':');
-            if (colonIndex !== -1) {
-                const key = line.substring(0, colonIndex).trim();
-                const value = line.substring(colonIndex + 1).trim();
-                meta[key] = value;
-            }
-        });
+        // 备用方案
+        const lines = markdown.split(/\r?\n/);
+        let metaStart = -1;
+        let metaEnd = -1;
 
-        return { meta, cleanedMarkdown };
-    }
+        for (let i = 0; i < lines.length; i++) {
+            const trimmed = lines[i].replace(/^[\s\uFEFF]+|[\s\uFEFF]+$/g, '');
 
-    // 备用方案（如果正则匹配失败）
-    console.warn("WARN: 正则匹配失败，使用备用解析方法");
-    const lines = markdown.split(/\r?\n/);
-    let metaStart = -1;
-    let metaEnd = -1;
-
-    // 寻找元数据边界（将 --- 改为 +++）
-    for (let i = 0; i < lines.length; i++) {
-        // 允许行首尾有空格/不可见字符
-        const trimmed = lines[i].replace(/^[\s\uFEFF]+|[\s\uFEFF]+$/g, '');
-
-        if (trimmed === '+++') {
-            if (metaStart === -1) {
-                metaStart = i;
-            } else {
-                metaEnd = i;
-                break;
+            if (trimmed === '+++') {
+                if (metaStart === -1) {
+                    metaStart = i;
+                } else {
+                    metaEnd = i;
+                    break;
+                }
             }
         }
-    }
 
-    if (metaStart !== -1 && metaEnd !== -1 && metaEnd > metaStart) {
-        const meta = {};
-        for (let i = metaStart + 1; i < metaEnd; i++) {
-            const line = lines[i];
-            if (line.includes(':')) {
-                const [key, value] = line.split(':').map(s => s.trim());
-                meta[key] = value;
+        if (metaStart !== -1 && metaEnd !== -1 && metaEnd > metaStart) {
+            const meta = {};
+            for (let i = metaStart + 1; i < metaEnd; i++) {
+                const line = lines[i];
+                if (line.includes(':')) {
+                    const [key, value] = line.split(':').map(s => s.trim());
+                    meta[key] = value;
+                }
             }
+            return {
+                meta,
+                cleanedMarkdown: lines.slice(metaEnd + 1).join('\n')
+            };
         }
+
         return {
-            meta,
-            cleanedMarkdown: lines.slice(metaEnd + 1).join('\n')
+            meta: { title: '═══ 未命名文章 ═══', date: '未指定' },
+            cleanedMarkdown: markdown
         };
     }
 
-    // 最终Fallback
-    console.error("ERROR: 无法解析元数据，使用默认值");
-    return {
-        meta: { title: '═══ 未命名文章 ═══', date: '未指定' },
-        cleanedMarkdown: markdown
-    };
-}
-
-    // 生成TOC (包含所有标题级别)
     function generateTOC() {
         const tocList = document.getElementById('tocList');
         tocList.innerHTML = '';
         
-        // 获取所有标题
         const headings = document.querySelectorAll('#articleBody h1, #articleBody h2, #articleBody h3, #articleBody h4');
         
-        // 为每个标题生成链接
+        if (headings.length === 0) {
+            tocList.innerHTML = '<li>暂无目录</li>';
+            return;
+        }
+        
         headings.forEach((heading, index) => {
             const level = parseInt(heading.tagName.substring(1));
             const id = `heading-${index}`;
             heading.id = id;
             
-            // 创建导航项
+            const listItem = document.createElement('li');
+            listItem.dataset.targetId = id;
+            
             const link = document.createElement('a');
             link.href = `#${id}`;
             link.textContent = heading.textContent;
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                smoothScrollTo(heading);
+                updateActiveTOCItem(id);
+            });
             
-            // 根据级别添加缩进
-            const listItem = document.createElement('li');
-            listItem.style.paddingLeft = `${(level - 1) * 15}px`;
             listItem.appendChild(link);
-            
             tocList.appendChild(listItem);
         });
     }
 
-    // 从URL获取参数
+    function initScrollSpy() {
+        const observerOptions = {
+            root: null,
+            rootMargin: '-100px 0px -70% 0px', // 调整视口范围
+            threshold: [0, 0.1, 0.5, 1]
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            let mostVisible = null;
+            let highestRatio = 0;
+            
+            entries.forEach(entry => {
+                if (entry.isIntersecting && entry.intersectionRatio > highestRatio) {
+                    highestRatio = entry.intersectionRatio;
+                    mostVisible = entry.target.id;
+                }
+            });
+            
+            if (mostVisible) {
+                updateActiveTOCItem(mostVisible);
+            }
+        }, observerOptions);
+
+        // 观察所有标题
+        document.querySelectorAll('#articleBody h1, #articleBody h2, #articleBody h3, #articleBody h4')
+            .forEach(heading => {
+                observer.observe(heading);
+            });
+    }
+
+    function updateActiveTOCItem(activeId) {
+        const tocItems = document.querySelectorAll('#tocList li');
+        
+        tocItems.forEach(item => {
+            item.classList.remove('active');
+        });
+        
+        const activeItem = document.querySelector(`#tocList li[data-target-id="${activeId}"]`);
+        if (activeItem) {
+            activeItem.classList.add('active');
+            
+            // 确保活动项在目录容器中可见
+            const tocContainer = document.querySelector('.toc-container');
+            const itemTop = activeItem.offsetTop;
+            const containerHeight = tocContainer.clientHeight;
+            
+            if (itemTop > tocContainer.scrollTop + containerHeight - 50 || 
+                itemTop < tocContainer.scrollTop) {
+                tocContainer.scrollTo({
+                    top: itemTop - 50,
+                    behavior: 'smooth'
+                });
+            }
+        }
+    }
+
+    function smoothScrollTo(element) {
+        const offset = 90; // 导航栏高度
+        const elementPosition = element.getBoundingClientRect().top;
+        const offsetPosition = elementPosition + window.pageYOffset - offset;
+
+        window.scrollTo({
+            top: offsetPosition,
+            behavior: 'smooth'
+        });
+    }
+
     function getUrlParameter(name) {
         const urlParams = new URLSearchParams(window.location.search);
         return urlParams.get(name);
