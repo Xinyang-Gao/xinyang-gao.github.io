@@ -12,7 +12,7 @@
 {
       "id": 2,
       "title": "朗诵音乐",
-      "description": "一次语文演讲需要的朗诵背景，包含两个页面",
+      "description": "一次语文朗诵比赛需要的朗诵背景，包含两个页面",
       "date": "2025-10-22",
       "tag": ["HTML", "CSS", "JavaScript","学习"],
       "link": "/works/朗诵1.html"
