@@ -1,85 +1,162 @@
 /* 信件风格主样式 */
 :root {
   /* 颜色变量 */
-  --bg-color: #fdf5e6; /* 页面背景色 */
-  --text-color: #333333; /* 主要文字颜色 */
-  --accent-color: #8b4513; /* 强调色 */
-  --border-color: #d2b48c; /* 边框色 */
-  --header-bg: #f5f5dc; /* 表头、引用等背景色 */
-  --link-color: var(--accent-color); /* 链接默认色 */
-  --link-hover: #a0522d; /* 链接悬停色 */
-  --shadow-color: rgba(0, 0, 0, 0.1); /* 主阴影色 */
-  --shadow-color-offset: rgba(210, 180, 140, 0.3); /* 信纸效果阴影色 */
-  --item-hover-shadow: rgba(0, 0, 0, 0.15); /* 列表项悬停阴影 */
-  --nav-bg-rgba: rgba(253, 245, 230, 0.92); /* 导航栏背景透明度 */
-  --nav-blur: 12px; /* 导航栏模糊度 */
-  --nav-border-rgba: rgba(210, 180, 140, 0.5); /* 导航栏边框透明度 */
-  --nav-shadow-rgba: rgba(0, 0, 0, 0.08);  /* 导航栏阴影透明度 */
-  --nav-item-hover-bg: rgba(139, 69, 19, 0.08); /* 导航项悬停背景 */
-  --nav-item-active-bg: rgba(139, 69, 19, 0.12); /* 导航项激活背景 */
-  --nav-item-active-border: rgba(139, 69, 19, 0.2); /* 导航项激活边框 */
-  --nav-item-hover-shadow: rgba(0, 0, 0, 0.05); /* 导航项悬停阴影 */
-  --tag-bg: #eee; /* 标签背景色 */
-  --tag-color: var(--text-color); /* 标签文字色 */
-  --back-to-top-bg: var(--accent-color); /* 返回顶部按钮背景 */
-  --back-to-top-hover-bg: var(--link-hover); /* 返回顶部按钮悬停背景 */
-  --transition-fast: 0.2s; /* 快速过渡 */
-  --transition-normal: 0.3s; /* 普通过渡 */
-  --transition-slow: 0.5s; /* 慢速过渡 */
-  --transition-ease: ease; /* 普通缓动 */
-  --transition-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1); /* 进出缓动 */
-  --transition-draw: cubic-bezier(0.25, 0.8, 0.25, 1); /* 绘制动画缓动 */
+  --bg-color: #fdf5e6;
+  /* 页面背景色 */
+  --text-color: #333333;
+  /* 主要文字颜色 */
+  --accent-color: #8b4513;
+  /* 强调色 */
+  --border-color: #d2b48c;
+  /* 边框色 */
+  --header-bg: #f5f5dc;
+  /* 表头、引用等背景色 */
+  --link-color: var(--accent-color);
+  /* 链接默认色 */
+  --link-hover: #a0522d;
+  /* 链接悬停色 */
+  --shadow-color: rgba(0, 0, 0, 0.1);
+  /* 主阴影色 */
+  --shadow-color-offset: rgba(210, 180, 140, 0.3);
+  /* 信纸效果阴影色 */
+  --item-hover-shadow: rgba(0, 0, 0, 0.15);
+  /* 列表项悬停阴影 */
+  --nav-bg-rgba: rgba(253, 245, 230, 0.92);
+  /* 导航栏背景透明度 */
+  --nav-blur: 12px;
+  /* 导航栏模糊度 */
+  --nav-border-rgba: rgba(210, 180, 140, 0.5);
+  /* 导航栏边框透明度 */
+  --nav-shadow-rgba: rgba(0, 0, 0, 0.08);
+  /* 导航栏阴影透明度 */
+  --nav-item-hover-bg: rgba(139, 69, 19, 0.08);
+  /* 导航项悬停背景 */
+  --nav-item-active-bg: rgba(139, 69, 19, 0.12);
+  /* 导航项激活背景 */
+  --nav-item-active-border: rgba(139, 69, 19, 0.2);
+  /* 导航项激活边框 */
+  --nav-item-hover-shadow: rgba(0, 0, 0, 0.05);
+  /* 导航项悬停阴影 */
+  --tag-bg: #eee;
+  /* 标签背景色 */
+  --tag-color: var(--text-color);
+  /* 标签文字色 */
+  --back-to-top-bg: var(--accent-color);
+  /* 返回顶部按钮背景 */
+  --back-to-top-hover-bg: var(--link-hover);
+  /* 返回顶部按钮悬停背景 */
+  --transition-fast: 0.2s;
+  /* 快速过渡 */
+  --transition-normal: 0.3s;
+  /* 普通过渡 */
+  --transition-slow: 0.5s;
+  /* 慢速过渡 */
+  --transition-ease: ease;
+  /* 普通缓动 */
+  --transition-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  /* 进出缓动 */
+  --transition-draw: cubic-bezier(0.25, 0.8, 0.25, 1);
+  /* 绘制动画缓动 */
 
   /* 尺寸变量 */
-  --font-size-base: 1.1rem;/* 基础字体大小 */
-  --font-size-small: 0.9rem;/* 小字体大小 */
-  --font-size-tag: 0.85rem;/* 标签字体大小 */
-  --font-size-h1: 2.2rem;/* h1 字体大小 */
-  --font-size-h2: 1.8rem;/* h2 字体大小 */
-  --font-size-h3: 1.5rem;/* h3 字体大小 */
-  --font-size-work-title: 1.6rem;/* 作品标题字体大小 */
-  --font-size-article-title: 1.6rem;/* 文章标题字体大小 */
-  --font-size-work-description: 1.05rem;/* 作品描述字体大小 */
-  --font-size-article-description: 1.05rem;/* 文章描述字体大小 */
-  --font-size-details-title: 2.2rem;/* 详情标题字体大小 */
-  --font-size-details-description: var(--font-size-base);/* 详情描述字体大小 */
-  --border-width: 2px;/* 边框宽度 */
-  --border-radius: 8px;/* 边框圆角 */
-  --border-radius-container: 6px;/* 容器边框圆角 */
-  --border-radius-tag: 4px;/* 标签边框圆角 */
-  --padding-container: 40px;/* 容器内边距 */
-  --padding-item: 20px;/* 列表项内边距 */
-  --padding-tag: 4px 8px;/* 标签内边距 */
-  --margin-item-bottom: 15px;/* 列表项底部外边距 */
-  --margin-tag: 4px 4px 0 0;/* 标签外边距 */
-  --margin-paragraph-bottom: 1.2em;/* 段落底部外边距 */
-  --margin-section-top: 20px;/* 区块顶部外边距 */
-  --nav-height: 70px;/* 导航栏高度 */
-  --nav-height-mobile: 60px;/* 移动端导航栏高度 */
-  --nav-height-mobile-sm: 55px;/* 小屏移动端导航栏高度 */
-  --nav-logo-font-size: 1.7rem;/* 导航栏 logo 字体大小 */
-  --nav-logo-font-size-mobile: 1.5rem;/* 移动端导航栏 logo 字体大小 */
-  --nav-logo-font-size-mobile-sm: 1.3rem;/* 小屏移动端导航栏 logo 字体大小 */
-  --nav-item-padding: 10px 20px;/* 导航项内边距 */
-  --nav-item-padding-mobile: 12px 20px;/* 移动端导航项内边距 */
-  --nav-item-padding-mobile-sm: 10px 15px;/* 小屏移动端导航项内边距 */
-  --nav-item-font-size: 1.05rem;/* 导航项字体大小 */
-  --nav-item-font-size-mobile: 1.1rem;/* 移动端导航项字体大小 */
-  --nav-item-font-size-mobile-sm: 1rem;/* 小屏移动端导航项字体大小 */
-  --nav-item-margin: 0 5px;/* 导航项外边距 */
-  --nav-item-margin-mobile: 5px 15px;/* 移动端导航项外边距 */
-  --nav-item-margin-mobile-sm: 4px 10px;/* 小屏移动端导航项外边距 */
-  --shadow-main: 0 4px 12px var(--shadow-color);/* 主要阴影 */
-  --shadow-offset: 6px 6px 0 -2px var(--shadow-color-offset);/* 信纸偏移阴影 */
-  --shadow-hover: 0 6px 16px var(--item-hover-shadow);/* 悬停阴影 */
-  --shadow-navbar: 0 2px 10px var(--nav-shadow-rgba);/* 导航栏阴影 */
-  --shadow-navbar-mobile: 0 6px 12px rgba(0, 0, 0, 0.1);/* 移动端导航栏阴影 */
-  --shadow-back-to-top: 0 2px 10px rgba(0, 0, 0, 0.2);/* 返回顶部按钮阴影 */
-  --z-index-navbar: 30;/* 导航栏层级 */
-  --z-index-details: 1000;/* 详情弹窗层级 */
-  --z-index-animation-paper: 1001;/* 动画纸张层级 */
-  --z-index-transition: 1000;/* 过渡遮罩层级 */
-  --z-index-back-to-top: 99;/* 返回顶部按钮层级 */
+  --font-size-base: 1.1rem;
+  /* 基础字体大小 */
+  --font-size-small: 0.9rem;
+  /* 小字体大小 */
+  --font-size-tag: 0.85rem;
+  /* 标签字体大小 */
+  --font-size-h1: 2.2rem;
+  /* h1 字体大小 */
+  --font-size-h2: 1.8rem;
+  /* h2 字体大小 */
+  --font-size-h3: 1.5rem;
+  /* h3 字体大小 */
+  --font-size-work-title: 1.6rem;
+  /* 作品标题字体大小 */
+  --font-size-article-title: 1.6rem;
+  /* 文章标题字体大小 */
+  --font-size-work-description: 1.05rem;
+  /* 作品描述字体大小 */
+  --font-size-article-description: 1.05rem;
+  /* 文章描述字体大小 */
+  --font-size-details-title: 2.2rem;
+  /* 详情标题字体大小 */
+  --font-size-details-description: var(--font-size-base);
+  /* 详情描述字体大小 */
+  --border-width: 2px;
+  /* 边框宽度 */
+  --border-radius: 8px;
+  /* 边框圆角 */
+  --border-radius-container: 6px;
+  /* 容器边框圆角 */
+  --border-radius-tag: 4px;
+  /* 标签边框圆角 */
+  --padding-container: 40px;
+  /* 容器内边距 */
+  --padding-item: 20px;
+  /* 列表项内边距 */
+  --padding-tag: 4px 8px;
+  /* 标签内边距 */
+  --margin-item-bottom: 15px;
+  /* 列表项底部外边距 */
+  --margin-tag: 4px 4px 0 0;
+  /* 标签外边距 */
+  --margin-paragraph-bottom: 1.2em;
+  /* 段落底部外边距 */
+  --margin-section-top: 20px;
+  /* 区块顶部外边距 */
+  --nav-height: 70px;
+  /* 导航栏高度 */
+  --nav-height-mobile: 60px;
+  /* 移动端导航栏高度 */
+  --nav-height-mobile-sm: 55px;
+  /* 小屏移动端导航栏高度 */
+  --nav-logo-font-size: 1.7rem;
+  /* 导航栏 logo 字体大小 */
+  --nav-logo-font-size-mobile: 1.5rem;
+  /* 移动端导航栏 logo 字体大小 */
+  --nav-logo-font-size-mobile-sm: 1.3rem;
+  /* 小屏移动端导航栏 logo 字体大小 */
+  --nav-item-padding: 10px 20px;
+  /* 导航项内边距 */
+  --nav-item-padding-mobile: 12px 20px;
+  /* 移动端导航项内边距 */
+  --nav-item-padding-mobile-sm: 10px 15px;
+  /* 小屏移动端导航项内边距 */
+  --nav-item-font-size: 1.05rem;
+  /* 导航项字体大小 */
+  --nav-item-font-size-mobile: 1.1rem;
+  /* 移动端导航项字体大小 */
+  --nav-item-font-size-mobile-sm: 1rem;
+  /* 小屏移动端导航项字体大小 */
+  --nav-item-margin: 0 5px;
+  /* 导航项外边距 */
+  --nav-item-margin-mobile: 5px 15px;
+  /* 移动端导航项外边距 */
+  --nav-item-margin-mobile-sm: 4px 10px;
+  /* 小屏移动端导航项外边距 */
+  --shadow-main: 0 4px 12px var(--shadow-color);
+  /* 主要阴影 */
+  --shadow-offset: 6px 6px 0 -2px var(--shadow-color-offset);
+  /* 信纸偏移阴影 */
+  --shadow-hover: 0 6px 16px var(--item-hover-shadow);
+  /* 悬停阴影 */
+  --shadow-navbar: 0 2px 10px var(--nav-shadow-rgba);
+  /* 导航栏阴影 */
+  --shadow-navbar-mobile: 0 6px 12px rgba(0, 0, 0, 0.1);
+  /* 移动端导航栏阴影 */
+  --shadow-back-to-top: 0 2px 10px rgba(0, 0, 0, 0.2);
+  /* 返回顶部按钮阴影 */
+  --z-index-navbar: 30;
+  /* 导航栏层级 */
+  --z-index-details: 1000;
+  /* 详情弹窗层级 */
+  --z-index-animation-paper: 1001;
+  /* 动画纸张层级 */
+  --z-index-transition: 1000;
+  /* 过渡遮罩层级 */
+  --z-index-back-to-top: 99;
+  /* 返回顶部按钮层级 */
 }
 
 /* 重置与基础样式 */
@@ -626,7 +703,8 @@ hr {
 }
 
 .list-item-title {
-  font-size: var(--font-size-work-title); /* 可以统一为 --font-size-list-title */
+  font-size: var(--font-size-work-title);
+  /* 可以统一为 --font-size-list-title */
   margin: 0;
   color: var(--accent-color);
 }
@@ -640,7 +718,8 @@ hr {
 
 .list-item-description {
   margin: 0;
-  font-size: var(--font-size-work-description); /* 可以统一为 --font-size-list-description */
+  font-size: var(--font-size-work-description);
+  /* 可以统一为 --font-size-list-description */
   line-height: 1.5;
   color: #444;
 }
@@ -826,7 +905,8 @@ hr {
 .tags-filter {
   margin: 20px 0;
   padding: 10px;
-  background-color: var(--header-bg); /* 使用与引用块相同的背景色以示区分 */
+  background-color: var(--header-bg);
+  /* 使用与引用块相同的背景色以示区分 */
   border-radius: var(--border-radius);
   display: flex;
   flex-wrap: wrap;
@@ -838,7 +918,8 @@ hr {
 .filter-label {
   font-weight: bold;
   color: var(--accent-color);
-  margin-right: 5px; /* 留一点右边距 */
+  margin-right: 5px;
+  /* 留一点右边距 */
 }
 
 /* 标签按钮样式 */
@@ -849,21 +930,29 @@ hr {
   border-radius: var(--border-radius-tag);
   font-size: var(--font-size-tag);
   cursor: pointer;
-  border: 1px solid var(--border-color); /* 添加边框使其更清晰 */
+  border: 1px solid var(--border-color);
+  /* 添加边框使其更清晰 */
   transition: all var(--transition-fast) var(--transition-ease);
-  user-select: none; /* 防止文本被选中 */
+  user-select: none;
+  /* 防止文本被选中 */
 }
 
 .tag-button:hover {
-  background-color: var(--link-hover); /* 悬停时改变背景色 */
-  color: white; /* 悬停时改变文字颜色 */
-  border-color: var(--link-hover); /* 悬停时改变边框颜色 */
+  background-color: var(--link-hover);
+  /* 悬停时改变背景色 */
+  color: white;
+  /* 悬停时改变文字颜色 */
+  border-color: var(--link-hover);
+  /* 悬停时改变边框颜色 */
 }
 
 .tag-button.active {
-  background-color: var(--accent-color); /* 被选中时的背景色 */
-  color: white; /* 被选中时的文字颜色 */
-  border-color: var(--accent-color); /* 被选中时的边框颜色 */
+  background-color: var(--accent-color);
+  /* 被选中时的背景色 */
+  color: white;
+  /* 被选中时的文字颜色 */
+  border-color: var(--accent-color);
+  /* 被选中时的边框颜色 */
   /* 可选：添加一些视觉反馈 */
   transform: scale(1.05);
 }
@@ -880,11 +969,13 @@ hr {
   min-width: 120px;
   cursor: pointer;
 }
+
 /* --- 结束标签筛选样式 --- */
 
 
 /* --- 搜索框样式 --- */
-#search-container { /* 原来的搜索框样式保持不变 */
+#search-container {
+  /* 原来的搜索框样式保持不变 */
   margin: 20px 0;
   display: flex;
   gap: 10px;
@@ -928,10 +1019,11 @@ hr {
     align-items: stretch;
   }
 
-  #search-input, #search-field {
+  #search-input,
+  #search-field {
     width: 100%;
     margin-bottom: 10px;
   }
 }
-/* --- 结束搜索框样式 --- */
 
+/* --- 结束搜索框样式 --- */
