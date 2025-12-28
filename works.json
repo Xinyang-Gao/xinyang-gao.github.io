@@ -3,26 +3,58 @@
     {
       "id": 1,
       "title": "数字统计计算器",
-      "description": "计算一些数据的和、平均值、中位数、众数、方差、标准差、极差、极值",
+      "description": "数学课上学完这一课，一时兴起，做了这个。计算一些数据的和、平均值、中位数、众数、方差、标准差、极差、极值",
       "date": "2025-05-30",
-      "tag": ["HTML", "CSS", "JavaScript","编程"],
+      "tag": ["HTML","编程","数学"],
       "link": "/works/统计计算器.html"
-    }
-,
+    },
 {
       "id": 2,
       "title": "朗诵音乐",
       "description": "一次语文朗诵比赛需要的朗诵背景，包含两个页面",
       "date": "2025-10-22",
-      "tag": ["HTML", "CSS", "JavaScript","学习"],
+      "tag": ["HTML","学习","语文"],
       "link": "/works/朗诵1.html"
     },
 {
       "id": 3,
       "title": "车轮模拟",
-      "description": "模拟圆形、椭圆、正方形、和长条车轮在平面上的运动情况",
+      "description": "九上数学课本上的一个活动题。模拟圆形、椭圆、正方形、和长条车轮在平面上的运动情况",
       "date": "2025-11-23",
-      "tag": ["Scratch","HTML","学习"],
+      "tag": ["Scratch","学习","数学"],
       "link": "/works/车轮模拟.html"
-    } ]
+    },
+    {
+      "id": 4,
+      "title": "【12-02】地理默写-中国主要铁路干线.pptx",
+      "description": "密码：00",
+      "date": "2024-11-30",
+      "tag": ["PPT","地理","学习"],
+      "link": "https://gaoxinyang.lanzouq.com/iFtCO2v06iqj"
+    },
+    {
+      "id": 5,
+      "title": "【12-09】地理默写-七年级上册第一章地球与地图.pptx",
+      "description": "密码：00",
+      "date": "2024-12-08",
+      "tag": ["PPT","地理","学习"],
+      "link": "https://gaoxinyang.lanzouq.com/iULVh2v06ira"
+    },
+    {
+      "id": 6,
+      "title": "【12-16】地理默写-七年级上期第二章-第一节.pptx",
+      "description": "密码：00",
+      "date": "2024-12-16",
+      "tag": ["PPT","地理","学习"],
+      "link": "https://gaoxinyang.lanzouq.com/iSfYZ2v06j0j"
+    },
+    {
+      "id": 7,
+      "title": "【12-23】地理默写-七年级上册P40-100.pptx",
+      "description": "密码：00",
+      "date": "2024-12-23",
+      "tag": ["PPT","地理","学习"],
+      "link": "https://gaoxinyang.lanzouq.com/iZHqv2v06kza"
+    }
+  ]
 }
