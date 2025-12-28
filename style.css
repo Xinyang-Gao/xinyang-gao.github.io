@@ -576,53 +576,56 @@ hr {
 
 /* --- 详情页样式 --- */
 .work-details-envelope {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: auto;
-  height: auto;
+  position: fixed; /* 改为 fixed 以确保在视口内定位 */
+  top: 50vh; /* 初始位置：视口垂直中心 */
+  left: 50%; /* 初始位置：视口水平中心 */
+  transform: translate(-50%, -50%) scale(0.1); /* 初始状态：缩放为很小，并居中 */
+  width: 700px; /* 初始动画起始宽度 */
+  height: 500px; /* 初始动画起始高度 */
+  max-width: 90vw; /* 最大宽度为视口宽度的 90% */
+  max-height: 90vh; /* 最大高度为视口高度的 90% */
   background-color: white;
   border: var(--border-width) solid var(--border-color);
   border-radius: var(--border-radius-container);
   box-shadow: var(--shadow-main), var(--shadow-offset), -var(--shadow-offset);
   z-index: var(--z-index-details);
-  overflow: hidden;
-  transform-origin: top left;
-  opacity: 0;
+  overflow: hidden; /* 内容溢出时隐藏 */
+  opacity: 0; /* 初始透明 */
   transition: all var(--transition-slow) var(--transition-draw);
   box-sizing: border-box;
+  min-height: 200px; /* 设置最小高度 */
 }
 
 .work-details-envelope.active {
   opacity: 1;
-  transform: translate(0, 0) scale(1);
+  transform: translate(-50%, -50%) scale(1); /* 动画结束状态：居中并正常大小 */
 }
 
 .work-details-content {
-  position: absolute;
-  top: 0;
-  left: 0;
+  position: relative; /* 相对于弹窗本身定位 */
   width: 100%;
   height: 100%;
   padding: var(--padding-item);
   box-sizing: border-box;
   opacity: 0;
   transition: opacity var(--transition-normal) var(--transition-ease);
+  overflow-y: auto; /* 如果内容过高，允许滚动 */
 }
+
 
 .work-details-envelope.active .work-details-content {
   opacity: 1;
 }
 
 .work-details-close {
-  position: absolute;
-  top: 20px;
-  right: 20px;
+  position: absolute; /* 相对于弹窗本身定位 */
+  top: 10px; /* 调整位置 */
+  right: 15px; /* 调整位置 */
   font-size: 1.5rem;
   cursor: pointer;
   color: var(--text-color);
   transition: color var(--transition-normal) var(--transition-ease);
-  z-index: 10;
+  z-index: 10; /* 确保在内容上方 */
 }
 
 .work-details-close:hover {

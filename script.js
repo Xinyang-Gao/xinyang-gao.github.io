@@ -709,86 +709,57 @@ function handleArticleItemClick(articleId) {
 // 显示作品详情
 function showWorkDetails(work) {
   if (document.querySelector('.work-details-envelope.active')) {
-      return;
+    return;
   }
-  
-  const workItem = document.querySelector(`.list-item[data-id="${work.id}"][data-type="work"]`);
-  if (!workItem) return;
-  
-  const workItemRect = workItem.getBoundingClientRect();
-  
   // 创建信封元素
   const envelope = document.createElement('div');
   envelope.className = 'work-details-envelope';
-  
-  // 存储初始位置
-  envelope.dataset.initialTop = workItemRect.top;
-  envelope.dataset.initialLeft = workItemRect.left;
-  envelope.dataset.initialWidth = workItemRect.width;
-  envelope.dataset.initialHeight = workItemRect.height;
-  
-  envelope.style.cssText = `
-      top: ${workItemRect.top}px;
-      left: ${workItemRect.left}px;
-      width: ${workItemRect.width}px;
-      height: ${workItemRect.height}px;
-  `;
-  
+
   // 创建详情内容
-  const tagsHtml = work.tag && work.tag.length ? 
-      `<div class="work-details-tag">
-          <strong>标签:</strong> ${work.tag.map(tag => `<span class="tag">${tag}</span>`).join('')}
-      </div>` : '';
-  
+  const tagsHtml = work.tag && work.tag.length ?
+    `<div class="work-details-tag">
+       <strong>标签:</strong>
+       ${work.tag.map(tag => `<span class="tag">${tag}</span>`).join('')}
+     </div>` : '';
+
   envelope.innerHTML = `
-      <div class="work-details-close">✕</div>
-      <div class="work-details-content">
-          <h2 class="work-details-title">${work.title}</h2>
-          <p class="work-details-description">${work.description}</p>
-          ${tagsHtml}
-          ${work.link ? `<a href="${work.link}" target="_blank" class="work-details-link">查看</a>` : ''}
-      </div>
+    <div class="work-details-close">✕</div>
+    <div class="work-details-content">
+      <h2 class="work-details-title">${work.title}</h2>
+      <p class="work-details-description">${work.description}</p>
+      ${tagsHtml}
+      ${work.link ? `<a href="${work.link}" target="_blank" class="work-details-link">查看</a>` : ''}
+    </div>
   `;
-  
+
   document.body.appendChild(envelope);
-  
+
   const closeBtn = envelope.querySelector('.work-details-close');
-  
+
   function closeWorkDetails() {
-      envelope.style.top = `${envelope.dataset.initialTop}px`;
-      envelope.style.left = `${envelope.dataset.initialLeft}px`;
-      envelope.style.width = `${envelope.dataset.initialWidth}px`;
-      envelope.style.height = `${envelope.dataset.initialHeight}px`;
-      envelope.classList.remove('active');
-      
-      setTimeout(() => {
-          if (envelope.parentNode) {
-              envelope.parentNode.removeChild(envelope);
-          }
-      }, 300);
+    envelope.style.transform = 'translate(-50%, -50%) scale(0.1)'; // 动画回到初始小尺寸状态
+    envelope.classList.remove('active');
+    setTimeout(() => {
+      if (envelope.parentNode) {
+        envelope.parentNode.removeChild(envelope);
+      }
+    }, 300); // 与 CSS 动画时间匹配
   }
-  
+
   // 绑定关闭事件
   closeBtn.addEventListener('click', closeWorkDetails);
-  
+
   // 触发动画
   requestAnimationFrame(() => {
-      const containerRect = document.querySelector('.container').getBoundingClientRect();
-      envelope.style.cssText = `
-          top: ${containerRect.top}px;
-          left: ${containerRect.left}px;
-          width: ${containerRect.width}px;
-          height: ${containerRect.height}px;
-      `;
-      envelope.classList.add('active');
-      
-      // 点击外部关闭
-      document.body.addEventListener('click', function closeOnBodyClick(e) {
-          if (!envelope.contains(e.target)) {
-              closeWorkDetails();
-              document.body.removeEventListener('click', closeOnBodyClick);
-          }
-      }, { once: true });
+    envelope.classList.add('active'); // 触发动画到最终状态
+
+    // 点击外部关闭
+    document.body.addEventListener('click', function closeOnBodyClick(e) {
+      if (!envelope.contains(e.target) && e.target !== closeBtn) {
+        closeWorkDetails();
+        document.body.removeEventListener('click', closeOnBodyClick);
+      }
+    }, { once: true });
   });
 }
 
