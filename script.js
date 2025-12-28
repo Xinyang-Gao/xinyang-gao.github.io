@@ -127,39 +127,32 @@ async function fetchData(type, useCache = true) {
 }
 
 // 生成标签HTML
-function generateTagsHTML(tags, type = "default") {
+function generateTagsHTML(tags) {
   if (!tags || !Array.isArray(tags) || tags.length === 0) {
       return '';
   }
   
-  const tagClassMap = {
-      work: 'work-tag',
-      article: 'article-tag',
-      default: 'tech-tag'
-  };
-  
-  const tagClass = tagClassMap[type] || 'tech-tag';
   const tagsHTML = tags.map(tag => 
-      `<span class="${tagClass} ${type}-details-tag-item">${tag}</span>`
+      `<span class="tag">${tag}</span>`
   ).join('');
   
-  return `<div class="${type}-tags">${tagsHTML}</div>`;
+  return `<div class="tags">${tagsHTML}</div>`;
 }
 
 // 通用列表项生成函数
-function generateListItem(item, type) {
+function generateListItem(item, itemType) {
   const { id, title, date, description, tag } = item;
-  const tagsHtml = generateTagsHTML(tag, type);
+  const tagsHtml = generateTagsHTML(tag);
   
   return `
-      <div class="${type}-item" data-id="${id}">
-          <div class="${type}-item-header">
-              <h3 class="${type}-title">${title}</h3>
-              <div class="${type}-meta">
-                  <span class="${type}-date">${date}</span>
+      <div class="list-item" data-id="${id}" data-type="${itemType}">
+          <div class="list-item-header">
+              <h3 class="list-item-title">${title}</h3>
+              <div class="list-item-meta">
+                  <span class="list-item-date">${date}</span>
               </div>
           </div>
-          <p class="${type}-description">${description}</p>
+          <p class="list-item-description">${description}</p>
           ${tagsHtml}
       </div>
   `;
@@ -175,7 +168,8 @@ function generateListHTML(data, type) {
   }
   
   const items = type === 'works' ? data.works : data.articles;
-  const itemsHTML = items.map(item => generateListItem(item, type.slice(0, -1))).join('');
+  const itemType = type.slice(0, -1); // 'work' 或 'article'
+  const itemsHTML = items.map(item => generateListItem(item, itemType)).join('');
   
   const html = `
       <div class="${type}-list">
@@ -472,12 +466,8 @@ class SearchManager {
       const content = document.getElementById('mainContent');
       if (!content) return;
       
-      const handler = this.pageName === 'works' 
-          ? handleWorkItemClick 
-          : handleArticleItemClick;
-      
-      content.removeEventListener('click', handler);
-      content.addEventListener('click', handler);
+      content.removeEventListener('click', handleListItemClick);
+      content.addEventListener('click', handleListItemClick);
   }
   
   // 销毁实例
@@ -640,33 +630,36 @@ function initializePageFeatures(pageName) {
       new SearchManager(pageName);
   }
   
-  if (pageName === 'works') {
-      setupWorkItemsInteraction();
-  } else if (pageName === 'articles') {
-      setupArticleItemsInteraction();
+  // 设置列表项交互
+  setupListItemsInteraction();
+}
+
+// 设置列表项交互
+function setupListItemsInteraction() {
+  const content = document.getElementById('mainContent');
+  content.removeEventListener('click', handleListItemClick);
+  content.addEventListener('click', handleListItemClick);
+}
+
+// 列表项点击处理
+function handleListItemClick(e) {
+  const listItem = e.target.closest('.list-item');
+  if (!listItem) return;
+  
+  const itemId = parseInt(listItem.dataset.id, 10);
+  const itemType = listItem.dataset.type; // 'work' 或 'article'
+  
+  if (isNaN(itemId)) return;
+  
+  if (itemType === 'work') {
+      handleWorkItemClick(itemId);
+  } else if (itemType === 'article') {
+      handleArticleItemClick(itemId);
   }
 }
 
-// 交互功能
-function setupWorkItemsInteraction() {
-  const content = document.getElementById('mainContent');
-  content.removeEventListener('click', handleWorkItemClick);
-  content.addEventListener('click', handleWorkItemClick);
-}
-
-function setupArticleItemsInteraction() {
-  const content = document.getElementById('mainContent');
-  content.removeEventListener('click', handleArticleItemClick);
-  content.addEventListener('click', handleArticleItemClick);
-}
-
-function handleWorkItemClick(e) {
-  const workItem = e.target.closest('.work-item');
-  if (!workItem) return;
-  
-  const workId = parseInt(workItem.dataset.id, 10);
-  if (isNaN(workId)) return;
-  
+// 处理作品项点击
+function handleWorkItemClick(workId) {
   const worksDataString = localStorage.getItem('worksData');
   if (!worksDataString) return;
   
@@ -683,13 +676,8 @@ function handleWorkItemClick(e) {
   }
 }
 
-function handleArticleItemClick(e) {
-  const articleItem = e.target.closest('.article-item');
-  if (!articleItem) return;
-  
-  const articleId = parseInt(articleItem.dataset.id, 10);
-  if (isNaN(articleId)) return;
-  
+// 处理文章项点击
+function handleArticleItemClick(articleId) {
   const articlesDataString = localStorage.getItem('articlesData');
   if (!articlesDataString) return;
   
@@ -713,7 +701,7 @@ function showWorkDetails(work) {
       return;
   }
   
-  const workItem = document.querySelector(`.work-item[data-id="${work.id}"]`);
+  const workItem = document.querySelector(`.list-item[data-id="${work.id}"][data-type="work"]`);
   if (!workItem) return;
   
   const workItemRect = workItem.getBoundingClientRect();
@@ -736,16 +724,17 @@ function showWorkDetails(work) {
   `;
   
   // 创建详情内容
+  const tagsHtml = work.tag && work.tag.length ? 
+      `<div class="work-details-tag">
+          <strong>标签:</strong> ${work.tag.map(tag => `<span class="tag">${tag}</span>`).join('')}
+      </div>` : '';
+  
   envelope.innerHTML = `
       <div class="work-details-close">✕</div>
       <div class="work-details-content">
           <h2 class="work-details-title">${work.title}</h2>
           <p class="work-details-description">${work.description}</p>
-          ${work.tag && work.tag.length ? `
-              <div class="work-details-tag">
-                  <strong>标签:</strong> ${work.tag.map(tech => `<span class="tech-tag">${tech}</span>`).join('')}
-              </div>
-          ` : ''}
+          ${tagsHtml}
           ${work.link ? `<a href="${work.link}" target="_blank" class="work-details-link">查看</a>` : ''}
       </div>
   `;

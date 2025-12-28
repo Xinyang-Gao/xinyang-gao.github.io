@@ -451,29 +451,6 @@ hr {
   width: 100%;
 }
 
-.work-item {
-  background: white;
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
-  padding: var(--padding-item);
-  margin-bottom: var(--margin-item-bottom);
-  cursor: pointer;
-  transition: all var(--transition-normal) var(--transition-ease);
-  box-shadow: 0 2px 8px var(--shadow-color);
-}
-
-.work-item:hover {
-  border-color: var(--accent-color);
-  box-shadow: var(--shadow-hover);
-}
-
-.work-item-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
 .work-title {
   font-size: var(--font-size-work-title);
   margin: 0;
@@ -498,29 +475,6 @@ hr {
 .articles-list {
   margin-top: var(--margin-section-top);
   width: 100%;
-}
-
-.article-item {
-  background: white;
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
-  padding: var(--padding-item);
-  margin-bottom: var(--margin-item-bottom);
-  cursor: pointer;
-  transition: all var(--transition-normal) var(--transition-ease);
-  box-shadow: 0 2px 8px var(--shadow-color);
-}
-
-.article-item:hover {
-  border-color: var(--accent-color);
-  box-shadow: var(--shadow-hover);
-}
-
-.article-item-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
 }
 
 .article-title {
@@ -647,29 +601,56 @@ hr {
   background: var(--link-hover);
 }
 
-/* --- 作品列表中的标签样式 --- */
-.work-tags {
+/* --- 通用列表项样式 --- */
+.list-item {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: var(--padding-item);
+  margin-bottom: var(--margin-item-bottom);
+  cursor: pointer;
+  transition: all var(--transition-normal) var(--transition-ease);
+  box-shadow: 0 2px 8px var(--shadow-color);
+}
+
+.list-item:hover {
+  border-color: var(--accent-color);
+  box-shadow: var(--shadow-hover);
+}
+
+.list-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.list-item-title {
+  font-size: var(--font-size-work-title); /* 可以统一为 --font-size-list-title */
+  margin: 0;
+  color: var(--accent-color);
+}
+
+.list-item-meta {
+  display: flex;
+  gap: 15px;
+  font-size: var(--font-size-small);
+  color: #666;
+}
+
+.list-item-description {
+  margin: 0;
+  font-size: var(--font-size-work-description); /* 可以统一为 --font-size-list-description */
+  line-height: 1.5;
+  color: #444;
+}
+
+/* --- 标签样式 --- */
+.tags {
   margin-top: 10px;
-  /* 标签与描述之间的间距 */
 }
 
-.work-tag {
-  display: inline-block;
-  background-color: var(--tag-bg);
-  color: var(--tag-color);
-  padding: var(--padding-tag);
-  margin: var(--margin-tag);
-  border-radius: var(--border-radius-tag);
-  font-size: var(--font-size-tag);
-}
-
-/* --- 文章列表中的标签样式 --- */
-.article-tags {
-  margin-top: 10px;
-  /* 标签与描述之间的间距 */
-}
-
-.article-tag {
+.tag {
   display: inline-block;
   background-color: var(--tag-bg);
   color: var(--tag-color);
