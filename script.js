@@ -161,22 +161,27 @@ function generateListItem(item, itemType) {
 // 生成列表HTML
 function generateListHTML(data, type) {
   perf.start(`生成${type === 'works' ? '作品' : '文章'}HTML`);
-  
   if (!validateData(data, type)) {
       perf.end(`生成${type === 'works' ? '作品' : '文章'}HTML`);
       return `<div class="${type}-list"><p>没有找到相关${type === 'works' ? '作品' : '文章'}！ >-<</p></div>`;
   }
-  
-  const items = type === 'works' ? data.works : data.articles;
+
+  let items = type === 'works' ? data.works : data.articles;
+
+  items = items.filter(item => {
+      // 检查 item.tag 是否存在且为数组，然后检查是否包含 "隐藏"
+      return !(item.tag && Array.isArray(item.tag) && item.tag.includes("隐藏"));
+  });
+
   const itemType = type.slice(0, -1); // 'work' 或 'article'
   const itemsHTML = items.map(item => generateListItem(item, itemType)).join('');
-  
+
   const html = `
       <div class="${type}-list">
           ${itemsHTML}
       </div>
   `;
-  
+
   perf.end(`生成${type === 'works' ? '作品' : '文章'}HTML`);
   return html;
 }
@@ -283,35 +288,41 @@ class SearchManager {
   
   // 获取所有唯一标签
   getAllUniqueTags(type) {
-      const tags = new Set();
-      const dataKey = `${type}Data`;
-      const dataString = localStorage.getItem(dataKey);
-      
-      if (!dataString) {
-          console.error(`${type} 数据未找到，无法提取标签`);
-          return tags;
-      }
-      
-      try {
-          const data = JSON.parse(dataString);
-          if (!validateData(data, type)) {
-              console.error(`缓存${type}数据格式无效`);
-              return tags;
-          }
-          
-          const items = type === 'works' ? data.works : data.articles;
-          items.forEach(item => {
-              if (item.tag && Array.isArray(item.tag)) {
-                  item.tag.forEach(tag => tags.add(tag));
-              }
-          });
-          
-          return tags;
-      } catch (e) {
-          console.error(`解析缓存${type}数据失败:`, e);
-          return tags;
-      }
-  }
+    const tags = new Set();
+    const dataKey = `${type}Data`;
+    const dataString = localStorage.getItem(dataKey);
+
+    if (!dataString) {
+        console.error(`${type} 数据未找到，无法提取标签`);
+        return tags;
+    }
+
+    try {
+        const data = JSON.parse(dataString);
+        if (!validateData(data, type)) {
+            console.error(`缓存${type}数据格式无效`);
+            return tags;
+        }
+
+        const items = type === 'works' ? data.works : data.articles;
+        items.forEach(item => {
+            if (item.tag && Array.isArray(item.tag)) {
+                item.tag.forEach(tag => {
+                    // --- 添加条件来过滤掉 "隐藏" 标签 ---
+                    if (tag !== "隐藏") {
+                        tags.add(tag);
+                    }
+                    // --- 过滤代码结束 ---
+                });
+            }
+        });
+
+        return tags;
+    } catch (e) {
+        console.error(`解析缓存${type}数据失败:`, e);
+        return tags;
+    }
+}
   
   // 初始化标签筛选
   initializeTagFilters() {
