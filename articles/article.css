@@ -1,3 +1,4 @@
+/* article.css */
 :root {
     --bg-color: #fdf5e6;
     --text-color: #333333;
@@ -6,6 +7,14 @@
     --header-bg: #f5f5dc;
     --link-color: #8b4513;
     --link-hover: #a0522d;
+    --toc-h1-color: #8b4513; /* 深棕色 */
+    --toc-h2-color: #a0522d; /* 稍浅的棕色 */
+    --toc-h3-color: #b8860b; /* 深金菊色 */
+    --toc-h4-color: #daa520; /* 金菊色 */
+    --toc-bg: white;
+    --toc-border: var(--border-color);
+    --toc-active-bg: rgba(255, 214, 125, 0.288);
+    --toc-active-border: var(--accent-color);
 }
 
 /* 从 style.css 复制基础样式 */
@@ -41,11 +50,13 @@ body {
 /* --- 固定 TOC 容器样式 --- */
 .toc-container {
     width: 25%; /* 占据容器的 25% 宽度 */
-    background: white;
-    border: 2px solid var(--border-color);
+    background: var(--toc-bg);
+    border: 2px solid var(--toc-border);
     border-radius: 6px;
     padding: 20px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 6px 6px 0 -2px rgba(210, 180, 140, 0.3), -6px 6px 0 -2px rgba(210, 180, 140, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1),
+                6px 6px 0 -2px rgba(210, 180, 140, 0.3),
+                -6px 6px 0 -2px rgba(210, 180, 140, 0.3);
     position: sticky; /* 使用 sticky 定位，在父容器内固定 */
     top: 90px; /* 距离 viewport 顶部的距离，略大于导航栏高度 */
     align-self: flex-start; /* 防止目录随内容拉伸 */
@@ -66,51 +77,78 @@ body {
 
 .toc-list {
     list-style: none;
-    padding-left: 0;
+    padding-left: 0; /* 移除默认的列表缩进 */
 }
+
 .toc-list li {
     margin-bottom: 8px;
-    padding-left: 10px;
+    padding-left: 10px; /* 左侧内边距，保持与边框的距离 */
     position: relative;
+    transition: all 0.3s ease;
+    border-left: 2px solid transparent;
+    margin-left: -2px; /* 抵消 border-left 的影响 */
 }
+
 .toc-list a {
     color: var(--text-color);
     text-decoration: none;
     transition: color 0.3s ease;
     display: block;
-    font-size: 1rem; /* 调整字体大小 */
+    /* font-size: 1rem; */ /* 移除固定的字体大小，由具体级别决定 */
+    padding: 4px 8px;
+    border-radius: 3px;
+    transition: all 0.2s ease;
 }
 
 .toc-list a:hover {
-    color: var(--accent-color);
+    background-color: rgba(139, 69, 19, 0.05);
 }
 
-/* 根据标题级别添加缩进 */
-.toc-list li h2,
-.toc-list li h3,
-.toc-list li h4 {
-     margin: 0;
-     padding: 0;
-     font-size: 1; /* 继承父级字体大小 */
-     font-weight: normal; /* 避免加粗 */
+/* --- 优化：为不同级别的目录项添加缩进、字体大小和颜色 --- */
+.toc-list li.toc-h1 {
+    margin-left: 0px;
+    font-size: 1.2rem; /* 最大 */
+    font-weight: bold; /* 加粗 */
+    color: var(--toc-h1-color);
 }
-.toc-list li h2 {
+.toc-list li.toc-h2 {
     margin-left: 10px;
+    font-size: 1.1rem; /* 次大 */
+    font-weight: bold; /* 加粗 */
+    color: var(--toc-h2-color);
 }
-.toc-list li h3 {
+.toc-list li.toc-h3 {
     margin-left: 20px;
+    font-size: 1rem; /* 再次 */
+    font-weight: normal; /* 不加粗 */
+    color: var(--toc-h3-color);
 }
-.toc-list li h4 {
+.toc-list li.toc-h4 {
     margin-left: 30px;
+    font-size: 0.95rem; /* 最小 */
+    font-weight: normal; /* 不加粗 */
+    color: var(--toc-h4-color);
+}
+/* --- 优化结束 --- */
+
+.toc-list li.active {
+    border-left: 2px solid var(--toc-active-border);
+    background-color: var(--toc-active-bg);
 }
 
+.toc-list li.active a {
+    color: var(--accent-color);
+    font-weight: bold; /* 活动项加粗 */
+}
 
 /* --- 主文章内容区域样式 (模仿 style.css 的 container 和内容样式) --- */
 .article-content-wrapper {
     width: 75%; /* 占据容器的 75% 宽度 */
     background: white;
     border: 2px solid var(--border-color);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 6px 6px 0 -2px rgba(210, 180, 140, 0.3), -6px 6px 0 -2px rgba(210, 180, 140, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1),
+                6px 6px 0 -2px rgba(210, 180, 140, 0.3),
+                -6px 6px 0 -2px rgba(210, 180, 140, 0.3);
     padding: 40px;
     position: relative;
     border-radius: 6px;
@@ -276,54 +314,31 @@ body {
     }
 
     .toc-container {
-         padding: 15px;
+        padding: 15px;
     }
 
     .article-content-wrapper {
-         padding: 20px;
+        padding: 20px;
     }
 }
 
 @media (max-width: 480px) {
-     .article-page-container {
-         padding: 15px 5px;
-         margin-top: 65px;
-     }
-     .article-content-wrapper h1 {
-          font-size: 1.8rem;
-     }
-     .article-content-wrapper h2 {
-          font-size: 1.5rem;
-     }
-     .article-content-wrapper p {
-          font-size: 1rem;
-     }
-}
+    .article-page-container {
+        padding: 15px 5px;
+        margin-top: 65px;
+    }
 
-.toc-list li {
-    transition: all 0.3s ease;
-    border-left: 2px solid transparent;
-    margin-left: -2px;
-}
+    .article-content-wrapper h1 {
+        font-size: 1.8rem;
+    }
 
-.toc-list li.active {
-    border-left: 2px solid var(--accent-color);
-    background-color: rgba(255, 214, 125, 0.288);
-}
+    .article-content-wrapper h2 {
+        font-size: 1.5rem;
+    }
 
-.toc-list li.active a {
-    color: var(--accent-color);
-    font-weight: bold;
-}
-
-.toc-list a {
-    padding: 4px 8px;
-    border-radius: 3px;
-    transition: all 0.2s ease;
-}
-
-.toc-list a:hover {
-    background-color: rgba(139, 69, 19, 0.05);
+    .article-content-wrapper p {
+        font-size: 1rem;
+    }
 }
 
 /* 平滑滚动 */

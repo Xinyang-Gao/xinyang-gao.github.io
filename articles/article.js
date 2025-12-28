@@ -1,6 +1,9 @@
+// article.js
 document.addEventListener('DOMContentLoaded', function () {
     // --- 配置 marked ---
-    marked.setOptions({ breaks: true });
+    marked.setOptions({
+        breaks: true
+    });
     // --- 配置结束 ---
 
     const articleId = getUrlParameter('article');
@@ -13,7 +16,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     const articlePath = `/articles/articles/${articleId}.md`;
-
     fetch(articlePath)
         .then(response => {
             if (!response.ok) {
@@ -23,19 +25,19 @@ document.addEventListener('DOMContentLoaded', function () {
         })
         .then(markdown => {
             const { meta, cleanedMarkdown } = extractMetaAndCleanMarkdown(markdown);
+
             if (!meta.title) {
                 throw new Error("元数据缺失：标题未定义");
             }
+
             const html = marked.parse(cleanedMarkdown);
 
             document.getElementById('articleTitle').textContent = `═══ ${meta.title} ═══`;
             document.getElementById('articleMeta').textContent = meta.date || '未指定日期';
             document.getElementById('articleBody').innerHTML = html;
 
-            generateTOC();
-            
-            // 初始化滚动监听和高亮功能
-            initScrollSpy();
+            generateTOC(); // 生成目录
+            initScrollSpy(); // 初始化滚动监听和高亮功能
         })
         .catch(error => {
             console.error('加载文章失败:', error);
@@ -50,18 +52,16 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
     function extractMetaAndCleanMarkdown(markdown) {
-        const metaRegex = /^[\s\uFEFF]*\+\+\+[\s\uFEFF]*\n([\s\S]+?)\n[\s\uFEFF]*\+\+\+[\s\uFEFF]*\n([\s\S]*)$/m;
+        // ... (extractMetaAndCleanMarkdown 函数内容保持不变)
+        const metaRegex = /^[\s﻿]*\+\+\+[\s﻿]*\n([\s\S]+?)\n[\s﻿]*\+\+\+[\s﻿]*\n([\s\S]*)$/m;
         const match = markdown.match(metaRegex);
-
         if (match) {
             const metaContent = match[1];
             const cleanedMarkdown = match[2];
             const meta = {};
-
             metaContent.split(/\r?\n/).forEach(line => {
                 line = line.trim();
                 if (!line) return;
-
                 const colonIndex = line.indexOf(':');
                 if (colonIndex !== -1) {
                     const key = line.substring(0, colonIndex).trim();
@@ -69,7 +69,6 @@ document.addEventListener('DOMContentLoaded', function () {
                     meta[key] = value;
                 }
             });
-
             return { meta, cleanedMarkdown };
         }
 
@@ -77,10 +76,8 @@ document.addEventListener('DOMContentLoaded', function () {
         const lines = markdown.split(/\r?\n/);
         let metaStart = -1;
         let metaEnd = -1;
-
         for (let i = 0; i < lines.length; i++) {
-            const trimmed = lines[i].replace(/^[\s\uFEFF]+|[\s\uFEFF]+$/g, '');
-
+            const trimmed = lines[i].replace(/^[\s﻿]+|[\s﻿]+$/g, '');
             if (trimmed === '+++') {
                 if (metaStart === -1) {
                     metaStart = i;
@@ -100,37 +97,34 @@ document.addEventListener('DOMContentLoaded', function () {
                     meta[key] = value;
                 }
             }
-            return {
-                meta,
-                cleanedMarkdown: lines.slice(metaEnd + 1).join('\n')
-            };
+            return { meta, cleanedMarkdown: lines.slice(metaEnd + 1).join('\n') };
         }
 
-        return {
-            meta: { title: '═══ 未命名文章 ═══', date: '未指定' },
-            cleanedMarkdown: markdown
-        };
+        return { meta: { title: '═══ 未命名文章 ═══', date: '未指定' }, cleanedMarkdown: markdown };
     }
 
     function generateTOC() {
         const tocList = document.getElementById('tocList');
-        tocList.innerHTML = '';
-        
+        tocList.innerHTML = ''; // 清空现有目录
+
         const headings = document.querySelectorAll('#articleBody h1, #articleBody h2, #articleBody h3, #articleBody h4');
-        
+
         if (headings.length === 0) {
             tocList.innerHTML = '<li>暂无目录</li>';
             return;
         }
-        
+
         headings.forEach((heading, index) => {
-            const level = parseInt(heading.tagName.substring(1));
+            const level = parseInt(heading.tagName.substring(1)); // 获取标题级别 (1, 2, 3, 4)
             const id = `heading-${index}`;
-            heading.id = id;
-            
+            heading.id = id; // 为原标题设置ID以便链接
+
             const listItem = document.createElement('li');
+            // --- 优化：根据标题级别添加CSS类 ---
+            listItem.classList.add(`toc-h${level}`);
+            // --- 优化结束 ---
             listItem.dataset.targetId = id;
-            
+
             const link = document.createElement('a');
             link.href = `#${id}`;
             link.textContent = heading.textContent;
@@ -139,7 +133,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 smoothScrollTo(heading);
                 updateActiveTOCItem(id);
             });
-            
+
             listItem.appendChild(link);
             tocList.appendChild(listItem);
         });
@@ -155,14 +149,12 @@ document.addEventListener('DOMContentLoaded', function () {
         const observer = new IntersectionObserver((entries) => {
             let mostVisible = null;
             let highestRatio = 0;
-            
             entries.forEach(entry => {
                 if (entry.isIntersecting && entry.intersectionRatio > highestRatio) {
                     highestRatio = entry.intersectionRatio;
                     mostVisible = entry.target.id;
                 }
             });
-            
             if (mostVisible) {
                 updateActiveTOCItem(mostVisible);
             }
@@ -177,22 +169,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
     function updateActiveTOCItem(activeId) {
         const tocItems = document.querySelectorAll('#tocList li');
-        
         tocItems.forEach(item => {
             item.classList.remove('active');
         });
-        
+
         const activeItem = document.querySelector(`#tocList li[data-target-id="${activeId}"]`);
         if (activeItem) {
             activeItem.classList.add('active');
-            
             // 确保活动项在目录容器中可见
             const tocContainer = document.querySelector('.toc-container');
             const itemTop = activeItem.offsetTop;
             const containerHeight = tocContainer.clientHeight;
-            
-            if (itemTop > tocContainer.scrollTop + containerHeight - 50 || 
-                itemTop < tocContainer.scrollTop) {
+            if (itemTop > tocContainer.scrollTop + containerHeight - 50 || itemTop < tocContainer.scrollTop) {
                 tocContainer.scrollTo({
                     top: itemTop - 50,
                     behavior: 'smooth'
@@ -205,7 +193,6 @@ document.addEventListener('DOMContentLoaded', function () {
         const offset = 90; // 导航栏高度
         const elementPosition = element.getBoundingClientRect().top;
         const offsetPosition = elementPosition + window.pageYOffset - offset;
-
         window.scrollTo({
             top: offsetPosition,
             behavior: 'smooth'
