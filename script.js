@@ -512,7 +512,7 @@ async function loadPage(pageName, pushState = true) {
   
   try {
       let content = '';
-      let pageTitle = `${config.title} - GXY's website`;
+      let pageTitle = `${config.title} - GaoXinYang's website`;
       
       if (config.type === 'list') {
           const baseHtml = await fetchPageContent(`pages/${pageName}.html`);
