@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>作业管理系统</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            color: #333;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        body.light-mode {
+            background: #f0f4f8;
+            color: #333;
+        }
+        
+        body.dark-mode {
+            background: #1a1a1a;
+            color: #e0e0e0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 30px;
+        }
+        
+        .header {
+            flex: 1;
+            text-align: left;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            color: #2c3e50;
+            margin-bottom: 5px;
+            font-weight: 700;
+        }
+        
+        body.dark-mode .header h1 {
+            color: #ecf0f1;
+        }
+        
+        .header .time {
+            font-size: 16px;
+            color: #3498db;
+            font-weight: 500;
+        }
+        
+        body.dark-mode .header .time {
+            color: #3498db;
+        }
+        
+        .tasks {
+            flex: 1;
+            text-align: right;
+            padding-left: 20px;
+        }
+        
+        .tasks h2 {
+            font-size: 24px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        body.dark-mode .tasks h2 {
+            color: #ecf0f1;
+        }
+        
+        .tasks p {
+            font-size: 16px;
+            margin-bottom: 8px;
+            color: #555;
+        }
+        
+        body.dark-mode .tasks p {
+            color: #bdc3c7;
+        }
+        
+        .deadline {
+            background: #e74c3c;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 1px;
+            width: 100%;
+            margin-bottom: 5px;
+        }
+        
+        .deadline.warning {
+            background: #f39c12;
+        }
+        
+        .deadline.normal {
+            background: #27ae60;
+        }
+        
+        body.dark-mode .deadline {
+            background: #c0392b;
+        }
+        
+        body.dark-mode .deadline.warning {
+            background: #d35400;
+        }
+        
+        body.dark-mode .deadline.normal {
+            background: #2ecc71;
+        }
+        
+        .main-content {
+            max-width: 1200px;
+            margin: 30px auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            padding: 25px;
+        }
+        
+        body.dark-mode .main-content {
+            background: #2c2c2c;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+        
+        .date-selector-container {
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .date-selector-container label {
+            font-weight: bold;
+            color: #2c3e50;
+            font-size: 16px;
+        }
+        
+        body.dark-mode .date-selector-container label {
+            color: #ecf0f1;
+        }
+        
+        .date-selector-container select {
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 16px;
+            background: white;
+            cursor: pointer;
+            min-width: 200px;
+            flex: 1;
+        }
+        
+        body.dark-mode .date-selector-container select {
+            background: #3c3c3c;
+            border: 1px solid #555;
+            color: #e0e0e0;
+        }
+        
+        .start-focus-mode-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-left: 15px;
+        }
+        
+        .start-focus-mode-btn:hover {
+            background: #2980b9;
+        }
+        
+        body.dark-mode .start-focus-mode-btn {
+            background: #2980b9;
+        }
+        
+        body.dark-mode .start-focus-mode-btn:hover {
+            background: #3498db;
+        }
+        
+        .current-date {
+            font-size: 20px;
+            color: #3498db;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+        
+        body.dark-mode .current-date {
+            color: #3498db;
+        }
+        
+        .subjects-container {
+            display: grid;
+            gap: 15px;
+        }
+        
+        .subject-title {
+            border: 1px solid #e1e8ed;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        
+        body.dark-mode .subject-title {
+            border: 1px solid #444;
+        }
+        
+        .subject-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e1e8ed;
+        }
+        
+        body.dark-mode .subject-header {
+            border-bottom: 1px solid #444;
+        }
+        
+        .subject-icon {
+            width: 40px;
+            height: 40px;
+            background: #3498db;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            margin-right: 12px;
+        }
+        
+        .subject-name {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        body.dark-mode .subject-name {
+            color: #ecf0f1;
+        }
+        
+        .task-list {
+            list-style: none;
+        }
+        
+        .task-item {
+            background: white;
+            border: 1px solid #e1e8ed;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: flex-start;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        
+        body.dark-mode .task-item {
+            background: #3c3c3c;
+            border: 1px solid #444;
+            color: #e0e0e0;
+        }
+        
+        .task-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-color: #3498db;
+        }
+        
+        body.dark-mode .task-item:hover {
+            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
+            border-color: #3498db;
+        }
+        
+        .task-item.selected {
+            border: 2px solid #3498db;
+            background-color: #f0f8ff;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+        
+        body.dark-mode .task-item.selected {
+            background-color: #2c3c4c;
+        }
+        
+        .task-item.completed {
+            background: #e8f5e8;
+            border-color: #a3d9a3;
+        }
+        
+        body.dark-mode .task-item.completed {
+            background: #2c3c2c;
+            border-color: #4a7c4a;
+        }
+        
+        .task-item.completed.selected {
+            background: #e0f0ff;
+            border-color: #3498db;
+        }
+        
+        body.dark-mode .task-item.completed.selected {
+            background: #2c3c4c;
+        }
+        
+        .task-checkbox {
+            margin-right: 12px;
+            transform: scale(1.2);
+            cursor: pointer;
+            accent-color: #3498db;
+        }
+        
+        .task-content {
+            flex: 1;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+        
+        .task-footer {
+            font-size: 13px;
+            color: #777;
+            margin-top: 6px;
+            font-weight: 500;
+        }
+        
+        body.dark-mode .task-footer {
+            color: #aaa;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e1e8ed;
+            border-radius: 4px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+        
+        body.dark-mode .progress-bar {
+            background: #444;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #3498db;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        
+        body.dark-mode .stats {
+            background: #3c3c3c;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 22px;
+            font-weight: bold;
+            color: #3498db;
+        }
+        
+        body.dark-mode .stat-number {
+            color: #3498db;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            color: #777;
+        }
+        
+        body.dark-mode .stat-label {
+            color: #aaa;
+        }
+        
+        .no-tasks {
+            text-align: center;
+            padding: 40px;
+            color: #777;
+            font-size: 16px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border: 1px dashed #ddd;
+        }
+        
+        body.dark-mode .no-tasks {
+            background: #3c3c3c;
+            border: 1px dashed #555;
+            color: #aaa;
+        }
+        
+        .no-tasks i {
+            font-size: 36px;
+            color: #bdc3c7;
+            margin-bottom: 10px;
+        }
+        
+        body.dark-mode .no-tasks i {
+            color: #777;
+        }
+        
+        /* 专注模式样式 */
+        .focus-mode {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000000; /* 纯黑色背景 */
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        .focus-clock {
+            font-size: 8rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(52, 152, 219, 0.5);
+        }
+        
+        .focus-date {
+            font-size: 2rem;
+            margin-bottom: 30px;
+        }
+        
+        .focus-deadlines {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        
+        .focus-deadline {
+            font-size: 1.5rem;
+            padding: 10px 20px;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 600px;
+        }
+        
+        .focus-current-task {
+            font-size: 2rem;
+            text-align: center;
+            margin-top: 30px;
+            padding: 20px;
+            border: 2px solid #3498db;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+        
+        .exit-focus-mode {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        
+        .exit-focus-mode:hover {
+            background: #c0392b;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .tasks {
+                padding-left: 0;
+                margin-top: 20px;
+                text-align: left;
+            }
+            
+            .main-content {
+                padding: 15px;
+            }
+            
+            .date-selector-container {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .date-selector-container select,
+            .start-focus-mode-btn {
+                min-width: auto;
+                margin-left: 0;
+                margin-top: 10px;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .focus-clock {
+                font-size: 4rem;
+            }
+            
+            .focus-date {
+                font-size: 1.5rem;
+            }
+            
+            .focus-deadline {
+                font-size: 1.2rem;
+            }
+            
+            .focus-current-task {
+                font-size: 1.5rem;
+            }
+        }
+        
+        .floating-action {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 50px;
+            height: 50px;
+            background: #3498db;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+            z-index: 999;
+        }
+        
+        .floating-action:hover {
+            background: #2980b9;
+        }
+        
+        /* 视觉反馈提示 */
+        .selection-feedback {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(52, 152, 219, 0.9);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        
+        .selection-feedback.show {
+            opacity: 1;
+        }
+        
+        /* 日期选项中的提示样式 */
+        .date-option {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .date-hint {
+            font-size: 12px;
+            color: #777;
+            margin-left: 10px;
+        }
+        
+        /* 模式切换按钮 */
+        .mode-toggle {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            width: 50px;
+            height: 50px;
+            background: #3498db;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+            z-index: 999;
+        }
+        
+        .mode-toggle:hover {
+            background: #2980b9;
+        }
+        
+        /* 加载状态指示器 */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #777;
+            font-size: 16px;
+        }
+        
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 2s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="light-mode">
+    <!-- 模式切换按钮 -->
+    <div class="mode-toggle" id="modeToggle">
+        <i class="fas fa-moon"></i>
+    </div>
+    
+    <!-- 正常模式 -->
+    <div class="container">
+        <div class="header">
+            <h1>作业管理系统 [寒假] </h1>
+            <div class="time" id="current-time">正在加载时间...</div>
+        </div>
+        <div class="tasks">
+            <h2>By:GaoXinYang</h2>
+            <p><i class="fas fa-check-circle"></i> 黑发不知勤学早，白头方悔读书迟。</p>
+            <div class="deadline" id="daily-deadline">每日打卡截止时间：--小时--分钟--秒</div>
+            <div class="deadline normal" id="winter-end-countdown">据寒假结束还剩下 --天--小时--分钟--秒</div>
+            <div class="deadline" id="tip">注意！目前作业内容仅包括语数英化</div>
+        </div>
+    </div>
+    
+    <div class="main-content">
+        <div class="date-selector-container">
+            <label for="dateSelector">选择日期:</label>
+            <select id="dateSelector"></select>
+            <button class="start-focus-mode-btn" id="startFocusModeBtn">开始专注模式</button>
+        </div>
+        
+        <div class="current-date" id="currentDateDisplay"></div>
+        
+        <div class="stats" id="stats">
+            <div class="stat-item">
+                <div class="stat-number" id="totalTasks">0</div>
+                <div class="stat-label">总任务</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="completedTasks">0</div>
+                <div class="stat-label">已完成</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-number" id="completionRate">0%</div>
+                <div class="stat-label">完成率</div>
+            </div>
+        </div>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+        
+        <div id="tasks">
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                <p>正在加载作业数据...</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="floating-action" title="返回顶部">
+        <i class="fas fa-arrow-up"></i>
+    </div>
+
+    <!-- 专注模式 -->
+    <div class="focus-mode" id="focusMode" style="display: none;">
+        <button class="exit-focus-mode" id="exitFocusModeBtn">退出专注模式</button>
+        <div class="focus-clock" id="focusClock">00:00:00</div>
+        <div class="focus-date" id="focusDate">正在加载日期...</div>
+        <div class="focus-deadlines">
+            <div class="focus-deadline" id="focusDailyDeadline">每日打卡截止时间：--小时--分钟--秒</div>
+            <div class="focus-deadline" id="focusWinterEndCountdown">据寒假结束还剩下 --天--小时--分钟--秒</div>
+        </div>
+        <div class="focus-current-task" id="focusCurrentTask">请选择一项任务开始专注学习</div>
+    </div>
+    
+    <!-- 视觉反馈提示 -->
+    <div class="selection-feedback" id="selectionFeedback">已选择专注任务</div>
+
+    <script>
+        // 全局变量
+        let homeworkData = [];
+        let currentSelectedTask = null;
+        let isDarkMode = false;
+        
+        // 从JSON文件加载作业数据
+        async function loadHomeworkData() {
+            try {
+                // 尝试从homework.json文件加载数据
+                const response = await fetch('homework.json');
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const jsonData = await response.json();
+                homeworkData = jsonData;
+                
+                console.log('作业数据加载成功:', homeworkData);
+                
+                // 数据加载完成后初始化应用
+                initAfterDataLoad();
+            } catch (error) {
+                console.error('加载homework.json失败:', error);
+                
+                // 如果加载失败，显示错误信息并使用示例数据
+                document.getElementById('tasks').innerHTML = `
+                    <div class="no-tasks">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <div>无法加载作业数据: ${error.message}</div>
+                        <div>请确保homework.json文件存在于同目录下</div>
+                    </div>
+                `;
+                // 数据加载完成后初始化应用
+                initAfterDataLoad();
+            }
+        }
+        
+        // 获取当前日期并显示
+        function getCurrentDate() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            return `${year}/${month}/${day}`;
+        }
+        
+        // 更新时间显示
+        function updateTimeDisplay() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const weekday = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'][now.getDay()];
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            
+            const timeString = `今天是${year}年${month}月${day}日 ${weekday} ${hours}:${minutes}:${seconds}`;
+            document.getElementById('current-time').textContent = timeString;
+            
+            // 更新日期显示
+            const currentDate = getCurrentDate();
+            document.getElementById('currentDateDisplay').textContent = formatDate(currentDate);
+            
+            updateDailyDeadline();
+            updateWinterEndCountdown();
+        }
+        
+        // 更新专注模式时间显示
+        function updateFocusTimeDisplay() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            
+            const timeString = `${hours}:${minutes}:${seconds}`;
+            document.getElementById('focusClock').textContent = timeString;
+            
+            // 更新日期显示
+            const currentDate = getCurrentDate();
+            document.getElementById('focusDate').textContent = formatDate(currentDate);
+            
+            updateFocusDailyDeadline();
+            updateFocusWinterEndCountdown();
+        }
+        
+        // 更新每日打卡截止时间
+        function updateDailyDeadline() {
+            const now = new Date();
+            const currentHours = now.getHours();
+            const currentMinutes = now.getMinutes();
+            const currentSeconds = now.getSeconds();
+            
+            // 计算到晚上10:30的剩余时间
+            let targetHour = 22; // 晚上10点
+            let targetMinute = 30; // 30分
+            
+            // 如果当前时间已经超过今天的目标时间，则显示"已截止"
+            if (currentHours > targetHour || (currentHours === targetHour && currentMinutes > targetMinute)) {
+                document.getElementById('daily-deadline').textContent = '今日打卡已截止';
+                document.getElementById('daily-deadline').className = 'deadline';
+                document.getElementById('daily-deadline').classList.add('warning');
+                return;
+            }
+            
+            // 计算剩余时间
+            let remainingHours = targetHour - currentHours;
+            let remainingMinutes = targetMinute - currentMinutes;
+            let remainingSeconds = 60 - currentSeconds;
+            
+            if (remainingMinutes < 0) {
+                remainingHours--;
+                remainingMinutes += 60;
+            }
+            
+            if (remainingSeconds >= 60) {
+                remainingMinutes++;
+                remainingSeconds -= 60;
+            }
+            
+            if (remainingMinutes < 0) {
+                remainingHours--;
+                remainingMinutes += 60;
+            }
+            
+            // 更新显示
+            const deadlineText = `距今日打卡截至还剩下 ${remainingHours}小时${remainingMinutes}分钟${remainingSeconds}秒`;
+            document.getElementById('daily-deadline').textContent = deadlineText;
+            
+            // 根据剩余时间调整颜色
+            const deadlineElement = document.getElementById('daily-deadline');
+            deadlineElement.className = 'deadline';
+            if (remainingHours <= 1) {
+                deadlineElement.classList.add('warning');
+            } else if (remainingHours <= 3) {
+                deadlineElement.classList.add('normal');
+            } else {
+                deadlineElement.classList.add('normal');
+            }
+        }
+        
+        // 更新专注模式每日打卡截止时间
+        function updateFocusDailyDeadline() {
+            const now = new Date();
+            const currentHours = now.getHours();
+            const currentMinutes = now.getMinutes();
+            const currentSeconds = now.getSeconds();
+            
+            // 计算到晚上10:30的剩余时间
+            let targetHour = 22; // 晚上10点
+            let targetMinute = 30; // 30分
+            
+            // 如果当前时间已经超过今天的目标时间，则显示"已截止"
+            if (currentHours > targetHour || (currentHours === targetHour && currentMinutes > targetMinute)) {
+                document.getElementById('focusDailyDeadline').textContent = '今日打卡已截止';
+                document.getElementById('focusDailyDeadline').className = 'focus-deadline';
+                return;
+            }
+            
+            // 计算剩余时间
+            let remainingHours = targetHour - currentHours;
+            let remainingMinutes = targetMinute - currentMinutes;
+            let remainingSeconds = 60 - currentSeconds;
+            
+            if (remainingMinutes < 0) {
+                remainingHours--;
+                remainingMinutes += 60;
+            }
+            
+            if (remainingSeconds >= 60) {
+                remainingMinutes++;
+                remainingSeconds -= 60;
+            }
+            
+            if (remainingMinutes < 0) {
+                remainingHours--;
+                remainingMinutes += 60;
+            }
+            
+            // 更新显示
+            const deadlineText = `距今日打卡截至还剩下 ${remainingHours}小时${remainingMinutes}分钟${remainingSeconds}秒`;
+            document.getElementById('focusDailyDeadline').textContent = deadlineText;
+        }
+        
+        // 更新寒假结束倒计时
+        function updateWinterEndCountdown() {
+            const winterEndDate = new Date('2026/3/4 23:59:59'); // 寒假结束日期
+            const now = new Date();
+            
+            const diff = winterEndDate - now;
+            
+            if (diff <= 0) {
+                document.getElementById('winter-end-countdown').textContent = '寒假已结束';
+                document.getElementById('winter-end-countdown').className = 'deadline';
+                document.getElementById('winter-end-countdown').classList.add('warning');
+                return;
+            }
+            
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / (1000));
+            
+            const countdownText = `据寒假结束还剩下 ${days}天${hours}小时${minutes}分钟${seconds}秒`;
+            document.getElementById('winter-end-countdown').textContent = countdownText;
+            
+            // 根据剩余天数调整颜色
+            const countdownElement = document.getElementById('winter-end-countdown');
+            countdownElement.className = 'deadline normal';
+            if (days <= 1) {
+                countdownElement.classList.remove('normal');
+                countdownElement.classList.add('warning');
+            } else if (days <= 3) {
+                countdownElement.classList.remove('normal');
+                countdownElement.classList.add('warning');
+            }
+        }
+        
+        // 更新专注模式寒假结束倒计时
+        function updateFocusWinterEndCountdown() {
+            const winterEndDate = new Date('2026/3/4 23:59:59'); // 寒假结束日期
+            const now = new Date();
+            
+            const diff = winterEndDate - now;
+            
+            if (diff <= 0) {
+                document.getElementById('focusWinterEndCountdown').textContent = '寒假已结束';
+                return;
+            }
+            
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const seconds = Math.floor((diff % (1000 * 60)) / (1000));
+            
+            const countdownText = `据寒假结束还剩下 ${days}天${hours}小时${minutes}分钟${seconds}秒`;
+            document.getElementById('focusWinterEndCountdown').textContent = countdownText;
+        }
+        
+        // 格式化日期显示
+        function formatDate(dateStr) {
+            const [year, month, day] = dateStr.split('/');
+            const date = new Date(year, month - 1, day);
+            const options = { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' };
+            return date.toLocaleDateString('zh-CN', options);
+        }
+        
+        // 计算日期差
+        function calculateDateDifference(targetDateStr, referenceDateStr) {
+            const targetDate = new Date(targetDateStr);
+            const referenceDate = new Date(referenceDateStr);
+            
+            // 将时间设为当天的开始（00:00:00）以便计算天数差异
+            targetDate.setHours(0, 0, 0, 0);
+            referenceDate.setHours(0, 0, 0, 0);
+            
+            const diffInMs = targetDate - referenceDate;
+            const diffInDays = Math.round(diffInMs / (1000 * 60 * 60 * 24));
+            
+            if (diffInDays === 0) {
+                return '今天';
+            } else if (diffInDays === 1) {
+                return '明天';
+            } else if (diffInDays === 2) {
+                return '后天';
+            } else if (diffInDays > 0) {
+                return `${diffInDays}天后`;
+            } else if (diffInDays === -1) {
+                return '昨天';
+            } else if (diffInDays === -2) {
+                return '前天';
+            } else {
+                return `${Math.abs(diffInDays)}天前`;
+            }
+        }
+        
+        // 切换日间/夜间模式
+        function toggleMode() {
+            isDarkMode = !isDarkMode;
+            const body = document.body;
+            const modeToggle = document.getElementById('modeToggle');
+            
+            if (isDarkMode) {
+                body.classList.remove('light-mode');
+                body.classList.add('dark-mode');
+                modeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+            } else {
+                body.classList.remove('dark-mode');
+                body.classList.add('light-mode');
+                modeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+            }
+            
+            // 保存用户偏好
+            localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
+        }
+        
+        // 检查并应用保存的主题
+        function applySavedTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'dark') {
+                isDarkMode = true;
+                document.body.classList.remove('light-mode');
+                document.body.classList.add('dark-mode');
+                document.getElementById('modeToggle').innerHTML = '<i class="fas fa-sun"></i>';
+            }
+        }
+        
+        // 生成日期选择器
+        function generateDateSelector() {
+            const dateSelector = document.getElementById('dateSelector');
+            const dates = [...new Set(homeworkData.map(item => item.date))];
+            dates.sort((a, b) => new Date(a) - new Date(b));
+            
+            const currentDate = getCurrentDate();
+            
+            dates.forEach(date => {
+                const option = document.createElement('option');
+                option.value = date;
+                
+                // 创建格式化的日期显示
+                const formattedDate = formatDate(date);
+                const dateHint = calculateDateDifference(date, currentDate);
+                
+                // 设置选项的显示文本，包含日期和相对提示
+                option.textContent = `${formattedDate} (${dateHint})`;
+                
+                // 存储原始日期值用于后续处理
+                option.setAttribute('data-date-value', date);
+                
+                dateSelector.appendChild(option);
+            });
+            
+            // 设置默认日期为当前日期（如果存在）
+            if (dates.includes(currentDate)) {
+                dateSelector.value = Array.from(dateSelector.options).find(opt => opt.getAttribute('data-date-value') === currentDate)?.value || dates[0];
+            } else {
+                // 如果当前日期不在数据中，选择第一个日期
+                dateSelector.value = dateSelector.options[0]?.value;
+            }
+            
+            showTasks(dateSelector.value.split(' ')[0]); // 提取日期部分
+        }
+        
+        // 统计任务完成情况
+        function updateStats(date) {
+            const data = homeworkData.find(item => item.date === date);
+            if (!data) return;
+            
+            const subjects = ['chinese', 'math', 'english', 'chemistry'];
+            let totalTasks = 0;
+            let completedTasks = 0;
+            
+            subjects.forEach(subject => {
+                const content = data[subject];
+                if (!content || content.trim() === '') return;
+                
+                const taskItems = content.split('<br>');
+                taskItems.forEach((task, index) => {
+                    if (!task.trim()) return;
+                    
+                    const taskId = `task-${date}-${subject}-${index}`;
+                    totalTasks++;
+                    
+                    if (localStorage.getItem(taskId) === 'true') {
+                        completedTasks++;
+                    }
+                });
+            });
+            
+            const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+            
+            document.getElementById('totalTasks').textContent = totalTasks;
+            document.getElementById('completedTasks').textContent = completedTasks;
+            document.getElementById('completionRate').textContent = `${completionRate}%`;
+            document.getElementById('progressFill').style.width = `${completionRate}%`;
+        }
+        
+        // 显示指定日期的任务
+        function showTasks(date) {
+            const tasksContainer = document.getElementById('tasks');
+            tasksContainer.innerHTML = '';
+            
+            const data = homeworkData.find(item => item.date === date);
+            if (!data) {
+                tasksContainer.innerHTML = `
+                    <div class="no-tasks">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <div>未找到该日期的作业</div>
+                    </div>
+                `;
+                updateStats(date);
+                return;
+            }
+            
+            const subjects = [
+                { key: 'chinese', name: '语文作业', icon: '语', color: '#e74c3c' },
+                { key: 'math', name: '数学作业', icon: '数', color: '#3498db' },
+                { key: 'english', name: '英语作业', icon: '英', color: '#f39c12' },
+                { key: 'chemistry', name: '化学作业', icon: '化', color: '#9b59b6' }
+            ];
+            
+            const hasTasks = subjects.some(subject => data[subject.key] && data[subject.key].trim() !== '');
+            
+            if (!hasTasks) {
+                tasksContainer.innerHTML = `
+                    <div class="no-tasks">
+                        <i class="fas fa-check-circle"></i>
+                        <div>该日期暂无作业</div>
+                    </div>
+                `;
+                updateStats(date);
+                return;
+            }
+            
+            subjects.forEach(subject => {
+                const content = data[subject.key];
+                if (!content || content.trim() === '') return;
+                
+                const taskItems = content.split('<br>');
+                
+                const subjectDiv = document.createElement('div');
+                subjectDiv.className = 'subject-title';
+                
+                const subjectHeader = document.createElement('div');
+                subjectHeader.className = 'subject-header';
+                
+                subjectHeader.innerHTML = `
+                    <div class="subject-icon" style="background-color: ${subject.color}">
+                        ${subject.icon}
+                    </div>
+                    <div class="subject-name">${subject.name}</div>
+                `;
+                
+                const taskList = document.createElement('ul');
+                taskList.className = 'task-list';
+                
+                taskItems.forEach((task, index) => {
+                    if (!task.trim()) return; // 跳过空任务
+                    
+                    const taskItem = document.createElement('li');
+                    taskItem.className = 'task-item';
+                    
+                    const taskId = `task-${date}-${subject.key}-${index}`;
+                    const isCompleted = localStorage.getItem(taskId) === 'true';
+                    
+                    taskItem.innerHTML = `
+                        <input type="checkbox" class="task-checkbox" id="${taskId}" ${isCompleted ? 'checked' : ''}>
+                        <div class="task-content">${task}</div>
+                        <div class="task-footer">
+                            <span>任务 ${index + 1} / ${taskItems.filter(t => t.trim()).length}</span>
+                        </div>
+                    `;
+
+                    taskItem.classList.toggle('completed', isCompleted);
+                    
+                    // 添加点击事件来设置专注任务
+                    taskItem.addEventListener('click', function(e) {
+                        if (!e.target.classList.contains('task-checkbox')) {
+                            // 移除之前选中的任务高亮
+                            if (currentSelectedTask) {
+                                currentSelectedTask.classList.remove('selected');
+                            }
+                            
+                            // 高亮当前选中的任务
+                            this.classList.add('selected');
+                            currentSelectedTask = this;
+                            
+                            // 显示视觉反馈
+                            showSelectionFeedback();
+                            
+                            // 设置专注任务
+                            const taskText = task.replace(/<[^>]*>/g, '').trim(); // 移除HTML标签
+                            setCurrentFocusTask(taskText);
+                        }
+                    });
+                    
+                    taskList.appendChild(taskItem);
+                });
+                
+                subjectDiv.appendChild(subjectHeader);
+                subjectDiv.appendChild(taskList);
+                tasksContainer.appendChild(subjectDiv);
+            });
+            
+            // 添加复选框事件监听
+            document.querySelectorAll('.task-checkbox').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    const taskId = this.id;
+                    localStorage.setItem(taskId, this.checked);
+                    
+                    const taskItem = this.closest('.task-item');
+                    taskItem.classList.toggle('completed', this.checked);
+                    
+                    // 更新统计信息
+                    updateStats(document.getElementById('dateSelector').value.split(' ')[0]);
+                });
+            });
+            
+            updateStats(date);
+        }
+        
+        // 显示视觉反馈
+        function showSelectionFeedback() {
+            const feedback = document.getElementById('selectionFeedback');
+            feedback.classList.add('show');
+            
+            setTimeout(() => {
+                feedback.classList.remove('show');
+            }, 1500);
+        }
+        
+        // 设置当前专注任务
+        function setCurrentFocusTask(taskText) {
+            document.getElementById('focusCurrentTask').textContent = taskText;
+        }
+        
+        // 进入专注模式
+        function enterFocusMode() {
+            document.body.style.overflow = 'hidden'; // 防止背景滚动
+            document.getElementById('focusMode').style.display = 'flex';
+            updateFocusTimeDisplay();
+            setInterval(updateFocusTimeDisplay, 1000); // 每秒更新专注模式时间
+        }
+        
+        // 退出专注模式
+        function exitFocusMode() {
+            document.body.style.overflow = 'auto'; // 恢复背景滚动
+            document.getElementById('focusMode').style.display = 'none';
+        }
+        
+        // 返回顶部功能
+        document.querySelector('.floating-action').addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+        
+        // 在数据加载完成后初始化应用
+        function initAfterDataLoad() {
+            applySavedTheme(); // 应用保存的主题
+            generateDateSelector();
+            updateTimeDisplay();
+            setInterval(updateTimeDisplay, 1000); // 每秒更新时间
+            
+            // 日期选择器事件
+            document.getElementById('dateSelector').addEventListener('change', function() {
+                // 提取实际日期值（去提示文本）
+                const selectedOption = this.options[this.selectedIndex];
+                const actualDate = selectedOption.getAttribute('data-date-value');
+                showTasks(actualDate);
+            });
+            
+            // 开始专注模式按钮事件
+            document.getElementById('startFocusModeBtn').addEventListener('click', function() {
+                enterFocusMode();
+            });
+            
+            // 退出专注模式按钮事件
+            document.getElementById('exitFocusModeBtn').addEventListener('click', function() {
+                exitFocusMode();
+            });
+            
+            // 模式切换按钮事件
+            document.getElementById('modeToggle').addEventListener('click', toggleMode);
+        }
+        
+        // 页面加载完成后启动数据加载
+        window.addEventListener('load', loadHomeworkData);
+    </script>
+</body>
+</html>
