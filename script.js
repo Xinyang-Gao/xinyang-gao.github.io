@@ -131,6 +131,34 @@ class DataManager {
     }
 }
 
+// 动态问候语函数
+function updateDynamicGreeting() {
+    const hour = new Date().getHours();
+    console.log('当前小时:', hour); // 调试用
+
+    let greeting = '';
+    if (hour >= 5 && hour < 7) greeting = '唔…好早啊…早上好！';
+    else if (hour >= 7 && hour < 8) greeting = '早上好呀！希望今天是开心的一天呐';
+    else if (hour >= 8 && hour < 11) greeting = '上午好！';
+    else if (hour >= 11 && hour < 14) greeting = '中午好！记得吃午饭和午睡哦~';
+    else if (hour >= 14 && hour < 18) greeting = '下午好！';
+    else if (hour >= 18 && hour < 21) greeting = '晚上好呀！';
+    else if (hour >= 22 && hour < 23) greeting = '夜深了，注意休息~';
+    else if (hour >= 23 && hour < 24) greeting = '熬夜对身体不好的，要注意休息呀！';
+    else greeting = '熬夜对身体不好的，要注意休息呀！';
+
+    const greetingEl = document.getElementById('dynamic-greeting');
+    if (greetingEl) {
+        console.log('找到元素，正在替换...');
+        greetingEl.textContent = greeting;
+//        greetingEl.style.fontSize = '1.2em';
+        greetingEl.style.fontWeight = 'bold';
+        greetingEl.style.color = '#2c3e50';
+    } else {
+        console.error('❌ 未找到 id="dynamic-greeting" 的元素！');
+    }
+}
+
 // --- UI渲染器 ---
 class UIrenderer {
     static generateTagsHTML(tags) {
@@ -643,6 +671,10 @@ class PageManager {
             new SearchManager(pageName);
         }
 
+        if (pageName === 'index') {
+            updateDynamicGreeting();
+          }
+
         // 设置列表项交互
         PageManager.setupListItemsInteraction();
     }
@@ -827,6 +859,9 @@ class ScrollManager {
 document.addEventListener('DOMContentLoaded', function () {
     console.log('🚀 初始化网站...');
 
+    console.log('页面已加载，尝试更新问候语...');
+    updateDynamicGreeting();
+
     // 初始化所有组件
     NavigationManager.initNavigation();
     NavigationManager.initPopstate();
@@ -840,4 +875,6 @@ document.addEventListener('DOMContentLoaded', function () {
     // 添加加载完成标志
     document.body.setAttribute('data-loaded', 'true');
     console.log('✅ 网站初始化完成');
+
+    document.getElementById('dynamic-greeting')
 });
