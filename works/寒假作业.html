@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -20,8 +21,8 @@
             --dark-card: #2c2c2c;
             --dark-text: #e0e0e0;
             --dark-border: #444444;
-            --card-shadow: 0 4px 12px rgba(0,0,0,0.1);
-            --dark-card-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            --dark-card-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
             --transition-speed: 0.3s;
             --focus-mode-bg: #000000;
         }
@@ -184,7 +185,7 @@
             display: inline-block;
             flex: 1;
         }
-        
+
         .date-picker-input {
             padding: 10px 15px;
             border: 1px solid var(--light-border);
@@ -219,69 +220,57 @@
             background: var(--light-card);
             border: 1px solid var(--light-border);
             border-radius: 6px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             z-index: 1000;
             display: none;
             margin-top: 5px;
         }
-        
+
         body.dark-mode .date-picker-dropdown {
             background: #3c3c3c;
             border: 1px solid var(--dark-border);
         }
-        
+
         .date-picker-option {
             padding: 12px 15px;
             cursor: pointer;
             border-bottom: 1px solid var(--light-border);
             transition: background-color var(--transition-speed) ease;
         }
-        
+
         body.dark-mode .date-picker-option {
             border-bottom: 1px solid var(--dark-border);
         }
-        
+
         .date-picker-option:last-child {
             border-bottom: none;
         }
-        
+
         .date-picker-option:hover {
             background-color: var(--primary-color);
             color: white;
         }
-        
+
         .date-picker-option.selected {
             background-color: var(--primary-color);
             color: white;
         }
-        
-        .date-picker-option .date-text {
-            display: block;
-            font-weight: 500;
-        }
-        
-        .date-picker-option .date-hint {
-            display: block;
-            font-size: 12px;
-            opacity: 0.8;
-            margin-top: 3px;
-        }
-        
+
         .date-picker-open {
             display: block;
         }
-        
+
         .date-navigation {
             display: flex;
             justify-content: space-between;
             padding: 10px 15px;
             border-bottom: 1px solid var(--light-border);
         }
-        
+
         body.dark-mode .date-navigation {
             border-bottom: 1px solid var(--dark-border);
         }
-        
+
         .nav-btn {
             background: none;
             border: none;
@@ -290,7 +279,7 @@
             color: var(--primary-color);
             padding: 5px;
         }
-        
+
         .current-month-year {
             font-weight: bold;
             color: var(--primary-color);
@@ -408,7 +397,7 @@
 
         .task-item:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             border-color: var(--primary-color);
         }
 
@@ -559,7 +548,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: radial-gradient(circle, #2c3e50, #1a1a1a);
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             color: white;
             display: flex;
             flex-direction: column;
@@ -570,6 +559,7 @@
             opacity: 0;
             visibility: hidden;
             transition: opacity 0.5s ease, visibility 0.5s ease;
+            padding: 20px;
         }
 
         .focus-mode.active {
@@ -578,79 +568,98 @@
         }
 
         .focus-clock {
-            font-size: 8rem;
-            font-weight: bold;
-            margin-bottom: 20px;
-            text-shadow: 0 0 20px rgba(52, 152, 219, 0.5);
-            color: var(--primary-color);
+            font-size: 6rem;
+            font-weight: 300;
+            margin-bottom: 10px;
+            text-shadow: 0 0 30px rgba(52, 152, 219, 0.7);
+            color: #4fc3f7;
             font-family: 'Courier New', monospace;
+            letter-spacing: 2px;
         }
 
         .focus-date {
-            font-size: 2rem;
-            margin-bottom: 30px;
-            color: #ddd;
+            font-size: 1.5rem;
+            margin-bottom: 40px;
+            color: #bbdefb;
+            font-weight: 300;
         }
 
         .focus-deadlines {
             display: flex;
             flex-direction: column;
             gap: 15px;
-            margin-bottom: 30px;
-            text-align: center;
+            margin-bottom: 40px;
             width: 100%;
-            max-width: 800px;
+            max-width: 600px;
         }
 
         .focus-deadline {
-            font-size: 1.5rem;
+            font-size: 1.2rem;
             padding: 15px 20px;
-            border-radius: 8px;
+            border-radius: 12px;
             width: 100%;
-            max-width: 600px;
-            margin: 0 auto;
-            text-align: center;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .focus-deadline:hover {
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-2px);
         }
 
         .focus-current-task {
-            font-size: 2rem;
+            font-size: 1.8rem;
             text-align: center;
-            margin-top: 30px;
+            margin-top: 40px;
             padding: 30px;
-            border: 2px solid var(--primary-color);
-            border-radius: 10px;
+            border: 2px solid rgba(79, 195, 247, 0.3);
+            border-radius: 16px;
             max-width: 90%;
             width: 800px;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(10px);
             word-break: break-word;
             min-height: 120px;
             display: flex;
             align-items: center;
             justify-content: center;
+            line-height: 1.6;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .focus-current-task:hover {
+            border-color: rgba(79, 195, 247, 0.5);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
         }
 
         .exit-focus-mode {
             position: absolute;
-            top: 20px;
-            right: 20px;
-            background: var(--danger-color);
+            top: 30px;
+            right: 30px;
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
             color: white;
             border: none;
-            padding: 12px 24px;
-            border-radius: 6px;
+            padding: 12px 28px;
+            border-radius: 50px;
             cursor: pointer;
             font-size: 16px;
-            transition: all var(--transition-speed) ease;
+            font-weight: 500;
+            transition: all 0.3s ease;
             z-index: 1001;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 15px rgba(231, 76, 60, 0.3);
         }
 
         .exit-focus-mode:hover {
-            background: #c0392b;
-            transform: scale(1.05);
+            background: linear-gradient(135deg, #ff6b6b 0%, #e74c3c 100%);
+            transform: translateY(-2px) scale(1.05);
+            box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
         }
 
         .focus-content {
@@ -692,10 +701,9 @@
         }
 
         .timer-status {
-            font-size: 1.8rem;
-            margin-top: 10px;
-            color: #2ecc71;
-            font-weight: bold;
+            font-size: 1rem;
+            color: #bbdefb;
+            font-weight: 400;
         }
 
         .tomato-progress {
@@ -709,11 +717,12 @@
             width: 100%;
             height: 100%;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
             position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
         }
 
         .tomato-progress-bar {
@@ -747,7 +756,7 @@
             position: absolute;
             width: 160px;
             height: 160px;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(26, 26, 46, 0.9);
             border-radius: 50%;
             display: flex;
             flex-direction: column;
@@ -755,6 +764,16 @@
             justify-content: center;
             color: white;
             font-size: 1.2rem;
+            z-index: 2;
+            box-shadow: inset 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+
+        #tomatoTimer {
+            font-size: 2.5rem;
+            font-weight: 300;
+            font-family: 'Courier New', monospace;
+            color: #4fc3f7;
+            margin-bottom: 8px;
         }
 
         .tomato-session-counter {
@@ -798,69 +817,38 @@
         }
 
         @media (max-width: 768px) {
-            .container {
-                flex-direction: column;
-            }
-
-            .tasks {
-                padding-left: 0;
-                margin-top: 20px;
-                text-align: left;
-            }
-
-            .main-content {
-                padding: 15px;
-            }
-
-            .date-selector-container {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .date-picker-container,
-            .start-focus-mode-btn {
-                min-width: auto;
-                margin-left: 0;
-                margin-top: 10px;
-            }
-
-            .stats {
-                flex-direction: column;
-                gap: 12px;
-            }
-
             .focus-clock {
-                font-size: 4rem;
+                font-size: 3.5rem;
             }
 
             .focus-date {
-                font-size: 1.5rem;
+                font-size: 1.2rem;
+                margin-bottom: 30px;
             }
 
             .focus-deadline {
-                font-size: 1.2rem;
-                padding: 10px 15px;
+                font-size: 1rem;
+                padding: 12px 16px;
             }
 
             .focus-current-task {
-                font-size: 1.5rem;
+                font-size: 1.3rem;
                 padding: 20px;
                 min-height: 100px;
             }
 
-            .exit-focus-mode {
-                padding: 10px 15px;
-                font-size: 14px;
-            }
-            
             .tomato-progress {
-                width: 150px;
-                height: 150px;
+                width: 160px;
+                height: 160px;
             }
-            
+
             .tomato-progress-inner {
-                width: 120px;
-                height: 120px;
+                width: 128px;
+                height: 128px;
+            }
+
+            #tomatoTimer {
+                font-size: 2rem;
             }
         }
 
@@ -953,8 +941,13 @@
         }
 
         @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
         }
 
         /* 平滑滚动 */
@@ -993,6 +986,7 @@
         }
     </style>
 </head>
+
 <body class="light-mode">
     <!-- 模式切换按钮 -->
     <div class="mode-toggle" id="modeToggle">
@@ -1074,7 +1068,7 @@
                 <div class="focus-deadline" id="focusDailyDeadline">每日打卡截止时间：--小时--分钟--秒</div>
                 <div class="focus-deadline" id="focusWinterEndCountdown">据寒假结束还剩下 --天--小时--分钟--秒</div>
             </div>
-            
+
             <!-- 番茄钟进度环 -->
             <div class="tomato-progress">
                 <div class="tomato-progress-circle">
@@ -1087,18 +1081,18 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="tomato-session-counter">
                 已完成番茄钟: <span id="sessionCounter">0</span> 个
             </div>
-            
+
             <div class="tomato-controls">
                 <button class="tomato-btn" id="startTomatoBtn">开始</button>
                 <button class="tomato-btn" id="pauseTomatoBtn">暂停</button>
                 <button class="tomato-btn reset" id="resetTomatoBtn">重置</button>
                 <button class="tomato-btn" id="skipTomatoBtn">跳过</button>
             </div>
-            
+
             <div class="focus-current-task" id="focusCurrentTask">请选择一项任务开始专注学习</div>
         </div>
     </div>
@@ -1145,8 +1139,8 @@
                 try {
                     // 使用fetch API获取本地数据
                     const response = await fetch('data.json');
-                    
-                    if(response.status === 404) {
+
+                    if (response.status === 404) {
                         // 如果本地文件不存在，使用模拟数据
                         this.homeworkData = this.getMockData();
                     } else {
@@ -1158,10 +1152,10 @@
                     // 使用模拟数据
                     this.homeworkData = this.getMockData();
                 }
-                
+
                 return Promise.resolve();
             },
-            
+
             // 获取模拟数据
             getMockData() {
                 return [
@@ -1395,7 +1389,7 @@
                 const diff = winterEndDate - now;
 
                 if (diff <= 0) {
-                    document.getElementById('focusWinterEndCountdown').textContent = '寒假已结束';
+                    document.getElementById('focusWinterEndCountcountdown').textContent = '寒假已结束';
                     return;
                 }
 
@@ -1481,7 +1475,7 @@
                 const datePickerInput = document.getElementById('datePickerInput');
                 const dateOptions = document.getElementById('dateOptions');
                 const currentMonthYear = document.getElementById('currentMonthYear');
-                
+
                 // 获取所有可用日期
                 const dates = [...new Set(this.homeworkData.map(item => item.date))].sort((a, b) => new Date(a) - new Date(b));
 
@@ -1498,33 +1492,33 @@
                     const dateObj = new Date(date);
                     const dateYear = dateObj.getFullYear();
                     const dateMonth = dateObj.getMonth() + 1;
-                    
+
                     // 只显示当前月份的日期
                     if (dateYear === year && dateMonth === month) {
                         const option = document.createElement('div');
                         option.className = 'date-picker-option';
-                        
+
                         // 检查是否为今天
                         const currentDateStr = this.getCurrentDate();
                         if (date === currentDateStr) {
                             option.classList.add('selected');
                         }
-                        
+
                         const formattedDate = this.formatDate(date);
                         const dateHint = this.calculateDateDifference(date, currentDateStr);
-                        
+
                         option.innerHTML = `
                             <span class="date-text">${formattedDate}</span>
                             <span class="date-hint">${dateHint}</span>
                         `;
-                        
+
                         option.dataset.dateValue = date;
-                        
+
                         option.addEventListener('click', () => {
                             this.selectDate(date, formattedDate);
                             this.hideDatePicker();
                         });
-                        
+
                         dateOptions.appendChild(option);
                     }
                 });
@@ -1539,7 +1533,7 @@
             selectDate(date, formattedDate) {
                 const datePickerInput = document.getElementById('datePickerInput');
                 const dateHint = this.calculateDateDifference(date, this.getCurrentDate());
-                
+
                 datePickerInput.value = `${formattedDate} (${dateHint})`;
                 this.showTasks(date);
             },
@@ -1558,8 +1552,26 @@
 
             // 统计任务完成情况
             updateStats(date) {
+                // 如果没有传入日期，使用当前选中的日期
+                if (!date) {
+                    const datePickerInput = document.getElementById('datePickerInput');
+                    // 从输入框的值中提取日期
+                    const dateStr = this.extractDateFromInput(datePickerInput.value);
+                    if (dateStr) {
+                        date = dateStr;
+                    } else {
+                        date = this.getCurrentDate(); // 默认使用今天
+                    }
+                }
                 const data = this.homeworkData.find(item => item.date === date);
-                if (!data) return;
+                if (!data) {
+                    // 如果没有找到数据，重置统计
+                    document.getElementById('totalTasks').textContent = '0';
+                    document.getElementById('completedTasks').textContent = '0';
+                    document.getElementById('completionRate').textContent = '0%';
+                    document.getElementById('progressFill').style.width = '0%';
+                    return;
+                }
 
                 const subjects = ['chinese', 'math', 'english', 'chemistry'];
                 let totalTasks = 0;
@@ -1706,13 +1718,10 @@
                         const taskItem = e.target.closest('.task-item');
                         taskItem.classList.toggle('completed', e.target.checked);
 
-                        // 更新统计信息
-                        const date = document.getElementById('datePickerInput').value.split(' ')[0];
-                        this.updateStats(date);
+                        // 更新统计信息 - 使用当前显示的任务日期
+                        this.updateStats(date); // 直接使用函数参数 date
                     });
                 });
-
-                this.updateStats(date);
             },
 
             // 显示视觉反馈
@@ -1735,31 +1744,21 @@
                 const progressFill = document.getElementById('tomatoProgressFill');
                 const progressBar = document.getElementById('tomatoProgressBar');
                 const progressPercent = ((this.tomatoTotalTime - this.tomatoTimeLeft) / this.tomatoTotalTime) * 100;
-                
-                // 计算旋转角度
-                const rotation = (progressPercent / 100) * 360;
-                
-                // 更新进度环
+
+                // 计算旋转角度 - 更精确的计算
+                let rotation;
                 if (progressPercent <= 50) {
-                    progressFill.style.transform = `rotate(${rotation}deg)`;
+                    // 0-50%: 旋转右半圆
+                    rotation = (progressPercent / 50) * 180;
                     progressBar.className = 'tomato-progress-bar';
+                    progressFill.style.transform = `rotate(${rotation}deg)`;
+                    progressFill.style.clip = 'rect(0px, 100px, 200px, 0px)';
                 } else {
-                    // 当进度超过50%，需要特殊处理
-                    const adjustedRotation = rotation - 180;
-                    progressFill.style.transform = `rotate(180deg)`;
+                    // 50%-100%: 右半圆固定，左半圆旋转
+                    rotation = ((progressPercent - 50) / 50) * 180;
                     progressBar.className = 'tomato-progress-bar full';
-                    
-                    // 使用第二个半圆来表示后50%
-                    const secondHalf = document.createElement('div');
-                    secondHalf.className = 'tomato-progress-fill';
-                    secondHalf.style.transform = `rotate(${adjustedRotation}deg)`;
-                    secondHalf.style.background = 'var(--primary-color)';
-                    
-                    // 替换原有的填充元素
-                    const container = document.getElementById('tomatoProgressBar');
-                    container.innerHTML = '';
-                    container.appendChild(secondHalf);
-                    container.className = 'tomato-progress-bar full';
+                    progressFill.style.transform = `rotate(${rotation}deg)`;
+                    progressFill.style.clip = 'rect(0px, 200px, 200px, 100px)';
                 }
             },
 
@@ -1767,28 +1766,31 @@
             updateTomatoDisplay() {
                 const minutes = Math.floor(this.tomatoTimeLeft / 60);
                 const seconds = this.tomatoTimeLeft % 60;
-                
-                document.getElementById('tomatoTimer').textContent = 
+
+                document.getElementById('tomatoTimer').textContent =
                     `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-                
-                document.getElementById('timerStatus').textContent = 
+
+                document.getElementById('timerStatus').textContent =
                     this.isWorking ? '专注时间' : '休息时间';
-                
+
                 document.getElementById('sessionCounter').textContent = this.tomatoSessions;
-                
+
                 this.updateTomatoProgress();
             },
 
             // 开始番茄钟
             startTomato() {
                 if (this.isTomatoRunning) return;
-                
+
                 this.isTomatoRunning = true;
                 document.getElementById('startTomatoBtn').classList.add('active');
-                
+
+                // 确保进度环显示正确
+                this.updateTomatoProgress();
+
                 this.tomatoTimer = setInterval(() => {
                     this.tomatoTimeLeft--;
-                    
+
                     if (this.tomatoTimeLeft <= 0) {
                         this.completeTomatoSession();
                     } else {
@@ -1800,7 +1802,7 @@
             // 暂停番茄钟
             pauseTomato() {
                 if (!this.isTomatoRunning) return;
-                
+
                 this.isTomatoRunning = false;
                 clearInterval(this.tomatoTimer);
                 document.getElementById('startTomatoBtn').classList.remove('active');
@@ -1809,13 +1811,20 @@
             // 重置番茄钟
             resetTomato() {
                 this.pauseTomato();
-                
+
                 if (this.isWorking) {
                     this.tomatoTimeLeft = this.tomatoTotalTime;
                 } else {
                     this.tomatoTimeLeft = this.tomatoBreakTime;
                 }
-                
+
+                // 重置进度环
+                const progressFill = document.getElementById('tomatoProgressFill');
+                const progressBar = document.getElementById('tomatoProgressBar');
+                progressBar.className = 'tomato-progress-bar';
+                progressFill.style.transform = 'rotate(0deg)';
+                progressFill.style.clip = 'rect(0px, 100px, 200px, 0px)';
+
                 this.updateTomatoDisplay();
                 document.getElementById('startTomatoBtn').classList.remove('active');
             },
@@ -1828,7 +1837,7 @@
             // 完成番茄钟会话
             completeTomatoSession() {
                 this.pauseTomato();
-                
+
                 if (this.isWorking) {
                     // 结束工作时间，进入休息
                     this.isWorking = false;
@@ -1841,7 +1850,7 @@
                     this.tomatoTimeLeft = this.tomatoTotalTime;
                     alert('休息时间结束！继续专注学习吧！');
                 }
-                
+
                 this.updateTomatoDisplay();
             },
 
@@ -1849,13 +1858,13 @@
             enterFocusMode() {
                 this.focusModeActive = true;
                 document.body.style.overflow = 'hidden'; // 防止背景滚动
-                
+
                 // 添加动画类以触发淡入效果
                 const focusMode = document.getElementById('focusMode');
                 focusMode.classList.add('active');
-                
+
                 this.updateFocusTimeDisplay();
-                
+
                 // 开始专注模式下的定时器
                 this.focusTimerInterval = setInterval(() => {
                     this.updateFocusTimeDisplay();
@@ -1866,17 +1875,17 @@
             exitFocusMode() {
                 this.focusModeActive = false;
                 document.body.style.overflow = 'auto'; // 恢复背景滚动
-                
+
                 // 移除动画类以触发动画效果
                 const focusMode = document.getElementById('focusMode');
                 focusMode.classList.remove('active');
-                
+
                 // 清除专注模式下的定时器
                 if (this.focusTimerInterval) {
                     clearInterval(this.focusTimerInterval);
                     this.focusTimerInterval = null;
                 }
-                
+
                 // 停止番茄钟
                 this.pauseTomato();
             },
@@ -1891,12 +1900,12 @@
                 // 日期选择器事件
                 const datePickerInput = document.getElementById('datePickerInput');
                 const datePickerDropdown = document.getElementById('datePickerDropdown');
-                
+
                 datePickerInput.addEventListener('click', (e) => {
                     e.stopPropagation();
                     this.showDatePicker();
                 });
-                
+
                 // 点击其他地方隐藏日期选择器
                 document.addEventListener('click', (e) => {
                     if (!datePickerDropdown.contains(e.target) && !datePickerInput.contains(e.target)) {
@@ -1910,7 +1919,7 @@
                     this.currentMonthView.setMonth(this.currentMonthView.getMonth() - 1);
                     this.generateDatePicker();
                 });
-                
+
                 document.getElementById('nextMonth').addEventListener('click', (e) => {
                     e.stopPropagation();
                     this.currentMonthView.setMonth(this.currentMonthView.getMonth() + 1);
@@ -1965,4 +1974,5 @@
         });
     </script>
 </body>
+
 </html>
