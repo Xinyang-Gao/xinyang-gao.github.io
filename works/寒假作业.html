@@ -179,7 +179,13 @@
             color: #ecf0f1;
         }
 
-        .date-selector-container select {
+        .date-picker-container {
+            position: relative;
+            display: inline-block;
+            flex: 1;
+        }
+        
+        .date-picker-input {
             padding: 10px 15px;
             border: 1px solid var(--light-border);
             border-radius: 6px;
@@ -187,20 +193,107 @@
             background: var(--light-card);
             cursor: pointer;
             min-width: 200px;
-            flex: 1;
+            width: 100%;
             transition: all var(--transition-speed) ease;
         }
 
-        .date-selector-container select:focus {
+        .date-picker-input:focus {
             outline: none;
             border-color: var(--primary-color);
             box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
         }
 
-        body.dark-mode .date-selector-container select {
+        body.dark-mode .date-picker-input {
             background: #3c3c3c;
             border: 1px solid var(--dark-border);
             color: var(--dark-text);
+        }
+
+        .date-picker-dropdown {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            max-height: 300px;
+            overflow-y: auto;
+            background: var(--light-card);
+            border: 1px solid var(--light-border);
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            z-index: 1000;
+            display: none;
+            margin-top: 5px;
+        }
+        
+        body.dark-mode .date-picker-dropdown {
+            background: #3c3c3c;
+            border: 1px solid var(--dark-border);
+        }
+        
+        .date-picker-option {
+            padding: 12px 15px;
+            cursor: pointer;
+            border-bottom: 1px solid var(--light-border);
+            transition: background-color var(--transition-speed) ease;
+        }
+        
+        body.dark-mode .date-picker-option {
+            border-bottom: 1px solid var(--dark-border);
+        }
+        
+        .date-picker-option:last-child {
+            border-bottom: none;
+        }
+        
+        .date-picker-option:hover {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .date-picker-option.selected {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .date-picker-option .date-text {
+            display: block;
+            font-weight: 500;
+        }
+        
+        .date-picker-option .date-hint {
+            display: block;
+            font-size: 12px;
+            opacity: 0.8;
+            margin-top: 3px;
+        }
+        
+        .date-picker-open {
+            display: block;
+        }
+        
+        .date-navigation {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 15px;
+            border-bottom: 1px solid var(--light-border);
+        }
+        
+        body.dark-mode .date-navigation {
+            border-bottom: 1px solid var(--dark-border);
+        }
+        
+        .nav-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: var(--primary-color);
+            padding: 5px;
+        }
+        
+        .current-month-year {
+            font-weight: bold;
+            color: var(--primary-color);
         }
 
         .start-focus-mode-btn {
@@ -466,7 +559,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: var(--focus-mode-bg);
+            background: radial-gradient(circle, #2c3e50, #1a1a1a);
             color: white;
             display: flex;
             flex-direction: column;
@@ -490,6 +583,7 @@
             margin-bottom: 20px;
             text-shadow: 0 0 20px rgba(52, 152, 219, 0.5);
             color: var(--primary-color);
+            font-family: 'Courier New', monospace;
         }
 
         .focus-date {
@@ -597,6 +691,112 @@
             color: #ccc;
         }
 
+        .timer-status {
+            font-size: 1.8rem;
+            margin-top: 10px;
+            color: #2ecc71;
+            font-weight: bold;
+        }
+
+        .tomato-progress {
+            width: 200px;
+            height: 200px;
+            position: relative;
+            margin: 20px auto;
+        }
+
+        .tomato-progress-circle {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tomato-progress-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            clip: rect(0, 200px, 200px, 100px);
+        }
+
+        .tomato-progress-bar.full {
+            clip: rect(auto, auto, auto, auto);
+        }
+
+        .tomato-progress-fill {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            clip: rect(0, 100px, 200px, 0);
+            background: var(--primary-color);
+            transform: rotate(0deg);
+            transition: transform 0.1s linear;
+        }
+
+        .tomato-progress-inner {
+            position: absolute;
+            width: 160px;
+            height: 160px;
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .tomato-session-counter {
+            margin-top: 20px;
+            font-size: 1.2rem;
+            color: #ddd;
+        }
+
+        .tomato-controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .tomato-btn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .tomato-btn:hover {
+            background: #2980b9;
+            transform: scale(1.05);
+        }
+
+        .tomato-btn.active {
+            background: #27ae60;
+        }
+
+        .tomato-btn.reset {
+            background: #e74c3c;
+        }
+
+        .tomato-btn.reset:hover {
+            background: #c0392b;
+        }
+
         @media (max-width: 768px) {
             .container {
                 flex-direction: column;
@@ -617,7 +817,7 @@
                 align-items: stretch;
             }
 
-            .date-selector-container select,
+            .date-picker-container,
             .start-focus-mode-btn {
                 min-width: auto;
                 margin-left: 0;
@@ -651,6 +851,16 @@
             .exit-focus-mode {
                 padding: 10px 15px;
                 font-size: 14px;
+            }
+            
+            .tomato-progress {
+                width: 150px;
+                height: 150px;
+            }
+            
+            .tomato-progress-inner {
+                width: 120px;
+                height: 120px;
             }
         }
 
@@ -806,8 +1016,18 @@
 
     <div class="main-content">
         <div class="date-selector-container">
-            <label for="dateSelector">选择日期:</label>
-            <select id="dateSelector"></select>
+            <label for="datePickerInput">选择日期:</label>
+            <div class="date-picker-container">
+                <input type="text" class="date-picker-input" id="datePickerInput" placeholder="选择日期" readonly>
+                <div class="date-picker-dropdown" id="datePickerDropdown">
+                    <div class="date-navigation">
+                        <button class="nav-btn" id="prevMonth"><i class="fas fa-chevron-left"></i></button>
+                        <div class="current-month-year" id="currentMonthYear"></div>
+                        <button class="nav-btn" id="nextMonth"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                    <div id="dateOptions"></div>
+                </div>
+            </div>
             <button class="start-focus-mode-btn" id="startFocusModeBtn">开始专注模式</button>
         </div>
 
@@ -854,8 +1074,32 @@
                 <div class="focus-deadline" id="focusDailyDeadline">每日打卡截止时间：--小时--分钟--秒</div>
                 <div class="focus-deadline" id="focusWinterEndCountdown">据寒假结束还剩下 --天--小时--分钟--秒</div>
             </div>
-            <div class="focus-current-task" id="focusCurrentTask">请选择一项任务开始专注学习</div>
+            
+            <!-- 番茄钟进度环 -->
+            <div class="tomato-progress">
+                <div class="tomato-progress-circle">
+                    <div class="tomato-progress-bar" id="tomatoProgressBar">
+                        <div class="tomato-progress-fill" id="tomatoProgressFill"></div>
+                    </div>
+                    <div class="tomato-progress-inner">
+                        <div id="tomatoTimer">25:00</div>
+                        <div class="timer-status" id="timerStatus">专注时间</div>
+                    </div>
+                </div>
             </div>
+            
+            <div class="tomato-session-counter">
+                已完成番茄钟: <span id="sessionCounter">0</span> 个
+            </div>
+            
+            <div class="tomato-controls">
+                <button class="tomato-btn" id="startTomatoBtn">开始</button>
+                <button class="tomato-btn" id="pauseTomatoBtn">暂停</button>
+                <button class="tomato-btn reset" id="resetTomatoBtn">重置</button>
+                <button class="tomato-btn" id="skipTomatoBtn">跳过</button>
+            </div>
+            
+            <div class="focus-current-task" id="focusCurrentTask">请选择一项任务开始专注学习</div>
         </div>
     </div>
 
@@ -870,13 +1114,22 @@
             isDarkMode: false,
             focusModeActive: false,
             focusTimerInterval: null,
+            currentDate: new Date(),
+            currentMonthView: new Date(),
+            tomatoTimer: null,
+            tomatoTimeLeft: 25 * 60, // 25分钟
+            tomatoTotalTime: 25 * 60, // 25分钟
+            tomatoBreakTime: 5 * 60, // 5分钟休息
+            isWorking: true,
+            tomatoSessions: 0,
+            isTomatoRunning: false,
 
             // 初始化应用
             init() {
                 this.loadHomeworkData()
                     .then(() => {
                         this.applySavedTheme();
-                        this.generateDateSelector();
+                        this.generateDatePicker();
                         this.updateTimeDisplay();
                         this.setupEventListeners();
                         this.startTimers();
@@ -890,24 +1143,57 @@
             // 从JSON文件加载作业数据
             async loadHomeworkData() {
                 try {
-                    // 模拟数据加载（在实际环境中替换为真实的homework.json路径）
-                    const response = await fetch('homework.json');
-
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
+                    // 使用fetch API获取本地数据
+                    const response = await fetch('data.json');
+                    
+                    if(response.status === 404) {
+                        // 如果本地文件不存在，使用模拟数据
+                        this.homeworkData = this.getMockData();
+                    } else {
+                        const jsonData = await response.json();
+                        this.homeworkData = jsonData;
                     }
-
-                    const jsonData = await response.json();
-                    this.homeworkData = jsonData;
-
-                    console.log('作业数据加载成功:', this.homeworkData);
                 } catch (error) {
-                    console.error('加载homework.json失败:', error);
+                    console.error('加载作业数据失败:', error);
                     // 使用模拟数据
                     this.homeworkData = this.getMockData();
                 }
-
+                
                 return Promise.resolve();
+            },
+            
+            // 获取模拟数据
+            getMockData() {
+                return [
+                    {
+                        date: "2025/01/20",
+                        chinese: "完成《背影》阅读理解<br>写一篇作文：我的假期生活",
+                        math: "完成练习册第1-10题<br>复习函数章节",
+                        english: "背诵Unit 5单词<br>完成课后习题",
+                        chemistry: "完成实验报告<br>复习元素周期表"
+                    },
+                    {
+                        date: "2025/01/21",
+                        chinese: "完成《春》课后练习<br>默写古诗词",
+                        math: "完成练习册第11-20题<br>预习三角函数",
+                        english: "听力练习Unit 5<br>完成语法练习",
+                        chemistry: "完成化学方程式练习<br>复习酸碱盐性质"
+                    },
+                    {
+                        date: "2025/01/22",
+                        chinese: "阅读《骆驼祥子》<br>写读后感",
+                        math: "完成几何证明题<br>做一套综合测试",
+                        english: "完成阅读理解练习<br>写一篇英语日记",
+                        chemistry: "完成有机化合物练习<br>实验操作复习"
+                    },
+                    {
+                        date: "2025/01/23",
+                        chinese: "完成文言文翻译<br>背诵《出师表》",
+                        math: "完成概率统计练习<br>复习全册重点",
+                        english: "完成完形填空<br>准备口语展示",
+                        chemistry: "完成化学平衡练习<br>复习化学反应速率"
+                    }
+                ];
             },
 
             // 处理数据加载错误
@@ -916,10 +1202,10 @@
                     <div class="no-tasks">
                         <i class="fas fa-exclamation-triangle"></i>
                         <div>无法加载作业数据: ${error.message}</div>
-                        <div>请确保homework.json文件存在于同目录下</div>
+                        <div>请确保data.json文件存在于同目录下</div>
                     </div>
                 `;
-                this.generateDateSelector();
+                this.generateDatePicker();
             },
 
             // 获取当前日期
@@ -985,8 +1271,7 @@
                 // 如果当前时间已经超过今天的目标时间，则显示"已截止"
                 if (currentHours > targetHour || (currentHours === targetHour && currentMinutes > targetMinute)) {
                     document.getElementById('daily-deadline').textContent = '今日打卡已截止';
-                    document.getElementById('daily-deadline').className = 'deadline';
-                    document.getElementById('daily-deadline').classList.add('warning');
+                    document.getElementById('daily-deadline').className = 'deadline warning';
                     return;
                 }
 
@@ -1078,8 +1363,7 @@
 
                 if (diff <= 0) {
                     document.getElementById('winter-end-countdown').textContent = '寒假已结束';
-                    document.getElementById('winter-end-countdown').className = 'deadline';
-                    document.getElementById('winter-end-countdown').classList.add('warning');
+                    document.getElementById('winter-end-countdown').className = 'deadline warning';
                     return;
                 }
 
@@ -1193,39 +1477,83 @@
             },
 
             // 生成日期选择器
-            generateDateSelector() {
-                const dateSelector = document.getElementById('dateSelector');
-                const dates = [...new Set(this.homeworkData.map(item => item.date))];
-                dates.sort((a, b) => new Date(a) - new Date(b));
+            generateDatePicker() {
+                const datePickerInput = document.getElementById('datePickerInput');
+                const dateOptions = document.getElementById('dateOptions');
+                const currentMonthYear = document.getElementById('currentMonthYear');
+                
+                // 获取所有可用日期
+                const dates = [...new Set(this.homeworkData.map(item => item.date))].sort((a, b) => new Date(a) - new Date(b));
 
-                const currentDate = this.getCurrentDate();
+                // 显示当前月份的标题
+                const year = this.currentMonthView.getFullYear();
+                const month = this.currentMonthView.getMonth() + 1;
+                currentMonthYear.textContent = `${year}年${month}月`;
 
+                // 清空现有选项
+                dateOptions.innerHTML = '';
+
+                // 生成日期选项
                 dates.forEach(date => {
-                    const option = document.createElement('option');
-                    option.value = date;
-
-                    // 创建格式化的日期显示
-                    const formattedDate = this.formatDate(date);
-                    const dateHint = this.calculateDateDifference(date, currentDate);
-
-                    // 设置选项的显示文本，包含日期和相对提示
-                    option.textContent = `${formattedDate} (${dateHint})`;
-
-                    // 存储原始日期值用于后续处理
-                    option.setAttribute('data-date-value', date);
-
-                    dateSelector.appendChild(option);
+                    const dateObj = new Date(date);
+                    const dateYear = dateObj.getFullYear();
+                    const dateMonth = dateObj.getMonth() + 1;
+                    
+                    // 只显示当前月份的日期
+                    if (dateYear === year && dateMonth === month) {
+                        const option = document.createElement('div');
+                        option.className = 'date-picker-option';
+                        
+                        // 检查是否为今天
+                        const currentDateStr = this.getCurrentDate();
+                        if (date === currentDateStr) {
+                            option.classList.add('selected');
+                        }
+                        
+                        const formattedDate = this.formatDate(date);
+                        const dateHint = this.calculateDateDifference(date, currentDateStr);
+                        
+                        option.innerHTML = `
+                            <span class="date-text">${formattedDate}</span>
+                            <span class="date-hint">${dateHint}</span>
+                        `;
+                        
+                        option.dataset.dateValue = date;
+                        
+                        option.addEventListener('click', () => {
+                            this.selectDate(date, formattedDate);
+                            this.hideDatePicker();
+                        });
+                        
+                        dateOptions.appendChild(option);
+                    }
                 });
 
-                // 设置默认日期为当前日期（如果存在）
-                if (dates.includes(currentDate)) {
-                    dateSelector.value = Array.from(dateSelector.options).find(opt => opt.getAttribute('data-date-value') === currentDate)?.value || dates[0];
-                } else {
-                    // 如果当前日期不在数据中，选择第一个日期
-                    dateSelector.value = dateSelector.options[0]?.value;
+                // 如果没有当前月份的日期，显示提示
+                if (dateOptions.children.length === 0) {
+                    dateOptions.innerHTML = '<div class="date-picker-option">该月份暂无作业安排</div>';
                 }
+            },
 
-                this.showTasks(dateSelector.value.split(' ')[0]); // 提取日期部分
+            // 选择日期
+            selectDate(date, formattedDate) {
+                const datePickerInput = document.getElementById('datePickerInput');
+                const dateHint = this.calculateDateDifference(date, this.getCurrentDate());
+                
+                datePickerInput.value = `${formattedDate} (${dateHint})`;
+                this.showTasks(date);
+            },
+
+            // 显示日期选择器
+            showDatePicker() {
+                const dropdown = document.getElementById('datePickerDropdown');
+                dropdown.classList.add('date-picker-open');
+            },
+
+            // 隐藏日期选择器
+            hideDatePicker() {
+                const dropdown = document.getElementById('datePickerDropdown');
+                dropdown.classList.remove('date-picker-open');
             },
 
             // 统计任务完成情况
@@ -1379,7 +1707,8 @@
                         taskItem.classList.toggle('completed', e.target.checked);
 
                         // 更新统计信息
-                        this.updateStats(document.getElementById('dateSelector').value.split(' ')[0]);
+                        const date = document.getElementById('datePickerInput').value.split(' ')[0];
+                        this.updateStats(date);
                     });
                 });
 
@@ -1399,6 +1728,121 @@
             // 设置当前专注任务
             setCurrentFocusTask(taskText) {
                 document.getElementById('focusCurrentTask').textContent = taskText;
+            },
+
+            // 更新番茄钟进度环
+            updateTomatoProgress() {
+                const progressFill = document.getElementById('tomatoProgressFill');
+                const progressBar = document.getElementById('tomatoProgressBar');
+                const progressPercent = ((this.tomatoTotalTime - this.tomatoTimeLeft) / this.tomatoTotalTime) * 100;
+                
+                // 计算旋转角度
+                const rotation = (progressPercent / 100) * 360;
+                
+                // 更新进度环
+                if (progressPercent <= 50) {
+                    progressFill.style.transform = `rotate(${rotation}deg)`;
+                    progressBar.className = 'tomato-progress-bar';
+                } else {
+                    // 当进度超过50%，需要特殊处理
+                    const adjustedRotation = rotation - 180;
+                    progressFill.style.transform = `rotate(180deg)`;
+                    progressBar.className = 'tomato-progress-bar full';
+                    
+                    // 使用第二个半圆来表示后50%
+                    const secondHalf = document.createElement('div');
+                    secondHalf.className = 'tomato-progress-fill';
+                    secondHalf.style.transform = `rotate(${adjustedRotation}deg)`;
+                    secondHalf.style.background = 'var(--primary-color)';
+                    
+                    // 替换原有的填充元素
+                    const container = document.getElementById('tomatoProgressBar');
+                    container.innerHTML = '';
+                    container.appendChild(secondHalf);
+                    container.className = 'tomato-progress-bar full';
+                }
+            },
+
+            // 更新番茄钟时间显示
+            updateTomatoDisplay() {
+                const minutes = Math.floor(this.tomatoTimeLeft / 60);
+                const seconds = this.tomatoTimeLeft % 60;
+                
+                document.getElementById('tomatoTimer').textContent = 
+                    `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                
+                document.getElementById('timerStatus').textContent = 
+                    this.isWorking ? '专注时间' : '休息时间';
+                
+                document.getElementById('sessionCounter').textContent = this.tomatoSessions;
+                
+                this.updateTomatoProgress();
+            },
+
+            // 开始番茄钟
+            startTomato() {
+                if (this.isTomatoRunning) return;
+                
+                this.isTomatoRunning = true;
+                document.getElementById('startTomatoBtn').classList.add('active');
+                
+                this.tomatoTimer = setInterval(() => {
+                    this.tomatoTimeLeft--;
+                    
+                    if (this.tomatoTimeLeft <= 0) {
+                        this.completeTomatoSession();
+                    } else {
+                        this.updateTomatoDisplay();
+                    }
+                }, 1000);
+            },
+
+            // 暂停番茄钟
+            pauseTomato() {
+                if (!this.isTomatoRunning) return;
+                
+                this.isTomatoRunning = false;
+                clearInterval(this.tomatoTimer);
+                document.getElementById('startTomatoBtn').classList.remove('active');
+            },
+
+            // 重置番茄钟
+            resetTomato() {
+                this.pauseTomato();
+                
+                if (this.isWorking) {
+                    this.tomatoTimeLeft = this.tomatoTotalTime;
+                } else {
+                    this.tomatoTimeLeft = this.tomatoBreakTime;
+                }
+                
+                this.updateTomatoDisplay();
+                document.getElementById('startTomatoBtn').classList.remove('active');
+            },
+
+            // 跳过当前时段
+            skipTomato() {
+                this.completeTomatoSession();
+            },
+
+            // 完成番茄钟会话
+            completeTomatoSession() {
+                this.pauseTomato();
+                
+                if (this.isWorking) {
+                    // 结束工作时间，进入休息
+                    this.isWorking = false;
+                    this.tomatoTimeLeft = this.tomatoBreakTime;
+                    this.tomatoSessions++; // 增加完成的番茄钟数量
+                    alert('专注时间结束！现在开始休息吧！');
+                } else {
+                    // 结束休息时间，回到工作
+                    this.isWorking = true;
+                    this.tomatoTimeLeft = this.tomatoTotalTime;
+                    alert('休息时间结束！继续专注学习吧！');
+                }
+                
+                this.updateTomatoDisplay();
             },
 
             // 进入专注模式
@@ -1432,6 +1876,9 @@
                     clearInterval(this.focusTimerInterval);
                     this.focusTimerInterval = null;
                 }
+                
+                // 停止番茄钟
+                this.pauseTomato();
             },
 
             // 设置事件监听器
@@ -1442,11 +1889,32 @@
                 });
 
                 // 日期选择器事件
-                document.getElementById('dateSelector').addEventListener('change', (e) => {
-                    // 提取实际日期值（去提示文本）
-                    const selectedOption = e.target.options[e.target.selectedIndex];
-                    const actualDate = selectedOption.getAttribute('data-date-value');
-                    this.showTasks(actualDate);
+                const datePickerInput = document.getElementById('datePickerInput');
+                const datePickerDropdown = document.getElementById('datePickerDropdown');
+                
+                datePickerInput.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.showDatePicker();
+                });
+                
+                // 点击其他地方隐藏日期选择器
+                document.addEventListener('click', (e) => {
+                    if (!datePickerDropdown.contains(e.target) && !datePickerInput.contains(e.target)) {
+                        this.hideDatePicker();
+                    }
+                });
+
+                // 月份导航按钮事件
+                document.getElementById('prevMonth').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.currentMonthView.setMonth(this.currentMonthView.getMonth() - 1);
+                    this.generateDatePicker();
+                });
+                
+                document.getElementById('nextMonth').addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    this.currentMonthView.setMonth(this.currentMonthView.getMonth() + 1);
+                    this.generateDatePicker();
                 });
 
                 // 开始专注模式按钮事件
@@ -1462,6 +1930,23 @@
                 // 模式切换按钮事件
                 document.getElementById('modeToggle').addEventListener('click', () => {
                     this.toggleMode();
+                });
+
+                // 番茄钟控制按钮事件
+                document.getElementById('startTomatoBtn').addEventListener('click', () => {
+                    this.startTomato();
+                });
+
+                document.getElementById('pauseTomatoBtn').addEventListener('click', () => {
+                    this.pauseTomato();
+                });
+
+                document.getElementById('resetTomatoBtn').addEventListener('click', () => {
+                    this.resetTomato();
+                });
+
+                document.getElementById('skipTomatoBtn').addEventListener('click', () => {
+                    this.skipTomato();
                 });
             },
 
