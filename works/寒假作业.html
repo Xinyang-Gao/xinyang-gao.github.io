@@ -8,22 +8,69 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         :root {
-            --primary-color: #3498db;
-            --primary-hover: #2980b9;
-            --success-color: #27ae60;
-            --warning-color: #f39c12;
-            --danger-color: #e74c3c;
-            --light-bg: #f0f4f8;
-            --light-card: #ffffff;
-            --light-text: #333333;
-            --light-border: #e1e8ed;
-            --dark-bg: #1a1a1a;
-            --dark-card: #2c2c2c;
-            --dark-text: #e0e0e0;
-            --dark-border: #444444;
-            --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-            --dark-card-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-            --transition-speed: 0.3s;
+            /* Material Design 3 Color System */
+            --md-sys-color-primary: #0099ff;
+            --md-sys-color-on-primary: #FFFFFF;
+            --md-sys-color-primary-container: #EADDFF;
+            --md-sys-color-on-primary-container: #21005D;
+            --md-sys-color-secondary: #625B71;
+            --md-sys-color-on-secondary: #FFFFFF;
+            --md-sys-color-secondary-container: #E8DEF8;
+            --md-sys-color-on-secondary-container: #1D192B;
+            --md-sys-color-tertiary: #7D5260;
+            --md-sys-color-on-tertiary: #FFFFFF;
+            --md-sys-color-tertiary-container: #FFD8E4;
+            --md-sys-color-on-tertiary-container: #31111D;
+            --md-sys-color-error: #B3261E;
+            --md-sys-color-on-error: #FFFFFF;
+            --md-sys-color-error-container: #F9DEDC;
+            --md-sys-color-on-error-container: #410E0B;
+            --md-sys-color-background: #FFFBFE;
+            --md-sys-color-on-background: #1C1B1F;
+            --md-sys-color-surface: #FFFBFE;
+            --md-sys-color-on-surface: #1C1B1F;
+            --md-sys-color-surface-variant: #e0e9ec;
+            --md-sys-color-on-surface-variant: #49454F;
+            --md-sys-color-outline: #79747E;
+            --md-sys-color-inverse-on-surface: #F5F0F6;
+            --md-sys-color-inverse-surface: #313033;
+            --md-sys-color-inverse-primary: #bcd9ff;
+
+            /* Custom colors for our app */
+            --success-color: #4CAF50;
+            --warning-color: #FF9800;
+            --danger-color: #F44336;
+
+            /* Typography */
+            --md-sys-typescale-display-large-font-size: 2.5rem;
+            --md-sys-typescale-display-medium-font-size: 2rem;
+            --md-sys-typescale-display-small-font-size: 1.5rem;
+            --md-sys-typescale-headline-large-font-size: 1.5rem;
+            --md-sys-typescale-headline-medium-font-size: 1.25rem;
+            --md-sys-typescale-headline-small-font-size: 1rem;
+            --md-sys-typescale-body-large-font-size: 1rem;
+            --md-sys-typescale-body-medium-font-size: 0.875rem;
+            --md-sys-typescale-body-small-font-size: 0.75rem;
+
+            /* Shape */
+            --md-sys-shape-corner-extra-small: 4px;
+            --md-sys-shape-corner-small: 8px;
+            --md-sys-shape-corner-medium: 12px;
+            --md-sys-shape-corner-large: 16px;
+            --md-sys-shape-corner-extra-large: 28px;
+
+            /* Elevation */
+            --md-sys-elevation-1: 0 1px 3px 1px rgba(0, 0, 0, 0.15), 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+            --md-sys-elevation-2: 0 2px 6px 2px rgba(0, 0, 0, 0.15), 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+            --md-sys-elevation-3: 0 4px 8px 3px rgba(0, 0, 0, 0.15), 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+
+            /* Transition */
+            --md-sys-motion-duration-short1: 50ms;
+            --md-sys-motion-duration-short2: 100ms;
+            --md-sys-motion-duration-medium1: 200ms;
+            --md-sys-motion-duration-medium2: 300ms;
+            --md-sys-motion-duration-long1: 400ms;
+            --md-sys-motion-duration-long2: 500ms;
         }
 
         * {
@@ -33,23 +80,14 @@
         }
 
         body {
-            font-family: 'Segoe UI', 'Microsoft YaHei', sans-serif;
-            color: var(--light-text);
+            font-family: 'Roboto', 'Segoe UI', 'Microsoft YaHei', sans-serif;
+            color: var(--md-sys-color-on-background);
             line-height: 1.6;
             padding: 20px;
             min-height: 100vh;
-            background: var(--light-bg);
-            transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
-        }
-
-        body.light-mode {
-            background: var(--light-bg);
-            color: var(--light-text);
-        }
-
-        body.dark-mode {
-            background: var(--dark-bg);
-            color: var(--dark-text);
+            background: var(--md-sys-color-background);
+            transition: background-color var(--md-sys-motion-duration-medium2) ease,
+                color var(--md-sys-motion-duration-medium2) ease;
         }
 
         .container {
@@ -67,24 +105,16 @@
         }
 
         .header h1 {
-            font-size: 28px;
-            color: #2c3e50;
+            font-size: var(--md-sys-typescale-headline-medium-font-size);
+            color: var(--md-sys-color-primary);
             margin-bottom: 5px;
-            font-weight: 700;
-        }
-
-        body.dark-mode .header h1 {
-            color: #ecf0f1;
+            font-weight: 600;
         }
 
         .header .time {
-            font-size: 16px;
-            color: var(--primary-color);
-            font-weight: 500;
-        }
-
-        body.dark-mode .header .time {
-            color: var(--primary-color);
+            font-size: var(--md-sys-typescale-body-medium-font-size);
+            color: var(--md-sys-color-secondary);
+            font-weight: 400;
         }
 
         .tasks {
@@ -94,37 +124,29 @@
         }
 
         .tasks h2 {
-            font-size: 24px;
-            color: #2c3e50;
+            font-size: var(--md-sys-typescale-headline-medium-font-size);
+            color: var(--md-sys-color-primary);
             margin-bottom: 10px;
             font-weight: 600;
         }
 
-        body.dark-mode .tasks h2 {
-            color: #ecf0f1;
-        }
-
         .tasks p {
-            font-size: 16px;
+            font-size: var(--md-sys-typescale-body-medium-font-size);
             margin-bottom: 8px;
-            color: #555;
-        }
-
-        body.dark-mode .tasks p {
-            color: #bdc3c7;
+            color: var(--md-sys-color-on-surface-variant);
         }
 
         .deadline {
             background: var(--danger-color);
             color: white;
             padding: 12px 20px;
-            border-radius: 8px;
+            border-radius: var(--md-sys-shape-corner-small);
             font-weight: 600;
             display: inline-block;
             margin-top: 1px;
             width: 100%;
             margin-bottom: 5px;
-            transition: all var(--transition-speed) ease;
+            transition: all var(--md-sys-motion-duration-medium2) ease;
         }
 
         .deadline.warning {
@@ -135,30 +157,13 @@
             background: var(--success-color);
         }
 
-        body.dark-mode .deadline {
-            background: #c0392b;
-        }
-
-        body.dark-mode .deadline.warning {
-            background: #d35400;
-        }
-
-        body.dark-mode .deadline.normal {
-            background: #2ecc71;
-        }
-
         .main-content {
             max-width: 1200px;
             margin: 30px auto;
-            background: var(--light-card);
-            border-radius: 8px;
-            box-shadow: var(--card-shadow);
+            background: var(--md-sys-color-surface);
+            border-radius: var(--md-sys-shape-corner-medium);
+            box-shadow: var(--md-sys-elevation-2);
             padding: 25px;
-        }
-
-        body.dark-mode .main-content {
-            background: var(--dark-card);
-            box-shadow: var(--dark-card-shadow);
         }
 
         .date-selector-container {
@@ -170,13 +175,9 @@
         }
 
         .date-selector-container label {
-            font-weight: bold;
-            color: #2c3e50;
-            font-size: 16px;
-        }
-
-        body.dark-mode .date-selector-container label {
-            color: #ecf0f1;
+            font-weight: 500;
+            color: var(--md-sys-color-on-surface-variant);
+            font-size: var(--md-sys-typescale-body-medium-font-size);
         }
 
         .date-picker-container {
@@ -186,27 +187,21 @@
         }
 
         .date-picker-input {
-            padding: 10px 15px;
-            border: 1px solid var(--light-border);
-            border-radius: 6px;
-            font-size: 16px;
-            background: var(--light-card);
+            padding: 12px 16px;
+            border: 1px solid var(--md-sys-color-outline);
+            border-radius: var(--md-sys-shape-corner-small);
+            font-size: var(--md-sys-typescale-body-medium-font-size);
+            background: var(--md-sys-color-surface);
             cursor: pointer;
             min-width: 200px;
             width: 100%;
-            transition: all var(--transition-speed) ease;
+            transition: all var(--md-sys-motion-duration-medium2) ease;
         }
 
         .date-picker-input:focus {
             outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
-        }
-
-        body.dark-mode .date-picker-input {
-            background: #3c3c3c;
-            border: 1px solid var(--dark-border);
-            color: var(--dark-text);
+            border-color: var(--md-sys-color-primary);
+            box-shadow: 0 0 0 2px rgba(103, 80, 164, 0.2);
         }
 
         .date-picker-dropdown {
@@ -216,29 +211,20 @@
             width: 100%;
             max-height: 300px;
             overflow-y: auto;
-            background: var(--light-card);
-            border: 1px solid var(--light-border);
-            border-radius: 6px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            background: var(--md-sys-color-surface);
+            border: 1px solid var(--md-sys-color-outline);
+            border-radius: var(--md-sys-shape-corner-small);
+            box-shadow: var(--md-sys-elevation-3);
             z-index: 1000;
             display: none;
             margin-top: 5px;
         }
 
-        body.dark-mode .date-picker-dropdown {
-            background: #3c3c3c;
-            border: 1px solid var(--dark-border);
-        }
-
         .date-picker-option {
-            padding: 12px 15px;
+            padding: 12px 16px;
             cursor: pointer;
-            border-bottom: 1px solid var(--light-border);
-            transition: background-color var(--transition-speed) ease;
-        }
-
-        body.dark-mode .date-picker-option {
-            border-bottom: 1px solid var(--dark-border);
+            border-bottom: 1px solid var(--md-sys-color-surface-variant);
+            transition: background-color var(--md-sys-motion-duration-short2) ease;
         }
 
         .date-picker-option:last-child {
@@ -246,13 +232,12 @@
         }
 
         .date-picker-option:hover {
-            background-color: var(--primary-color);
-            color: white;
+            background-color: var(--md-sys-color-primary-container);
         }
 
         .date-picker-option.selected {
-            background-color: var(--primary-color);
-            color: white;
+            background-color: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
         }
 
         .date-picker-open {
@@ -263,11 +248,7 @@
             display: flex;
             justify-content: space-between;
             padding: 10px 15px;
-            border-bottom: 1px solid var(--light-border);
-        }
-
-        body.dark-mode .date-navigation {
-            border-bottom: 1px solid var(--dark-border);
+            border-bottom: 1px solid var(--md-sys-color-outline);
         }
 
         .nav-btn {
@@ -275,13 +256,19 @@
             border: none;
             font-size: 18px;
             cursor: pointer;
-            color: var(--primary-color);
+            color: var(--md-sys-color-primary);
             padding: 5px;
+            border-radius: 50%;
+            transition: background-color var(--md-sys-motion-duration-short2) ease;
+        }
+
+        .nav-btn:hover {
+            background-color: var(--md-sys-color-surface-variant);
         }
 
         .current-month-year {
-            font-weight: bold;
-            color: var(--primary-color);
+            font-weight: 500;
+            color: var(--md-sys-color-primary);
         }
 
         .mode-toggle-container {
@@ -292,37 +279,33 @@
         }
 
         .toggle-btn {
-            background: var(--primary-color);
-            color: white;
+            background: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
             border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
+            padding: 12px 24px;
+            border-radius: var(--md-sys-shape-corner-medium);
             cursor: pointer;
-            font-size: 16px;
-            transition: background var(--transition-speed) ease;
+            font-size: var(--md-sys-typescale-body-medium-font-size);
+            font-weight: 500;
+            transition: all var(--md-sys-motion-duration-medium2) ease;
+            box-shadow: var(--md-sys-elevation-1);
         }
 
         .toggle-btn:hover {
-            background: var(--primary-hover);
+            background: var(--md-sys-color-primary);
+            box-shadow: var(--md-sys-elevation-2);
+            transform: translateY(-2px);
         }
 
-        body.dark-mode .toggle-btn {
-            background: var(--primary-hover);
-        }
-
-        body.dark-mode .toggle-btn:hover {
-            background: var(--primary-color);
+        .toggle-btn:active {
+            transform: translateY(0);
         }
 
         .current-date {
-            font-size: 20px;
-            color: var(--primary-color);
+            font-size: var(--md-sys-typescale-headline-small-font-size);
+            color: var(--md-sys-color-primary);
             margin-bottom: 20px;
             font-weight: 600;
-        }
-
-        body.dark-mode .current-date {
-            color: var(--primary-color);
         }
 
         .subjects-container {
@@ -331,14 +314,11 @@
         }
 
         .subject-title {
-            border: 1px solid var(--light-border);
-            border-radius: 8px;
-            padding: 15px;
-            transition: all var(--transition-speed) ease;
-        }
-
-        body.dark-mode .subject-title {
-            border: 1px solid var(--dark-border);
+            border: 1px solid var(--md-sys-color-outline);
+            border-radius: var(--md-sys-shape-corner-medium);
+            padding: 16px;
+            transition: all var(--md-sys-motion-duration-medium2) ease;
+            background: var(--md-sys-color-surface-variant);
         }
 
         .subject-header {
@@ -346,18 +326,14 @@
             align-items: center;
             margin-bottom: 12px;
             padding-bottom: 8px;
-            border-bottom: 1px solid var(--light-border);
-        }
-
-        body.dark-mode .subject-header {
-            border-bottom: 1px solid var(--dark-border);
+            border-bottom: 1px solid var(--md-sys-color-outline);
         }
 
         .subject-icon {
             width: 40px;
             height: 40px;
-            background: var(--primary-color);
-            color: white;
+            background: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -369,13 +345,9 @@
         }
 
         .subject-name {
-            font-size: 18px;
-            font-weight: bold;
-            color: #2c3e50;
-        }
-
-        body.dark-mode .subject-name {
-            color: #ecf0f1;
+            font-size: var(--md-sys-typescale-headline-small-font-size);
+            font-weight: 600;
+            color: var(--md-sys-color-on-surface);
         }
 
         .task-list {
@@ -383,118 +355,82 @@
         }
 
         .task-item {
-            background: var(--light-card);
-            border: 1px solid var(--light-border);
-            border-radius: 6px;
-            padding: 12px;
+            background: var(--md-sys-color-surface);
+            border: 1px solid var(--md-sys-color-outline);
+            border-radius: var(--md-sys-shape-corner-small);
+            padding: 12px 16px;
             margin-bottom: 10px;
             display: flex;
             align-items: flex-start;
-            transition: all 0.2s ease;
+            transition: all var(--md-sys-motion-duration-short2) ease;
             cursor: pointer;
-        }
-
-        body.dark-mode .task-item {
-            background: #3c3c3c;
-            border: 1px solid var(--dark-border);
-            color: var(--dark-text);
+            box-shadow: var(--md-sys-elevation-1);
         }
 
         .task-item:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            border-color: var(--primary-color);
-        }
-
-        body.dark-mode .task-item:hover {
-            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.3);
-            border-color: var(--primary-color);
+            box-shadow: var(--md-sys-elevation-2);
+            border-color: var(--md-sys-color-primary);
         }
 
         .task-item.selected {
-            border: 2px solid var(--primary-color);
-            background-color: #f0f8ff;
-            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
-        }
-
-        body.dark-mode .task-item.selected {
-            background-color: #2c3c4c;
+            border: 2px solid var(--md-sys-color-primary);
+            background-color: var(--md-sys-color-primary-container);
         }
 
         .task-item.completed {
-            background: #e8f5e8;
-            border-color: #a3d9a3;
-        }
-
-        body.dark-mode .task-item.completed {
-            background: #2c3c2c;
-            border-color: #4a7c4a;
+            background: var(--md-sys-color-secondary-container);
+            border-color: var(--md-sys-color-secondary);
         }
 
         .task-item.completed.selected {
-            background: #e0f0ff;
-            border-color: var(--primary-color);
-        }
-
-        body.dark-mode .task-item.completed.selected {
-            background: #2c3c4c;
+            background: var(--md-sys-color-primary-container);
+            border-color: var(--md-sys-color-primary);
         }
 
         .task-checkbox {
             margin-right: 12px;
             transform: scale(1.2);
             cursor: pointer;
-            accent-color: var(--primary-color);
+            accent-color: var(--md-sys-color-primary);
         }
 
         .task-content {
             flex: 1;
-            font-size: 16px;
+            font-size: var(--md-sys-typescale-body-medium-font-size);
             line-height: 1.5;
         }
 
         .task-footer {
-            font-size: 13px;
-            color: #777;
+            font-size: var(--md-sys-typescale-body-small-font-size);
+            color: var(--md-sys-color-on-surface-variant);
             margin-top: 6px;
             font-weight: 500;
-        }
-
-        body.dark-mode .task-footer {
-            color: #aaa;
         }
 
         .progress-bar {
             width: 100%;
             height: 8px;
-            background: var(--light-border);
+            background: var(--md-sys-color-surface-variant);
             border-radius: 4px;
             margin: 15px 0;
             overflow: hidden;
         }
 
-        body.dark-mode .progress-bar {
-            background: var(--dark-border);
-        }
-
         .progress-fill {
             height: 100%;
-            background: var(--primary-color);
+            background: var(--md-sys-color-primary);
             border-radius: 4px;
-            transition: width var(--transition-speed) ease;
+            transition: width var(--md-sys-motion-duration-medium2) ease;
         }
 
         .stats {
             display: flex;
             justify-content: space-around;
             margin: 20px 0;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 6px;
-        }
-
-        body.dark-mode .stats {
-            background: #3c3c3c;
+            padding: 16px;
+            background: var(--md-sys-color-surface-variant);
+            border-radius: var(--md-sys-shape-corner-medium);
         }
 
         .stat-item {
@@ -502,66 +438,42 @@
         }
 
         .stat-number {
-            font-size: 22px;
+            font-size: var(--md-sys-typescale-display-small-font-size);
             font-weight: bold;
-            color: var(--primary-color);
-        }
-
-        body.dark-mode .stat-number {
-            color: var(--primary-color);
+            color: var(--md-sys-color-primary);
         }
 
         .stat-label {
-            font-size: 14px;
-            color: #777;
-        }
-
-        body.dark-mode .stat-label {
-            color: #aaa;
+            font-size: var(--md-sys-typescale-body-small-font-size);
+            color: var(--md-sys-color-on-surface-variant);
         }
 
         .no-tasks {
             text-align: center;
             padding: 40px;
-            color: #777;
-            font-size: 16px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border: 1px dashed #ddd;
-        }
-
-        body.dark-mode .no-tasks {
-            background: #3c3c3c;
-            border: 1px dashed #555;
-            color: #aaa;
+            color: var(--md-sys-color-on-surface-variant);
+            font-size: var(--md-sys-typescale-body-medium-font-size);
+            background: var(--md-sys-color-surface-variant);
+            border-radius: var(--md-sys-shape-corner-medium);
+            border: 1px dashed var(--md-sys-color-outline);
         }
 
         .no-tasks i {
             font-size: 36px;
-            color: #bdc3c7;
+            color: var(--md-sys-color-on-surface-variant);
             margin-bottom: 10px;
         }
 
-        body.dark-mode .no-tasks i {
-            color: #777;
-        }
-
-        /* 番茄钟样式 - 与任务列表样式同步 */
+        /* 番茄钟样式 - Material Design 3风格 */
         .tomato-container {
             display: none;
             padding: 25px;
-            border: 1px solid var(--light-border);
-            border-radius: 8px;
-            background: var(--light-card);
-            box-shadow: var(--card-shadow);
+            border: 1px solid var(--md-sys-color-outline);
+            border-radius: var(--md-sys-shape-corner-large);
+            background: var(--md-sys-color-surface);
+            box-shadow: var(--md-sys-elevation-2);
             margin-top: 20px;
-            transition: all var(--transition-speed) ease;
-        }
-
-        body.dark-mode .tomato-container {
-            background: var(--dark-card);
-            border-color: var(--dark-border);
-            box-shadow: var(--dark-card-shadow);
+            transition: all var(--md-sys-motion-duration-medium2) ease;
         }
 
         .tomato-container.active {
@@ -574,37 +486,28 @@
             align-items: center;
             margin-bottom: 20px;
             padding-bottom: 15px;
-            border-bottom: 1px solid var(--light-border);
-        }
-
-        body.dark-mode .tomato-header {
-            border-bottom-color: var(--dark-border);
+            border-bottom: 1px solid var(--md-sys-color-outline);
         }
 
         .tomato-title {
-            font-size: 24px;
+            font-size: var(--md-sys-typescale-headline-medium-font-size);
             font-weight: 600;
-            color: var(--primary-color);
+            color: var(--md-sys-color-primary);
         }
 
         .tomato-current-task {
-            font-size: 18px;
+            font-size: var(--md-sys-typescale-body-large-font-size);
             margin: 25px 0;
             padding: 20px;
-            background: var(--light-bg);
-            border-radius: 8px;
-            border: 1px solid var(--light-border);
+            background: var(--md-sys-color-surface-variant);
+            border-radius: var(--md-sys-shape-corner-medium);
+            border: 1px solid var(--md-sys-color-outline);
             min-height: 80px;
             display: flex;
             align-items: center;
             justify-content: center;
             word-break: break-word;
             text-align: center;
-        }
-
-        body.dark-mode .tomato-current-task {
-            background: var(--dark-bg);
-            border-color: var(--dark-border);
         }
 
         .tomato-progress {
@@ -618,19 +521,13 @@
             width: 100%;
             height: 100%;
             border-radius: 50%;
-            background: var(--light-bg);
+            background: var(--md-sys-color-surface-variant);
             position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: var(--card-shadow);
-            border: 1px solid var(--light-border);
-        }
-
-        body.dark-mode .tomato-progress-circle {
-            background: var(--dark-bg);
-            border-color: var(--dark-border);
-            box-shadow: var(--dark-card-shadow);
+            box-shadow: var(--md-sys-elevation-1);
+            border: 1px solid var(--md-sys-color-outline);
         }
 
         .tomato-progress-bar {
@@ -655,7 +552,7 @@
             height: 100%;
             border-radius: 50%;
             clip: rect(0, 100px, 200px, 0);
-            background: var(--primary-color);
+            background: var(--md-sys-color-primary);
             transform: rotate(0deg);
             transition: transform 0.1s linear;
         }
@@ -664,53 +561,38 @@
             position: absolute;
             width: 160px;
             height: 160px;
-            background: var(--light-card);
+            background: var(--md-sys-color-surface);
             border-radius: 50%;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            color: var(--light-text);
+            color: var(--md-sys-color-on-surface);
             font-size: 1.2rem;
             z-index: 2;
             box-shadow: inset 0 4px 20px rgba(0, 0, 0, 0.1);
-            border: 1px solid var(--light-border);
-        }
-
-        body.dark-mode .tomato-progress-inner {
-            background: var(--dark-card);
-            color: var(--dark-text);
-            border-color: var(--dark-border);
-            box-shadow: inset 0 4px 20px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--md-sys-color-outline);
         }
 
         #tomatoTimer {
             font-size: 2.5rem;
             font-weight: 300;
             font-family: 'Courier New', monospace;
-            color: var(--primary-color);
+            color: var(--md-sys-color-primary);
             margin-bottom: 8px;
         }
 
         .timer-status {
             font-size: 1rem;
-            color: var(--primary-color);
+            color: var(--md-sys-color-primary);
             font-weight: 400;
         }
 
-        body.dark-mode .timer-status {
-            color: var(--primary-color);
-        }
-
         .tomato-session-counter {
-            font-size: 1.2rem;
-            color: var(--light-text);
+            font-size: var(--md-sys-typescale-body-large-font-size);
+            color: var(--md-sys-color-on-surface);
             margin: 20px 0;
             text-align: center;
-        }
-
-        body.dark-mode .tomato-session-counter {
-            color: var(--dark-text);
         }
 
         .tomato-controls {
@@ -722,40 +604,39 @@
         }
 
         .tomato-btn {
-            background: var(--primary-color);
-            color: white;
+            background: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
             border: none;
             padding: 12px 24px;
-            border-radius: 6px;
+            border-radius: var(--md-sys-shape-corner-medium);
             cursor: pointer;
-            font-size: 16px;
-            transition: all var(--transition-speed) ease;
+            font-size: var(--md-sys-typescale-body-medium-font-size);
+            font-weight: 500;
+            transition: all var(--md-sys-motion-duration-medium2) ease;
             min-width: 100px;
+            box-shadow: var(--md-sys-elevation-1);
         }
 
         .tomato-btn:hover {
-            background: var(--primary-hover);
+            background: var(--md-sys-color-primary);
+            box-shadow: var(--md-sys-elevation-2);
             transform: scale(1.05);
         }
 
+        .tomato-btn:active {
+            transform: scale(1);
+        }
+
         .tomato-btn.active {
-            background: var(--success-color);
+            background: var(--md-sys-color-secondary);
         }
 
         .tomato-btn.reset {
-            background: var(--danger-color);
+            background: var(--md-sys-color-error);
         }
 
         .tomato-btn.reset:hover {
-            background: #c0392b;
-        }
-
-        body.dark-mode .tomato-btn.reset {
-            background: #c0392b;
-        }
-
-        body.dark-mode .tomato-btn.reset:hover {
-            background: #e74c3c;
+            background: var(--md-sys-color-error);
         }
 
         @media (max-width: 768px) {
@@ -777,99 +658,98 @@
                 padding: 10px 20px;
                 min-width: 80px;
             }
+
+            .container {
+                flex-direction: column;
+                gap: 15px;
+            }
         }
 
         .floating-action {
             position: fixed;
             bottom: 20px;
             right: 20px;
-            width: 50px;
-            height: 50px;
-            background: var(--primary-color);
+            width: 56px;
+            height: 56px;
+            background: var(--md-sys-color-primary);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
+            color: var(--md-sys-color-on-primary);
             font-size: 20px;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+            box-shadow: var(--md-sys-elevation-2);
             z-index: 999;
-            transition: all var(--transition-speed) ease;
+            transition: all var(--md-sys-motion-duration-medium2) ease;
+            border: none;
         }
 
         .floating-action:hover {
-            background: var(--primary-hover);
+            background: var(--md-sys-color-primary);
             transform: scale(1.1);
         }
 
-        /* 视觉反馈提示 */
         .selection-feedback {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(52, 152, 219, 0.9);
-            color: white;
+            background: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
             padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: bold;
+            border-radius: var(--md-sys-shape-corner-medium);
+            font-weight: 500;
             z-index: 2000;
             opacity: 0;
             pointer-events: none;
-            transition: opacity var(--transition-speed) ease;
+            transition: opacity var(--md-sys-motion-duration-medium2) ease;
         }
 
         .selection-feedback.show {
             opacity: 1;
         }
 
-        /* 模式切换按钮 */
         .mode-toggle {
             position: fixed;
             top: 20px;
             left: 20px;
-            width: 50px;
-            height: 50px;
-            background: var(--primary-color);
+            width: 56px;
+            height: 56px;
+            background: var(--md-sys-color-primary);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
+            color: var(--md-sys-color-on-primary);
             font-size: 20px;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
+            box-shadow: var(--md-sys-elevation-2);
             z-index: 999;
-            transition: all var(--transition-speed) ease;
+            transition: all var(--md-sys-motion-duration-medium2) ease;
+            border: none;
         }
 
         .mode-toggle:hover {
-            background: var(--primary-hover);
+            background: var(--md-sys-color-primary);
             transform: scale(1.1);
         }
 
-        /* 加载状态指示器 */
         .loading {
             text-align: center;
             padding: 40px;
-            color: #777;
-            font-size: 16px;
+            color: var(--md-sys-color-on-surface-variant);
+            font-size: var(--md-sys-typescale-body-medium-font-size);
         }
 
         .loading-spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid var(--primary-color);
+            border: 4px solid var(--md-sys-color-surface-variant);
+            border-top: 4px solid var(--md-sys-color-primary);
             border-radius: 50%;
             width: 40px;
             height: 40px;
             animation: spin 2s linear infinite;
             margin: 0 auto 20px;
-        }
-
-        body.dark-mode .loading-spinner {
-            border-color: #444;
-            border-top-color: var(--primary-color);
         }
 
         @keyframes spin {
@@ -882,42 +762,27 @@
             }
         }
 
-        /* 平滑滚动 */
         html {
             scroll-behavior: smooth;
         }
 
-        /* 自定义滚动条 */
         ::-webkit-scrollbar {
             width: 8px;
         }
 
         ::-webkit-scrollbar-track {
-            background: #f1f1f1;
+            background: var(--md-sys-color-surface-variant);
         }
 
         ::-webkit-scrollbar-thumb {
-            background: var(--primary-color);
+            background: var(--md-sys-color-primary);
             border-radius: 4px;
         }
 
         ::-webkit-scrollbar-thumb:hover {
-            background: var(--primary-hover);
+            background: var(--md-sys-color-primary);
         }
 
-        body.dark-mode ::-webkit-scrollbar-track {
-            background: #333;
-        }
-
-        body.dark-mode ::-webkit-scrollbar-thumb {
-            background: var(--primary-color);
-        }
-
-        body.dark-mode ::-webkit-scrollbar-thumb:hover {
-            background: var(--primary-hover);
-        }
-
-        /* 任务容器切换 */
         .tasks-container {
             display: block;
         }
@@ -928,13 +793,11 @@
     </style>
 </head>
 
-<body class="light-mode">
-    <!-- 模式切换按钮 -->
+<body>
     <div class="mode-toggle" id="modeToggle">
         <i class="fas fa-moon"></i>
     </div>
 
-    <!-- 正常模式 -->
     <div class="container">
         <div class="header">
             <h1>作业管理系统 [寒假] </h1>
@@ -945,7 +808,7 @@
             <p><i class="fas fa-check-circle"></i> 黑发不知勤学早，白头方悔读书迟。</p>
             <div class="deadline" id="daily-deadline">每日打卡截止时间：--小时--分钟--秒</div>
             <div class="deadline normal" id="winter-end-countdown">据寒假结束还剩下 --天--小时--分钟--秒</div>
-            <div class="deadline" id="tip">注意！目前作业内容仅包括语数英化</div>
+            <div class="deadline" id="tip">注意！目前作业内容仅包括语、数、英、化</div>
         </div>
     </div>
 
@@ -971,7 +834,6 @@
 
         <div class="current-date" id="currentDateDisplay"></div>
 
-        <!-- 任务容器 -->
         <div class="tasks-container" id="tasksContainer">
             <div class="stats" id="stats">
                 <div class="stat-item">
@@ -995,12 +857,11 @@
             <div id="tasks">
                 <div class="loading">
                     <div class="loading-spinner"></div>
-                    <p>正在加载作业数据...</p>
+                    <p>正在翻找作业数据...</p>
                 </div>
             </div>
         </div>
 
-        <!-- 番茄钟容器 -->
         <div class="tomato-container" id="tomatoContainer">
             <div class="tomato-header">
                 <div class="tomato-title">番茄工作法计时器</div>
@@ -1010,7 +871,6 @@
                 请选择一项任务开始专注学习
             </div>
 
-            <!-- 番茄钟进度环 -->
             <div class="tomato-progress">
                 <div class="tomato-progress-circle">
                     <div class="tomato-progress-bar" id="tomatoProgressBar">
@@ -1040,19 +900,17 @@
         <i class="fas fa-arrow-up"></i>
     </div>
 
-    <!-- 视觉反馈提示 -->
     <div class="selection-feedback" id="selectionFeedback">已选择专注任务</div>
 
     <script>
-        // 应用状态管理
         const AppState = {
             homeworkData: [],
             currentSelectedTask: null,
             isDarkMode: false,
             tomatoTimer: null,
-            tomatoTimeLeft: 25 * 60, // 25分钟
-            tomatoTotalTime: 25 * 60, // 25分钟
-            tomatoBreakTime: 5 * 60, // 5分钟休息
+            tomatoTimeLeft: 25 * 60,
+            tomatoTotalTime: 25 * 60,
+            tomatoBreakTime: 5 * 60,
             isWorking: true,
             tomatoSessions: 0,
             isTomatoRunning: false,
@@ -1060,7 +918,6 @@
             currentDate: new Date(),
             currentMonthView: new Date(),
 
-            // 初始化应用
             init() {
                 this.loadHomeworkData()
                     .then(() => {
@@ -1076,14 +933,11 @@
                     });
             },
 
-            // 从JSON文件加载作业数据
             async loadHomeworkData() {
                 try {
-                    // 使用fetch API获取本地数据
                     const response = await fetch('data.json');
 
                     if (response.status === 404) {
-                        // 如果本地文件不存在，使用模拟数据
                         this.homeworkData = this.getMockData();
                     } else {
                         const jsonData = await response.json();
@@ -1091,48 +945,24 @@
                     }
                 } catch (error) {
                     console.error('加载作业数据失败:', error);
-                    // 使用模拟数据
                     this.homeworkData = this.getMockData();
                 }
 
                 return Promise.resolve();
             },
 
-            // 获取模拟数据
             getMockData() {
                 return [
                     {
-                        date: "2025/01/20",
-                        chinese: "完成《背影》阅读理解<br>写一篇作文：我的假期生活",
-                        math: "完成练习册第1-10题<br>复习函数章节",
-                        english: "背诵Unit 5单词<br>完成课后习题",
-                        chemistry: "完成实验报告<br>复习元素周期表"
-                    },
-                    {
-                        date: "2025/01/21",
-                        chinese: "完成《春》课后练习<br>默写古诗词",
-                        math: "完成练习册第11-20题<br>预习三角函数",
-                        english: "听力练习Unit 5<br>完成语法练习",
-                        chemistry: "完成化学方程式练习<br>复习酸碱盐性质"
-                    },
-                    {
-                        date: "2025/01/22",
-                        chinese: "阅读《骆驼祥子》<br>写读后感",
-                        math: "完成几何证明题<br>做一套综合测试",
-                        english: "完成阅读理解练习<br>写一篇英语日记",
-                        chemistry: "完成有机化合物练习<br>实验操作复习"
-                    },
-                    {
-                        date: "2025/01/23",
-                        chinese: "完成文言文翻译<br>背诵《出师表》",
-                        math: "完成概率统计练习<br>复习全册重点",
-                        english: "完成完形填空<br>准备口语展示",
-                        chemistry: "完成化学平衡练习<br>复习化学反应速率"
+                        date: "0000/00/00",
+                        chinese: "语文",
+                        math: "数学",
+                        english: "英语",
+                        chemistry: "化学"
                     }
                 ];
             },
 
-            // 处理数据加载错误
             handleDataLoadError(error) {
                 document.getElementById('tasks').innerHTML = `
                     <div class="no-tasks">
@@ -1144,7 +974,6 @@
                 this.generateDatePicker();
             },
 
-            // 获取当前日期
             getCurrentDate() {
                 const now = new Date();
                 const year = now.getFullYear();
@@ -1153,7 +982,6 @@
                 return `${year}/${month}/${day}`;
             },
 
-            // 更新时间显示
             updateTimeDisplay() {
                 const now = new Date();
                 const year = now.getFullYear();
@@ -1167,7 +995,6 @@
                 const timeString = `今天是${year}年${month}月${day}日 ${weekday} ${hours}:${minutes}:${seconds}`;
                 document.getElementById('current-time').textContent = timeString;
 
-                // 更新日期显示
                 const currentDate = this.getCurrentDate();
                 document.getElementById('currentDateDisplay').textContent = this.formatDate(currentDate);
 
@@ -1175,25 +1002,21 @@
                 this.updateWinterEndCountdown();
             },
 
-            // 更新每日打卡截止时间
             updateDailyDeadline() {
                 const now = new Date();
                 const currentHours = now.getHours();
                 const currentMinutes = now.getMinutes();
                 const currentSeconds = now.getSeconds();
 
-                // 计算到晚上10:30的剩余时间
-                let targetHour = 22; // 晚上10点
-                let targetMinute = 30; // 30分
+                let targetHour = 22;
+                let targetMinute = 30;
 
-                // 如果当前时间已经超过今天的目标时间，则显示"已截止"
                 if (currentHours > targetHour || (currentHours === targetHour && currentMinutes > targetMinute)) {
                     document.getElementById('daily-deadline').textContent = '今日打卡已截止';
                     document.getElementById('daily-deadline').className = 'deadline warning';
                     return;
                 }
 
-                // 计算剩余时间
                 let remainingHours = targetHour - currentHours;
                 let remainingMinutes = targetMinute - currentMinutes;
                 let remainingSeconds = 60 - currentSeconds;
@@ -1213,11 +1036,9 @@
                     remainingMinutes += 60;
                 }
 
-                // 更新显示
                 const deadlineText = `距今日打卡截至还剩下 ${remainingHours}小时${remainingMinutes}分钟${remainingSeconds}秒`;
                 document.getElementById('daily-deadline').textContent = deadlineText;
 
-                // 根据剩余时间调整颜色
                 const deadlineElement = document.getElementById('daily-deadline');
                 deadlineElement.className = 'deadline';
                 if (remainingHours <= 1) {
@@ -1229,9 +1050,8 @@
                 }
             },
 
-            // 更新寒假结束倒计时
             updateWinterEndCountdown() {
-                const winterEndDate = new Date('2026/3/4 23:59:59'); // 寒假结束日期
+                const winterEndDate = new Date('2026/3/4 23:59:59');
                 const now = new Date();
 
                 const diff = winterEndDate - now;
@@ -1250,7 +1070,6 @@
                 const countdownText = `据寒假结束还剩下 ${days}天${hours}小时${minutes}分钟${seconds}秒`;
                 document.getElementById('winter-end-countdown').textContent = countdownText;
 
-                // 根据剩余天数调整颜色
                 const countdownElement = document.getElementById('winter-end-countdown');
                 countdownElement.className = 'deadline normal';
                 if (days <= 1) {
@@ -1262,7 +1081,6 @@
                 }
             },
 
-            // 格式化日期显示
             formatDate(dateStr) {
                 const [year, month, day] = dateStr.split('/');
                 const date = new Date(year, month - 1, day);
@@ -1270,12 +1088,10 @@
                 return date.toLocaleDateString('zh-CN', options);
             },
 
-            // 计算日期差
             calculateDateDifference(targetDateStr, referenceDateStr) {
                 const targetDate = new Date(targetDateStr);
                 const referenceDate = new Date(referenceDateStr);
 
-                // 将时间设为当天的开始（00:00:00）以便计算天数差异
                 targetDate.setHours(0, 0, 0, 0);
                 referenceDate.setHours(0, 0, 0, 0);
 
@@ -1299,66 +1115,85 @@
                 }
             },
 
-            // 切换日间/夜间模式
             toggleMode() {
                 this.isDarkMode = !this.isDarkMode;
-                const body = document.body;
                 const modeToggle = document.getElementById('modeToggle');
 
                 if (this.isDarkMode) {
-                    body.classList.remove('light-mode');
-                    body.classList.add('dark-mode');
+                    document.documentElement.style.setProperty('--md-sys-color-primary', '#bcd9ff');
+                    document.documentElement.style.setProperty('--md-sys-color-on-primary', '#1C003D');
+                    document.documentElement.style.setProperty('--md-sys-color-primary-container', '#4F378B');
+                    document.documentElement.style.setProperty('--md-sys-color-on-primary-container', '#EADDFF');
+                    document.documentElement.style.setProperty('--md-sys-color-background', '#1C1B1F');
+                    document.documentElement.style.setProperty('--md-sys-color-on-background', '#E6E1E5');
+                    document.documentElement.style.setProperty('--md-sys-color-surface', '#1C1B1F');
+                    document.documentElement.style.setProperty('--md-sys-color-on-surface', '#E6E1E5');
+                    document.documentElement.style.setProperty('--md-sys-color-surface-variant', '#49454E');
+                    document.documentElement.style.setProperty('--md-sys-color-on-surface-variant', '#CAC4D0');
+                    document.documentElement.style.setProperty('--md-sys-color-outline', '#938F99');
+
                     modeToggle.innerHTML = '<i class="fas fa-sun"></i>';
                 } else {
-                    body.classList.remove('dark-mode');
-                    body.classList.add('light-mode');
+                    document.documentElement.style.setProperty('--md-sys-color-primary', '#0099ff');
+                    document.documentElement.style.setProperty('--md-sys-color-on-primary', '#FFFFFF');
+                    document.documentElement.style.setProperty('--md-sys-color-primary-container', '#EADDFF');
+                    document.documentElement.style.setProperty('--md-sys-color-on-primary-container', '#21005D');
+                    document.documentElement.style.setProperty('--md-sys-color-background', '#FFFBFE');
+                    document.documentElement.style.setProperty('--md-sys-color-on-background', '#1C1B1F');
+                    document.documentElement.style.setProperty('--md-sys-color-surface', '#FFFBFE');
+                    document.documentElement.style.setProperty('--md-sys-color-on-surface', '#1C1B1F');
+                    document.documentElement.style.setProperty('--md-sys-color-surface-variant', '#e0e9ec');
+                    document.documentElement.style.setProperty('--md-sys-color-on-surface-variant', '#49454F');
+                    document.documentElement.style.setProperty('--md-sys-color-outline', '#79747E');
+
                     modeToggle.innerHTML = '<i class="fas fa-moon"></i>';
                 }
 
-                // 保存用户偏好
                 localStorage.setItem('theme', this.isDarkMode ? 'dark' : 'light');
             },
 
-            // 检查并应用保存的主题
             applySavedTheme() {
                 const savedTheme = localStorage.getItem('theme');
                 if (savedTheme === 'dark') {
                     this.isDarkMode = true;
-                    document.body.classList.remove('light-mode');
-                    document.body.classList.add('dark-mode');
+                    document.documentElement.style.setProperty('--md-sys-color-primary', '#bcd9ff');
+                    document.documentElement.style.setProperty('--md-sys-color-on-primary', '#1C003D');
+                    document.documentElement.style.setProperty('--md-sys-color-primary-container', '#4F378B');
+                    document.documentElement.style.setProperty('--md-sys-color-on-primary-container', '#EADDFF');
+                    document.documentElement.style.setProperty('--md-sys-color-background', '#1C1B1F');
+                    document.documentElement.style.setProperty('--md-sys-color-on-background', '#E6E1E5');
+                    document.documentElement.style.setProperty('--md-sys-color-surface', '#1C1B1F');
+                    document.documentElement.style.setProperty('--md-sys-color-on-surface', '#E6E1E5');
+                    document.documentElement.style.setProperty('--md-sys-color-surface-variant', '#49454E');
+                    document.documentElement.style.setProperty('--md-sys-color-on-surface-variant', '#CAC4D0');
+                    document.documentElement.style.setProperty('--md-sys-color-outline', '#938F99');
+
                     document.getElementById('modeToggle').innerHTML = '<i class="fas fa-sun"></i>';
                 }
             },
 
-            // 生成日期选择器
             generateDatePicker() {
                 const datePickerInput = document.getElementById('datePickerInput');
                 const dateOptions = document.getElementById('dateOptions');
                 const currentMonthYear = document.getElementById('currentMonthYear');
 
-                // 获取所有可用日期
                 const dates = [...new Set(this.homeworkData.map(item => item.date))].sort((a, b) => new Date(a) - new Date(b));
 
-                // 显示当前月份的标题
                 const year = this.currentMonthView.getFullYear();
                 const month = this.currentMonthView.getMonth() + 1;
                 currentMonthYear.textContent = `${year}年${month}月`;
 
-                // 清空现有选项
                 dateOptions.innerHTML = '';
 
-                // 生成日期选项
                 dates.forEach(date => {
                     const dateObj = new Date(date);
                     const dateYear = dateObj.getFullYear();
                     const dateMonth = dateObj.getMonth() + 1;
 
-                    // 只显示当前月份的日期
                     if (dateYear === year && dateMonth === month) {
                         const option = document.createElement('div');
                         option.className = 'date-picker-option';
 
-                        // 检查是否为今天
                         const currentDateStr = this.getCurrentDate();
                         if (date === currentDateStr) {
                             option.classList.add('selected');
@@ -1383,13 +1218,11 @@
                     }
                 });
 
-                // 如果没有当前月份的日期，显示提示
                 if (dateOptions.children.length === 0) {
                     dateOptions.innerHTML = '<div class="date-picker-option">该月份暂无作业安排</div>';
                 }
             },
 
-            // 选择日期
             selectDate(date, formattedDate) {
                 const datePickerInput = document.getElementById('datePickerInput');
                 const dateHint = this.calculateDateDifference(date, this.getCurrentDate());
@@ -1398,34 +1231,28 @@
                 this.showTasks(date);
             },
 
-            // 显示日期选择器
             showDatePicker() {
                 const dropdown = document.getElementById('datePickerDropdown');
                 dropdown.classList.add('date-picker-open');
             },
 
-            // 隐藏日期选择器
             hideDatePicker() {
                 const dropdown = document.getElementById('datePickerDropdown');
                 dropdown.classList.remove('date-picker-open');
             },
 
-            // 统计任务完成情况
             updateStats(date) {
-                // 如果没有传入日期，使用当前选中的日期
                 if (!date) {
                     const datePickerInput = document.getElementById('datePickerInput');
-                    // 从输入框的值中提取日期
                     const dateStr = this.extractDateFromInput(datePickerInput.value);
                     if (dateStr) {
                         date = dateStr;
                     } else {
-                        date = this.getCurrentDate(); // 默认使用今天
+                        date = this.getCurrentDate();
                     }
                 }
                 const data = this.homeworkData.find(item => item.date === date);
                 if (!data) {
-                    // 如果没有找到数据，重置统计
                     document.getElementById('totalTasks').textContent = '0';
                     document.getElementById('completedTasks').textContent = '0';
                     document.getElementById('completionRate').textContent = '0%';
@@ -1462,7 +1289,6 @@
                 document.getElementById('progressFill').style.width = `${completionRate}%`;
             },
 
-            // 显示指定日期的任务
             showTasks(date) {
                 const tasksContainer = document.getElementById('tasks');
                 tasksContainer.innerHTML = '';
@@ -1522,7 +1348,7 @@
                     taskList.className = 'task-list';
 
                     taskItems.forEach((task, index) => {
-                        if (!task.trim()) return; // 跳过空任务
+                        if (!task.trim()) return;
 
                         const taskItem = document.createElement('li');
                         taskItem.className = 'task-item';
@@ -1540,23 +1366,18 @@
 
                         taskItem.classList.toggle('completed', isCompleted);
 
-                        // 添加点击事件来设置专注任务
                         taskItem.addEventListener('click', (e) => {
                             if (!e.target.classList.contains('task-checkbox')) {
-                                // 移除之前选中的任务高亮
                                 if (this.currentSelectedTask) {
                                     this.currentSelectedTask.classList.remove('selected');
                                 }
 
-                                // 高亮当前选中的任务
                                 this.currentSelectedTask = taskItem;
                                 this.currentSelectedTask.classList.add('selected');
 
-                                // 显示视觉反馈
                                 this.showSelectionFeedback();
 
-                                // 设置专注任务
-                                const taskText = task.replace(/<[^>]*>/g, '').trim(); // 移除HTML标签
+                                const taskText = task.replace(/<[^>]*>/g, '').trim();
                                 this.setCurrentTomatoTask(taskText);
                             }
                         });
@@ -1569,7 +1390,6 @@
                     tasksContainer.appendChild(subjectDiv);
                 });
 
-                // 添加复选框事件监听
                 document.querySelectorAll('.task-checkbox').forEach(checkbox => {
                     checkbox.addEventListener('change', (e) => {
                         const taskId = e.target.id;
@@ -1578,13 +1398,11 @@
                         const taskItem = e.target.closest('.task-item');
                         taskItem.classList.toggle('completed', e.target.checked);
 
-                        // 更新统计信息 - 使用当前显示的任务日期
-                        this.updateStats(date); // 直接使用函数参数 date
+                        this.updateStats(date);
                     });
                 });
             },
 
-            // 显示视觉反馈
             showSelectionFeedback() {
                 const feedback = document.getElementById('selectionFeedback');
                 feedback.classList.add('show');
@@ -1594,27 +1412,22 @@
                 }, 1500);
             },
 
-            // 设置当前番茄钟任务
             setCurrentTomatoTask(taskText) {
                 document.getElementById('tomatoCurrentTask').textContent = taskText;
             },
 
-            // 更新番茄钟进度环
             updateTomatoProgress() {
                 const progressFill = document.getElementById('tomatoProgressFill');
                 const progressBar = document.getElementById('tomatoProgressBar');
                 const progressPercent = ((this.tomatoTotalTime - this.tomatoTimeLeft) / this.tomatoTotalTime) * 100;
 
-                // 计算旋转角度 - 更精确的计算
                 let rotation;
                 if (progressPercent <= 50) {
-                    // 0-50%: 旋转右半圆
                     rotation = (progressPercent / 50) * 180;
                     progressBar.className = 'tomato-progress-bar';
                     progressFill.style.transform = `rotate(${rotation}deg)`;
                     progressFill.style.clip = 'rect(0px, 100px, 200px, 0px)';
                 } else {
-                    // 50%-100%: 右半圆固定，左半圆旋转
                     rotation = ((progressPercent - 50) / 50) * 180;
                     progressBar.className = 'tomato-progress-bar full';
                     progressFill.style.transform = `rotate(${rotation}deg)`;
@@ -1622,7 +1435,6 @@
                 }
             },
 
-            // 更新番茄钟时间显示
             updateTomatoDisplay() {
                 const minutes = Math.floor(this.tomatoTimeLeft / 60);
                 const seconds = this.tomatoTimeLeft % 60;
@@ -1638,14 +1450,12 @@
                 this.updateTomatoProgress();
             },
 
-            // 开始番茄钟
             startTomato() {
                 if (this.isTomatoRunning) return;
 
                 this.isTomatoRunning = true;
                 document.getElementById('startTomatoBtn').classList.add('active');
 
-                // 确保进度环显示正确
                 this.updateTomatoProgress();
 
                 this.tomatoTimer = setInterval(() => {
@@ -1659,7 +1469,6 @@
                 }, 1000);
             },
 
-            // 暂停番茄钟
             pauseTomato() {
                 if (!this.isTomatoRunning) return;
 
@@ -1668,7 +1477,6 @@
                 document.getElementById('startTomatoBtn').classList.remove('active');
             },
 
-            // 重置番茄钟
             resetTomato() {
                 this.pauseTomato();
 
@@ -1678,7 +1486,6 @@
                     this.tomatoTimeLeft = this.tomatoBreakTime;
                 }
 
-                // 重置进度环
                 const progressFill = document.getElementById('tomatoProgressFill');
                 const progressBar = document.getElementById('tomatoProgressBar');
                 progressBar.className = 'tomato-progress-bar';
@@ -1689,23 +1496,19 @@
                 document.getElementById('startTomatoBtn').classList.remove('active');
             },
 
-            // 跳过当前时段
             skipTomato() {
                 this.completeTomatoSession();
             },
 
-            // 完成番茄钟会话
             completeTomatoSession() {
                 this.pauseTomato();
 
                 if (this.isWorking) {
-                    // 结束工作时间，进入休息
                     this.isWorking = false;
                     this.tomatoTimeLeft = this.tomatoBreakTime;
-                    this.tomatoSessions++; // 增加完成的番茄钟数量
+                    this.tomatoSessions++;
                     alert('专注时间结束！现在开始休息吧！');
                 } else {
-                    // 结束休息时间，回到工作
                     this.isWorking = true;
                     this.tomatoTimeLeft = this.tomatoTotalTime;
                     alert('休息时间结束！继续专注学习吧！');
@@ -1714,7 +1517,6 @@
                 this.updateTomatoDisplay();
             },
 
-            // 进入番茄钟模式
             enterTomatoMode() {
                 this.isTomatoMode = true;
                 document.getElementById('tasksContainer').classList.add('hidden');
@@ -1724,7 +1526,6 @@
                 this.resetTomato();
             },
 
-            // 退出番茄钟模式
             exitTomatoMode() {
                 this.isTomatoMode = false;
                 this.pauseTomato();
@@ -1734,14 +1535,11 @@
                 document.getElementById('backToTasksBtn').style.display = 'none';
             },
 
-            // 设置事件监听器
             setupEventListeners() {
-                // 返回顶部功能
                 document.querySelector('.floating-action').addEventListener('click', () => {
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 });
 
-                // 日期选择器事件
                 const datePickerInput = document.getElementById('datePickerInput');
                 const datePickerDropdown = document.getElementById('datePickerDropdown');
 
@@ -1750,14 +1548,12 @@
                     this.showDatePicker();
                 });
 
-                // 点击其他地方隐藏日期选择器
                 document.addEventListener('click', (e) => {
                     if (!datePickerDropdown.contains(e.target) && !datePickerInput.contains(e.target)) {
                         this.hideDatePicker();
                     }
                 });
 
-                // 月份导航按钮事件
                 document.getElementById('prevMonth').addEventListener('click', (e) => {
                     e.stopPropagation();
                     this.currentMonthView.setMonth(this.currentMonthView.getMonth() - 1);
@@ -1770,22 +1566,18 @@
                     this.generateDatePicker();
                 });
 
-                // 开始番茄钟模式按钮事件
                 document.getElementById('startTomatoModeBtn').addEventListener('click', () => {
                     this.enterTomatoMode();
                 });
 
-                // 返回任务列表按钮事件
                 document.getElementById('backToTasksBtn').addEventListener('click', () => {
                     this.exitTomatoMode();
                 });
 
-                // 模式切换按钮事件
                 document.getElementById('modeToggle').addEventListener('click', () => {
                     this.toggleMode();
                 });
 
-                // 番茄钟控制按钮事件
                 document.getElementById('startTomatoBtn').addEventListener('click', () => {
                     this.startTomato();
                 });
@@ -1803,25 +1595,20 @@
                 });
             },
 
-            // 启动定时器
             startTimers() {
-                // 每秒更新时间
                 setInterval(() => {
                     this.updateTimeDisplay();
                 }, 1000);
             },
 
-            // 从输入框值提取日期（辅助函数）
             extractDateFromInput(inputValue) {
                 if (!inputValue) return null;
-                
-                // 尝试从输入框中提取日期
+
                 const match = inputValue.match(/\d{4}\/\d{1,2}\/\d{1,2}/);
                 return match ? match[0] : null;
             }
         };
 
-        // 页面加载完成后启动应用
         window.addEventListener('load', () => {
             AppState.init();
         });
