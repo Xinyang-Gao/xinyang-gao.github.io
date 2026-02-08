@@ -73,6 +73,25 @@
             --md-sys-motion-duration-long2: 500ms;
         }
 
+        .dark-mode {
+            --md-sys-color-primary: #0099ff;
+            --md-sys-color-on-primary: #FFFFFF;
+            --md-sys-color-primary-container: #1e293b;
+            --md-sys-color-on-primary-container: #e2e8f0;
+            --md-sys-color-background: #0f172a;
+            --md-sys-color-on-background: #f1f5f9;
+            --md-sys-color-surface: #1e293b;
+            --md-sys-color-on-surface: #f8fafc;
+            --md-sys-color-surface-variant: #334155;
+            --md-sys-color-on-surface-variant: #cbd5e1;
+            --md-sys-color-outline: #64748b;
+            --md-sys-color-inverse-on-surface: #1e293b;
+            --md-sys-color-inverse-surface: #f1f5f9;
+            --md-sys-color-inverse-primary: #0f172a;
+            --md-sys-color-secondary-container: #334155;
+            --md-sys-color-on-secondary-container: #e2e8f0;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -752,6 +771,97 @@
             margin: 0 auto 20px;
         }
 
+        /* 添加通知样式 */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 20px;
+            background: var(--md-sys-color-surface);
+            color: var(--md-sys-color-on-surface);
+            border-radius: var(--md-sys-shape-corner-medium);
+            box-shadow: var(--md-sys-elevation-3);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 9999;
+            animation: slideInRight 0.3s ease-out;
+            max-width: 350px;
+            border-left: 4px solid var(--md-sys-color-primary);
+        }
+
+        .notification i {
+            color: var(--md-sys-color-primary);
+            font-size: 1.2rem;
+        }
+
+        .notification.success {
+            border-left-color: var(--success-color);
+        }
+
+        .notification.success i {
+            color: var(--success-color);
+        }
+
+        .notification.warning {
+            border-left-color: var(--warning-color);
+        }
+
+        .notification.warning i {
+            color: var(--warning-color);
+        }
+
+        .notification.fade-out {
+            opacity: 0;
+            transform: translateX(100%);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        /* 任务完成动画 */
+        @keyframes taskComplete {
+            0% {
+                transform: scale(1);
+                box-shadow: var(--md-sys-elevation-1);
+            }
+
+            50% {
+                transform: scale(1.02);
+                box-shadow: var(--md-sys-elevation-3);
+            }
+
+            100% {
+                transform: scale(1);
+                box-shadow: var(--md-sys-elevation-1);
+            }
+        }
+
+        .task-item.completed {
+            animation: taskComplete 0.3s ease-out;
+            border-color: var(--success-color);
+        }
+
+        .task-item.completed .task-content {
+            text-decoration: line-through;
+            opacity: 0.7;
+        }
+
+        .task-item.completed .task-checkbox:checked {
+            accent-color: var(--success-color);
+        }
+
+
         @keyframes spin {
             0% {
                 transform: rotate(0deg);
@@ -1118,35 +1228,16 @@
             toggleMode() {
                 this.isDarkMode = !this.isDarkMode;
                 const modeToggle = document.getElementById('modeToggle');
+                const body = document.body;
 
                 if (this.isDarkMode) {
-                    document.documentElement.style.setProperty('--md-sys-color-primary', '#bcd9ff');
-                    document.documentElement.style.setProperty('--md-sys-color-on-primary', '#1C003D');
-                    document.documentElement.style.setProperty('--md-sys-color-primary-container', '#4F378B');
-                    document.documentElement.style.setProperty('--md-sys-color-on-primary-container', '#EADDFF');
-                    document.documentElement.style.setProperty('--md-sys-color-background', '#1C1B1F');
-                    document.documentElement.style.setProperty('--md-sys-color-on-background', '#E6E1E5');
-                    document.documentElement.style.setProperty('--md-sys-color-surface', '#1C1B1F');
-                    document.documentElement.style.setProperty('--md-sys-color-on-surface', '#E6E1E5');
-                    document.documentElement.style.setProperty('--md-sys-color-surface-variant', '#49454E');
-                    document.documentElement.style.setProperty('--md-sys-color-on-surface-variant', '#CAC4D0');
-                    document.documentElement.style.setProperty('--md-sys-color-outline', '#938F99');
-
+                    body.classList.add('dark-mode');
                     modeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+                    modeToggle.title = '切换到浅色模式';
                 } else {
-                    document.documentElement.style.setProperty('--md-sys-color-primary', '#0099ff');
-                    document.documentElement.style.setProperty('--md-sys-color-on-primary', '#FFFFFF');
-                    document.documentElement.style.setProperty('--md-sys-color-primary-container', '#EADDFF');
-                    document.documentElement.style.setProperty('--md-sys-color-on-primary-container', '#21005D');
-                    document.documentElement.style.setProperty('--md-sys-color-background', '#FFFBFE');
-                    document.documentElement.style.setProperty('--md-sys-color-on-background', '#1C1B1F');
-                    document.documentElement.style.setProperty('--md-sys-color-surface', '#FFFBFE');
-                    document.documentElement.style.setProperty('--md-sys-color-on-surface', '#1C1B1F');
-                    document.documentElement.style.setProperty('--md-sys-color-surface-variant', '#e0e9ec');
-                    document.documentElement.style.setProperty('--md-sys-color-on-surface-variant', '#49454F');
-                    document.documentElement.style.setProperty('--md-sys-color-outline', '#79747E');
-
+                    body.classList.remove('dark-mode');
                     modeToggle.innerHTML = '<i class="fas fa-moon"></i>';
+                    modeToggle.title = '切换到深色模式';
                 }
 
                 localStorage.setItem('theme', this.isDarkMode ? 'dark' : 'light');
@@ -1154,21 +1245,16 @@
 
             applySavedTheme() {
                 const savedTheme = localStorage.getItem('theme');
+                const modeToggle = document.getElementById('modeToggle');
+                const body = document.body;
+
                 if (savedTheme === 'dark') {
                     this.isDarkMode = true;
-                    document.documentElement.style.setProperty('--md-sys-color-primary', '#bcd9ff');
-                    document.documentElement.style.setProperty('--md-sys-color-on-primary', '#1C003D');
-                    document.documentElement.style.setProperty('--md-sys-color-primary-container', '#4F378B');
-                    document.documentElement.style.setProperty('--md-sys-color-on-primary-container', '#EADDFF');
-                    document.documentElement.style.setProperty('--md-sys-color-background', '#1C1B1F');
-                    document.documentElement.style.setProperty('--md-sys-color-on-background', '#E6E1E5');
-                    document.documentElement.style.setProperty('--md-sys-color-surface', '#1C1B1F');
-                    document.documentElement.style.setProperty('--md-sys-color-on-surface', '#E6E1E5');
-                    document.documentElement.style.setProperty('--md-sys-color-surface-variant', '#49454E');
-                    document.documentElement.style.setProperty('--md-sys-color-on-surface-variant', '#CAC4D0');
-                    document.documentElement.style.setProperty('--md-sys-color-outline', '#938F99');
-
-                    document.getElementById('modeToggle').innerHTML = '<i class="fas fa-sun"></i>';
+                    body.classList.add('dark-mode');
+                    modeToggle.innerHTML = '<i class="fas fa-sun"></i>';
+                    modeToggle.title = '切换到浅色模式';
+                } else {
+                    modeToggle.title = '切换到深色模式';
                 }
             },
 
@@ -1315,14 +1401,20 @@
                 const hasTasks = subjects.some(subject => data[subject.key] && data[subject.key].trim() !== '');
 
                 if (!hasTasks) {
+                    const today = new Date();
+                    const isWeekend = today.getDay() === 0 || today.getDay() === 6;
+                    const message = isWeekend
+                        ? '好好休息一下吧！'
+                        : '今天没有作业安排，可以复习之前的内容或预习新课。';
+
                     tasksContainer.innerHTML = `
-                        <div class="no-tasks">
-                            <i class="fas fa-check-circle"></i>
-                            <div>该日期暂无作业</div>
-                        </div>
-                    `;
-                    this.updateStats(date);
-                    return;
+    <div class="no-tasks">
+      <i class="fas fa-calendar-check"></i>
+      <div class="empty-title">今天没有作业</div>
+      <div class="empty-message">${message}</div>
+      </div>
+    </div>
+  `;
                 }
 
                 subjects.forEach(subject => {
@@ -1421,17 +1513,23 @@
                 const progressBar = document.getElementById('tomatoProgressBar');
                 const progressPercent = ((this.tomatoTotalTime - this.tomatoTimeLeft) / this.tomatoTotalTime) * 100;
 
+                // 使用更流畅的动画
                 let rotation;
                 if (progressPercent <= 50) {
                     rotation = (progressPercent / 50) * 180;
-                    progressBar.className = 'tomato-progress-bar';
+                    progressBar.classList.remove('full');
                     progressFill.style.transform = `rotate(${rotation}deg)`;
-                    progressFill.style.clip = 'rect(0px, 100px, 200px, 0px)';
                 } else {
                     rotation = ((progressPercent - 50) / 50) * 180;
-                    progressBar.className = 'tomato-progress-bar full';
+                    progressBar.classList.add('full');
                     progressFill.style.transform = `rotate(${rotation}deg)`;
-                    progressFill.style.clip = 'rect(0px, 200px, 200px, 100px)';
+                }
+
+                // 动态改变颜色
+                if (progressPercent > 90) {
+                    progressFill.style.background = this.isWorking ? 'var(--warning-color)' : 'var(--success-color)';
+                } else {
+                    progressFill.style.background = this.isWorking ? 'var(--md-sys-color-primary)' : 'var(--success-color)';
                 }
             },
 
@@ -1507,11 +1605,26 @@
                     this.isWorking = false;
                     this.tomatoTimeLeft = this.tomatoBreakTime;
                     this.tomatoSessions++;
-                    alert('专注时间结束！现在开始休息吧！');
+                    this.showNotification('专注时间结束！开始休息 5 分钟', 'success');
+
+                    // 如果启用了浏览器通知
+                    if (Notification.permission === 'granted') {
+                        new Notification('专注时间结束', {
+                            body: '开始休息 5 分钟',
+                            icon: '/favicon.ico'
+                        });
+                    }
                 } else {
                     this.isWorking = true;
                     this.tomatoTimeLeft = this.tomatoTotalTime;
-                    alert('休息时间结束！继续专注学习吧！');
+                    this.showNotification('休息时间结束！继续专注学习', 'info');
+
+                    if (Notification.permission === 'granted') {
+                        new Notification('休息时间结束', {
+                            body: '继续专注学习 25 分钟',
+                            icon: '/favicon.ico'
+                        });
+                    }
                 }
 
                 this.updateTomatoDisplay();
@@ -1606,7 +1719,28 @@
 
                 const match = inputValue.match(/\d{4}\/\d{1,2}\/\d{1,2}/);
                 return match ? match[0] : null;
+            },
+
+            showNotification(message, type = 'info') {
+                const notification = document.createElement('div');
+                notification.className = `notification ${type}`;
+                notification.innerHTML = `
+    <i class="fas fa-${type === 'success' ? 'check-circle' : 'bell'}"></i>
+    <span>${message}</span>
+  `;
+
+                document.body.appendChild(notification);
+
+                // 3秒后移除
+                setTimeout(() => {
+                    notification.classList.add('fade-out');
+                    setTimeout(() => {
+                        notification.remove();
+                    }, 300);
+                }, 3000);
             }
+
+
         };
 
         window.addEventListener('load', () => {
