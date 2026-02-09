@@ -71,6 +71,10 @@
             --md-sys-motion-duration-medium2: 300ms;
             --md-sys-motion-duration-long1: 400ms;
             --md-sys-motion-duration-long2: 500ms;
+            
+            /* Theme transition */
+            --theme-transition: background-color var(--md-sys-motion-duration-medium2) ease,
+                               color var(--md-sys-motion-duration-medium2) ease;
         }
 
         .dark-mode {
@@ -111,8 +115,7 @@
             padding: 20px;
             min-height: 100vh;
             background: var(--md-sys-color-background);
-            transition: background-color var(--md-sys-motion-duration-medium2) ease,
-                color var(--md-sys-motion-duration-medium2) ease;
+            transition: var(--theme-transition);
         }
 
         .container {
@@ -189,6 +192,7 @@
             border-radius: var(--md-sys-shape-corner-medium);
             box-shadow: var(--md-sys-elevation-2);
             padding: 25px;
+            transition: var(--theme-transition);
         }
 
         .date-selector-container {
@@ -244,6 +248,7 @@
             z-index: 1000;
             display: none;
             margin-top: 5px;
+            transition: var(--theme-transition);
         }
 
         .date-picker-option {
@@ -960,6 +965,15 @@
         .tasks-container.hidden {
             display: none;
         }
+        
+        /* 主题切换过渡动画 */
+        body {
+            transition: var(--theme-transition);
+        }
+        
+        .theme-transition {
+            transition: var(--theme-transition);
+        }
     </style>
 </head>
 
@@ -970,15 +984,15 @@
 
     <div class="container">
         <div class="header">
-            <h1>作业管理系统 [寒假] </h1>
+            <h1>作业管理系统</h1>
             <div class="time" id="current-time">正在加载时间...</div>
         </div>
         <div class="tasks">
             <h2>By:GaoXinYang</h2>
-            <p><i class="fas fa-check-circle"></i> 黑发不知勤学早，白头方悔读书迟。</p>
+            <p><i class="fas fa-check-circle"></i> 目前处于 <2026年寒假> 阶段 </p>
             <div class="deadline" id="daily-deadline">每日打卡截止时间：--小时--分钟--秒</div>
             <div class="deadline normal" id="winter-end-countdown">据寒假结束还剩下 --天--小时--分钟--秒</div>
-            <div class="deadline" id="tip">注意！目前作业内容缺少道德与法治科目</div>
+            <div class="deadline warning" id="tip">注意！目前作业内容缺少道德与法治科目</div>
         </div>
     </div>
 
@@ -1290,6 +1304,9 @@
             },
 
             toggleMode() {
+                // 在主题切换前添加过渡类
+                document.body.classList.add('theme-transition');
+                
                 this.isDarkMode = !this.isDarkMode;
                 const modeToggle = document.getElementById('modeToggle');
                 const body = document.body;
@@ -1305,6 +1322,11 @@
                 }
 
                 localStorage.setItem('theme', this.isDarkMode ? 'dark' : 'light');
+                
+                // 在主题切换后移除过渡类
+                setTimeout(() => {
+                    document.body.classList.remove('theme-transition');
+                }, 300); // 等待过渡完成
             },
 
             applySavedTheme() {
