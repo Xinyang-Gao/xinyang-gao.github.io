@@ -71,10 +71,10 @@
             --md-sys-motion-duration-medium2: 300ms;
             --md-sys-motion-duration-long1: 400ms;
             --md-sys-motion-duration-long2: 500ms;
-            
+
             /* Theme transition */
             --theme-transition: background-color var(--md-sys-motion-duration-medium2) ease,
-                               color var(--md-sys-motion-duration-medium2) ease;
+                color var(--md-sys-motion-duration-medium2) ease;
         }
 
         .dark-mode {
@@ -965,12 +965,12 @@
         .tasks-container.hidden {
             display: none;
         }
-        
+
         /* 主题切换过渡动画 */
         body {
             transition: var(--theme-transition);
         }
-        
+
         .theme-transition {
             transition: var(--theme-transition);
         }
@@ -1089,6 +1089,7 @@
     <script>
         const AppState = {
             homeworkData: [],
+            homeworkMetadata: [], // 新增：存储科目元数据
             currentSelectedTask: null,
             isDarkMode: false,
             tomatoTimer: null,
@@ -1101,6 +1102,19 @@
             isTomatoMode: false,
             currentDate: new Date(),
             currentMonthView: new Date(),
+            
+            // 科目配置映射 - 移到AppState属性中
+            subjectConfigMap: {
+                'chinese': { name: '语文作业', icon: '语', color: '#e74c3c' },
+                'math': { name: '数学作业', icon: '数', color: '#3498db' },
+                'english': { name: '英语作业', icon: '英', color: '#f39c12' },
+                'chemistry': { name: '化学作业', icon: '化', color: '#9b59b6' },
+                'history': { name: '历史作业', icon: '历', color: '#27ae60' },
+                'physics': { name: '物理作业', icon: '物', color: '#8e44ad' },
+                'biology': { name: '生物作业', icon: '生', color: '#16a085' },
+                'geography': { name: '地理作业', icon: '地', color: '#d35400' },
+                'politics': { name: '政治作业', icon: '政', color: '#c0392b' }
+            },
 
             init() {
                 this.loadHomeworkData()
@@ -1126,29 +1140,39 @@
                     const response = await fetch('data.json');
 
                     if (response.status === 404) {
-                        this.homeworkData = this.getMockData();
+                        const mockData = this.getMockData();
+                        this.homeworkData = mockData.data;
+                        this.homeworkMetadata = mockData.metadata;
                     } else {
                         const jsonData = await response.json();
-                        this.homeworkData = jsonData;
+                        this.homeworkData = jsonData.data;
+                        this.homeworkMetadata = jsonData.metadata ||
+                            ['chinese', 'math', 'english', 'chemistry', 'history'];
                     }
                 } catch (error) {
                     console.error('加载作业数据失败:', error);
-                    this.homeworkData = this.getMockData();
+                    const mockData = this.getMockData();
+                    this.homeworkData = mockData.data;
+                    this.homeworkMetadata = mockData.metadata;
                 }
 
                 return Promise.resolve();
             },
 
             getMockData() {
-                return [
-                    {
-                        date: "0000/00/00", // 修正：将 data 改为 date
-                        chinese: "语文",
-                        math: "数学",
-                        english: "英语",
-                        chemistry: "化学"
-                    }
-                ];
+                return {
+                    metadata: ["chinese", "math", "english", "chemistry", "history"],
+                    data: [
+                        {
+                            date: "0000/00/00",
+                            chinese: "语文",
+                            math: "数学",
+                            english: "英语",
+                            chemistry: "化学",
+                            history: "历史"
+                        }
+                    ]
+                };
             },
 
             handleDataLoadError(error) {
@@ -1306,7 +1330,7 @@
             toggleMode() {
                 // 在主题切换前添加过渡类
                 document.body.classList.add('theme-transition');
-                
+
                 this.isDarkMode = !this.isDarkMode;
                 const modeToggle = document.getElementById('modeToggle');
                 const body = document.body;
@@ -1322,11 +1346,11 @@
                 }
 
                 localStorage.setItem('theme', this.isDarkMode ? 'dark' : 'light');
-                
+
                 // 在主题切换后移除过渡类
                 setTimeout(() => {
                     document.body.classList.remove('theme-transition');
-                }, 300); // 等待过渡完成
+                }, 300);
             },
 
             applySavedTheme() {
@@ -1349,7 +1373,6 @@
                 const dateOptions = document.getElementById('dateOptions');
                 const currentMonthYear = document.getElementById('currentMonthYear');
 
-                // 修正：从 homeworkData 中获取 date 字段而不是 data
                 const dates = [...new Set(this.homeworkData.map(item => item.date))].sort((a, b) => new Date(a) - new Date(b));
 
                 const year = this.currentMonthView.getFullYear();
@@ -1376,9 +1399,9 @@
                         const dateHint = this.calculateDateDifference(date, currentDateStr);
 
                         option.innerHTML = `
-                <span class="date-text">${formattedDate}</span>
-                <span class="date-hint">${dateHint}</span>
-            `;
+                            <span class="date-text">${formattedDate}</span>
+                            <span class="date-hint">${dateHint}</span>
+                        `;
 
                         option.dataset.dateValue = date;
 
@@ -1415,11 +1438,10 @@
             },
 
             updateStats(date) {
-                const subjects = ['chinese', 'math', 'english', 'chemistry', 'history'];
                 let totalTasks = 0;
                 let completedTasks = 0;
 
-                subjects.forEach(subject => {
+                this.homeworkMetadata.forEach(subject => {
                     const content = this.getSubjectContentByDate(date, subject);
                     if (!content || content.trim() === '') return;
 
@@ -1445,7 +1467,6 @@
             },
 
             getSubjectContentByDate(date, subjectKey) {
-                // 修正：查找 date 字段而不是 data
                 const entry = this.homeworkData.find(item => item.date === date);
                 if (!entry) return '';
 
@@ -1468,32 +1489,75 @@
                 return content;
             },
 
+            generateSubjectConfig(subjectKey) {
+                const presetConfig = this.subjectConfigMap[subjectKey];
+                if (presetConfig) {
+                    return presetConfig;
+                }
+
+                // 如果没有预设配置，生成动态配置
+                const subjectNameMap = {
+                    'chinese': '语文',
+                    'math': '数学',
+                    'english': '英语',
+                    'physics': '物理',
+                    'chemistry': '化学',
+                    'biology': '生物',
+                    'history': '历史',
+                    'geography': '地理',
+                    'politics': '政治'
+                };
+
+                // 生成随机但稳定的颜色
+                const colors = [
+                    '#e74c3c', '#3498db', '#f39c12', '#9b59b6', '#27ae60',
+                    '#1abc9c', '#d35400', '#c0392b', '#8e44ad', '#16a085'
+                ];
+
+                const colorIndex = Math.abs(this.hashCode(subjectKey)) % colors.length;
+
+                return {
+                    name: subjectNameMap[subjectKey] ? `${subjectNameMap[subjectKey]}作业` : `${subjectKey}作业`,
+                    icon: subjectNameMap[subjectKey] ? subjectNameMap[subjectKey].charAt(0) : subjectKey.charAt(0).toUpperCase(),
+                    color: colors[colorIndex]
+                };
+            },
+
+            hashCode(str) {
+                let hash = 0;
+                for (let i = 0; i < str.length; i++) {
+                    const char = str.charCodeAt(i);
+                    hash = ((hash << 5) - hash) + char;
+                    hash = hash & hash;
+                }
+                return hash;
+            },
+
             showTasks(date) {
                 const tasksContainer = document.getElementById('tasks');
                 tasksContainer.innerHTML = '';
 
-                // 修正：查找 date 字段而不是 data
                 const entry = this.homeworkData.find(item => item.date === date);
                 if (!entry) {
                     tasksContainer.innerHTML = `
-            <div class="no-tasks">
-                <i class="fas fa-exclamation-triangle"></i>
-                <div>未找到该日期的作业</div>
-            </div>
-        `;
+                        <div class="no-tasks">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <div>未找到该日期的作业</div>
+                        </div>
+                    `;
                     this.updateStats(date);
                     return;
                 }
 
-                const subjects = [
-                    { key: 'chinese', name: '语文作业', icon: '语', color: '#e74c3c' },
-                    { key: 'math', name: '数学作业', icon: '数', color: '#3498db' },
-                    { key: 'english', name: '英语作业', icon: '英', color: '#f39c12' },
-                    { key: 'chemistry', name: '化学作业', icon: '化', color: '#9b59b6' },
-                    { key: 'history', name: '历史作业', icon: '历', color: '#9b59b6' }
-                ];
+                // 根据metadata动态生成科目
+                const subjects = this.homeworkMetadata.map(subjectKey => {
+                    return {
+                        key: subjectKey,
+                        ...this.generateSubjectConfig(subjectKey)
+                    };
+                });
 
-                let hasTasks = false;
+                let hasTasks = false; // 修复：添加变量声明
 
                 subjects.forEach(subject => {
                     const content = this.getSubjectContentByDate(date, subject.key);
@@ -1509,11 +1573,11 @@
                     subjectHeader.className = 'subject-header';
 
                     subjectHeader.innerHTML = `
-            <div class="subject-icon" style="background-color: ${subject.color}">
-                ${subject.icon}
-            </div>
-            <div class="subject-name">${subject.name}</div>
-        `;
+                        <div class="subject-icon" style="background-color: ${subject.color}">
+                            ${subject.icon}
+                        </div>
+                        <div class="subject-name">${subject.name}</div>
+                    `;
 
                     const taskList = document.createElement('ul');
                     taskList.className = 'task-list';
@@ -1528,12 +1592,12 @@
                         const isCompleted = localStorage.getItem(taskId) === 'true';
 
                         taskItem.innerHTML = `
-                <input type="checkbox" class="task-checkbox" id="${taskId}" ${isCompleted ? 'checked' : ''}>
-                <div class="task-content">${task}</div>
-                <div class="task-footer">
-                    <span>任务 ${index + 1} / ${taskItems.filter(t => t.trim()).length}</span>
-                </div>
-            `;
+                            <input type="checkbox" class="task-checkbox" id="${taskId}" ${isCompleted ? 'checked' : ''}>
+                            <div class="task-content">${task}</div>
+                            <div class="task-footer">
+                                <span>任务 ${index + 1} / ${taskItems.filter(t => t.trim()).length}</span>
+                            </div>
+                        `;
 
                         taskItem.classList.toggle('completed', isCompleted);
 
@@ -1541,11 +1605,7 @@
                         const checkbox = taskItem.querySelector('.task-checkbox');
                         checkbox.addEventListener('change', () => {
                             localStorage.setItem(taskId, checkbox.checked);
-
-                            // 更新任务项的完成状态
                             taskItem.classList.toggle('completed', checkbox.checked);
-
-                            // 更新统计信息
                             this.updateStats(date);
                         });
 
@@ -1581,15 +1641,14 @@
                         : '今天没有作业安排，可以复习之前的内容或预习新课。';
 
                     tasksContainer.innerHTML = `
-            <div class="no-tasks">
-                <i class="fas fa-calendar-check"></i>
-                <div class="empty-title">今天没有作业</div>
-                <div class="empty-message">${message}</div>
-            </div>
-        `;
+                        <div class="no-tasks">
+                            <i class="fas fa-calendar-check"></i>
+                            <div class="empty-title">今天没有作业</div>
+                            <div class="empty-message">${message}</div>
+                        </div>
+                    `;
                 }
 
-                // 更新统计信息
                 this.updateStats(date);
             },
 
@@ -1690,9 +1749,6 @@
                 const progressBar = document.getElementById('tomatoProgressBar');
                 progressBar.className = 'tomato-progress-bar';
                 progressFill.style.transform = 'rotate(0deg)';
-
-                // 移除手动设置 clip 属性的代码，让 CSS 控制
-                // progressFill.style.clip = 'rect(0px, 100px, 200px, 0px)'; // 删除这行
 
                 this.updateTomatoDisplay();
                 document.getElementById('startTomatoBtn').classList.remove('active');
@@ -1817,9 +1873,7 @@
                 return match ? match[0] : null;
             },
 
-            // 修改 showNotification 方法
             showNotification(message, type = 'info') {
-                // 创建通知容器（如果不存在）
                 let container = document.querySelector('.notification-container');
                 if (!container) {
                     container = document.createElement('div');
@@ -1827,22 +1881,18 @@
                     document.body.appendChild(container);
                 }
 
-                // 创建通知元素
                 const notification = document.createElement('div');
                 notification.className = `notification ${type}`;
                 notification.innerHTML = `
-    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'bell'}"></i>
-    <span>${message}</span>
-  `;
+                    <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'warning' ? 'exclamation-triangle' : 'bell'}"></i>
+                    <span>${message}</span>
+                `;
 
-                // 添加到容器顶部（最新的通知显示在最上面）
                 container.insertBefore(notification, container.firstChild);
 
-                // 计算通知ID用于后续移除
                 const notificationId = Date.now();
                 notification.dataset.id = notificationId;
 
-                // 3秒后移除
                 setTimeout(() => {
                     this.removeNotification(notificationId);
                 }, 3000);
@@ -1850,19 +1900,16 @@
                 return notificationId;
             },
 
-            // 添加移除通知的方法
             removeNotification(notificationId) {
                 const notification = document.querySelector(`[data-id="${notificationId}"]`);
                 if (notification) {
                     notification.classList.add('fade-out');
 
-                    // 动画结束后移除元素
                     setTimeout(() => {
                         if (notification.parentNode) {
                             notification.remove();
                         }
 
-                        // 如果容器空了，移除容器
                         const container = document.querySelector('.notification-container');
                         if (container && container.children.length === 0) {
                             container.remove();
