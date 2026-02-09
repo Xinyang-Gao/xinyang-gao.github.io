@@ -90,6 +90,12 @@
             --md-sys-color-inverse-primary: #0f172a;
             --md-sys-color-secondary-container: #334155;
             --md-sys-color-on-secondary-container: #e2e8f0;
+            --md-sys-color-input-text: #f8fafc;
+        }
+
+        /* 添加默认模式下的下拉框文字颜色变量 */
+        :root {
+            --dropdown-text-color: #1C1B1F;
         }
 
         * {
@@ -215,6 +221,7 @@
             min-width: 200px;
             width: 100%;
             transition: all var(--md-sys-motion-duration-medium2) ease;
+            color: var(--md-sys-color-on-surface, #1C1B1F);
         }
 
         .date-picker-input:focus {
@@ -244,7 +251,10 @@
             cursor: pointer;
             border-bottom: 1px solid var(--md-sys-color-surface-variant);
             transition: background-color var(--md-sys-motion-duration-short2) ease;
+            /* 直接使用现有的颜色变量 */
+            color: var(--md-sys-color-on-surface);
         }
+
 
         .date-picker-option:last-child {
             border-bottom: none;
@@ -1071,23 +1081,23 @@
             currentMonthView: new Date(),
 
             init() {
-    this.loadHomeworkData()
-        .then(() => {
-            this.applySavedTheme();
-            this.generateDatePicker();
-            this.updateTimeDisplay();
-            this.setupEventListeners();
-            this.startTimers();
-            
-            // 默认显示当前日期的作业
-            const currentDate = this.getCurrentDate();
-            this.selectDate(currentDate, this.formatDate(currentDate));
-        })
-        .catch(error => {
-            console.error('初始化失败:', error);
-            this.handleDataLoadError(error);
-        });
-},
+                this.loadHomeworkData()
+                    .then(() => {
+                        this.applySavedTheme();
+                        this.generateDatePicker();
+                        this.updateTimeDisplay();
+                        this.setupEventListeners();
+                        this.startTimers();
+
+                        // 默认显示当前日期的作业
+                        const currentDate = this.getCurrentDate();
+                        this.selectDate(currentDate, this.formatDate(currentDate));
+                    })
+                    .catch(error => {
+                        console.error('初始化失败:', error);
+                        this.handleDataLoadError(error);
+                    });
+            },
 
             async loadHomeworkData() {
                 try {
@@ -1110,7 +1120,7 @@
             getMockData() {
                 return [
                     {
-                        date: "0000/00/00",
+                        date: "0000/00/00", // 修正：将 data 改为 date
                         chinese: "语文",
                         math: "数学",
                         english: "英语",
@@ -1305,55 +1315,56 @@
             },
 
             generateDatePicker() {
-    const datePickerInput = document.getElementById('datePickerInput');
-    const dateOptions = document.getElementById('dateOptions');
-    const currentMonthYear = document.getElementById('currentMonthYear');
+                const datePickerInput = document.getElementById('datePickerInput');
+                const dateOptions = document.getElementById('dateOptions');
+                const currentMonthYear = document.getElementById('currentMonthYear');
 
-    const dates = [...new Set(this.homeworkData.map(item => item.data))].sort((a, b) => new Date(a) - new Date(b));
+                // 修正：从 homeworkData 中获取 date 字段而不是 data
+                const dates = [...new Set(this.homeworkData.map(item => item.date))].sort((a, b) => new Date(a) - new Date(b));
 
-    const year = this.currentMonthView.getFullYear();
-    const month = this.currentMonthView.getMonth() + 1;
-    currentMonthYear.textContent = `${year}年${month}月`;
+                const year = this.currentMonthView.getFullYear();
+                const month = this.currentMonthView.getMonth() + 1;
+                currentMonthYear.textContent = `${year}年${month}月`;
 
-    dateOptions.innerHTML = '';
+                dateOptions.innerHTML = '';
 
-    dates.forEach(date => {
-        const dateObj = new Date(date);
-        const dateYear = dateObj.getFullYear();
-        const dateMonth = dateObj.getMonth() + 1;
+                dates.forEach(date => {
+                    const dateObj = new Date(date);
+                    const dateYear = dateObj.getFullYear();
+                    const dateMonth = dateObj.getMonth() + 1;
 
-        if (dateYear === year && dateMonth === month) {
-            const option = document.createElement('div');
-            option.className = 'date-picker-option';
+                    if (dateYear === year && dateMonth === month) {
+                        const option = document.createElement('div');
+                        option.className = 'date-picker-option';
 
-            const currentDateStr = this.getCurrentDate();
-            if (date === currentDateStr) {
-                option.classList.add('selected');
-            }
+                        const currentDateStr = this.getCurrentDate();
+                        if (date === currentDateStr) {
+                            option.classList.add('selected');
+                        }
 
-            const formattedDate = this.formatDate(date);
-            const dateHint = this.calculateDateDifference(date, currentDateStr);
+                        const formattedDate = this.formatDate(date);
+                        const dateHint = this.calculateDateDifference(date, currentDateStr);
 
-            option.innerHTML = `
+                        option.innerHTML = `
                 <span class="date-text">${formattedDate}</span>
                 <span class="date-hint">${dateHint}</span>
             `;
 
-            option.dataset.dateValue = date;
+                        option.dataset.dateValue = date;
 
-            option.addEventListener('click', () => {
-                this.selectDate(date, formattedDate);
-                this.hideDatePicker();
-            });
+                        option.addEventListener('click', () => {
+                            this.selectDate(date, formattedDate);
+                            this.hideDatePicker();
+                        });
 
-            dateOptions.appendChild(option);
-        }
-    });
+                        dateOptions.appendChild(option);
+                    }
+                });
 
-    if (dateOptions.children.length === 0) {
-        dateOptions.innerHTML = '<div class="date-picker-option">该月份暂无作业安排</div>';
-    }
-},
+                if (dateOptions.children.length === 0) {
+                    dateOptions.innerHTML = '<div class="date-picker-option">该月份暂无作业安排</div>';
+                }
+            },
 
             selectDate(date, formattedDate) {
                 const datePickerInput = document.getElementById('datePickerInput');
@@ -1374,117 +1385,119 @@
             },
 
             updateStats(date) {
-    const subjects = ['chinese', 'math', 'english', 'chemistry'];
-    let totalTasks = 0;
-    let completedTasks = 0;
+                const subjects = ['chinese', 'math', 'english', 'chemistry', 'history'];
+                let totalTasks = 0;
+                let completedTasks = 0;
 
-    subjects.forEach(subject => {
-        const content = this.getSubjectContentByDate(date, subject);
-        if (!content || content.trim() === '') return;
+                subjects.forEach(subject => {
+                    const content = this.getSubjectContentByDate(date, subject);
+                    if (!content || content.trim() === '') return;
 
-        const taskItems = content.split('<br>');
-        taskItems.forEach((task, index) => {
-            if (!task.trim()) return;
+                    const taskItems = content.split('<br>');
+                    taskItems.forEach((task, index) => {
+                        if (!task.trim()) return;
 
-            const taskId = `task-${date}-${subject}-${index}`;
-            totalTasks++;
+                        const taskId = `task-${date}-${subject}-${index}`;
+                        totalTasks++;
 
-            if (localStorage.getItem(taskId) === 'true') {
-                completedTasks++;
-            }
-        });
-    });
+                        if (localStorage.getItem(taskId) === 'true') {
+                            completedTasks++;
+                        }
+                    });
+                });
 
-    const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+                const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
-    document.getElementById('totalTasks').textContent = totalTasks;
-    document.getElementById('completedTasks').textContent = completedTasks;
-    document.getElementById('completionRate').textContent = `${completionRate}%`;
-    document.getElementById('progressFill').style.width = `${completionRate}%`;
-},
+                document.getElementById('totalTasks').textContent = totalTasks;
+                document.getElementById('completedTasks').textContent = completedTasks;
+                document.getElementById('completionRate').textContent = `${completionRate}%`;
+                document.getElementById('progressFill').style.width = `${completionRate}%`;
+            },
 
             getSubjectContentByDate(date, subjectKey) {
-    const entry = this.homeworkData.find(item => item.data === date);
-    if (!entry) return '';
-    
-    const content = entry[subjectKey];
-    if (content === '' || content === undefined || content === null) {
-        return '';
-    }
-    
-    // 如果内容是一个数字（指向其他日期的ID）
-    if (typeof content === 'number' || !isNaN(content)) {
-        const targetId = parseInt(content);
-        const targetEntry = this.homeworkData.find(item => item.id === targetId);
-        if (targetEntry && targetEntry[subjectKey]) {
-            return this.getSubjectContentByDate(targetEntry.data, subjectKey);
-        }
-        return '';
-    }
-    
-    // 如果是正常字符串内容
-    return content;
-},
+                // 修正：查找 date 字段而不是 data
+                const entry = this.homeworkData.find(item => item.date === date);
+                if (!entry) return '';
 
-showTasks(date) {
-    const tasksContainer = document.getElementById('tasks');
-    tasksContainer.innerHTML = '';
+                const content = entry[subjectKey];
+                if (content === '' || content === undefined || content === null) {
+                    return '';
+                }
 
-    const entry = this.homeworkData.find(item => item.data === date);
-    if (!entry) {
-        tasksContainer.innerHTML = `
+                // 如果内容是一个数字（指向其他日期的ID）
+                if (typeof content === 'number' || !isNaN(content)) {
+                    const targetId = parseInt(content);
+                    const targetEntry = this.homeworkData.find(item => item.id === targetId);
+                    if (targetEntry && targetEntry[subjectKey]) {
+                        return this.getSubjectContentByDate(targetEntry.date, subjectKey);
+                    }
+                    return '';
+                }
+
+                // 如果是正常字符串内容
+                return content;
+            },
+
+            showTasks(date) {
+                const tasksContainer = document.getElementById('tasks');
+                tasksContainer.innerHTML = '';
+
+                // 修正：查找 date 字段而不是 data
+                const entry = this.homeworkData.find(item => item.date === date);
+                if (!entry) {
+                    tasksContainer.innerHTML = `
             <div class="no-tasks">
                 <i class="fas fa-exclamation-triangle"></i>
                 <div>未找到该日期的作业</div>
             </div>
         `;
-        this.updateStats(date);
-        return;
-    }
+                    this.updateStats(date);
+                    return;
+                }
 
-    const subjects = [
-        { key: 'chinese', name: '语文作业', icon: '语', color: '#e74c3c' },
-        { key: 'math', name: '数学作业', icon: '数', color: '#3498db' },
-        { key: 'english', name: '英语作业', icon: '英', color: '#f39c12' },
-        { key: 'chemistry', name: '化学作业', icon: '化', color: '#9b59b6' },
-        { key: 'history', name: '历史作业', icon: '历', color: '#9b59b6' }
-    ];
+                const subjects = [
+                    { key: 'chinese', name: '语文作业', icon: '语', color: '#e74c3c' },
+                    { key: 'math', name: '数学作业', icon: '数', color: '#3498db' },
+                    { key: 'english', name: '英语作业', icon: '英', color: '#f39c12' },
+                    { key: 'chemistry', name: '化学作业', icon: '化', color: '#9b59b6' },
+                    { key: 'history', name: '历史作业', icon: '历', color: '#9b59b6' }
+                ];
 
-    let hasTasks = false;
+                let hasTasks = false;
 
-    subjects.forEach(subject => {
-        const content = this.getSubjectContentByDate(date, subject.key);
-        if (!content || content.trim() === '') return;
-        
-        hasTasks = true;
-        const taskItems = content.split('<br>');
+                subjects.forEach(subject => {
+                    const content = this.getSubjectContentByDate(date, subject.key);
+                    if (!content || content.trim() === '') return;
 
-        const subjectDiv = document.createElement('div');
-        subjectDiv.className = 'subject-title';
+                    hasTasks = true;
+                    const taskItems = content.split('<br>');
 
-        const subjectHeader = document.createElement('div');
-        subjectHeader.className = 'subject-header';
+                    const subjectDiv = document.createElement('div');
+                    subjectDiv.className = 'subject-title';
 
-        subjectHeader.innerHTML = `
+                    const subjectHeader = document.createElement('div');
+                    subjectHeader.className = 'subject-header';
+
+                    subjectHeader.innerHTML = `
             <div class="subject-icon" style="background-color: ${subject.color}">
                 ${subject.icon}
             </div>
             <div class="subject-name">${subject.name}</div>
         `;
 
-        const taskList = document.createElement('ul');
-        taskList.className = 'task-list';
+                    const taskList = document.createElement('ul');
+                    taskList.className = 'task-list';
 
-        taskItems.forEach((task, index) => {
-            if (!task.trim()) return;
+                    taskItems.forEach((task, index) => {
+                        if (!task.trim()) return;
 
-            const taskItem = document.createElement('li');
-            taskItem.className = 'task-item';
+                        const taskItem = document.createElement('li');
+                        taskItem.className = 'task-item';
 
-            const taskId = `task-${date}-${subject.key}-${index}`;
-            const isCompleted = localStorage.getItem(taskId) === 'true';
+                        const taskId = `task-${date}-${subject.key}-${index}`;
+                        const isCompleted = localStorage.getItem(taskId) === 'true';
 
-            taskItem.innerHTML = `
+                        taskItem.innerHTML = `
                 <input type="checkbox" class="task-checkbox" id="${taskId}" ${isCompleted ? 'checked' : ''}>
                 <div class="task-content">${task}</div>
                 <div class="task-footer">
@@ -1492,51 +1505,63 @@ showTasks(date) {
                 </div>
             `;
 
-            taskItem.classList.toggle('completed', isCompleted);
+                        taskItem.classList.toggle('completed', isCompleted);
 
-            taskItem.addEventListener('click', (e) => {
-                if (!e.target.classList.contains('task-checkbox')) {
-                    if (this.currentSelectedTask) {
-                        this.currentSelectedTask.classList.remove('selected');
-                    }
+                        // 添加复选框事件监听器
+                        const checkbox = taskItem.querySelector('.task-checkbox');
+                        checkbox.addEventListener('change', () => {
+                            localStorage.setItem(taskId, checkbox.checked);
 
-                    this.currentSelectedTask = taskItem;
-                    this.currentSelectedTask.classList.add('selected');
+                            // 更新任务项的完成状态
+                            taskItem.classList.toggle('completed', checkbox.checked);
 
-                    this.showSelectionFeedback();
+                            // 更新统计信息
+                            this.updateStats(date);
+                        });
 
-                    const taskText = task.replace(/<[^>]*>/g, '').trim();
-                    this.setCurrentTomatoTask(taskText);
-                }
-            });
+                        taskItem.addEventListener('click', (e) => {
+                            if (!e.target.classList.contains('task-checkbox')) {
+                                if (this.currentSelectedTask) {
+                                    this.currentSelectedTask.classList.remove('selected');
+                                }
 
-            taskList.appendChild(taskItem);
-        });
+                                this.currentSelectedTask = taskItem;
+                                this.currentSelectedTask.classList.add('selected');
 
-        subjectDiv.appendChild(subjectHeader);
-        subjectDiv.appendChild(taskList);
-        tasksContainer.appendChild(subjectDiv);
-    });
+                                this.showSelectionFeedback();
 
-    if (!hasTasks) {
-        const today = new Date();
-        const isWeekend = today.getDay() === 0 || today.getDay() === 6;
-        const message = isWeekend
-            ? '好好休息一下吧！'
-            : '今天没有作业安排，可以复习之前的内容或预习新课。';
+                                const taskText = task.replace(/<[^>]*>/g, '').trim();
+                                this.setCurrentTomatoTask(taskText);
+                            }
+                        });
 
-        tasksContainer.innerHTML = `
+                        taskList.appendChild(taskItem);
+                    });
+
+                    subjectDiv.appendChild(subjectHeader);
+                    subjectDiv.appendChild(taskList);
+                    tasksContainer.appendChild(subjectDiv);
+                });
+
+                if (!hasTasks) {
+                    const today = new Date();
+                    const isWeekend = today.getDay() === 0 || today.getDay() === 6;
+                    const message = isWeekend
+                        ? '好好休息一下吧！'
+                        : '今天没有作业安排，可以复习之前的内容或预习新课。';
+
+                    tasksContainer.innerHTML = `
             <div class="no-tasks">
                 <i class="fas fa-calendar-check"></i>
                 <div class="empty-title">今天没有作业</div>
                 <div class="empty-message">${message}</div>
             </div>
         `;
-    }
+                }
 
-    // 更新统计信息
-    this.updateStats(date);
-},
+                // 更新统计信息
+                this.updateStats(date);
+            },
 
             showSelectionFeedback() {
                 const feedback = document.getElementById('selectionFeedback');
@@ -1819,9 +1844,9 @@ showTasks(date) {
             },
         }
 
-            window.addEventListener('load', () => {
-                AppState.init();
-            });
+        window.addEventListener('load', () => {
+            AppState.init();
+        });
     </script>
 </body>
 
