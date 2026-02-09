@@ -1102,7 +1102,7 @@
             isTomatoMode: false,
             currentDate: new Date(),
             currentMonthView: new Date(),
-            
+
             // 科目配置映射 - 移到AppState属性中
             subjectConfigMap: {
                 'chinese': { name: '语文作业', icon: '语', color: '#e74c3c' },
@@ -1591,11 +1591,25 @@
                         const taskId = `task-${date}-${subject.key}-${index}`;
                         const isCompleted = localStorage.getItem(taskId) === 'true';
 
+                        // 检测是否为引用内容并添加提示
+                        const entry = this.homeworkData.find(item => item.date === date);
+                        let taskHint = '';
+
+                        if (entry && typeof entry[subject.key] === 'number') {
+                            const referencedEntry = this.homeworkData.find(item => item.id === entry[subject.key]);
+                            if (referencedEntry) {
+                                taskHint = `<div class="task-hint" style="font-size: 0.8em; color: var(--md-sys-color-secondary); margin-top: 4px; font-style: italic;">
+                继承自 ${referencedEntry.date} 的任务
+            </div>`;
+                            }
+                        }
+
                         taskItem.innerHTML = `
                             <input type="checkbox" class="task-checkbox" id="${taskId}" ${isCompleted ? 'checked' : ''}>
                             <div class="task-content">${task}</div>
+                            ${taskHint}
                             <div class="task-footer">
-                                <span>任务 ${index + 1} / ${taskItems.filter(t => t.trim()).length}</span>
+                                <span>任务 ${index + 1}</span>
                             </div>
                         `;
 
