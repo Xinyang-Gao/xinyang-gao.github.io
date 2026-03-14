@@ -557,8 +557,26 @@ class ScrollManager {
     }
 }
 
+// 加载导航栏
+async function loadNavbar() {
+    try {
+        const response = await fetch('navbar.html');
+        if (!response.ok) throw new Error('Failed to load navbar');
+        const navbarHTML = await response.text();
+        const placeholder = document.getElementById('navbar-placeholder');
+        if (placeholder) {
+            placeholder.innerHTML = navbarHTML;
+        } else {
+            console.warn('Navbar placeholder not found');
+        }
+    } catch (error) {
+        console.error('Error loading navbar:', error);
+    }
+}
+
 // 主初始化
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    await loadNavbar();
     const currentPage = window.location.pathname.split('/').pop().replace('.html', '') || 'index';
     if (currentPage === 'index') {
         updateDynamicGreeting();
