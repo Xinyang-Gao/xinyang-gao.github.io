@@ -523,12 +523,16 @@ class NavigationManager {
     }
 
     static initNavigation() {
+        // 在多页面模式下，导航链接是直接的HTML链接，不需要JavaScript处理
+        // 但可以设置active状态
+        const currentPage = window.location.pathname.split('/').pop().replace('.html', '') || 'index';
         document.querySelectorAll('.nav-item').forEach(item => {
-            item.addEventListener('click', e => {
-                e.preventDefault();
-                const p = item.getAttribute('data-page');
-                if (p) PageManager.loadPage(p);
-            });
+            const page = item.getAttribute('data-page');
+            if (page === currentPage) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
         });
     }
 
@@ -555,12 +559,44 @@ class ScrollManager {
 
 // 主初始化
 document.addEventListener('DOMContentLoaded', () => {
-    updateDynamicGreeting();
+    const currentPage = window.location.pathname.split('/').pop().replace('.html', '') || 'index';
+    if (currentPage === 'index') {
+        updateDynamicGreeting();
+    } else if (currentPage === 'articles') {
+        initializeArticlesPage();
+    } else if (currentPage === 'works') {
+        initializeWorksPage();
+    }
     NavigationManager.initNavigation();
-    NavigationManager.initPopstate();
     NavigationManager.initMobileMenuToggle();
     ScrollManager.initBackToTopButton();
-    const initialPage = Utils.getUrlParam('page') || 'index';
-    PageManager.loadPage(initialPage);
     document.body.setAttribute('data-loaded', 'true');
 });
+
+async function initializeArticlesPage() {
+    try {
+        const data = await DataManager.fetchData('articles');
+        const html = UIRenderer.generateListHTML(data, 'articles');
+        const container = document.getElementById('articles-list-container');
+        if (container) {
+            container.innerHTML = html;
+            new SearchController('articles');
+        }
+    } catch (e) {
+        console.error('加载文章数据失败:', e);
+    }
+}
+
+async function initializeWorksPage() {
+    try {
+        const data = await DataManager.fetchData('works');
+        const html = UIRenderer.generateListHTML(data, 'works');
+        const container = document.getElementById('works-list-container');
+        if (container) {
+            container.innerHTML = html;
+            new SearchController('works');
+        }
+    } catch (e) {
+        console.error('加载作品数据失败:', e);
+    }
+}

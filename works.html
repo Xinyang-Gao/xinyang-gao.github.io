@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>作品 - GaoXinYang's website</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+</head>
+<body>
+  <div class="navbar">
+    <div class="nav-logo">
+      <span class="logo-text">GaoXinYang</span>
+    </div>
+    <nav aria-label="主导航">
+      <div class="nav-items" id="navbarNav">
+          <a href="index.html" class="nav-item" data-page="index">首页</a>
+          <a href="about.html" class="nav-item" data-page="about">关于</a>
+          <a href="articles.html" class="nav-item" data-page="articles">文章</a>
+          <a href="works.html" class="nav-item active" data-page="works">作品</a>
+          <a href="contact.html" class="nav-item" data-page="contact">联系</a>
+      </div>
+  </nav>
+    <div class="nav-actions">
+      <div class="mobile-toggle">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="container">
+    <main id="mainContent" role="main" aria-live="polite" aria-busy="false">
+      <h2>作品</h2>
+<div id="search-container">
+    <input type="text" id="search-input" placeholder="搜索作品...">
+    <select id="search-field">
+      <option value="all">全部</option>
+      <option value="title">标题</option>
+      <option value="tag">标签</option>
+      <option value="date">日期</option>
+    </select>
+  </div>
+  <div id="works-tags-filter" class="tags-filter">
+    <!-- 标签按钮将在这里动态生成 -->
+    <span class="filter-label">按标签筛选:</span>
+  </div>
+  <div id="works-list-container"></div>
+<div id="works-list-container">
+    <!-- 作品列表将被 JavaScript 动态插入到这里 -->
+</div>
+ </main>
+  </div>
+
+  <button id="backToTopBtn" class="back-to-top-btn" title="返回顶部">↑</button>
+  <div id="pageTransition" class="page-transition"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
