@@ -560,7 +560,7 @@ class ScrollManager {
 // 加载导航栏
 async function loadNavbar() {
     try {
-        const response = await fetch('navbar.html');
+        const response = await fetch('/navbar.html');
         if (!response.ok) throw new Error('Failed to load navbar');
         const navbarHTML = await response.text();
         const placeholder = document.getElementById('navbar-placeholder');
