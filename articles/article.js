@@ -36,6 +36,9 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('articleMeta').textContent = meta.date || '未指定日期';
             document.getElementById('articleBody').innerHTML = html;
 
+            // 重新触发动画
+            resetAnimations();
+
             generateTOC(); // 生成目录
             initScrollSpy(); // 初始化滚动监听和高亮功能
         })
@@ -204,3 +207,37 @@ document.addEventListener('DOMContentLoaded', function () {
         return urlParams.get(name);
     }
 });
+
+// 重新触发动画的函数
+function resetAnimations() {
+    // 强制重新触发动画
+    const title = document.getElementById('articleTitle');
+    const meta = document.getElementById('articleMeta');
+    const body = document.getElementById('articleBody');
+
+    if (title) {
+        title.style.animation = 'none';
+        title.offsetHeight; // 触发重绘
+        title.style.animation = '';
+    }
+
+    if (meta) {
+        meta.style.animation = 'none';
+        meta.offsetHeight;
+        meta.style.animation = '';
+    }
+
+    if (body) {
+        body.style.animation = 'none';
+        body.offsetHeight;
+        body.style.animation = '';
+    }
+
+    // 重新触目录动画
+    const tocItems = document.querySelectorAll('.toc-list li');
+    tocItems.forEach((item, index) => {
+        item.style.animation = 'none';
+        item.offsetHeight;
+        item.style.animation = '';
+    });
+}

@@ -591,7 +591,7 @@ hr {
   position: fixed; /* 改为 fixed 以确保在视口内定位 */
   top: 50vh; /* 初始位置：视口垂直中心 */
   left: 50%; /* 初始位置：视口水平中心 */
-  transform: translate(-50%, -50%) scale(0.1); /* 初始状态：缩放为很小，并居中 */
+  transform: translate(-50%, -50%) scale(0.8) rotate(-5deg); /* 初始状态：缩放为很小，并居中 */
   width: 700px; /* 初始动画起始宽度 */
   height: 500px; /* 初始动画起始高度 */
   max-width: 90vw; /* 最大宽度为视口宽度的 90% */
@@ -603,14 +603,17 @@ hr {
   z-index: var(--z-index-details);
   overflow: hidden; /* 内容溢出时隐藏 */
   opacity: 0; /* 初始透明 */
-  transition: all var(--transition-slow) var(--transition-draw);
+  transition: none; /* 移除过渡，使用动画 */
   box-sizing: border-box;
   min-height: 200px; /* 设置最小高度 */
 }
 
 .work-details-envelope.active {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1); /* 动画结束状态：居中并正常大小 */
+  animation: workDetailsScaleIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.work-details-envelope.closing {
+  animation: workDetailsScaleOut 0.4s ease-in forwards;
 }
 
 .work-details-content {
@@ -703,7 +706,17 @@ hr {
   cursor: pointer;
   transition: all var(--transition-normal) var(--transition-ease);
   box-shadow: 0 2px 8px var(--shadow-color);
+  opacity: 0;
+  transform: translateY(20px);
+  animation: listItemFadeIn 0.6s ease-out forwards;
 }
+
+.list-item:nth-child(1) { animation-delay: 0.1s; }
+.list-item:nth-child(2) { animation-delay: 0.2s; }
+.list-item:nth-child(3) { animation-delay: 0.3s; }
+.list-item:nth-child(4) { animation-delay: 0.4s; }
+.list-item:nth-child(5) { animation-delay: 0.5s; }
+.list-item:nth-child(n+6) { animation-delay: 0.6s; }
 
 .list-item:hover {
   border-color: var(--accent-color);
@@ -786,6 +799,69 @@ hr {
   100% {
     transform: translateY(0) scale(0.98);
     opacity: 0;
+  }
+}
+
+/* 列表项淡入动画 */
+@keyframes listItemFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 作品详情弹窗动画 */
+@keyframes workDetailsScaleIn {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8) rotate(-5deg);
+  }
+  50% {
+    opacity: 0.8;
+    transform: translate(-50%, -50%) scale(1.05) rotate(1deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+  }
+}
+
+@keyframes workDetailsScaleOut {
+  0% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8) rotate(-5deg);
+  }
+}
+
+/* 文章内容加载动画 */
+@keyframes articleContentFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 目录项动画 */
+@keyframes tocItemSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
   }
 }
 

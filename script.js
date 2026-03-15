@@ -498,9 +498,9 @@ class PageManager {
         document.body.appendChild(envelope);
         const closeBtn = envelope.querySelector('.work-details-close');
         function close() {
-            envelope.style.transform = 'translate(-50%,-50%) scale(0.1)';
             envelope.classList.remove('active');
-            setTimeout(() => envelope.parentNode?.removeChild(envelope), 300);
+            envelope.classList.add('closing');
+            setTimeout(() => envelope.parentNode?.removeChild(envelope), 400);
         }
         closeBtn.addEventListener('click', close);
         requestAnimationFrame(() => {
