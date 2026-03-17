@@ -125,7 +125,8 @@ function updateDynamicGreeting() {
     if (el) {
         el.textContent = greeting;
         el.style.fontWeight = 'bold';
-        el.style.color = '#2c3e50';
+        // 颜色由 CSS 变量控制，这里不再硬编码
+        el.style.color = ''; 
     }
 }
 
@@ -412,6 +413,12 @@ class PageManager {
         const cs = window.getComputedStyle(elements.container);
         const pad = ['Top', 'Right', 'Bottom', 'Left'].map(k => parseFloat(cs[`padding${k}`]));
         paper.style.cssText = `position: fixed; top: ${rect.top}px; left: ${rect.left}px; width: ${rect.width}px; height: ${rect.height}px; padding: ${pad.join(' ')}; border: var(--border-width) solid var(--border-color); box-shadow: var(--shadow-main), var(--shadow-offset), -var(--shadow-offset); border-radius: var(--border-radius-container); background: white; box-sizing: border-box; z-index: var(--z-index-animation-paper); opacity: 0; transform: translateY(100%) scale(0.95);`;
+        
+        // 暗黑模式下调整纸张背景色
+        if (document.documentElement.getAttribute('data-theme') === 'dark') {
+             paper.style.background = '#222';
+        }
+
         paper.innerHTML = content;
         elements.content.classList.add('fade-out-shrink');
         return new Promise(resolve => {
@@ -523,8 +530,8 @@ class NavigationManager {
     }
 
     static initNavigation() {
-        // 在多页面模式下，导航链接是直接的HTML链接，不需要JavaScript处理
-        // 但可以设置active状态
+        // 在多页面模式下，导航链接是直接的 HTML 链接，不需要 JavaScript 处理
+        // 但可以设置 active 状态
         const currentPage = window.location.pathname.split('/').pop().replace('.html', '') || 'index';
         document.querySelectorAll('.nav-item').forEach(item => {
             const page = item.getAttribute('data-page');
@@ -540,6 +547,42 @@ class NavigationManager {
         window.addEventListener('popstate', e => {
             const p = e.state?.page || 'index';
             PageManager.loadPage(p, false);
+        });
+    }
+    
+    // 新增：初始化主题切换
+    static initThemeToggle() {
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        if (!themeToggleBtn) return;
+
+        const applyTheme = (theme) => {
+            document.documentElement.setAttribute('data-theme', theme);
+            themeToggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+            localStorage.setItem('theme', theme);
+        };
+
+        // 检查本地存储或系统偏好
+        const savedTheme = localStorage.getItem('theme');
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        if (savedTheme) {
+            applyTheme(savedTheme);
+        } else if (systemPrefersDark) {
+            applyTheme('dark');
+        }
+
+        // 监听按钮点击
+        themeToggleBtn.addEventListener('click', () => {
+            const currentTheme = document.documentElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            applyTheme(newTheme);
+        });
+        
+        // 监听系统主题变化 (如果用户没有手动设置过)
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
+            if (!localStorage.getItem('theme')) {
+                applyTheme(e.matches ? 'dark' : 'light');
+            }
         });
     }
 }
@@ -566,6 +609,8 @@ async function loadNavbar() {
         const placeholder = document.getElementById('navbar-placeholder');
         if (placeholder) {
             placeholder.innerHTML = navbarHTML;
+            // 导航栏加载后，初始化主题切换功能
+            NavigationManager.initThemeToggle();
         } else {
             console.warn('Navbar placeholder not found');
         }
@@ -576,6 +621,15 @@ async function loadNavbar() {
 
 // 主初始化
 document.addEventListener('DOMContentLoaded', async () => {
+    // 在加载导航栏之前，先尝试应用保存的主题，防止闪烁
+    const savedTheme = localStorage.getItem('theme');
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (savedTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+    } else if (systemPrefersDark) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+    }
+
     await loadNavbar();
     const currentPage = window.location.pathname.split('/').pop().replace('.html', '') || 'index';
     if (currentPage === 'index') {
