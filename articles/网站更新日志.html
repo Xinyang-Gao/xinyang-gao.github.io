@@ -33,7 +33,8 @@
 </blockquote>
 <h1 id="heading-0">2026年3月28日 V5.0.0</h1>
 <ul>
-<li><strong>重大修改</strong></li>
+<li><strong>重大修改＆新增</strong></li>
+<li>添加 <a href="https://twikoo.js.org/">Twikoo</a> 评论系统</li>
 <li>优化网站样式（详见本节末）</li>
 <li><strong>修改</strong></li>
 <li>更改文章查看页显示逻辑<ul>
@@ -457,6 +458,11 @@
 <li>新增 <code>LICENSE</code> (MIT License)</li>
 </ul>
             </div>
+            <!-- 评论区域 -->
+            <div class="comments-container">
+                <h3>评论区</h3>
+                <div id="twikoo-comments"></div>
+            </div>
         </div>
     </div>
 
@@ -477,5 +483,22 @@
     </script>
     <script src="/script.js"></script>
     <script src="article.js"></script>
+    
+    <!-- Twikoo 评论系统 -->
+    <script src="https://registry.npmmirror.com/twikoo/1.7.4/files/dist/twikoo.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof twikoo !== 'undefined') {
+                twikoo.init({
+                    envId: 'https://twikoo-gxy.netlify.app/.netlify/functions/twikoo',
+                    el: '#twikoo-comments',
+                    path: window.location.pathname,
+                    lang: 'zh-CN',
+                });
+            } else {
+                console.warn('Twikoo 加载失败，请检查网络或 CDN 地址');
+            }
+        });
+    </script>
 </body>
 </html>

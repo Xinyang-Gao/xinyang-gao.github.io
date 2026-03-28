@@ -13,7 +13,7 @@
 /* 目录容器（固定侧边栏） */
 .toc-container {
     width: 25%;
-    background: var(--bg-color);      /* 使用主站背景色，暗黑模式自动变深 */
+    background: var(--bg-color);
     border: 1px solid var(--border-color);
     border-radius: var(--border-radius-container);
     padding: 20px;
@@ -314,6 +314,23 @@
     background: linear-gradient(90deg, var(--accent-color), var(--link-hover));
     transition: width 0.1s ease;
     box-shadow: 0 0 6px rgba(139, 69, 19, 0.5);
+}
+
+/* 评论区样式（新增） */
+.comments-container {
+    margin-top: 3rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.comments-container h3 {
+    font-size: 1.4rem;
+    margin-bottom: 1rem;
+    color: var(--accent-color);
+}
+
+#twikoo-comments {
+    margin: 1rem 0;
 }
 
 /* 响应式设计 */

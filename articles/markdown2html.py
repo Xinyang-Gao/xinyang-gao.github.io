@@ -115,7 +115,7 @@ def convert_markdown_to_html(md_content: str) -> str:
 
 def create_html_page(title: str, date: str, content_html: str, headings_json: str) -> str:
     """
-    生成完整的HTML页面，与主站样式保持一致
+    生成完整的HTML页面，与主站样式保持一致，并集成Twikoo评论系统
     """
     # 如果date是"未指定"或空，尝试使用当前日期
     if not date or date == "未指定":
@@ -153,6 +153,11 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
             <div class="article-body" id="articleBody">
                 {content_html}
             </div>
+            <!-- 评论区域 -->
+            <div class="comments-container">
+                <h3>评论区</h3>
+                <div id="twikoo-comments"></div>
+            </div>
         </div>
     </div>
 
@@ -173,6 +178,23 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
     </script>
     <script src="/script.js"></script>
     <script src="article.js"></script>
+    
+    <!-- Twikoo 评论系统 -->
+    <script src="https://registry.npmmirror.com/twikoo/1.7.4/files/dist/twikoo.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {{
+            if (typeof twikoo !== 'undefined') {{
+                twikoo.init({{
+                    envId: 'https://twikoo-gxy.netlify.app/.netlify/functions/twikoo',
+                    el: '#twikoo-comments',
+                    path: window.location.pathname,
+                    lang: 'zh-CN',
+                }});
+            }} else {{
+                console.warn('Twikoo 加载失败，请检查网络或 CDN 地址');
+            }}
+        }});
+    </script>
 </body>
 </html>'''
     

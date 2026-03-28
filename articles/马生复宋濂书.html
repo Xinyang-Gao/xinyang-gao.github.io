@@ -76,6 +76,11 @@
 <p>学生 马生 谨上<br />
 时洪武八年腊月</p>
             </div>
+            <!-- 评论区域 -->
+            <div class="comments-container">
+                <h3>评论区</h3>
+                <div id="twikoo-comments"></div>
+            </div>
         </div>
     </div>
 
@@ -96,5 +101,22 @@
     </script>
     <script src="/script.js"></script>
     <script src="article.js"></script>
+    
+    <!-- Twikoo 评论系统 -->
+    <script src="https://registry.npmmirror.com/twikoo/1.7.4/files/dist/twikoo.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof twikoo !== 'undefined') {
+                twikoo.init({
+                    envId: 'https://twikoo-gxy.netlify.app/.netlify/functions/twikoo',
+                    el: '#twikoo-comments',
+                    path: window.location.pathname,
+                    lang: 'zh-CN',
+                });
+            } else {
+                console.warn('Twikoo 加载失败，请检查网络或 CDN 地址');
+            }
+        });
+    </script>
 </body>
 </html>

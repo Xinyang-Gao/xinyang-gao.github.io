@@ -38,6 +38,11 @@
 <p>对父母和老师而言， “驾驭”意味着从“堵”到“疏”。请尝试理解游戏世界的多元价值，看到它激发创意、促进社交、甚至辅助学习的一面。如同那位倡导“赏·玩”教育的校长所言，教育需要“赏”和“玩”。当你们看到我们坐在电脑前时，能否先问一句“在玩什么有趣的，能和我分享一下吗？”，而不是直接斥责？共同商定规则、以身作则，远比强制命令有效得多。</p>
 <p>归根结底，网络游戏是现代生活的一部分，是洪水猛兽还是得力工具，全系于我们的选择与智慧。让我们勇敢地承担起“驾驭者”的责任，用行动证明游戏可以利大于弊；也恳请大人们给予我们更多的信任和引导，放下偏见，与我们一同握住智慧的缰绳，在数字世界的原野上，共同奔向一个真正“学玩两不误”的精彩未来。</p>
             </div>
+            <!-- 评论区域 -->
+            <div class="comments-container">
+                <h3>评论区</h3>
+                <div id="twikoo-comments"></div>
+            </div>
         </div>
     </div>
 
@@ -58,5 +63,22 @@
     </script>
     <script src="/script.js"></script>
     <script src="article.js"></script>
+    
+    <!-- Twikoo 评论系统 -->
+    <script src="https://registry.npmmirror.com/twikoo/1.7.4/files/dist/twikoo.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof twikoo !== 'undefined') {
+                twikoo.init({
+                    envId: 'https://twikoo-gxy.netlify.app/.netlify/functions/twikoo',
+                    el: '#twikoo-comments',
+                    path: window.location.pathname,
+                    lang: 'zh-CN',
+                });
+            } else {
+                console.warn('Twikoo 加载失败，请检查网络或 CDN 地址');
+            }
+        });
+    </script>
 </body>
 </html>

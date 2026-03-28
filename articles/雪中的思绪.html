@@ -55,6 +55,11 @@
 <p>写作灵感：周五放学和同学打完雪仗 回家的路上，想到老师让写一篇作文——《雪中的思绪》，看着雪下着，于是骑着车想着路上转转能不能找到点素材，路过小学门口突然想看看，到门口从外向里张望，不由得回想起小学生活。一扭头发现值班室还有人，不知道当时怎么想的，我对值班的爷爷说想进去看看母校，可能是因为他知道我是十三中的学生（经常有初中生来看母校或老师）——我也不知道——反正就这么让我进去了，看着熟悉的景物，勾起我阵阵思绪，“素材肯定不愁了——”我这么想着。逛了一圈，决定回去，猛地想起还没看教室呐！不知道变化地大不大，于是从那不知走了多少遍的楼梯上去，走过不知走了多少遍的走廊，到教室门口了。“教室门锁着啊（失望）”[教室门不锁才怪的吧！]，于是趴在窗台上往里看（不趴着反光看不清……），但这一看，就勾起了我许多许多回忆，想起一件件往事、同学，开心的回忆、难过的经历、后悔的选择………………不知觉地，眼眶就湿了………………不知在哪里呆了多久——我只知道反应过来时天都黑了………………</p>
 </blockquote>
             </div>
+            <!-- 评论区域 -->
+            <div class="comments-container">
+                <h3>评论区</h3>
+                <div id="twikoo-comments"></div>
+            </div>
         </div>
     </div>
 
@@ -75,5 +80,22 @@
     </script>
     <script src="/script.js"></script>
     <script src="article.js"></script>
+    
+    <!-- Twikoo 评论系统 -->
+    <script src="https://registry.npmmirror.com/twikoo/1.7.4/files/dist/twikoo.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            if (typeof twikoo !== 'undefined') {
+                twikoo.init({
+                    envId: 'https://twikoo-gxy.netlify.app/.netlify/functions/twikoo',
+                    el: '#twikoo-comments',
+                    path: window.location.pathname,
+                    lang: 'zh-CN',
+                });
+            } else {
+                console.warn('Twikoo 加载失败，请检查网络或 CDN 地址');
+            }
+        });
+    </script>
 </body>
 </html>
