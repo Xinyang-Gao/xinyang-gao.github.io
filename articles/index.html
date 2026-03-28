@@ -10,8 +10,11 @@
 </head>
 <body>
   <div id="navbar-placeholder"></div>
-    <!-- 包含导航栏的占位符，主站结构 -->
-    <!-- 导航栏的 HTML/CSS -->
+  
+  <!-- 阅读进度条 -->
+  <div id="reading-progress" class="reading-progress-bar">
+    <div id="progress-bar" class="progress-bar"></div>
+  </div>
 
     <!-- 主内容区域：Flex 布局包含目录和文章内容 -->
     <div class="article-page-container">
@@ -35,6 +38,17 @@
             </div>
         </div>
 
+    </div>
+
+    <!-- 图片预览模态框 -->
+    <div id="imageModal" class="image-modal">
+        <span class="close">&times;</span>
+        <div class="modal-content">
+            <img id="modalImage" src="" alt="">
+        </div>
+        <div class="image-info">
+            <span id="imageCaption"></span>
+        </div>
     </div>
 
     <!-- marked 库必须在 article.js 之前加载 -->

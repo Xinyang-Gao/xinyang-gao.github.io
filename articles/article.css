@@ -38,9 +38,28 @@ body {
     overflow-x: hidden;
 }
 
+/* 阅读进度条样式 */
+.reading-progress-bar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background-color: transparent;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent-color), #a0522d);
+    transition: width 0.1s ease;
+    box-shadow: 0 0 6px rgba(139, 69, 19, 0.5);
+}
+
 .article-page-container {
     max-width: 1200px;
-    margin: 90px auto 40px auto; /* 顶部留出导航栏空间 */
+    margin: 94px auto 40px auto; /* 顶部留出导航栏和进度条空间 */
     padding: 0 20px; /* 左右内边距 */
     display: flex;
     gap: 20px; /* 目录和内容之间的间距 */
@@ -58,9 +77,9 @@ body {
                 6px 6px 0 -2px rgba(210, 180, 140, 0.3),
                 -6px 6px 0 -2px rgba(210, 180, 140, 0.3);
     position: sticky; /* 使用 sticky 定位，在父容器内固定 */
-    top: 90px; /* 距离 viewport 顶部的距离，略大于导航栏高度 */
+    top: 94px; /* 距离 viewport 顶部的距离，略大于导航栏高度 */
     align-self: flex-start; /* 防止目录随内容拉伸 */
-    max-height: calc(100vh - 120px); /* 限制最大高度，防止溢出 */
+    max-height: calc(100vh - 124px); /* 限制最大高度，防止溢出 */
     overflow-y: auto; /* 内容溢出时滚动 */
 }
 
@@ -224,7 +243,6 @@ body {
     margin-top: 0.8em;
 }
 
-/* 从 style.css 复制链接样式 */
 .article-content-wrapper a {
     color: var(--link-color);
     text-decoration: underline;
@@ -307,6 +325,100 @@ body {
     font-family: monospace; /* 确保代码字体 */
 }
 
+/* 懒加载图片样式 */
+.lazy-image {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 1.5em auto;
+    border-radius: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: transform 0.3s ease;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.lazy-image.loaded {
+    opacity: 1;
+}
+
+.lazy-image:hover {
+    transform: scale(1.02);
+}
+
+.image-placeholder {
+    max-width: 100%;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 1.5em auto;
+    border-radius: 4px;
+    background-color: #f0f0f0;
+    color: #888;
+    font-style: italic;
+    font-size: 0.9rem;
+}
+
+/* 图片预览模态框样式 */
+.image-modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.9);
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    display: block;
+    margin: 5% auto;
+    max-width: 90%;
+    max-height: 80%;
+    position: relative;
+}
+
+#modalImage {
+    margin: auto;
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 90vw;
+    max-height: 80vh;
+    object-fit: contain;
+    border-radius: 4px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+.close {
+    position: absolute;
+    top: 15px;
+    right: 35px;
+    color: #fff;
+    font-size: 40px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 1001;
+    transition: color 0.3s ease;
+}
+
+.close:hover,
+.close:focus {
+    color: #ccc;
+}
+
+.image-info {
+    text-align: center;
+    color: white;
+    padding: 20px;
+    margin-top: 10px;
+    font-size: 1.1rem;
+}
+
 /* --- 文章元数据样式 --- */
 .article-meta {
     text-align: center;
@@ -324,7 +436,7 @@ body {
     .article-page-container {
         flex-direction: column; /* 小屏幕下垂直排列 */
         padding: 20px 10px; /* 调整内边距 */
-        margin-top: 70px; /* 调整顶部边距 */
+        margin-top: 74px; /* 调整顶部边距 */
     }
 
     .toc-container,
@@ -343,12 +455,20 @@ body {
     .article-content-wrapper {
         padding: 20px;
     }
+    
+    .modal-content {
+        margin: 10% auto;
+    }
+    
+    .image-info {
+        font-size: 1rem;
+    }
 }
 
 @media (max-width: 480px) {
     .article-page-container {
         padding: 15px 5px;
-        margin-top: 65px;
+        margin-top: 69px;
     }
 
     .article-content-wrapper h1 {
@@ -362,6 +482,12 @@ body {
     .article-content-wrapper p {
         font-size: 1rem;
     }
+    
+    .close {
+        top: 10px;
+        right: 20px;
+        font-size: 30px;
+    }
 }
 
 /* 平滑滚动 */
@@ -374,7 +500,7 @@ html {
 .article-content-wrapper h2,
 .article-content-wrapper h3,
 .article-content-wrapper h4 {
-    scroll-margin-top: 100px; /* 考虑到固定导航栏 */
+    scroll-margin-top: 104px; /* 考虑到固定导航栏和进度条 */
     position: relative;
 }
 
