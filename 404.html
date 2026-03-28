@@ -4,140 +4,151 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>页面未找到 - GaoXinYang's website</title>
+  <link rel="stylesheet" href="style.css">
   <style>
-    /* 信件风格主样式 */
-    :root {
-        --bg-color: #fdf5e6;
-        --text-color: #333333;
-        --accent-color: #8b4513;
-        --border-color: #d2b48c;
-        --header-bg: #f5f5dc;
-        --link-color: #8b4513;
-        --link-hover: #a0522d;
+    /* 404 页面特定微调，复用全局变量 */
+    .error-container {
+      max-width: 750px;
+      margin: calc(var(--nav-height) + 35px) auto 60px auto;
+      background: white;
+      border: var(--border-width) solid var(--border-color);
+      box-shadow: var(--shadow-main), var(--shadow-offset), -var(--shadow-offset);
+      padding: 55px 45px;
+      position: relative;
+      border-radius: var(--border-radius-container);
+      text-align: center;
+      transition: background-color var(--transition-normal) var(--transition-ease), 
+                  border-color var(--transition-normal) var(--transition-ease);
     }
 
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
+    [data-theme="dark"] .error-container {
+      background: #222;
     }
 
-    body {
-        background-color: var(--bg-color);
-        font-family: "Georgia", "Times New Roman", "FangSong", "仿宋", "STFangSong", "华文仿宋", serif;
-        color: var(--text-color);
-        line-height: 1.6;
-        padding: 20px;
-        min-height: 100vh;
-        overflow-x: hidden;
-        display: flex;
-        justify-content: center;
-        align-items: center;
+    .error-container h1 {
+      font-size: 5rem;
+      margin: 0.3em 0 0.2em;
+      color: var(--accent-color);
+      font-weight: 700;
+      letter-spacing: 4px;
     }
 
-    .container {
-        max-width: 800px;
-        margin: 0 auto;
-        background: white;
-        border: 2px solid var(--border-color);
-        box-shadow: 
-            0 4px 12px rgba(0, 0, 0, 0.1),
-            6px 6px 0 -2px rgba(210, 180, 140, 0.3),
-            -6px 6px 0 -2px rgba(210, 180, 140, 0.3);
-        padding: 40px;
-        position: relative;
-        border-radius: 6px;
-        text-align: center;
+    .error-container h2 {
+      font-size: 1.9rem;
+      margin: 0.5em 0;
+      color: var(--accent-color);
+      border-bottom: none;
+      padding-bottom: 0;
     }
 
-    h1 {
-        font-size: 4rem;
-        color: var(--accent-color);
-        margin: 20px 0;
-        font-family: "Georgia", serif;
+    .error-container p {
+      font-size: var(--font-size-base);
+      margin: 1.5em 0;
+      color: var(--text-color);
     }
 
-    h2 {
-        font-size: 2rem;
-        color: var(--accent-color);
-        margin: 20px 0;
-        font-family: "Georgia", serif;
+    [data-theme="dark"] .error-container p {
+      color: #d0d0d0;
     }
 
-    p {
-        font-size: 1.2rem;
-        margin: 20px 0;
-        color: #444;
-        line-height: 1.7;
+    .error-buttons {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      margin-top: 30px;
+      flex-wrap: wrap;
     }
 
-    .home-link {
-        display: inline-block;
-        background: var(--accent-color);
-        color: white;
-        padding: 12px 24px;
-        text-decoration: none;
-        border-radius: 6px;
-        transition: all 0.3s ease;
-        font-weight: bold;
-        font-size: 1.1rem;
-        margin-top: 20px;
-        border: 2px solid var(--accent-color);
+    .error-btn {
+      display: inline-block;
+      background: var(--accent-color);
+      color: white;
+      padding: 12px 28px;
+      text-decoration: none;
+      border-radius: 6px;
+      transition: all var(--transition-fast) var(--transition-ease);
+      font-weight: 500;
+      font-size: 1rem;
+      border: none;
+      cursor: pointer;
     }
 
-    .home-link:hover {
-        background: var(--link-hover);
-        border-color: var(--link-hover);
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    .error-btn:hover {
+      background: var(--link-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px var(--item-hover-shadow);
     }
 
-    .decoration {
-        position: absolute;
-        font-size: 6rem;
-        color: rgba(139, 69, 19, 0.1);
-        z-index: 0;
-        user-select: none;
+    .error-btn.outline {
+      background: transparent;
+      color: var(--accent-color);
+      border: 1px solid var(--accent-color);
     }
 
-    .decoration.tl {
-        top: 20px;
-        left: 20px;
-        transform: rotate(-10deg);
+    .error-btn.outline:hover {
+      background: var(--accent-color);
+      color: white;
     }
 
-    .decoration.tr {
-        top: 20px;
-        right: 20px;
-        transform: rotate(10deg);
+    .decoration-emoji {
+      font-size: 4rem;
+      opacity: 0.25;
+      user-select: none;
+      margin: 10px 0;
     }
 
-    .decoration.bl {
-        bottom: 20px;
-        left: 20px;
-        transform: rotate(-5deg);
-    }
-
-    .decoration.br {
-        bottom: 20px;
-        right: 20px;
-        transform: rotate(5deg);
+    @media (max-width: 768px) {
+      .error-container {
+        padding: 35px 25px;
+        margin: calc(var(--nav-height-mobile) + 25px) 20px 50px;
+      }
+      .error-container h1 { font-size: 4rem; }
+      .error-container h2 { font-size: 1.5rem; }
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="decoration tl">✉</div>
-    <div class="decoration tr">Gxy</div>
-    <div class="decoration bl">ERROR</div>
-    <div class="decoration br">？</div>
-    
+  <!-- 导航栏占位符，由 js 动态加载，与全局一致 -->
+  <div id="navbar-placeholder"></div>
+
+  <div class="error-container">
+    <div class="decoration-emoji">ERROR</div>
     <h1>404</h1>
-    <h2>——————页面未找到——————</h2>
-    <p>诶呀……没找到这个页面呀，也许是网址输错了？（或者我不小心写错代码了）</p>
-    <p>或者，不妨回到首页，重新开始探索</p>
-    <a href="/index.html" class="home-link">返回首页</a>
-    <a href="https://github.com/Xinyang-Gao/xinyang-gao.github.io/issues/new" class="home-link">反馈</a>
+    <h2>—————— 页面未找到 ——————</h2>
+    <p>诶呀……没找到这个页面呀，也许是网址输错了？<br>（或者我不小心写错代码了）</p>
+    <div class="error-buttons">
+      <a href="/index.html" class="error-btn">返回首页</a>
+      <a href="https://github.com/Xinyang-Gao/xinyang-gao.github.io/issues/new" target="_blank" class="error-btn outline">反馈问题</a>
+    </div>
   </div>
+
+  <script src="script.js"></script>
+  <script>
+    // 确保导航栏加载和主题一致性
+    document.addEventListener('DOMContentLoaded', async () => {
+      // 预置主题（防止闪烁）
+      const savedTheme = localStorage.getItem('theme');
+      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (savedTheme) {
+        document.documentElement.setAttribute('data-theme', savedTheme);
+      } else if (systemPrefersDark) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
+
+      // 加载导航栏（如果 navbar-placeholder 存在）
+      if (document.getElementById('navbar-placeholder')) {
+        await loadNavbar();
+      }
+      
+      // 激活导航高亮（当前页面为 404 时不需要高亮具体项，但保持主题切换按钮可用）
+      if (typeof NavigationManager !== 'undefined' && NavigationManager.initNavigation) {
+        NavigationManager.initNavigation();
+      }
+      if (typeof ScrollManager !== 'undefined' && ScrollManager.initBackToTopButton) {
+        ScrollManager.initBackToTopButton();
+      }
+      document.body.setAttribute('data-loaded', 'true');
+    });
+  </script>
 </body>
 </html>
