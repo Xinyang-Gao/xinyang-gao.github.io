@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网站更新日志 - GaoXinYang's website</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="article.css">
+</head>
+<body>
+    <div id="navbar-placeholder"></div>
+    
+    <!-- 阅读进度条 -->
+    <div id="reading-progress" class="reading-progress-bar">
+        <div id="progress-bar" class="progress-bar"></div>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="article-page-container">
+        <!-- 目录容器 - 将由JS动态生成 -->
+        <div class="toc-container">
+            <h2 class="toc-title">目录</h2>
+            <div id="toc-list-container"></div>
+        </div>
+
+        <!-- 主文章内容区 -->
+        <div class="article-content-wrapper">
+            <h1 class="article-title" id="articleTitle">═══ 网站更新日志 ═══</h1>
+            <div class="article-meta" id="articleMeta">2026-03-28</div>
+            <div class="article-body" id="articleBody">
+                <blockquote>
+<p>更新周期大概为一周</p>
+</blockquote>
+<h1 id="heading-0">2026年3月28日 V4.3.0</h1>
+<ul>
+<li><strong>重大修改</strong></li>
+<li>优化网站样式（详见本节末）</li>
+<li><strong>修改</strong></li>
+<li>更改文章查看页显示逻辑<ul>
+<li>由原本的 <code>/articles/?article=${encodeURIComponent(article.title)}</code> 获取参数调用 markdown 文件改为由 <code>markdown2html.py</code> 预生成 HTML 文件（同时，文章列表的跳转改为<code>/articles/{encodeURIComponent(article.title)}.html</code>）</li>
+<li>将 markdown 中的元数据标识从 <code>+++</code> 改为 <code>---</code></li>
+</ul>
+</li>
+<li><strong>新增</strong></li>
+<li>在文章查看页增加了图片查看器</li>
+<li>新增了文章查看页浏览记录功能，退出重进后仍能回到阅读位置</li>
+<li>在文章查看页增加了阅读进度条</li>
+<li><strong>优化</strong></li>
+<li>删除文章查看页的冗余代码</li>
+<li>在文章查看页显示的图片不会再超出内容框架范围</li>
+<li>在文章查看页实现了图片懒加载（未滚动到图片位置则不加载）</li>
+<li>修复文章查看页暗黑模式适配不全的 BUG</li>
+<li>修复文章查看页导航栏显示在 <code>首页</code> 的 BUG<blockquote>
+<p>旧样式:<br />
+<img alt="旧样式" src="https://s41.ax1x.com/2026/03/28/pe1QOXV.png" /><br />
+新样式<br />
+<img alt="新样式" src="https://s41.ax1x.com/2026/03/28/pe1QokQ.png" /></p>
+</blockquote>
+</li>
+</ul>
+<h1 id="heading-1">↓ 此前更新 ↓</h1>
+
+<h2 id="heading-2">2026年03月17日-27日 V4.2.0</h2>
+<ul>
+<li><strong>新增</strong></li>
+<li>增加了暗黑模式</li>
+<li>增加了一篇文章</li>
+<li>增加了一个作品<br />
+<strong>已知问题：1.文章查看页未适配*<br />
+</strong>2.在切换页面时会闪烁*</li>
+</ul>
+<h2 id="heading-3">2026年03月15日 V4.1.0</h2>
+<ul>
+<li><strong>修改</strong></li>
+<li>支持在文章查看页显示导航栏</li>
+<li>其他小修改</li>
+<li><strong>优化</strong></li>
+<li>动画优化<ul>
+<li>优化列表项显示动画：每个列表项从下方渐显滑入</li>
+<li>优化作品详情弹窗动画</li>
+<li>优化文章查看页动画</li>
+</ul>
+</li>
+<li>代码优化<ul>
+<li>删除多余的 <code>style.css</code> 代码</li>
+</ul>
+</li>
+</ul>
+<h2 id="heading-4">2026年03月14日 V4.0.0</h2>
+<ul>
+<li><strong>重大修改</strong></li>
+<li>为了进行 SEO 优化，重构了网站模式：从 SPA 转为 MAP<ul>
+<li>分离导航栏</li>
+<li>导航栏代码移动至 <code>navbar.html</code></li>
+<li>修改导航链接（从查询参数形式给位直接的 HTML 文件链接）</li>
+<li>移动 <code>pages</code> 文件夹中的文件到根目录，并为每个文件创建了完整的 HTML 结构</li>
+<li>相应的，更新了 <code>script.js</code> 以适应多页面模式</li>
+<li>移除了页面动态加载逻辑（ <code>PageManager.loadPage</code> ）</li>
+<li>添加了页面特定的初始化函数</li>
+<li>根据当前页面路径初始化相应的功能（问候语、文章列表、作品列表等）</li>
+<li>简化了导航管理，保留了移动菜单和返回顶部功能</li>
+</ul>
+</li>
+<li><strong>修改</strong></li>
+<li>其他小修改</li>
+</ul>
+<p>*<em>由于模式更换，被迫将原动画改为信纸淡入淡出（没想到怎么在多页面模式下实现原来的动画效果）</em></p>
+<h2 id="heading-5">2026年03月08日 V3.4.0</h2>
+<ul>
+<li><strong>修改</strong></li>
+<li>修改了“关于”页面文本（~终于不是占位文本啦~）</li>
+<li>其他小修改</li>
+<li><strong>优化</strong></li>
+<li>重构 <code>script.js</code> <ul>
+<li>优化命名与逻辑</li>
+</ul>
+</li>
+</ul>
+<h2 id="heading-6">2026年02月05日 V3.3.2</h2>
+<ul>
+<li><strong>新增</strong></li>
+<li>增加了一个作品</li>
+<li><strong>修改</strong></li>
+<li>修改了“首页”（跟随时间动态调整）和“关于”页面文本</li>
+<li>其他小修改</li>
+</ul>
+<h2 id="heading-7">2026年01月06日 V3.3.1.1</h2>
+<ul>
+<li><strong>修改</strong></li>
+<li>更新 <code>LICENSE</code> 文件</li>
+</ul>
+<h2 id="heading-8">2025年12月28日 V3.3.1</h2>
+
+<ul>
+<li><strong>新增</strong></li>
+<li>隐藏带有 <code>隐藏</code> 标签的文章与作品</li>
+<li><strong>优化</strong></li>
+<li>修复作品列表页在滚动后打开详情页会出现的显示问题</li>
+<li>文章查看页目录中的不同级别标题具有更明显的视觉差异</li>
+<li>优化 <code>script.js</code> 结构<ul>
+<li>优化性能</li>
+<li>为 <code>SearchManager</code> 中搜索输入添加了防抖功能</li>
+<li>使用DOMParser替代innerHTML直接操作</li>
+<li>优化了事件监听器的管理</li>
+<li>优化代码</li>
+<li>合并了 <code>fetchWorksData</code> 和 <code>fetchArticlesData</code> 为通用 <code>fetchData</code> 函数</li>
+<li>合并了列表生成函数，减少重复代码</li>
+<li>使用 <code>.list-item</code> 替代原来的 <code>.work-item</code> 和 <code>.article-item</code></li>
+<li>使用统一的 <code>.list-item-header</code>, <code>.list-item-title</code>, <code>.list-item-meta</code>, <code>.list-item-description</code> 类</li>
+<li>使用 <code>.tag</code> 类替代原来的 <code>.work-tag</code>, <code>.article-tag</code>, <code>.tech-tag</code></li>
+<li>将原来的 <code>handleWorkItemClick</code> 和 <code>handleArticleItemClick</code> 合并为 <code>handleListItemClick</code></li>
+<li>移除了原来的 <code>setupWorkItemsInteraction</code> 和 <code>setupArticleItemsInteraction</code>，使用统一的 <code>setupListItemsInteraction</code></li>
+<li>重构了 <code>SearchManager</code></li>
+<li>统一了命名规范并拆分了长函数</li>
+<li>优化 <code>style.css</code> 结构</li>
+<li>合并 <code>.work-item</code> 和 <code>.article-item</code> 为 <code>.list-item</code></li>
+</ul>
+</li>
+<li><strong>修改</strong></li>
+<li>修改了一些文本</li>
+</ul>
+<h2 id="heading-9">2025年12月27日 V3.3.0</h2>
+
+<ul>
+<li><strong>新增</strong></li>
+<li><strong>文章和作品列表页可以选择标签搜索了（相应地，移除了搜索中的<code>标签</code>搜索功能）</strong></li>
+<li>文章查看页面菜单标题现在追踪正文</li>
+<li><strong>优化</strong></li>
+<li><strong>移动端菜单点击后自动关闭</strong></li>
+<li>优化 <code>script.js</code> 结构<ul>
+<li>优化动画使其更加流畅、自然</li>
+<li>减少不必要的 DOM 操作和重绘</li>
+<li>优化代码结构和可维护性</li>
+<li>添加更完善的错误处理</li>
+<li>添加更详细的错误日志</li>
+</ul>
+</li>
+<li>优化 <code>style.css</code> 结构</li>
+<li><strong>修改</strong></li>
+<li>修改了一些文本</li>
+</ul>
+<h2 id="heading-10">2025年12月25日 V3.2.1</h2>
+
+<ul>
+<li><strong>优化</strong></li>
+<li>修复文章页面无法获取到元数据的问题<br />
+<em>2025年12月25日注：不管是什么文件， Github page 的 Jekyll 都会识别并删除以 <code>---</code> 为标识符的文件的元数据，于是我把 <code>---</code> 都改为 <code>+++</code> 终于解决了这个问题</em></li>
+<li>更改作品 <code>统计计算器</code> 为网站新样式，同时大幅精简代码</li>
+<li>优化 <code>style.css</code> 结构</li>
+</ul>
+<h2 id="heading-11">2025年12月23日 V3.2.0</h2>
+
+<ul>
+<li><strong>新增</strong></li>
+<li><strong>文章和作品页搜索功能</strong><ul>
+<li>支持搜索<code>标题</code>、<code>描述</code>、<code>标签</code>、<code>日期</code>和<code>所有</code></li>
+</ul>
+</li>
+<li><strong>优化</strong></li>
+<li>优化文件结构</li>
+<li><strong>修改</strong></li>
+<li>修改了一些文本</li>
+<li>修改了 <code>script.js</code> 中的一些函数</li>
+<li>移除 <code>works.json</code> 中的 <code>image</code></li>
+<li>将一些路径改为绝对路径</li>
+</ul>
+<h2 id="heading-12">2025年12月21日 V3.1.1</h2>
+
+<p><strong>生日大更新!（下半部分）</strong></p>
+<ul>
+<li><strong>新增</strong></li>
+<li>文章查看页面（目录 + 内容）</li>
+<li>新增文章：<code>test</code>（测试用）<code>计划实现的网站功能</code>、<code>网站更新日志</code>和一篇作文<code>雪中的思绪</code></li>
+<li><strong>优化</strong></li>
+<li>优化导航栏样式</li>
+<li>清理和优化代码结构（主要是 <code>script.js</code> ）<ul>
+<li>将函数定义移出 <code>DOMContentLoaded</code> 回调</li>
+<li>提取 <code>generateTagsHTML</code> 函数</li>
+<li>增强了对网络请求、数据解析和 DOM 操作的错误处理</li>
+<li>增加了对 <code>localStorage</code> 数据和 DOM 元素存在的检查</li>
+<li>添加了一些注释</li>
+</ul>
+</li>
+<li>修复 404 页面的<code>返回首页</code>按钮指向的不是根目录的 <code>index.html</code> 的问题</li>
+<li>修复网站图标不显示的问题</li>
+<li>首页新增了<code>查看网站更新日志</code>链接</li>
+<li><strong>修改</strong></li>
+<li>修改了一些样式</li>
+<li>修改了一些文本</li>
+</ul>
+<h2 id="heading-13">2025年12月20日 V3.1.0</h2>
+
+<p><strong>生日大更新!（上半部分）</strong></p>
+<ul>
+<li><strong>新增</strong></li>
+<li>新增页面切换动画</li>
+<li><strong>优化</strong></li>
+<li>优化网站文件结构，更方便维护</li>
+<li>优化作品详情查看页样式和动画</li>
+<li>优化 <code>works.json</code> 结构（合并了一些条目）</li>
+<li>清理上个样式残留的自定义光标和视差背景相关代码</li>
+<li>清理多余无用文件</li>
+<li><strong>修改</strong></li>
+<li>同步 <code>404.html</code> 页面的样式到新样式并修改了一些文本</li>
+<li>作品页从卡片流样式修改为列表样式</li>
+</ul>
+<h2 id="heading-14">2025年12月19日 V3.0.0</h2>
+
+<ul>
+<li><strong>重大修改</strong></li>
+<li>重构样式，从科技风改信“封”</li>
+<li><strong>修改</strong></li>
+<li>修改了一些文本</li>
+</ul>
+<h2 id="heading-15">2025年12月6日</h2>
+
+<ul>
+<li><strong>优化</strong></li>
+<li>优化网站性能</li>
+<li><strong>修改</strong></li>
+<li>优化样式</li>
+</ul>
+<h2 id="heading-16">2025年12月3日</h2>
+
+<ul>
+<li><strong>优化</strong></li>
+<li>分离导航栏代码</li>
+<li><strong>修改</strong></li>
+<li>一些小修改</li>
+</ul>
+<h2 id="heading-17">2025年12月2日</h2>
+
+<ul>
+<li><strong>优化</strong></li>
+<li>优化导航栏样式</li>
+<li><strong>修改</strong></li>
+<li>一些小修改</li>
+</ul>
+<h2 id="heading-18">2025年11月30日</h2>
+
+<ul>
+<li><strong>优化</strong></li>
+<li>优化网站性能</li>
+</ul>
+<h2 id="heading-19">2025年11月23日</h2>
+
+<ul>
+<li><strong>新增</strong></li>
+<li>新增了一个作品：<code>车轮模拟.html</code></li>
+</ul>
+<h2 id="heading-20">2025年10月22日</h2>
+
+<ul>
+<li><strong>优化</strong></li>
+<li>优化作品<code>朗诵1.html</code>(和<code>朗诵2.html</code>)中的图片，以及修复其中的一些链接跳转问题</li>
+</ul>
+<h2 id="heading-21">2025年10月22日</h2>
+
+<ul>
+<li><strong>新增</strong></li>
+<li>新增了一个（也可以说是两个）作品：<code>朗诵1.html</code>(和<code>朗诵2.html</code>)</li>
+</ul>
+<h2 id="heading-22">2025年9月8日</h2>
+
+<ul>
+<li><strong>新增</strong></li>
+<li>404页面（<code>404.html</code>）</li>
+<li>新增触屏支持（在初始页面可以通过屏幕上滑进入，以前只能使用鼠标滚轮）</li>
+</ul>
+<h2 id="heading-23">2025年9月7日</h2>
+
+<ul>
+<li><strong>重大修改</strong></li>
+<li>大量文件代码重构和移动</li>
+<li><strong>优化</strong></li>
+<li>分离和部分优化了作品<code>统计计算器.html</code>的 js 和 css 代码</li>
+<li>缩短切换页面的间隙时间</li>
+<li>优化作品页面卡片流布局</li>
+</ul>
+<h2 id="heading-24">2025年5月30日</h2>
+
+<ul>
+<li><strong>新增</strong></li>
+<li>新增了一个作品：<code>统计计算器.html</code></li>
+</ul>
+<h2 id="heading-25">2025年5月24日</h2>
+
+<ul>
+<li><strong>新增</strong></li>
+<li>在<code>file.json</code>中新增了一项内容<code>gaoyaqing的画.jpg</code></li>
+</ul>
+<h2 id="heading-26">2025年5月16日</h2>
+
+<ul>
+<li><strong>优化</strong></li>
+<li>更新页脚文件<code>footer.html</code></li>
+</ul>
+<h2 id="heading-27">2025年5月2日</h2>
+
+<ul>
+<li><strong>优化</strong></li>
+<li>代码和样式优化</li>
+</ul>
+<h2 id="heading-28">2025年5月1日</h2>
+
+<ul>
+<li><strong>新增</strong></li>
+<li>新增了一个文章：<code>dilimoxieppt</code></li>
+<li>增加文件系统</li>
+<li>添加文章阅读器</li>
+<li>增加了一个自定义 markdown 语法：<code>&lt;file src="文件链接" title="文件标题" type="文件类型" url="跳转链接"&gt;</code></li>
+<li><strong>优化</strong></li>
+<li>代码和样式优化</li>
+<li>更新<code>404.html</code></li>
+<li>将导航栏页脚移动至通用脚本</li>
+</ul>
+<h2 id="heading-29">2025年4月30日</h2>
+
+<ul>
+<li><strong>新增</strong></li>
+<li>新增了文章页面</li>
+<li><strong>优化</strong></li>
+<li>分离 HTML、CSS、JS 文件并优化代码</li>
+<li>优化文件结构</li>
+</ul>
+<h2 id="heading-30">2025年4月29日</h2>
+
+<ul>
+<li><strong>新增</strong></li>
+<li>新增网站图标<br />
+<em>2025年12月21日注：时间上从加入起图标就一直不显示，今天才修复……</em></li>
+<li><strong>优化</strong></li>
+<li>一些样式优化</li>
+</ul>
+<h2 id="heading-31">2025年4月27日</h2>
+
+<ul>
+<li><strong>新增</strong></li>
+<li>新增网站图配置文件：<code>ekyll-gh-pages.yml``jekyll-docker.yml</code></li>
+<li><strong>优化</strong></li>
+<li>合并两个 html 文件:<code>content.html</code>和<code>index.html</code></li>
+</ul>
+<h2 id="heading-32">2025年4月26日</h2>
+
+<ul>
+<li><strong>重大修改</strong></li>
+<li>大量文件代码重构和移动</li>
+<li><strong>优化</strong></li>
+<li>优化页面布局</li>
+</ul>
+<h2 id="heading-33">2025年3月14日</h2>
+
+<ul>
+<li><strong>优化</strong></li>
+<li>优化 markdown 查看器</li>
+<li>修复一些链接指向问题</li>
+</ul>
+<h2 id="heading-34">2025年3月13日</h2>
+
+<ul>
+<li><strong>优化</strong></li>
+<li>优化代码</li>
+</ul>
+<h2 id="heading-35">2025年3月12日</h2>
+
+<ul>
+<li><strong>优化</strong></li>
+<li>优化代码</li>
+</ul>
+<h2 id="heading-36">2025年3月11日</h2>
+
+<ul>
+<li><strong>优化</strong></li>
+<li>修复跨域问题<br />
+<em>2025年12月21日注：实际上当时根本没修复</em></li>
+</ul>
+<h2 id="heading-37">2025年3月3日</h2>
+
+<ul>
+<li><strong>优化</strong></li>
+<li>在新窗口打开文章</li>
+<li>优化代码</li>
+</ul>
+<h2 id="heading-38">2025年3月2日</h2>
+
+<ul>
+<li><strong>新增</strong></li>
+<li>新增日夜模式切换</li>
+<li>新增 <code>404.html</code></li>
+<li><strong>优化</strong></li>
+<li>优化代码</li>
+</ul>
+<h2 id="heading-39">2025年3月1日</h2>
+
+<ul>
+<li><strong>优化</strong></li>
+<li>优化代码</li>
+</ul>
+<h2 id="heading-40">2025年2月28日</h2>
+
+<ul>
+<li><strong>优化</strong></li>
+<li>优化代码</li>
+</ul>
+<h2 id="heading-41">2025年2月23日</h2>
+
+<ul>
+<li><strong>优化</strong></li>
+<li>优化一些文本</li>
+<li>优化代码</li>
+</ul>
+<h2 id="heading-42">2025年2月22日</h2>
+
+<ul>
+<li><strong>初始版本</strong></li>
+<li>新增 <code>index.html</code></li>
+<li>新增 <code>LICENSE</code> (MIT License)</li>
+</ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- 图片预览模态框 -->
+    <div id="imageModal" class="image-modal">
+        <span class="close">&times;</span>
+        <div class="modal-content">
+            <img id="modalImage" src="" alt="">
+        </div>
+        <div class="image-info">
+            <span id="imageCaption"></span>
+        </div>
+    </div>
+
+    <script>
+        // 将标题数据注入到全局变量
+        window.ARTICLE_HEADINGS = [{"level": 1, "text": "2026年3月28日 V4.3.0", "id": "heading-0"}, {"level": 1, "text": "↓ 此前更新 ↓", "id": "heading-1"}, {"level": 2, "text": "2026年03月17日-27日 V4.2.0", "id": "heading-2"}, {"level": 2, "text": "2026年03月15日 V4.1.0", "id": "heading-3"}, {"level": 2, "text": "2026年03月14日 V4.0.0", "id": "heading-4"}, {"level": 2, "text": "2026年03月08日 V3.4.0", "id": "heading-5"}, {"level": 2, "text": "2026年02月05日 V3.3.2", "id": "heading-6"}, {"level": 2, "text": "2026年01月06日 V3.3.1.1", "id": "heading-7"}, {"level": 2, "text": "2025年12月28日 V3.3.1", "id": "heading-8"}, {"level": 2, "text": "2025年12月27日 V3.3.0", "id": "heading-9"}, {"level": 2, "text": "2025年12月25日 V3.2.1", "id": "heading-10"}, {"level": 2, "text": "2025年12月23日 V3.2.0", "id": "heading-11"}, {"level": 2, "text": "2025年12月21日 V3.1.1", "id": "heading-12"}, {"level": 2, "text": "2025年12月20日 V3.1.0", "id": "heading-13"}, {"level": 2, "text": "2025年12月19日 V3.0.0", "id": "heading-14"}, {"level": 2, "text": "2025年12月6日", "id": "heading-15"}, {"level": 2, "text": "2025年12月3日", "id": "heading-16"}, {"level": 2, "text": "2025年12月2日", "id": "heading-17"}, {"level": 2, "text": "2025年11月30日", "id": "heading-18"}, {"level": 2, "text": "2025年11月23日", "id": "heading-19"}, {"level": 2, "text": "2025年10月22日", "id": "heading-20"}, {"level": 2, "text": "2025年10月22日", "id": "heading-21"}, {"level": 2, "text": "2025年9月8日", "id": "heading-22"}, {"level": 2, "text": "2025年9月7日", "id": "heading-23"}, {"level": 2, "text": "2025年5月30日", "id": "heading-24"}, {"level": 2, "text": "2025年5月24日", "id": "heading-25"}, {"level": 2, "text": "2025年5月16日", "id": "heading-26"}, {"level": 2, "text": "2025年5月2日", "id": "heading-27"}, {"level": 2, "text": "2025年5月1日", "id": "heading-28"}, {"level": 2, "text": "2025年4月30日", "id": "heading-29"}, {"level": 2, "text": "2025年4月29日", "id": "heading-30"}, {"level": 2, "text": "2025年4月27日", "id": "heading-31"}, {"level": 2, "text": "2025年4月26日", "id": "heading-32"}, {"level": 2, "text": "2025年3月14日", "id": "heading-33"}, {"level": 2, "text": "2025年3月13日", "id": "heading-34"}, {"level": 2, "text": "2025年3月12日", "id": "heading-35"}, {"level": 2, "text": "2025年3月11日", "id": "heading-36"}, {"level": 2, "text": "2025年3月3日", "id": "heading-37"}, {"level": 2, "text": "2025年3月2日", "id": "heading-38"}, {"level": 2, "text": "2025年3月1日", "id": "heading-39"}, {"level": 2, "text": "2025年2月28日", "id": "heading-40"}, {"level": 2, "text": "2025年2月23日", "id": "heading-41"}, {"level": 2, "text": "2025年2月22日", "id": "heading-42"}];
+    </script>
+    <script src="/script.js"></script>
+    <script src="article.js"></script>
+</body>
+</html>

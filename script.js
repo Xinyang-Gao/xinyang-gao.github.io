@@ -476,7 +476,7 @@ class PageManager {
         const data = this.getData('articles');
         if (data) {
             const article = data.articles.find(a => a.id === articleId);
-            if (article) window.open(`/articles/?article=${encodeURIComponent(article.title)}`, '_blank');
+            if (article) window.open(`/articles/${encodeURIComponent(article.title)}.html`, '_blank');
         }
     }
 

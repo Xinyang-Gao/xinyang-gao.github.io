@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试文章 - GaoXinYang's website</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="article.css">
+</head>
+<body>
+    <div id="navbar-placeholder"></div>
+    
+    <!-- 阅读进度条 -->
+    <div id="reading-progress" class="reading-progress-bar">
+        <div id="progress-bar" class="progress-bar"></div>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="article-page-container">
+        <!-- 目录容器 - 将由JS动态生成 -->
+        <div class="toc-container">
+            <h2 class="toc-title">目录</h2>
+            <div id="toc-list-container"></div>
+        </div>
+
+        <!-- 主文章内容区 -->
+        <div class="article-content-wrapper">
+            <h1 class="article-title" id="articleTitle">═══ 测试文章 ═══</h1>
+            <div class="article-meta" id="articleMeta">2025-12-21</div>
+            <div class="article-body" id="articleBody">
+                <h1 id="heading-0">标题测试</h1>
+
+<h1 id="heading-1">h1</h1>
+
+<h2 id="heading-2">h2</h2>
+
+<h3 id="heading-3">h3</h3>
+
+<h4 id="heading-4">h4</h4>
+
+<h5>h5</h5>
+<h6>h6</h6>
+<hr />
+<h1 id="heading-5">分割线测试</h1>
+
+<h2>---</h2>
+<hr />
+<h1 id="heading-6">文本测试</h1>
+
+<h2 id="heading-7">长文本测试：</h2>
+<p>这是一段测试文本、这是一段测试文本、这是一段测试文本、这是一段测试文本、这是一段测试文本、这是一段测试文本、这是一段测试文本、这是一段测试文本、这是一段测试文本、这是一段测试文本。</p>
+<h2 id="heading-8">硬换行测试：</h2>
+<p>行1</p>
+<p>行2</p>
+<p>行3</p>
+<h2 id="heading-9">非硬换行换行测试：</h2>
+<p>行1<br />
+行2<br />
+行3</p>
+<hr />
+<h1 id="heading-10">代码框测试：</h1>
+<p><code>code</code><br />
+<code>代码块`嵌套`测试</code></p>
+<hr />
+<blockquote>
+<h1>引用测试</h1>
+<p>引用</p>
+<blockquote>
+<p>嵌套引用（下行换行）<br />
+长文本测试：这是一段测试文本、这是一段测试文本、这是一段测试文本、这是一段测试文本、这是一段测试文本、这是一段测试文本、这是一段测试文本、这是一段测试文本、这是一段测试文本、这是一段测试文本。</p>
+<p>另一个引用</p>
+</blockquote>
+</blockquote>
+<hr />
+<h1 id="heading-11">图片测试</h1>
+
+<p><img alt="pe1QokQ.png" src="https://s41.ax1x.com/2026/03/28/pe1QokQ.png" /></p>
+<h1 id="heading-12">结束</h1>
+            </div>
+        </div>
+    </div>
+
+    <!-- 图片预览模态框 -->
+    <div id="imageModal" class="image-modal">
+        <span class="close">&times;</span>
+        <div class="modal-content">
+            <img id="modalImage" src="" alt="">
+        </div>
+        <div class="image-info">
+            <span id="imageCaption"></span>
+        </div>
+    </div>
+
+    <script>
+        // 将标题数据注入到全局变量
+        window.ARTICLE_HEADINGS = [{"level": 1, "text": "标题测试", "id": "heading-0"}, {"level": 1, "text": "h1", "id": "heading-1"}, {"level": 2, "text": "h2", "id": "heading-2"}, {"level": 3, "text": "h3", "id": "heading-3"}, {"level": 4, "text": "h4", "id": "heading-4"}, {"level": 1, "text": "分割线测试", "id": "heading-5"}, {"level": 1, "text": "文本测试", "id": "heading-6"}, {"level": 2, "text": "长文本测试：", "id": "heading-7"}, {"level": 2, "text": "硬换行测试：", "id": "heading-8"}, {"level": 2, "text": "非硬换行换行测试：", "id": "heading-9"}, {"level": 1, "text": "代码框测试：", "id": "heading-10"}, {"level": 1, "text": "图片测试", "id": "heading-11"}, {"level": 1, "text": "结束", "id": "heading-12"}];
+    </script>
+    <script src="/script.js"></script>
+    <script src="article.js"></script>
+</body>
+</html>

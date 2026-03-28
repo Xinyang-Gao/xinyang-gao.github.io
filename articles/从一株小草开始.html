@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>从一株小草开始 - GaoXinYang's website</title>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="article.css">
+</head>
+<body>
+    <div id="navbar-placeholder"></div>
+    
+    <!-- 阅读进度条 -->
+    <div id="reading-progress" class="reading-progress-bar">
+        <div id="progress-bar" class="progress-bar"></div>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="article-page-container">
+        <!-- 目录容器 - 将由JS动态生成 -->
+        <div class="toc-container">
+            <h2 class="toc-title">目录</h2>
+            <div id="toc-list-container"></div>
+        </div>
+
+        <!-- 主文章内容区 -->
+        <div class="article-content-wrapper">
+            <h1 class="article-title" id="articleTitle">═══ 从一株小草开始 ═══</h1>
+            <div class="article-meta" id="articleMeta">2026-03-18</div>
+            <div class="article-body" id="articleBody">
+                <p>风像刀一般刮过操场，阳光时隐时现，像个犹豫不决的旁观者。我脱下外套的那一刻，胃部好像还在阵阵抽痛——昨天的急性肠胃炎让我在床上躺了一整天，今天本该继续休息的，但体育课的一千米测试不等人。</p>
+<p>“各就各位——”体育老师的声音刺破寒风。</p>
+<p>我站上起跑线，双腿像灌了铅。第一圈，我机械地迈步，还能维持节奏。第二圈开始，呼吸变得急促，冷风灌进喉咙，刺痛从肺部蔓延到全身。我开始用嘴大口喘气，每一次呼吸都像在吞刀子。</p>
+<p>第三圈。立德楼在跑道尽头若隐若现，我的视线开始模糊。前两圈的消耗加上未愈的身体，每一步都像踩在棉花上。跑道在脚下旋转，胃部翻涌，我想吐，想停下来，想直接瘫倒在跑道上。意识恍惚间，我几乎要放弃了。</p>
+<p>就在那一刻，我看见了那抹绿。</p>
+<p>它不在操场中央那片假草坪里——那些塑料草叶一年四季都是一个颜色，死气沉沉地铺在那里。那抹绿在台阶旁，在水泥与假草的缝隙中，一株真正的、活着的草。</p>
+<p>它是怎么钻出来的？下面是水泥地基，上面压着人造草皮，左右是坚硬的台阶。没有土壤，没有空间，没有人为它浇水。可它还是钻出来了，嫩绿的叶片在寒风中颤抖，却倔强地挺立着。那抹绿刺进我浑浊的意识，像一记无声的惊雷。</p>
+<p>我看着它，突然想起它要经历什么：在水泥缝里扎根，从无到有地汲取每一滴雨露，在无数双脚踩过的台阶旁生长。它没有选择天气的权利，没有请假休息的可能，甚至没有人会注意到它的存在。可它还是绿了，在这个寒冷有风的冬日，在我即将倒下的时刻。</p>
+<p>不知哪里来的力气，我的腿又开始迈动。风还在刮，但我不再觉得它在割我的喉咙；胃还在痛，但我不再想吐。忍着喉咙里的甜涩，最后一百米，五十米，终点线——我冲了过去。</p>
+<p>停下来的时候，我弯着腰大口喘气。回头望去，虽然那株小草已经望不见了，但肯定还在那里，在夹缝中，在一片人造的绿色中，独自真实地绿着。阳光恰好从云后探出头，我想，那抹艳绿上，也许已被镀了一层金边。</p>
+<p>那株小草后来怎样了，我不知道。也许后来被同学拔掉，也许无人在意地被哪个不经意的脚步踩断。但在那一刻，在那个我几乎要放弃的时刻，它用自己全部的生命力告诉我：再坚硬的水泥，也能被坚持钻出缝隙。</p>
+<p>从一株小草开始，我学会了在不可能的地方扎根。后来每次想要放弃，我都会想起那抹钻出人造假草的艳绿——它提醒我，真正的生长，从来不需要肥沃的土壤，只需要一颗不肯死去的种子。</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- 图片预览模态框 -->
+    <div id="imageModal" class="image-modal">
+        <span class="close">&times;</span>
+        <div class="modal-content">
+            <img id="modalImage" src="" alt="">
+        </div>
+        <div class="image-info">
+            <span id="imageCaption"></span>
+        </div>
+    </div>
+
+    <script>
+        // 将标题数据注入到全局变量
+        window.ARTICLE_HEADINGS = [];
+    </script>
+    <script src="/script.js"></script>
+    <script src="article.js"></script>
+</body>
+</html>
