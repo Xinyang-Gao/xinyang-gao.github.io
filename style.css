@@ -176,7 +176,7 @@ body {
   width: 100%;
   background: var(--nav-bg-rgba);
   backdrop-filter: blur(var(--nav-blur));
-  -webkit-backdrop-filter: blur(var(--nav-blur)); /* Safari 支持 */
+  -webkit-backdrop-filter: blur(var(--nav-blur));
   border-bottom: 1px solid var(--nav-border-rgba);
   box-shadow: var(--shadow-navbar);
   display: flex;
@@ -252,28 +252,110 @@ body {
   display: flex;
   align-items: center;
   margin-left: auto;
-  gap: 18px; /* 为主题切换按钮留出空间 */
+  gap: 12px;
 }
 
-/* 主题切换按钮样式 */
-.theme-toggle-btn {
-  background: none;
-  border: none;
-  cursor: pointer;
-  font-size: 1.4rem;
-  color: var(--text-color);
-  display: flex;
+/* 明暗模式开关样式 - 带图标版本 */
+.theme-switch {
+  position: relative;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  padding: 6px;
-  border-radius: 50%;
-  transition: all var(--transition-fast) var(--transition-ease);
+  cursor: pointer;
+  margin-right: 4px;
+  outline: none;
 }
 
-.theme-toggle-btn:hover {
-  background-color: var(--nav-item-hover-bg);
-  color: var(--accent-color);
-  transform: scale(1.1);
+.theme-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.slider {
+  position: relative;
+  display: inline-block;
+  width: 52px;
+  height: 28px;
+  background-color: #ccc;
+  border-radius: 34px;
+  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.2s ease;
+  cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+/* 滑块圆点 */
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 22px;
+  width: 22px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+              background-color 0.2s ease;
+  border-radius: 50%;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* 添加图标（太阳/月亮） */
+.slider:after {
+  position: absolute;
+  content: "☀️";
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+input:checked + .slider:after {
+  content: "🌙";
+  right: auto;
+  left: 8px;
+  opacity: 0.8;
+}
+
+input:checked + .slider {
+  background-color: var(--accent-color);
+}
+
+input:checked + .slider:before {
+  transform: translateX(24px);
+}
+
+/* 悬停效果 */
+.theme-switch:hover .slider {
+  transform: scale(1.02);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.theme-switch:hover .slider:before {
+  background-color: #f5f5f5;
+}
+
+/* 聚焦样式 */
+.theme-switch:focus-within {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(165, 88, 96, 0.3);
+  border-radius: 34px;
+}
+
+/* 暗黑模式下的额外调整 */
+[data-theme="dark"] .slider {
+  background-color: #555;
+}
+
+[data-theme="dark"] .slider:before {
+  background-color: #e0e0e0;
+}
+
+[data-theme="dark"] input:checked + .slider:before {
+  background-color: #fff;
 }
 
 /* 移动端汉堡菜单按钮 */
@@ -321,7 +403,7 @@ body {
     left: 0;
     width: 100%;
     background: var(--nav-bg-rgba);
-    background-color: rgba(248, 245, 240, 0.98); /* 稍微增加不透明度 */
+    background-color: rgba(248, 245, 240, 0.98);
     flex-direction: column;
     align-items: stretch;
     padding: 18px 0;
@@ -347,7 +429,7 @@ body {
   }
 
   .nav-item:hover {
-    background-color: var(--nav-item-active-bg); /* 使用更明显的背景色 */
+    background-color: var(--nav-item-active-bg);
   }
 
   .nav-item.active {
@@ -378,6 +460,29 @@ body {
   
   .nav-actions {
       margin-left: 0;
+      gap: 8px;
+  }
+  
+  .theme-switch {
+    margin-right: 0;
+  }
+  
+  .slider {
+    width: 48px;
+    height: 26px;
+  }
+  
+  .slider:before {
+    height: 20px;
+    width: 20px;
+  }
+  
+  .slider:after {
+    font-size: 12px;
+  }
+  
+  input:checked + .slider:before {
+    transform: translateX(22px);
   }
 }
 
@@ -400,12 +505,30 @@ body {
   .nav-items {
     padding: 12px 0;
   }
+  
+  .slider {
+    width: 44px;
+    height: 24px;
+  }
+  
+  .slider:before {
+    height: 18px;
+    width: 18px;
+  }
+  
+  .slider:after {
+    font-size: 11px;
+  }
+  
+  input:checked + .slider:before {
+    transform: translateX(20px);
+  }
 }
 
 /* --- 主体内容样式 --- */
 .container {
   max-width: 850px;
-  margin: calc(var(--nav-height) + 25px) auto 50px auto; /* 顶部间距 = 导航栏高度 + body padding */
+  margin: calc(var(--nav-height) + 25px) auto 50px auto;
   background: white;
   border: var(--border-width) solid var(--border-color);
   box-shadow: var(--shadow-main), var(--shadow-offset), -var(--shadow-offset);
@@ -416,7 +539,7 @@ body {
 }
 
 [data-theme="dark"] .container {
-    background: #222; /* 容器背景在暗黑模式下也变深 */
+    background: #222;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -450,11 +573,11 @@ p {
   margin-bottom: var(--margin-paragraph-bottom);
   font-size: var(--font-size-base);
   line-height: 1.8;
-  color: var(--text-color); /* 确保段落颜色使用变量 */
+  color: var(--text-color);
 }
 
 [data-theme="dark"] p {
-    color: #d0d0d0; /* 暗黑模式下段落颜色微调 */
+    color: #d0d0d0;
 }
 
 #mainContent > p:first-of-type,
@@ -1005,7 +1128,7 @@ hr {
   border-radius: 50%;
   font-size: 1.6rem;
   cursor: pointer;
-  display: none; /* 默认隐藏 */
+  display: none;
   align-items: center;
   justify-content: center;
   box-shadow: var(--shadow-back-to-top);
@@ -1020,7 +1143,7 @@ hr {
 }
 
 .back-to-top-btn.show {
-  display: flex; /* 使用 flex 来居中文字 */
+  display: flex;
   opacity: 1;
 }
 

@@ -125,7 +125,6 @@ function updateDynamicGreeting() {
     if (el) {
         el.textContent = greeting;
         el.style.fontWeight = 'bold';
-        // 颜色由 CSS 变量控制，这里不再硬编码
         el.style.color = ''; 
     }
 }
@@ -414,7 +413,6 @@ class PageManager {
         const pad = ['Top', 'Right', 'Bottom', 'Left'].map(k => parseFloat(cs[`padding${k}`]));
         paper.style.cssText = `position: fixed; top: ${rect.top}px; left: ${rect.left}px; width: ${rect.width}px; height: ${rect.height}px; padding: ${pad.join(' ')}; border: var(--border-width) solid var(--border-color); box-shadow: var(--shadow-main), var(--shadow-offset), -var(--shadow-offset); border-radius: var(--border-radius-container); background: white; box-sizing: border-box; z-index: var(--z-index-animation-paper); opacity: 0; transform: translateY(100%) scale(0.95);`;
         
-        // 暗黑模式下调整纸张背景色
         if (document.documentElement.getAttribute('data-theme') === 'dark') {
              paper.style.background = '#222';
         }
@@ -530,8 +528,6 @@ class NavigationManager {
     }
 
     static initNavigation() {
-        // 在多页面模式下，导航链接是直接的 HTML 链接，不需要 JavaScript 处理
-        // 但可以设置 active 状态
         const currentPage = window.location.pathname.split('/').pop().replace('.html', '') || 'index';
         document.querySelectorAll('.nav-item').forEach(item => {
             const page = item.getAttribute('data-page');
@@ -550,38 +546,73 @@ class NavigationManager {
         });
     }
     
-    // 新增：初始化主题切换
+    // 主题切换 (开关版)
     static initThemeToggle() {
-        const themeToggleBtn = document.getElementById('theme-toggle');
-        if (!themeToggleBtn) return;
+        const checkbox = document.getElementById('theme-toggle-checkbox');
+        if (!checkbox) return;
 
-        const applyTheme = (theme) => {
-            document.documentElement.setAttribute('data-theme', theme);
-            themeToggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+        // 核心主题切换函数
+        const setTheme = (theme, updateCheckbox = true) => {
+            const root = document.documentElement;
+            const currentTheme = root.getAttribute('data-theme');
+            if (currentTheme === theme) return;
+
+            // 添加页面过渡效果
+            document.body.style.transition = 'background-color 0.3s ease, color 0.3s ease';
+            const overlay = document.createElement('div');
+            overlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: ${theme === 'dark' ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)'};
+                z-index: 9999;
+                pointer-events: none;
+                opacity: 0;
+                transition: opacity 0.4s ease;
+            `;
+            document.body.appendChild(overlay);
+            requestAnimationFrame(() => { overlay.style.opacity = '1'; });
+            setTimeout(() => {
+                overlay.remove();
+                document.body.style.transition = '';
+            }, 400);
+            
+            root.setAttribute('data-theme', theme);
             localStorage.setItem('theme', theme);
+            
+            if (updateCheckbox) {
+                checkbox.checked = (theme === 'dark');
+            }
+            
+            window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme } }));
         };
 
-        // 检查本地存储或系统偏好
+        // 监听开关变化
+        const handleChange = (e) => {
+            const newTheme = e.target.checked ? 'dark' : 'light';
+            setTheme(newTheme, false);
+        };
+        
+        checkbox.addEventListener('change', handleChange);
+        
+        // 初始化：读取存储或系统偏好
         const savedTheme = localStorage.getItem('theme');
         const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        
-        if (savedTheme) {
-            applyTheme(savedTheme);
-        } else if (systemPrefersDark) {
-            applyTheme('dark');
+        let initialTheme = savedTheme;
+        if (!initialTheme) {
+            initialTheme = systemPrefersDark ? 'dark' : 'light';
         }
-
-        // 监听按钮点击
-        themeToggleBtn.addEventListener('click', () => {
-            const currentTheme = document.documentElement.getAttribute('data-theme');
-            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
-            applyTheme(newTheme);
-        });
+        // 设置根属性与checkbox状态
+        document.documentElement.setAttribute('data-theme', initialTheme);
+        checkbox.checked = (initialTheme === 'dark');
         
-        // 监听系统主题变化 (如果用户没有手动设置过)
+        // 监听系统主题变化（如果用户没有手动设置过）
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
             if (!localStorage.getItem('theme')) {
-                applyTheme(e.matches ? 'dark' : 'light');
+                const newSysTheme = e.matches ? 'dark' : 'light';
+                setTheme(newSysTheme, true);
             }
         });
     }
@@ -609,7 +640,6 @@ async function loadNavbar() {
         const placeholder = document.getElementById('navbar-placeholder');
         if (placeholder) {
             placeholder.innerHTML = navbarHTML;
-            // 导航栏加载后，初始化主题切换功能
             NavigationManager.initThemeToggle();
         } else {
             console.warn('Navbar placeholder not found');
@@ -621,16 +651,17 @@ async function loadNavbar() {
 
 // 主初始化
 document.addEventListener('DOMContentLoaded', async () => {
-    // 在加载导航栏之前，先尝试应用保存的主题，防止闪烁
+    // 预先设置主题，避免闪烁（导航栏加载前）
     const savedTheme = localStorage.getItem('theme');
     const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    if (savedTheme) {
-        document.documentElement.setAttribute('data-theme', savedTheme);
-    } else if (systemPrefersDark) {
-        document.documentElement.setAttribute('data-theme', 'dark');
+    let initialTheme = savedTheme;
+    if (!initialTheme) {
+        initialTheme = systemPrefersDark ? 'dark' : 'light';
     }
+    document.documentElement.setAttribute('data-theme', initialTheme);
 
     await loadNavbar();
+    
     const currentPage = window.location.pathname.split('/').pop().replace('.html', '') || 'index';
     if (currentPage === 'index') {
         updateDynamicGreeting();

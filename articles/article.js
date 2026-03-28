@@ -31,6 +31,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
     // 初始化滚动监听和高亮功能
     initScrollSpy();
+
+    // 添加浮动按钮（评论区跳转 & 返回顶部）
+    addFloatingButtons();
     
     // 重新触发动画
     resetAnimations();
@@ -137,8 +140,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
-    function smoothScrollTo(element) {
-        const offset = 90;
+    function smoothScrollTo(element, offset = 90) {
         const elementPosition = element.getBoundingClientRect().top;
         const offsetPosition = elementPosition + window.pageYOffset - offset;
         window.scrollTo({
@@ -264,5 +266,51 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
             });
         }, 100);
+    }
+
+    // 新增：添加浮动按钮（评论区跳转 & 返回顶部）
+    function addFloatingButtons() {
+        // 检查是否已经存在按钮容器，避免重复添加
+        if (document.getElementById('floating-buttons')) return;
+
+        // 创建按钮容器
+        const buttonContainer = document.createElement('div');
+        buttonContainer.id = 'floating-buttons';
+        buttonContainer.className = 'floating-buttons';
+
+        // 创建“评论”按钮
+        const commentBtn = document.createElement('button');
+        commentBtn.id = 'goto-comments';
+        commentBtn.className = 'floating-btn comment-btn';
+        commentBtn.innerHTML = '评论';
+        commentBtn.title = '跳转到评论区';
+        commentBtn.addEventListener('click', () => {
+            const commentsSection = document.querySelector('.comments-container');
+            if (commentsSection) {
+                smoothScrollTo(commentsSection, 20); // 偏移量小一点，让标题更靠近顶部
+            } else {
+                console.warn('未找到评论区容器');
+            }
+        });
+
+        // 创建“返回顶部”按钮
+        const topBtn = document.createElement('button');
+        topBtn.id = 'back-to-top';
+        topBtn.className = 'floating-btn top-btn';
+        topBtn.innerHTML = '↑';
+        topBtn.title = '返回页面顶部';
+        topBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+
+        // 将按钮添加到容器
+        buttonContainer.appendChild(commentBtn);
+        buttonContainer.appendChild(topBtn);
+
+        // 将容器添加到body
+        document.body.appendChild(buttonContainer);
     }
 });
