@@ -1545,3 +1545,28 @@ body.mouse-outside .custom-cursor {
   filter: brightness(1.2);
 }
 
+/* 网站统计样式 */
+.site-stats {
+  font-size: 0.85rem;
+  opacity: 0.75;
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.stats-separator {
+  opacity: 0.5;
+}
+
+/* 暗黑模式微调 */
+[data-theme="dark"] .site-stats {
+  opacity: 0.7;
+}
+
+/* 移动端适配 */
+@media (max-width: 768px) {
+  .site-stats {
+    justify-content: center;
+  }
+}
