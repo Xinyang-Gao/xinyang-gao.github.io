@@ -889,6 +889,29 @@ class CustomCursor {
   }
 }
 
+// 加载全局页脚
+async function loadFooter() {
+  try {
+    const response = await fetch('/footer.html');
+    if (!response.ok) throw new Error('加载页脚失败');
+    const footerHTML = await response.text();
+    const placeholder = document.getElementById('footer-placeholder');
+    if (placeholder) {
+      placeholder.innerHTML = footerHTML;
+      // 如果需要动态更新最后更新时间，可在此处理
+      const updateSpan = document.getElementById('footer-update-date');
+      if (updateSpan) {
+        // 可以动态设置为今天的日期
+        // updateSpan.textContent = new Date().toLocaleDateString('zh-CN');
+      }
+    } else {
+      console.warn('页脚占位符未找到');
+    }
+  } catch (error) {
+    console.error('加载页脚错误:', error);
+  }
+}
+
 // 在页面完全加载后初始化光标（确保导航栏等已加载）
 document.addEventListener('DOMContentLoaded', () => {
   // 延迟一小段时间，保证 DOM 完整
@@ -911,6 +934,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.documentElement.setAttribute('data-theme', initialTheme);
 
     await loadNavbar();
+    await loadFooter();
     
     const currentPage = window.location.pathname.split('/').pop().replace('.html', '') || 'index';
     if (currentPage === 'index') {

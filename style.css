@@ -1394,3 +1394,153 @@ body.mouse-outside .custom-cursor {
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5), 0 0 4px rgba(255, 255, 255, 0.2);
   border-color: var(--accent-color);
 }
+
+/* 全局页脚样式 */
+.global-footer {
+  max-width: 850px;
+  margin: 40px auto 20px;
+  padding: 20px var(--padding-container);
+  border-top: 1px solid var(--border-color);
+  font-size: 0.9rem;
+  color: var(--text-color);
+  background-color: var(--bg-color);
+  transition: background-color var(--transition-normal) var(--transition-ease), 
+              border-color var(--transition-normal) var(--transition-ease);
+}
+
+.footer-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.footer-info p {
+  margin: 4px 0;
+  line-height: 1.5;
+}
+
+.footer-last-update {
+  font-size: 0.85rem;
+  opacity: 0.8;
+}
+
+.footer-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.footer-social {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.social-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  color: var(--text-color);
+  font-size: 1.3rem;
+  transition: all var(--transition-fast) var(--transition-ease);
+  border-radius: 50%;
+  background-color: transparent;
+  text-decoration: none;
+}
+
+.social-link:hover {
+  color: var(--accent-color);
+  transform: translateY(-2px);
+  background-color: var(--nav-item-hover-bg);
+}
+
+.social-link i {
+  font-size: 1.4rem;
+}
+
+.footer-links {
+  display: flex;
+  gap: 20px;
+}
+
+.footer-link {
+  color: var(--accent-color);
+  text-decoration: none;
+  transition: color var(--transition-fast) var(--transition-ease);
+  font-size: 0.9rem;
+}
+
+.footer-link:hover {
+  color: var(--link-hover);
+  text-decoration: underline;
+}
+
+/* 响应式布局 */
+@media (max-width: 768px) {
+  .footer-content {
+    flex-direction: column;
+    text-align: center;
+    gap: 16px;
+  }
+  
+  .footer-right {
+    align-items: center;
+  }
+  
+  .footer-social {
+    justify-content: center;
+  }
+  
+  .social-link {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .social-link i {
+    font-size: 1.3rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer-social {
+    gap: 15px;
+  }
+  
+  .social-link {
+    width: 38px;
+    height: 38px;
+  }
+  
+  .social-link i {
+    font-size: 1.2rem;
+  }
+}
+
+/* 自定义 Bilibili 图标（ Font Awesome 不支持） */
+.social-link .bili-icon {
+  display: inline-block;
+  width: 1.2em;
+  height: 1.2em;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M4.977 3.561a1.31 1.31 0 111.818-1.884l2.828 2.728c.08.078.149.163.205.254h4.277a1.32 1.32 0 01.205-.254l2.828-2.728a1.31 1.31 0 011.818 1.884L17.82 4.66h.848A5.333 5.333 0 0124 9.992v7.34a5.333 5.333 0 01-5.333 5.334H5.333A5.333 5.333 0 010 17.333V9.992a5.333 5.333 0 015.333-5.333h.781L4.977 3.56zm.356 3.67a2.667 2.667 0 00-2.666 2.667v7.529a2.667 2.667 0 002.666 2.666h13.334a2.667 2.667 0 002.666-2.666v-7.53a2.667 2.667 0 00-2.666-2.666H5.333zm1.334 5.192a1.333 1.333 0 112.666 0v1.192a1.333 1.333 0 11-2.666 0v-1.192zM16 11.09c-.736 0-1.333.597-1.333 1.333v1.192a1.333 1.333 0 102.666 0v-1.192c0-.736-.597-1.333-1.333-1.333z'/%3E%3C/svg%3E");
+  background-size: contain;
+  background-repeat: no-repeat;
+  filter: brightness(0.8);
+  transition: filter 0.2s ease;
+}
+
+.social-link:hover .bili-icon {
+  filter: brightness(1);
+}
+
+[data-theme="dark"] .social-link .bili-icon {
+  filter: brightness(0.9);
+}
+
+[data-theme="dark"] .social-link:hover .bili-icon {
+  filter: brightness(1.2);
+}
