@@ -961,6 +961,49 @@ async function loadFooter() {
   }
 }
 
+// ==================== 网站存活时间计时器 ====================
+let siteAgeInterval = null;
+
+/**
+ * 启动并持续更新网站存活时间显示
+ * 网站创建时间: 2025-02-22 12:23:53 UTC
+ */
+function startSiteAgeUpdater() {
+    // 避免重复启动定时器
+    if (siteAgeInterval) {
+        clearInterval(siteAgeInterval);
+        siteAgeInterval = null;
+    }
+
+    const BIRTH_DATE = new Date('2025-02-22T12:23:53Z'); // UTC 时间
+
+    function updateAge() {
+        const ageSpan = document.getElementById('site-age');
+        if (!ageSpan) return; // 页脚尚未加载完成时忽略
+
+        const now = Date.now();
+        const diff = now - BIRTH_DATE.getTime();
+
+        if (diff < 0) {
+            ageSpan.innerText = '……等等，结果是负数？？！';
+            return;
+        }
+
+        const totalSeconds = Math.floor(diff / 1000);
+        const days = Math.floor(totalSeconds / 86400);
+        const hours = Math.floor((totalSeconds % 86400) / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+
+        // 格式：XX天XX小时XX分钟XX秒
+        const ageStr = `${days}天${hours.toString().padStart(2, '0')}小时${minutes.toString().padStart(2, '0')}分钟${seconds.toString().padStart(2, '0')}秒`;
+        ageSpan.innerText = ageStr;
+    }
+
+    updateAge(); // 立即更新一次
+    siteAgeInterval = setInterval(updateAge, 1000); // 每秒刷新
+}
+
 // 在页面完全加载后初始化光标（确保导航栏等已加载）
 document.addEventListener('DOMContentLoaded', () => {
   // 延迟一小段时间，保证 DOM 完整
@@ -985,6 +1028,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadNavbar();
     await loadFooter();
     
+    // 启动网站存活时间计时器（页脚已加载完成）
+    startSiteAgeUpdater();
+
     const currentPage = window.location.pathname.split('/').pop().replace('.html', '') || 'index';
     if (currentPage === 'index') {
         updateDynamicGreeting();
