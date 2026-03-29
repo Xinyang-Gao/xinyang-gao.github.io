@@ -38,7 +38,7 @@ class Utils {
     static isDataExpired(raw, minutes = 5) {
         if (!raw) return true;
         try {
-            const { _timestamp } = JSON.parse(raw);
+            const { _timestamp = null } = JSON.parse(raw);
             return !_timestamp || _timestamp < Date.now() - minutes * 60e3;
         } catch {
             console.error('解析缓存数据失败');
@@ -133,25 +133,32 @@ function updateDynamicGreeting() {
 class UIRenderer {
     static generateTagsHTML(tags = []) {
         if (!tags.length) return '';
-        return `<div class=\"tags\">${tags.map(t => `<span class=\"tag\">${t}</span>`).join('')}</div>`;
+        return `<div class="tags">${tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>`;
     }
 
     static generateListItem(item, type) {
         const tags = UIRenderer.generateTagsHTML(item.tag);
         return `
-        <div class=\"list-item\" data-id=\"${item.id}\" data-type=\"${type}\">\n          <div class=\"list-item-header\">\n            <h3 class=\"list-item-title\">${item.title}</h3>\n            <div class=\"list-item-meta\"><span class=\"list-item-date\">${item.date}</span></div>\n          </div>\n          <p class=\"list-item-description\">${item.description}</p>\n          ${tags}\n        </div>`;
+        <div class="list-item" data-id="${item.id}" data-type="${type}">
+          <div class="list-item-header">
+            <h3 class="list-item-title">${item.title}</h3>
+            <div class="list-item-meta"><span class="list-item-date">${item.date}</span></div>
+          </div>
+          <p class="list-item-description">${item.description}</p>
+          ${tags}
+        </div>`;
     }
 
     static generateListHTML(data, type) {
         perf.start(`生成${DataManager.TYPE_LABEL[type]}HTML`);
         if (!Utils.validateData(data, type)) {
             perf.end(`生成${DataManager.TYPE_LABEL[type]}HTML`);
-            return `<div class=\"${type}-list\"><p>没有找到相关${DataManager.TYPE_LABEL[type]}！ >-<</p></div>`;
+            return `<div class="${type}-list"><p>没有找到相关${DataManager.TYPE_LABEL[type]}！ >-<</p></div>`;
         }
 
         const list = (type === 'works' ? data.works : data.articles)
             .filter(i => !(i.tag && i.tag.includes('隐藏')));
-        const html = `<div class=\"${type}-list\">${list.map(i => UIRenderer.generateListItem(i, type.slice(0, -1))).join('')}</div>`;
+        const html = `<div class="${type}-list">${list.map(i => UIRenderer.generateListItem(i, type.slice(0, -1))).join('')}</div>`;
         perf.end(`生成${DataManager.TYPE_LABEL[type]}HTML`);
         return html;
     }
@@ -648,6 +655,249 @@ async function loadNavbar() {
         console.error('Error loading navbar:', error);
     }
 }
+
+// ==================== 自定义光标 ====================
+class CustomCursor {
+  constructor(options = {}) {
+    // 移动设备自动禁用
+    if (window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window) {
+      console.log('触摸设备，跳过自定义光标');
+      return;
+    }
+
+    this.config = {
+      damping: 0.92,
+      stiffness: 0.18,
+      rotationSmoothing: 0.2,
+      minSpeedForRotation: 0.5,
+      ...options
+    };
+
+    this.targetX = 0;
+    this.targetY = 0;
+    this.currentX = 0;
+    this.currentY = 0;
+    this.fixedScale = 0.55; //光标大小
+    this.currentRotation = 0;
+    this.targetRotation = 0;
+
+    this.lastMouseX = 0;
+    this.lastMouseY = 0;
+    this.lastTimestamp = 0;
+    this.velocityX = 0;
+    this.velocityY = 0;
+
+    this.snappedMode = false;
+    this.snappedElement = null;
+
+    this.rafId = null;
+    this.visible = false;
+
+    this.initDOM();
+    this.initEvents();
+    this.updateColors();
+    this.startAnimation();
+
+    window.addEventListener('themeChanged', () => this.updateColors());
+    const observer = new MutationObserver(() => this.updateColors());
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+  }
+
+  initDOM() {
+    this.container = document.createElement('div');
+    this.container.className = 'custom-cursor';
+    document.body.appendChild(this.container);
+
+    const svgNS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(svgNS, 'svg');
+    svg.setAttribute('width', '50');
+    svg.setAttribute('height', '54');
+    svg.setAttribute('viewBox', '0 0 50 54');
+    svg.style.width = '50px';
+    svg.style.height = '54px';
+    svg.style.display = 'block';
+
+    this.fillPath = document.createElementNS(svgNS, 'path');
+    this.fillPath.setAttribute('d', 'M42.6817 41.1495L27.5103 6.79925C26.7269 5.02557 24.2082 5.02558 23.3927 6.79925L7.59814 41.1495C6.75833 42.9759 8.52712 44.8902 10.4125 44.1954L24.3757 39.0496C24.8829 38.8627 25.4385 38.8627 25.9422 39.0496L39.8121 44.1954C41.6849 44.8902 43.4884 42.9759 42.6817 41.1495Z');
+
+    this.strokePath = document.createElementNS(svgNS, 'path');
+    this.strokePath.setAttribute('d', 'M43.7146 40.6933L28.5431 6.34306C27.3556 3.65428 23.5772 3.69516 22.3668 6.32755L6.57226 40.6778C5.3134 43.4156 7.97238 46.298 10.803 45.2549L24.7662 40.109C25.0221 40.0147 25.2999 40.0156 25.5494 40.1082L39.4193 45.254C42.2261 46.2953 44.9254 43.4347 43.7146 40.6933Z');
+    this.strokePath.setAttribute('stroke-width', '2.5');
+    this.strokePath.setAttribute('fill', 'none');
+
+    svg.appendChild(this.fillPath);
+    svg.appendChild(this.strokePath);
+    this.container.appendChild(svg);
+    this.svg = svg;
+
+    this.dot = document.createElement('div');
+    this.dot.className = 'custom-cursor-dot';
+    document.body.appendChild(this.dot);
+  }
+
+  updateColors() {
+    const rootStyles = getComputedStyle(document.documentElement);
+    const accentColor = rootStyles.getPropertyValue('--accent-color').trim() || '#a55860';
+    this.fillPath.setAttribute('fill', accentColor);
+    this.strokePath.setAttribute('stroke', '#ffffff');
+    // 不再设置圆点背景色，保持CSS定义的空心样式
+  }
+
+  initEvents() {
+    window.addEventListener('mousemove', (e) => {
+      if (!this.visible) {
+        this.visible = true;
+        this.container.classList.add('visible');
+        document.body.classList.add('custom-cursor-enabled');
+      }
+
+      const elemUnderCursor = document.elementsFromPoint(e.clientX, e.clientY)[0];
+      const isClickable = elemUnderCursor?.matches?.(
+        'a, button, .nav-item, .list-item, [role="button"], [data-clickable], .tag-button, .work-details-close, ' +
+        'input, textarea, select, [contenteditable="true"]'
+      );
+
+      if (isClickable) {
+        if (!this.snappedMode || this.snappedElement !== elemUnderCursor) {
+          this.enterSnappedMode(elemUnderCursor);
+        }
+        this.updateDotPosition(e.clientX, e.clientY);
+      } else {
+        if (this.snappedMode) {
+          this.exitSnappedMode();
+        }
+      }
+
+      const now = performance.now();
+      if (this.lastTimestamp) {
+        const dt = Math.min(50, Math.max(1, now - this.lastTimestamp));
+        this.velocityX = (e.clientX - this.lastMouseX) / dt;
+        this.velocityY = (e.clientY - this.lastMouseY) / dt;
+      }
+      this.lastMouseX = e.clientX;
+      this.lastMouseY = e.clientY;
+      this.lastTimestamp = now;
+
+      if (!this.snappedMode) {
+        this.targetX = e.clientX;
+        this.targetY = e.clientY;
+
+        let speed = Math.hypot(this.velocityX, this.velocityY);
+        // 光标大小固定，不再根据速度或悬停改变缩放
+        // 旋转方向根据速度计算
+        if (speed > this.config.minSpeedForRotation) {
+          let angle = Math.atan2(this.velocityY, this.velocityX) * 180 / Math.PI + 90;
+          this.targetRotation = angle;
+        } else {
+          this.targetRotation = 0;
+        }
+      } else {
+        this.targetRotation = -45; // 吸附模式下旋转45度（左上角）
+      }
+    });
+
+    window.addEventListener('mouseleave', () => {
+      this.visible = false;
+      this.container.classList.remove('visible');
+      document.body.classList.remove('custom-cursor-enabled');
+      if (this.snappedMode) this.exitSnappedMode();
+    });
+
+    window.addEventListener('mouseenter', () => {
+      if (this.targetX !== undefined) {
+        this.visible = true;
+        this.container.classList.add('visible');
+        document.body.classList.add('custom-cursor-enabled');
+      }
+    });
+
+    window.addEventListener('scroll', () => {
+      if (this.snappedMode && this.snappedElement) {
+        this.updateSnappedTargetPosition();
+      }
+    });
+    window.addEventListener('resize', () => {
+      if (this.snappedMode && this.snappedElement) {
+        this.updateSnappedTargetPosition();
+      }
+    });
+  }
+
+  enterSnappedMode(element) {
+    if (!element) return;
+    this.snappedMode = true;
+    this.snappedElement = element;
+    this.dot.style.display = 'block';
+    this.updateSnappedTargetPosition();
+    // 进入吸附模式时设置旋转角度45度
+    this.targetRotation = 45;
+  }
+
+  exitSnappedMode() {
+    this.snappedMode = false;
+    this.snappedElement = null;
+    this.dot.style.display = 'none';
+    // 退出时让旋转目标归零
+    this.targetRotation = 0;
+  }
+
+  updateSnappedTargetPosition() {
+    if (!this.snappedElement) return;
+    const rect = this.snappedElement.getBoundingClientRect();
+    this.targetX = rect.right;
+    this.targetY = rect.bottom;
+  }
+
+  updateDotPosition(x, y) {
+    if (!this.dot) return;
+    this.dot.style.transform = `translate(${x}px, ${y}px)`;
+  }
+
+  startAnimation() {
+    const animate = () => {
+      if (this.snappedMode && this.snappedElement) {
+        this.updateSnappedTargetPosition();
+      }
+
+      this.currentX += (this.targetX - this.currentX) * this.config.stiffness;
+      this.currentY += (this.targetY - this.currentY) * this.config.stiffness;
+      const dx = this.targetX - this.currentX;
+      const dy = this.targetY - this.currentY;
+      this.currentX += dx * 0.3;
+      this.currentY += dy * 0.3;
+
+      // 平滑旋转过渡
+      let diff = this.targetRotation - this.currentRotation;
+      if (Math.abs(diff) > 180) diff -= Math.sign(diff) * 360;
+      this.currentRotation += diff * this.config.rotationSmoothing;
+
+      // 固定大小，不进行缩放变换
+      this.svg.style.transform = `translate(-50%, -50%) rotate(${this.currentRotation}deg) scale(${this.fixedScale})`;
+      this.container.style.transform = `translate(${this.currentX}px, ${this.currentY}px)`;
+
+      this.rafId = requestAnimationFrame(animate);
+    };
+    this.rafId = requestAnimationFrame(animate);
+  }
+
+  destroy() {
+    if (this.rafId) cancelAnimationFrame(this.rafId);
+    this.container?.remove();
+    this.dot?.remove();
+    document.body.classList.remove('custom-cursor-enabled');
+    document.body.style.cursor = '';
+  }
+}
+
+// 在页面完全加载后初始化光标（确保导航栏等已加载）
+document.addEventListener('DOMContentLoaded', () => {
+  // 延迟一小段时间，保证 DOM 完整
+  setTimeout(() => {
+    if (!window.customCursorInstance) {
+      window.customCursorInstance = new CustomCursor();
+    }
+  }, 100);
+});
 
 // 主初始化
 document.addEventListener('DOMContentLoaded', async () => {

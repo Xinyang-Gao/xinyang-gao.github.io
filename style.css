@@ -1283,3 +1283,114 @@ hr {
     background-color: #333;
     border-color: #555;
 }
+
+/* 自定义滚动条样式 - 符合整体设计 */
+/* Webkit 浏览器 (Chrome, Safari, Edge) */
+::-webkit-scrollbar {
+  width: 10px;          /* 垂直滚动条宽度 */
+  height: 10px;         /* 水平滚动条高度 */
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-color);      /* 轨道背景色，跟随主题变量 */
+  border-radius: 8px;               /* 圆角，与整体风格协调 */
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--accent-color);  /* 滑块颜色，使用强调色 */
+  border-radius: 8px;
+  transition: background 0.2s ease; /* 平滑过渡 */
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--link-hover);    /* 悬停时加深/提亮 */
+}
+
+::-webkit-scrollbar-corner {
+  background: var(--bg-color);      /* 滚动条相交区域背景色 */
+}
+
+/* Firefox 滚动条样式 */
+* {
+  scrollbar-width: auto;            /* 保持默认宽度 */
+  scrollbar-color: var(--accent-color) var(--bg-color); /* 滑块色 轨道色 */
+}
+
+/* 自定义光标容器 */
+.custom-cursor {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.custom-cursor.visible {
+  opacity: 1;
+}
+
+.custom-cursor svg {
+  position: absolute;
+  left: 0;
+  top: 0;
+  transform: translate(-50%, -50%);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+  transition: filter 0.2s ease;
+}
+
+/* 启用自定义光标时隐藏默认光标 */
+body.custom-cursor-enabled {
+  cursor: none;
+}
+
+/* 可点击元素增强（可选，让自定义光标悬浮时更明显） */
+body.custom-cursor-enabled a,
+body.custom-cursor-enabled button,
+body.custom-cursor-enabled .nav-item,
+body.custom-cursor-enabled .list-item {
+  cursor: none;
+}
+
+/* 针对可点击元素的光标样式变化 */
+body.custom-cursor-enabled a:hover,
+body.custom-cursor-enabled button:hover,
+body.custom-cursor-enabled .nav-item:hover,
+body.custom-cursor-enabled .list-item:hover,
+body.custom-cursor-enabled .tag-button:hover,
+body.custom-cursor-enabled .work-details-close:hover {
+  cursor: none;
+}
+
+/* 当鼠标离开页面时隐藏自定义光标 */
+body.mouse-outside .custom-cursor {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* 自定义光标圆点（吸附模式下显示） - 空心圆样式 */
+.custom-cursor-dot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 14px;
+  height: 14px;
+  background: transparent;
+  border: 2px solid var(--accent-color);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 10000;
+  transform: translate(-50%, -50%);
+  display: none;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.5), 0 0 4px rgba(0, 0, 0, 0.2);
+  transition: transform 0.05s linear;
+}
+
+/* 暗黑模式下圆点边框和阴影调整 */
+[data-theme="dark"] .custom-cursor-dot {
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.5), 0 0 4px rgba(255, 255, 255, 0.2);
+  border-color: var(--accent-color);
+}
