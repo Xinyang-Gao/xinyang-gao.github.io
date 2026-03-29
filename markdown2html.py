@@ -253,7 +253,7 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
     <script src="article.js"></script>
     
     <!-- Twikoo 评论系统 -->
-    <script src="https://registry.npmmirror.com/twikoo/1.7.4/files/dist/twikoo.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/twikoo@1.7.4/dist/twikoo.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {{
             if (typeof twikoo !== 'undefined') {{
