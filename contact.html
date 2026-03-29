@@ -3,29 +3,55 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>联系 - GaoXinYang's website</title>
+  <title>留言板 - GaoXinYang's website</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+  <!-- Twikoo 样式 -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/twikoo@1.6.39/dist/twikoo.min.css">
 </head>
 <body>
   <div id="navbar-placeholder"></div>
 
   <div class="container">
     <main id="mainContent" role="main" aria-live="polite" aria-busy="false">
-      <h2>联系</h2>
-<ul>
-    <li>Email: <a href="mailto:gao_xinyang@foxmail.com">gao_xinyang@foxmail.com</a></li>
-    <li>GitHub: <a href="https://github.com/Xinyang-Gao" target="_blank">Xinyang-Gao</a></li>
-    <li>Bilibili: <a href="https://space.bilibili.com/1064600697" target="_blank">GaoXinYang_</a></li>
-    <li>QQ: 2489083744</li>
-</ul>
- </main>
+      <h2>留言板</h2>
+      <p>欢迎留下你的想法、建议或者随便说点什么~</p>
+      
+      <!-- 留言板容器 -->
+      <div id="twikoo-comments"></div>
+    </main>
   </div>
 
   <button id="backToTopBtn" class="back-to-top-btn" title="返回顶部">↑</button>
   <div id="pageTransition" class="page-transition"></div>
-
   <div id="footer-placeholder"></div>
+
+  <!-- Twikoo 核心脚本 -->
+  <script src="https://cdn.jsdelivr.net/npm/twikoo@1.6.39/dist/twikoo.min.js"></script>
   <script src="script.js"></script>
+  
+  <script>
+    // 初始化 Twikoo 留言板
+    document.addEventListener('DOMContentLoaded', function() {
+      // 等待导航栏加载完成后初始化（可选，确保 DOM 就绪）
+      setTimeout(function() {
+        if (typeof twikoo === 'undefined') {
+          console.error('Twikoo 加载失败');
+          return;
+        }
+        
+        twikoo.init({
+          envId: 'https://twikoo-gxy.netlify.app/.netlify/functions/twikoo',
+          el: '#twikoo-comments',
+          lang: 'zh-CN',
+          enableComment: true,
+        }).then(() => {
+          console.log('Twikoo 留言板初始化成功');
+        }).catch(err => {
+          console.error('Twikoo 初始化失败:', err);
+        });
+      }, 100);
+    });
+  </script>
 </body>
 </html>
