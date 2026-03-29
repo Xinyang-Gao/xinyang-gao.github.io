@@ -517,3 +517,41 @@ html {
         font-size: 10px;
     }
 }
+
+/* 文章元数据样式 */
+.article-meta {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 0;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.95rem;
+    color: var(--text-color);
+}
+
+.article-date,
+.article-stats {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.stats-separator {
+    color: var(--border-color);
+    margin: 0 4px;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .article-meta {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .stats-separator {
+        display: none;
+    }
+}

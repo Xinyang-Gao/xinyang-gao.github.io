@@ -149,7 +149,13 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
         <!-- 主文章内容区 -->
         <div class="article-content-wrapper">
             <h1 class="article-title" id="articleTitle">═══ {title} ═══</h1>
-            <div class="article-meta" id="articleMeta">{date}</div>
+            <div class="article-meta" id="articleMeta">
+                <span class="article-date">{date}</span>
+                <span class="stats-separator">|</span>
+                <span class="article-stats">本页总访客: <span id="busuanzi_page_uv">加载中...</span> 人</span>
+                <span class="stats-separator">|</span>
+                <span class="article-stats">本页总阅读量: <span id="busuanzi_page_pv">加载中...</span> 人</span>
+            </div>
             <div class="article-body" id="articleBody">
                 {content_html}
             </div>
@@ -176,6 +182,7 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
         // 将标题数据注入到全局变量
         window.ARTICLE_HEADINGS = {headings_json};
     </script>
+    <script src="//cdn.busuanzi.cc/busuanzi/3.6.9/busuanzi.min.js" defer></script>
     <script src="/script.js"></script>
     <script src="article.js"></script>
     
