@@ -3,7 +3,7 @@ import re
 import sys
 import json
 from pathlib import Path
-from typing import Dict, Tuple
+from typing import Dict, Tuple, List
 from datetime import datetime
 
 # 尝试导入markdown库，如果没有则提示安装
@@ -15,8 +15,8 @@ except ImportError:
 
 # 配置路径
 BASE_DIR = Path(__file__).parent  # 脚本所在目录
-ARTICLES_DIR = BASE_DIR / "articles"  # md文件所在目录
-OUTPUT_DIR = BASE_DIR  # HTML输出目录（与css/js同目录）
+ARTICLES_DIR = BASE_DIR / "articles" / "articles"  # md文件所在目录
+OUTPUT_DIR = BASE_DIR / "articles"  # HTML输出目录（与css/js同目录）
 
 # 确保输出目录存在
 OUTPUT_DIR.mkdir(exist_ok=True)
@@ -26,26 +26,46 @@ def extract_metadata(content: str) -> Tuple[Dict[str, str], str]:
     """
     从markdown内容中提取元数据（---格式）
     返回: (metadata_dict, cleaned_content)
+    支持: title, date, description, tag, author 等字段
     """
     # 匹配 --- ... --- 格式的元数据（YAML front matter）
     meta_pattern = r'^\s*---\s*\n([\s\S]+?)\n\s*---\s*\n([\s\S]*)$'
     match = re.match(meta_pattern, content, re.MULTILINE)
-    
+
     if match:
         meta_content = match.group(1)
         cleaned_content = match.group(2)
         metadata = {}
-        
+
         for line in meta_content.split('\n'):
             line = line.strip()
             if not line:
                 continue
             if ':' in line:
                 key, value = line.split(':', 1)
-                metadata[key.strip()] = value.strip()
-        
+                key = key.strip()
+                value = value.strip()
+
+                # 处理 tag 字段（可能包含多个标签）
+                if key == 'tag':
+                    # 支持多种格式: [tag1][tag2] 或 [tag1, tag2] 或 tag1, tag2
+                    tags = []
+                    # 处理 [tag1][tag2] 格式
+                    bracket_pattern = r'\[([^\[\]]+)\]'
+                    bracket_matches = re.findall(bracket_pattern, value)
+                    if bracket_matches:
+                        for match in bracket_matches:
+                            sub_tags = [t.strip() for t in re.split(r'[,\s]+', match) if t.strip()]
+                            tags.extend(sub_tags)
+                    else:
+                        # 处理普通逗号分隔格式
+                        tags = [t.strip() for t in re.split(r'[,\s]+', value) if t.strip()]
+                    metadata[key] = tags
+                else:
+                    metadata[key] = value
+
         return metadata, cleaned_content
-    
+
     # 如果没有元数据，返回空字典和原内容
     return {}, content
 
@@ -58,7 +78,7 @@ def extract_headings(content: str) -> list:
     heading_pattern = r'^(#{1,4})\s+(.+)$'
     headings = []
     heading_counter = 0
-    
+
     for line in content.split('\n'):
         match = re.match(heading_pattern, line)
         if match:
@@ -66,13 +86,13 @@ def extract_headings(content: str) -> list:
             heading_text = match.group(2).strip()
             heading_id = f"heading-{heading_counter}"
             heading_counter += 1
-            
+
             headings.append({
                 'level': heading_level,
                 'text': heading_text,
                 'id': heading_id
             })
-    
+
     return headings
 
 
@@ -83,7 +103,7 @@ def add_heading_ids(content: str, headings: list) -> str:
     lines = content.split('\n')
     heading_pattern = r'^(#{1,4})\s+(.+)$'
     heading_idx = 0
-    
+
     for i, line in enumerate(lines):
         match = re.match(heading_pattern, line)
         if match:
@@ -93,7 +113,7 @@ def add_heading_ids(content: str, headings: list) -> str:
                 heading_text = match.group(2)
                 lines[i] = f'<h{heading_level} id="{heading_id}">{heading_text}</h{heading_level}>'
                 heading_idx += 1
-    
+
     return '\n'.join(lines)
 
 
@@ -107,25 +127,77 @@ def convert_markdown_to_html(md_content: str) -> str:
         'codehilite',  # 代码高亮
         'nl2br',  # 换行转<br>
     ]
-    
+
     # 转换markdown为HTML
     html = markdown.markdown(md_content, extensions=extensions)
     return html
 
 
-def create_html_page(title: str, date: str, content_html: str, headings_json: str) -> str:
+def create_html_page(title: str, date: str, content_html: str, headings_json: str,
+                     description: str = "", tags: list = None, author: str = "") -> str:
     """
     生成完整的HTML页面，与主站样式保持一致，并集成Twikoo评论系统
     """
     # 如果date是"未指定"或空，尝试使用当前日期
     if not date or date == "未指定":
         date = datetime.now().strftime("%Y年%m月%d日")
-    
+
+    # 格式化日期显示
+    try:
+        # 尝试解析 YYYY-MM-DD 格式
+        if re.match(r'\d{4}-\d{1,2}-\d{1,2}', date):
+            dt = datetime.strptime(date, '%Y-%m-%d')
+            formatted_date = dt.strftime("%Y年%m月%d日")
+        else:
+            formatted_date = date
+    except:
+        formatted_date = date
+
+    # 处理标签显示（胶囊样式）
+    tags_html = ""
+    if tags and len(tags) > 0:
+        tags_html = '<div class="meta-row meta-tags"><span class="meta-label">标签：</span>'
+        for tag in tags:
+            tags_html += f'<span class="tag">{tag}</span>'
+        tags_html += '</div>'
+
+    # 处理描述显示
+    desc_html = ""
+    if description:
+        desc_html = f'<div class="meta-row meta-description"><span class="meta-label">简介：</span>{description}</div>'
+
+    # 处理作者显示
+    author_html = ""
+    if author:
+        author_html = f'<span class="article-author">作者：{author}</span>'
+
+    # 组装完整的 article-meta
+    meta_html = f'''
+    <div class="article-meta" id="articleMeta">
+        <div class="meta-row meta-info">
+            <span class="article-date">{formatted_date}</span>
+            {f'<span class="article-author">{author_html}</span>' if author else ''}
+            <span class="stats-separator">|</span>
+            <span class="article-stats">本页总访客: <span id="busuanzi_page_uv">加载中...</span> 人</span>
+            <span class="stats-separator">|</span>
+            <span class="article-stats">本页总阅读量: <span id="busuanzi_page_pv">加载中...</span> 次</span>
+        </div>
+        {tags_html}
+        {desc_html}
+    </div>
+    '''
+
+    # 处理描述显示（用于meta标签）
+    meta_description = description if description else f"{title} - GaoXinYang的文章"
+
     html_template = f'''<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="{meta_description}">
+    <meta name="author" content="{author if author else 'GaoXinYang'}">
+    {f'<meta name="keywords" content="{", ".join(tags) if tags else ""}">' if tags else ''}
     <title>{title} - GaoXinYang's website</title>
     <link rel="stylesheet" href="/style.css">
     <link rel="stylesheet" href="article.css">
@@ -149,13 +221,7 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
         <!-- 主文章内容区 -->
         <div class="article-content-wrapper">
             <h1 class="article-title" id="articleTitle">═══ {title} ═══</h1>
-            <div class="article-meta" id="articleMeta">
-                <span class="article-date">{date}</span>
-                <span class="stats-separator">|</span>
-                <span class="article-stats">本页总访客: <span id="busuanzi_page_uv">加载中...</span> 人</span>
-                <span class="stats-separator">|</span>
-                <span class="article-stats">本页总阅读量: <span id="busuanzi_page_pv">加载中...</span> 人</span>
-            </div>
+            {meta_html}
             <div class="article-body" id="articleBody">
                 {content_html}
             </div>
@@ -204,138 +270,147 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
     </script>
 </body>
 </html>'''
-    
+
     return html_template
 
 
-def process_markdown_file(md_file_path: Path) -> str:
+def process_markdown_file(md_file_path: Path) -> Dict:
     """
     处理单个markdown文件，生成HTML
-    返回生成的HTML文件路径
+    返回文章信息字典
     """
     print(f"处理文件: {md_file_path}")
-    
+
     # 读取markdown文件
     with open(md_file_path, 'r', encoding='utf-8') as f:
         md_content = f.read()
-    
+
     # 提取元数据
     metadata, cleaned_content = extract_metadata(md_content)
-    
-    # 获取标题和日期
+
+    # 获取元数据字段
     title = metadata.get('title', '未命名文章')
     date = metadata.get('date', '未指定日期')
-    
+    description = metadata.get('description', '')
+    author = metadata.get('author', '')
+    tags = metadata.get('tag', [])
+
+    # 如果tags是字符串，转换为列表
+    if isinstance(tags, str):
+        tags = [t.strip() for t in tags.split(',') if t.strip()]
+
     # 提取标题信息（用于生成目录）
     headings = extract_headings(cleaned_content)
-    
+
     # 为标题添加ID
     content_with_ids = add_heading_ids(cleaned_content, headings)
-    
+
     # 转换markdown为HTML
     content_html = convert_markdown_to_html(content_with_ids)
-    
+
     # 将标题数据转换为JSON字符串
     headings_json = json.dumps(headings, ensure_ascii=False)
-    
+
     # 生成完整HTML页面
-    full_html = create_html_page(title, date, content_html, headings_json)
-    
+    full_html = create_html_page(title, date, content_html, headings_json,
+                                 description, tags, author)
+
     # 确定输出文件名
     output_filename = md_file_path.stem + '.html'
     output_path = OUTPUT_DIR / output_filename
-    
+
     # 写入HTML文件
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write(full_html)
-    
+
     print(f"  已生成: {output_path}")
-    return str(output_path)
+
+    # 返回文章信息用于JSON索引
+    article_info = {
+        'id': md_file_path.stem,
+        'title': title,
+        'date': date,
+        'description': description,
+        'author': author if author else '高新炀',
+        'tags': tags,
+        'url': f'/articles/{output_filename}'
+    }
+
+    return article_info
 
 
-def process_all_markdown_files():
+def process_all_markdown_files() -> List[Dict]:
     """
     处理articles目录下的所有markdown文件
+    返回所有文章信息列表
     """
     if not ARTICLES_DIR.exists():
         print(f"错误: 文章目录不存在 - {ARTICLES_DIR}")
-        return
-    
+        return []
+
     # 查找所有.md文件
     md_files = list(ARTICLES_DIR.glob('*.md'))
-    
+
     if not md_files:
         print(f"在 {ARTICLES_DIR} 中未找到任何.md文件")
-        return
-    
+        return []
+
     print(f"找到 {len(md_files)} 个markdown文件")
     print("-" * 50)
-    
-    generated_files = []
+
+    articles_info = []
     for md_file in md_files:
         try:
-            output_path = process_markdown_file(md_file)
-            generated_files.append(output_path)
+            article_info = process_markdown_file(md_file)
+            articles_info.append(article_info)
         except Exception as e:
             print(f"  处理失败: {e}")
-    
+
     print("-" * 50)
-    print(f"成功生成 {len(generated_files)} 个HTML文件")
-    
-    # 可选：生成索引文件
-    generate_index(generated_files)
+    print(f"成功生成 {len(articles_info)} 个HTML文件")
+
+    # 生成文章索引和JSON文件
+    generate_index(articles_info)
+    generate_articles_json(articles_info)
+
+    return articles_info
 
 
-def generate_index(html_files: list):
+def generate_index(articles_info: List[Dict]):
     """
     生成文章列表索引页面
     """
-    if not html_files:
+    if not articles_info:
         return
-    
-    # 提取文章信息
-    articles = []
-    for html_file in html_files:
-        # 从文件名获取文章ID
-        article_id = Path(html_file).stem
-        articles.append({
-            'id': article_id,
-            'title': article_id,  # 可以后续从HTML中提取，这里简单处理
-            'url': article_id + '.html'
-        })
-    
-    # 生成简单的文章列表
-    index_html = '''<!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>文章列表 - GaoXinYang's website</title>
-    <link rel="stylesheet" href="/style.css">
-</head>
-<body>
-    <div id="navbar-placeholder"></div>
-    
-    <div class="container" style="max-width: 800px; margin: 100px auto 40px;">
-        <h1>文章列表</h1>
-        <ul class="article-list">
-'''
-    
-    for article in articles:
-        index_html += f'            <li><a href="{article["url"]}">{article["title"]}</a></li>\n'
-    
-    index_html += '''        </ul>
-    </div>
-    
-    <script src="/script.js"></script>
-</body>
-</html>'''
-    
-    index_path = OUTPUT_DIR / 'articles_list.html'
-    with open(index_path, 'w', encoding='utf-8') as f:
-        f.write(index_html)
-    
-    print(f"已生成文章索引: {index_path}")
+
+    # 按日期排序（最新的在前）
+    sorted_articles = sorted(articles_info,
+                             key=lambda x: x.get('date', ''),
+                             reverse=True)
+
+
+def generate_articles_json(articles_info: List[Dict]):
+    """
+    在根目录生成 articles.json 文件，包含所有文章的元数据
+    """
+    if not articles_info:
+        return
+
+    # 准备JSON数据
+    json_data = {
+        'generated_at': datetime.now().isoformat(),
+        'total_articles': len(articles_info),
+        'articles': sorted(articles_info,
+                           key=lambda x: x.get('date', ''),
+                           reverse=True)
+    }
+
+    # 保存到根目录
+    json_path = BASE_DIR / 'articles.json'
+    with open(json_path, 'w', encoding='utf-8') as f:
+        json.dump(json_data, f, ensure_ascii=False, indent=2)
+
+    print(f"已生成文章JSON索引: {json_path}")
 
 
 def main():
@@ -345,20 +420,60 @@ def main():
     print("=" * 50)
     print("Markdown 转 HTML 工具")
     print("=" * 50)
-    
+
     # 检查参数
     if len(sys.argv) > 1:
         # 如果指定了文件，只处理该文件
         md_file_path = Path(sys.argv[1])
         if md_file_path.exists() and md_file_path.suffix == '.md':
-            process_markdown_file(md_file_path)
+            article_info = process_markdown_file(md_file_path)
+            # 更新单个文件的JSON（读取现有JSON并更新）
+            update_single_article_json(article_info)
         else:
             print(f"错误: 文件不存在或不是markdown文件 - {md_file_path}")
     else:
         # 处理所有文件
-        process_all_markdown_files()
-    
+        articles_info = process_all_markdown_files()
+
     print("\n完成!")
+
+
+def update_single_article_json(new_article: Dict):
+    """
+    更新单个文章的JSON索引
+    """
+    json_path = BASE_DIR / 'articles.json'
+    articles_info = []
+
+    # 读取现有JSON
+    if json_path.exists():
+        with open(json_path, 'r', encoding='utf-8') as f:
+            existing_data = json.load(f)
+            articles_info = existing_data.get('articles', [])
+
+    # 更新或添加文章
+    found = False
+    for i, article in enumerate(articles_info):
+        if article['id'] == new_article['id']:
+            articles_info[i] = new_article
+            found = True
+            break
+
+    if not found:
+        articles_info.append(new_article)
+
+    # 排序并保存
+    articles_info.sort(key=lambda x: x.get('date', ''), reverse=True)
+    json_data = {
+        'generated_at': datetime.now().isoformat(),
+        'total_articles': len(articles_info),
+        'articles': articles_info
+    }
+
+    with open(json_path, 'w', encoding='utf-8') as f:
+        json.dump(json_data, f, ensure_ascii=False, indent=2)
+
+    print(f"已更新文章JSON索引: {json_path}")
 
 
 if __name__ == "__main__":

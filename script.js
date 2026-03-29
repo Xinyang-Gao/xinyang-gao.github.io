@@ -48,10 +48,24 @@ class Utils {
 
     static validateData(data, type) {
         if (!data) return false;
-        return {
-            works: d => Array.isArray(d.works) && d.works.length,
-            articles: d => Array.isArray(d.articles) && d.articles.length
-        }[type]?.(data) || false;
+        if (type === 'works') {
+            return Array.isArray(data.works) && data.works.length > 0;
+        } else if (type === 'articles') {
+            return Array.isArray(data.articles) && data.articles.length > 0;
+        }
+        return false;
+    }
+    
+    // 获取标签数组（兼容旧格式）
+    static getTags(item) {
+        // 优先使用 tags 字段，其次使用 tag 字段
+        if (item.tags && Array.isArray(item.tags)) {
+            return item.tags;
+        }
+        if (item.tag && Array.isArray(item.tag)) {
+            return item.tag;
+        }
+        return [];
     }
 }
 
@@ -131,20 +145,34 @@ function updateDynamicGreeting() {
 
 // UI 渲染器
 class UIRenderer {
-    static generateTagsHTML(tags = []) {
-        if (!tags.length) return '';
-        return `<div class="tags">${tags.map(t => `<span class="tag">${t}</span>`).join('')}</div>`;
+    static generateTagsHTML(item) {
+        const tags = Utils.getTags(item);
+        if (!tags || !tags.length) return '';
+        return `<div class="tags">${tags.map(t => `<span class="tag">${this.escapeHtml(t)}</span>`).join('')}</div>`;
+    }
+    
+    // 简单的HTML转义
+    static escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
     }
 
-    static generateListItem(item, type) {
-        const tags = UIRenderer.generateTagsHTML(item.tag);
+    static generateListItem(item, type, index) {
+        const tags = UIRenderer.generateTagsHTML(item);
+        // 使用 id 或 title 作为标识
+        const itemId = item.id || item.title;
         return `
-        <div class="list-item" data-id="${item.id}" data-type="${type}">
+        <div class="list-item" data-id="${this.escapeHtml(String(itemId))}" data-type="${type}" data-index="${index}">
           <div class="list-item-header">
-            <h3 class="list-item-title">${item.title}</h3>
-            <div class="list-item-meta"><span class="list-item-date">${item.date}</span></div>
+            <h3 class="list-item-title">${this.escapeHtml(item.title)}</h3>
+            <div class="list-item-meta"><span class="list-item-date">${this.escapeHtml(item.date)}</span></div>
           </div>
-          <p class="list-item-description">${item.description}</p>
+          <p class="list-item-description">${this.escapeHtml(item.description || '')}</p>
           ${tags}
         </div>`;
     }
@@ -156,9 +184,14 @@ class UIRenderer {
             return `<div class="${type}-list"><p>没有找到相关${DataManager.TYPE_LABEL[type]}！ >-<</p></div>`;
         }
 
-        const list = (type === 'works' ? data.works : data.articles)
-            .filter(i => !(i.tag && i.tag.includes('隐藏')));
-        const html = `<div class="${type}-list">${list.map(i => UIRenderer.generateListItem(i, type.slice(0, -1))).join('')}</div>`;
+        const items = type === 'works' ? data.works : data.articles;
+        // 过滤掉包含"隐藏"标签的项目
+        const filteredItems = items.filter(item => {
+            const tags = Utils.getTags(item);
+            return !tags.includes('隐藏');
+        });
+        
+        const html = `<div class="${type}-list">${filteredItems.map((item, idx) => UIRenderer.generateListItem(item, type.slice(0, -1), idx)).join('')}</div>`;
         perf.end(`生成${DataManager.TYPE_LABEL[type]}HTML`);
         return html;
     }
@@ -248,8 +281,9 @@ class SearchController {
         if (!data) return tags;
         const items = this.page === 'works' ? data.works : data.articles;
         items.forEach(item => {
-            if (item.tag && Array.isArray(item.tag)) {
-                item.tag.forEach(t => {
+            const itemTags = Utils.getTags(item);
+            if (itemTags && Array.isArray(itemTags)) {
+                itemTags.forEach(t => {
                     if (t !== '隐藏') tags.add(t);
                 });
             }
@@ -277,7 +311,9 @@ class SearchController {
             return;
         }
 
-        allTags.forEach(tag => {
+        // 排序标签
+        const sortedTags = Array.from(allTags).sort();
+        sortedTags.forEach(tag => {
             const btn = document.createElement('button');
             btn.type = 'button';
             btn.className = 'tag-button';
@@ -318,24 +354,33 @@ class SearchController {
         const data = this.getCachedData(type);
         if (!data) return;
 
-        let items = type === 'works' ? data.works : data.articles;
+        let items = type === 'works' ? [...data.works] : [...data.articles];
 
+        // 标签筛选
         if (this.selectedTags.length) {
-            items = items.filter(item =>
-                item.tag && Array.isArray(item.tag) &&
-                item.tag.some(t => this.selectedTags.includes(t))
-            );
+            items = items.filter(item => {
+                const itemTags = Utils.getTags(item);
+                return itemTags && Array.isArray(itemTags) &&
+                    itemTags.some(t => this.selectedTags.includes(t));
+            });
         }
 
-        if (query && field !== 'tag') {
-            const ql = query.toLowerCase();
+        // 搜索筛选
+        if (query && query.trim() !== '') {
+            const ql = query.toLowerCase().trim();
             items = items.filter(item => {
                 switch (field) {
-                    case 'title': return item.title.toLowerCase().includes(ql);
-                    case 'date': return item.date.includes(query);
-                    default:
+                    case 'title':
+                        return item.title.toLowerCase().includes(ql);
+                    case 'tag':
+                        const itemTags = Utils.getTags(item);
+                        return itemTags && Array.isArray(itemTags) && 
+                            itemTags.some(t => t.toLowerCase().includes(ql));
+                    case 'date':
+                        return item.date.includes(query);
+                    default: // 'all'
                         return item.title.toLowerCase().includes(ql) ||
-                            (item.tag && Array.isArray(item.tag) && item.tag.some(t => t.toLowerCase().includes(ql))) ||
+                            (Utils.getTags(item).some(t => t.toLowerCase().includes(ql))) ||
                             item.date.includes(query);
                 }
             });
@@ -463,16 +508,20 @@ class PageManager {
     static handleListItemClick(e) {
         const item = e.target.closest('.list-item');
         if (!item) return;
-        const id = parseInt(item.dataset.id, 10);
+        const itemId = item.dataset.id;
         const type = item.dataset.type;
-        if (isNaN(id)) return;
-        type === 'work' ? PageManager.handleWorkItemClick(id) : PageManager.handleArticleItemClick(id);
+        if (!itemId) return;
+        if (type === 'work') {
+            PageManager.handleWorkItemClick(itemId);
+        } else if (type === 'article') {
+            PageManager.handleArticleItemClick(itemId);
+        }
     }
 
     static handleWorkItemClick(workId) {
         const data = this.getData('works');
         if (data) {
-            const work = data.works.find(w => w.id === workId);
+            const work = data.works.find(w => String(w.id) === String(workId));
             if (work) PageManager.showWorkDetails(work);
         }
     }
@@ -480,8 +529,13 @@ class PageManager {
     static handleArticleItemClick(articleId) {
         const data = this.getData('articles');
         if (data) {
-            const article = data.articles.find(a => a.id === articleId);
-            if (article) window.open(`/articles/${encodeURIComponent(article.title)}.html`, '_blank');
+            const article = data.articles.find(a => String(a.id) === String(articleId));
+            if (article && article.url) {
+                window.open(article.url, '_blank');
+            } else if (article) {
+                // 如果没有 url 字段，尝试使用 id 构建 URL
+                window.open(`/articles/${encodeURIComponent(article.id)}.html`, '_blank');
+            }
         }
     }
 
@@ -498,13 +552,14 @@ class PageManager {
         if (document.querySelector('.work-details-envelope.active')) return;
         const envelope = document.createElement('div');
         envelope.className = 'work-details-envelope';
-        const tags = work.tag && work.tag.length ? `<div class="work-details-tag"><strong>标签:</strong>${work.tag.map(t => `<span class="tag">${t}</span>`).join('')}</div>` : '';
+        const tags = work.tags || work.tag;
+        const tagsHtml = tags && tags.length ? `<div class="work-details-tag"><strong>标签:</strong>${tags.map(t => `<span class="tag">${UIRenderer.escapeHtml(t)}</span>`).join('')}</div>` : '';
         envelope.innerHTML = `
         <div class="work-details-close">✕</div>
         <div class="work-details-content">
-          <h2 class="work-details-title">${work.title}</h2>
-          <p class="work-details-description">${work.description}</p>
-          ${tags}
+          <h2 class="work-details-title">${UIRenderer.escapeHtml(work.title)}</h2>
+          <p class="work-details-description">${UIRenderer.escapeHtml(work.description || '')}</p>
+          ${tagsHtml}
           ${work.link ? `<a href="${work.link}" target="_blank" class="work-details-link">查看</a>` : ''}
         </div>`;
         document.body.appendChild(envelope);
@@ -898,12 +953,6 @@ async function loadFooter() {
     const placeholder = document.getElementById('footer-placeholder');
     if (placeholder) {
       placeholder.innerHTML = footerHTML;
-      // 如果需要动态更新最后更新时间，可在此处理
-      const updateSpan = document.getElementById('footer-update-date');
-      if (updateSpan) {
-        // 可以动态设置为今天的日期
-        // updateSpan.textContent = new Date().toLocaleDateString('zh-CN');
-      }
     } else {
       console.warn('页脚占位符未找到');
     }

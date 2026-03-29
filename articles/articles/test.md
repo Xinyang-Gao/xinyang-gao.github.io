@@ -1,6 +1,9 @@
 ---
 title: 测试文章
+description: 这是一篇测试文章
+author: 高新炀
 date: 2025-12-21
+tag: [网站][隐藏]
 ---
 
 # 标题测试

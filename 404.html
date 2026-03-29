@@ -3,14 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>页面未找到 - GaoXinYang's website</title>
+  <title>页面未找到 · 留言反馈 - GaoXinYang's website</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-<style>
-    /* 404 页面特定微调，复用全局变量 */
+  <!-- Twikoo 评论样式（与contact保持一致） -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/twikoo@1.6.39/dist/twikoo.min.css">
+  <style>
+    /* 404 页面专属微调 - 优雅融合评论区 */
+    .error-wrapper {
+      max-width: 850px;
+      margin: calc(var(--nav-height) + 35px) auto 50px auto;
+      transition: all 0.2s ease;
+    }
+
+    /* 404 主卡片（保持原有复古信封感） */
     .error-container {
-      max-width: 750px;
-      margin: calc(var(--nav-height) + 35px) auto 60px auto;
       background: white;
       border: var(--border-width) solid var(--border-color);
       box-shadow: var(--shadow-main), var(--shadow-offset), -var(--shadow-offset);
@@ -20,6 +27,7 @@
       text-align: center;
       transition: background-color var(--transition-normal) var(--transition-ease), 
                   border-color var(--transition-normal) var(--transition-ease);
+      margin-bottom: 40px;
     }
 
     [data-theme="dark"] .error-container {
@@ -98,39 +106,133 @@
       margin: 10px 0;
     }
 
+    /* 评论区容器 —— 风格与主容器一致，继承卡片质感 */
+    .comments-section {
+      background: white;
+      border: var(--border-width) solid var(--border-color);
+      box-shadow: var(--shadow-main), var(--shadow-offset), -var(--shadow-offset);
+      padding: 35px 45px;
+      border-radius: var(--border-radius-container);
+      transition: background-color var(--transition-normal) var(--transition-ease), 
+                  border-color var(--transition-normal) var(--transition-ease);
+      margin-top: 25px;
+    }
+
+    [data-theme="dark"] .comments-section {
+      background: #222;
+    }
+
+    .comments-section h3 {
+      font-size: 1.7rem;
+      margin-top: 0;
+      margin-bottom: 0.6rem;
+      color: var(--accent-color);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 2px solid var(--accent-color);
+      display: inline-block;
+      padding-bottom: 8px;
+    }
+
+    .comments-section .section-sub {
+      color: var(--text-color);
+      opacity: 0.75;
+      margin-bottom: 28px;
+      font-size: 0.95rem;
+    }
+
+    /* 针对 Twikoo 评论区暗色主题微调 */
+    [data-theme="dark"] .twikoo .tk-comment,
+    [data-theme="dark"] .twikoo .tk-submit,
+    [data-theme="dark"] .twikoo .tk-input {
+      background-color: #2c2c2c;
+      border-color: #555;
+    }
+
+    [data-theme="dark"] .twikoo .tk-content {
+      color: #e0e0e0;
+    }
+
+    [data-theme="dark"] .twikoo .tk-nick,
+    [data-theme="dark"] .twikoo .tk-mail {
+      background-color: #3a3a3a;
+      color: #f0f0f0;
+      border-color: #666;
+    }
+
+    /* 保持响应式 */
     @media (max-width: 768px) {
       .error-container {
         padding: 35px 25px;
-        margin: calc(var(--nav-height-mobile) + 25px) 20px 50px;
+        margin-bottom: 30px;
       }
       .error-container h1 { font-size: 4rem; }
       .error-container h2 { font-size: 1.5rem; }
+      .comments-section {
+        padding: 28px 22px;
+      }
+      .comments-section h3 {
+        font-size: 1.5rem;
+      }
+      .error-wrapper {
+        margin: calc(var(--nav-height-mobile) + 25px) 20px 50px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .comments-section {
+        padding: 20px 18px;
+      }
+      .error-container {
+        padding: 28px 20px;
+      }
+    }
+
+    .twikoo-loading {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-color);
+      font-size: 0.95rem;
+      opacity: 0.7;
     }
   </style>
 </head>
 <body>
-  <!-- 导航栏占位符，由 js 动态加载，与全局一致 -->
+  <!-- 全局导航占位符 -->
   <div id="navbar-placeholder"></div>
 
-  <div class="error-container">
-    <div class="decoration-emoji">ERROR</div>
-    <h1>404</h1>
-    <h2>—————— 页面未找到 ——————</h2>
-    <p>诶呀……没找到这个页面呀，也许是网址输错了？<br>（或者我不小心写错代码了）</p>
-    <div class="error-buttons">
-      <a href="/index.html" class="error-btn">返回首页</a>
-      <a href="https://github.com/Xinyang-Gao/xinyang-gao.github.io/issues/new" target="_blank" class="error-btn outline">反馈问题</a>
+  <div class="error-wrapper">
+    <div class="error-container">
+      <div class="decoration-emoji">⚠️</div>
+      <h1>404</h1>
+      <h2>—————— 页面未找到 ——————</h2>
+      <p>诶呀……没找到这个页面呀，也许是网址输错了？<br>（或者我不小心写错代码了）</p>
+      <div class="error-buttons">
+        <a href="/index.html" class="error-btn"><i class="fas fa-home" style="margin-right: 8px;"></i>返回首页</a>
+        <a href="https://github.com/Xinyang-Gao/xinyang-gao.github.io/issues/new" target="_blank" class="error-btn outline"><i class="fas fa-bug" style="margin-right: 6px;"></i>反馈问题</a>
+      </div>
+    </div>
+
+  <div class="comments-section" id="commentsSection">
+      <h3>反馈</h3>
+      <div class="section-sub">找不到页面了？如果你觉得这是个问题，欢迎反馈</div>
+      <!-- Twikoo 评论容器 -->
+      <div id="twikoo-comments"></div>
     </div>
   </div>
 
+  <button id="backToTopBtn" class="back-to-top-btn" title="返回顶部">↑</button>
+  <div id="pageTransition" class="page-transition"></div>
   <div id="footer-placeholder"></div>
 
+  <script src="https://cdn.jsdelivr.net/npm/twikoo@1.6.39/dist/twikoo.min.js"></script>
   <script src="//cdn.busuanzi.cc/busuanzi/3.6.9/busuanzi.min.js" defer></script>
   <script src="script.js"></script>
+
   <script>
-    // 确保导航栏加载和主题一致性
-    document.addEventListener('DOMContentLoaded', async () => {
-      // 预置主题（防止闪烁）
+    (function() {
+      // 确保主题在DOM加载前就应用（避免闪烁）
       const savedTheme = localStorage.getItem('theme');
       const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       if (savedTheme) {
@@ -139,20 +241,206 @@
         document.documentElement.setAttribute('data-theme', 'dark');
       }
 
-      // 加载导航栏（如果 navbar-placeholder 存在）
-      if (document.getElementById('navbar-placeholder')) {
-        await loadNavbar();
+      // 辅助函数：等待元素出现/等待navbar加载完成后再执行初始化（避免与script.js冲突但增强兼容）
+      async function waitForElement(selector, timeout = 3000) {
+        const startTime = Date.now();
+        while (Date.now() - startTime < timeout) {
+          const el = document.querySelector(selector);
+          if (el) return el;
+          await new Promise(r => setTimeout(r, 50));
+        }
+        return null;
       }
+
+      // 初始化 Twikoo 评论区
+      function initTwikooComments() {
+        if (typeof twikoo === 'undefined') {
+          console.warn('Twikoo 脚本尚未加载完成，稍后重试');
+          setTimeout(() => initTwikooComments(), 300);
+          return;
+        }
+        const container = document.querySelector('#twikoo-comments');
+        if (!container) return;
+        // 显示加载占位
+        if (container.children.length === 0) {
+          const loadingDiv = document.createElement('div');
+          loadingDiv.className = 'twikoo-loading';
+          loadingDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> 加载留言板中，稍等片刻...';
+          container.appendChild(loadingDiv);
+        }
+        
+        twikoo.init({
+          envId: 'https://twikoo-gxy.netlify.app/.netlify/functions/twikoo',
+          el: '#twikoo-comments',
+          lang: 'zh-CN',
+          enableComment: true,
+        }).then(() => {
+          // 移除占位loading (twikoo会接管容器)
+          const loadingHint = container.querySelector('.twikoo-loading');
+          if (loadingHint) loadingHint.remove();
+        }).catch(err => {
+          console.error('❌ Twikoo 初始化失败:', err);
+          const containerEl = document.querySelector('#twikoo-comments');
+          if (containerEl) {
+            containerEl.innerHTML = '<div style="padding: 20px; text-align: center; color: #a55860;"><i class="fas fa-exclamation-triangle"></i> 评论服务暂时不可用，请稍后再试~</div>';
+          }
+        });
+      }
+
+      // 加载导航栏以及公共组件 (与原有逻辑保持一致)
+      async function loadNavbarAndFooter() {
+        // 使用现有全局 loadNavbar 函数（如果存在）否则手动实现
+        if (typeof loadNavbar === 'function') {
+          try {
+            await loadNavbar();
+          } catch(e) { console.warn(e); }
+        } else {
+          // 后备：手动获取导航栏html并注入（与script.js预期一致）
+          const navbarPlaceholder = document.getElementById('navbar-placeholder');
+          const footerPlaceholder = document.getElementById('footer-placeholder');
+          if (navbarPlaceholder) {
+            try {
+              const response = await fetch('/navbar.html');
+              if (response.ok) {
+                const html = await response.text();
+                navbarPlaceholder.innerHTML = html;
+              } else {
+                console.warn('未找到 navbar.html，使用简易导航结构');
+                navbarPlaceholder.innerHTML = getFallbackNavbar();
+              }
+            } catch (err) {
+              navbarPlaceholder.innerHTML = getFallbackNavbar();
+            }
+          }
+          if (footerPlaceholder) {
+            try {
+              const response = await fetch('/footer.html');
+              if (response.ok) {
+                const html = await response.text();
+                footerPlaceholder.innerHTML = html;
+              } else {
+                footerPlaceholder.innerHTML = getFallbackFooter();
+              }
+            } catch (err) {
+              footerPlaceholder.innerHTML = getFallbackFooter();
+            }
+          }
+        }
+        
+        // 等待DOM更新，再触发导航高亮管理和主题切换同步 (若有 NavigationManager)
+        setTimeout(() => {
+          if (typeof NavigationManager !== 'undefined' && NavigationManager.initNavigation) {
+            NavigationManager.initNavigation();
+          } else {
+            // 基础高亮：当前页面不激活特殊项，但保证主题切换按钮存在并工作
+            setupThemeSwitchManually();
+          }
+          if (typeof ScrollManager !== 'undefined' && ScrollManager.initBackToTopButton) {
+            ScrollManager.initBackToTopButton();
+          } else {
+            setupBackToTopManually();
+          }
+        }, 100);
+      }
+
+      // 手动设置主题切换（当 NavigationManager 不存在时使用）
+      function setupThemeSwitchManually() {
+        const checkbox = document.getElementById('theme-toggle-checkbox');
+        if (!checkbox) return;
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        checkbox.checked = (currentTheme === 'dark');
+        checkbox.addEventListener('change', function(e) {
+          const newTheme = e.target.checked ? 'dark' : 'light';
+          document.documentElement.setAttribute('data-theme', newTheme);
+          localStorage.setItem('theme', newTheme);
+        });
+        // 移动端菜单
+        const mobileToggle = document.getElementById('mobileToggle');
+        const navItems = document.querySelector('.nav-items');
+        if (mobileToggle && navItems) {
+          mobileToggle.addEventListener('click', () => {
+            mobileToggle.classList.toggle('active');
+            navItems.classList.toggle('active');
+          });
+        }
+        // 高亮当前页面（404页面不激活具体导航，但如果有匹配的路径可加active）
+        const currentPath = window.location.pathname;
+        const navLinks = document.querySelectorAll('.nav-item');
+        navLinks.forEach(link => {
+          const href = link.getAttribute('href');
+          if (href && (currentPath === href || (href !== '/' && currentPath.includes(href)))) {
+            link.classList.add('active');
+          } else if (currentPath.includes('404') && link.getAttribute('data-page') === 'home') {
+            // 避免高亮错误
+          }
+        });
+      }
+
+      function setupBackToTopManually() {
+        const backBtn = document.getElementById('backToTopBtn');
+        if (!backBtn) return;
+        window.addEventListener('scroll', () => {
+          if (window.scrollY > 400) {
+            backBtn.classList.add('show');
+          } else {
+            backBtn.classList.remove('show');
+          }
+        });
+        backBtn.addEventListener('click', () => {
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+      }
+
+      // 页面主体启动
+      document.addEventListener('DOMContentLoaded', async () => {
+        // 确保主题持久化监听
+        const themeObserver = () => {
+          const stored = localStorage.getItem('theme');
+          if (stored && stored !== document.documentElement.getAttribute('data-theme')) {
+            document.documentElement.setAttribute('data-theme', stored);
+          }
+        };
+        window.addEventListener('storage', themeObserver);
+        
+        // 加载导航栏和页脚
+        await loadNavbarAndFooter();
+        
+        // 延迟一小段时间确保导航栏的样式已经注入完成，再初始化评论区
+        setTimeout(() => {
+          initTwikooComments();
+        }, 200);
+        
+        // 若script.js中有自定义光标、其他功能，避免冲突；但不影响
+        document.body.setAttribute('data-loaded', 'true');
+        
+        // 处理404页面特有的页面过渡动画效果（可选，优雅消失）
+        const pageTransitionDiv = document.getElementById('pageTransition');
+        if (pageTransitionDiv) {
+          setTimeout(() => {
+            pageTransitionDiv.style.opacity = '0';
+          }, 200);
+        }
+      });
       
-      // 激活导航高亮（当前页面为 404 时不需要高亮具体项，但保持主题切换按钮可用）
-      if (typeof NavigationManager !== 'undefined' && NavigationManager.initNavigation) {
-        NavigationManager.initNavigation();
-      }
-      if (typeof ScrollManager !== 'undefined' && ScrollManager.initBackToTopButton) {
-        ScrollManager.initBackToTopButton();
-      }
-      document.body.setAttribute('data-loaded', 'true');
-    });
+      // 当页面完全加载后再执行一次Twikoo确保资源到位（应对网络延迟）
+      window.addEventListener('load', () => {
+        // 再次确认Twikoo容器是否已存在评论组件，若未加载则重试
+        const twikooContainer = document.querySelector('#twikoo-comments');
+        if (twikooContainer && twikooContainer.children.length <= 1 && !twikooContainer.querySelector('.tk-comments')) {
+          // 看起来评论区还没成功渲染，二次调用
+          if (typeof twikoo !== 'undefined') {
+            twikoo.init({
+              envId: 'https://twikoo-gxy.netlify.app/.netlify/functions/twikoo',
+              el: '#twikoo-comments',
+              lang: 'zh-CN',
+              path: window.location.pathname,
+            }).catch(e => console.warn('二次初始化跳过', e));
+          }
+        }
+      });
+    })();
   </script>
+  <!-- 保证不蒜子异步统计不报错且正常显示 -->
+  <noscript>请启用JavaScript以查看站点统计和留言功能。</noscript>
 </body>
 </html>
