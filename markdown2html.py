@@ -220,7 +220,7 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
 
         <!-- 主文章内容区 -->
         <div class="article-content-wrapper">
-            <h1 class="article-title" id="articleTitle">═══ {title} ═══</h1>
+            <h1 class="article-title" id="articleTitle">{title}</h1>
             {meta_html}
             <div class="article-body" id="articleBody">
                 {content_html}
