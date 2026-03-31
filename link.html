@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>外链跳转确认</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'Noto Sans', sans-serif;
+            background-color: #f8f5f0;
+            color: #3a3a3a;
+            line-height: 1.7;
+            padding: 20px;
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 70px auto 50px auto;
+            background: white;
+            border: 1.5px solid #e0d6cc;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08),
+                        6px 6px 0 -2px rgba(224, 214, 204, 0.4),
+                        -6px 6px 0 -2px rgba(224, 214, 204, 0.4);
+            padding: 45px;
+            position: relative;
+            border-radius: 8px;
+            transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .redirect-card {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .redirect-icon {
+            font-size: 4rem;
+            color: #a55860;
+            margin-bottom: 20px;
+        }
+
+        .redirect-title {
+            font-size: 2rem;
+            color: #a55860;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .redirect-subtitle {
+            font-size: 1.2rem;
+            color: #777;
+            margin-bottom: 30px;
+        }
+
+        .redirect-url {
+            background-color: #f0eae1;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            word-break: break-all;
+            font-family: monospace;
+            font-size: 1rem;
+            color: #555;
+            border: 1px solid #e0d6cc;
+        }
+
+        .redirect-message {
+            margin: 25px 0;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #555;
+        }
+
+        .redirect-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .btn-primary {
+            background-color: #a55860;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #8a454d;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        .btn-secondary {
+            background-color: #f0eae1;
+            color: #3a3a3a;
+        }
+
+        .btn-secondary:hover {
+            background-color: #e0d6cc;
+            transform: translateY(-2px);
+        }
+
+        /* 暗黑模式 */
+        [data-theme="dark"] {
+            --bg-color: #1e1e1e;
+            --text-color: #e8e8e8;
+            --accent-color: #d4a5a5;
+            --border-color: #444444;
+            --header-bg: #2a2a2a;
+            --link-color: var(--accent-color);
+            --link-hover: #f0c4c4;
+        }
+
+        [data-theme="dark"] body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+        }
+
+        [data-theme="dark"] .container {
+            background: #222;
+            border-color: var(--border-color);
+        }
+
+        [data-theme="dark"] .redirect-subtitle {
+            color: #aaa;
+        }
+
+        [data-theme="dark"] .redirect-url {
+            background-color: #333;
+            border-color: #555;
+            color: #ccc;
+        }
+
+        [data-theme="dark"] .redirect-message {
+            color: #d0d0d0;
+        }
+
+        [data-theme="dark"] .btn-secondary {
+            background-color: #333;
+            color: #e8e8e8;
+        }
+
+        [data-theme="dark"] .btn-secondary:hover {
+            background-color: #444;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="redirect-card">
+            <div class="redirect-icon">⚠️</div>
+            <h1 class="redirect-title" id="domain-title">www.example.com</h1>
+            <p class="redirect-subtitle">您即将访问外部网站</p>
+            <div class="redirect-url" id="full-url">https://www.example.com/path/to/page</div>
+            <p class="redirect-message">您正在离开本网站<br>
+                请确认您信任此网站并了解可能存在的风险<br>
+                本网站不对第三方网站的内容或安全性负责
+            </p>
+            <div class="redirect-buttons">
+                <button class="btn btn-secondary" onclick="closePage()">关闭</button>
+                <button class="btn btn-primary" onclick="proceedToUrl()" id="proceed-btn">继续前往</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 解析URL参数
+        function getUrlParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        // 获取目标URL
+        const targetUrl = getUrlParameter('url');
+        
+        if (!targetUrl) {
+            document.getElementById('full-url').textContent = '无效的URL参数';
+            document.getElementById('proceed-btn').disabled = true;
+        } else {
+            // 设置显示的URL
+            document.getElementById('full-url').textContent = targetUrl;
+            
+            // 提取域名作为标题
+            try {
+                const urlObj = new URL(targetUrl);
+                document.getElementById('domain-title').textContent = urlObj.hostname;
+            } catch (e) {
+                document.getElementById('domain-title').textContent = '无效网址';
+                document.getElementById('proceed-btn').disabled = true;
+            }
+        }
+
+        // 在新标签页打开目标URL，然后关闭当前警告页面
+        function proceedToUrl() {
+            if (targetUrl) {
+                // 在新标签页打开外链
+                window.open(targetUrl, '_blank', 'noopener,noreferrer');
+                // 关闭当前确认页面
+                window.close();
+                // 如果由于浏览器安全策略无法关闭，提示用户手动关闭
+                setTimeout(() => {
+                    alert('请手动关闭此标签页');
+                }, 100);
+            }
+        }
+
+        // 关闭当前页面（返回上一页或直接关闭）
+        function closePage() {
+            // 尝试关闭窗口，如果无法关闭则返回上一页
+            window.close();
+            // 如果窗口没有被关闭（浏览器安全策略限制），则返回上一页
+            setTimeout(() => {
+                if (window.history.length > 1) {
+                    window.history.back();
+                } else {
+                    // 如果没有历史记录，尝试跳转到首页
+                    window.location.href = '/';
+                }
+            }, 100);
+        }
+
+        // 检测主题设置
+        function applyTheme() {
+            const savedTheme = localStorage.getItem('theme');
+            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            let initialTheme = savedTheme;
+            if (!initialTheme) {
+                initialTheme = systemPrefersDark ? 'dark' : 'light';
+            }
+            document.documentElement.setAttribute('data-theme', initialTheme);
+        }
+
+        // 初始化主题
+        applyTheme();
+    </script>
+</body>
+</html>

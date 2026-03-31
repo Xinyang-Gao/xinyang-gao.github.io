@@ -1055,6 +1055,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // 主初始化
 document.addEventListener('DOMContentLoaded', async () => {
+    ExternalLinkManager = new ExternalLinkManager();
     // 预先设置主题，避免闪烁（导航栏加载前）
     const savedTheme = localStorage.getItem('theme');
     const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -1066,7 +1067,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await loadNavbar();
     await loadFooter();
-    
+
     // 启动网站存活时间计时器（页脚已加载完成）
     startSiteAgeUpdater();
 
@@ -1109,5 +1110,79 @@ async function initializeWorksPage() {
         }
     } catch (e) {
         console.error('加载作品数据失败:', e);
+    }
+}
+class ExternalLinkManager {
+    constructor() {
+        // 排除本网站的域名列表（根据实际情况修改）
+        this.internalDomains = [
+            window.location.hostname,           // 当前域名
+            'localhost',
+            '127.0.0.1',
+            'xinyang-gao.github.io',                   // 请替换为您的实际域名
+            'www.xinyang-gao.github.io'
+        ];
+        
+        this.init();
+    }
+
+    /**
+     * 判断链接是否为外部链接
+     * @param {string} url - 链接地址
+     * @returns {boolean} 是否为外部链接
+     */
+    isExternalLink(url) {
+        if (!url || url.startsWith('#') || url.startsWith('javascript:')) {
+            return false;
+        }
+        
+        try {
+            const linkUrl = new URL(url, window.location.href);
+            // 检查协议是否为 http 或 https
+            if (!['http:', 'https:'].includes(linkUrl.protocol)) {
+                return false;
+            }
+            // 检查域名是否属于内部域名
+            return !this.internalDomains.includes(linkUrl.hostname);
+        } catch (e) {
+            // URL 解析失败，如果是相对路径则视为内部链接
+            return false;
+        }
+    }
+
+    /**
+     * 处理链接点击事件
+     * @param {Event} e - 点击事件
+     */
+handleLinkClick(e) {
+    let target = e.target.closest('a');
+    if (!target) return;
+    
+    const href = target.getAttribute('href');
+    if (!href) return;
+    
+    if (this.isExternalLink(href)) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        // 在新标签页打开确认页面
+        const confirmUrl = `/link.html?url=${encodeURIComponent(href)}`;
+        window.open(confirmUrl, '_blank', 'noopener,noreferrer');
+    }
+}
+
+    /**
+     * 初始化：监听全局点击事件
+     */
+    init() {
+        // 使用事件委托监听所有链接点击
+        document.addEventListener('click', (e) => {
+            this.handleLinkClick(e);
+        });
+        
+        // 对于动态加载的内容（如通过 AJAX 加载的文章列表），
+        // 事件委托已经可以处理，无需额外操作
+        
+        console.log('外链跳转确认管理器已启动');
     }
 }
