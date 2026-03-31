@@ -548,35 +548,74 @@ class PageManager {
         } catch { return null; }
     }
 
-    static showWorkDetails(work) {
-        if (document.querySelector('.work-details-envelope.active')) return;
-        const envelope = document.createElement('div');
-        envelope.className = 'work-details-envelope';
-        const tags = work.tags || work.tag;
-        const tagsHtml = tags && tags.length ? `<div class="work-details-tag"><strong>标签:</strong>${tags.map(t => `<span class="tag">${UIRenderer.escapeHtml(t)}</span>`).join('')}</div>` : '';
-        envelope.innerHTML = `
+static showWorkDetails(work) {
+    // 如果已有弹窗或遮罩，先关闭
+    if (this.currentModalClose) {
+        this.currentModalClose();
+    }
+
+    // 创建遮罩层
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    document.body.appendChild(overlay);
+
+    // 创建弹窗容器
+    const envelope = document.createElement('div');
+    envelope.className = 'work-details-envelope';
+    const tags = work.tags || work.tag;
+    const tagsHtml = tags && tags.length ? 
+        `<div class="work-details-tag"><strong>标签:</strong>${tags.map(t => `<span class="tag">${UIRenderer.escapeHtml(t)}</span>`).join('')}</div>` : '';
+    envelope.innerHTML = `
         <div class="work-details-close">✕</div>
         <div class="work-details-content">
-          <h2 class="work-details-title">${UIRenderer.escapeHtml(work.title)}</h2>
-          <p class="work-details-description">${UIRenderer.escapeHtml(work.description || '')}</p>
-          ${tagsHtml}
-          ${work.link ? `<a href="${work.link}" target="_blank" class="work-details-link">查看</a>` : ''}
-        </div>`;
-        document.body.appendChild(envelope);
-        const closeBtn = envelope.querySelector('.work-details-close');
-        function close() {
-            envelope.classList.remove('active');
-            envelope.classList.add('closing');
-            setTimeout(() => envelope.parentNode?.removeChild(envelope), 400);
+            <h2 class="work-details-title">${UIRenderer.escapeHtml(work.title)}</h2>
+            <p class="work-details-description">${UIRenderer.escapeHtml(work.description || '')}</p>
+            ${tagsHtml}
+            ${work.link ? `<a href="${work.link}" target="_blank" class="work-details-link">查看</a>` : ''}
+        </div>
+    `;
+    document.body.appendChild(envelope);
+
+    // 关闭函数（包含清理工作）
+    const closeModal = () => {
+        if (envelope.classList.contains('closing')) return;
+        envelope.classList.add('closing');
+        overlay.classList.remove('active');
+        setTimeout(() => {
+            envelope.remove();
+            overlay.remove();
+            // 移除全局事件监听
+            document.removeEventListener('keydown', escHandler);
+            if (this.currentModalClose === closeModal) {
+                this.currentModalClose = null;
+            }
+        }, 400);
+    };
+
+    // ESC 键关闭
+    const escHandler = (e) => {
+        if (e.key === 'Escape') {
+            closeModal();
         }
-        closeBtn.addEventListener('click', close);
-        requestAnimationFrame(() => {
-            envelope.classList.add('active');
-            document.body.addEventListener('click', function fn(e) {
-                if (!envelope.contains(e.target) && e.target !== closeBtn) { close(); document.body.removeEventListener('click', fn); }
-            }, { once: true });
-        });
-    }
+    };
+    document.addEventListener('keydown', escHandler);
+
+    // 点击遮罩关闭
+    overlay.addEventListener('click', closeModal);
+
+    // 点击关闭按钮关闭
+    const closeBtn = envelope.querySelector('.work-details-close');
+    closeBtn.addEventListener('click', closeModal);
+
+    // 存储当前关闭函数，供下次调用时清理
+    this.currentModalClose = closeModal;
+
+    // 显示弹窗动画
+    requestAnimationFrame(() => {
+        envelope.classList.add('active');
+        overlay.classList.add('active');
+    });
+}
 }
 
 // 导航管理器

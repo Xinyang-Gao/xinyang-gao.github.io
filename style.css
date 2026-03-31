@@ -1570,3 +1570,28 @@ body.mouse-outside .custom-cursor {
     justify-content: center;
   }
 }
+
+/* 弹窗遮罩层 - 背景模糊效果 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(1px);
+  -webkit-backdrop-filter: blur(1px);
+  z-index: 999;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: auto;
+}
+
+.modal-overlay.active {
+  opacity: 1;
+}
+
+/* 确保弹窗层级高于遮罩层 */
+.work-details-envelope {
+  z-index: 1000;
+}
