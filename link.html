@@ -2,8 +2,8 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>外链跳转确认</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>外链安全跳转 | 可信导航</title>
     <style>
         * {
             margin: 0;
@@ -18,72 +18,122 @@
             line-height: 1.7;
             padding: 20px;
             min-height: 100vh;
-            overflow-x: hidden;
             transition: background-color 0.3s ease, color 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .container {
             max-width: 850px;
-            margin: 70px auto 50px auto;
+            width: 100%;
+            margin: 20px auto;
             background: white;
             border: 1.5px solid #e0d6cc;
             box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08),
                         6px 6px 0 -2px rgba(224, 214, 204, 0.4),
                         -6px 6px 0 -2px rgba(224, 214, 204, 0.4);
             padding: 45px;
-            position: relative;
             border-radius: 8px;
             transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
         }
 
         .redirect-card {
-            text-align: center;
-            padding: 40px 20px;
+            text-align: left;           /* 整体左对齐，保持现代清晰布局 */
+            padding: 20px 0 10px 0;
+        }
+
+        /* 头部区域：图标 + 标题 并排 (flex) */
+        .header-row {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
         }
 
         .redirect-icon {
-            font-size: 4rem;
-            color: #a55860;
-            margin-bottom: 20px;
+            font-size: 3.2rem;          /* 适中大小，与标题平衡 */
+            line-height: 1;
+            flex-shrink: 0;
+            transition: transform 0.2s ease;
+            margin-bottom: 0;           /* 移除原居中布局遗留的底部边距 */
         }
 
         .redirect-title {
             font-size: 2rem;
-            color: #a55860;
-            margin-bottom: 10px;
             font-weight: 700;
+            word-break: break-word;
+            margin: 0;
+            line-height: 1.2;
+            color: #a55860;              /* 默认警告色，安全模式会动态覆盖 */
         }
 
+        /* 安全模式标题颜色 (由JS添加类控制) */
+        .safe-mode .redirect-title {
+            color: #2c7a4d;
+        }
+
+        /* 副标题：位于主标题下方，与图标行自然错落 */
         .redirect-subtitle {
-            font-size: 1.2rem;
+            font-size: 1.1rem;
             color: #777;
-            margin-bottom: 30px;
+            margin: 8px 0 20px 0;
+            padding-left: 0;
+            font-weight: 500;
+            border-left: none;
         }
 
+        /* URL 区块 */
         .redirect-url {
             background-color: #f0eae1;
             padding: 15px;
             border-radius: 8px;
             margin: 20px 0;
             word-break: break-all;
-            font-family: monospace;
-            font-size: 1rem;
+            font-family: 'SF Mono', 'JetBrains Mono', monospace;
+            font-size: 1.2rem;
             color: #555;
             border: 1px solid #e0d6cc;
+            transition: all 0.2s;
+            text-align: left;
         }
 
+        /* 安全提示消息 */
         .redirect-message {
-            margin: 25px 0;
-            font-size: 1.1rem;
+            margin: 20px 0 15px 0;
+            font-size: 1rem;
             line-height: 1.6;
             color: #555;
+            text-align: left;
         }
 
+        /* 倒计时区域 (左对齐，更自然) */
+        .timer-area {
+            margin-top: 5px;
+            margin-bottom: 10px;
+            font-size: 1rem;
+            font-weight: 500;
+            background: #f0f4f0;
+            display: inline-block;
+            padding: 6px 20px;
+            border-radius: 40px;
+            color: #2c7a4d;
+            transition: all 0.2s;
+        }
+
+        #timerContainer {
+            text-align: left;
+            min-height: 55px;
+        }
+
+        /* 按钮组：保持居中对齐，视觉舒适 */
         .redirect-buttons {
             display: flex;
             justify-content: center;
-            gap: 15px;
-            margin-top: 30px;
+            gap: 18px;
+            margin-top: 25px;
+            flex-wrap: wrap;
         }
 
         .btn {
@@ -92,8 +142,9 @@
             font-size: 1rem;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.25s ease;
             border: none;
+            font-family: inherit;
         }
 
         .btn-primary {
@@ -101,10 +152,16 @@
             color: white;
         }
 
-        .btn-primary:hover {
+        .btn-primary:hover:not(:disabled) {
             background-color: #8a454d;
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
         }
 
         .btn-secondary {
@@ -117,15 +174,19 @@
             transform: translateY(-2px);
         }
 
+        .btn-safe {
+            background-color: #2c7a4d;
+        }
+        .btn-safe:hover:not(:disabled) {
+            background-color: #1f5e3a;
+        }
+
         /* 暗黑模式 */
         [data-theme="dark"] {
             --bg-color: #1e1e1e;
             --text-color: #e8e8e8;
             --accent-color: #d4a5a5;
             --border-color: #444444;
-            --header-bg: #2a2a2a;
-            --link-color: var(--accent-color);
-            --link-hover: #f0c4c4;
         }
 
         [data-theme="dark"] body {
@@ -160,95 +221,407 @@
         [data-theme="dark"] .btn-secondary:hover {
             background-color: #444;
         }
+
+        [data-theme="dark"] .timer-area {
+            background: #2a3a2a;
+            color: #b8e4c2;
+        }
+
+        [data-theme="dark"] .safe-mode .redirect-title {
+            color: #7dcea0;
+        }
+
+        @keyframes gentlePulse {
+            0% { transform: scale(1);}
+            50% { transform: scale(1.02);}
+            100% { transform: scale(1);}
+        }
+        .auto-jump-active {
+            animation: gentlePulse 0.6s ease-in-out;
+        }
+
+        /* 移动端优化：小屏幕下图标和标题更紧凑 */
+        @media (max-width: 550px) {
+            .container {
+                padding: 30px 22px;
+            }
+            .header-row {
+                gap: 12px;
+            }
+            .redirect-icon {
+                font-size: 2.6rem;
+            }
+            .redirect-title {
+                font-size: 1.6rem;
+            }
+            .redirect-subtitle {
+                font-size: 1rem;
+                margin-top: 6px;
+            }
+            .btn {
+                padding: 10px 24px;
+            }
+        }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="redirect-card">
-            <div class="redirect-icon">⚠️</div>
+<div class="container" id="mainContainer">
+    <div class="redirect-card" id="redirectCard">
+        <!-- 优化布局: 图标 + 标题并排 (左侧图标，标题在其右侧) -->
+        <div class="header-row">
+            <div class="redirect-icon" id="statusIcon">⚠️</div>
             <h1 class="redirect-title" id="domain-title">www.example.com</h1>
-            <p class="redirect-subtitle">您即将访问外部网站</p>
-            <div class="redirect-url" id="full-url">https://www.example.com/path/to/page</div>
-            <p class="redirect-message">您正在离开本网站<br>
-                请确认您信任此网站并了解可能存在的风险<br>
-                本网站不对第三方网站的内容或安全性负责
-            </p>
-            <div class="redirect-buttons">
-                <button class="btn btn-secondary" onclick="closePage()">关闭</button>
-                <button class="btn btn-primary" onclick="proceedToUrl()" id="proceed-btn">继续前往</button>
-            </div>
+        </div>
+        <!-- 副标题紧跟在标题下方 -->
+        <p class="redirect-subtitle" id="subtitleText">您即将访问外部网站</p>
+        
+        <div class="redirect-url" id="full-url">https://www.example.com/path/to/page</div>
+        <div class="redirect-message" id="messageBox">
+            请确认您信任此网站并了解可能存在的风险<br>
+            本网站不对第三方网站的内容或安全性负责
+        </div>
+        <div id="timerContainer" style="min-height: 55px;"></div>
+        <div class="redirect-buttons">
+            <button class="btn btn-secondary" id="closeBtn">关闭</button>
+            <button class="btn btn-primary" id="proceedBtn">继续前往</button>
         </div>
     </div>
+</div>
 
-    <script>
-        // 解析URL参数
-        function getUrlParameter(name) {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get(name);
+<script>
+    // ---------- 白名单配置 ----------
+    const WHITELIST_DOMAINS = new Set([
+        "github.com",
+        "vercel.com",
+        "netlify.app",
+        "wikipedia.org",
+        "bilibili.com",
+        "bing.com",
+        "baidu.com",
+        "zhihu.com",
+        "csdn.net",
+        "cloud.tencent.com",
+        "aliyun.com"
+    ]);
+
+    function isDomainInWhitelist(hostname) {
+        if (!hostname) return false;
+        const lowerHost = hostname.toLowerCase();
+        if (WHITELIST_DOMAINS.has(lowerHost)) return true;
+        for (let domain of WHITELIST_DOMAINS) {
+            if (lowerHost === domain) continue;
+            if (lowerHost.endsWith('.' + domain)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    // ---------- 工具函数 ----------
+    function getUrlParameter(name) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(name);
+    }
+
+    // ---------- 核心变量 ----------
+    let targetUrl = null;           // 最终跳转地址
+    let isWhitelisted = false;      // 是否在白名单中
+    let autoTimer = null;           // 倒计时定时器
+    let countdownSeconds = 3;       // 倒计时秒数
+    let redirectTriggered = false;   // 防止多次跳转
+
+    // DOM 元素
+    const domainTitleEl = document.getElementById('domain-title');
+    const fullUrlEl = document.getElementById('full-url');
+    const statusIconEl = document.getElementById('statusIcon');
+    const subtitleEl = document.getElementById('subtitleText');
+    const messageBoxEl = document.getElementById('messageBox');
+    const timerContainer = document.getElementById('timerContainer');
+    let proceedBtn = document.getElementById('proceedBtn');
+    let closeBtn = document.getElementById('closeBtn');
+    const mainContainer = document.getElementById('mainContainer');
+
+    // ---------- 核心跳转方法：替换当前页面，实现页面跳转（而非新窗口）----------
+    function performRedirect() {
+        if (redirectTriggered) return;
+        if (!targetUrl) return;
+
+        // 二次校验协议安全
+        try {
+            const urlObj = new URL(targetUrl);
+            if (urlObj.protocol !== 'http:' && urlObj.protocol !== 'https:') {
+                showErrorMessage('不支持的协议，无法安全跳转。');
+                return;
+            }
+        } catch (e) {
+            showErrorMessage('目标链接无效，无法跳转。');
+            return;
         }
 
-        // 获取目标URL
-        const targetUrl = getUrlParameter('url');
-        
-        if (!targetUrl) {
-            document.getElementById('full-url').textContent = '无效的URL参数';
-            document.getElementById('proceed-btn').disabled = true;
+        redirectTriggered = true;
+
+        // 清除定时器，避免残留
+        if (autoTimer) {
+            clearInterval(autoTimer);
+            autoTimer = null;
+        }
+
+        // 直接替换当前页面，实现“提示页被跳转页面替换”的效果
+        window.location.replace(targetUrl);
+    }
+
+    // 展示错误信息且禁用跳转按钮
+    function showErrorMessage(msg) {
+        if (messageBoxEl) messageBoxEl.innerHTML = `<span style="color:#c0392b;">⚠️ ${msg}</span>`;
+        if (proceedBtn) proceedBtn.disabled = true;
+        if (timerContainer) timerContainer.innerHTML = '';
+        if (autoTimer) {
+            clearInterval(autoTimer);
+            autoTimer = null;
+        }
+    }
+
+    // 清理自动计时器
+    function clearAutoTimer() {
+        if (autoTimer) {
+            clearInterval(autoTimer);
+            autoTimer = null;
+        }
+    }
+
+    // 停止自动跳转并重置UI（但不会跳转）
+    function stopAutoRedirectAndResetButton() {
+        clearAutoTimer();
+        if (timerContainer) {
+            timerContainer.innerHTML = '';
+        }
+        if (proceedBtn) {
+            if (isWhitelisted) {
+                proceedBtn.textContent = '立即前往';
+                proceedBtn.disabled = false;
+            } else {
+                proceedBtn.textContent = '继续前往';
+                proceedBtn.disabled = false;
+            }
+        }
+    }
+
+    // 手动继续（用户点击“继续前往”或“立即前往”）
+    function onProceed() {
+        if (redirectTriggered) return;
+        if (isWhitelisted) {
+            // 停止倒计时并立即跳转
+            if (autoTimer) {
+                clearAutoTimer();
+                timerContainer.innerHTML = `<div class="timer-area">✓ 手动确认，正在跳转...</div>`;
+            } else {
+                if (timerContainer) timerContainer.innerHTML = `<div class="timer-area">✓ 正在跳转...</div>`;
+            }
+            if (proceedBtn) proceedBtn.disabled = true;
+            performRedirect();
         } else {
-            // 设置显示的URL
-            document.getElementById('full-url').textContent = targetUrl;
-            
-            // 提取域名作为标题
-            try {
-                const urlObj = new URL(targetUrl);
-                document.getElementById('domain-title').textContent = urlObj.hostname;
-            } catch (e) {
-                document.getElementById('domain-title').textContent = '无效网址';
-                document.getElementById('proceed-btn').disabled = true;
-            }
+            // 普通模式：直接跳转
+            if (proceedBtn) proceedBtn.disabled = true;
+            performRedirect();
         }
+    }
 
-        // 在新标签页打开目标URL，然后关闭当前警告页面
-        function proceedToUrl() {
-            if (targetUrl) {
-                // 在新标签页打开外链
-                window.open(targetUrl, '_blank', 'noopener,noreferrer');
-                // 关闭当前确认页面
-                window.close();
-                // 如果由于浏览器安全策略无法关闭，提示用户手动关闭
-                setTimeout(() => {
-                    alert('请手动关闭此标签页');
-                }, 100);
-            }
+    // 关闭页面 / 返回
+    function onClose() {
+        if (autoTimer) {
+            clearAutoTimer();
         }
-
-        // 关闭当前页面（返回上一页或直接关闭）
-        function closePage() {
-            // 尝试关闭窗口，如果无法关闭则返回上一页
-            window.close();
-            // 如果窗口没有被关闭（浏览器安全策略限制），则返回上一页
-            setTimeout(() => {
+        // 尝试关闭窗口，如果失败则回退历史
+        window.close();
+        setTimeout(() => {
+            if (!window.closed) {
                 if (window.history.length > 1) {
                     window.history.back();
                 } else {
-                    // 如果没有历史记录，尝试跳转到首页
                     window.location.href = '/';
                 }
-            }, 100);
-        }
-
-        // 检测主题设置
-        function applyTheme() {
-            const savedTheme = localStorage.getItem('theme');
-            const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            let initialTheme = savedTheme;
-            if (!initialTheme) {
-                initialTheme = systemPrefersDark ? 'dark' : 'light';
             }
-            document.documentElement.setAttribute('data-theme', initialTheme);
+        }, 120);
+    }
+
+    // 启动白名单倒计时 (自动跳转)
+    function startCountdown() {
+        if (!isWhitelisted) return;
+        if (redirectTriggered) return;
+        if (autoTimer) clearAutoTimer();
+
+        let remaining = countdownSeconds;
+        timerContainer.innerHTML = `<div class="timer-area">🔒 受信任站点 · ${remaining} 秒后自动跳转</div>`;
+
+        autoTimer = setInterval(() => {
+            if (redirectTriggered) {
+                if (autoTimer) clearInterval(autoTimer);
+                return;
+            }
+            remaining--;
+            if (remaining <= 0) {
+                clearAutoTimer();
+                if (!redirectTriggered) {
+                    timerContainer.innerHTML = `<div class="timer-area">✨ 正在自动跳转，请稍候...</div>`;
+                    performRedirect();
+                }
+            } else {
+                if (timerContainer && !redirectTriggered) {
+                    timerContainer.innerHTML = `<div class="timer-area">🔒 受信任站点 · ${remaining} 秒后自动跳转</div>`;
+                }
+            }
+        }, 1000);
+
+        // 白名单下按钮显示“立即前往”，且始终可用，允许用户在倒计时中手动跳转
+        if (proceedBtn) {
+            proceedBtn.textContent = '立即前往';
+            proceedBtn.disabled = false;
+        }
+    }
+
+    // 根据白名单状态渲染UI及倒计时行为
+    function applyWhitelistUI() {
+        if (isWhitelisted) {
+            statusIconEl.innerHTML = '✅';
+            domainTitleEl.style.color = '#2c7a4d';   // 安全绿标题色
+            subtitleEl.textContent = '安全站点 · 受信任链接';
+            messageBoxEl.innerHTML = `该网站位于信任白名单中，安全性经过验证。<br>页面将在 <strong>${countdownSeconds}秒</strong> 后自动跳转，您也可以点击「立即前往」按钮手动跳转。`;
+            if (proceedBtn) {
+                proceedBtn.classList.add('btn-safe');
+                proceedBtn.textContent = '立即前往';
+                proceedBtn.disabled = false;
+            }
+            mainContainer.classList.add('safe-mode');
+            // 启动倒计时
+            startCountdown();
+        } else {
+            statusIconEl.innerHTML = '⚠️';
+            domainTitleEl.style.color = '#a55860';
+            subtitleEl.textContent = '您即将访问外部网站';
+            messageBoxEl.innerHTML = `请确认您信任此网站并了解可能存在的风险<br>本网站不对第三方网站的内容或安全性负责`;
+            if (proceedBtn) {
+                proceedBtn.classList.remove('btn-safe');
+                proceedBtn.textContent = '继续前往';
+                proceedBtn.disabled = false;
+            }
+            mainContainer.classList.remove('safe-mode');
+            if (timerContainer) timerContainer.innerHTML = '';
+            clearAutoTimer();
+        }
+    }
+
+    // 初始化页面逻辑（URL解析，安全校验，布局已优化）
+    function initPage() {
+        const rawUrl = getUrlParameter('url');
+        if (!rawUrl) {
+            fullUrlEl.textContent = '缺少 URL 参数，无法跳转';
+            domainTitleEl.textContent = '无效请求';
+            if (proceedBtn) proceedBtn.disabled = true;
+            if (closeBtn) closeBtn.textContent = '返回';
+            statusIconEl.innerHTML = '❓';
+            messageBoxEl.innerHTML = '未提供目标链接，请返回重试。';
+            subtitleEl.textContent = '无效的跳转请求';
+            return;
         }
 
-        // 初始化主题
-        applyTheme();
-    </script>
+        // 解码 URL
+        let decodedUrl = rawUrl;
+        try {
+            decodedUrl = decodeURIComponent(rawUrl);
+        } catch(e) {
+            decodedUrl = rawUrl;
+        }
+
+        targetUrl = decodedUrl;
+        fullUrlEl.textContent = targetUrl;
+
+        let hostname = '';
+        let isValid = false;
+
+        try {
+            const urlObj = new URL(targetUrl);
+            if (urlObj.protocol === 'http:' || urlObj.protocol === 'https:') {
+                isValid = true;
+                hostname = urlObj.hostname;
+                domainTitleEl.textContent = hostname;
+            } else {
+                domainTitleEl.textContent = '不支持的协议';
+                fullUrlEl.textContent = `${targetUrl} (仅允许http/https)`;
+                if (proceedBtn) proceedBtn.disabled = true;
+                statusIconEl.innerHTML = '🚫';
+                messageBoxEl.innerHTML = '目标链接使用了非安全协议，跳转已被阻止。';
+                subtitleEl.textContent = '协议不受支持';
+                return;
+            }
+        } catch (e) {
+            domainTitleEl.textContent = '无效网址';
+            fullUrlEl.textContent = targetUrl + ' (无法解析)';
+            if (proceedBtn) proceedBtn.disabled = true;
+            statusIconEl.innerHTML = '⚠️';
+            messageBoxEl.innerHTML = '链接格式无效，无法跳转。';
+            subtitleEl.textContent = '网址格式错误';
+            return;
+        }
+
+        if (!isValid) return;
+
+        // 判定白名单
+        isWhitelisted = isDomainInWhitelist(hostname);
+
+        // 重新绑定按钮，避免重复监听或残留事件（保证最新引用）
+        const oldProceed = proceedBtn;
+        const newProceedBtn = oldProceed.cloneNode(true);
+        oldProceed.parentNode.replaceChild(newProceedBtn, oldProceed);
+        proceedBtn = document.getElementById('proceedBtn');
+        
+        const oldClose = closeBtn;
+        const newCloseBtn = oldClose.cloneNode(true);
+        oldClose.parentNode.replaceChild(newCloseBtn, oldClose);
+        closeBtn = document.getElementById('closeBtn');
+
+        // 添加全新事件监听
+        proceedBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            if (redirectTriggered) return;
+            if (proceedBtn.disabled) return;
+            onProceed();
+        });
+
+        closeBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            onClose();
+        });
+
+        // 根据白名单渲染界面与自动跳转逻辑
+        applyWhitelistUI();
+        
+        // 页面关闭或卸载时清除定时器
+        window.addEventListener('beforeunload', () => {
+            if (autoTimer) clearInterval(autoTimer);
+        });
+    }
+
+    // ---------- 暗色主题 (保留原有逻辑) ----------
+    function applyTheme() {
+        const savedTheme = localStorage.getItem('theme');
+        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        let initialTheme = savedTheme;
+        if (!initialTheme) {
+            initialTheme = systemPrefersDark ? 'dark' : 'light';
+        }
+        document.documentElement.setAttribute('data-theme', initialTheme);
+    }
+    
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+        if (!localStorage.getItem('theme')) {
+            const newTheme = e.matches ? 'dark' : 'light';
+            document.documentElement.setAttribute('data-theme', newTheme);
+        }
+    });
+
+    // 启动所有
+    applyTheme();
+    initPage();
+</script>
 </body>
 </html>
