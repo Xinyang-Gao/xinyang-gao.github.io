@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-03-31T23:04:23.243276",
+  "generated_at": "2026-04-01T23:33:22.567632",
   "total_articles": 6,
+  "total_word_count": 12472,
   "articles": [
     {
-      "id": "网站更新日志",
       "title": "网站更新日志",
       "date": "2026-03-28",
       "description": "记录网站历次更新内容",
@@ -11,10 +11,10 @@
       "tags": [
         "网站"
       ],
-      "url": "/articles/网站更新日志.html"
+      "url": "/articles/网站更新日志.html",
+      "word_count": 5712
     },
     {
-      "id": "从一株小草开始",
       "title": "从一株小草开始",
       "date": "2026-03-18",
       "description": "一篇随笔",
@@ -23,10 +23,10 @@
         "记叙文",
         "学习"
       ],
-      "url": "/articles/从一株小草开始.html"
+      "url": "/articles/从一株小草开始.html",
+      "word_count": 951
     },
     {
-      "id": "test",
       "title": "测试文章",
       "date": "2025-12-21",
       "description": "这是一篇测试文章，它是被隐藏的",
@@ -35,10 +35,10 @@
         "网站",
         "隐藏"
       ],
-      "url": "/articles/test.html"
+      "url": "/articles/test.html",
+      "word_count": 430
     },
     {
-      "id": "雪中的思绪",
       "title": "雪中的思绪",
       "date": "2025-12-14",
       "description": "一篇随笔",
@@ -47,10 +47,10 @@
         "记叙文",
         "学习"
       ],
-      "url": "/articles/雪中的思绪.html"
+      "url": "/articles/雪中的思绪.html",
+      "word_count": 2410
     },
     {
-      "id": "马生复宋濂书",
       "title": "马生复宋濂书",
       "date": "2025-12-09",
       "description": "一篇文言文回信，学习《送东阳马生序》后，以文中马生的口吻回信",
@@ -59,10 +59,10 @@
         "文言文",
         "学习"
       ],
-      "url": "/articles/马生复宋濂书.html"
+      "url": "/articles/马生复宋濂书.html",
+      "word_count": 1503
     },
     {
-      "id": "论网络游戏的功与过",
       "title": "论网络游戏的“功”与“过”",
       "date": "2025-11-30",
       "description": "一篇议论文",
@@ -71,7 +71,8 @@
         "议论文",
         "学习"
       ],
-      "url": "/articles/论网络游戏的功与过.html"
+      "url": "/articles/论网络游戏的功与过.html",
+      "word_count": 1466
     }
   ]
 }

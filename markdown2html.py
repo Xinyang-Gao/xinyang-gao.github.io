@@ -134,7 +134,8 @@ def convert_markdown_to_html(md_content: str) -> str:
 
 
 def create_html_page(title: str, date: str, content_html: str, headings_json: str,
-                     description: str = "", tags: list = None, author: str = "") -> str:
+                     description: str = "", tags: list = None, author: str = "", 
+                     word_count: int = 0) -> str: 
     """
     生成完整的HTML页面，与主站样式保持一致，并集成Twikoo评论系统
     """
@@ -184,6 +185,10 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
         </div>
         {tags_html}
         {desc_html}
+        <div class="meta-row meta-word-count">
+            <span class="meta-label">字数：</span>
+            <span class="word-count">{word_count}</span> 字
+        </div>
     </div>
     '''
 
@@ -274,6 +279,16 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
     return html_template
 
 
+def count_words(text: str) -> int:
+    """
+    统计文本中的非空白字符数量（中文字符、英文字母、数字等）
+    去除所有空白字符后计算长度。
+    """
+    # 去除所有空白字符（空格、换行、制表符等）
+    no_whitespace = re.sub(r'\s+', '', text)
+    return len(no_whitespace)
+
+
 def process_markdown_file(md_file_path: Path) -> Dict:
     """
     处理单个markdown文件，生成HTML
@@ -299,6 +314,9 @@ def process_markdown_file(md_file_path: Path) -> Dict:
     if isinstance(tags, str):
         tags = [t.strip() for t in tags.split(',') if t.strip()]
 
+    # 计算文章字数（基于 cleaned_content）
+    word_count = count_words(cleaned_content)
+
     # 提取标题信息（用于生成目录）
     headings = extract_headings(cleaned_content)
 
@@ -313,7 +331,7 @@ def process_markdown_file(md_file_path: Path) -> Dict:
 
     # 生成完整HTML页面
     full_html = create_html_page(title, date, content_html, headings_json,
-                                 description, tags, author)
+                                 description, tags, author, word_count)
 
     # 确定输出文件名
     output_filename = md_file_path.stem + '.html'
@@ -325,15 +343,15 @@ def process_markdown_file(md_file_path: Path) -> Dict:
 
     print(f"  已生成: {output_path}")
 
-    # 返回文章信息用于JSON索引
+    # 返回文章信息用于JSON索引（移除了id字段，添加了word_count）
     article_info = {
-        'id': md_file_path.stem,
         'title': title,
         'date': date,
         'description': description,
         'author': author if author else '高新炀',
         'tags': tags,
-        'url': f'/articles/{output_filename}'
+        'url': f'/articles/{output_filename}',
+        'word_count': word_count
     }
 
     return article_info
@@ -378,7 +396,7 @@ def process_all_markdown_files() -> List[Dict]:
 
 def generate_index(articles_info: List[Dict]):
     """
-    生成文章列表索引页面
+    生成文章列表索引页面（原函数为空，保留以兼容）
     """
     if not articles_info:
         return
@@ -392,14 +410,19 @@ def generate_index(articles_info: List[Dict]):
 def generate_articles_json(articles_info: List[Dict]):
     """
     在根目录生成 articles.json 文件，包含所有文章的元数据
+    移除了每个文章的 id 字段，添加了 total_word_count 总字数统计
     """
     if not articles_info:
         return
+
+    # 计算所有文章的总字数
+    total_word_count = sum(article.get('word_count', 0) for article in articles_info)
 
     # 准备JSON数据
     json_data = {
         'generated_at': datetime.now().isoformat(),
         'total_articles': len(articles_info),
+        'total_word_count': total_word_count,
         'articles': sorted(articles_info,
                            key=lambda x: x.get('date', ''),
                            reverse=True)
@@ -441,6 +464,7 @@ def main():
 def update_single_article_json(new_article: Dict):
     """
     更新单个文章的JSON索引
+    确保删除旧文章中的 id 字段，并重新计算总字数
     """
     json_path = BASE_DIR / 'articles.json'
     articles_info = []
@@ -451,10 +475,16 @@ def update_single_article_json(new_article: Dict):
             existing_data = json.load(f)
             articles_info = existing_data.get('articles', [])
 
+    # 删除现有文章中可能存在的 id 字段
+    for article in articles_info:
+        if 'id' in article:
+            del article['id']
+
     # 更新或添加文章
     found = False
     for i, article in enumerate(articles_info):
-        if article['id'] == new_article['id']:
+        # 通过 url 或 title+date 来判断是否为同一篇文章（这里用 url 作为唯一标识）
+        if article.get('url') == new_article.get('url'):
             articles_info[i] = new_article
             found = True
             break
@@ -462,11 +492,14 @@ def update_single_article_json(new_article: Dict):
     if not found:
         articles_info.append(new_article)
 
-    # 排序并保存
+    # 排序并计算总字数
     articles_info.sort(key=lambda x: x.get('date', ''), reverse=True)
+    total_word_count = sum(article.get('word_count', 0) for article in articles_info)
+
     json_data = {
         'generated_at': datetime.now().isoformat(),
         'total_articles': len(articles_info),
+        'total_word_count': total_word_count,
         'articles': articles_info
     }
 

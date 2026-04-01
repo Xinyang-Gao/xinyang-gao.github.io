@@ -162,20 +162,39 @@ class UIRenderer {
         });
     }
 
-    static generateListItem(item, type, index) {
-        const tags = UIRenderer.generateTagsHTML(item);
-        // 使用 id 或 title 作为标识
+static generateListItem(item, type, index) {
+    const tags = UIRenderer.generateTagsHTML(item);
+    let dataAttr = '';
+    if (type === 'article') {
+        // 文章使用 data-url，不再依赖 id
+        const itemUrl = item.url || '';
+        dataAttr = `data-url="${this.escapeHtml(itemUrl)}"`;
+    } else {
+        // 作品仍使用 data-id
         const itemId = item.id || item.title;
-        return `
-        <div class="list-item" data-id="${this.escapeHtml(String(itemId))}" data-type="${type}" data-index="${index}">
-          <div class="list-item-header">
-            <h3 class="list-item-title">${this.escapeHtml(item.title)}</h3>
-            <div class="list-item-meta"><span class="list-item-date">${this.escapeHtml(item.date)}</span></div>
-          </div>
-          <p class="list-item-description">${this.escapeHtml(item.description || '')}</p>
-          ${tags}
-        </div>`;
+        dataAttr = `data-id="${this.escapeHtml(String(itemId))}"`;
     }
+    // 仅文章显示作者和字数
+    const author = (type === 'article' && item.author) ? item.author : '';
+    const wordCount = (type === 'article' && item.word_count) ? item.word_count : 0;
+    return `
+    <div class="list-item" ${dataAttr} data-type="${type}" data-index="${index}">
+      <div class="list-item-header">
+        <h3 class="list-item-title">${this.escapeHtml(item.title)}</h3>
+        <div class="list-item-meta">
+          <span class="list-item-date">${this.escapeHtml(item.date)}</span>
+        </div>
+        ${type === 'article' ? `
+        <div class="list-item-meta-extras">
+          <span class="list-item-author">作者：${this.escapeHtml(author)}</span>
+          <span class="list-item-word-count">字数：${wordCount} 字</span>
+        </div>
+        ` : ''}
+      </div>
+      <p class="list-item-description">${this.escapeHtml(item.description || '')}</p>
+      ${tags}
+    </div>`;
+}
 
     static generateListHTML(data, type) {
         perf.start(`生成${DataManager.TYPE_LABEL[type]}HTML`);
@@ -505,18 +524,18 @@ class PageManager {
         }
     }
 
-    static handleListItemClick(e) {
-        const item = e.target.closest('.list-item');
-        if (!item) return;
+static handleListItemClick(e) {
+    const item = e.target.closest('.list-item');
+    if (!item) return;
+    const type = item.dataset.type;
+    if (type === 'work') {
         const itemId = item.dataset.id;
-        const type = item.dataset.type;
-        if (!itemId) return;
-        if (type === 'work') {
-            PageManager.handleWorkItemClick(itemId);
-        } else if (type === 'article') {
-            PageManager.handleArticleItemClick(itemId);
-        }
+        if (itemId) PageManager.handleWorkItemClick(itemId);
+    } else if (type === 'article') {
+        const itemUrl = item.dataset.url;
+        if (itemUrl) PageManager.handleArticleItemClick(itemUrl);
     }
+}
 
     static handleWorkItemClick(workId) {
         const data = this.getData('works');
@@ -526,18 +545,13 @@ class PageManager {
         }
     }
 
-    static handleArticleItemClick(articleId) {
-        const data = this.getData('articles');
-        if (data) {
-            const article = data.articles.find(a => String(a.id) === String(articleId));
-            if (article && article.url) {
-                window.open(article.url, '_blank');
-            } else if (article) {
-                // 如果没有 url 字段，尝试使用 id 构建 URL
-                window.open(`/articles/${encodeURIComponent(article.id)}.html`, '_blank');
-            }
-        }
+static handleArticleItemClick(articleUrl) {
+    if (articleUrl) {
+        window.open(articleUrl, '_blank');
+    } else {
+        console.warn('文章链接无效');
     }
+}
 
     static getData(type) {
         const raw = localStorage.getItem(`${type}Data`);

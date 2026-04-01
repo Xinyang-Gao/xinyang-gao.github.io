@@ -1595,3 +1595,16 @@ body.mouse-outside .custom-cursor {
 .work-details-envelope {
   z-index: 1000;
 }
+
+.list-item-meta-extras {
+    margin-top: 5px;
+    font-size: 0.85rem;
+    color: #888;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.list-item-author,
+.list-item-word-count {
+    margin-right: 8px;
+}
