@@ -187,7 +187,7 @@ static generateListItem(item, type, index) {
         ${type === 'article' ? `
         <div class="list-item-meta-extras">
           <span class="list-item-author">作者：${this.escapeHtml(author)}</span>
-          <span class="list-item-word-count">字数：${wordCount} 字</span>
+          <span class="list-item-word-count">${wordCount} 字</span>
         </div>
         ` : ''}
       </div>
