@@ -278,7 +278,7 @@ document.addEventListener('DOMContentLoaded', function () {
         buttonContainer.id = 'floating-buttons';
         buttonContainer.className = 'floating-buttons';
 
-        // 创建“评论”按钮
+        // 创建"评论"按钮
         const commentBtn = document.createElement('button');
         commentBtn.id = 'goto-comments';
         commentBtn.className = 'floating-btn comment-btn';
@@ -293,7 +293,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
 
-        // 创建“返回顶部”按钮
+        // 创建"返回顶部"按钮
         const topBtn = document.createElement('button');
         topBtn.id = 'back-to-top';
         topBtn.className = 'floating-btn top-btn';

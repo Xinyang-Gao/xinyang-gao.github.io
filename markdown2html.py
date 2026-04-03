@@ -178,19 +178,29 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
     # 组装完整的 article-meta
     meta_html = f'''
     <div class="article-meta" id="articleMeta">
-        <div class="meta-row meta-info">
-            <span class="article-date">{formatted_date}</span>
-            {f'<span class="article-author">{author_html}</span>' if author else ''}
-            <span class="stats-separator">|</span>
-            <span class="article-stats">本页总访客: <span id="busuanzi_page_uv">加载中...</span> 人</span>
-            <span class="stats-separator">|</span>
-            <span class="article-stats">本页总阅读量: <span id="busuanzi_page_pv">加载中...</span> 次</span>
+        <div class="meta-grid">
+            <div class="meta-item">
+                <span class="meta-label">发布日期</span>
+                <span class="meta-value">{formatted_date}</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">作者</span>
+                <span class="meta-value">{author if author else "高新炀"}</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">字数</span>
+                <span class="meta-value">{word_count}</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">访客</span>
+                <span class="meta-value" id="busuanzi_page_uv">加载中...</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">阅读量</span>
+                <span class="meta-value" id="busuanzi_page_pv">加载中...</span>
+            </div>
         </div>
         {desc_html}
-        <div class="meta-row meta-word-count">
-            <span class="meta-label">字数：</span>
-            <span class="word-count">{word_count}</span> 字
-        </div>
     </div>
     '''
 
