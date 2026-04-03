@@ -1,5 +1,6 @@
 # markdown2html.py
 import html
+import math
 import os
 import re
 import sys
@@ -135,14 +136,39 @@ def convert_markdown_to_html(md_content: str) -> str:
     return html_content
 
 
+def calculate_read_time(word_count: int) -> str:
+    """
+    根据字数计算阅读时间（按200~500字/分钟估算）
+    返回格式如："<1分钟" / "3分钟" / "3-5分钟"
+    """
+    if word_count <= 0:
+        return "<1分钟"
+
+    min_minutes = math.ceil(word_count / 500)   # 快速阅读
+    max_minutes = math.ceil(word_count / 200)   # 慢速阅读
+
+    if max_minutes == 0:
+        return "<1分钟"
+    if min_minutes == max_minutes:
+        return f"{min_minutes}分钟"
+    else:
+        return f"{min_minutes}-{max_minutes}分钟"
+
+
 def create_html_page(title: str, date: str, content_html: str, headings_json: str,
                      description: str = "", tags: list = None, author: str = "",
-                     word_count: int = 0) -> str:
+                     word_count: int = 0, read_time_str: str = None) -> str:
     """
     生成完整的HTML页面，与主站样式保持一致，并集成Twikoo评论系统
     标签已从元数据区移至正文末尾，以 #标签 的形式显示
     评论区独立为卡片，与内容区分离
+    元数据仅显示图标和数值，悬浮显示说明（通过 data-label 实现）
+    新增阅读时间字段（若未提供则自动计算）
     """
+    # 如果未提供阅读时间字符串，则基于字数计算
+    if read_time_str is None:
+        read_time_str = calculate_read_time(word_count)
+
     # 如果date是"未指定"或空，尝试使用当前日期
     if not date or date == "未指定":
         date = datetime.now().strftime("%Y年%m月%d日")
@@ -171,33 +197,33 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
     if description:
         subtitle_html = f'<div class="article-subtitle">{description}</div>'
 
-    # 元数据区域（不包含描述）
+    # 优化后的元数据区域：只显示图标和数值，悬浮时通过 data-label 显示说明
+    # 在字数后面增加阅读时间项
     meta_html = f'''
     <div class="article-meta" id="articleMeta">
         <div class="meta-grid">
-            <div class="meta-item">
+            <div class="meta-item" data-label="发布日期">
                 <i class="fas fa-calendar-alt"></i>
-                <span class="meta-label">发布日期</span>
                 <span class="meta-value">{formatted_date}</span>
             </div>
-            <div class="meta-item">
+            <div class="meta-item" data-label="作者">
                 <i class="fas fa-user"></i>
-                <span class="meta-label">作者</span>
                 <span class="meta-value">{author if author else "高新炀"}</span>
             </div>
-            <div class="meta-item">
+            <div class="meta-item" data-label="字数">
                 <i class="fas fa-file-alt"></i>
-                <span class="meta-label">字数</span>
                 <span class="meta-value">{word_count}</span>
             </div>
-            <div class="meta-item">
+            <div class="meta-item" data-label="阅读时间（200~500字/分钟）">
+                <i class="fas fa-clock"></i>
+                <span class="meta-value">{read_time_str}</span>
+            </div>
+            <div class="meta-item" data-label="访客数">
                 <i class="fas fa-users"></i>
-                <span class="meta-label">访客</span>
                 <span class="meta-value" id="busuanzi_page_uv">加载中...</span>
             </div>
-            <div class="meta-item">
+            <div class="meta-item" data-label="阅读量">
                 <i class="fas fa-eye"></i>
-                <span class="meta-label">阅读量</span>
                 <span class="meta-value" id="busuanzi_page_pv">加载中...</span>
             </div>
         </div>
@@ -314,7 +340,7 @@ def count_words(text: str) -> int:
 def process_markdown_file(md_file_path: Path) -> Dict:
     """
     处理单个markdown文件，生成HTML
-    返回文章信息字典
+    返回文章信息字典（包含阅读时间）
     """
     print(f"处理文件: {md_file_path}")
 
@@ -339,6 +365,9 @@ def process_markdown_file(md_file_path: Path) -> Dict:
     # 计算文章字数（基于 cleaned_content）
     word_count = count_words(cleaned_content)
 
+    # 计算阅读时间
+    read_time_str = calculate_read_time(word_count)
+
     # 提取标题信息（用于生成目录）
     headings = extract_headings(cleaned_content)
 
@@ -351,9 +380,9 @@ def process_markdown_file(md_file_path: Path) -> Dict:
     # 将标题数据转换为JSON字符串
     headings_json = json.dumps(headings, ensure_ascii=False)
 
-    # 生成完整HTML页面
+    # 生成完整HTML页面（传入阅读时间）
     full_html = create_html_page(title, date, content_html, headings_json,
-                                 description, tags, author, word_count)
+                                 description, tags, author, word_count, read_time_str)
 
     # 确定输出文件名
     output_filename = md_file_path.stem + '.html'
@@ -365,7 +394,7 @@ def process_markdown_file(md_file_path: Path) -> Dict:
 
     print(f"  已生成: {output_path}")
 
-    # 返回文章信息用于JSON索引（移除了id字段，添加了word_count）
+    # 返回文章信息用于JSON索引（添加 read_time 字段）
     article_info = {
         'title': title,
         'date': date,
@@ -373,7 +402,8 @@ def process_markdown_file(md_file_path: Path) -> Dict:
         'author': author if author else '高新炀',
         'tags': tags,
         'url': f'/articles/{output_filename}',
-        'word_count': word_count
+        'word_count': word_count,
+        'read_time': read_time_str   # 新增阅读时间字段
     }
 
     return article_info
@@ -433,6 +463,7 @@ def generate_articles_json(articles_info: List[Dict]):
     """
     在根目录生成 articles.json 文件，包含所有文章的元数据
     移除了每个文章的 id 字段，添加了 total_word_count 总字数统计
+    同时包含每篇文章的 read_time 阅读时间
     """
     if not articles_info:
         return
@@ -487,6 +518,7 @@ def update_single_article_json(new_article: Dict):
     """
     更新单个文章的JSON索引
     确保删除旧文章中的 id 字段，并重新计算总字数
+    同时保留 read_time 字段
     """
     json_path = BASE_DIR / 'articles.json'
     articles_info = []
