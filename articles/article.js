@@ -285,11 +285,11 @@ document.addEventListener('DOMContentLoaded', function () {
         commentBtn.innerHTML = '评论';
         commentBtn.title = '跳转到评论区';
         commentBtn.addEventListener('click', () => {
-            const commentsSection = document.querySelector('.comments-container');
+            const commentsSection = document.querySelector('.comments-card');
             if (commentsSection) {
                 smoothScrollTo(commentsSection, 20); // 偏移量小一点，让标题更靠近顶部
             } else {
-                console.warn('未找到评论区容器');
+                console.warn('未找到评论区卡片');
             }
         });
 

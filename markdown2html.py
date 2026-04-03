@@ -1,3 +1,5 @@
+# markdown2html.py
+import html
 import os
 import re
 import sys
@@ -129,15 +131,16 @@ def convert_markdown_to_html(md_content: str) -> str:
     ]
 
     # 转换markdown为HTML
-    html = markdown.markdown(md_content, extensions=extensions)
-    return html
-
+    html_content = markdown.markdown(md_content, extensions=extensions)
+    return html_content
 
 def create_html_page(title: str, date: str, content_html: str, headings_json: str,
                      description: str = "", tags: list = None, author: str = "", 
-                     word_count: int = 0) -> str: 
+                     word_count: int = 0) -> str:
     """
     生成完整的HTML页面，与主站样式保持一致，并集成Twikoo评论系统
+    标签已从元数据区移至正文末尾，以 #标签 的形式显示
+    评论区独立为卡片，与内容区分离
     """
     # 如果date是"未指定"或空，尝试使用当前日期
     if not date or date == "未指定":
@@ -145,7 +148,6 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
 
     # 格式化日期显示
     try:
-        # 尝试解析 YYYY-MM-DD 格式
         if re.match(r'\d{4}-\d{1,2}-\d{1,2}', date):
             dt = datetime.strptime(date, '%Y-%m-%d')
             formatted_date = dt.strftime("%Y年%m月%d日")
@@ -154,13 +156,14 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
     except:
         formatted_date = date
 
-    # 处理标签显示（胶囊样式）
-    tags_html = ""
+    # 处理标签显示（正文末尾的 #标签 样式）
+    footer_tags_html = ""
     if tags and len(tags) > 0:
-        tags_html = '<div class="meta-row meta-tags"><span class="meta-label">标签：</span>'
+        tag_spans = []
         for tag in tags:
-            tags_html += f'<span class="tag">{tag}</span>'
-        tags_html += '</div>'
+            safe_tag = html.escape(tag.strip())
+            tag_spans.append(f'<span class="footer-tag">#{safe_tag}</span>')
+        footer_tags_html = f'<div class="article-footer-tags">{" ".join(tag_spans)}</div>'
 
     # 处理描述显示
     desc_html = ""
@@ -183,7 +186,6 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
             <span class="stats-separator">|</span>
             <span class="article-stats">本页总阅读量: <span id="busuanzi_page_pv">加载中...</span> 次</span>
         </div>
-        {tags_html}
         {desc_html}
         <div class="meta-row meta-word-count">
             <span class="meta-label">字数：</span>
@@ -223,17 +225,25 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
             <div id="toc-list-container"></div>
         </div>
 
-        <!-- 主文章内容区 -->
-        <div class="article-content-wrapper">
-            <h1 class="article-title" id="articleTitle">{title}</h1>
-            {meta_html}
-            <div class="article-body" id="articleBody">
-                {content_html}
+        <!-- 右侧内容列：文章卡片 + 评论卡片 -->
+        <div class="article-right-column">
+            <!-- 主文章内容区 -->
+            <div class="article-content-wrapper">
+                <h1 class="article-title" id="articleTitle">{title}</h1>
+                {meta_html}
+                <div class="article-body" id="articleBody">
+                    {content_html}
+                </div>
+                <!-- 标签 -->
+                {footer_tags_html}
             </div>
-            <!-- 评论区域 -->
-            <div class="comments-container">
-                <h3>评论区</h3>
-                <div id="twikoo-comments"></div>
+
+            <!-- 独立评论卡片 -->
+            <div class="comments-card">
+                <div class="comments-container">
+                    <h3>评论区</h3>
+                    <div id="twikoo-comments"></div>
+                </div>
             </div>
         </div>
     </div>

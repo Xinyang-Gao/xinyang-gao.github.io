@@ -26,10 +26,12 @@
             <div id="toc-list-container"></div>
         </div>
 
-        <!-- 主文章内容区 -->
-        <div class="article-content-wrapper">
-            <h1 class="article-title" id="articleTitle">测试文章</h1>
-            
+        <!-- 右侧内容列：文章卡片 + 评论卡片 -->
+        <div class="article-right-column">
+            <!-- 主文章内容区 -->
+            <div class="article-content-wrapper">
+                <h1 class="article-title" id="articleTitle">测试文章</h1>
+                
     <div class="article-meta" id="articleMeta">
         <div class="meta-row meta-info">
             <span class="article-date">2025年12月21日</span>
@@ -39,7 +41,6 @@
             <span class="stats-separator">|</span>
             <span class="article-stats">本页总阅读量: <span id="busuanzi_page_pv">加载中...</span> 次</span>
         </div>
-        <div class="meta-row meta-tags"><span class="meta-label">标签：</span><span class="tag">网站</span><span class="tag">隐藏</span></div>
         <div class="meta-row meta-description"><span class="meta-label">简介：</span>这是一篇测试文章，它是被隐藏的</div>
         <div class="meta-row meta-word-count">
             <span class="meta-label">字数：</span>
@@ -47,8 +48,8 @@
         </div>
     </div>
     
-            <div class="article-body" id="articleBody">
-                <h1 id="heading-0">标题测试</h1>
+                <div class="article-body" id="articleBody">
+                    <h1 id="heading-0">标题测试</h1>
 
 <h1 id="heading-1">h1</h1>
 
@@ -98,11 +99,17 @@
 
 <p><img alt="pe1QokQ.png" src="https://s41.ax1x.com/2026/03/28/pe1QokQ.png" /></p>
 <h1 id="heading-12">结束</h1>
+                </div>
+                <!-- 标签 -->
+                <div class="article-footer-tags"><span class="footer-tag">#网站</span> <span class="footer-tag">#隐藏</span></div>
             </div>
-            <!-- 评论区域 -->
-            <div class="comments-container">
-                <h3>评论区</h3>
-                <div id="twikoo-comments"></div>
+
+            <!-- 独立评论卡片 -->
+            <div class="comments-card">
+                <div class="comments-container">
+                    <h3>评论区</h3>
+                    <div id="twikoo-comments"></div>
+                </div>
             </div>
         </div>
     </div>
