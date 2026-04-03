@@ -1,4 +1,5 @@
-/* article.css - 优化元数据显示 */
+/* article.css - 优化元数据显示，新增副标题样式 */
+
 /* 文章页容器（两栏布局） */
 .article-page-container {
   max-width: 1200px;
@@ -150,11 +151,28 @@
   font-size: 2.2rem;
   text-align: center;
   margin-top: 0.5em;
-  margin-bottom: 1.2em;
+  margin-bottom: 0.3em;
   animation: articleTitleSlideDown 0.8s ease-out;
 }
 
-/* ========== 优化后的元数据区域样式 ========== */
+/* 副标题样式 */
+.article-subtitle {
+  font-size: 1.2rem;
+  text-align: center;
+  color: #666;
+  margin-bottom: 1.5em;
+  padding-bottom: 0.5em;
+  border-bottom: 1px dashed var(--border-color);
+  font-style: italic;
+  letter-spacing: 0.5px;
+  transition: color var(--transition-normal) ease;
+}
+[data-theme="dark"] .article-subtitle {
+  color: #aaa;
+  border-bottom-color: rgba(255,255,255,0.1);
+}
+
+/* ========== 优化后的元数据区域样式（无描述行） ========== */
 .article-meta {
   background: var(--header-bg);
   border-radius: 8px;
@@ -164,8 +182,6 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   transition: all 0.3s ease;
   text-align: center;
-  color: #777;
-  font-size: 0.9rem;
   border-left: 4px solid var(--accent-color);
   backdrop-filter: blur(4px);
 }
@@ -174,7 +190,6 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 15px;
-  margin-bottom: 15px;
 }
 
 .meta-item {
@@ -211,32 +226,15 @@
   font-weight: 500;
 }
 
-.meta-row:last-child {
-  margin-bottom: 0;
+/* 元数据区域图标样式 */
+.meta-item i {
+  margin-right: 8px;
+  width: 1.25em;
+  text-align: center;
+  color: var(--accent-color);
 }
-
-/* 描述区域 */
-.meta-description {
-  font-size: 0.95rem;
-  color: var(--text-color);
-  background: rgba(0, 0, 0, 0.02);
-  padding: 12px 16px;
-  border-radius: 8px;
-  border-left: 3px solid var(--accent-color);
-  line-height: 1.6;
-  margin-top: 15px;
-  text-align: left;
-}
-
-/* 暗黑模式适配 */
-[data-theme="dark"] .meta-description {
-  background: rgba(255, 255, 255, 0.05);
-}
-
-/* 统计信息分隔符 */
-.stats-separator {
-  color: var(--border-color);
-  margin: 0 4px;
+[data-theme="dark"] .meta-item i {
+  color: #cd8943;
 }
 
 /* 响应式：小屏幕下元数据更紧凑 */
@@ -244,28 +242,18 @@
   .article-meta {
     padding: 15px;
   }
-  
   .meta-grid {
     grid-template-columns: 1fr;
     gap: 12px;
   }
-  
   .meta-item {
     flex-direction: row;
     justify-content: space-between;
     padding: 8px 12px;
   }
-  
   .meta-label {
     margin-bottom: 0;
     margin-right: 8px;
-  }
-  
-  .stats-separator {
-    display: none;
-  }
-  .meta-description {
-    font-size: 0.85rem;
   }
   .article-page-container {
     flex-direction: column;
@@ -304,6 +292,10 @@
   }
   .top-btn {
     font-size: 1.5rem;
+  }
+  .article-subtitle {
+    font-size: 1rem;
+    margin-bottom: 1.2em;
   }
 }
 

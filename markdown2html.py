@@ -134,8 +134,9 @@ def convert_markdown_to_html(md_content: str) -> str:
     html_content = markdown.markdown(md_content, extensions=extensions)
     return html_content
 
+
 def create_html_page(title: str, date: str, content_html: str, headings_json: str,
-                     description: str = "", tags: list = None, author: str = "", 
+                     description: str = "", tags: list = None, author: str = "",
                      word_count: int = 0) -> str:
     """
     生成完整的HTML页面，与主站样式保持一致，并集成Twikoo评论系统
@@ -165,42 +166,41 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
             tag_spans.append(f'<span class="footer-tag">#{safe_tag}</span>')
         footer_tags_html = f'<div class="article-footer-tags">{" ".join(tag_spans)}</div>'
 
-    # 处理描述显示
-    desc_html = ""
+    # 副标题（原description）
+    subtitle_html = ""
     if description:
-        desc_html = f'<div class="meta-row meta-description"><span class="meta-label">简介：</span>{description}</div>'
+        subtitle_html = f'<div class="article-subtitle">{description}</div>'
 
-    # 处理作者显示
-    author_html = ""
-    if author:
-        author_html = f'<span class="article-author">作者：{author}</span>'
-
-    # 组装完整的 article-meta
+    # 元数据区域（不包含描述）
     meta_html = f'''
     <div class="article-meta" id="articleMeta">
         <div class="meta-grid">
             <div class="meta-item">
+                <i class="fas fa-calendar-alt"></i>
                 <span class="meta-label">发布日期</span>
                 <span class="meta-value">{formatted_date}</span>
             </div>
             <div class="meta-item">
+                <i class="fas fa-user"></i>
                 <span class="meta-label">作者</span>
                 <span class="meta-value">{author if author else "高新炀"}</span>
             </div>
             <div class="meta-item">
+                <i class="fas fa-file-alt"></i>
                 <span class="meta-label">字数</span>
                 <span class="meta-value">{word_count}</span>
             </div>
             <div class="meta-item">
+                <i class="fas fa-users"></i>
                 <span class="meta-label">访客</span>
                 <span class="meta-value" id="busuanzi_page_uv">加载中...</span>
             </div>
             <div class="meta-item">
+                <i class="fas fa-eye"></i>
                 <span class="meta-label">阅读量</span>
                 <span class="meta-value" id="busuanzi_page_pv">加载中...</span>
             </div>
         </div>
-        {desc_html}
     </div>
     '''
 
@@ -218,6 +218,7 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
     <title>{title} - GaoXinYang's website</title>
     <link rel="stylesheet" href="/style.css">
     <link rel="stylesheet" href="article.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <div id="navbar-placeholder"></div>
@@ -240,6 +241,7 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
             <!-- 主文章内容区 -->
             <div class="article-content-wrapper">
                 <h1 class="article-title" id="articleTitle">{title}</h1>
+                {subtitle_html}
                 {meta_html}
                 <div class="article-body" id="articleBody">
                     {content_html}
