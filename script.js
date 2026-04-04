@@ -166,33 +166,39 @@ static generateListItem(item, type, index) {
     const tags = UIRenderer.generateTagsHTML(item);
     let dataAttr = '';
     if (type === 'article') {
-        // 文章使用 data-url，不再依赖 id
         const itemUrl = item.url || '';
         dataAttr = `data-url="${this.escapeHtml(itemUrl)}"`;
     } else {
-        // 作品仍使用 data-id
         const itemId = item.id || item.title;
         dataAttr = `data-id="${this.escapeHtml(String(itemId))}"`;
     }
-    // 仅文章显示作者和字数
-    const author = (type === 'article' && item.author) ? item.author : '';
-    const wordCount = (type === 'article' && item.word_count) ? item.word_count : 0;
+
+    // 文章专用：作者、字数、阅读时间
+    let metaInfoHtml = '';
+    if (type === 'article') {
+        const author = item.author ? this.escapeHtml(item.author) : '未知作者';
+        const wordCount = item.word_count ? `${item.word_count} 字` : '';
+        const readTime = item.read_time ? this.escapeHtml(item.read_time) : '';
+        metaInfoHtml = `
+            <div class="article-meta-info">
+                <span class="article-author"> ${author}</span>
+                ${wordCount ? `<span class="article-word-count"> ${wordCount}</span>` : ''}
+                ${readTime ? `<span class="article-read-time"><i class="far fa-clock"></i> ${readTime}</span>` : ''}
+            </div>
+        `;
+    }
+
     return `
     <div class="list-item" ${dataAttr} data-type="${type}" data-index="${index}">
-      <div class="list-item-header">
-        <h3 class="list-item-title">${this.escapeHtml(item.title)}</h3>
-        <div class="list-item-meta">
-          <span class="list-item-date">${this.escapeHtml(item.date)}</span>
+        <div class="list-item-header">
+            <h3 class="list-item-title">${this.escapeHtml(item.title)}</h3>
+            <div class="list-item-meta">
+                <span class="list-item-date">${this.escapeHtml(item.date)}</span>
+            </div>
         </div>
-        ${type === 'article' ? `
-        <div class="list-item-meta-extras">
-          <span class="list-item-author">作者：${this.escapeHtml(author)}</span>
-          <span class="list-item-word-count">${wordCount} 字</span>
-        </div>
-        ` : ''}
-      </div>
-      <p class="list-item-description">${this.escapeHtml(item.description || '')}</p>
-      ${tags}
+        ${metaInfoHtml}
+        <p class="list-item-description">${this.escapeHtml(item.description || '')}</p>
+        ${tags}
     </div>`;
 }
 

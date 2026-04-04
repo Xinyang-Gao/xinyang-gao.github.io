@@ -847,6 +847,45 @@ hr {
   line-height: 1.6;
   color: var(--text-color);
 }
+/* 文章元数据行样式（作者、字数、阅读时间） */
+.article-meta-info {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin: 8px 0 12px 0;
+    font-size: 0.85rem;
+    color: #777;
+    border-bottom: 1px dashed var(--border-color);
+    padding-bottom: 8px;
+}
+
+[data-theme="dark"] .article-meta-info {
+    color: #aaa;
+    border-bottom-color: var(--border-color);
+}
+
+.article-meta-info span {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.article-meta-info i {
+    width: 16px;
+    color: var(--accent-color);
+    font-size: 0.85rem;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .article-meta-info {
+        gap: 12px;
+        font-size: 0.8rem;
+    }
+    .article-meta-info i {
+        font-size: 0.75rem;
+    }
+}
 [data-theme="dark"] .list-item-description {
   color: #d0d0d0;
 }

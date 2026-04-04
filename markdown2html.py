@@ -6,7 +6,6 @@ import re
 import sys
 import json
 from pathlib import Path
-from typing import Dict, Tuple, List
 from datetime import datetime
 
 # 尝试导入markdown库，如果没有则提示安装
@@ -25,7 +24,7 @@ OUTPUT_DIR = BASE_DIR / "articles"  # HTML输出目录（与css/js同目录）
 OUTPUT_DIR.mkdir(exist_ok=True)
 
 
-def extract_metadata(content: str) -> Tuple[Dict[str, str], str]:
+def extract_metadata(content: str) -> tuple[dict[str, str], str]:
     """
     从markdown内容中提取元数据（---格式）
     返回: (metadata_dict, cleaned_content)
@@ -122,17 +121,18 @@ def add_heading_ids(content: str, headings: list) -> str:
 
 def convert_markdown_to_html(md_content: str) -> str:
     """
-    将markdown内容转换为HTML
+    将markdown内容转换为HTML，通过 sane_lists 扩展原生支持两空格缩进的列表
     """
     # 配置markdown扩展
     extensions = [
-        'extra',  # 支持表格、脚注等
-        'codehilite',  # 代码高亮
-        'nl2br',  # 换行转<br>
+        'extra',           # 支持表格、脚注等
+        'codehilite',      # 代码高亮
+        'nl2br',           # 换行转<br>
+        'sane_lists',      # 更智能的列表支持（包括两空格缩进）
     ]
 
-    # 转换markdown为HTML
-    html_content = markdown.markdown(md_content, extensions=extensions)
+    # tab_length=2 使制表符被视为2个空格，与两空格缩进风格一致
+    html_content = markdown.markdown(md_content, extensions=extensions, tab_length=2)
     return html_content
 
 
@@ -337,7 +337,7 @@ def count_words(text: str) -> int:
     return len(no_whitespace)
 
 
-def process_markdown_file(md_file_path: Path) -> Dict:
+def process_markdown_file(md_file_path: Path) -> dict:
     """
     处理单个markdown文件，生成HTML
     返回文章信息字典（包含阅读时间）
@@ -374,7 +374,7 @@ def process_markdown_file(md_file_path: Path) -> Dict:
     # 为标题添加ID
     content_with_ids = add_heading_ids(cleaned_content, headings)
 
-    # 转换markdown为HTML
+    # 转换markdown为HTML（已支持两空格缩进）
     content_html = convert_markdown_to_html(content_with_ids)
 
     # 将标题数据转换为JSON字符串
@@ -409,7 +409,7 @@ def process_markdown_file(md_file_path: Path) -> Dict:
     return article_info
 
 
-def process_all_markdown_files() -> List[Dict]:
+def process_all_markdown_files() -> list:
     """
     处理articles目录下的所有markdown文件
     返回所有文章信息列表
@@ -446,7 +446,7 @@ def process_all_markdown_files() -> List[Dict]:
     return articles_info
 
 
-def generate_index(articles_info: List[Dict]):
+def generate_index(articles_info: list):
     """
     生成文章列表索引页面（原函数为空，保留以兼容）
     """
@@ -459,7 +459,7 @@ def generate_index(articles_info: List[Dict]):
                              reverse=True)
 
 
-def generate_articles_json(articles_info: List[Dict]):
+def generate_articles_json(articles_info: list):
     """
     在根目录生成 articles.json 文件，包含所有文章的元数据
     移除了每个文章的 id 字段，添加了 total_word_count 总字数统计
@@ -514,7 +514,7 @@ def main():
     print("\n完成!")
 
 
-def update_single_article_json(new_article: Dict):
+def update_single_article_json(new_article: dict):
     """
     更新单个文章的JSON索引
     确保删除旧文章中的 id 字段，并重新计算总字数
