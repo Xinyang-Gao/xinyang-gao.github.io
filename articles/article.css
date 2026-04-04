@@ -1,6 +1,6 @@
 /* ========== 文章页两栏布局 ========== */
 .article-page-container {
-  max-width: 1200px;
+  max-width: 1300px;
   margin: 94px auto 40px;
   padding: 0 20px;
   display: flex;
