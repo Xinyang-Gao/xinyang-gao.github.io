@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>文心配对 · 闯关研习</title>
+    <style>
+        /* ---------- 全局主题变量 (与 style.css 完全一致，支持暗色模式) ---------- */
+        :root {
+            --bg-color: #f8f5f0;
+            --text-color: #3a3a3a;
+            --accent-color: #a55860;
+            --border-color: #e0d6cc;
+            --header-bg: #f0eae1;
+            --link-color: var(--accent-color);
+            --link-hover: #8a454d;
+            --shadow-color: rgba(0, 0, 0, 0.08);
+            --shadow-color-offset: rgba(224, 214, 204, 0.4);
+            --item-hover-shadow: rgba(0, 0, 0, 0.12);
+            --nav-bg-rgba: rgba(248, 245, 240, 0.95);
+            --nav-blur: 10px;
+            --tag-bg: #f0eae1;
+            --tag-color: var(--text-color);
+            --border-radius: 10px;
+            --border-radius-container: 8px;
+            --border-radius-tag: 20px;
+            --font-size-base: 1.1rem;
+            --font-size-small: 0.9rem;
+            --font-size-tag: 0.85rem;
+            --transition-normal: 0.3s;
+            --transition-fast: 0.2s;
+            --shadow-main: 0 4px 16px var(--shadow-color);
+            --shadow-offset: 6px 6px 0 -2px var(--shadow-color-offset);
+            --shadow-hover: 0 8px 20px var(--item-hover-shadow);
+        }
+        [data-theme="dark"] {
+            --bg-color: #1e1e1e;
+            --text-color: #e8e8e8;
+            --accent-color: #d4a5a5;
+            --border-color: #444444;
+            --header-bg: #2a2a2a;
+            --link-color: var(--accent-color);
+            --link-hover: #f0c4c4;
+            --shadow-color: rgba(0, 0, 0, 0.3);
+            --shadow-color-offset: rgba(0, 0, 0, 0.4);
+            --item-hover-shadow: rgba(0, 0, 0, 0.4);
+            --tag-bg: #333;
+            --tag-color: #ccc;
+            --shadow-main: 0 4px 16px var(--shadow-color);
+            --shadow-offset: 6px 6px 0 -2px var(--shadow-color-offset);
+            --shadow-hover: 0 8px 20px var(--item-hover-shadow);
+        }
+
+        /* 重置 & 基础样式 — 继承主站风格 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            font-family: "Inter", "Segoe UI", "Roboto", "Helvetica Neue", "Arial", "Noto Sans", sans-serif;
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 24px 20px;
+            min-height: 100vh;
+            transition: background-color var(--transition-normal) ease, color var(--transition-normal) ease;
+        }
+
+        /* 游戏主容器 — 模仿 .container 风格 */
+        .game-container {
+            max-width: 1500px;
+            width: 100%;
+            margin: 0 auto;
+            background: var(--header-bg);
+            border: 1.5px solid var(--border-color);
+            box-shadow: var(--shadow-main), var(--shadow-offset), -var(--shadow-offset);
+            padding: 28px 30px 36px;
+            border-radius: var(--border-radius-container);
+            transition: background-color var(--transition-normal) ease, border-color var(--transition-normal) ease, box-shadow var(--transition-normal) ease;
+        }
+
+        /* 篇目栏 */
+        .lesson-bar {
+            background: var(--bg-color);
+            border-radius: 60px;
+            padding: 12px 24px;
+            margin-bottom: 28px;
+            box-shadow: 0 2px 8px var(--shadow-color);
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+            border: 1px solid var(--border-color);
+        }
+        .lesson-title {
+            font-weight: 700;
+            background: var(--accent-color);
+            color: white;
+            padding: 6px 20px;
+            border-radius: 40px;
+            font-size: 1rem;
+            letter-spacing: 1px;
+            white-space: nowrap;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .lesson-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .lesson-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            font-size: 0.9rem;
+            font-weight: 600;
+            padding: 6px 18px;
+            border-radius: 40px;
+            cursor: pointer;
+            color: var(--text-color);
+            transition: all var(--transition-fast) ease;
+            font-family: inherit;
+            background-color: var(--bg-color);
+        }
+        .lesson-btn.active {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+            box-shadow: 0 2px 6px var(--shadow-color);
+        }
+        .lesson-btn:hover:not(.active) {
+            background: var(--tag-bg);
+            transform: translateY(-1px);
+            border-color: var(--accent-color);
+        }
+
+        /* 统计卡片栏 */
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 28px;
+            flex-wrap: wrap;
+        }
+        .stat-card {
+            flex: 1;
+            min-width: 100px;
+            background: var(--bg-color);
+            border-radius: 48px;
+            text-align: center;
+            padding: 12px 12px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px var(--shadow-color);
+            border: 1px solid var(--border-color);
+            transition: all var(--transition-fast) ease;
+        }
+        .stat-label {
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+        .stat-value {
+            font-size: 1.9rem;
+            font-weight: 800;
+            color: var(--text-color);
+            line-height: 1.2;
+            font-family: monospace;
+        }
+
+        /* 卡片网格 */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(6, minmax(130px, 1fr));
+            gap: 18px;
+            margin: 28px 0 30px;
+            justify-items: center;
+            align-items: stretch;
+        }
+
+        /* 卡片通用样式 — 典雅宣纸感 */
+        .card {
+            width: 100%;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 1rem 0.8rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            font-weight: 500;
+            color: var(--text-color);
+            word-break: break-word;
+            height: 130px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            font-size: 1rem;
+            line-height: 1.4;
+            overflow-y: auto;
+            box-shadow: 0 2px 6px var(--shadow-color);
+        }
+        .card::-webkit-scrollbar {
+            width: 4px;
+            background: var(--border-color);
+        }
+        .card::-webkit-scrollbar-thumb {
+            background: var(--accent-color);
+            border-radius: 10px;
+        }
+        /* 术语卡片 */
+        .card.term-card {
+            font-weight: 700;
+            background: linear-gradient(145deg, var(--bg-color), var(--header-bg));
+            border-left: 5px solid var(--accent-color);
+            border-right: 1px solid var(--border-color);
+            color: var(--accent-color);
+            font-size: 1.1rem;
+        }
+        /* 注释卡片 */
+        .card.anno-card {
+            background: var(--bg-color);
+            border-bottom: 2px solid var(--accent-color);
+            font-size: 0.92rem;
+        }
+        .card.selected {
+            background: var(--accent-color);
+            color: white;
+            border: 2px solid var(--link-hover);
+            transform: scale(0.98);
+            box-shadow: 0 0 0 3px rgba(165, 88, 96, 0.3);
+        }
+        .card.selected.term-card,
+        .card.selected.anno-card {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        /* 配对正确动画 */
+        .card.correct-animate {
+            animation: correctFlash 0.45s cubic-bezier(0.2, 1.2, 0.4, 1) forwards;
+            z-index: 10;
+        }
+        @keyframes correctFlash {
+            0% { transform: scale(1); background: var(--bg-color); box-shadow: 0 0 0 0 var(--accent-color); border-color: var(--border-color);}
+            40% { transform: scale(1.07); background: var(--accent-color); color: white; box-shadow: 0 0 0 8px rgba(212, 165, 165, 0.5); border-color: var(--link-hover);}
+            80% { transform: scale(0.98); background: var(--accent-color); color: white;}
+            100% { transform: scale(1); background: var(--bg-color); color: var(--text-color); box-shadow: none;}
+        }
+        /* 错误动画 */
+        .card.wrong-animate {
+            animation: wrongShake 0.38s ease-in-out;
+            background-color: rgba(212, 63, 31, 0.2) !important;
+            border-color: var(--link-hover) !important;
+        }
+        @keyframes wrongShake {
+            0% { transform: translateX(0px);}
+            25% { transform: translateX(-6px);}
+            50% { transform: translateX(6px);}
+            75% { transform: translateX(-3px);}
+            100% { transform: translateX(0px);}
+        }
+
+        /* 已配对卡片 */
+        .card.matched {
+            background: var(--tag-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            text-decoration: line-through;
+            cursor: default;
+            filter: grayscale(0.1);
+            transform: scale(0.96);
+            box-shadow: inset 0 2px 5px var(--shadow-color);
+            opacity: 0.7;
+        }
+        .card.matched::after {
+            content: "✓";
+            position: absolute;
+            bottom: 8px;
+            right: 12px;
+            font-size: 1.3rem;
+            color: var(--accent-color);
+            font-weight: bold;
+            animation: checkPop 0.3s ease-out;
+        }
+        @keyframes checkPop {
+            0% { transform: scale(0.2); opacity: 0; }
+            70% { transform: scale(1.3); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* 游戏未激活状态 */
+        .game-inactive .card:not(.matched) {
+            cursor: not-allowed;
+            filter: brightness(0.92);
+            pointer-events: none;
+        }
+
+        /* 操作栏 */
+        .action-bar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+        .reset-btn, .mistake-toggle-btn {
+            background: var(--accent-color);
+            border: none;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 10px 28px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: all var(--transition-fast) ease;
+            font-family: inherit;
+            letter-spacing: 1px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 6px var(--shadow-color);
+        }
+        .reset-btn:hover, .mistake-toggle-btn:hover {
+            background: var(--link-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px var(--item-hover-shadow);
+        }
+        .mistake-toggle-btn {
+            background: #5f7c4a;
+        }
+        .mistake-toggle-btn:hover {
+            background: #4a6130;
+        }
+        .message-area {
+            background: var(--header-bg);
+            padding: 8px 24px;
+            border-radius: 32px;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-color);
+            min-width: 200px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+        }
+
+        /* 错题本面板 */
+        .mistake-panel {
+            margin-top: 32px;
+            background: var(--bg-color);
+            border-radius: 32px;
+            box-shadow: 0 12px 24px var(--shadow-color);
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            transition: all var(--transition-normal) ease;
+        }
+        .mistake-header {
+            background: var(--header-bg);
+            padding: 14px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-weight: 700;
+            color: var(--accent-color);
+            font-size: 1.1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .clear-mistakes {
+            background: var(--accent-color);
+            border: none;
+            color: white;
+            padding: 4px 14px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.1s;
+        }
+        .clear-mistakes:hover {
+            background: var(--link-hover);
+            transform: scale(1.02);
+        }
+        .mistake-list {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+        .mistake-item {
+            background: var(--header-bg);
+            border-radius: 24px;
+            padding: 16px 20px;
+            border-left: 6px solid var(--accent-color);
+            transition: 0.1s;
+        }
+        .wrong-pair {
+            background: rgba(212, 63, 31, 0.1);
+            padding: 10px 12px;
+            border-radius: 20px;
+            color: var(--text-color);
+            font-size: 0.9rem;
+            text-decoration: line-through;
+            text-decoration-thickness: 2px;
+            text-decoration-color: var(--accent-color);
+            margin-bottom: 14px;
+            border: 1px dashed var(--border-color);
+        }
+        .correct-pair {
+            background: rgba(100, 150, 80, 0.15);
+            padding: 10px 14px;
+            border-radius: 20px;
+            color: var(--text-color);
+            font-weight: 500;
+            border-left: 3px solid #4caf50;
+        }
+        .correct-line {
+            display: flex;
+            align-items: baseline;
+            flex-wrap: wrap;
+            gap: 10px;
+            font-size: 0.9rem;
+            margin-top: 6px;
+        }
+        .correct-badge {
+            background: #4caf50;
+            color: white;
+            border-radius: 30px;
+            padding: 2px 8px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+        .term-word {
+            font-weight: 800;
+            color: var(--accent-color);
+        }
+        .anno-text {
+            font-weight: 500;
+            color: #5f8b4c;
+        }
+        [data-theme="dark"] .anno-text {
+            color: #b8d9a6;
+        }
+        .empty-mistake {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-color);
+            opacity: 0.7;
+        }
+
+        /* 页脚 */
+        footer {
+            font-size: 0.75rem;
+            text-align: center;
+            margin-top: 32px;
+            color: var(--text-color);
+            opacity: 0.7;
+            border-top: 1px solid var(--border-color);
+            padding-top: 20px;
+        }
+
+        /* 响应式布局 (保留原有栅格灵活性，并匹配全局断点) */
+        @media (max-width: 1100px) {
+            .card { height: 125px; font-size: 0.95rem; }
+            .card.term-card { font-size: 1rem; }
+        }
+        @media (max-width: 960px) {
+            .cards-grid { grid-template-columns: repeat(6, minmax(100px, 1fr)); gap: 14px; }
+            .card { height: 120px; font-size: 0.9rem; }
+            .stat-value { font-size: 1.6rem; }
+        }
+        @media (max-width: 780px) {
+            .cards-grid { grid-template-columns: repeat(3, 1fr); gap: 16px; }
+            .card { height: 125px; }
+            .lesson-bar { flex-direction: column; align-items: stretch; }
+            .lesson-buttons { justify-content: center; }
+            .game-container { padding: 20px 18px; }
+        }
+        @media (max-width: 550px) {
+            .stats-bar { flex-direction: column; gap: 12px; }
+            .card { height: 115px; font-size: 0.85rem; }
+            .card.term-card { font-size: 0.95rem; }
+            .action-bar { gap: 12px; }
+            .reset-btn, .mistake-toggle-btn { padding: 8px 20px; font-size: 0.9rem; }
+        }
+        @media (max-width: 420px) {
+            .card { height: 110px; }
+        }
+    </style>
+</head>
+<body>
+<div class="game-container" id="gameContainer">
+    <div class="lesson-bar">
+        <div class="lesson-title">📜 篇目</div>
+        <div class="lesson-buttons" id="lessonButtons"></div>
+    </div>
+
+    <div class="stats-bar">
+        <div class="stat-card"><div class="stat-label">🏆 总分</div><div class="stat-value" id="scoreValue">0</div></div>
+        <div class="stat-card"><div class="stat-label">⏱️ 剩余</div><div class="stat-value" id="timeValue">03:00</div></div>
+        <div class="stat-card"><div class="stat-label">❌ 错误</div><div class="stat-value" id="mistakeValue">0</div></div>
+        <div class="stat-card"><div class="stat-label">📖 关卡</div><div class="stat-value" id="levelInfo">1 / 1</div></div>
+    </div>
+
+    <div class="cards-grid" id="cardsGrid"></div>
+
+    <div class="action-bar">
+        <button class="reset-btn" id="resetGameBtn">🖌️ 重新闯关</button>
+        <button class="mistake-toggle-btn" id="mistakeToggleBtn">📖 错题本 <span id="mistakeCountBadge">0</span></button>
+        <div class="message-area" id="gameMessage">✨ 闯关模式：完成当前关卡所有配对进入下一关 ✨</div>
+    </div>
+
+    <div id="mistakePanel" class="mistake-panel" style="display: none;">
+        <div class="mistake-header" id="mistakeHeaderToggle">
+            <span>📚 错题本 · 温故知新</span>
+            <button id="clearMistakesBtn" class="clear-mistakes">清空记录</button>
+        </div>
+        <div id="mistakeListContainer" class="mistake-list">
+            <div class="empty-mistake">✨ 暂无错题，继续研习 ✨</div>
+        </div>
+    </div>
+
+    <footer>闯关模式 · 每关最多18组 | 配对正确+10分 | 错题自动收录 | 典雅文心 ✨</footer>
+</div>
+
+<script>
+    // 数据
+    const FULL_LESSONS_DATA = {
+        "鱼我所欲也": [
+            { "苟得": "苟且取得。这里是苟且偷生的意思。" }, { "恶": "讨厌，憎恨。" }, { "患": "祸患，灾难。" }, { "辟": "同“避”，躲避。" },
+            { "如使": "假如，假使。" }, { "何不用也": "什么（手段）不用呢？" }, { "是心": "这种心。" }, { "丧": "丧失。" },
+            { "豆": "古代盛食物的一种容器，形似高脚盘。" }, { "羹": "用肉（或肉菜相杂）调和五味做的粥状食物。" },
+            { "呼尔而与之": "意思是没有礼貌地吆喝着给他。尔，用作后缀。" }, { "蹴": "踩踏。" }, { "不屑": "认为不值得，表示轻视而不肯接受。" },
+            { "万钟": "优厚的俸禄。钟，古代的一种量器。" }, { "辩": "同“辨”，辨别。" }, { "何加": "有什么益处。" }, { "奉": "侍奉。" },
+            { "所识穷乏者得我与": "所认识的穷困的人感激我吗？得，同“德”，感恩、感激。与，同“欤”，语气词。" },
+            { "乡为身死而不受": "先前为了“礼义”，宁愿死也不接受施舍。乡，同“向”，先前、从前。" }, { "已": "停止。" }, { "本心": "本性。这里指人的羞恶之心。" }
+        ],
+        "送东阳马生序": [
+            { "致": "得到" }, { "假借": "借" }, { "弗之怠": "即“弗怠之”，不懈怠，指不放松抄录书" }, { "走": "跑" }, { "逾约": "超过约定期限" }, { "以是": "因此" },
+            { "既加冠": "加冠之后，指已成年。" }, { "硕师": "学问渊博的老师" }, { "趋": "快步走" }, { "从乡之先达执经叩问": "拿着经书向同乡有道德有学问的前辈请教。叩问，请教" },
+            { "德隆望尊": "道德声望高" }, { "填": "挤满" }, { "稍降辞色": "把言辞和脸色略变得温和一些" }, { "援疑质理": "提出疑难，询问道理" }, { "俯身倾耳以请": "弯下身子，侧着耳朵来请教" },
+            { "叱咄": "训斥，呵责" }, { "至": "周到" }, { "复": "回答，答复。这里是辩解的意思" }, { "俟": "等待" }, { "负箧曳屣": "背着书箱，拖着鞋子" }, { "穷冬": "深冬，隆冬" },
+            { "皲裂": "皮肤因寒冷干燥而开裂" }, { "舍": "这里指客舍" }, { "四支僵劲": "四肢僵硬。支，同“肢”" }, { "媵人": "侍婢。这里指旅舍中的仆役" }, { "持汤沃灌": "拿了热水来洗濯" },
+            { "和": "暖" }, { "寓逆旅，主人日再食": "寄居在旅店，店主人每天供给两顿饭" }, { "被绮绣": "穿着华丽的丝绸衣服" }, { "缨": "系帽的带子" }, { "腰": "用作动词，在腰间佩戴" },
+            { "容臭": "香袋。臭，香气" }, { "烨然": "光彩鲜明的样子" }, { "缊袍敝衣": "破旧的衣服" }, { "慕艳": "羡慕" }, { "以中有足乐者，不知口体之奉不若人也": "因为内心有值得快乐的事，不觉得吃的穿的不如人" },
+            { "预君子之列": "意思是做了官" }, { "宠光": "恩宠光耀" }, { "缀": "跟随" }, { "日侍坐备顾问": "每天在皇帝座位旁边侍奉，准备接受询问" }, { "谬称其氏名": "错误地称说我的姓名" },
+            { "太学": "我国古代设在京城的最高学府。" }, { "县官": "这里指朝廷" }, { "廪稍": "公家按时供给的粮食" }, { "裘葛": "冬天的皮衣和夏天的葛衣" }, { "遗": "给予，赠送" },
+            { "馁": "饥饿" }, { "司业、博士": "都是古代学官名" }, { "假诸人": "即“假之于人”，向别人借" }, { "流辈": "同辈" }, { "谒": "拜见" }, { "撰长书以为贽": "写了一封长信作为礼物" },
+            { "言和而色夷": "言辞谦和，脸色平易" }, { "诋": "诋毁，毁谤" }, { "夸际遇之盛而骄乡人": "夸耀自己的际遇好而在同乡面前表示骄傲" }, { "论辨": "议论辩驳" }
+        ],
+        "出师表": [
+            { "崩殂": "指帝王之死" }, { "秋": "时候" }, { "内": "朝廷" }, { "外": "这里指疆场" }, { "追": "追念" }, { "殊遇": "特殊的礼遇" }, { "开张": "扩大" },
+            { "光": "发扬光大" }, { "恢弘": "发扬，扩展" }, { "妄自菲薄": "随意地看轻自己" }, { "引喻失义": "说话不恰当" }, { "陟罚臧否，不宜异同": "晋升、处罚，赞扬、批评，不应该因在宫中或在丞相府中而不同" },
+            { "作奸犯科": "做奸邪事情，触犯科条" }, { "刑": "罚" }, { "平明之理": "公平清明的治理" }, { "良实": "忠良诚实的人" }, { "志虑忠纯": "志向和思虑忠诚纯正" },
+            { "简拔": "选拔" }, { "愚": "我，谦称" }, { "咨": "询问" }, { "裨补阙漏": "弥补缺失疏漏" }, { "有所广益": "这里指有启发和帮助" }, { "性行淑均": "性情品行善良公正" },
+            { "行阵": "行伍，部队" }, { "痛恨": "痛心、遗憾" }, { "贞良死节": "忠正贤明，为保全节操而死" }, { "躬耕": "亲身耕种" }, { "闻达": "有名望，显贵" },
+            { "卑鄙": "社会地位低微，见识短浅" }, { "猥": "辱。谦辞" }, { "枉屈": "屈尊就卑" }, { "感激": "感奋激发" }, { "驱驰": "奔走效劳" }, { "夙夜": "早晚，日日夜夜" },
+            { "不效": "没有效果" }, { "不毛": "不生长草木。这里指贫瘠、未开垦的地方" }, { "攘除": "排除，铲除" }, { "斟酌损益": "斟酌利弊" }, { "效": "这里是功效的意思" },
+            { "告": "祭告" }, { "兴德之言": "发扬圣德的话" }, { "慢": "怠慢，疏忽" }, { "彰其咎": "揭示他们的过失" }, { "咨诹善道": "询问（治国的）好方法" }, { "奖": "鼓励" },
+            { "雅言": "指正确合理的言论" }, { "庶": "表示期望" }, { "驽钝": "比喻才能平庸，这是诸葛亮自谦的话。" }, { "涕零": "流泪，落泪" }
+        ]
+    };
+
+    const MAX_PAIRS_PER_LEVEL = 18;
+    const LEVEL_TIME_SEC = 180;
+
+    let currentLessonKey = "出师表";
+    let allPairs = [];
+    let levels = [];
+    let totalLevels = 0;
+    let currentLevelIndex = 0;
+    let cards = [];
+    let score = 0;
+    let mistakes = 0;
+    let timeLeft = LEVEL_TIME_SEC;
+    let gameActive = true;
+    let gameWinFlag = false;
+    let timerInterval = null;
+    let selectedCardIdx = null;
+    let mistakeList = [];
+    let processingAnimation = false;
+
+    const scoreEl = document.getElementById('scoreValue');
+    const timeEl = document.getElementById('timeValue');
+    const mistakeEl = document.getElementById('mistakeValue');
+    const levelInfoEl = document.getElementById('levelInfo');
+    const cardsGrid = document.getElementById('cardsGrid');
+    const resetBtn = document.getElementById('resetGameBtn');
+    const gameMessage = document.getElementById('gameMessage');
+    const lessonButtonsContainer = document.getElementById('lessonButtons');
+    const mistakePanel = document.getElementById('mistakePanel');
+    const mistakeToggleBtn = document.getElementById('mistakeToggleBtn');
+    const mistakeCountBadge = document.getElementById('mistakeCountBadge');
+    const clearMistakesBtn = document.getElementById('clearMistakesBtn');
+    const mistakeListContainer = document.getElementById('mistakeListContainer');
+    let panelVisible = false;
+
+    function formatTime(seconds) { const mins = Math.floor(seconds / 60); const secs = seconds % 60; return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`; }
+    function updateStatsUI() { scoreEl.innerText = score; mistakeEl.innerText = mistakes; timeEl.innerText = formatTime(timeLeft); levelInfoEl.innerText = `${currentLevelIndex+1} / ${totalLevels}`; updateMistakeBadge(); }
+    function updateMistakeBadge() { const count = mistakeList.length; mistakeCountBadge.innerText = count; if (mistakeToggleBtn) mistakeToggleBtn.innerHTML = `📖 错题本 <span id="mistakeCountBadge">${count}</span>`; const badgeSpan = document.getElementById('mistakeCountBadge'); if(badgeSpan) badgeSpan.innerText = count; }
+    function shuffleArray(arr) { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; }
+    function convertRawToPairs(rawArray) { const pairs = []; for (const item of rawArray) { for (const [term, annotation] of Object.entries(item)) { if (term && annotation) pairs.push({ term: term.trim(), annotation: annotation.trim() }); } } return pairs; }
+    function buildLevelsFromPairs(pairs) { const levelsArr = []; for (let i = 0; i < pairs.length; i += MAX_PAIRS_PER_LEVEL) { const pairIds = pairs.slice(i, i + MAX_PAIRS_PER_LEVEL).map((_, idx) => i + idx); levelsArr.push(pairIds); } return levelsArr; }
+    function generateCardsForLevel(levelIdx) { if (!levels[levelIdx]) return []; const pairIds = levels[levelIdx]; const newCards = []; let uniqueId = 0; for (const globalPairId of pairIds) { const pair = allPairs[globalPairId]; if (!pair) continue; newCards.push({ id: uniqueId++, pairId: globalPairId, type: 'term', text: pair.term, matched: false }); newCards.push({ id: uniqueId++, pairId: globalPairId, type: 'anno', text: pair.annotation, matched: false }); } return shuffleArray(newCards); }
+    function applyCorrectMatch(idxA, idxB) { if (!gameActive || gameWinFlag) return; const cardA = cards[idxA], cardB = cards[idxB]; if (!cardA || !cardB || cardA.matched || cardB.matched) return; cardA.matched = true; cardB.matched = true; score += 10; updateStatsUI(); selectedCardIdx = null; cards = cards.filter(card => !card.matched); renderCards(); gameMessage.innerText = '✓ 配对正确！ +10分 ✨'; setTimeout(() => { if (gameActive && !gameWinFlag && cards.length > 0) gameMessage.innerText = '📖 继续研读，慧心配对'; }, 900); checkLevelComplete(); }
+    function applyWrongMatch(termCardObj, annoCardObj) { if (!gameActive || gameWinFlag) return; mistakes++; updateStatsUI(); const termPair = allPairs[termCardObj.pairId]; const annoPair = allPairs[annoCardObj.pairId]; const termCorrectAnno = termPair ? termPair.annotation : "（无法获取）"; const annoCorrectTerm = annoPair ? annoPair.term : "（无法获取）"; mistakeList.push({ termText: termCardObj.text, annoText: annoCardObj.text, termCorrectAnno, annoCorrectTerm }); renderMistakeList(); updateMistakeBadge(); selectedCardIdx = null; renderCards(); gameMessage.innerText = '❌ 配对错误！已收录错题本 ❌'; setTimeout(() => { if (gameActive && !gameWinFlag) gameMessage.innerText = '📖 再试一次，仔细对照注释'; }, 1200); }
+    function animateAndExecute(selectedIdx, clickedIdx, isCorrect, termCard, annoCard) { if (processingAnimation) return; processingAnimation = true; const cardElements = document.querySelectorAll('.card'); const elem1 = cardElements[selectedIdx]; const elem2 = cardElements[clickedIdx]; if (elem1 && elem2) { if (isCorrect) { elem1.classList.add('correct-animate'); elem2.classList.add('correct-animate'); setTimeout(() => { if(elem1) elem1.classList.remove('correct-animate'); if(elem2) elem2.classList.remove('correct-animate'); }, 500); } else { elem1.classList.add('wrong-animate'); elem2.classList.add('wrong-animate'); setTimeout(() => { if(elem1) elem1.classList.remove('wrong-animate'); if(elem2) elem2.classList.remove('wrong-animate'); }, 450); } } setTimeout(() => { if (isCorrect) applyCorrectMatch(selectedIdx, clickedIdx); else applyWrongMatch(termCard, annoCard); processingAnimation = false; }, 330); }
+    function onCardClick(clickedIdx) { if (!gameActive || gameWinFlag || processingAnimation) return; if (clickedIdx < 0 || clickedIdx >= cards.length) return; const clickedCard = cards[clickedIdx]; if (clickedCard.matched) return; if (selectedCardIdx === null) { selectedCardIdx = clickedIdx; renderCards(); gameMessage.innerText = `👉 已选中: ${clickedCard.type === 'term' ? '【原词】' : '【注释】'} “${clickedCard.text.substring(0, 32)}”，再点击对应卡片配对`; return; } if (selectedCardIdx === clickedIdx) { selectedCardIdx = null; renderCards(); gameMessage.innerText = '✨ 已取消选择 ✨'; return; } const selectedCard = cards[selectedCardIdx]; if (selectedCard.matched) { selectedCardIdx = null; renderCards(); return; } const isSamePair = (selectedCard.pairId === clickedCard.pairId); const isDifferentType = (selectedCard.type !== clickedCard.type); if (isSamePair && isDifferentType) { animateAndExecute(selectedCardIdx, clickedIdx, true, null, null); } else { let termCard, annoCard; if (selectedCard.type === 'term' && clickedCard.type === 'anno') { termCard = selectedCard; annoCard = clickedCard; } else if (selectedCard.type === 'anno' && clickedCard.type === 'term') { termCard = clickedCard; annoCard = selectedCard; } else { termCard = selectedCard; annoCard = clickedCard; } animateAndExecute(selectedCardIdx, clickedIdx, false, termCard, annoCard); } }
+    function renderCards() { if (!cardsGrid) return; cardsGrid.innerHTML = ''; cards.forEach((card, idx) => { const cardDiv = document.createElement('div'); cardDiv.className = 'card'; if (card.type === 'term') cardDiv.classList.add('term-card'); else cardDiv.classList.add('anno-card'); if (card.matched) cardDiv.classList.add('matched'); if (selectedCardIdx === idx && !card.matched && gameActive) cardDiv.classList.add('selected'); cardDiv.innerText = card.text; cardDiv.addEventListener('click', (e) => { e.stopPropagation(); onCardClick(idx); }); cardsGrid.appendChild(cardDiv); }); }
+    function checkLevelComplete() { const unmatched = cards.filter(c => !c.matched).length; if (unmatched === 0 && gameActive && !gameWinFlag) { if (currentLevelIndex + 1 < totalLevels) { currentLevelIndex++; gameMessage.innerText = `🎉 过关！进入第${currentLevelIndex+1}/${totalLevels}关，再接再厉 🎉`; loadLevel(currentLevelIndex); } else { gameWinFlag = true; gameActive = false; if (timerInterval) clearInterval(timerInterval); timerInterval = null; gameMessage.innerText = `🏆 大获全胜！《${currentLessonKey}》全部通关！文心宗师！🏆`; document.getElementById('gameContainer').classList.add('game-inactive'); renderCards(); } } }
+    function loadLevel(levelIndex) { if (timerInterval) clearInterval(timerInterval); cards = generateCardsForLevel(levelIndex); selectedCardIdx = null; timeLeft = LEVEL_TIME_SEC; gameActive = true; gameWinFlag = false; processingAnimation = false; updateStatsUI(); renderCards(); startTimerForLevel(); const currentPairCount = levels[levelIndex].length; gameMessage.innerText = `📖 第${levelIndex+1}/${totalLevels}关 · ${currentPairCount}组词句，配对正确+10分！`; document.getElementById('gameContainer').classList.remove('game-inactive'); }
+    function startTimerForLevel() { if (timerInterval) clearInterval(timerInterval); timerInterval = setInterval(() => { if (!gameActive) return; if (timeLeft <= 1) { clearInterval(timerInterval); timerInterval = null; timeLeft = 0; updateStatsUI(); gameActive = false; gameWinFlag = false; gameMessage.innerText = '⏰ 时间耗尽... 点击「重新闯关」继续研习吧 ⏰'; document.getElementById('gameContainer').classList.add('game-inactive'); renderCards(); } else { timeLeft--; updateStatsUI(); } }, 1000); }
+    function resetGame() { if (timerInterval) clearInterval(timerInterval); timerInterval = null; score = 0; mistakes = 0; mistakeList = []; currentLevelIndex = 0; gameActive = true; gameWinFlag = false; selectedCardIdx = null; processingAnimation = false; allPairs = convertRawToPairs(FULL_LESSONS_DATA[currentLessonKey]); levels = buildLevelsFromPairs(allPairs); totalLevels = levels.length; updateStatsUI(); renderMistakeList(); updateMistakeBadge(); loadLevel(0); document.getElementById('gameContainer').classList.remove('game-inactive'); gameMessage.innerText = `✨ 重新闯关《${currentLessonKey}》，共 ${totalLevels} 关，加油 ✨`; }
+    function switchLesson(lessonKey) { if (!FULL_LESSONS_DATA[lessonKey]) return; if (lessonKey === currentLessonKey) { resetGame(); return; } currentLessonKey = lessonKey; if (timerInterval) clearInterval(timerInterval); timerInterval = null; score = 0; mistakes = 0; mistakeList = []; currentLevelIndex = 0; gameActive = true; gameWinFlag = false; selectedCardIdx = null; processingAnimation = false; allPairs = convertRawToPairs(FULL_LESSONS_DATA[currentLessonKey]); levels = buildLevelsFromPairs(allPairs); totalLevels = levels.length; updateStatsUI(); renderMistakeList(); updateMistakeBadge(); loadLevel(0); document.getElementById('gameContainer').classList.remove('game-inactive'); gameMessage.innerText = `📖 已切换至《${currentLessonKey}》，共 ${totalLevels} 关，文心配对 📖`; document.querySelectorAll('.lesson-btn').forEach(btn => { if (btn.getAttribute('data-lesson') === lessonKey) btn.classList.add('active'); else btn.classList.remove('active'); }); if (panelVisible) { mistakePanel.style.display = 'block'; renderMistakeList(); } else mistakePanel.style.display = 'none'; }
+    function buildLessonButtons() { lessonButtonsContainer.innerHTML = ''; Object.keys(FULL_LESSONS_DATA).forEach(key => { const btn = document.createElement('button'); btn.className = 'lesson-btn'; if (key === currentLessonKey) btn.classList.add('active'); btn.setAttribute('data-lesson', key); btn.innerText = key; btn.addEventListener('click', () => switchLesson(key)); lessonButtonsContainer.appendChild(btn); }); }
+    function renderMistakeList() { if (!mistakeListContainer) return; if (mistakeList.length === 0) { mistakeListContainer.innerHTML = '<div class="empty-mistake">📖 暂无错题，继续研习 📖</div>'; return; } let html = ''; mistakeList.forEach((item) => { html += `<div class="mistake-item"><div class="wrong-pair">❌ 你配对的： 「${escapeHtml(item.termText)}」 ↔ 「${escapeHtml(item.annoText)}」</div><div class="correct-pair"><div class="correct-line"><span class="correct-badge">✅ 正确</span><span><span class="term-word">「${escapeHtml(item.termText)}」</span> 的正确注释 → <span class="anno-text">${escapeHtml(item.termCorrectAnno)}</span></span></div><div class="correct-line"><span class="correct-badge">✅ 正确</span><span><span class="term-word">「${escapeHtml(item.annoText)}」</span> 对应的原词 → <span class="anno-text">${escapeHtml(item.annoCorrectTerm)}</span></span></div></div></div>`; }); mistakeListContainer.innerHTML = html; }
+    function escapeHtml(str) { return str.replace(/[&<>]/g, function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+    function clearMistakeList() { mistakeList = []; renderMistakeList(); updateMistakeBadge(); gameMessage.innerText = '错题本已清空，砥砺前行'; setTimeout(()=>{ if(gameActive&&!gameWinFlag) gameMessage.innerText='📖 再试一次，仔细对照注释'; },1200); }
+    function toggleMistakePanel() { panelVisible = !panelVisible; mistakePanel.style.display = panelVisible ? 'block' : 'none'; if(panelVisible) renderMistakeList(); }
+    resetBtn.addEventListener('click', () => resetGame());
+    mistakeToggleBtn.addEventListener('click', toggleMistakePanel);
+    clearMistakesBtn.addEventListener('click', (e) => { e.stopPropagation(); clearMistakeList(); });
+    document.getElementById('mistakeHeaderToggle')?.addEventListener('click', (e) => { if(e.target !== clearMistakesBtn) toggleMistakePanel(); });
+    function initGame() { buildLessonButtons(); allPairs = convertRawToPairs(FULL_LESSONS_DATA[currentLessonKey]); levels = buildLevelsFromPairs(allPairs); totalLevels = levels.length; score = 0; mistakes = 0; currentLevelIndex = 0; gameActive = true; gameWinFlag = false; selectedCardIdx = null; mistakeList = []; renderMistakeList(); updateMistakeBadge(); updateStatsUI(); loadLevel(0); mistakePanel.style.display = 'none'; panelVisible = false; }
+    initGame();
+</script>
+</body>
+</html>

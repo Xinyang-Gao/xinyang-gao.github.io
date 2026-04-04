@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-04-04T18:51:01.737518",
+  "generated_at": "2026-04-05T00:24:01.032504",
   "total_articles": 6,
-  "total_word_count": 13124,
+  "total_word_count": 13539,
   "articles": [
     {
       "title": "网站更新日志",
@@ -11,9 +11,10 @@
       "tags": [
         "网站"
       ],
+      "category": "网站",
       "url": "/articles/网站更新日志.html",
-      "word_count": 6364,
-      "read_time": "13-32分钟"
+      "word_count": 6779,
+      "read_time": "14-34分钟"
     },
     {
       "title": "从一株小草开始",
@@ -21,9 +22,9 @@
       "description": "一篇随笔",
       "author": "高新炀",
       "tags": [
-        "记叙文",
-        "学习"
+        "记叙文"
       ],
+      "category": "学习",
       "url": "/articles/从一株小草开始.html",
       "word_count": 951,
       "read_time": "2-5分钟"
@@ -37,6 +38,7 @@
         "网站",
         "隐藏"
       ],
+      "category": "网站",
       "url": "/articles/test.html",
       "word_count": 430,
       "read_time": "1-3分钟"
@@ -48,8 +50,9 @@
       "author": "高新炀",
       "tags": [
         "记叙文",
-        "学习"
+        "日常"
       ],
+      "category": "学习",
       "url": "/articles/雪中的思绪.html",
       "word_count": 2410,
       "read_time": "5-13分钟"
@@ -60,9 +63,9 @@
       "description": "一篇文言文回信，学习《送东阳马生序》后，以文中马生的口吻回信",
       "author": "高新炀",
       "tags": [
-        "文言文",
-        "学习"
+        "文言文"
       ],
+      "category": "学习",
       "url": "/articles/马生复宋濂书.html",
       "word_count": 1503,
       "read_time": "4-8分钟"
@@ -73,9 +76,9 @@
       "description": "一篇议论文",
       "author": "高新炀",
       "tags": [
-        "议论文",
-        "学习"
+        "议论文"
       ],
+      "category": "学习",
       "url": "/articles/论网络游戏的功与过.html",
       "word_count": 1466,
       "read_time": "3-8分钟"

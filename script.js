@@ -31,7 +31,7 @@ class PerformanceMonitor {
     }
 
     getMetrics() {
-        return this.metrics.slice(-50); // 最近50条记录
+        return this.metrics.slice(-50);
     }
 
     clearMetrics() {
@@ -70,9 +70,7 @@ class Utils {
         return false;
     }
     
-    // 获取标签数组（兼容旧格式）
     static getTags(item) {
-        // 优先使用 tags 字段，其次使用 tag 字段
         if (item.tags && Array.isArray(item.tags)) {
             return item.tags;
         }
@@ -82,7 +80,6 @@ class Utils {
         return [];
     }
     
-    // 防抖
     static debounce(func, wait) {
         let timeout;
         return function executedFunction(...args) {
@@ -95,7 +92,6 @@ class Utils {
         };
     }
     
-    // 节流
     static throttle(func, limit) {
         let inThrottle;
         return function() {
@@ -198,7 +194,6 @@ class UIRenderer {
         return `<div class="tags">${tags.map(t => `<span class="tag">${this.escapeHtml(t)}</span>`).join('')}</div>`;
     }
     
-    // 简单的HTML转义
     static escapeHtml(str) {
         if (!str) return '';
         return str.replace(/[&<>]/g, function(m) {
@@ -211,42 +206,46 @@ class UIRenderer {
 
     static generateListItem(item, type, index) {
         const tags = UIRenderer.generateTagsHTML(item);
-        let dataAttr = '';
+        
         if (type === 'article') {
             const itemUrl = item.url || '';
-            dataAttr = `data-url="${this.escapeHtml(itemUrl)}"`;
-        } else {
-            const itemId = item.id || item.title;
-            dataAttr = `data-id="${this.escapeHtml(String(itemId))}"`;
-        }
-
-        // 文章专用：作者、字数、阅读时间
-        let metaInfoHtml = '';
-        if (type === 'article') {
-            const author = item.author ? this.escapeHtml(item.author) : '未知作者';
-            const wordCount = item.word_count ? `${item.word_count} 字` : '';
-            const readTime = item.read_time ? this.escapeHtml(item.read_time) : '';
-            metaInfoHtml = `
+            return `
+            <div class="list-item" data-url="${this.escapeHtml(itemUrl)}" data-type="article" data-index="${index}">
+                <div class="list-item-header">
+                    <h3 class="list-item-title">${this.escapeHtml(item.title)}</h3>
+                    <div class="list-item-meta">
+                        <span class="list-item-date">${this.escapeHtml(item.date)}</span>
+                    </div>
+                </div>
                 <div class="article-meta-info">
-                    <span class="article-author"> ${author}</span>
-                    ${wordCount ? `<span class="article-word-count"> ${wordCount}</span>` : ''}
-                    ${readTime ? `<span class="article-read-time"><i class="far fa-clock"></i> ${readTime}</span>` : ''}
+                    <span class="article-author">${this.escapeHtml(item.author || '未知作者')}</span>
+                    ${item.word_count ? `<span class="article-word-count">${item.word_count} 字</span>` : ''}
+                    ${item.read_time ? `<span class="article-read-time"><i class="far fa-clock"></i> ${this.escapeHtml(item.read_time)}</span>` : ''}
                 </div>
-            `;
+                <p class="list-item-description">${this.escapeHtml(item.description || '')}</p>
+                ${tags}
+            </div>`;
+        } else { // work 类型
+            // 构造作品信息对象，用于弹窗展示（不含 id，完全基于 json 内容）
+            const workInfo = {
+                title: item.title,
+                description: item.description || '',
+                link: item.link || '',
+                tags: Utils.getTags(item)
+            };
+            const workInfoStr = encodeURIComponent(JSON.stringify(workInfo));
+            return `
+            <div class="list-item" data-work-info="${workInfoStr}" data-type="work" data-index="${index}">
+                <div class="list-item-header">
+                    <h3 class="list-item-title">${this.escapeHtml(item.title)}</h3>
+                    <div class="list-item-meta">
+                        <span class="list-item-date">${this.escapeHtml(item.date)}</span>
+                    </div>
+                </div>
+                <p class="list-item-description">${this.escapeHtml(item.description || '')}</p>
+                ${tags}
+            </div>`;
         }
-
-        return `
-        <div class="list-item" ${dataAttr} data-type="${type}" data-index="${index}">
-            <div class="list-item-header">
-                <h3 class="list-item-title">${this.escapeHtml(item.title)}</h3>
-                <div class="list-item-meta">
-                    <span class="list-item-date">${this.escapeHtml(item.date)}</span>
-                </div>
-            </div>
-            ${metaInfoHtml}
-            <p class="list-item-description">${this.escapeHtml(item.description || '')}</p>
-            ${tags}
-        </div>`;
     }
 
     static generateListHTML(data, type) {
@@ -257,7 +256,6 @@ class UIRenderer {
         }
 
         const items = type === 'works' ? data.works : data.articles;
-        // 过滤掉包含"隐藏"标签的项目
         const filteredItems = items.filter(item => {
             const tags = Utils.getTags(item);
             return !tags.includes('隐藏');
@@ -380,7 +378,6 @@ class SearchController {
             return;
         }
 
-        // 排序标签
         const sortedTags = Array.from(allTags).sort();
         sortedTags.forEach(tag => {
             const btn = document.createElement('button');
@@ -425,7 +422,6 @@ class SearchController {
 
         let items = type === 'works' ? [...data.works] : [...data.articles];
 
-        // 标签筛选
         if (this.selectedTags.length) {
             items = items.filter(item => {
                 const itemTags = Utils.getTags(item);
@@ -434,7 +430,6 @@ class SearchController {
             });
         }
 
-        // 搜索筛选
         if (query && query.trim() !== '') {
             const ql = query.toLowerCase().trim();
             items = items.filter(item => {
@@ -447,7 +442,7 @@ class SearchController {
                             itemTags.some(t => t.toLowerCase().includes(ql));
                     case 'date':
                         return item.date.includes(query);
-                    default: // 'all'
+                    default:
                         return item.title.toLowerCase().includes(ql) ||
                             (Utils.getTags(item).some(t => t.toLowerCase().includes(ql))) ||
                             item.date.includes(query);
@@ -581,56 +576,43 @@ class PageManager {
         if (!item) return;
         const type = item.dataset.type;
         if (type === 'work') {
-            const itemId = item.dataset.id;
-            if (itemId) PageManager.handleWorkItemClick(itemId);
+            const workInfoRaw = item.dataset.workInfo;
+            if (workInfoRaw) {
+                try {
+                    const workInfo = JSON.parse(decodeURIComponent(workInfoRaw));
+                    PageManager.showWorkDetails(workInfo);
+                } catch(e) {
+                    console.error('解析作品信息失败', e);
+                }
+            } else {
+                console.warn('未找到作品信息，无法展示详情');
+            }
         } else if (type === 'article') {
             const itemUrl = item.dataset.url;
-            if (itemUrl) PageManager.handleArticleItemClick(itemUrl);
+            if (itemUrl) {
+                window.open(itemUrl, '_blank');
+            } else {
+                console.warn('文章链接无效');
+            }
         }
-    }
-
-    static handleWorkItemClick(workId) {
-        const data = this.getData('works');
-        if (data) {
-            const work = data.works.find(w => String(w.id) === String(workId));
-            if (work) PageManager.showWorkDetails(work);
-        }
-    }
-
-    static handleArticleItemClick(articleUrl) {
-        if (articleUrl) {
-            window.open(articleUrl, '_blank');
-        } else {
-            console.warn('文章链接无效');
-        }
-    }
-
-    static getData(type) {
-        const raw = localStorage.getItem(`${type}Data`);
-        if (!raw) return null;
-        try {
-            const d = JSON.parse(raw);
-            return Utils.validateData(d, type) ? d : null;
-        } catch { return null; }
     }
 
     static showWorkDetails(work) {
-        // 如果已有弹窗或遮罩，先关闭
         if (this.currentModalClose) {
             this.currentModalClose();
         }
 
-        // 创建遮罩层
         const overlay = document.createElement('div');
         overlay.className = 'modal-overlay';
         document.body.appendChild(overlay);
 
-        // 创建弹窗容器
         const envelope = document.createElement('div');
         envelope.className = 'work-details-envelope';
-        const tags = work.tags || work.tag;
-        const tagsHtml = tags && tags.length ? 
+        
+        const tags = work.tags || [];
+        const tagsHtml = tags.length ? 
             `<div class="work-details-tag"><strong>标签:</strong>${tags.map(t => `<span class="tag">${UIRenderer.escapeHtml(t)}</span>`).join('')}</div>` : '';
+        
         envelope.innerHTML = `
             <div class="work-details-close">✕</div>
             <div class="work-details-content">
@@ -642,7 +624,6 @@ class PageManager {
         `;
         document.body.appendChild(envelope);
 
-        // 关闭函数（包含清理工作）
         const closeModal = () => {
             if (envelope.classList.contains('closing')) return;
             envelope.classList.add('closing');
@@ -650,7 +631,6 @@ class PageManager {
             setTimeout(() => {
                 envelope.remove();
                 overlay.remove();
-                // 移除全局事件监听
                 document.removeEventListener('keydown', escHandler);
                 if (this.currentModalClose === closeModal) {
                     this.currentModalClose = null;
@@ -658,25 +638,18 @@ class PageManager {
             }, 400);
         };
 
-        // ESC 键关闭
         const escHandler = (e) => {
             if (e.key === 'Escape') {
                 closeModal();
             }
         };
         document.addEventListener('keydown', escHandler);
-
-        // 点击遮罩关闭
         overlay.addEventListener('click', closeModal);
-
-        // 点击关闭按钮关闭
         const closeBtn = envelope.querySelector('.work-details-close');
         closeBtn.addEventListener('click', closeModal);
 
-        // 存储当前关闭函数，供下次调用时清理
         this.currentModalClose = closeModal;
 
-        // 显示弹窗动画
         requestAnimationFrame(() => {
             envelope.classList.add('active');
             overlay.classList.add('active');
@@ -715,18 +688,15 @@ class NavigationManager {
         });
     }
     
-    // 主题切换 (开关版)
     static initThemeToggle() {
         const checkbox = document.getElementById('theme-toggle-checkbox');
         if (!checkbox) return;
 
-        // 核心主题切换函数
         const setTheme = (theme, updateCheckbox = true) => {
             const root = document.documentElement;
             const currentTheme = root.getAttribute('data-theme');
             if (currentTheme === theme) return;
 
-            // 添加页面过渡效果
             document.body.style.transition = 'background-color 0.3s ease, color 0.3s ease';
             const overlay = document.createElement('div');
             overlay.style.cssText = `
@@ -758,7 +728,6 @@ class NavigationManager {
             window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme } }));
         };
 
-        // 监听开关变化
         const handleChange = (e) => {
             const newTheme = e.target.checked ? 'dark' : 'light';
             setTheme(newTheme, false);
@@ -766,18 +735,15 @@ class NavigationManager {
         
         checkbox.addEventListener('change', handleChange);
         
-        // 初始化：读取存储或系统偏好
         const savedTheme = localStorage.getItem('theme');
         const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         let initialTheme = savedTheme;
         if (!initialTheme) {
             initialTheme = systemPrefersDark ? 'dark' : 'light';
         }
-        // 设置根属性与checkbox状态
         document.documentElement.setAttribute('data-theme', initialTheme);
         checkbox.checked = (initialTheme === 'dark');
         
-        // 监听系统主题变化（如果用户没有手动设置过）
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
             if (!localStorage.getItem('theme')) {
                 const newSysTheme = e.matches ? 'dark' : 'light';
@@ -827,7 +793,6 @@ async function loadNavbar() {
  */
 class CustomCursor {
   constructor(options = {}) {
-    // 移动设备自动禁用
     if (window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window) {
       console.log('触摸设备，跳过自定义光标');
       return;
@@ -845,7 +810,7 @@ class CustomCursor {
     this.targetY = 0;
     this.currentX = 0;
     this.currentY = 0;
-    this.fixedScale = 0.55; //光标大小
+    this.fixedScale = 0.55;
     this.currentRotation = 0;
     this.targetRotation = 0;
 
@@ -908,7 +873,6 @@ class CustomCursor {
     const accentColor = rootStyles.getPropertyValue('--accent-color').trim() || '#a55860';
     this.fillPath.setAttribute('fill', accentColor);
     this.strokePath.setAttribute('stroke', '#ffffff');
-    // 不再设置圆点背景色，保持CSS定义的空心样式
   }
 
   initEvents() {
@@ -951,8 +915,6 @@ class CustomCursor {
         this.targetY = e.clientY;
 
         let speed = Math.hypot(this.velocityX, this.velocityY);
-        // 光标大小固定，不再根据速度或悬停改变缩放
-        // 旋转方向根据速度计算
         if (speed > this.config.minSpeedForRotation) {
           let angle = Math.atan2(this.velocityY, this.velocityX) * 180 / Math.PI + 90;
           this.targetRotation = angle;
@@ -960,7 +922,7 @@ class CustomCursor {
           this.targetRotation = 0;
         }
       } else {
-        this.targetRotation = -45; // 吸附模式下旋转45度（左上角）
+        this.targetRotation = -45;
       }
     });
 
@@ -997,7 +959,6 @@ class CustomCursor {
     this.snappedElement = element;
     this.dot.style.display = 'block';
     this.updateSnappedTargetPosition();
-    // 进入吸附模式时设置旋转角度45度
     this.targetRotation = 45;
   }
 
@@ -1005,7 +966,6 @@ class CustomCursor {
     this.snappedMode = false;
     this.snappedElement = null;
     this.dot.style.display = 'none';
-    // 退出时让旋转目标归零
     this.targetRotation = 0;
   }
 
@@ -1034,12 +994,10 @@ class CustomCursor {
       this.currentX += dx * 0.3;
       this.currentY += dy * 0.3;
 
-      // 平滑旋转过渡
       let diff = this.targetRotation - this.currentRotation;
       if (Math.abs(diff) > 180) diff -= Math.sign(diff) * 360;
       this.currentRotation += diff * this.config.rotationSmoothing;
 
-      // 固定大小，不进行缩放变换
       this.svg.style.transform = `translate(-50%, -50%) rotate(${this.currentRotation}deg) scale(${this.fixedScale})`;
       this.container.style.transform = `translate(${this.currentX}px, ${this.currentY}px)`;
 
@@ -1081,22 +1039,17 @@ async function loadFooter() {
  */
 let siteAgeInterval = null;
 
-/**
- * 启动并持续更新网站存活时间显示
- * 网站创建时间: 2025-02-22 12:23:53 UTC
- */
 function startSiteAgeUpdater() {
-    // 避免重复启动定时器
     if (siteAgeInterval) {
         clearInterval(siteAgeInterval);
         siteAgeInterval = null;
     }
 
-    const BIRTH_DATE = new Date('2025-02-22T12:23:53Z'); // UTC 时间
+    const BIRTH_DATE = new Date('2025-02-22T12:23:53Z');
 
     function updateAge() {
         const ageSpan = document.getElementById('site-age');
-        if (!ageSpan) return; // 页脚尚未加载完成时忽略
+        if (!ageSpan) return;
 
         const now = Date.now();
         const diff = now - BIRTH_DATE.getTime();
@@ -1112,13 +1065,12 @@ function startSiteAgeUpdater() {
         const minutes = Math.floor((totalSeconds % 3600) / 60);
         const seconds = totalSeconds % 60;
 
-        // 格式：XX天XX小时XX分钟XX秒
         const ageStr = `${days}天${hours.toString().padStart(2, '0')}小时${minutes.toString().padStart(2, '0')}分钟${seconds.toString().padStart(2, '0')}秒`;
         ageSpan.innerText = ageStr;
     }
 
-    updateAge(); // 立即更新一次
-    siteAgeInterval = setInterval(updateAge, 1000); // 每秒刷新
+    updateAge();
+    siteAgeInterval = setInterval(updateAge, 1000);
 }
 
 /**
@@ -1126,9 +1078,8 @@ function startSiteAgeUpdater() {
  */
 class ExternalLinkManager {
     constructor() {
-        // 排除本网站的域名列表（根据实际情况修改）
         this.internalDomains = [
-            window.location.hostname,// 当前域名
+            window.location.hostname,
             'localhost',
             '127.0.0.1',
             'xinyang-gao.github.io',
@@ -1138,11 +1089,6 @@ class ExternalLinkManager {
         this.init();
     }
 
-    /**
-     * 判断链接是否为外部链接
-     * @param {string} url - 链接地址
-     * @returns {boolean} 是否为外部链接
-     */
     isExternalLink(url) {
         if (!url || url.startsWith('#') || url.startsWith('javascript:')) {
             return false;
@@ -1150,22 +1096,15 @@ class ExternalLinkManager {
         
         try {
             const linkUrl = new URL(url, window.location.href);
-            // 检查协议是否为 http 或 https
             if (!['http:', 'https:'].includes(linkUrl.protocol)) {
                 return false;
             }
-            // 检查域名是否属于内部域名
             return !this.internalDomains.includes(linkUrl.hostname);
         } catch (e) {
-            // URL 解析失败，如果是相对路径则视为内部链接
             return false;
         }
     }
 
-    /**
-     * 处理链接点击事件
-     * @param {Event} e - 点击事件
-     */
     handleLinkClick(e) {
         let target = e.target.closest('a');
         if (!target) return;
@@ -1177,31 +1116,21 @@ class ExternalLinkManager {
             e.preventDefault();
             e.stopPropagation();
             
-            // 在新标签页打开确认页面
             const confirmUrl = `/link.html?url=${encodeURIComponent(href)}`;
             window.open(confirmUrl, '_blank', 'noopener,noreferrer');
         }
     }
 
-    /**
-     * 初始化：监听全局点击事件
-     */
     init() {
-        // 使用事件委托监听所有链接点击
         document.addEventListener('click', (e) => {
             this.handleLinkClick(e);
         });
-        
-        // 对于动态加载的内容（如通过 AJAX 加载的文章列表），
-        // 事件委托已经可以处理，无需额外操作
         
         console.log('外链跳转确认管理器已启动');
     }
 }
 
-// 在页面完全加载后初始化光标（确保导航栏等已加载）
 document.addEventListener('DOMContentLoaded', () => {
-  // 延迟一小段时间，保证 DOM 完整
   setTimeout(() => {
     if (!window.customCursorInstance) {
       window.customCursorInstance = new CustomCursor();
@@ -1209,10 +1138,8 @@ document.addEventListener('DOMContentLoaded', () => {
   }, 100);
 });
 
-// 主初始化
 document.addEventListener('DOMContentLoaded', async () => {
     window.ExternalLinkManager = new ExternalLinkManager();
-    // 预先设置主题，避免闪烁（导航栏加载前）
     const savedTheme = localStorage.getItem('theme');
     const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     let initialTheme = savedTheme;
@@ -1224,7 +1151,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     await loadNavbar();
     await loadFooter();
 
-    // 启动网站存活时间计时器（页脚已加载完成）
     startSiteAgeUpdater();
 
     const currentPage = window.location.pathname.split('/').pop().replace('.html', '') || 'index';

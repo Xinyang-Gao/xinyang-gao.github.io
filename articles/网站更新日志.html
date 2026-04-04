@@ -44,13 +44,17 @@
                 <i class="fas fa-user"></i>
                 <span class="meta-value">高新炀</span>
             </div>
+            <div class="meta-item" data-label="分类">
+                <i class="fas fa-folder-open"></i>
+                <span class="meta-value">网站</span>
+            </div>
             <div class="meta-item" data-label="字数">
                 <i class="fas fa-file-alt"></i>
-                <span class="meta-value">6364</span>
+                <span class="meta-value">6779</span>
             </div>
             <div class="meta-item" data-label="阅读时间（200~500字/分钟）">
                 <i class="fas fa-clock"></i>
-                <span class="meta-value">13-32分钟</span>
+                <span class="meta-value">14-34分钟</span>
             </div>
             <div class="meta-item" data-label="访客数">
                 <i class="fas fa-users"></i>
@@ -79,15 +83,36 @@
 <li>归档功能</li>
 <li>友链功能</li>
 <li>外链跳转的过度动画</li>
-<li>移除 works.json id 字段<ul>
 <li>优化统计文本</li>
-</ul>
-</li>
 <li>优化页脚</li>
 <li>SEO 优化</li>
 </ol>
-<h1 id="heading-1">2026年4月4日 </h1>
-<h3 id="heading-2">V5.3.4</h3>
+<h1 id="heading-1">2026年4月4日 V6.0.0</h1>
+<ul>
+<li><strong>优化</strong><ul>
+<li>导航栏的按钮现在居中显示</li>
+<li>更改了文章文件存储<ul>
+<li>由原来的 <code>./articles/articles/xxx.md</code> 改为 <code>./articles/source/分类/xxx.md</code></li>
+<li>在 <code>articles.json</code> 中添加 <code>category</code>(分类) 项<ul>
+<li>分类会显示在文章元数据区</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>更改了作品文件存储<ul>
+<li>由原来的 <code>./works/作品.html</code> 改为 <code>./works/作品/index.html</code> (HTML类文件改动示例)</li>
+<li>在 <code>./works/作品/</code> 下添加 <code>metadata.json</code> 来存储作品元数据</li>
+</ul>
+</li>
+<li>将 <code>markdown2html.py</code> 重命名为 <code>ArticleManager.py</code></li>
+<li>新增 <code>WorkManager.py</code> 用于将 <code>./works/作品/</code> 下的 <code>metadata.json</code> 汇总生成 <code>works.json</code> 到根目录</li>
+<li>新增 <code>run.py</code> 用于启动 <code>ArticleManager.py</code> 和 <code>WorkManager.py</code></li>
+</ul>
+</li>
+</ul>
+<h2 id="heading-2">2026年4月4日 </h2>
+
+<h3 id="heading-3">V5.3.4</h3>
 <ul>
 <li><strong>优化</strong><ul>
 <li>优化代码结构和性能<ul>
@@ -99,11 +124,11 @@
 </li>
 <li><strong>修改</strong><ul>
 <li>页面宽度从 <code>850px</code> 改为 <code>1100px</code></li>
-<li>文章查看页宽度从 <code>1200px</code> 改为 <code>1400px</code></li>
+<li>文章查看页宽度从 <code>1200px</code> 改为 <code>1300px</code></li>
 </ul>
 </li>
 </ul>
-<h3 id="heading-3">V5.3.3</h3>
+<h3 id="heading-4">V5.3.3</h3>
 <ul>
 <li><strong>新增</strong><ul>
 <li>在网站页脚新增 <a href="https://opensource.org/licenses/MIT">MIT License</a> 和 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0">CC BY-NC-ND 4.0</a> 声明</li>
@@ -119,7 +144,7 @@
 </ul>
 </li>
 </ul>
-<h1 id="heading-4">2026年4月3日 V5.3.2  </h1>
+<h2 id="heading-5">2026年4月3日 V5.3.2  </h2>
 <ul>
 <li><strong>优化</strong><ul>
 <li>优化网站文章查看页的布局<ul>
@@ -138,7 +163,7 @@
 </ul>
 </li>
 </ul>
-<h1 id="heading-5">2026年4月2日 V5.3.1</h1>
+<h2 id="heading-6">2026年4月2日 V5.3.1</h2>
 <ul>
 <li><strong>优化</strong><ul>
 <li>优化 <code>style.css</code> 合并样式</li>
@@ -150,7 +175,7 @@
 </ul>
 </li>
 </ul>
-<h1 id="heading-6">2026年4月1日 V5.3.0</h1>
+<h2 id="heading-7">2026年4月1日 V5.3.0</h2>
 <ul>
 <li><strong>新增</strong><ul>
 <li>新增文章字数统计功能<ul>
@@ -177,7 +202,7 @@
 </ul>
 </li>
 </ul>
-<h2 id="heading-7">2026年3月31日 V5.2.0</h2>
+<h2 id="heading-8">2026年3月31日 V5.2.0</h2>
 <ul>
 <li><strong>新增</strong><ul>
 <li>增加外链提示功能（ <code>link.html</code> ）</li>
@@ -192,7 +217,7 @@
 </ul>
 </li>
 </ul>
-<h2 id="heading-8">2026年3月30日 V5.1.2</h2>
+<h2 id="heading-9">2026年3月30日 V5.1.2</h2>
 <ul>
 <li><strong>修改</strong><ul>
 <li>删除文章查看页无意义的标题强调<ul>
@@ -202,8 +227,8 @@
 </ul>
 </li>
 </ul>
-<h2 id="heading-9">2026年3月29日</h2>
-<h3 id="heading-10">V5.1.1</h3>
+<h2 id="heading-10">2026年3月29日</h2>
+<h3 id="heading-11">V5.1.1</h3>
 <ul>
 <li><strong>新增</strong><ul>
 <li>在页脚新增网站存活时间</li>
@@ -214,7 +239,7 @@
 </ul>
 </li>
 </ul>
-<h3 id="heading-11">V5.1.0</h3>
+<h3 id="heading-12">V5.1.0</h3>
 <ul>
 <li><strong>新增</strong><ul>
 <li>添加 <a href="https://www.busuanzi.cc/">不蒜子</a> 访问量统计系统</li>
@@ -236,7 +261,7 @@
 </ul>
 </li>
 </ul>
-<h3 id="heading-12">V5.0.1(.2)</h3>
+<h3 id="heading-13">V5.0.1(.2)</h3>
 <ul>
 <li><strong>新增</strong><ul>
 <li>添加自定义网站滚动条</li>
@@ -257,7 +282,7 @@
 </ul>
 </li>
 </ul>
-<h2 id="heading-13">2026年3月28日 V5.0.0</h2>
+<h2 id="heading-14">2026年3月28日 V5.0.0</h2>
 <ul>
 <li><strong>重大修改＆新增</strong><ul>
 <li>添加 <a href="https://twikoo.js.org/">Twikoo</a> 评论系统</li>
@@ -293,8 +318,6 @@
 </ul>
 </li>
 </ul>
-<h1 id="heading-14">↓ 此前更新 ↓</h1>
-
 <h2 id="heading-15">2026年03月17日-27日 V4.2.0</h2>
 <ul>
 <li><strong>新增</strong><ul>
@@ -863,7 +886,7 @@
 
     <script>
         // 将标题数据注入到全局变量
-        window.ARTICLE_HEADINGS = [{"level": 1, "text": "计划的更新", "id": "heading-0"}, {"level": 1, "text": "2026年4月4日", "id": "heading-1"}, {"level": 3, "text": "V5.3.4", "id": "heading-2"}, {"level": 3, "text": "V5.3.3", "id": "heading-3"}, {"level": 1, "text": "2026年4月3日 V5.3.2", "id": "heading-4"}, {"level": 1, "text": "2026年4月2日 V5.3.1", "id": "heading-5"}, {"level": 1, "text": "2026年4月1日 V5.3.0", "id": "heading-6"}, {"level": 2, "text": "2026年3月31日 V5.2.0", "id": "heading-7"}, {"level": 2, "text": "2026年3月30日 V5.1.2", "id": "heading-8"}, {"level": 2, "text": "2026年3月29日", "id": "heading-9"}, {"level": 3, "text": "V5.1.1", "id": "heading-10"}, {"level": 3, "text": "V5.1.0", "id": "heading-11"}, {"level": 3, "text": "V5.0.1(.2)", "id": "heading-12"}, {"level": 2, "text": "2026年3月28日 V5.0.0", "id": "heading-13"}, {"level": 1, "text": "↓ 此前更新 ↓", "id": "heading-14"}, {"level": 2, "text": "2026年03月17日-27日 V4.2.0", "id": "heading-15"}, {"level": 2, "text": "2026年03月15日 V4.1.0", "id": "heading-16"}, {"level": 2, "text": "2026年03月14日 V4.0.0", "id": "heading-17"}, {"level": 2, "text": "2026年03月08日 V3.4.0", "id": "heading-18"}, {"level": 2, "text": "2026年02月05日 V3.3.2", "id": "heading-19"}, {"level": 2, "text": "2026年01月06日 V3.3.1.1", "id": "heading-20"}, {"level": 2, "text": "2025年12月28日 V3.3.1", "id": "heading-21"}, {"level": 2, "text": "2025年12月27日 V3.3.0", "id": "heading-22"}, {"level": 2, "text": "2025年12月25日 V3.2.1", "id": "heading-23"}, {"level": 2, "text": "2025年12月23日 V3.2.0", "id": "heading-24"}, {"level": 2, "text": "2025年12月21日 V3.1.1", "id": "heading-25"}, {"level": 2, "text": "2025年12月20日 V3.1.0", "id": "heading-26"}, {"level": 2, "text": "2025年12月19日 V3.0.0", "id": "heading-27"}, {"level": 2, "text": "2025年12月6日", "id": "heading-28"}, {"level": 2, "text": "2025年12月3日", "id": "heading-29"}, {"level": 2, "text": "2025年12月2日", "id": "heading-30"}, {"level": 2, "text": "2025年11月30日", "id": "heading-31"}, {"level": 2, "text": "2025年11月23日", "id": "heading-32"}, {"level": 2, "text": "2025年10月22日", "id": "heading-33"}, {"level": 2, "text": "2025年10月22日", "id": "heading-34"}, {"level": 2, "text": "2025年9月8日", "id": "heading-35"}, {"level": 2, "text": "2025年9月7日", "id": "heading-36"}, {"level": 2, "text": "2025年5月30日", "id": "heading-37"}, {"level": 2, "text": "2025年5月24日", "id": "heading-38"}, {"level": 2, "text": "2025年5月16日", "id": "heading-39"}, {"level": 2, "text": "2025年5月2日", "id": "heading-40"}, {"level": 2, "text": "2025年5月1日", "id": "heading-41"}, {"level": 2, "text": "2025年4月30日", "id": "heading-42"}, {"level": 2, "text": "2025年4月29日", "id": "heading-43"}, {"level": 2, "text": "2025年4月27日", "id": "heading-44"}, {"level": 2, "text": "2025年4月26日", "id": "heading-45"}, {"level": 2, "text": "2025年3月14日", "id": "heading-46"}, {"level": 2, "text": "2025年3月13日", "id": "heading-47"}, {"level": 2, "text": "2025年3月12日", "id": "heading-48"}, {"level": 2, "text": "2025年3月11日", "id": "heading-49"}, {"level": 2, "text": "2025年3月3日", "id": "heading-50"}, {"level": 2, "text": "2025年3月2日", "id": "heading-51"}, {"level": 2, "text": "2025年3月1日", "id": "heading-52"}, {"level": 2, "text": "2025年2月28日", "id": "heading-53"}, {"level": 2, "text": "2025年2月23日", "id": "heading-54"}, {"level": 2, "text": "2025年2月22日", "id": "heading-55"}];
+        window.ARTICLE_HEADINGS = [{"level": 1, "text": "计划的更新", "id": "heading-0"}, {"level": 1, "text": "2026年4月4日 V6.0.0", "id": "heading-1"}, {"level": 2, "text": "2026年4月4日", "id": "heading-2"}, {"level": 3, "text": "V5.3.4", "id": "heading-3"}, {"level": 3, "text": "V5.3.3", "id": "heading-4"}, {"level": 2, "text": "2026年4月3日 V5.3.2", "id": "heading-5"}, {"level": 2, "text": "2026年4月2日 V5.3.1", "id": "heading-6"}, {"level": 2, "text": "2026年4月1日 V5.3.0", "id": "heading-7"}, {"level": 2, "text": "2026年3月31日 V5.2.0", "id": "heading-8"}, {"level": 2, "text": "2026年3月30日 V5.1.2", "id": "heading-9"}, {"level": 2, "text": "2026年3月29日", "id": "heading-10"}, {"level": 3, "text": "V5.1.1", "id": "heading-11"}, {"level": 3, "text": "V5.1.0", "id": "heading-12"}, {"level": 3, "text": "V5.0.1(.2)", "id": "heading-13"}, {"level": 2, "text": "2026年3月28日 V5.0.0", "id": "heading-14"}, {"level": 2, "text": "2026年03月17日-27日 V4.2.0", "id": "heading-15"}, {"level": 2, "text": "2026年03月15日 V4.1.0", "id": "heading-16"}, {"level": 2, "text": "2026年03月14日 V4.0.0", "id": "heading-17"}, {"level": 2, "text": "2026年03月08日 V3.4.0", "id": "heading-18"}, {"level": 2, "text": "2026年02月05日 V3.3.2", "id": "heading-19"}, {"level": 2, "text": "2026年01月06日 V3.3.1.1", "id": "heading-20"}, {"level": 2, "text": "2025年12月28日 V3.3.1", "id": "heading-21"}, {"level": 2, "text": "2025年12月27日 V3.3.0", "id": "heading-22"}, {"level": 2, "text": "2025年12月25日 V3.2.1", "id": "heading-23"}, {"level": 2, "text": "2025年12月23日 V3.2.0", "id": "heading-24"}, {"level": 2, "text": "2025年12月21日 V3.1.1", "id": "heading-25"}, {"level": 2, "text": "2025年12月20日 V3.1.0", "id": "heading-26"}, {"level": 2, "text": "2025年12月19日 V3.0.0", "id": "heading-27"}, {"level": 2, "text": "2025年12月6日", "id": "heading-28"}, {"level": 2, "text": "2025年12月3日", "id": "heading-29"}, {"level": 2, "text": "2025年12月2日", "id": "heading-30"}, {"level": 2, "text": "2025年11月30日", "id": "heading-31"}, {"level": 2, "text": "2025年11月23日", "id": "heading-32"}, {"level": 2, "text": "2025年10月22日", "id": "heading-33"}, {"level": 2, "text": "2025年10月22日", "id": "heading-34"}, {"level": 2, "text": "2025年9月8日", "id": "heading-35"}, {"level": 2, "text": "2025年9月7日", "id": "heading-36"}, {"level": 2, "text": "2025年5月30日", "id": "heading-37"}, {"level": 2, "text": "2025年5月24日", "id": "heading-38"}, {"level": 2, "text": "2025年5月16日", "id": "heading-39"}, {"level": 2, "text": "2025年5月2日", "id": "heading-40"}, {"level": 2, "text": "2025年5月1日", "id": "heading-41"}, {"level": 2, "text": "2025年4月30日", "id": "heading-42"}, {"level": 2, "text": "2025年4月29日", "id": "heading-43"}, {"level": 2, "text": "2025年4月27日", "id": "heading-44"}, {"level": 2, "text": "2025年4月26日", "id": "heading-45"}, {"level": 2, "text": "2025年3月14日", "id": "heading-46"}, {"level": 2, "text": "2025年3月13日", "id": "heading-47"}, {"level": 2, "text": "2025年3月12日", "id": "heading-48"}, {"level": 2, "text": "2025年3月11日", "id": "heading-49"}, {"level": 2, "text": "2025年3月3日", "id": "heading-50"}, {"level": 2, "text": "2025年3月2日", "id": "heading-51"}, {"level": 2, "text": "2025年3月1日", "id": "heading-52"}, {"level": 2, "text": "2025年2月28日", "id": "heading-53"}, {"level": 2, "text": "2025年2月23日", "id": "heading-54"}, {"level": 2, "text": "2025年2月22日", "id": "heading-55"}];
     </script>
     <script src="//cdn.busuanzi.cc/busuanzi/3.6.9/busuanzi.min.js" defer></script>
     <script src="/script.js"></script>

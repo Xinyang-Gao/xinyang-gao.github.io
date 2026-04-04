@@ -1,76 +1,112 @@
-﻿{
+{
   "works": [
     {
-      "id": 1,
-      "title": "数字统计计算器",
-      "description": "数学课上学完这一课，一时兴起，做了这个。计算一些数据的和、平均值、中位数、众数、方差、标准差、极差、极值",
-      "date": "2025-05-30",
-      "tag": ["HTML","编程","数学"],
-      "link": "/works/统计计算器.html"
+      "title": "文言文词汇闯关",
+      "description": "一个语文文言文词语闯关游戏",
+      "author": "高新炀",
+      "date": "2026-03-26",
+      "tag": [
+        "语文",
+        "HTML",
+        "学习"
+      ],
+      "link": "./works/文言文词汇闯关/"
     },
-{
-      "id": 2,
-      "title": "朗诵音乐",
-      "description": "一次语文朗诵比赛需要的朗诵背景，包含两个页面",
-      "date": "2025-10-22",
-      "tag": ["HTML","学习","语文"],
-      "link": "/works/朗诵1.html"
+    {
+      "title": "寒假作业管理",
+      "description": "一个任务追踪系统",
+      "author": "高新炀",
+      "date": "2026-02-05",
+      "tag": [
+        "寒假作业",
+        "HTML",
+        "学习"
+      ],
+      "link": "./works/寒假作业管理/"
     },
-{
-      "id": 3,
+    {
       "title": "车轮模拟",
       "description": "九上数学课本上的一个活动题。模拟圆形、椭圆、正方形、和长条车轮在平面上的运动情况",
+      "author": "高新炀",
       "date": "2025-11-23",
-      "tag": ["Scratch","学习","数学"],
-      "link": "/works/车轮模拟.html"
+      "tag": [
+        "Scratch",
+        "学习",
+        "数学"
+      ],
+      "link": "./works/车轮模拟/"
     },
     {
-      "id": 4,
-      "title": "【12-02】地理默写-中国主要铁路干线.pptx",
-      "description": "密码：00",
-      "date": "2024-11-30",
-      "tag": ["PPT","地理","学习"],
-      "link": "https://gaoxinyang.lanzouq.com/iFtCO2v06iqj"
+      "title": "朗诵音乐",
+      "description": "一次语文朗诵比赛需要的朗诵背景，包含两个页面",
+      "author": "高新炀",
+      "date": "2025-10-22",
+      "tag": [
+        "HTML",
+        "学习",
+        "语文"
+      ],
+      "link": "./works/朗诵音乐/"
     },
     {
-      "id": 5,
-      "title": "【12-09】地理默写-七年级上册第一章地球与地图.pptx",
-      "description": "密码：00",
-      "date": "2024-12-08",
-      "tag": ["PPT","地理","学习"],
-      "link": "https://gaoxinyang.lanzouq.com/iULVh2v06ira"
+      "title": "统计计算器",
+      "description": "数学课上学完这一课，一时兴起，做了这个。计算一些数据的和、平均值、中位数、众数、方差、标准差、极差、极值",
+      "author": "高新炀",
+      "date": "2025-05-30",
+      "tag": [
+        "HTML",
+        "编程",
+        "数学"
+      ],
+      "link": "./works/统计计算器/"
     },
     {
-      "id": 6,
-      "title": "【12-16】地理默写-七年级上期第二章-第一节.pptx",
-      "description": "密码：00",
-      "date": "2024-12-16",
-      "tag": ["PPT","地理","学习"],
-      "link": "https://gaoxinyang.lanzouq.com/iSfYZ2v06j0j"
-    },
-    {
-      "id": 7,
-      "title": "【12-23】地理默写-七年级上册P40-100.pptx",
-      "description": "密码：00",
+      "title": "地理默写-七年级上册P40-100",
+      "description": "原计划12月23日默写，但最终未默写 密码：00",
+      "author": "高新炀",
       "date": "2024-12-23",
-      "tag": ["PPT","地理","学习"],
+      "tag": [
+        "PPT",
+        "地理",
+        "学习"
+      ],
       "link": "https://gaoxinyang.lanzouq.com/iZHqv2v06kza"
     },
     {
-      "id": 8,
-      "title": "寒假作业.html",
-      "description": "一个任务追踪系统",
-      "date": "2026-02-05",
-      "tag": ["寒假作业","HTML","学习"],
-      "link": "/works/寒假作业.html"
+      "title": "地理默写-七年级上册第二章-第一节",
+      "description": "12月16日默写 密码：00",
+      "author": "高新炀",
+      "date": "2024-12-16",
+      "tag": [
+        "PPT",
+        "地理",
+        "学习"
+      ],
+      "link": "https://gaoxinyang.lanzouq.com/iSfYZ2v06j0j"
     },
     {
-      "id": 9,
-      "title": "game.html",
-      "description": "一个语文文言文词语闯关游戏",
-      "date": "2026-03-26",
-      "tag": ["语文","HTML","学习"],
-      "link": "/works/game.html"
+      "title": "地理默写-七年级上册第一章地球与地图",
+      "description": "12月9日默写 密码：00",
+      "author": "高新炀",
+      "date": "2024-12-08",
+      "tag": [
+        "PPT",
+        "地理",
+        "学习"
+      ],
+      "link": "https://gaoxinyang.lanzouq.com/iULVh2v06ira"
+    },
+    {
+      "title": "地理默写-中国主要铁路干线",
+      "description": "12月2日默写 密码：00",
+      "author": "高新炀",
+      "date": "2024-11-30",
+      "tag": [
+        "PPT",
+        "地理",
+        "学习"
+      ],
+      "link": "https://gaoxinyang.lanzouq.com/iFtCO2v06iqj"
     }
   ]
 }

@@ -16,9 +16,9 @@ except ImportError:
     sys.exit(1)
 
 # 配置路径
-BASE_DIR = Path(__file__).parent  # 脚本所在目录
-ARTICLES_DIR = BASE_DIR / "articles" / "articles"  # md文件所在目录
-OUTPUT_DIR = BASE_DIR / "articles"  # HTML输出目录（与css/js同目录）
+BASE_DIR = Path(__file__).parent                     # 脚本所在目录
+SOURCE_DIR = BASE_DIR / "articles" / "source"         # 分类源目录（内含各分类子目录）
+OUTPUT_DIR = BASE_DIR / "articles"                   # HTML输出目录（与css/js同目录）
 
 # 确保输出目录存在
 OUTPUT_DIR.mkdir(exist_ok=True)
@@ -28,7 +28,7 @@ def extract_metadata(content: str) -> tuple[dict[str, str], str]:
     """
     从markdown内容中提取元数据（---格式）
     返回: (metadata_dict, cleaned_content)
-    支持: title, date, description, tag, author 等字段
+    支持: title, date, description, tag, author, category 等字段
     """
     # 匹配 --- ... --- 格式的元数据（YAML front matter）
     meta_pattern = r'^\s*---\s*\n([\s\S]+?)\n\s*---\s*\n([\s\S]*)$'
@@ -157,13 +157,15 @@ def calculate_read_time(word_count: int) -> str:
 
 def create_html_page(title: str, date: str, content_html: str, headings_json: str,
                      description: str = "", tags: list = None, author: str = "",
-                     word_count: int = 0, read_time_str: str = None) -> str:
+                     word_count: int = 0, read_time_str: str = None,
+                     category: str = "") -> str:
     """
     生成完整的HTML页面，与主站样式保持一致，并集成Twikoo评论系统
     标签已从元数据区移至正文末尾，以 #标签 的形式显示
     评论区独立为卡片，与内容区分离
     元数据仅显示图标和数值，悬浮显示说明（通过 data-label 实现）
     新增阅读时间字段（若未提供则自动计算）
+    新增分类字段（由目录名决定，显示在元数据栏）
     """
     # 如果未提供阅读时间字符串，则基于字数计算
     if read_time_str is None:
@@ -197,8 +199,7 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
     if description:
         subtitle_html = f'<div class="article-subtitle">{description}</div>'
 
-    # 优化后的元数据区域：只显示图标和数值，悬浮时通过 data-label 显示说明
-    # 在字数后面增加阅读时间项
+    # 元数据区域：增加“分类”项
     meta_html = f'''
     <div class="article-meta" id="articleMeta">
         <div class="meta-grid">
@@ -209,6 +210,10 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
             <div class="meta-item" data-label="作者">
                 <i class="fas fa-user"></i>
                 <span class="meta-value">{author if author else "高新炀"}</span>
+            </div>
+            <div class="meta-item" data-label="分类">
+                <i class="fas fa-folder-open"></i>
+                <span class="meta-value">{html.escape(category) if category else "未分类"}</span>
             </div>
             <div class="meta-item" data-label="字数">
                 <i class="fas fa-file-alt"></i>
@@ -339,10 +344,11 @@ def count_words(text: str) -> int:
     return len(no_whitespace)
 
 
-def process_markdown_file(md_file_path: Path) -> dict:
+def process_markdown_file(md_file_path: Path, category: str = None) -> dict:
     """
     处理单个markdown文件，生成HTML
-    返回文章信息字典（包含阅读时间）
+    参数 category: 可选，指定文章分类。若不提供，则从文件所在目录名推断。
+    返回文章信息字典（包含阅读时间、分类等）
     """
     print(f"处理文件: {md_file_path}")
 
@@ -352,6 +358,15 @@ def process_markdown_file(md_file_path: Path) -> dict:
 
     # 提取元数据
     metadata, cleaned_content = extract_metadata(md_content)
+
+    # 确定分类：优先使用front matter中的category，否则使用传入的category或目录名
+    if 'category' in metadata and metadata['category']:
+        final_category = metadata['category']
+    elif category:
+        final_category = category
+    else:
+        # 从文件路径的父目录名获取（用于单文件处理时自动推断）
+        final_category = md_file_path.parent.name if md_file_path.parent != SOURCE_DIR else "未分类"
 
     # 获取元数据字段
     title = metadata.get('title', '未命名文章')
@@ -382,9 +397,10 @@ def process_markdown_file(md_file_path: Path) -> dict:
     # 将标题数据转换为JSON字符串
     headings_json = json.dumps(headings, ensure_ascii=False)
 
-    # 生成完整HTML页面（传入阅读时间）
+    # 生成完整HTML页面（传入阅读时间和分类）
     full_html = create_html_page(title, date, content_html, headings_json,
-                                 description, tags, author, word_count, read_time_str)
+                                 description, tags, author, word_count, read_time_str,
+                                 category=final_category)
 
     # 确定输出文件名
     output_filename = md_file_path.stem + '.html'
@@ -396,16 +412,17 @@ def process_markdown_file(md_file_path: Path) -> dict:
 
     print(f"  已生成: {output_path}")
 
-    # 返回文章信息用于JSON索引（添加 read_time 字段）
+    # 返回文章信息用于JSON索引（添加 category 和 read_time 字段）
     article_info = {
         'title': title,
         'date': date,
         'description': description,
         'author': author if author else '高新炀',
         'tags': tags,
+        'category': final_category,
         'url': f'/articles/{output_filename}',
         'word_count': word_count,
-        'read_time': read_time_str   # 新增阅读时间字段
+        'read_time': read_time_str
     }
 
     return article_info
@@ -413,33 +430,34 @@ def process_markdown_file(md_file_path: Path) -> dict:
 
 def process_all_markdown_files() -> list:
     """
-    处理articles目录下的所有markdown文件
+    处理 article/source/ 下所有分类子目录中的 markdown 文件
     返回所有文章信息列表
     """
-    if not ARTICLES_DIR.exists():
-        print(f"错误: 文章目录不存在 - {ARTICLES_DIR}")
+    if not SOURCE_DIR.exists():
+        print(f"错误: 文章源目录不存在 - {SOURCE_DIR}")
         return []
-
-    # 查找所有.md文件
-    md_files = list(ARTICLES_DIR.glob('*.md'))
-
-    if not md_files:
-        print(f"在 {ARTICLES_DIR} 中未找到任何.md文件")
-        return []
-
-    print(f"找到 {len(md_files)} 个markdown文件")
-    print("-" * 50)
 
     articles_info = []
-    for md_file in md_files:
-        try:
-            article_info = process_markdown_file(md_file)
-            articles_info.append(article_info)
-        except Exception as e:
-            print(f"  处理失败: {e}")
+    # 遍历 source 下的每个子目录（每个子目录代表一个分类）
+    for category_dir in SOURCE_DIR.iterdir():
+        if not category_dir.is_dir():
+            continue
+        category_name = category_dir.name
+        md_files = list(category_dir.glob('*.md'))
+        if not md_files:
+            print(f"分类 '{category_name}' 目录下没有 .md 文件，跳过")
+            continue
+        print(f"处理分类: {category_name} (共 {len(md_files)} 个文件)")
+        for md_file in md_files:
+            try:
+                article_info = process_markdown_file(md_file, category=category_name)
+                articles_info.append(article_info)
+            except Exception as e:
+                print(f"  处理失败: {e}")
+        print("-" * 30)
 
+    print(f"共找到 {len(articles_info)} 个markdown文件")
     print("-" * 50)
-    print(f"成功生成 {len(articles_info)} 个HTML文件")
 
     # 生成文章索引和JSON文件
     generate_index(articles_info)
@@ -465,7 +483,7 @@ def generate_articles_json(articles_info: list):
     """
     在根目录生成 articles.json 文件，包含所有文章的元数据
     移除了每个文章的 id 字段，添加了 total_word_count 总字数统计
-    同时包含每篇文章的 read_time 阅读时间
+    同时包含每篇文章的 read_time 阅读时间和 category 分类
     """
     if not articles_info:
         return
@@ -491,36 +509,11 @@ def generate_articles_json(articles_info: list):
     print(f"已生成文章JSON索引: {json_path}")
 
 
-def main():
-    """
-    主函数
-    """
-    print("=" * 50)
-    print("Markdown 转 HTML 工具")
-    print("=" * 50)
-
-    # 检查参数
-    if len(sys.argv) > 1:
-        # 如果指定了文件，只处理该文件
-        md_file_path = Path(sys.argv[1])
-        if md_file_path.exists() and md_file_path.suffix == '.md':
-            article_info = process_markdown_file(md_file_path)
-            # 更新单个文件的JSON（读取现有JSON并更新）
-            update_single_article_json(article_info)
-        else:
-            print(f"错误: 文件不存在或不是markdown文件 - {md_file_path}")
-    else:
-        # 处理所有文件
-        articles_info = process_all_markdown_files()
-
-    print("\n完成!")
-
-
 def update_single_article_json(new_article: dict):
     """
     更新单个文章的JSON索引
     确保删除旧文章中的 id 字段，并重新计算总字数
-    同时保留 read_time 字段
+    同时保留 read_time 和 category 字段
     """
     json_path = BASE_DIR / 'articles.json'
     articles_info = []
@@ -539,7 +532,7 @@ def update_single_article_json(new_article: dict):
     # 更新或添加文章
     found = False
     for i, article in enumerate(articles_info):
-        # 通过 url 或 title+date 来判断是否为同一篇文章（这里用 url 作为唯一标识）
+        # 通过 url 作为唯一标识
         if article.get('url') == new_article.get('url'):
             articles_info[i] = new_article
             found = True
@@ -563,6 +556,37 @@ def update_single_article_json(new_article: dict):
         json.dump(json_data, f, ensure_ascii=False, indent=2)
 
     print(f"已更新文章JSON索引: {json_path}")
+
+
+def main():
+    """
+    主函数
+    """
+    print("=" * 50)
+    print("Markdown 转 HTML 工具")
+    print("=" * 50)
+
+    # 检查参数
+    if len(sys.argv) > 1:
+        # 如果指定了文件，只处理该文件
+        md_file_path = Path(sys.argv[1])
+        if md_file_path.exists() and md_file_path.suffix == '.md':
+            # 尝试从文件路径推断分类（父目录名）
+            # 若文件位于 source 的某个子目录下，则分类为子目录名；否则为"未分类"
+            if SOURCE_DIR in md_file_path.parents and md_file_path.parent != SOURCE_DIR:
+                inferred_category = md_file_path.parent.name
+            else:
+                inferred_category = "未分类"
+            article_info = process_markdown_file(md_file_path, category=inferred_category)
+            # 更新单个文件的JSON
+            update_single_article_json(article_info)
+        else:
+            print(f"错误: 文件不存在或不是markdown文件 - {md_file_path}")
+    else:
+        # 处理所有文件
+        articles_info = process_all_markdown_files()
+
+    print("\n完成!")
 
 
 if __name__ == "__main__":
