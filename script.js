@@ -1,7 +1,10 @@
-// 性能监控器
+/**
+ * 性能监控器 - 现代化重构版本
+ */
 class PerformanceMonitor {
     constructor() {
         this.timers = new Map();
+        this.metrics = [];
     }
 
     start(label) {
@@ -18,18 +21,29 @@ class PerformanceMonitor {
             return;
         }
         const startTime = this.timers.get(label);
-        const duration = performance.now() - startTime;
+        const duration = performance.now() - startTime;        
         if (duration > 100) {
             console.log(`⏱️ ${label}: ${duration.toFixed(2)}ms (慢)`);
         }
+        this.metrics.push({ label, duration, timestamp: Date.now() });
         this.timers.delete(label);
         return duration;
+    }
+
+    getMetrics() {
+        return this.metrics.slice(-50); // 最近50条记录
+    }
+
+    clearMetrics() {
+        this.metrics = [];
     }
 }
 
 const perf = new PerformanceMonitor();
 
-// 通用工具
+/**
+ * 通用工具类
+ */
 class Utils {
     static getUrlParam(name) {
         return new URLSearchParams(window.location.search).get(name);
@@ -67,9 +81,38 @@ class Utils {
         }
         return [];
     }
+    
+    // 防抖
+    static debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+    
+    // 节流
+    static throttle(func, limit) {
+        let inThrottle;
+        return function() {
+            const args = arguments;
+            const context = this;
+            if (!inThrottle) {
+                func.apply(context, args);
+                inThrottle = true;
+                setTimeout(() => inThrottle = false, limit);
+            }
+        };
+    }
 }
 
-// 数据管理器
+/**
+ * 数据管理器
+ */
 class DataManager {
     static TYPE_LABEL = { works: '作品', articles: '文章' };
 
@@ -121,7 +164,9 @@ class DataManager {
     }
 }
 
-// 问候语
+/**
+ * 问候语
+ */
 function updateDynamicGreeting() {
     const h = new Date().getHours();
     const slots = [
@@ -139,11 +184,13 @@ function updateDynamicGreeting() {
     if (el) {
         el.textContent = greeting;
         el.style.fontWeight = 'bold';
-        el.style.color = ''; 
+        el.style.color = '';
     }
 }
 
-// UI 渲染器
+/**
+ * UI 渲染器
+ */
 class UIRenderer {
     static generateTagsHTML(item) {
         const tags = Utils.getTags(item);
@@ -162,45 +209,45 @@ class UIRenderer {
         });
     }
 
-static generateListItem(item, type, index) {
-    const tags = UIRenderer.generateTagsHTML(item);
-    let dataAttr = '';
-    if (type === 'article') {
-        const itemUrl = item.url || '';
-        dataAttr = `data-url="${this.escapeHtml(itemUrl)}"`;
-    } else {
-        const itemId = item.id || item.title;
-        dataAttr = `data-id="${this.escapeHtml(String(itemId))}"`;
-    }
+    static generateListItem(item, type, index) {
+        const tags = UIRenderer.generateTagsHTML(item);
+        let dataAttr = '';
+        if (type === 'article') {
+            const itemUrl = item.url || '';
+            dataAttr = `data-url="${this.escapeHtml(itemUrl)}"`;
+        } else {
+            const itemId = item.id || item.title;
+            dataAttr = `data-id="${this.escapeHtml(String(itemId))}"`;
+        }
 
-    // 文章专用：作者、字数、阅读时间
-    let metaInfoHtml = '';
-    if (type === 'article') {
-        const author = item.author ? this.escapeHtml(item.author) : '未知作者';
-        const wordCount = item.word_count ? `${item.word_count} 字` : '';
-        const readTime = item.read_time ? this.escapeHtml(item.read_time) : '';
-        metaInfoHtml = `
-            <div class="article-meta-info">
-                <span class="article-author"> ${author}</span>
-                ${wordCount ? `<span class="article-word-count"> ${wordCount}</span>` : ''}
-                ${readTime ? `<span class="article-read-time"><i class="far fa-clock"></i> ${readTime}</span>` : ''}
-            </div>
-        `;
-    }
+        // 文章专用：作者、字数、阅读时间
+        let metaInfoHtml = '';
+        if (type === 'article') {
+            const author = item.author ? this.escapeHtml(item.author) : '未知作者';
+            const wordCount = item.word_count ? `${item.word_count} 字` : '';
+            const readTime = item.read_time ? this.escapeHtml(item.read_time) : '';
+            metaInfoHtml = `
+                <div class="article-meta-info">
+                    <span class="article-author"> ${author}</span>
+                    ${wordCount ? `<span class="article-word-count"> ${wordCount}</span>` : ''}
+                    ${readTime ? `<span class="article-read-time"><i class="far fa-clock"></i> ${readTime}</span>` : ''}
+                </div>
+            `;
+        }
 
-    return `
-    <div class="list-item" ${dataAttr} data-type="${type}" data-index="${index}">
-        <div class="list-item-header">
-            <h3 class="list-item-title">${this.escapeHtml(item.title)}</h3>
-            <div class="list-item-meta">
-                <span class="list-item-date">${this.escapeHtml(item.date)}</span>
+        return `
+        <div class="list-item" ${dataAttr} data-type="${type}" data-index="${index}">
+            <div class="list-item-header">
+                <h3 class="list-item-title">${this.escapeHtml(item.title)}</h3>
+                <div class="list-item-meta">
+                    <span class="list-item-date">${this.escapeHtml(item.date)}</span>
+                </div>
             </div>
-        </div>
-        ${metaInfoHtml}
-        <p class="list-item-description">${this.escapeHtml(item.description || '')}</p>
-        ${tags}
-    </div>`;
-}
+            ${metaInfoHtml}
+            <p class="list-item-description">${this.escapeHtml(item.description || '')}</p>
+            ${tags}
+        </div>`;
+    }
 
     static generateListHTML(data, type) {
         perf.start(`生成${DataManager.TYPE_LABEL[type]}HTML`);
@@ -242,7 +289,9 @@ static generateListItem(item, type, index) {
     }
 }
 
-// 搜索控制器
+/**
+ * 搜索控制器
+ */
 class SearchController {
     static instances = new Map();
 
@@ -270,17 +319,12 @@ class SearchController {
                 return;
             }
 
-            this.input.addEventListener('input', () => this.debounceSearch());
+            this.input.addEventListener('input', Utils.debounce(() => this.handleSearch(), 300));
             this.field.addEventListener('change', () => this.handleSearch());
 
             this.updateTagFilters();
             this.handleSearch();
         });
-    }
-
-    debounceSearch() {
-        clearTimeout(this.debounceTimer);
-        this.debounceTimer = setTimeout(() => this.handleSearch(), 300);
     }
 
     handleSearch() {
@@ -428,14 +472,16 @@ class SearchController {
     }
 
     destroy() {
-        if (this.input) this.input.removeEventListener('input', this.debounceSearch);
+        if (this.input) this.input.removeEventListener('input', this.handleSearch);
         if (this.field) this.field.removeEventListener('change', this.handleSearch);
         clearTimeout(this.debounceTimer);
         SearchController.instances.delete(this.page);
     }
 }
 
-// 页面管理器
+/**
+ * 页面管理器
+ */
 class PageManager {
     static pageConfig = {
         about: { title: '关于', type: 'normal' },
@@ -530,18 +576,18 @@ class PageManager {
         }
     }
 
-static handleListItemClick(e) {
-    const item = e.target.closest('.list-item');
-    if (!item) return;
-    const type = item.dataset.type;
-    if (type === 'work') {
-        const itemId = item.dataset.id;
-        if (itemId) PageManager.handleWorkItemClick(itemId);
-    } else if (type === 'article') {
-        const itemUrl = item.dataset.url;
-        if (itemUrl) PageManager.handleArticleItemClick(itemUrl);
+    static handleListItemClick(e) {
+        const item = e.target.closest('.list-item');
+        if (!item) return;
+        const type = item.dataset.type;
+        if (type === 'work') {
+            const itemId = item.dataset.id;
+            if (itemId) PageManager.handleWorkItemClick(itemId);
+        } else if (type === 'article') {
+            const itemUrl = item.dataset.url;
+            if (itemUrl) PageManager.handleArticleItemClick(itemUrl);
+        }
     }
-}
 
     static handleWorkItemClick(workId) {
         const data = this.getData('works');
@@ -551,13 +597,13 @@ static handleListItemClick(e) {
         }
     }
 
-static handleArticleItemClick(articleUrl) {
-    if (articleUrl) {
-        window.open(articleUrl, '_blank');
-    } else {
-        console.warn('文章链接无效');
+    static handleArticleItemClick(articleUrl) {
+        if (articleUrl) {
+            window.open(articleUrl, '_blank');
+        } else {
+            console.warn('文章链接无效');
+        }
     }
-}
 
     static getData(type) {
         const raw = localStorage.getItem(`${type}Data`);
@@ -568,77 +614,79 @@ static handleArticleItemClick(articleUrl) {
         } catch { return null; }
     }
 
-static showWorkDetails(work) {
-    // 如果已有弹窗或遮罩，先关闭
-    if (this.currentModalClose) {
-        this.currentModalClose();
-    }
-
-    // 创建遮罩层
-    const overlay = document.createElement('div');
-    overlay.className = 'modal-overlay';
-    document.body.appendChild(overlay);
-
-    // 创建弹窗容器
-    const envelope = document.createElement('div');
-    envelope.className = 'work-details-envelope';
-    const tags = work.tags || work.tag;
-    const tagsHtml = tags && tags.length ? 
-        `<div class="work-details-tag"><strong>标签:</strong>${tags.map(t => `<span class="tag">${UIRenderer.escapeHtml(t)}</span>`).join('')}</div>` : '';
-    envelope.innerHTML = `
-        <div class="work-details-close">✕</div>
-        <div class="work-details-content">
-            <h2 class="work-details-title">${UIRenderer.escapeHtml(work.title)}</h2>
-            <p class="work-details-description">${UIRenderer.escapeHtml(work.description || '')}</p>
-            ${tagsHtml}
-            ${work.link ? `<a href="${work.link}" target="_blank" class="work-details-link">查看</a>` : ''}
-        </div>
-    `;
-    document.body.appendChild(envelope);
-
-    // 关闭函数（包含清理工作）
-    const closeModal = () => {
-        if (envelope.classList.contains('closing')) return;
-        envelope.classList.add('closing');
-        overlay.classList.remove('active');
-        setTimeout(() => {
-            envelope.remove();
-            overlay.remove();
-            // 移除全局事件监听
-            document.removeEventListener('keydown', escHandler);
-            if (this.currentModalClose === closeModal) {
-                this.currentModalClose = null;
-            }
-        }, 400);
-    };
-
-    // ESC 键关闭
-    const escHandler = (e) => {
-        if (e.key === 'Escape') {
-            closeModal();
+    static showWorkDetails(work) {
+        // 如果已有弹窗或遮罩，先关闭
+        if (this.currentModalClose) {
+            this.currentModalClose();
         }
-    };
-    document.addEventListener('keydown', escHandler);
 
-    // 点击遮罩关闭
-    overlay.addEventListener('click', closeModal);
+        // 创建遮罩层
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        document.body.appendChild(overlay);
 
-    // 点击关闭按钮关闭
-    const closeBtn = envelope.querySelector('.work-details-close');
-    closeBtn.addEventListener('click', closeModal);
+        // 创建弹窗容器
+        const envelope = document.createElement('div');
+        envelope.className = 'work-details-envelope';
+        const tags = work.tags || work.tag;
+        const tagsHtml = tags && tags.length ? 
+            `<div class="work-details-tag"><strong>标签:</strong>${tags.map(t => `<span class="tag">${UIRenderer.escapeHtml(t)}</span>`).join('')}</div>` : '';
+        envelope.innerHTML = `
+            <div class="work-details-close">✕</div>
+            <div class="work-details-content">
+                <h2 class="work-details-title">${UIRenderer.escapeHtml(work.title)}</h2>
+                <p class="work-details-description">${UIRenderer.escapeHtml(work.description || '')}</p>
+                ${tagsHtml}
+                ${work.link ? `<a href="${work.link}" target="_blank" class="work-details-link">查看</a>` : ''}
+            </div>
+        `;
+        document.body.appendChild(envelope);
 
-    // 存储当前关闭函数，供下次调用时清理
-    this.currentModalClose = closeModal;
+        // 关闭函数（包含清理工作）
+        const closeModal = () => {
+            if (envelope.classList.contains('closing')) return;
+            envelope.classList.add('closing');
+            overlay.classList.remove('active');
+            setTimeout(() => {
+                envelope.remove();
+                overlay.remove();
+                // 移除全局事件监听
+                document.removeEventListener('keydown', escHandler);
+                if (this.currentModalClose === closeModal) {
+                    this.currentModalClose = null;
+                }
+            }, 400);
+        };
 
-    // 显示弹窗动画
-    requestAnimationFrame(() => {
-        envelope.classList.add('active');
-        overlay.classList.add('active');
-    });
+        // ESC 键关闭
+        const escHandler = (e) => {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        };
+        document.addEventListener('keydown', escHandler);
+
+        // 点击遮罩关闭
+        overlay.addEventListener('click', closeModal);
+
+        // 点击关闭按钮关闭
+        const closeBtn = envelope.querySelector('.work-details-close');
+        closeBtn.addEventListener('click', closeModal);
+
+        // 存储当前关闭函数，供下次调用时清理
+        this.currentModalClose = closeModal;
+
+        // 显示弹窗动画
+        requestAnimationFrame(() => {
+            envelope.classList.add('active');
+            overlay.classList.add('active');
+        });
+    }
 }
-}
 
-// 导航管理器
+/**
+ * 导航管理器
+ */
 class NavigationManager {
     static initMobileMenuToggle() {
         const toggle = document.querySelector('.mobile-toggle');
@@ -739,20 +787,24 @@ class NavigationManager {
     }
 }
 
-// 滚动管理器
+/**
+ * 滚动管理器
+ */
 class ScrollManager {
     static initBackToTopButton() {
         const btn = document.getElementById('backToTopBtn');
         if (!btn) return;
         const threshold = 300;
-        window.addEventListener('scroll', () => {
+        window.addEventListener('scroll', Utils.throttle(() => {
             btn.classList.toggle('show', window.scrollY > threshold);
-        }, { passive: true });
+        }, 100), { passive: true });
         btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
     }
 }
 
-// 加载导航栏
+/**
+ * 加载导航栏
+ */
 async function loadNavbar() {
     try {
         const response = await fetch('/navbar.html');
@@ -770,7 +822,9 @@ async function loadNavbar() {
     }
 }
 
-// ==================== 自定义光标 ====================
+/**
+ * 自定义光标
+ */
 class CustomCursor {
   constructor(options = {}) {
     // 移动设备自动禁用
@@ -1003,7 +1057,9 @@ class CustomCursor {
   }
 }
 
-// 加载全局页脚
+/**
+ * 加载全局页脚
+ */
 async function loadFooter() {
   try {
     const response = await fetch('/footer.html');
@@ -1020,7 +1076,9 @@ async function loadFooter() {
   }
 }
 
-// ==================== 网站存活时间计时器 ====================
+/**
+ * 网站存活时间计时器
+ */
 let siteAgeInterval = null;
 
 /**
@@ -1063,6 +1121,84 @@ function startSiteAgeUpdater() {
     siteAgeInterval = setInterval(updateAge, 1000); // 每秒刷新
 }
 
+/**
+ * 外链跳转确认管理器
+ */
+class ExternalLinkManager {
+    constructor() {
+        // 排除本网站的域名列表（根据实际情况修改）
+        this.internalDomains = [
+            window.location.hostname,// 当前域名
+            'localhost',
+            '127.0.0.1',
+            'xinyang-gao.github.io',
+            'www.xinyang-gao.github.io'
+        ];
+        
+        this.init();
+    }
+
+    /**
+     * 判断链接是否为外部链接
+     * @param {string} url - 链接地址
+     * @returns {boolean} 是否为外部链接
+     */
+    isExternalLink(url) {
+        if (!url || url.startsWith('#') || url.startsWith('javascript:')) {
+            return false;
+        }
+        
+        try {
+            const linkUrl = new URL(url, window.location.href);
+            // 检查协议是否为 http 或 https
+            if (!['http:', 'https:'].includes(linkUrl.protocol)) {
+                return false;
+            }
+            // 检查域名是否属于内部域名
+            return !this.internalDomains.includes(linkUrl.hostname);
+        } catch (e) {
+            // URL 解析失败，如果是相对路径则视为内部链接
+            return false;
+        }
+    }
+
+    /**
+     * 处理链接点击事件
+     * @param {Event} e - 点击事件
+     */
+    handleLinkClick(e) {
+        let target = e.target.closest('a');
+        if (!target) return;
+        
+        const href = target.getAttribute('href');
+        if (!href) return;
+        
+        if (this.isExternalLink(href)) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            // 在新标签页打开确认页面
+            const confirmUrl = `/link.html?url=${encodeURIComponent(href)}`;
+            window.open(confirmUrl, '_blank', 'noopener,noreferrer');
+        }
+    }
+
+    /**
+     * 初始化：监听全局点击事件
+     */
+    init() {
+        // 使用事件委托监听所有链接点击
+        document.addEventListener('click', (e) => {
+            this.handleLinkClick(e);
+        });
+        
+        // 对于动态加载的内容（如通过 AJAX 加载的文章列表），
+        // 事件委托已经可以处理，无需额外操作
+        
+        console.log('外链跳转确认管理器已启动');
+    }
+}
+
 // 在页面完全加载后初始化光标（确保导航栏等已加载）
 document.addEventListener('DOMContentLoaded', () => {
   // 延迟一小段时间，保证 DOM 完整
@@ -1075,7 +1211,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // 主初始化
 document.addEventListener('DOMContentLoaded', async () => {
-    ExternalLinkManager = new ExternalLinkManager();
+    window.ExternalLinkManager = new ExternalLinkManager();
     // 预先设置主题，避免闪烁（导航栏加载前）
     const savedTheme = localStorage.getItem('theme');
     const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -1130,79 +1266,5 @@ async function initializeWorksPage() {
         }
     } catch (e) {
         console.error('加载作品数据失败:', e);
-    }
-}
-class ExternalLinkManager {
-    constructor() {
-        // 排除本网站的域名列表（根据实际情况修改）
-        this.internalDomains = [
-            window.location.hostname,           // 当前域名
-            'localhost',
-            '127.0.0.1',
-            'xinyang-gao.github.io',                   // 请替换为您的实际域名
-            'www.xinyang-gao.github.io'
-        ];
-        
-        this.init();
-    }
-
-    /**
-     * 判断链接是否为外部链接
-     * @param {string} url - 链接地址
-     * @returns {boolean} 是否为外部链接
-     */
-    isExternalLink(url) {
-        if (!url || url.startsWith('#') || url.startsWith('javascript:')) {
-            return false;
-        }
-        
-        try {
-            const linkUrl = new URL(url, window.location.href);
-            // 检查协议是否为 http 或 https
-            if (!['http:', 'https:'].includes(linkUrl.protocol)) {
-                return false;
-            }
-            // 检查域名是否属于内部域名
-            return !this.internalDomains.includes(linkUrl.hostname);
-        } catch (e) {
-            // URL 解析失败，如果是相对路径则视为内部链接
-            return false;
-        }
-    }
-
-    /**
-     * 处理链接点击事件
-     * @param {Event} e - 点击事件
-     */
-handleLinkClick(e) {
-    let target = e.target.closest('a');
-    if (!target) return;
-    
-    const href = target.getAttribute('href');
-    if (!href) return;
-    
-    if (this.isExternalLink(href)) {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        // 在新标签页打开确认页面
-        const confirmUrl = `/link.html?url=${encodeURIComponent(href)}`;
-        window.open(confirmUrl, '_blank', 'noopener,noreferrer');
-    }
-}
-
-    /**
-     * 初始化：监听全局点击事件
-     */
-    init() {
-        // 使用事件委托监听所有链接点击
-        document.addEventListener('click', (e) => {
-            this.handleLinkClick(e);
-        });
-        
-        // 对于动态加载的内容（如通过 AJAX 加载的文章列表），
-        // 事件委托已经可以处理，无需额外操作
-        
-        console.log('外链跳转确认管理器已启动');
     }
 }
