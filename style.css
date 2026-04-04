@@ -1411,3 +1411,61 @@ body.mouse-outside .custom-cursor {
 .list-item-word-count {
   margin-right: 8px;
 }
+
+.license-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+}
+.license-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: var(--tag-bg, #f0eae1);
+  color: var(--text-color, #3a3a3a);
+  border: 1px solid var(--border-color, #e0d6cc);
+  border-radius: 40px;
+  padding: 4px 14px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  backdrop-filter: blur(2px);
+}
+.license-badge i {
+  font-size: 0.85rem;
+  color: var(--accent-color, #a55860);
+}
+.license-badge:hover {
+  background-color: var(--accent-color, #a55860);
+  color: white;
+  border-color: var(--accent-color, #a55860);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+.license-badge:hover i {
+  color: white;
+}
+[data-theme="dark"] .license-badge {
+  background-color: #2a2a2a;
+  border-color: #555;
+}
+[data-theme="dark"] .license-badge:hover {
+  background-color: var(--accent-color);
+  color: #1e1e1e;
+}
+[data-theme="dark"] .license-badge:hover i {
+  color: #1e1e1e;
+}
+/* 移动端微调 */
+@media (max-width: 768px) {
+  .license-badges {
+    justify-content: center;
+    margin-top: 12px;
+  }
+  .license-badge {
+    padding: 3px 12px;
+    font-size: 0.75rem;
+  }
+}

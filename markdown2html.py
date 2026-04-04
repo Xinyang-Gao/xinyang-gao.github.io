@@ -297,6 +297,8 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
         </div>
     </div>
 
+  <div id="footer-placeholder"></div>
+
     <script>
         // 将标题数据注入到全局变量
         window.ARTICLE_HEADINGS = {headings_json};
