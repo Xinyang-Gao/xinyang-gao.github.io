@@ -8,14 +8,14 @@
   position: relative;
 }
 
-/* 侧边目录 - 优化滚动条与粘滞效果 */
+/* 侧边目录 - 与主站卡片风格统一 */
 .toc-container {
   width: 26%;
-  background: var(--bg-color);
+  background: var(--surface-color-secondary);
   border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-container);
+  border-radius: var(--radius-lg);
   padding: 24px 20px;
-  box-shadow: var(--shadow-main);
+  box-shadow: var(--shadow-md), var(--shadow-offset);
   position: sticky;
   top: 94px;
   align-self: flex-start;
@@ -112,21 +112,25 @@
   100% { opacity: 1; transform: translateX(0); }
 }
 
-/* ========== 文章卡片 ========== */
+/* ========== 文章卡片 - 同步主站卡片样式 ========== */
 .article-content-wrapper {
-  background: white;
+  background: var(--surface-color);
   border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-container);
-  box-shadow: var(--shadow-main), var(--shadow-offset), -var(--shadow-offset);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md), var(--shadow-offset);
   padding: 48px;
   transition: all var(--transition-normal);
 }
+
 .article-content-wrapper:hover {
-  box-shadow: 0 25px 40px -12px rgba(0, 0, 0, 0.2);
-  transform: translateY(-3px);
+  border-color: var(--card-border-hover);
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-6px);
+  background: var(--surface-color-secondary);
 }
+
 [data-theme="dark"] .article-content-wrapper {
-  background: #222;
+  background: var(--surface-color);
 }
 
 /* 文章头部 */
@@ -384,21 +388,27 @@
   border-color: var(--accent-color);
 }
 
-/* 评论卡片 */
+/* ========== 评论卡片 - 同步主站卡片样式 ========== */
 .comments-card {
-  background: white;
+  background: var(--surface-color);
   border: 1px solid var(--border-color);
-  border-radius: var(--border-radius-container);
-  box-shadow: var(--shadow-main);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md), var(--shadow-offset);
   padding: 32px 36px;
-  transition: box-shadow 0.3s, transform 0.2s;
+  transition: all var(--transition-normal);
 }
+
 .comments-card:hover {
-  box-shadow: 0 20px 32px -12px rgba(0, 0, 0, 0.12);
+  border-color: var(--card-border-hover);
+  box-shadow: var(--shadow-hover);
+  transform: translateY(-4px);
+  background: var(--surface-color-secondary);
 }
+
 [data-theme="dark"] .comments-card {
-  background: #222;
+  background: var(--surface-color);
 }
+
 .comments-container h3 {
   font-size: 1.4rem;
   margin-bottom: 1.2rem;
@@ -805,7 +815,7 @@
   margin-top: 8px;
   margin-bottom: 1.2em;
   line-height: 1.4;
-  font-style: italic;    /* 可选：斜体更优雅 */
+  font-style: italic;
   letter-spacing: 0.3px;
 }
 
@@ -817,7 +827,7 @@
 /* 确保图片本身底部无多余间距 */
 .article-body img {
   display: block;
-  margin: 1.5em auto 0 auto;  /* 下边距留给描述文字 */
+  margin: 1.5em auto 0 auto;
   max-width: 100%;
   height: auto;
 }
