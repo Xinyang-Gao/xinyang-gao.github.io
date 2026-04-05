@@ -285,6 +285,57 @@ class UIRenderer {
 }
 
 /**
+ * 滚动视口渐入动画管理器
+ */
+class ScrollReveal {
+    constructor() {
+        this.observer = null;
+        this.initObserver();
+    }
+
+    initObserver() {
+        if (this.observer) {
+            this.observer.disconnect();
+        }
+        this.observer = new IntersectionObserver(
+            (entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('revealed');
+                        this.observer.unobserve(entry.target);
+                    }
+                });
+            },
+            { threshold: 0.2, rootMargin: '0px 0px -20px 0px' }
+        );
+        this.observeItems();
+    }
+
+    observeItems() {
+        const items = document.querySelectorAll('.list-item');
+        items.forEach(item => {
+            if (!item.classList.contains('revealed')) {
+                this.observer.observe(item);
+            }
+        });
+    }
+
+    refresh() {
+        this.initObserver();
+    }
+}
+
+let scrollRevealInstance = null;
+
+function initScrollReveal() {
+    if (!scrollRevealInstance) {
+        scrollRevealInstance = new ScrollReveal();
+    } else {
+        scrollRevealInstance.refresh();
+    }
+}
+
+/**
  * 搜索控制器
  */
 class SearchController {
@@ -452,6 +503,8 @@ class SearchController {
         if (container) {
             container.innerHTML = html;
             this.setupItemsInteraction();
+            // 刷新滚动动画
+            if (typeof initScrollReveal === 'function') initScrollReveal();
         }
     }
 
@@ -558,6 +611,8 @@ class PageManager {
         if (['works', 'articles'].includes(page)) new SearchController(page);
         if (page === 'index') updateDynamicGreeting();
         PageManager.setupListItemsInteraction();
+        // 刷新滚动动画
+        if (typeof initScrollReveal === 'function') initScrollReveal();
     }
 
     static setupListItemsInteraction() {
@@ -1162,6 +1217,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     NavigationManager.initMobileMenuToggle();
     ScrollManager.initBackToTopButton();
     document.body.setAttribute('data-loaded', 'true');
+    
+    // 启动滚动渐入动画
+    initScrollReveal();
 });
 
 async function initializeArticlesPage() {
@@ -1172,6 +1230,8 @@ async function initializeArticlesPage() {
         if (container) {
             container.innerHTML = html;
             new SearchController('articles');
+            // 确保滚动动画绑定
+            initScrollReveal();
         }
     } catch (e) {
         console.error('加载文章数据失败:', e);
@@ -1186,6 +1246,8 @@ async function initializeWorksPage() {
         if (container) {
             container.innerHTML = html;
             new SearchController('works');
+            // 确保滚动动画绑定
+            initScrollReveal();
         }
     } catch (e) {
         console.error('加载作品数据失败:', e);

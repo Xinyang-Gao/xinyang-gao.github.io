@@ -4,7 +4,18 @@ class ArticlePageManager {
         this.scrollTimer = null;
         this.observer = null;
         
-        this.init();
+    this.viewerActive = false;
+    this.currentIndex = 0;
+    this.galleryImages = [];
+    this.viewerElement = null;
+    this.viewerImage = null;
+    this.viewerWrapper = null;
+    this.transform = { scale: 1, translateX: 0, translateY: 0 };
+    this.isDragging = false;
+    this.dragStart = { x: 0, y: 0 };
+    this.currentTransform = { x: 0, y: 0, scale: 1 };
+    
+    this.init();
     }
 
     /**
@@ -200,71 +211,316 @@ class ArticlePageManager {
     /**
      * 初始化图片功能
      */
-    initImageFeatures() {
-        const images = document.querySelectorAll('#articleBody img');
-        images.forEach(img => {
-            img.classList.add('lazy-image', 'loaded');
-            img.addEventListener('click', (e) => {
-                e.stopPropagation();
-                this.showImageModal(img);
-            });
+initImageFeatures() {
+    const images = document.querySelectorAll('#articleBody img');
+    // 收集所有图片信息（src, alt）
+    this.galleryImages = Array.from(images).map(img => ({
+        src: img.src,
+        alt: img.alt || img.title || ''
+    }));
+    
+    images.forEach((img, index) => {
+        img.classList.add('lazy-image', 'loaded');
+        // 绑定点击事件，打开查看器
+        img.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.openImageViewer(index);
         });
-        
-        this.setupImageModal();
-    }
+    });
+}
 
-    /**
-     * 设置图片预览模态框
-     */
-    setupImageModal() {
-        const modal = document.getElementById('imageModal');
-        const closeBtn = document.querySelector('.close');
-        
-        if (!modal) return;
-        
-        closeBtn?.addEventListener('click', () => this.hideImageModal());
-        
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                this.hideImageModal();
-            }
-        });
-        
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && modal.style.display === 'block') {
-                this.hideImageModal();
-            }
-        });
-    }
-
-    /**
-     * 显示图片模态框
-     */
-    showImageModal(imgElement) {
-        const modal = document.getElementById('imageModal');
-        const modalImg = document.getElementById('modalImage');
-        const captionText = document.getElementById('imageCaption');
-        
-        modal.style.display = 'block';
-        modalImg.src = imgElement.src;
-        captionText.textContent = imgElement.alt || imgElement.title || '';
-        
-        sessionStorage.setItem('scrollPositionBeforeModal', window.scrollY);
-    }
-
-    /**
-     * 隐藏图片模态框
-     */
-    hideImageModal() {
-        const modal = document.getElementById('imageModal');
-        modal.style.display = 'none';
-        
-        const savedPosition = sessionStorage.getItem('scrollPositionBeforeModal');
-        if (savedPosition) {
-            window.scrollTo(0, parseInt(savedPosition));
-            sessionStorage.removeItem('scrollPositionBeforeModal');
+/**
+ * 打开图片查看器
+ */
+openImageViewer(index) {
+    this.currentIndex = index;
+    this.transform = { scale: 1, translateX: 0, translateY: 0 };
+    this.currentTransform = { x: 0, y: 0, scale: 1 };
+    
+    this.createViewerDOM();
+    this.updateViewerImage();
+    this.bindViewerEvents();
+    this.updateCounter();
+    
+    document.body.style.overflow = 'hidden';
+    this.viewerActive = true;
+    // 添加显示动画
+    setTimeout(() => {
+        if (this.viewerElement) {
+            this.viewerElement.classList.add('active');
         }
+    }, 10);
+}
+
+/**
+ * 创建查看器DOM结构
+ */
+createViewerDOM() {
+    // 如果已存在则移除
+    if (this.viewerElement) {
+        this.viewerElement.remove();
     }
+    
+    const viewer = document.createElement('div');
+    viewer.className = 'modern-image-viewer';
+    viewer.innerHTML = `
+        <div class="viewer-overlay"></div>
+        <div class="viewer-container">
+            <button class="viewer-close" aria-label="关闭">&times;</button>
+            <button class="viewer-prev" aria-label="上一张">‹</button>
+            <button class="viewer-next" aria-label="下一张">›</button>
+            <div class="viewer-toolbar">
+                <button class="viewer-zoom-in" aria-label="放大">+</button>
+                <button class="viewer-zoom-out" aria-label="缩小">-</button>
+                <button class="viewer-reset" aria-label="重置">⟳</button>
+                <span class="viewer-counter">1 / 1</span>
+            </div>
+            <div class="viewer-image-wrapper">
+                <img class="viewer-image" alt="" draggable="false">
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(viewer);
+    this.viewerElement = viewer;
+    this.viewerImage = viewer.querySelector('.viewer-image');
+    this.viewerWrapper = viewer.querySelector('.viewer-image-wrapper');
+}
+
+/**
+ * 更新当前显示的图片
+ */
+updateViewerImage() {
+    if (!this.viewerImage || !this.galleryImages[this.currentIndex]) return;
+    
+    const imgData = this.galleryImages[this.currentIndex];
+    this.viewerImage.alt = imgData.alt;
+    this.viewerImage.src = imgData.src;
+    
+    // 重置变换
+    this.resetImageTransform();
+    this.updateCounter();
+}
+
+/**
+ * 重置图片缩放和位置
+ */
+resetImageTransform() {
+    this.transform = { scale: 1, translateX: 0, translateY: 0 };
+    this.currentTransform = { x: 0, y: 0, scale: 1 };
+    this.applyTransform();
+}
+
+/**
+ * 应用CSS变换
+ */
+applyTransform() {
+    if (!this.viewerImage) return;
+    const { translateX, translateY, scale } = this.transform;
+    this.viewerImage.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+}
+
+/**
+ * 缩放图片
+ */
+zoomImage(delta) {
+    let newScale = this.transform.scale + delta;
+    newScale = Math.min(Math.max(0.5, newScale), 5);
+    
+    if (newScale !== this.transform.scale) {
+        this.transform.scale = newScale;
+        // 如果缩放为1，重置位置
+        if (newScale === 1) {
+            this.transform.translateX = 0;
+            this.transform.translateY = 0;
+            this.currentTransform = { x: 0, y: 0, scale: 1 };
+        } else {
+            // 边界限制（简化处理）
+            this.transform.translateX = Math.min(Math.max(this.transform.translateX, -300), 300);
+            this.transform.translateY = Math.min(Math.max(this.transform.translateY, -300), 300);
+        }
+        this.applyTransform();
+    }
+}
+
+/**
+ * 切换上一张/下一张
+ */
+switchImage(direction) {
+    let newIndex = this.currentIndex + direction;
+    if (newIndex < 0) newIndex = this.galleryImages.length - 1;
+    if (newIndex >= this.galleryImages.length) newIndex = 0;
+    
+    if (newIndex === this.currentIndex) return;
+    
+    this.currentIndex = newIndex;
+    this.updateViewerImage();
+}
+
+/**
+ * 更新计数器显示
+ */
+updateCounter() {
+    const counter = this.viewerElement?.querySelector('.viewer-counter');
+    if (counter) {
+        counter.textContent = `${this.currentIndex + 1} / ${this.galleryImages.length}`;
+    }
+    
+    // 根据图片数量显示/隐藏导航按钮
+    const prevBtn = this.viewerElement?.querySelector('.viewer-prev');
+    const nextBtn = this.viewerElement?.querySelector('.viewer-next');
+    if (this.galleryImages.length <= 1) {
+        prevBtn?.style.setProperty('display', 'none');
+        nextBtn?.style.setProperty('display', 'none');
+    } else {
+        prevBtn?.style.setProperty('display', 'flex');
+        nextBtn?.style.setProperty('display', 'flex');
+    }
+}
+
+/**
+ * 绑定查看器事件
+ */
+bindViewerEvents() {
+    if (!this.viewerElement) return;
+    
+    // 关闭按钮
+    const closeBtn = this.viewerElement.querySelector('.viewer-close');
+    closeBtn?.addEventListener('click', () => this.closeImageViewer());
+    
+    // 背景点击关闭
+    const overlay = this.viewerElement.querySelector('.viewer-overlay');
+    overlay?.addEventListener('click', () => this.closeImageViewer());
+    
+    // 上一张/下一张
+    const prevBtn = this.viewerElement.querySelector('.viewer-prev');
+    const nextBtn = this.viewerElement.querySelector('.viewer-next');
+    prevBtn?.addEventListener('click', () => this.switchImage(-1));
+    nextBtn?.addEventListener('click', () => this.switchImage(1));
+    
+    // 缩放按钮
+    const zoomInBtn = this.viewerElement.querySelector('.viewer-zoom-in');
+    const zoomOutBtn = this.viewerElement.querySelector('.viewer-zoom-out');
+    const resetBtn = this.viewerElement.querySelector('.viewer-reset');
+    zoomInBtn?.addEventListener('click', () => this.zoomImage(0.2));
+    zoomOutBtn?.addEventListener('click', () => this.zoomImage(-0.2));
+    resetBtn?.addEventListener('click', () => this.resetImageTransform());
+    
+    // 双击重置
+    this.viewerImage?.addEventListener('dblclick', () => this.resetImageTransform());
+    
+    // 鼠标/触摸拖拽平移
+    this.initDragEvents();
+    
+    // 键盘事件
+    document.addEventListener('keydown', this.handleViewerKeydown);
+}
+
+/**
+ * 初始化拖拽平移事件
+ */
+initDragEvents() {
+    if (!this.viewerImage) return;
+    
+    const onPointerDown = (e) => {
+        // 只在缩放大于1时允许拖拽
+        if (this.transform.scale <= 1) return;
+        
+        e.preventDefault();
+        this.isDragging = true;
+        this.dragStart = {
+            x: e.clientX - this.transform.translateX,
+            y: e.clientY - this.transform.translateY
+        };
+        this.viewerImage.style.cursor = 'grabbing';
+    };
+    
+    const onPointerMove = (e) => {
+        if (!this.isDragging) return;
+        
+        const newX = e.clientX - this.dragStart.x;
+        const newY = e.clientY - this.dragStart.y;
+        
+        // 边界限制（可调整）
+        const maxTranslate = 200;
+        this.transform.translateX = Math.min(Math.max(newX, -maxTranslate), maxTranslate);
+        this.transform.translateY = Math.min(Math.max(newY, -maxTranslate), maxTranslate);
+        this.applyTransform();
+    };
+    
+    const onPointerUp = () => {
+        this.isDragging = false;
+        if (this.viewerImage) {
+            this.viewerImage.style.cursor = 'grab';
+        }
+    };
+    
+    this.viewerImage.addEventListener('pointerdown', onPointerDown);
+    window.addEventListener('pointermove', onPointerMove);
+    window.addEventListener('pointerup', onPointerUp);
+    
+    // 保存以便移除
+    this.viewerDragHandlers = { onPointerDown, onPointerMove, onPointerUp };
+}
+
+/**
+ * 键盘事件处理
+ */
+handleViewerKeydown = (e) => {
+    if (!this.viewerActive) return;
+    
+    switch(e.key) {
+        case 'Escape':
+            this.closeImageViewer();
+            break;
+        case 'ArrowLeft':
+            this.switchImage(-1);
+            break;
+        case 'ArrowRight':
+            this.switchImage(1);
+            break;
+        case '+':
+        case '=':
+            this.zoomImage(0.2);
+            break;
+        case '-':
+            this.zoomImage(-0.2);
+            break;
+        default:
+            break;
+    }
+};
+
+/**
+ * 关闭图片查看器
+ */
+closeImageViewer() {
+    if (!this.viewerActive) return;
+    
+    document.body.style.overflow = '';
+    this.viewerActive = false;
+    
+    // 移除键盘事件
+    document.removeEventListener('keydown', this.handleViewerKeydown);
+    
+    // 移除拖拽事件
+    if (this.viewerDragHandlers && this.viewerImage) {
+        this.viewerImage.removeEventListener('pointerdown', this.viewerDragHandlers.onPointerDown);
+        window.removeEventListener('pointermove', this.viewerDragHandlers.onPointerMove);
+        window.removeEventListener('pointerup', this.viewerDragHandlers.onPointerUp);
+    }
+    
+    if (this.viewerElement) {
+        this.viewerElement.classList.remove('active');
+        setTimeout(() => {
+            if (this.viewerElement) {
+                this.viewerElement.remove();
+                this.viewerElement = null;
+            }
+        }, 300);
+    }
+}
+
 
     /**
      * 初始化阅读进度条
@@ -372,6 +628,40 @@ class ArticlePageManager {
         container.appendChild(topBtn);
         return container;
     }
+}
+
+// 在 article.js 中添加（DOMContentLoaded 内部或直接执行）
+function addImageAltCaptions() {
+  const articleBody = document.querySelector('.article-body');
+  if (!articleBody) return;
+
+  const images = articleBody.querySelectorAll('img');
+  images.forEach(img => {
+    // 避免重复添加（检查下一个兄弟元素是否已经是 caption）
+    const nextSibling = img.nextElementSibling;
+    if (nextSibling && nextSibling.classList && nextSibling.classList.contains('image-alt-text')) {
+      return;
+    }
+
+    const altText = img.getAttribute('alt');
+    // 如果 alt 为空或仅为空格，则不显示
+    if (!altText || altText.trim() === '') return;
+
+    // 创建描述元素
+    const caption = document.createElement('span');
+    caption.className = 'image-alt-text';
+    caption.textContent = altText.trim();
+
+    // 插入到图片后面
+    img.insertAdjacentElement('afterend', caption);
+  });
+}
+
+// 执行时机：文章主体内容已渲染
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', addImageAltCaptions);
+} else {
+  addImageAltCaptions();
 }
 
 // 初始化文章页面管理器

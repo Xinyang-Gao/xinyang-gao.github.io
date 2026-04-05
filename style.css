@@ -745,25 +745,25 @@ input:checked + .slider:after {
   cursor: pointer;
   transition: all 0.35s var(--transition-bounce);
   box-shadow: var(--shadow-sm);
-  opacity: 0;
-  transform: translateY(20px);
-  animation: listItemFadeIn 0.5s var(--transition-bounce) forwards;
   display: flex;
   flex-direction: column;
   height: 100%;
   position: relative;
+  /* 滚动渐入动画相关样式 */
+  opacity: 0;
+  transform: translateY(25px);
+  transition: opacity 0.5s var(--transition-bounce), transform 0.5s var(--transition-bounce), border-color 0.35s var(--transition-bounce), box-shadow 0.35s var(--transition-bounce), background 0.35s var(--transition-bounce);
+}
+
+/* 卡片进入视口后显示 */
+.list-item.revealed {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .articles-list .list-item {
   width: 100%;
   margin-bottom: 24px;
-}
-
-@keyframes listItemFadeIn {
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .list-item:hover {

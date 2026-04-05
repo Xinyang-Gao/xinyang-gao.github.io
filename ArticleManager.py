@@ -308,7 +308,7 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
         // 将标题数据注入到全局变量
         window.ARTICLE_HEADINGS = {headings_json};
     </script>
-    <script src="//cdn.busuanzi.cc/busuanzi/3.6.9/busuanzi.min.js" defer></script>
+    <script src="/busuanzi.min.js" defer></script>
     <script src="/script.js"></script>
     <script src="article.js"></script>
     
