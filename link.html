@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>外链安全跳转 | 可信导航</title>
+    <title>外链跳转</title>
     <style>
         * {
             margin: 0;
@@ -301,7 +301,8 @@
         "zhihu.com",
         "csdn.net",
         "cloud.tencent.com",
-        "aliyun.com"
+        "aliyun.com",
+        "gaoxinyang.lanzouq.com"
     ]);
 
     function isDomainInWhitelist(hostname) {
@@ -462,7 +463,7 @@
             if (remaining <= 0) {
                 clearAutoTimer();
                 if (!redirectTriggered) {
-                    timerContainer.innerHTML = `<div class="timer-area">✨ 正在自动跳转，请稍候...</div>`;
+                    timerContainer.innerHTML = `<div class="timer-area">正在自动跳转，请稍候...</div>`;
                     performRedirect();
                 }
             } else {
@@ -546,10 +547,10 @@
                 domainTitleEl.textContent = hostname;
             } else {
                 domainTitleEl.textContent = '不支持的协议';
-                fullUrlEl.textContent = `${targetUrl} (仅允许http/https)`;
+                fullUrlEl.textContent = `${targetUrl}`;
                 if (proceedBtn) proceedBtn.disabled = true;
                 statusIconEl.innerHTML = '🚫';
-                messageBoxEl.innerHTML = '目标链接使用了非安全协议，跳转已被阻止。';
+                messageBoxEl.innerHTML = '目标链接使用了非安全的或不支持的协议，跳转已被阻止。';
                 subtitleEl.textContent = '协议不受支持';
                 return;
             }
@@ -601,7 +602,7 @@
         });
     }
 
-    // ---------- 暗色主题 (保留原有逻辑) ----------
+    // 暗色主题
     function applyTheme() {
         const savedTheme = localStorage.getItem('theme');
         const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
