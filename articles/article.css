@@ -122,11 +122,13 @@
   transition: all var(--transition-normal);
 }
 
+/* 已删除鼠标悬停时的上移、边框变色、阴影增强、背景变化等强调效果 */
 .article-content-wrapper:hover {
-  border-color: var(--card-border-hover);
-  box-shadow: var(--shadow-hover);
-  transform: translateY(-6px);
-  background: var(--surface-color-secondary);
+  /* 保持与默认状态完全一致，无任何强调效果 */
+  border-color: var(--border-color);
+  box-shadow: var(--shadow-md), var(--shadow-offset);
+  transform: none;
+  background: var(--surface-color);
 }
 
 [data-theme="dark"] .article-content-wrapper {
@@ -398,11 +400,12 @@
   transition: all var(--transition-normal);
 }
 
+/* 已删除鼠标悬停时的上移、边框变色、阴影增强等强调效果 */
 .comments-card:hover {
-  border-color: var(--card-border-hover);
-  box-shadow: var(--shadow-hover);
-  transform: translateY(-4px);
-  background: var(--surface-color-secondary);
+  border-color: var(--border-color);
+  box-shadow: var(--shadow-md), var(--shadow-offset);
+  transform: none;
+  background: var(--surface-color);
 }
 
 [data-theme="dark"] .comments-card {
@@ -417,7 +420,7 @@
   padding-left: 16px;
 }
 
-/* 阅读进度条 */
+/* 阅读进度条 - 颜色调整为滚动条颜色（纯主色调） */
 .reading-progress-bar {
   position: fixed;
   top: 0;
@@ -430,7 +433,7 @@
 }
 .progress-bar {
   height: 100%;
-  background: linear-gradient(90deg, var(--accent-color), var(--link-hover));
+  background: var(--accent-color); /* 改为纯色，与滚动条滑块颜色一致 */
   width: 0%;
   transition: width 0.1s linear;
   box-shadow: 0 0 8px rgba(165, 88, 96, 0.6);
