@@ -7,6 +7,7 @@ import sys
 import json
 from pathlib import Path
 from datetime import datetime
+from urllib.parse import quote
 
 # 尝试导入markdown库，如果没有则提示安装
 try:
@@ -188,11 +189,24 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
     # 处理标签显示（正文末尾的 #标签 样式）
     footer_tags_html = ""
     if tags and len(tags) > 0:
-        tag_spans = []
+        tag_links = []
         for tag in tags:
-            safe_tag = html.escape(tag.strip())
-            tag_spans.append(f'<span class="footer-tag">#{safe_tag}</span>')
-        footer_tags_html = f'<div class="article-footer-tags">{" ".join(tag_spans)}</div>'
+            tag_raw = tag.strip()
+            if not tag_raw:
+                continue
+        # 显示文本（带 # 号，并转义）
+            display_text = f"#{html.escape(tag_raw)}"
+        # URL 参数值（原始标签名，不含 #，并进行 URL 编码）
+            param_value = quote(tag_raw, safe='')
+            href = f"/articles.html?tags={param_value}"
+        # 生成可点击的标签链接，保持原样式 + 内联样式确保无下划线、颜色继承、鼠标手型
+            tag_link = (
+                f'<a class="footer-tag" href="{href}" '
+                f'style="text-decoration: none; color: inherit; cursor: pointer;" '
+                f'title="查看「{html.escape(tag_raw)}」相关文章">{display_text}</a>'
+            )
+            tag_links.append(tag_link)
+        footer_tags_html = f'<div class="article-footer-tags">{" ".join(tag_links)}</div>'
 
     # 副标题（原description）
     subtitle_html = ""

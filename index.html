@@ -100,6 +100,10 @@
       border-color: var(--accent-color);
       box-shadow: var(--shadow-lg), var(--shadow-offset);
     }
+    /* 可点击统计卡片指针样式 */
+    .stat-card[data-stat-type] {
+      cursor: pointer;
+    }
     .stat-icon {
       font-size: 2.2rem;
       color: var(--accent-color);
@@ -161,7 +165,7 @@
       gap: 12px;
     }
     .tags-list .tag {
-      cursor: default;
+      cursor: pointer;     /* 覆盖原有 default 样式，支持点击跳转 */
       transition: all 0.25s ease;
       font-weight: 500;
       background: var(--surface-color);
@@ -467,7 +471,7 @@
           </div>
         </div>
         <div class="tags-section">
-          <h3><i class="fas fa-code"></i> 创作工坊</h3>
+          <h3><i class="fas fa-code"></i> 创意工坊</h3>
           <div id="workTagsList" class="tags-list">
             <span class="tag">加载中...</span>
           </div>
@@ -536,7 +540,7 @@
         });
       }
 
-      // 渲染统计卡片 + 标签云
+      // 渲染统计卡片 + 标签云（增强版：添加可跳转属性）
       function loadStatisticsAndTags() {
         fetch('/statistics.json')
           .then(res => {
@@ -551,10 +555,11 @@
             
             const statsContainer = document.getElementById('statsContainer');
             if (statsContainer) {
+              // 文章总数卡片添加 data-stat-type="articles"；作品数量卡片添加 data-stat-type="works"
               statsContainer.innerHTML = `
-                <div class="stat-card"><div class="stat-icon"><i class="fas fa-newspaper"></i></div><div class="stat-number">${totalArticles}</div><div class="stat-label">文章总数</div><div class="stat-sub">深度思考</div></div>
+                <div class="stat-card" data-stat-type="articles"><div class="stat-icon"><i class="fas fa-newspaper"></i></div><div class="stat-number">${totalArticles}</div><div class="stat-label">文章总数</div><div class="stat-sub">深度思考</div></div>
                 <div class="stat-card"><div class="stat-icon"><i class="fas fa-chart-line"></i></div><div class="stat-number">${totalWords.toLocaleString()}</div><div class="stat-label">总字数</div><div class="stat-sub">文字力量</div></div>
-                <div class="stat-card"><div class="stat-icon"><i class="fas fa-rocket"></i></div><div class="stat-number">${totalWorks}</div><div class="stat-label">作品数量</div><div class="stat-sub">创意落地</div></div>
+                <div class="stat-card" data-stat-type="works"><div class="stat-icon"><i class="fas fa-rocket"></i></div><div class="stat-number">${totalWorks}</div><div class="stat-label">作品数量</div><div class="stat-sub">创意落地</div></div>
               `;
             }
             // 处理标签云 (过滤隐藏标签)
@@ -566,14 +571,14 @@
               if (articleTags.length) {
                 articleTagsContainer.innerHTML = articleTags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('');
               } else {
-                articleTagsContainer.innerHTML = '<span class="tag">✨ 暂无标签</span>';
+                articleTagsContainer.innerHTML = '<span class="tag">暂无标签</span>';
               }
             }
             if (workTagsContainer) {
               if (workTags.length) {
                 workTagsContainer.innerHTML = workTags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('');
               } else {
-                workTagsContainer.innerHTML = '<span class="tag">⚙️ 暂无标签</span>';
+                workTagsContainer.innerHTML = '<span class="tag">暂无标签</span>';
               }
             }
             const badge = document.getElementById('statsUpdateBadge');
@@ -592,7 +597,6 @@
 
       // 加载最新文章和作品（过滤隐藏标签）
       function loadRecentContent() {
-        // 优雅降级 fetch
         const fetchArticles = fetch('/articles.json').then(res => res.ok ? res.json() : Promise.reject('articles.json不可用'));
         const fetchWorks = fetch('/works.json').then(res => res.ok ? res.json() : Promise.reject('works.json不可用'));
         
@@ -615,7 +619,6 @@
             });
           }
           
-          // 按日期排序（新->旧）
           const sortByDate = (a,b) => new Date(b.date) - new Date(a.date);
           articles.sort(sortByDate);
           works.sort(sortByDate);
@@ -659,7 +662,6 @@
               </div>
             `;
           } else {
-            // 作品类型存储 data-work-info
             const workInfo = {
               title: item.title,
               description: item.description || '',
@@ -683,7 +685,6 @@
         attachRecentEvents(container);
       }
       
-      // 绑定最近项目的点击事件（复用作品详情或文章跳转逻辑，与全局风格统一）
       function attachRecentEvents(container) {
         const items = container.querySelectorAll('.recent-item');
         items.forEach(el => {
@@ -707,11 +708,9 @@
           if (workInfoRaw) {
             try {
               const workInfo = JSON.parse(decodeURIComponent(workInfoRaw));
-              // 调用全局 PageManager 展示详情（若已加载）
               if (typeof PageManager !== 'undefined' && PageManager.showWorkDetails) {
                 PageManager.showWorkDetails(workInfo);
               } else {
-                // 后备方案
                 alert(`${workInfo.title}\n${workInfo.description || '暂无描述'}`);
                 if (workInfo.link) window.open(workInfo.link, '_blank');
               }
@@ -722,10 +721,49 @@
         }
       }
       
+      // ---------- 新增：全局事件委托（统计卡片跳转 + 标签跳转）----------
+      function bindGlobalNavigateEvents() {
+        document.addEventListener('click', function(e) {
+          // 统计卡片点击跳转 (文章总数 -> /articles.html , 作品数量 -> /works.html)
+          const statCard = e.target.closest('.stat-card[data-stat-type]');
+          if (statCard) {
+            e.preventDefault();
+            const type = statCard.getAttribute('data-stat-type');
+            if (type === 'articles') {
+              window.location.href = '/articles.html';
+            } else if (type === 'works') {
+              window.location.href = '/works.html';
+            }
+            return;
+          }
+          
+          // 标签云点击跳转 (文章星系标签 -> /articles.html?tags=xxx , 创意工坊标签 -> /works.html?tags=xxx)
+          const tagEl = e.target.closest('.tags-list .tag');
+          if (tagEl) {
+            const tagText = tagEl.innerText.trim();
+            // 过滤掉占位/无效标签文本
+            if (!tagText || tagText === '加载中...' || tagText === '暂无标签') {
+              return;
+            }
+            // 判断位于文章星系还是创意工坊
+            const isArticleZone = tagEl.closest('#articleTagsList') !== null;
+            const isWorkZone = tagEl.closest('#workTagsList') !== null;
+            if (isArticleZone) {
+              const encodedTag = encodeURIComponent(tagText);
+              window.location.href = `/articles.html?tags=${encodedTag}`;
+            } else if (isWorkZone) {
+              const encodedTag = encodeURIComponent(tagText);
+              window.location.href = `/works.html?tags=${encodedTag}`;
+            }
+          }
+        });
+      }
+      
       // 初始化所有
       function initHomeEnhance() {
         loadStatisticsAndTags();
         loadRecentContent();
+        bindGlobalNavigateEvents();   // 注册一次全局委托，支持动态卡片/标签跳转
       }
       
       if (document.readyState === 'loading') {
@@ -734,10 +772,8 @@
         initHomeEnhance();
       }
       
-      // 解决当 PageManager 完全加载后，作品详情展示可能尚未绑定全局的问题，但无需额外处理
-      // 确保点击作品卡片时，若 PageManager 可用则调用优雅弹窗
+      // 确保最近卡片交互在完全加载后再次强化
       window.addEventListener('load', function() {
-        // 二次确保最近元素事件 (以防动态内容未绑定)
         const containers = ['recentArticlesList', 'recentWorksList'];
         containers.forEach(id => {
           const cont = document.getElementById(id);

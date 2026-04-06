@@ -223,7 +223,6 @@ class UIRenderer {
                 ${tags}
             </div>`;
         } else { // work 类型
-            // 构造作品信息对象，用于弹窗展示（不含 id，完全基于 json 内容）
             const workInfo = {
                 title: item.title,
                 description: item.description || '',
@@ -336,7 +335,7 @@ function initScrollReveal() {
 }
 
 /**
- * 搜索控制器
+ * 搜索控制器（支持 URL 参数同步）
  */
 class SearchController {
     static instances = new Map();
@@ -350,6 +349,8 @@ class SearchController {
         this.field = null;
         this.selectedTags = [];
         this.debounceTimer = null;
+        this.popStateHandler = null;
+        this.skipNextPopState = false;
 
         SearchController.instances.set(page, this);
         this.init();
@@ -365,18 +366,92 @@ class SearchController {
                 return;
             }
 
+            // 绑定 UI 事件
             this.input.addEventListener('input', Utils.debounce(() => this.handleSearch(), 300));
             this.field.addEventListener('change', () => this.handleSearch());
 
             this.updateTagFilters();
-            this.handleSearch();
+            // 从 URL 恢复筛选条件
+            this.restoreFromURL();
+            // 执行初始筛选
+            this.handleSearch(true); // skipUpdateURL = true 避免重复 pushState
+            // 监听 popstate 事件
+            this.popStateHandler = (e) => {
+                if (this.skipNextPopState) {
+                    this.skipNextPopState = false;
+                    return;
+                }
+                this.restoreFromURL();
+                this.handleSearch(true);
+            };
+            window.addEventListener('popstate', this.popStateHandler);
         });
     }
 
-    handleSearch() {
+    // 从 URL 参数恢复 UI 状态
+    restoreFromURL() {
+        const params = new URLSearchParams(window.location.search);
+        const q = params.get('q') || '';
+        const field = params.get('field') || 'all';
+        const tagsParam = params.get('tags') || '';
+        
+        if (this.input) this.input.value = q;
+        if (this.field) this.field.value = field;
+        
+        this.selectedTags = tagsParam ? tagsParam.split(',').filter(t => t.trim()) : [];
+        
+        // 激活对应的标签按钮（等待标签按钮渲染）
+        this.applyTagsToButtons();
+    }
+    
+    applyTagsToButtons() {
+        const container = document.getElementById(`${this.page}-tags-filter`);
+        if (!container) return;
+        const btns = container.querySelectorAll('.tag-button:not(:last-child)');
+        btns.forEach(btn => {
+            const tag = btn.dataset.tag;
+            if (this.selectedTags.includes(tag)) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+    }
+    
+    // 更新 URL 参数（pushState）
+    updateURL() {
+        const params = new URLSearchParams(window.location.search);
+        const q = this.input ? this.input.value.trim() : '';
+        const field = this.field ? this.field.value : 'all';
+        
+        if (q) params.set('q', q);
+        else params.delete('q');
+        
+        if (field && field !== 'all') params.set('field', field);
+        else params.delete('field');
+        
+        if (this.selectedTags.length) {
+            params.set('tags', this.selectedTags.join(','));
+        } else {
+            params.delete('tags');
+        }
+        
+        // 保留 page 参数（如果存在）
+        const newUrl = `${window.location.pathname}?${params.toString()}`;
+        const currentUrl = window.location.href.split('#')[0];
+        if (newUrl !== currentUrl) {
+            this.skipNextPopState = true;
+            window.history.pushState({}, '', newUrl);
+        }
+    }
+
+    handleSearch(skipUpdateURL = false) {
         const q = this.input.value.trim();
         const f = this.field.value;
         this.filterContent(this.page, q, f);
+        if (!skipUpdateURL) {
+            this.updateURL();
+        }
     }
 
     getCachedData(type) {
@@ -444,6 +519,9 @@ class SearchController {
         clearBtn.style.marginLeft = 'auto';
         clearBtn.addEventListener('click', () => this.clearAllTags());
         container.appendChild(clearBtn);
+        
+        // 恢复激活状态
+        this.applyTagsToButtons();
     }
 
     toggleTag(tag, btn) {
@@ -455,7 +533,7 @@ class SearchController {
             this.selectedTags.push(tag);
             btn.classList.add('active');
         }
-        this.handleSearch();
+        this.handleSearch(); // 会触发 updateURL
     }
 
     clearAllTags() {
@@ -503,7 +581,6 @@ class SearchController {
         if (container) {
             container.innerHTML = html;
             this.setupItemsInteraction();
-            // 刷新滚动动画
             if (typeof initScrollReveal === 'function') initScrollReveal();
         }
     }
@@ -519,6 +596,9 @@ class SearchController {
     destroy() {
         if (this.input) this.input.removeEventListener('input', this.handleSearch);
         if (this.field) this.field.removeEventListener('change', this.handleSearch);
+        if (this.popStateHandler) {
+            window.removeEventListener('popstate', this.popStateHandler);
+        }
         clearTimeout(this.debounceTimer);
         SearchController.instances.delete(this.page);
     }
@@ -595,7 +675,15 @@ class PageManager {
                     elements.content.innerHTML = content;
                     elements.content.classList.remove('fade-out-shrink');
                     document.title = pageTitle;
-                    if (pushState) window.history.pushState({ page }, pageTitle, `?page=${page}`);
+                    if (pushState) {
+                        const searchParams = new URLSearchParams(window.location.search);
+                        searchParams.delete('q');
+                        searchParams.delete('field');
+                        searchParams.delete('tags');
+                        const queryString = searchParams.toString();
+                        const newUrl = queryString ? `?page=${page}&${queryString}` : `?page=${page}`;
+                        window.history.pushState({ page }, pageTitle, newUrl);
+                    }
                     elements.navItems.forEach(i => i.classList.toggle('active', i.getAttribute('data-page') === page));
                     paper.parentNode?.removeChild(paper);
                     elements.pageTransition.classList.remove('active');
@@ -611,7 +699,6 @@ class PageManager {
         if (['works', 'articles'].includes(page)) new SearchController(page);
         if (page === 'index') updateDynamicGreeting();
         PageManager.setupListItemsInteraction();
-        // 刷新滚动动画
         if (typeof initScrollReveal === 'function') initScrollReveal();
     }
 
@@ -1208,7 +1295,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const currentPage = window.location.pathname.split('/').pop().replace('.html', '') || 'index';
     if (currentPage === 'index') {
         updateDynamicGreeting();
-        srtInterval(updateDynamicGreeting, 60000);
+        setInterval(updateDynamicGreeting, 60000);
     } else if (currentPage === 'articles') {
         initializeArticlesPage();
     } else if (currentPage === 'works') {
@@ -1219,7 +1306,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     ScrollManager.initBackToTopButton();
     document.body.setAttribute('data-loaded', 'true');
     
-    // 启动滚动渐入动画
     initScrollReveal();
 });
 
@@ -1231,7 +1317,6 @@ async function initializeArticlesPage() {
         if (container) {
             container.innerHTML = html;
             new SearchController('articles');
-            // 确保滚动动画绑定
             initScrollReveal();
         }
     } catch (e) {
@@ -1247,7 +1332,6 @@ async function initializeWorksPage() {
         if (container) {
             container.innerHTML = html;
             new SearchController('works');
-            // 确保滚动动画绑定
             initScrollReveal();
         }
     } catch (e) {
