@@ -134,6 +134,11 @@ def convert_markdown_to_html(md_content: str) -> str:
 
     # tab_length=2 使制表符被视为2个空格，与两空格缩进风格一致
     html_content = markdown.markdown(md_content, extensions=extensions, tab_length=2)
+
+    html_content = re.sub(r'<img (.*?)src="([^"]+)"(.*?)>', 
+                      r'<img \1data-src="\2" src="data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 1 1\'%3E%3C/svg%3E" class="lazy-image" \3>', 
+                      html_content)
+    
     return html_content
 
 
