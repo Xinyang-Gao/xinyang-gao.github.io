@@ -2,23 +2,518 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GaoXinYang's website</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="高新炀的个人网站 - 学生、开发者、写作者，用代码和文字探索世界">
+  <title>高新炀 · 个人网站</title>
   <link rel="stylesheet" href="style.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-<script defer src="https://cloud.umami.is/script.js" data-website-id="c3085953-4d50-4fa3-89f4-58bdc71c403b"></script>
+  <style>
+    .hero {
+      position: relative;
+      text-align: center;
+      margin: 0.5rem 0 2rem 0;
+      padding: 1rem 0.5rem;
+      border-radius: var(--radius-xl);
+      background: radial-gradient(ellipse at 50% 0%, rgba(180, 91, 99, 0.08) 0%, transparent 70%);
+    }
+    [data-theme="dark"] .hero {
+      background: radial-gradient(ellipse at 50% 0%, rgba(224, 184, 184, 0.12) 0%, transparent 70%);
+    }
+    .hero h1 {
+      font-size: 3.8rem;
+      margin-bottom: 0.25rem;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-light) 100%);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      display: inline-block;
+      text-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .hero .greeting-text {
+      font-size: 1.5rem;
+      margin: 0.5rem 0 0.3rem;
+      font-weight: 500;
+      color: var(--accent-color);
+      backdrop-filter: blur(2px);
+      display: inline-block;
+      padding: 0 1rem;
+      border-radius: 60px;
+    }
+    .hero .bio {
+      font-size: 1.12rem;
+      max-width: 620px;
+      margin: 0.8rem auto 0;
+      color: var(--text-secondary);
+      opacity: 0.85;
+      letter-spacing: 0.2px;
+    }
+    .hero-signature {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--surface-color-secondary);
+      padding: 8px 20px;
+      border-radius: 60px;
+      font-size: 0.85rem;
+      color: var(--accent-color);
+      margin-top: 1.2rem;
+      border: 1px solid var(--border-color);
+      backdrop-filter: blur(4px);
+    }
+    
+    /* 统计卡片 */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 26px;
+      margin: 2rem 0 2rem;
+    }
+    .stat-card {
+      background: var(--surface-color);
+      backdrop-filter: blur(2px);
+      border-radius: var(--radius-xl);
+      padding: 1.7rem 1rem;
+      text-align: center;
+      border: 1px solid var(--border-color);
+      transition: all 0.35s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+      box-shadow: var(--shadow-sm);
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: linear-gradient(90deg, var(--accent-light), var(--accent-color));
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .stat-card:hover::before {
+      opacity: 1;
+    }
+    .stat-card:hover {
+      transform: translateY(-8px);
+      border-color: var(--accent-color);
+      box-shadow: var(--shadow-lg), var(--shadow-offset);
+    }
+    .stat-icon {
+      font-size: 2.2rem;
+      color: var(--accent-color);
+      margin-bottom: 12px;
+      opacity: 0.8;
+    }
+    .stat-number {
+      font-size: 2.9rem;
+      font-weight: 800;
+      color: var(--accent-color);
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+    .stat-label {
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-top: 10px;
+    }
+    .stat-sub {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      margin-top: 6px;
+      opacity: 0.7;
+    }
+    
+    /* 标签云区域 */
+    .tags-showcase {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2rem;
+      margin: 2rem 0 2rem;
+      background: var(--surface-color-secondary);
+      padding: 1.8rem 2rem;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border-color);
+      backdrop-filter: blur(2px);
+      transition: all 0.2s;
+    }
+    .tags-section {
+      flex: 1;
+      min-width: 180px;
+    }
+    .tags-section h3 {
+      font-size: 1.35rem;
+      margin-top: 0;
+      margin-bottom: 1.2rem;
+      border-left: 4px solid var(--accent-color);
+      padding-left: 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .tags-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .tags-list .tag {
+      cursor: default;
+      transition: all 0.25s ease;
+      font-weight: 500;
+      background: var(--surface-color);
+    }
+    .tags-list .tag:hover {
+      transform: translateY(-3px) scale(1.02);
+      background-color: var(--accent-color);
+      color: white;
+      border-color: var(--accent-color);
+      box-shadow: 0 6px 12px -8px rgba(0,0,0,0.2);
+    }
+    
+    /* 最近更新区域 */
+    .recent-section {
+      margin: 2.5rem 0 1.2rem;
+    }
+    .recent-section h2 {
+      font-size: 1.9rem;
+      margin-bottom: 1.4rem;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: none;
+      background: linear-gradient(135deg, var(--text-color), var(--accent-color));
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      width: fit-content;
+    }
+    .recent-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 32px;
+    }
+    .recent-posts h3, .recent-works h3 {
+      font-size: 1.4rem;
+      margin: 0 0 1.2rem 0;
+      color: var(--accent-color);
+      font-weight: 620;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-bottom: 2px dashed var(--border-color);
+      padding-bottom: 8px;
+    }
+    .recent-item {
+      background: var(--surface-color);
+      border-radius: var(--radius-lg);
+      padding: 1rem 1.3rem;
+      margin-bottom: 16px;
+      border: 1px solid var(--border-color);
+      transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.2);
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+    .recent-item::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 0%;
+      height: 2px;
+      background: var(--accent-color);
+      transition: width 0.3s ease;
+    }
+    .recent-item:hover::after {
+      width: 100%;
+    }
+    .recent-item:hover {
+      border-color: var(--accent-color);
+      transform: translateX(6px) translateY(-2px);
+      background: var(--surface-color-secondary);
+      box-shadow: var(--shadow-md);
+    }
+    .recent-title {
+      font-weight: 650;
+      font-size: 1.05rem;
+      color: var(--text-color);
+      margin-bottom: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .recent-meta {
+      font-size: 0.75rem;
+      color: var(--text-secondary);
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+    .recent-badge {
+      background: var(--accent-color);
+      color: white;
+      padding: 2px 10px;
+      border-radius: 30px;
+      font-size: 0.7rem;
+      font-weight: 500;
+    }
+    .recent-empty {
+      color: var(--text-secondary);
+      font-style: italic;
+      padding: 1.2rem 0;
+      text-align: center;
+      background: var(--surface-color-secondary);
+      border-radius: var(--radius-md);
+    }
+    
+    /* 灵感引子区 */
+    .inspire-quote {
+      margin: 2.8rem 0 1rem;
+      background: linear-gradient(120deg, var(--surface-color-secondary), var(--surface-color));
+      border-radius: var(--radius-xl);
+      padding: 1.6rem 2rem;
+      border-left: 5px solid var(--accent-color);
+      font-style: normal;
+      box-shadow: var(--shadow-sm);
+    }
+    .inspire-quote p {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 450;
+      color: var(--text-color);
+    }
+    .inspire-quote i {
+      color: var(--accent-color);
+      margin-right: 12px;
+    }
+    .inspire-author {
+      margin-top: 12px;
+      font-size: 0.8rem;
+      text-align: right;
+      color: var(--text-secondary);
+    }
+    
+    /* 最后更新徽章美化 */
+    .last-update-badge {
+      text-align: center;
+      margin-top: 32px;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+      opacity: 0.75;
+      background: var(--surface-color-secondary);
+      width: fit-content;
+      margin-left: auto;
+      margin-right: auto;
+      padding: 5px 18px;
+      border-radius: 40px;
+      border: 1px solid var(--border-color);
+    }
+    
+    /* 不蒜子统计 */
+    .busuanzi-stats {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 28px;
+      margin: 28px auto 20px;
+      padding: 12px 28px;
+      background: var(--surface-color-secondary);
+      border-radius: 60px;
+      border: 1px solid var(--border-color);
+      backdrop-filter: blur(4px);
+      width: fit-content;
+      transition: all 0.2s ease;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
+    .busuanzi-stats span i {
+      margin-right: 8px;
+      color: var(--accent-color);
+      opacity: 0.8;
+    }
+    .busuanzi-stats .stat-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      letter-spacing: 0.3px;
+      font-weight: 500;
+    }
+    .busuanzi-stats .stat-number {
+      font-weight: 700;
+      color: var(--accent-color);
+      background: var(--surface-color);
+      padding: 2px 10px;
+      border-radius: 40px;
+      margin-left: 6px;
+      font-size: 0.9rem;
+      display: inline-block;
+      min-width: 48px;
+      text-align: center;
+    }
+    [data-theme="dark"] .busuanzi-stats .stat-number {
+      background: rgba(0,0,0,0.3);
+    }
+    .busuanzi-stats:hover {
+      border-color: var(--accent-color);
+      box-shadow: var(--shadow-sm);
+      transform: translateY(-2px);
+    }
+    
+    /* 响应式微调 */
+    @media (max-width: 760px) {
+      .recent-grid {
+        grid-template-columns: 1fr;
+        gap: 24px;
+      }
+      .hero h1 {
+        font-size: 2.7rem;
+      }
+      .hero .greeting-text {
+        font-size: 1.2rem;
+      }
+      .stats-grid {
+        gap: 16px;
+      }
+      .stat-number {
+        font-size: 2.2rem;
+      }
+      .tags-showcase {
+        flex-direction: column;
+        padding: 1.2rem;
+      }
+      .inspire-quote {
+        padding: 1.2rem;
+      }
+      .busuanzi-stats {
+        gap: 16px;
+        padding: 10px 20px;
+        font-size: 0.8rem;
+        width: 90%;
+      }
+    }
+    @media (max-width: 480px) {
+      .hero h1 {
+        font-size: 2.2rem;
+      }
+      .stat-card {
+        padding: 1.2rem 0.5rem;
+      }
+      .recent-item {
+        padding: 0.8rem 1rem;
+      }
+      .busuanzi-stats {
+        flex-direction: column;
+        gap: 8px;
+        border-radius: 32px;
+      }
+    }
+    
+    /* 自定义滚动渐入已在全局script中，但主页确保动画可见 */
+    .stat-card, .tags-showcase, .recent-item {
+      opacity: 0;
+      transform: translateY(15px);
+      animation: homeFadeUp 0.6s cubic-bezier(0.2, 0.9, 0.4, 1) forwards;
+    }
+    .stat-card:nth-child(1) { animation-delay: 0.05s; }
+    .stat-card:nth-child(2) { animation-delay: 0.1s; }
+    .stat-card:nth-child(3) { animation-delay: 0.15s; }
+    .stat-card:nth-child(4) { animation-delay: 0.2s; }
+    .tags-showcase { animation-delay: 0.25s; }
+    .recent-section { animation: homeFadeUp 0.5s 0.3s forwards; opacity: 0; transform: translateY(15px); animation-fill-mode: forwards; }
+    @keyframes homeFadeUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+  </style>
+  <script defer src="https://cloud.umami.is/script.js" data-website-id="c3085953-4d50-4fa3-89f4-58bdc71c403b"></script>
 </head>
 <body>
   <div id="navbar-placeholder"></div>
 
   <div class="container">
-    <main id="mainContent" role="main" aria-live="polite" aria-busy="false">
-      <h1>Hi, 我是高新炀</h1>
-<!--下面的段落插入随时间变化的问候语的-->
-<p id="dynamic-greeting">你好呀！</p>
-<h2>⚠️ 网站目前正在重构布局 ⚠️</h2>
-<h3>预计4月6日初步完成框架</h3>
- </main>
+    <main id="mainContent" role="main" aria-live="polite">
+      <div class="hero">
+        <h1>GXY</h1>
+        <p id="dynamic-greeting" class="greeting-text">早上好！中午好！晚上好！</p>
+        <p class="bio">「 学生 · 技术爱好者 · 把想象编译成现实 」</p>
+        <div class="hero-signature">
+          <i class="fas fa-terminal"></i> 代码 | 文字 | 探索
+          <i class="fas fa-feather-alt" style="margin-left: 6px;"></i>
+        </div>
+      </div>
+
+      <!-- 统计卡片容器（由 statistics.json 填充） -->
+      <div class="stats-grid" id="statsContainer">
+        <div class="stat-card"><div class="stat-icon"><i class="fas fa-spinner fa-pulse"></i></div><div class="stat-number">—</div><div class="stat-label">文章总数</div></div>
+        <div class="stat-card"><div class="stat-icon"><i class="fas fa-feather-alt"></i></div><div class="stat-number">—</div><div class="stat-label">总字数</div><div class="stat-sub">字里行间</div></div>
+        <div class="stat-card"><div class="stat-icon"><i class="fas fa-cube"></i></div><div class="stat-number">—</div><div class="stat-label">作品数量</div></div>
+      </div>
+
+      <!-- 标签云区域 -->
+      <div class="tags-showcase">
+        <div class="tags-section">
+          <h3><i class="fas fa-book-open"></i> 文章星系</h3>
+          <div id="articleTagsList" class="tags-list">
+            <span class="tag">加载中...</span>
+          </div>
+        </div>
+        <div class="tags-section">
+          <h3><i class="fas fa-code"></i> 创作工坊</h3>
+          <div id="workTagsList" class="tags-list">
+            <span class="tag">加载中...</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 灵感箴言区 -->
+      <div class="inspire-quote">
+        <p><i class="fas fa-quote-left"></i> 新样式上新！改了许多东西呢~</p>
+        <div class="inspire-author">—— 高新炀</div>
+      </div>
+
+      <!-- 最近更新区域 (文章&作品) -->
+      <div class="recent-section">
+        <h2><i class="fas fa-history"></i> 最近更新</h2>
+        <div class="recent-grid">
+          <div class="recent-posts">
+            <h3><i class="fas fa-pen-fancy"></i> 最新墨迹</h3>
+            <div id="recentArticlesList">
+              <div class="recent-empty"><i class="fas fa-hourglass-half"></i> 正在拾取星光...</div>
+            </div>
+          </div>
+          <div class="recent-works">
+            <h3><i class="fas fa-laptop-code"></i> 最新创作</h3>
+            <div id="recentWorksList">
+              <div class="recent-empty"><i class="fas fa-microchip"></i> 正在编译创意...</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="last-update-badge" id="statsUpdateBadge"></div>
+      
+      <!-- 不蒜子统计模块 (全站访问量/访客数) -->
+      <div class="busuanzi-stats">
+        <div class="stat-item">
+          <i class="fas fa-chart-line"></i> 全站总访问量
+          <span id="busuanzi_site_pv" class="stat-number">-</span>
+          <span style="margin-left: 2px;">次</span>
+        </div>
+        <div class="stat-item">
+          <i class="fas fa-user-friends"></i> 全站总访客数
+          <span id="busuanzi_site_uv" class="stat-number">-</span>
+          <span style="margin-left: 2px;">人</span>
+        </div>
+      </div>
+    </main>
   </div>
   
   <button id="backToTopBtn" class="back-to-top-btn" title="返回顶部">↑</button>
@@ -27,5 +522,229 @@
   <script src="/busuanzi.min.js" defer></script>
   <script src="script.js"></script>
   <div id="footer-placeholder"></div>
+
+  <script>
+    (function() {
+      // 辅助函数：HTML转义
+      function escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/[&<>]/g, function(m) {
+          if (m === '&') return '&amp;';
+          if (m === '<') return '&lt;';
+          if (m === '>') return '&gt;';
+          return m;
+        });
+      }
+
+      // 渲染统计卡片 + 标签云
+      function loadStatisticsAndTags() {
+        fetch('/statistics.json')
+          .then(res => {
+            if (!res.ok) throw new Error('统计加载失败');
+            return res.json();
+          })
+          .then(stat => {
+            const totalArticles = stat.total_articles ?? 0;
+            const totalWords = stat.total_word_count ?? 0;
+            const totalWorks = stat.total_works ?? 0;
+            const lastUpdated = stat.last_updated || '未知';
+            
+            const statsContainer = document.getElementById('statsContainer');
+            if (statsContainer) {
+              statsContainer.innerHTML = `
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-newspaper"></i></div><div class="stat-number">${totalArticles}</div><div class="stat-label">文章总数</div><div class="stat-sub">深度思考</div></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-chart-line"></i></div><div class="stat-number">${totalWords.toLocaleString()}</div><div class="stat-label">总字数</div><div class="stat-sub">文字力量</div></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-rocket"></i></div><div class="stat-number">${totalWorks}</div><div class="stat-label">作品数量</div><div class="stat-sub">创意落地</div></div>
+              `;
+            }
+            // 处理标签云 (过滤隐藏标签)
+            const articleTags = (stat.article_tags || []).filter(t => t !== '隐藏');
+            const workTags = (stat.work_tags || []).filter(t => t !== '隐藏');
+            const articleTagsContainer = document.getElementById('articleTagsList');
+            const workTagsContainer = document.getElementById('workTagsList');
+            if (articleTagsContainer) {
+              if (articleTags.length) {
+                articleTagsContainer.innerHTML = articleTags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('');
+              } else {
+                articleTagsContainer.innerHTML = '<span class="tag">✨ 暂无标签</span>';
+              }
+            }
+            if (workTagsContainer) {
+              if (workTags.length) {
+                workTagsContainer.innerHTML = workTags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('');
+              } else {
+                workTagsContainer.innerHTML = '<span class="tag">⚙️ 暂无标签</span>';
+              }
+            }
+            const badge = document.getElementById('statsUpdateBadge');
+            if (badge) {
+              badge.innerHTML = `<i class="far fa-clock"></i> 数据快照 · ${escapeHtml(lastUpdated)}`;
+            }
+          })
+          .catch(err => {
+            console.warn('统计卡片加载异常:', err);
+            const statsContainer = document.getElementById('statsContainer');
+            if (statsContainer) {
+              statsContainer.innerHTML = `<div class="stat-card" style="grid-column:1/-1;text-align:center;"><i class="fas fa-cloud-moon"></i> 统计信息正在星海漂流，稍后再来看看吧~</div>`;
+            }
+          });
+      }
+
+      // 加载最新文章和作品（过滤隐藏标签）
+      function loadRecentContent() {
+        // 优雅降级 fetch
+        const fetchArticles = fetch('/articles.json').then(res => res.ok ? res.json() : Promise.reject('articles.json不可用'));
+        const fetchWorks = fetch('/works.json').then(res => res.ok ? res.json() : Promise.reject('works.json不可用'));
+        
+        Promise.allSettled([fetchArticles, fetchWorks]).then(results => {
+          let articlesData = results[0].status === 'fulfilled' ? results[0].value : null;
+          let worksData = results[1].status === 'fulfilled' ? results[1].value : null;
+          
+          let articles = [];
+          let works = [];
+          if (articlesData && articlesData.articles) {
+            articles = articlesData.articles.filter(item => {
+              const tags = (item.tags || item.tag || []);
+              return !tags.includes('隐藏');
+            });
+          }
+          if (worksData && worksData.works) {
+            works = worksData.works.filter(item => {
+              const tags = (item.tags || item.tag || []);
+              return !tags.includes('隐藏');
+            });
+          }
+          
+          // 按日期排序（新->旧）
+          const sortByDate = (a,b) => new Date(b.date) - new Date(a.date);
+          articles.sort(sortByDate);
+          works.sort(sortByDate);
+          const latestArticles = articles.slice(0, 5);
+          const latestWorks = works.slice(0, 5);
+          
+          renderRecentList('recentArticlesList', latestArticles, 'article');
+          renderRecentList('recentWorksList', latestWorks, 'work');
+        }).catch(err => {
+          console.error('最近内容加载失败:', err);
+          const artContainer = document.getElementById('recentArticlesList');
+          if (artContainer) artContainer.innerHTML = '<div class="recent-empty"><i class="fas fa-sad-tear"></i> 内容加载失败，刷新试试</div>';
+          const workContainer = document.getElementById('recentWorksList');
+          if (workContainer) workContainer.innerHTML = '<div class="recent-empty"><i class="fas fa-tools"></i> 暂时无法获取作品</div>';
+        });
+      }
+      
+      function renderRecentList(containerId, items, type) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        if (!items || items.length === 0) {
+          container.innerHTML = '<div class="recent-empty"><i class="far fa-star"></i> 暂无新动态，敬请期待～</div>';
+          return;
+        }
+        const html = items.map(item => {
+          const title = escapeHtml(item.title || '未命名');
+          const date = item.date ? escapeHtml(item.date) : '';
+          let desc = item.description ? escapeHtml(item.description.substring(0, 85)) : '';
+          if (desc.length >= 85) desc += '…';
+          
+          if (type === 'article') {
+            const articleUrl = item.url || '';
+            return `
+              <div class="recent-item" data-type="article" data-url="${escapeHtml(articleUrl)}">
+                <div class="recent-title">
+                  <span><i class="far fa-file-alt" style="margin-right: 8px; color: var(--accent-color);"></i>${title}</span>
+                  ${date ? `<span class="recent-badge">${date}</span>` : ''}
+                </div>
+                ${desc ? `<div class="recent-meta"><i class="fas fa-feather"></i> ${desc}</div>` : ''}
+                <div class="recent-meta" style="margin-top: 8px;"><i class="far fa-clock"></i> 点击阅读</div>
+              </div>
+            `;
+          } else {
+            // 作品类型存储 data-work-info
+            const workInfo = {
+              title: item.title,
+              description: item.description || '',
+              link: item.link || '',
+              tags: item.tags || item.tag || []
+            };
+            const workInfoStr = encodeURIComponent(JSON.stringify(workInfo));
+            return `
+              <div class="recent-item" data-type="work" data-work-info="${workInfoStr}">
+                <div class="recent-title">
+                  <span><i class="fas fa-cube" style="margin-right: 8px; color: var(--accent-color);"></i>${title}</span>
+                  ${date ? `<span class="recent-badge">${date}</span>` : ''}
+                </div>
+                ${desc ? `<div class="recent-meta"><i class="fas fa-code-branch"></i> ${desc}</div>` : ''}
+                <div class="recent-meta" style="margin-top: 8px;"><i class="fas fa-mouse-pointer"></i> 点击查看详情</div>
+              </div>
+            `;
+          }
+        }).join('');
+        container.innerHTML = html;
+        attachRecentEvents(container);
+      }
+      
+      // 绑定最近项目的点击事件（复用作品详情或文章跳转逻辑，与全局风格统一）
+      function attachRecentEvents(container) {
+        const items = container.querySelectorAll('.recent-item');
+        items.forEach(el => {
+          el.removeEventListener('click', recentClickHandler);
+          el.addEventListener('click', recentClickHandler);
+        });
+      }
+      
+      function recentClickHandler(e) {
+        const target = e.currentTarget;
+        const type = target.dataset.type;
+        if (type === 'article') {
+          const url = target.dataset.url;
+          if (url && url.trim()) {
+            window.open(url, '_blank');
+          } else {
+            console.warn('文章链接无效');
+          }
+        } else if (type === 'work') {
+          const workInfoRaw = target.dataset.workInfo;
+          if (workInfoRaw) {
+            try {
+              const workInfo = JSON.parse(decodeURIComponent(workInfoRaw));
+              // 调用全局 PageManager 展示详情（若已加载）
+              if (typeof PageManager !== 'undefined' && PageManager.showWorkDetails) {
+                PageManager.showWorkDetails(workInfo);
+              } else {
+                // 后备方案
+                alert(`${workInfo.title}\n${workInfo.description || '暂无描述'}`);
+                if (workInfo.link) window.open(workInfo.link, '_blank');
+              }
+            } catch(e) {
+              console.error('作品详情解析失败');
+            }
+          }
+        }
+      }
+      
+      // 初始化所有
+      function initHomeEnhance() {
+        loadStatisticsAndTags();
+        loadRecentContent();
+      }
+      
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initHomeEnhance);
+      } else {
+        initHomeEnhance();
+      }
+      
+      // 解决当 PageManager 完全加载后，作品详情展示可能尚未绑定全局的问题，但无需额外处理
+      // 确保点击作品卡片时，若 PageManager 可用则调用优雅弹窗
+      window.addEventListener('load', function() {
+        // 二次确保最近元素事件 (以防动态内容未绑定)
+        const containers = ['recentArticlesList', 'recentWorksList'];
+        containers.forEach(id => {
+          const cont = document.getElementById(id);
+          if (cont && cont.querySelectorAll('.recent-item').length) attachRecentEvents(cont);
+        });
+      });
+    })();
+  </script>
 </body>
 </html>

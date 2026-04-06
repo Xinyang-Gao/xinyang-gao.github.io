@@ -161,25 +161,25 @@ class DataManager {
  * 问候语
  */
 function updateDynamicGreeting() {
+    const greetingEl = document.getElementById('dynamic-greeting');
+    if (!greetingEl) return;
+    
     const h = new Date().getHours();
-    const slots = [
-        { max: 7, text: '唔…好早啊…早上好！' },
-        { max: 8, text: '早上好呀！希望今天是开心的一天呐' },
-        { max: 11, text: '上午好！' },
-        { max: 14, text: '中午好！记得吃午饭和午睡哦~' },
-        { max: 18, text: '下午好！' },
-        { max: 21, text: '晚上好呀！' },
-        { max: 23, text: '夜深了，注意休息~' }
-    ];
-    const greeting = slots.find(s => h < s.max)?.text || '熬夜对身体不好的，要注意休息呀！';
-
-    const el = document.getElementById('dynamic-greeting');
-    if (el) {
-        el.textContent = greeting;
-        el.style.fontWeight = 'bold';
-        el.style.color = '';
-    }
+    let msg = '';
+    
+    if (h < 5) msg = '深夜灵感迸发，也要记得休息～';
+    else if (h < 8) msg = '晨光熹微，今天也要闪闪发光！';
+    else if (h < 11) msg = '早上好！元气满满的一天开始啦';
+    else if (h < 14) msg = '中午好，记得补充能量~';
+    else if (h < 18) msg = '午后时光，适合创造';
+    else if (h < 21) msg = '傍晚好，享受此刻宁静';
+    else msg = '星河在上，愿你今夜好梦';
+    
+    greetingEl.textContent = msg;
+    greetingEl.style.fontWeight = 'bold';
 }
+
+window.updateDynamicGreeting = updateDynamicGreeting;
 
 /**
  * UI 渲染器
@@ -1208,6 +1208,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const currentPage = window.location.pathname.split('/').pop().replace('.html', '') || 'index';
     if (currentPage === 'index') {
         updateDynamicGreeting();
+        srtInterval(updateDynamicGreeting, 60000);
     } else if (currentPage === 'articles') {
         initializeArticlesPage();
     } else if (currentPage === 'works') {
