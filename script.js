@@ -1217,6 +1217,21 @@ function startSiteAgeUpdater() {
  */
 class ExternalLinkManager {
     constructor() {
+        // 白名单配置
+        this.WHITELIST = new Set([
+            "github.com", "vercel.com", "netlify.app", "wikipedia.org",
+            "bilibili.com", "bing.com", "baidu.com", "zhihu.com",
+            "csdn.net", "cloud.tencent.com", "aliyun.com", "gaoxinyang.lanzouq.com"
+        ]);
+        
+        this.currentModal = null;
+        this.currentOverlay = null;
+        this.countdownInterval = null;
+        this.remainingSeconds = 3;
+        this.pendingUrl = null;
+        this.isSafe = false;
+        this.redirectTriggered = false;
+        
         this.internalDomains = [
             window.location.hostname,
             'localhost',
@@ -1228,6 +1243,18 @@ class ExternalLinkManager {
         this.init();
     }
 
+    // 判断是否为白名单域名
+    isWhitelistedDomain(hostname) {
+        if (!hostname) return false;
+        const lower = hostname.toLowerCase();
+        if (this.WHITELIST.has(lower)) return true;
+        for (let domain of this.WHITELIST) {
+            if (lower.endsWith('.' + domain)) return true;
+        }
+        return false;
+    }
+
+    // 判断是否为外部链接
     isExternalLink(url) {
         if (!url || url.startsWith('#') || url.startsWith('javascript:')) {
             return false;
@@ -1244,6 +1271,247 @@ class ExternalLinkManager {
         }
     }
 
+    // 清除倒计时
+    clearTimer() {
+        if (this.countdownInterval) {
+            clearInterval(this.countdownInterval);
+            this.countdownInterval = null;
+        }
+    }
+
+    // 关闭当前弹窗
+    closeModal() {
+        if (!this.currentModal) return;
+        
+        this.clearTimer();
+        
+        if (this.currentModal.classList.contains('closing')) return;
+        this.currentModal.classList.add('closing');
+        if (this.currentOverlay) {
+            this.currentOverlay.classList.remove('active');
+        }
+        
+        setTimeout(() => {
+            if (this.currentModal) this.currentModal.remove();
+            if (this.currentOverlay) this.currentOverlay.remove();
+            this.currentModal = null;
+            this.currentOverlay = null;
+            this.pendingUrl = null;
+            this.redirectTriggered = false;
+        }, 400);
+    }
+
+    // 执行跳转（新标签页打开）
+    doRedirect() {
+        if (this.redirectTriggered) return;
+        if (!this.pendingUrl) return;
+        
+        this.redirectTriggered = true;
+        this.clearTimer();
+        
+        // 在新标签页打开链接
+        window.open(this.pendingUrl, '_blank', 'noopener,noreferrer');
+        
+        // 延迟关闭弹窗，让用户看到已跳转的提示
+        setTimeout(() => {
+            this.closeModal();
+        }, 300);
+    }
+
+    // 启动白名单倒计时
+    startCountdown(timerElement) {
+        if (!this.isSafe) return;
+        if (this.redirectTriggered) return;
+        
+        this.clearTimer();
+        this.remainingSeconds = 3;
+        
+        if (timerElement) {
+            timerElement.innerHTML = `信任站点 · ${this.remainingSeconds} 秒后自动跳转`;
+        }
+        
+        this.countdownInterval = setInterval(() => {
+            if (this.redirectTriggered || !this.currentModal) {
+                this.clearTimer();
+                return;
+            }
+            
+            this.remainingSeconds--;
+            
+            if (this.remainingSeconds <= 0) {
+                this.clearTimer();
+                if (!this.redirectTriggered && timerElement) {
+                    timerElement.innerHTML = `✓ 正在跳转...`;
+                }
+                this.doRedirect();
+            } else {
+                if (!this.redirectTriggered && timerElement) {
+                    timerElement.innerHTML = `信任站点 · ${this.remainingSeconds} 秒后自动跳转`;
+                }
+            }
+        }, 1000);
+    }
+
+    // 显示外链确认弹窗
+    showExternalLinkModal(url, targetElement = null) {
+        // 关闭已存在的弹窗
+        if (this.currentModal) {
+            this.closeModal();
+        }
+        
+        // 验证 URL
+        let hostname = '';
+        let isValid = false;
+        
+        try {
+            const urlObj = new URL(url);
+            if (urlObj.protocol === 'http:' || urlObj.protocol === 'https:') {
+                isValid = true;
+                hostname = urlObj.hostname;
+            } else {
+                this.showErrorToast('不支持的协议，仅支持 HTTP/HTTPS');
+                return false;
+            }
+        } catch (err) {
+            this.showErrorToast('链接格式无效');
+            return false;
+        }
+        
+        if (!isValid) return false;
+        
+        // 判断是否白名单
+        this.isSafe = this.isWhitelistedDomain(hostname);
+        this.pendingUrl = url;
+        this.redirectTriggered = false;
+        
+        // 创建遮罩层
+        const overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        document.body.appendChild(overlay);
+        
+        // 创建弹窗
+        const modal = document.createElement('div');
+        modal.className = 'external-modal';
+        
+        // 转义函数
+        const escapeHtml = (str) => {
+            if (!str) return '';
+            return str.replace(/[&<>]/g, function(m) {
+                if (m === '&') return '&amp;';
+                if (m === '<') return '&lt;';
+                if (m === '>') return '&gt;';
+                return m;
+            });
+        };
+        
+        const safeClass = this.isSafe ? 'safe' : '';
+        const icon = this.isSafe ? '' : '';
+        const subText = this.isSafe ? '安全站点' : '您即将访问外部网站';
+        const messageHtml = this.isSafe 
+            ? '安全的网站<br>将自动为您跳转，您也可点击「立即前往」手动跳转。'
+            : '本站不对第三方内容负责';
+        const btnText = this.isSafe ? '立即前往' : '继续前往';
+        const btnSafeClass = this.isSafe ? 'safe' : '';
+        
+        modal.innerHTML = `
+            <div class="external-modal-close">✕</div>
+            <div class="external-modal-content">
+                <div class="external-modal-header">
+                    <span class="external-modal-icon">${icon}</span>
+                    <span class="external-modal-domain ${safeClass}">${escapeHtml(hostname)}</span>
+                </div>
+                <div class="external-modal-sub">${subText}</div>
+                <div class="external-modal-url">${escapeHtml(url)}</div>
+                <div class="external-modal-message">${messageHtml}</div>
+                <div id="external-timer-area" class="external-modal-timer" style="${this.isSafe ? '' : 'display: none;'}"></div>
+                <div class="external-modal-buttons">
+                    <button class="external-modal-btn" id="external-cancel-btn">取消</button>
+                    <button class="external-modal-btn external-modal-btn-primary ${btnSafeClass}" id="external-confirm-btn">${btnText}</button>
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        this.currentModal = modal;
+        this.currentOverlay = overlay;
+        
+        // 绑定事件
+        const closeBtn = modal.querySelector('.external-modal-close');
+        const cancelBtn = modal.querySelector('#external-cancel-btn');
+        const confirmBtn = modal.querySelector('#external-confirm-btn');
+        const timerArea = modal.querySelector('#external-timer-area');
+        
+        const handleClose = () => this.closeModal();
+        const handleConfirm = () => {
+            if (this.redirectTriggered) return;
+            this.clearTimer();
+            this.doRedirect();
+        };
+        
+        closeBtn.addEventListener('click', handleClose);
+        cancelBtn.addEventListener('click', handleClose);
+        confirmBtn.addEventListener('click', handleConfirm);
+        overlay.addEventListener('click', handleClose);
+        
+        // ESC 键关闭
+        const escHandler = (e) => {
+            if (e.key === 'Escape') {
+                this.closeModal();
+                document.removeEventListener('keydown', escHandler);
+            }
+        };
+        document.addEventListener('keydown', escHandler);
+        
+        // 弹窗关闭时清理 ESC 监听
+        const originalClose = this.closeModal.bind(this);
+        this.closeModal = () => {
+            document.removeEventListener('keydown', escHandler);
+            originalClose();
+            // 恢复原始的 closeModal 引用
+            this.closeModal = originalClose;
+        };
+        
+        // 显示动画
+        requestAnimationFrame(() => {
+            modal.classList.add('active');
+            overlay.classList.add('active');
+        });
+        
+        // 如果是白名单，启动倒计时
+        if (this.isSafe) {
+            this.startCountdown(timerArea);
+        }
+        
+        return true;
+    }
+
+    // 显示错误提示（简单的 toast 风格）
+    showErrorToast(message) {
+        const toast = document.createElement('div');
+        toast.textContent = message;
+        toast.style.cssText = `
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--accent-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            z-index: 10000;
+            box-shadow: var(--shadow-md);
+            animation: fadeInUp 0.3s ease;
+        `;
+        document.body.appendChild(toast);
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            setTimeout(() => toast.remove(), 300);
+        }, 2500);
+    }
+
+    // 处理链接点击
     handleLinkClick(e) {
         let target = e.target.closest('a');
         if (!target) return;
@@ -1254,17 +1522,15 @@ class ExternalLinkManager {
         if (this.isExternalLink(href)) {
             e.preventDefault();
             e.stopPropagation();
-            
-            const confirmUrl = `/link.html?url=${encodeURIComponent(href)}`;
-            window.open(confirmUrl, '_blank', 'noopener,noreferrer');
+            this.showExternalLinkModal(href, target);
         }
     }
 
+    // 初始化事件监听
     init() {
         document.addEventListener('click', (e) => {
             this.handleLinkClick(e);
         });
-        
         console.log('外链跳转确认管理器已启动');
     }
 }

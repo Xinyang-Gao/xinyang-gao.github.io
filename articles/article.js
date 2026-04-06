@@ -4,18 +4,18 @@ class ArticlePageManager {
         this.scrollTimer = null;
         this.observer = null;
         
-    this.viewerActive = false;
-    this.currentIndex = 0;
-    this.galleryImages = [];
-    this.viewerElement = null;
-    this.viewerImage = null;
-    this.viewerWrapper = null;
-    this.transform = { scale: 1, translateX: 0, translateY: 0 };
-    this.isDragging = false;
-    this.dragStart = { x: 0, y: 0 };
-    this.currentTransform = { x: 0, y: 0, scale: 1 };
-    
-    this.init();
+        this.viewerActive = false;
+        this.currentIndex = 0;
+        this.galleryImages = [];
+        this.viewerElement = null;
+        this.viewerImage = null;
+        this.viewerWrapper = null;
+        this.transform = { scale: 1, translateX: 0, translateY: 0 };
+        this.isDragging = false;
+        this.dragStart = { x: 0, y: 0 };
+        this.currentTransform = { x: 0, y: 0, scale: 1 };
+        
+        this.init();
     }
 
     /**
@@ -209,369 +209,409 @@ class ArticlePageManager {
     }
 
     /**
-     * 初始化图片功能
+     * 初始化图片功能（懒加载 + 查看器 + 样式类）
      */
-initImageFeatures() {
-    const images = document.querySelectorAll('#articleBody img');
-    // 收集图片信息（真实 URL 优先从 data-src 获取）
-    this.galleryImages = Array.from(images).map(img => ({
-        src: img.dataset.src || img.src,
-        alt: img.alt || img.title || ''
-    }));
-    
-    // 为每个图片设置懒加载
-    this.lazyLoadImages(images);
-    
-    // 绑定点击事件（打开查看器）
-    images.forEach((img, index) => {
-        img.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.openImageViewer(index);
-        });
-    });
-}
+    initImageFeatures() {
+        const images = document.querySelectorAll('#articleBody img');
+        if (!images.length) return;
 
-lazyLoadImages(images) {
-    if (!images.length) return;
-    
-    // 检查浏览器是否支持 Intersection Observer
-    if (!window.IntersectionObserver) {
-        // 降级：直接加载所有图片
-        images.forEach(img => this.loadImage(img));
-        return;
-    }
-    
-    const observer = new IntersectionObserver((entries, obs) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                const img = entry.target;
-                this.loadImage(img);
-                obs.unobserve(img); // 加载后停止观察
+        // 为所有图片添加懒加载基础样式类（用于淡入效果）
+        images.forEach(img => {
+            // 避免重复添加
+            if (!img.classList.contains('lazy-image')) {
+                img.classList.add('lazy-image');
+            }
+            // 如果图片已经有 src（非懒加载），直接标记为已加载
+            if (img.src && img.src !== '' && !img.dataset.src) {
+                img.classList.add('loaded');
             }
         });
-    }, {
-        rootMargin: '100px 0px', // 提前 100px 开始加载
-        threshold: 0.01
-    });
-    
-    images.forEach(img => observer.observe(img));
-}
 
-loadImage(img) {
-    const src = img.dataset.src;
-    if (!src || img.src === src) return;
-    
-    // 添加加载状态类
-    img.classList.add('lazy-loading');
-    
-    // 创建一个新的 Image 对象预加载
-    const tempImage = new Image();
-    tempImage.onload = () => {
-        img.src = src;
-        img.classList.remove('lazy-loading');
-        img.classList.add('lazy-loaded');
-        // 移除 data-src 属性
-        img.removeAttribute('data-src');
-    };
-    tempImage.onerror = () => {
-        img.classList.remove('lazy-loading');
-        // 可设置一张错误占位图
-    };
-    tempImage.src = src;
-}
-
-/**
- * 打开图片查看器
- */
-openImageViewer(index) {
-    this.currentIndex = index;
-    this.transform = { scale: 1, translateX: 0, translateY: 0 };
-    this.currentTransform = { x: 0, y: 0, scale: 1 };
-    
-    this.createViewerDOM();
-    this.updateViewerImage();
-    this.bindViewerEvents();
-    this.updateCounter();
-    
-    document.body.style.overflow = 'hidden';
-    this.viewerActive = true;
-    // 添加显示动画
-    setTimeout(() => {
-        if (this.viewerElement) {
-            this.viewerElement.classList.add('active');
-        }
-    }, 10);
-}
-
-/**
- * 创建查看器DOM结构
- */
-createViewerDOM() {
-    // 如果已存在则移除
-    if (this.viewerElement) {
-        this.viewerElement.remove();
-    }
-    
-    const viewer = document.createElement('div');
-    viewer.className = 'modern-image-viewer';
-    viewer.innerHTML = `
-        <div class="viewer-overlay"></div>
-        <div class="viewer-container">
-            <button class="viewer-close" aria-label="关闭">&times;</button>
-            <button class="viewer-prev" aria-label="上一张">‹</button>
-            <button class="viewer-next" aria-label="下一张">›</button>
-            <div class="viewer-toolbar">
-                <button class="viewer-zoom-in" aria-label="放大">+</button>
-                <button class="viewer-zoom-out" aria-label="缩小">-</button>
-                <button class="viewer-reset" aria-label="重置">⟳</button>
-                <span class="viewer-counter">1 / 1</span>
-            </div>
-            <div class="viewer-image-wrapper">
-                <img class="viewer-image" alt="" draggable="false">
-            </div>
-        </div>
-    `;
-    
-    document.body.appendChild(viewer);
-    this.viewerElement = viewer;
-    this.viewerImage = viewer.querySelector('.viewer-image');
-    this.viewerWrapper = viewer.querySelector('.viewer-image-wrapper');
-}
-
-/**
- * 更新当前显示的图片
- */
-updateViewerImage() {
-    if (!this.viewerImage || !this.galleryImages[this.currentIndex]) return;
-    
-    const imgData = this.galleryImages[this.currentIndex];
-    this.viewerImage.alt = imgData.alt;
-    this.viewerImage.src = imgData.src;
-    
-    // 重置变换
-    this.resetImageTransform();
-    this.updateCounter();
-}
-
-/**
- * 重置图片缩放和位置
- */
-resetImageTransform() {
-    this.transform = { scale: 1, translateX: 0, translateY: 0 };
-    this.currentTransform = { x: 0, y: 0, scale: 1 };
-    this.applyTransform();
-}
-
-/**
- * 应用CSS变换
- */
-applyTransform() {
-    if (!this.viewerImage) return;
-    const { translateX, translateY, scale } = this.transform;
-    this.viewerImage.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
-}
-
-/**
- * 缩放图片
- */
-zoomImage(delta) {
-    let newScale = this.transform.scale + delta;
-    newScale = Math.min(Math.max(0.5, newScale), 5);
-    
-    if (newScale !== this.transform.scale) {
-        this.transform.scale = newScale;
-        // 如果缩放为1，重置位置
-        if (newScale === 1) {
-            this.transform.translateX = 0;
-            this.transform.translateY = 0;
-            this.currentTransform = { x: 0, y: 0, scale: 1 };
-        } else {
-            // 边界限制（简化处理）
-            this.transform.translateX = Math.min(Math.max(this.transform.translateX, -300), 300);
-            this.transform.translateY = Math.min(Math.max(this.transform.translateY, -300), 300);
-        }
-        this.applyTransform();
-    }
-}
-
-/**
- * 切换上一张/下一张
- */
-switchImage(direction) {
-    let newIndex = this.currentIndex + direction;
-    if (newIndex < 0) newIndex = this.galleryImages.length - 1;
-    if (newIndex >= this.galleryImages.length) newIndex = 0;
-    
-    if (newIndex === this.currentIndex) return;
-    
-    this.currentIndex = newIndex;
-    this.updateViewerImage();
-}
-
-/**
- * 更新计数器显示
- */
-updateCounter() {
-    const counter = this.viewerElement?.querySelector('.viewer-counter');
-    if (counter) {
-        counter.textContent = `${this.currentIndex + 1} / ${this.galleryImages.length}`;
-    }
-    
-    // 根据图片数量显示/隐藏导航按钮
-    const prevBtn = this.viewerElement?.querySelector('.viewer-prev');
-    const nextBtn = this.viewerElement?.querySelector('.viewer-next');
-    if (this.galleryImages.length <= 1) {
-        prevBtn?.style.setProperty('display', 'none');
-        nextBtn?.style.setProperty('display', 'none');
-    } else {
-        prevBtn?.style.setProperty('display', 'flex');
-        nextBtn?.style.setProperty('display', 'flex');
-    }
-}
-
-/**
- * 绑定查看器事件
- */
-bindViewerEvents() {
-    if (!this.viewerElement) return;
-    
-    // 关闭按钮
-    const closeBtn = this.viewerElement.querySelector('.viewer-close');
-    closeBtn?.addEventListener('click', () => this.closeImageViewer());
-    
-    // 背景点击关闭
-    const overlay = this.viewerElement.querySelector('.viewer-overlay');
-    overlay?.addEventListener('click', () => this.closeImageViewer());
-    
-    // 上一张/下一张
-    const prevBtn = this.viewerElement.querySelector('.viewer-prev');
-    const nextBtn = this.viewerElement.querySelector('.viewer-next');
-    prevBtn?.addEventListener('click', () => this.switchImage(-1));
-    nextBtn?.addEventListener('click', () => this.switchImage(1));
-    
-    // 缩放按钮
-    const zoomInBtn = this.viewerElement.querySelector('.viewer-zoom-in');
-    const zoomOutBtn = this.viewerElement.querySelector('.viewer-zoom-out');
-    const resetBtn = this.viewerElement.querySelector('.viewer-reset');
-    zoomInBtn?.addEventListener('click', () => this.zoomImage(0.2));
-    zoomOutBtn?.addEventListener('click', () => this.zoomImage(-0.2));
-    resetBtn?.addEventListener('click', () => this.resetImageTransform());
-    
-    // 双击重置
-    this.viewerImage?.addEventListener('dblclick', () => this.resetImageTransform());
-    
-    // 鼠标/触摸拖拽平移
-    this.initDragEvents();
-    
-    // 键盘事件
-    document.addEventListener('keydown', this.handleViewerKeydown);
-}
-
-/**
- * 初始化拖拽平移事件
- */
-initDragEvents() {
-    if (!this.viewerImage) return;
-    
-    const onPointerDown = (e) => {
-        // 只在缩放大于1时允许拖拽
-        if (this.transform.scale <= 1) return;
+        // 收集图片信息（真实 URL 优先从 data-src 获取）
+        this.galleryImages = Array.from(images).map(img => ({
+            src: img.dataset.src || img.src,
+            alt: img.alt || img.title || ''
+        }));
         
-        e.preventDefault();
-        this.isDragging = true;
-        this.dragStart = {
-            x: e.clientX - this.transform.translateX,
-            y: e.clientY - this.transform.translateY
+        // 为每个图片设置懒加载
+        this.lazyLoadImages(images);
+        
+        // 绑定点击事件（打开查看器）
+        images.forEach((img, index) => {
+            img.addEventListener('click', (e) => {
+                e.stopPropagation();
+                // 如果图片尚未加载真实内容，尝试先加载（提升查看器体验）
+                if (img.dataset.src && (!img.src || img.src === '')) {
+                    this.loadImage(img, () => {
+                        this.openImageViewer(index);
+                    });
+                } else {
+                    this.openImageViewer(index);
+                }
+            });
+        });
+    }
+
+    /**
+     * 懒加载图片（使用 IntersectionObserver）
+     */
+    lazyLoadImages(images) {
+        if (!images.length) return;
+        
+        // 检查浏览器是否支持 Intersection Observer
+        if (!window.IntersectionObserver) {
+            // 降级：直接加载所有图片
+            images.forEach(img => this.loadImage(img));
+            return;
+        }
+        
+        const observer = new IntersectionObserver((entries, obs) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    this.loadImage(img);
+                    obs.unobserve(img); // 加载后停止观察
+                }
+            });
+        }, {
+            rootMargin: '100px 0px', // 提前 100px 开始加载
+            threshold: 0.01
+        });
+        
+        images.forEach(img => observer.observe(img));
+    }
+
+    /**
+     * 加载单张图片（支持回调）
+     */
+    loadImage(img, onLoadCallback) {
+        const src = img.dataset.src;
+        if (!src || (img.src === src && img.classList.contains('loaded'))) {
+            if (onLoadCallback) onLoadCallback();
+            return;
+        }
+        
+        // 添加加载状态类（可选，用于显示加载指示器）
+        img.classList.add('lazy-loading');
+        
+        // 创建一个新的 Image 对象预加载
+        const tempImage = new Image();
+        tempImage.onload = () => {
+            img.src = src;
+            img.classList.remove('lazy-loading');
+            img.classList.add('loaded');
+            // 移除 data-src 属性，标记已加载
+            img.removeAttribute('data-src');
+            if (onLoadCallback) onLoadCallback();
         };
-        this.viewerImage.style.cursor = 'grabbing';
-    };
-    
-    const onPointerMove = (e) => {
-        if (!this.isDragging) return;
-        
-        const newX = e.clientX - this.dragStart.x;
-        const newY = e.clientY - this.dragStart.y;
-        
-        // 边界限制（可调整）
-        const maxTranslate = 200;
-        this.transform.translateX = Math.min(Math.max(newX, -maxTranslate), maxTranslate);
-        this.transform.translateY = Math.min(Math.max(newY, -maxTranslate), maxTranslate);
-        this.applyTransform();
-    };
-    
-    const onPointerUp = () => {
-        this.isDragging = false;
-        if (this.viewerImage) {
-            this.viewerImage.style.cursor = 'grab';
-        }
-    };
-    
-    this.viewerImage.addEventListener('pointerdown', onPointerDown);
-    window.addEventListener('pointermove', onPointerMove);
-    window.addEventListener('pointerup', onPointerUp);
-    
-    // 保存以便移除
-    this.viewerDragHandlers = { onPointerDown, onPointerMove, onPointerUp };
-}
-
-/**
- * 键盘事件处理
- */
-handleViewerKeydown = (e) => {
-    if (!this.viewerActive) return;
-    
-    switch(e.key) {
-        case 'Escape':
-            this.closeImageViewer();
-            break;
-        case 'ArrowLeft':
-            this.switchImage(-1);
-            break;
-        case 'ArrowRight':
-            this.switchImage(1);
-            break;
-        case '+':
-        case '=':
-            this.zoomImage(0.2);
-            break;
-        case '-':
-            this.zoomImage(-0.2);
-            break;
-        default:
-            break;
+        tempImage.onerror = () => {
+            img.classList.remove('lazy-loading');
+            // 可设置一张错误占位图或保留原占位图
+            console.warn('图片加载失败:', src);
+            if (onLoadCallback) onLoadCallback();
+        };
+        tempImage.src = src;
     }
-};
 
-/**
- * 关闭图片查看器
- */
-closeImageViewer() {
-    if (!this.viewerActive) return;
-    
-    document.body.style.overflow = '';
-    this.viewerActive = false;
-    
-    // 移除键盘事件
-    document.removeEventListener('keydown', this.handleViewerKeydown);
-    
-    // 移除拖拽事件
-    if (this.viewerDragHandlers && this.viewerImage) {
-        this.viewerImage.removeEventListener('pointerdown', this.viewerDragHandlers.onPointerDown);
-        window.removeEventListener('pointermove', this.viewerDragHandlers.onPointerMove);
-        window.removeEventListener('pointerup', this.viewerDragHandlers.onPointerUp);
-    }
-    
-    if (this.viewerElement) {
-        this.viewerElement.classList.remove('active');
+    /**
+     * 打开图片查看器
+     */
+    openImageViewer(index) {
+        if (!this.galleryImages.length) return;
+        
+        this.currentIndex = Math.min(Math.max(0, index), this.galleryImages.length - 1);
+        this.transform = { scale: 1, translateX: 0, translateY: 0 };
+        this.currentTransform = { x: 0, y: 0, scale: 1 };
+        
+        this.createViewerDOM();
+        this.updateViewerImage();
+        this.bindViewerEvents();
+        this.updateCounter();
+        
+        document.body.style.overflow = 'hidden';
+        this.viewerActive = true;
+        // 添加显示动画
         setTimeout(() => {
             if (this.viewerElement) {
-                this.viewerElement.remove();
-                this.viewerElement = null;
+                this.viewerElement.classList.add('active');
             }
-        }, 300);
+        }, 10);
     }
-}
 
+    /**
+     * 创建查看器DOM结构
+     */
+    createViewerDOM() {
+        // 如果已存在则移除
+        if (this.viewerElement) {
+            this.viewerElement.remove();
+        }
+        
+        const viewer = document.createElement('div');
+        viewer.className = 'modern-image-viewer';
+        viewer.innerHTML = `
+            <div class="viewer-overlay"></div>
+            <div class="viewer-container">
+                <button class="viewer-close" aria-label="关闭">&times;</button>
+                <button class="viewer-prev" aria-label="上一张">‹</button>
+                <button class="viewer-next" aria-label="下一张">›</button>
+                <div class="viewer-toolbar">
+                    <button class="viewer-zoom-in" aria-label="放大">+</button>
+                    <button class="viewer-zoom-out" aria-label="缩小">-</button>
+                    <button class="viewer-reset" aria-label="重置">⟳</button>
+                    <span class="viewer-counter">1 / 1</span>
+                </div>
+                <div class="viewer-image-wrapper">
+                    <img class="viewer-image" alt="" draggable="false">
+                </div>
+            </div>
+        `;
+        
+        document.body.appendChild(viewer);
+        this.viewerElement = viewer;
+        this.viewerImage = viewer.querySelector('.viewer-image');
+        this.viewerWrapper = viewer.querySelector('.viewer-image-wrapper');
+    }
+
+    /**
+     * 更新当前显示的图片
+     */
+    updateViewerImage() {
+        if (!this.viewerImage || !this.galleryImages[this.currentIndex]) return;
+        
+        const imgData = this.galleryImages[this.currentIndex];
+        this.viewerImage.alt = imgData.alt;
+        // 添加加载中占位效果
+        this.viewerImage.style.opacity = '0.5';
+        const tempImg = new Image();
+        tempImg.onload = () => {
+            this.viewerImage.src = imgData.src;
+            this.viewerImage.style.opacity = '1';
+        };
+        tempImg.onerror = () => {
+            this.viewerImage.src = '';
+            this.viewerImage.alt = '图片加载失败';
+            this.viewerImage.style.opacity = '1';
+        };
+        tempImg.src = imgData.src;
+        
+        // 重置变换
+        this.resetImageTransform();
+        this.updateCounter();
+    }
+
+    /**
+     * 重置图片缩放和位置
+     */
+    resetImageTransform() {
+        this.transform = { scale: 1, translateX: 0, translateY: 0 };
+        this.currentTransform = { x: 0, y: 0, scale: 1 };
+        this.applyTransform();
+    }
+
+    /**
+     * 应用CSS变换
+     */
+    applyTransform() {
+        if (!this.viewerImage) return;
+        const { translateX, translateY, scale } = this.transform;
+        this.viewerImage.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+    }
+
+    /**
+     * 缩放图片（带边界自适应）
+     */
+    zoomImage(delta) {
+        let newScale = this.transform.scale + delta;
+        newScale = Math.min(Math.max(0.5, newScale), 5);
+        
+        if (newScale !== this.transform.scale) {
+            // 缩放时限制平移范围，防止图片移出视野
+            const maxTranslate = Math.max(200, (newScale - 1) * 300);
+            this.transform.translateX = Math.min(Math.max(this.transform.translateX, -maxTranslate), maxTranslate);
+            this.transform.translateY = Math.min(Math.max(this.transform.translateY, -maxTranslate), maxTranslate);
+            this.transform.scale = newScale;
+            this.applyTransform();
+        }
+    }
+
+    /**
+     * 切换上一张/下一张
+     */
+    switchImage(direction) {
+        let newIndex = this.currentIndex + direction;
+        if (newIndex < 0) newIndex = this.galleryImages.length - 1;
+        if (newIndex >= this.galleryImages.length) newIndex = 0;
+        
+        if (newIndex === this.currentIndex) return;
+        
+        this.currentIndex = newIndex;
+        this.updateViewerImage();
+    }
+
+    /**
+     * 更新计数器显示
+     */
+    updateCounter() {
+        const counter = this.viewerElement?.querySelector('.viewer-counter');
+        if (counter) {
+            counter.textContent = `${this.currentIndex + 1} / ${this.galleryImages.length}`;
+        }
+        
+        // 根据图片数量显示/隐藏导航按钮
+        const prevBtn = this.viewerElement?.querySelector('.viewer-prev');
+        const nextBtn = this.viewerElement?.querySelector('.viewer-next');
+        if (this.galleryImages.length <= 1) {
+            prevBtn?.style.setProperty('display', 'none');
+            nextBtn?.style.setProperty('display', 'none');
+        } else {
+            prevBtn?.style.setProperty('display', 'flex');
+            nextBtn?.style.setProperty('display', 'flex');
+        }
+    }
+
+    /**
+     * 绑定查看器事件
+     */
+    bindViewerEvents() {
+        if (!this.viewerElement) return;
+        
+        // 关闭按钮
+        const closeBtn = this.viewerElement.querySelector('.viewer-close');
+        closeBtn?.addEventListener('click', () => this.closeImageViewer());
+        
+        // 背景点击关闭
+        const overlay = this.viewerElement.querySelector('.viewer-overlay');
+        overlay?.addEventListener('click', () => this.closeImageViewer());
+        
+        // 上一张/下一张
+        const prevBtn = this.viewerElement.querySelector('.viewer-prev');
+        const nextBtn = this.viewerElement.querySelector('.viewer-next');
+        prevBtn?.addEventListener('click', () => this.switchImage(-1));
+        nextBtn?.addEventListener('click', () => this.switchImage(1));
+        
+        // 缩放按钮
+        const zoomInBtn = this.viewerElement.querySelector('.viewer-zoom-in');
+        const zoomOutBtn = this.viewerElement.querySelector('.viewer-zoom-out');
+        const resetBtn = this.viewerElement.querySelector('.viewer-reset');
+        zoomInBtn?.addEventListener('click', () => this.zoomImage(0.2));
+        zoomOutBtn?.addEventListener('click', () => this.zoomImage(-0.2));
+        resetBtn?.addEventListener('click', () => this.resetImageTransform());
+        
+        // 双击重置
+        this.viewerImage?.addEventListener('dblclick', () => this.resetImageTransform());
+        
+        // 鼠标/触摸拖拽平移
+        this.initDragEvents();
+        
+        // 键盘事件
+        document.addEventListener('keydown', this.handleViewerKeydown);
+    }
+
+    /**
+     * 初始化拖拽平移事件（增强边界限制）
+     */
+    initDragEvents() {
+        if (!this.viewerImage) return;
+        
+        const onPointerDown = (e) => {
+            // 只在缩放大于1时允许拖拽
+            if (this.transform.scale <= 1) return;
+            
+            e.preventDefault();
+            this.isDragging = true;
+            this.dragStart = {
+                x: e.clientX - this.transform.translateX,
+                y: e.clientY - this.transform.translateY
+            };
+            this.viewerImage.style.cursor = 'grabbing';
+        };
+        
+        const onPointerMove = (e) => {
+            if (!this.isDragging) return;
+            
+            const newX = e.clientX - this.dragStart.x;
+            const newY = e.clientY - this.dragStart.y;
+            
+            // 动态计算边界（根据缩放比例）
+            const maxTranslate = Math.max(200, (this.transform.scale - 1) * 400);
+            this.transform.translateX = Math.min(Math.max(newX, -maxTranslate), maxTranslate);
+            this.transform.translateY = Math.min(Math.max(newY, -maxTranslate), maxTranslate);
+            this.applyTransform();
+        };
+        
+        const onPointerUp = () => {
+            this.isDragging = false;
+            if (this.viewerImage) {
+                this.viewerImage.style.cursor = 'grab';
+            }
+        };
+        
+        this.viewerImage.addEventListener('pointerdown', onPointerDown);
+        window.addEventListener('pointermove', onPointerMove);
+        window.addEventListener('pointerup', onPointerUp);
+        
+        // 保存以便移除
+        this.viewerDragHandlers = { onPointerDown, onPointerMove, onPointerUp };
+    }
+
+    /**
+     * 键盘事件处理
+     */
+    handleViewerKeydown = (e) => {
+        if (!this.viewerActive) return;
+        
+        switch(e.key) {
+            case 'Escape':
+                this.closeImageViewer();
+                break;
+            case 'ArrowLeft':
+                this.switchImage(-1);
+                break;
+            case 'ArrowRight':
+                this.switchImage(1);
+                break;
+            case '+':
+            case '=':
+                this.zoomImage(0.2);
+                break;
+            case '-':
+                this.zoomImage(-0.2);
+                break;
+            default:
+                break;
+        }
+    };
+
+    /**
+     * 关闭图片查看器
+     */
+    closeImageViewer() {
+        if (!this.viewerActive) return;
+        
+        document.body.style.overflow = '';
+        this.viewerActive = false;
+        
+        // 移除键盘事件
+        document.removeEventListener('keydown', this.handleViewerKeydown);
+        
+        // 移除拖拽事件
+        if (this.viewerDragHandlers && this.viewerImage) {
+            this.viewerImage.removeEventListener('pointerdown', this.viewerDragHandlers.onPointerDown);
+            window.removeEventListener('pointermove', this.viewerDragHandlers.onPointerMove);
+            window.removeEventListener('pointerup', this.viewerDragHandlers.onPointerUp);
+        }
+        
+        if (this.viewerElement) {
+            this.viewerElement.classList.remove('active');
+            setTimeout(() => {
+                if (this.viewerElement) {
+                    this.viewerElement.remove();
+                    this.viewerElement = null;
+                }
+            }, 300);
+        }
+    }
 
     /**
      * 初始化阅读进度条
@@ -680,6 +720,45 @@ closeImageViewer() {
         return container;
     }
 }
+
+/**
+ * 为图片添加 alt 文本作为图片下方说明（避免重复添加）
+ */
+function addImageAltCaptions() {
+    const articleBody = document.querySelector('.article-body');
+    if (!articleBody) return;
+
+    const images = articleBody.querySelectorAll('img');
+    images.forEach(img => {
+        // 避免重复添加（检查下一个兄弟元素是否已经是 caption）
+        const nextSibling = img.nextElementSibling;
+        if (nextSibling && nextSibling.classList && nextSibling.classList.contains('image-alt-text')) {
+            return;
+        }
+
+        const altText = img.getAttribute('alt');
+        // 如果 alt 为空或仅为空格，则不显示
+        if (!altText || altText.trim() === '') return;
+
+        // 创建描述元素
+        const caption = document.createElement('span');
+        caption.className = 'image-alt-text';
+        caption.textContent = altText.trim();
+
+        // 插入到图片后面
+        img.insertAdjacentElement('afterend', caption);
+    });
+}
+
+// 执行时机：文章主体内容已渲染
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', addImageAltCaptions);
+} else {
+    addImageAltCaptions();
+}
+
+// 初始化文章页面管理器
+new ArticlePageManager();
 
 // 在 article.js 中添加（DOMContentLoaded 内部或直接执行）
 function addImageAltCaptions() {
