@@ -77,6 +77,16 @@ class Utils {
         return [];
     }
     
+    static escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
     static debounce(func, wait) {
         let timeout;
         return function executedFunction(...args) {
@@ -192,13 +202,7 @@ class UIRenderer {
     }
     
     static escapeHtml(str) {
-        if (!str) return '';
-        return str.replace(/[&<>]/g, function(m) {
-            if (m === '&') return '&amp;';
-            if (m === '<') return '&lt;';
-            if (m === '>') return '&gt;';
-            return m;
-        });
+        return Utils.escapeHtml(str);
     }
 
     static generateListItem(item, type, index) {
@@ -416,9 +420,11 @@ class SearchController {
                 return;
             }
 
-            // 绑定 UI 事件
-            this.input.addEventListener('input', Utils.debounce(() => this.handleSearch(), 300));
-            this.field.addEventListener('change', () => this.handleSearch());
+            // 绑定 UI 事件（保存引用以便 later removeEventListener）
+            this._inputHandler = Utils.debounce(() => this.handleSearch(), 300);
+            this.input.addEventListener('input', this._inputHandler);
+            this._fieldHandler = () => this.handleSearch();
+            this.field.addEventListener('change', this._fieldHandler);
 
             this.updateTagFilters();
             // 从 URL 恢复筛选条件
@@ -642,8 +648,8 @@ class SearchController {
     }
 
     destroy() {
-        if (this.input) this.input.removeEventListener('input', this.handleSearch);
-        if (this.field) this.field.removeEventListener('change', this.handleSearch);
+        if (this.input && this._inputHandler) this.input.removeEventListener('input', this._inputHandler);
+        if (this.field && this._fieldHandler) this.field.removeEventListener('change', this._fieldHandler);
         if (this.popStateHandler) {
             window.removeEventListener('popstate', this.popStateHandler);
         }
@@ -1478,17 +1484,6 @@ class ExternalLinkManager {
         const modal = document.createElement('div');
         modal.className = 'external-modal';
         
-        // 转义函数
-        const escapeHtml = (str) => {
-            if (!str) return '';
-            return str.replace(/[&<>]/g, function(m) {
-                if (m === '&') return '&amp;';
-                if (m === '<') return '&lt;';
-                if (m === '>') return '&gt;';
-                return m;
-            });
-        };
-        
         const safeClass = this.isSafe ? 'safe' : '';
         const icon = this.isSafe ? '' : '';
         const subText = this.isSafe ? '安全站点' : '您即将访问外部网站';
@@ -1503,10 +1498,10 @@ class ExternalLinkManager {
             <div class="external-modal-content">
                 <div class="external-modal-header">
                     <span class="external-modal-icon">${icon}</span>
-                    <span class="external-modal-domain ${safeClass}">${escapeHtml(hostname)}</span>
+                    <span class="external-modal-domain ${safeClass}">${Utils.escapeHtml(hostname)}</span>
                 </div>
                 <div class="external-modal-sub">${subText}</div>
-                <div class="external-modal-url">${escapeHtml(url)}</div>
+                <div class="external-modal-url">${Utils.escapeHtml(url)}</div>
                 <div class="external-modal-message">${messageHtml}</div>
                 <div id="external-timer-area" class="external-modal-timer" style="${this.isSafe ? '' : 'display: none;'}"></div>
                 <div class="external-modal-buttons">
