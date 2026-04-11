@@ -640,11 +640,15 @@ class SearchController {
     }
 
     setupItemsInteraction() {
-        const content = document.getElementById('mainContent');
+        const content = document.getElementById('mainContent') || document.querySelector('main.main-content-area') || document.querySelector('.container') || document.getElementById(`${this.page}-list-container`);
         if (content) {
             content.removeEventListener('click', PageManager.handleListItemClick);
             content.addEventListener('click', PageManager.handleListItemClick);
+            return;
         }
+        // 兜底：如果未找到主容器，绑定到 document，以确保列表项点击能被捕获
+        document.removeEventListener('click', PageManager.handleListItemClick);
+        document.addEventListener('click', PageManager.handleListItemClick);
     }
 
     destroy() {
@@ -758,11 +762,15 @@ class PageManager {
     }
 
     static setupListItemsInteraction() {
-        const content = document.getElementById('mainContent');
+        const content = document.getElementById('mainContent') || document.querySelector('main.main-content-area') || document.querySelector('.container') || document.getElementById('articles-list-container') || document.getElementById('works-list-container');
         if (content) {
             content.removeEventListener('click', PageManager.handleListItemClick);
             content.addEventListener('click', PageManager.handleListItemClick);
+            return;
         }
+        // 兜底绑定到 document，确保在无特定容器时仍能响应列表项点击
+        document.removeEventListener('click', PageManager.handleListItemClick);
+        document.addEventListener('click', PageManager.handleListItemClick);
     }
 
     static handleListItemClick(e) {
