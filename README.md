@@ -21,11 +21,12 @@
 
 这是一个基于 HTML/CSS/JS 构建的静态个人网站，主要包含以下模块：
 
-- **首页**：展示统计卡片（文章数、总字数、作品数）、标签云、最近更新的文章和作品，以及动态问候语。
+- **首页**：展示统计卡片（文章数、总字数、作品数）、标签云（文章标签 / 作品标签）、最近更新的文章和作品，以及动态问候语。
 - **关于**：个人介绍页。
 - **文章**：通过 Markdown 生成的博客文章列表，支持标签筛选、搜索、阅读进度条、目录导航和 Twikoo 评论。
 - **作品**：展示个人项目作品，支持标签筛选、搜索和详情弹窗。
 - **留言板**：基于 Twikoo 的独立评论系统，访客可留言交流。
+- **404 页面**：包含返回首页和问题反馈入口，并集成 Twikoo 评论区用于收集报错反馈。
 
 网站采用 SPA 风格的页面切换动画，所有页面内容由 JavaScript 动态加载，数据从 JSON 文件中获取，具有良好的扩展性和维护性。
 
@@ -33,18 +34,34 @@
 
 ## 功能特性
 
+### 前端体验
 - **页面动态加载**：通过 `PageManager` 实现无刷新切换，带有平滑过渡动画（“纸张展开”效果）。
 - **暗黑模式**：主题切换，跟随系统或用户手动选择，持久化存储到 `localStorage`。
 - **搜索与标签筛选**：文章和作品页面支持标题、标签、日期等多种搜索方式，并可通过标签按钮筛选，筛选条件自动同步到 URL。
 - **自定义光标**：非触摸设备上显示独特的钢笔尖光标，悬停可点击元素时自动吸附并改变样式。
+- **响应式设计**：适配移动端和桌面端，导航栏在移动端折叠为汉堡菜单。
+
+### 文章阅读增强
 - **文章目录**：自动提取文章中的标题生成目录，点击可平滑滚动到对应位置。
 - **阅读进度条**：滚动时显示文章阅读进度。
 - **图片预览**：点击文章中的图片可放大预览。
+- **阅读时间**：根据文章字数自动计算并显示（支持 200~500 字/分钟估算）。
+- **文章分类**：支持按分类组织文章（由源文件所在子目录自动识别）。
+
+### 评论与统计
 - **评论系统**：集成 Twikoo，支持留言、回复、点赞等。
 - **统计信息**：集成不蒜子统计，显示全站和单页访问量；同时通过 `statistics.json` 提供文章/作品的聚合统计（标签云、总字数等）。
+
+### 安全与辅助功能
 - **外链跳转确认**：点击外部链接时弹出模态框确认（支持白名单自动跳转），提升安全性。
 - **返回顶部按钮**：滚动超过一定阈值后显示，平滑滚动到顶部。
-- **响应式设计**：适配移动端和桌面端，导航栏在移动端折叠为汉堡菜单。
+- **网站运行时长**：页脚动态显示网站已运行时间。
+
+### 内容生成与自动化
+- **Markdown 转 HTML**：通过 Python 脚本批量处理，支持 YAML Front Matter 元数据。
+- **作品管理**：通过 `works/` 目录下的 `metadata.json` 管理作品信息。
+- **RSS Feed 生成**：自动生成 `rss.xml`，支持文章和作品订阅（可配置）。
+- **统计数据聚合**：自动生成 `statistics.json`，供首页使用。
 
 ---
 
@@ -59,7 +76,7 @@
 | 评论系统     | [Twikoo](https://twikoo.js.org/)                              |
 | 统计系统     | [不蒜子](https://busuanzi.ibruce.info/)                       |
 | 存储         | localStorage（缓存文章/作品数据，主题偏好）                   |
-| 构建工具     | Python 脚本（批量处理、生成 JSON 索引）                       |
+| 构建工具     | Python 脚本（批量处理、生成 JSON 索引、RSS）                  |
 
 ---
 
@@ -72,6 +89,7 @@
 ├── articles.html            # 文章列表页面（实际使用 pages/articles.html 动态加载）
 ├── works.html               # 作品列表页面（实际使用 pages/works.html 动态加载）
 ├── contact.html             # 留言板页面
+├── 404.html                 # 自定义 404 页面（含反馈评论区）
 ├── style.css                # 全局样式
 ├── script.js                # 主要 JavaScript 逻辑（页面管理、搜索、滚动、外链等）
 ├── article.js               # 文章页面专用脚本（目录生成、进度条、图片预览）
@@ -95,10 +113,12 @@
 ├── ArticleManager.py        # Markdown 转 HTML 脚本
 ├── WorkManager.py           # 扫描 works/ 目录生成 works.json
 ├── Statistic.py             # 从 articles.json 和 works.json 生成 statistics.json
-├── run.py                   # 一键运行三个 Python 脚本
+├── RssGenerator.py          # 生成 RSS Feed (rss.xml)
+├── run.py                   # 一键运行上述四个 Python 脚本
 ├── articles.json            # 文章元数据索引（自动生成）
 ├── works.json               # 作品元数据索引（自动生成）
 ├── statistics.json          # 聚合统计数据（自动生成）
+├── rss.xml                  # RSS Feed 文件（自动生成）
 └── README.md                # 本文件
 ```
 
@@ -106,7 +126,7 @@
 - `pages/` 目录下的 HTML 文件是页面的基础骨架，用于被 `script.js` 动态加载并填充数据。
 - `articles/source/` 下按分类建立子目录，每个子目录代表一个文章分类（如“随笔”“技术”）。
 - `works/` 下每个子目录代表一个作品，其中必须包含 `metadata.json`。
-- 所有 JSON 索引文件均由 Python 脚本自动生成，无需手动编辑。
+- 所有 JSON 索引文件及 RSS 文件均由 Python 脚本自动生成，无需手动编辑。
 
 ---
 
@@ -116,7 +136,7 @@
 
 1. **克隆或下载本仓库** 到本地。
 
-2. **安装 Python 依赖**（用于 Markdown 转换）：
+2. **安装 Python 依赖**（用于 Markdown 转换和 RSS 生成）：
    ```bash
    pip install markdown
    ```
@@ -129,6 +149,7 @@
    - `ArticleManager.py`：扫描 `articles/source/` 下的所有 `.md` 文件，生成 HTML 文章到 `articles/` 目录，并创建/更新 `articles.json`。
    - `WorkManager.py`：扫描 `works/` 目录，读取每个子文件夹中的 `metadata.json`，生成 `works.json`。
    - `Statistic.py`：读取 `articles.json` 和 `works.json`，生成 `statistics.json`（包含总文章数、总字数、作品数、标签云等）。
+   - `RssGenerator.py`：读取 `articles.json` 和 `works.json`，生成 `rss.xml`。
 
 4. **启动本地服务器**（推荐使用 `live-server` 或 Python 自带服务器）：
    ```bash
@@ -140,8 +161,8 @@
 ### 部署到生产环境
 
 - 将整个项目上传至任意静态网站托管服务（如 GitHub Pages、Netlify、Vercel 等）。
-- 确保所有文件（包括 `pages/`、`articles/`、`works/`、`*.json` 等）都上传。
-- 配置 `contact.html` 和 `ArticleManager.py` 中的 Twikoo `envId` 为自己的后端地址（见下文配置）。
+- 确保所有文件（包括 `pages/`、`articles/`、`works/`、`*.json`、`rss.xml` 等）都上传。
+- 配置 `contact.html`、`404.html` 和 `ArticleManager.py` 中的 Twikoo `envId` 为自己的后端地址（见下文配置）。
 - 更新 `script.js` 中 `startSiteAgeUpdater` 函数的网站创建时间 `BIRTH_DATE`。
 - 如需自定义域名，请按托管服务商指引设置。
 
@@ -155,20 +176,24 @@
   1. 在 `articles/source/` 下选择或创建分类子目录（如 `articles/source/随笔/`）。
   2. 在该目录中创建 `.md` 文件，文件头部必须包含 YAML 元数据（见下文格式）。
   3. 运行 `python run.py` 或单独执行 `python ArticleManager.py`。
-  4. 生成的 HTML 文件会出现在 `articles/` 目录，同时 `articles.json` 和 `statistics.json` 自动更新。
+  4. 生成的 HTML 文件会出现在 `articles/` 目录，同时 `articles.json`、`statistics.json` 和 `rss.xml` 自动更新。
 
 - **修改文章**：直接编辑 `.md` 文件，重新运行 `ArticleManager.py` 即可覆盖对应的 HTML。
 
 - **删除文章**：删除 `.md` 文件后重新运行脚本，`articles.json` 会自动移除该文章。
+
+- **隐藏文章**：在文章 front matter 的 `tag` 字段中加入 `隐藏` 标签（如 `tag: [随笔, 隐藏]`），运行脚本后该文章将不会出现在 `articles.json` 和 RSS 中，但仍会生成 HTML 文件（可通过直接链接访问，但不在列表显示）。
 
 ### 作品管理
 
 - **添加新作品**：
   1. 在 `works/` 下创建一个新文件夹，文件夹名称即为作品标题。
   2. 在该文件夹中创建 `metadata.json`，内容格式见下文。
-  3. 运行 `python run.py` 或单独执行 `python WorkManager.py`，`works.json` 和 `statistics.json` 会自动更新。
+  3. 运行 `python run.py` 或单独执行 `python WorkManager.py`，`works.json`、`statistics.json` 和 `rss.xml` 会自动更新。
 
 - **修改/删除作品**：修改 `metadata.json` 或删除整个作品文件夹，重新运行脚本即可。
+
+- **隐藏作品**：在 `metadata.json` 的 `tag` 字段中加入 `隐藏` 标签（如 `"tag": ["工具", "隐藏"]`），运行脚本后该作品将不会出现在 `works.json` 和 RSS 中。
 
 ### 统计数据更新
 
@@ -182,16 +207,24 @@
 
 - 首页的统计卡片和标签云区域会通过 `fetch('/statistics.json')` 动态加载这些数据。
 
+### RSS Feed 更新
+
+- 运行 `RssGenerator.py` 会根据 `articles.json` 和 `works.json` 生成 `rss.xml`。
+- 可在脚本顶部配置 `INCLUDE_ARTICLES` 和 `INCLUDE_WORKS` 选择是否包含文章/作品。
+- RSS 条目按日期降序排列，无效日期的条目会被跳过。
+- 生成后可通过 `https://你的域名/rss.xml` 订阅。
+
 ---
 
 ## 配置说明
 
 ### 1. Twikoo 评论系统
 
-- 网站中的留言板（`contact.html`）和每篇文章底部都集成了 Twikoo 评论。
+- 网站中的留言板（`contact.html`）、404 页面（`404.html`）和每篇文章底部都集成了 Twikoo 评论。
 - 你需要先部署一个 Twikoo 后端（可使用 [腾讯云云函数](https://twikoo.js.org/backend.html) 或 [Netlify Functions](https://twikoo.js.org/backend.html#netlify-functions)）。
 - 获得后端 URL 后，修改以下文件中的 `envId` 参数：
   - `contact.html`：`twikoo.init` 中的 `envId`
+  - `404.html`：`twikoo.init` 中的 `envId`
   - `ArticleManager.py`：`create_html_page` 函数中生成的 `<script>` 部分的 `envId`（重新生成所有文章后生效）
 
 ### 2. 不蒜子统计
@@ -216,7 +249,16 @@
   - 监听滚动事件，更新进度条宽度。
   - 根据 `window.ARTICLE_HEADINGS` 生成目录并绑定点击滚动。
   - 图片预览功能（点击图片放大）。
-- 本项目已提供 `article.js` 的完整实现（需与仓库中其他文件一同部署）。
+- 本项目已提供 `article.js` 的完整实现，无需额外配置。
+
+### 6. RSS 生成配置
+
+- 编辑 `RssGenerator.py` 开头的常量：
+  - `SITE_TITLE`：网站标题
+  - `SITE_LINK`：网站根 URL
+  - `SITE_DESCRIPTION`：站点描述
+  - `INCLUDE_ARTICLES`：是否包含文章（默认 `True`）
+  - `INCLUDE_WORKS`：是否包含作品（默认 `False`，可按需开启）
 
 ---
 
@@ -256,6 +298,7 @@
 
 - `title` 如果未提供，则使用文件夹名作为标题。
 - `link` 如果未提供，默认为 `./works/作品名/`（可放置一个 `index.html` 作为作品展示页）。
+- 若 `tag` 数组中包含 `隐藏`，该作品将不会出现在 `works.json` 和 RSS 中。
 
 ### `articles.json` 格式
 
@@ -300,7 +343,7 @@ tag: [随笔, 生活]
 这里是文章正文...
 ```
 
-- `tag` 字段支持数组格式（如 `[tag1, tag2]`）或逗号分隔的字符串。
+- `tag` 字段支持数组格式（如 `[tag1, tag2]`）或逗号分隔的字符串。若包含 `隐藏`，该文章将不会出现在 `articles.json` 和 RSS 中。
 - `category` 字段可选，若不提供则自动使用所在子目录名作为分类。
 - `word_count` 和 `read_time` 由脚本自动计算，无需手动填写。
 
@@ -351,6 +394,11 @@ tag: [随笔, 生活]
 ### 自定义光标样式
 
 - `CustomCursor` 类控制光标外观和吸附行为。如需禁用，可注释 `DOMContentLoaded` 中的初始化代码。
+
+### 无刷新导航（AJAX）
+
+- 已通过 `enableAjaxNavigation` 函数启用，所有内部链接点击后会通过 `fetch` 加载新页面并替换主内容区域，实现 SPA 体验。
+- 若某个链接不希望使用 AJAX 导航，可添加 `data-no-ajax` 属性。
 
 ---
 
