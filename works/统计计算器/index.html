@@ -2,172 +2,209 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>统计计算器</title>
-    <!-- 引入网站主题样式 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>统计计算器 · 高欣洋的统计工具</title>
+    <!-- 全局主题样式 (现代化字体、暗色模式、组件库) -->
     <link rel="stylesheet" href="/style.css">
-    <!-- 为计算器页面内容添加特定样式 -->
+    <!-- 页面内嵌微调: 保持与主页完全一致的变量体系，移除衬线字体，确保现代感 -->
     <style>
-        /* 为计算器主体容器应用信件风格 */
         .calculator-container {
-            max-width: 600px;
-            margin: 100px auto 40px auto; /* 考虑到固定导航栏的高度 */
-            background: white;
-            border: 2px solid var(--border-color);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1),
-                        6px 6px 0 -2px rgba(210, 180, 140, 0.3),
-                        -6px 6px 0 -2px rgba(210, 180, 140, 0.3);
-            padding: 40px;
-            position: relative;
-            border-radius: 6px;
-            font-family: "Georgia", "Times New Roman", "FangSong", "仿宋", "STFangSong", "华文仿宋", serif;
-            color: var(--text-color);
+            max-width: 680px;
+            margin: calc(var(--nav-height, 70px) + 28px) auto 56px auto;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-md), var(--shadow-offset);
+            padding: 40px 36px;
+            transition: background-color var(--transition-normal), border-color var(--transition-normal), box-shadow var(--transition-normal);
         }
 
-        /* 计算器标题样式 */
+        /* 计算器标题 - 现代无衬线，克制优雅 */
         .calculator-title {
-            font-size: 2.2rem;
+            font-size: 2rem;
             text-align: center;
             color: var(--accent-color);
-            margin-top: 0.5em;
-            margin-bottom: 1.2em;
-            font-family: "Georgia", serif;
+            margin-top: 0.2em;
+            margin-bottom: 0.8em;
+            font-weight: 650;
+            letter-spacing: -0.01em;
+            font-family: var(--font-family);
         }
 
-        /* 输入区域样式 */
-        .input-group {
-            margin-bottom: 1.5em;
-        }
-
+        /* 输入标签 */
         .input-label {
             display: block;
-            margin-bottom: 0.5em;
-            font-size: 1.1rem;
-            color: var(--accent-color); /* 使用主题强调色 */
+            margin-bottom: 0.6em;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            letter-spacing: 0.3px;
         }
 
+        /* 文本域 - 现代输入体验 */
         .number-input {
             width: 100%;
-            padding: 12px 15px; /* 增加内边距提升视觉舒适度 */
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            font-family: "Georgia", serif;
-            font-size: 1.05rem;
-            transition: all 0.3s ease;
-            box-sizing: border-box; /* 确保padding不影响总宽度 */
-            background-color: white; /* 明确背景色 */
+            padding: 14px 18px;
+            background: var(--surface-color);
+            border: 1.5px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-family: var(--font-family);
+            font-size: 1rem;
             color: var(--text-color);
+            transition: all var(--transition-fast);
+            resize: vertical;
+            line-height: 1.5;
         }
 
         .number-input:focus {
             outline: none;
-            border-color: var(--accent-color); /* 聚焦时使用主题色 */
-            box-shadow: 0 0 0 2px rgba(139, 69, 19, 0.2); /* 添加主题色阴影 */
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(180, 91, 99, 0.2);
         }
 
-        /* 按钮样式 */
+        /* 主按钮 - 柔和且有重量感 */
         .calculate-btn {
             display: block;
             width: 100%;
-            padding: 12px;
-            background-color: var(--accent-color); /* 使用主题强调色作为背景 */
+            padding: 14px 20px;
+            background: var(--accent-color);
             color: white;
             border: none;
-            border-radius: 4px;
-            font-family: "Georgia", serif;
-            font-size: 1.1rem;
-            font-weight: bold;
+            border-radius: var(--radius-full);
+            font-family: var(--font-family);
+            font-size: 1.05rem;
+            font-weight: 600;
             cursor: pointer;
-            transition: background-color 0.3s ease;
-            margin-top: 1em;
+            transition: all var(--transition-fast);
+            margin-top: 1.2em;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
         }
 
         .calculate-btn:hover {
-            background-color: var(--link-hover); /* 悬停时使用主题悬停色 */
+            background: var(--accent-light);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
         }
 
-        /* 结果区域样式 */
+        /* 结果区域 */
         .results-section {
-            margin-top: 2em;
-            padding-top: 1.5em;
-            border-top: 2px dotted var(--border-color); /* 使用与h2相同的点线边框 */
+            margin-top: 2.2rem;
+            padding-top: 1.6rem;
+            border-top: 2px dotted var(--border-color);
         }
 
         .results-title {
-            font-size: 1.5rem; /* 与h3大小一致 */
+            font-size: 1.6rem;
+            font-weight: 600;
             color: var(--accent-color);
-            margin-bottom: 1em;
-            font-family: "Georgia", serif;
+            margin-bottom: 1.2rem;
+            font-family: var(--font-family);
         }
 
         .result-item {
-            margin-bottom: 0.8em;
-            font-size: 1.1rem;
+            margin-bottom: 0.9rem;
+            font-size: 1rem;
             line-height: 1.6;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: baseline;
+            gap: 8px;
         }
 
         .result-label {
-            display: inline-block;
-            width: 120px; /* 固定标签宽度，使布局更整齐 */
+            min-width: 110px;
+            font-weight: 600;
             color: var(--accent-color);
-            font-weight: bold;
+            letter-spacing: 0.2px;
         }
 
         .result-value {
-            color: #444; /* 使用与段落相同的颜色 */
+            color: var(--text-color);
+            font-family: var(--font-mono);
+            font-size: 0.98rem;
+            background: var(--code-bg);
+            padding: 0.2rem 0.6rem;
+            border-radius: var(--radius-sm);
+            word-break: break-word;
         }
 
-        /* 错误信息样式 */
+        /* 错误信息 - 干净无icon */
         .error-message {
-            color: #a94442; /* Bootstrap 风格的错误色，可根据主题调整 */
-            background-color: #f2dede;
-            border: 1px solid #ebccd1;
-            border-radius: 4px;
-            padding: 10px 15px;
-            margin-top: 1em;
-            display: none; /* 默认隐藏 */
+            color: #c23d3d;
+            background: rgba(194, 61, 61, 0.08);
+            border-left: 4px solid #c23d3d;
+            border-radius: var(--radius-sm);
+            padding: 12px 18px;
+            margin-top: 1.2em;
+            font-size: 0.9rem;
+            display: none;
         }
 
-        /* 响应式调整 */
+        [data-theme="dark"] .error-message {
+            color: #f0a0a0;
+            background: rgba(224, 184, 184, 0.12);
+            border-left-color: #e0b8b8;
+        }
+
+        /* 响应式微调 */
         @media (max-width: 768px) {
             .calculator-container {
-                margin: 80px 20px 40px 20px; /* 调整移动端边距 */
-                padding: 30px 20px; /* 调整移动端内边距 */
+                margin: calc(var(--nav-height-mobile, 60px) + 20px) 20px 40px 20px;
+                padding: 28px 20px;
+            }
+            .result-item {
+                flex-direction: column;
+                gap: 4px;
+                margin-bottom: 1rem;
             }
             .result-label {
-                display: block; /* 移动端标签独占一行 */
-                width: auto;
-                margin-bottom: 0.3em;
+                min-width: auto;
             }
+            .calculator-title {
+                font-size: 1.8rem;
+            }
+        }
+
+        /* 现代化细节：输入框占位符优雅 */
+        .number-input::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.6;
+            font-weight: 400;
+        }
+
+        .nav-item, .logo-text, .result-label, .calculate-btn, .input-label {
+            letter-spacing: normal;
         }
     </style>
 </head>
 <body>
 
-    <!-- 导航栏 (假设存在，需要与您网站的导航栏保持一致) -->
+    <!-- 导航栏 (完全复用主题结构，并加入主题切换开关) -->
     <nav class="navbar">
         <div class="nav-logo">
             <span class="logo-text">GaoXinYang</span>
         </div>
         <ul class="nav-items">
             <li class="nav-item" onclick="location.href='/index.html'">首页</li>
-            <li class="nav-item active">统计计算器</li> <!-- 当前页面高亮 -->
-<!--             <li class="nav-item" onclick="location.href='about.html'">关于</li>-->
+            <li class="nav-item active">统计计算器</li>
+            <!-- 可根据需要扩展其他页面 -->
         </ul>
         <div class="nav-actions">
-            <!-- 可选的导航右侧内容 -->
+            <label class="theme-switch" aria-label="主题切换">
+                <input type="checkbox" id="themeToggleCheckbox">
+                <span class="slider"></span>
+            </label>
         </div>
-        <div class="mobile-toggle">
+        <div class="mobile-toggle" aria-label="菜单">
             <span></span>
             <span></span>
             <span></span>
         </div>
     </nav>
 
-    <!-- 计算器主体内容 -->
+    <!-- 统计计算器主体 -->
     <div class="calculator-container">
         <h1 class="calculator-title">统计计算器</h1>
-
         <div class="input-group">
             <label for="numbers" class="input-label">请输入数字，用空格分隔（例如：1 2 5.3 8.21 10）</label>
             <textarea
@@ -178,137 +215,266 @@
             ></textarea>
         </div>
 
-        <button id="calculateBtn" class="calculate-btn">计算</button>
+        <button id="calculateBtn" class="calculate-btn">计算统计量</button>
 
         <div id="errorMessage" class="error-message"></div>
 
         <section class="results-section">
             <h2 class="results-title">计算结果</h2>
             <div id="results">
-                <!-- 结果将通过JavaScript动态插入 -->
+                <!-- 动态渲染结果 -->
+                <div class="result-item"><span class="result-label">和：</span><span class="result-value">—</span></div>
+                <div class="result-item"><span class="result-label">平均值：</span><span class="result-value">—</span></div>
+                <div class="result-item"><span class="result-label">中位数：</span><span class="result-value">—</span></div>
+                <div class="result-item"><span class="result-label">众数：</span><span class="result-value">—</span></div>
+                <div class="result-item"><span class="result-label">总体方差：</span><span class="result-value">—</span></div>
+                <div class="result-item"><span class="result-label">总体标准差：</span><span class="result-value">—</span></div>
+                <div class="result-item"><span class="result-label">极差：</span><span class="result-value">—</span></div>
+                <div class="result-item"><span class="result-label">最小值 / 最大值：</span><span class="result-value">— / —</span></div>
             </div>
         </section>
     </div>
 
     <script>
-        document.getElementById('calculateBtn').addEventListener('click', calculateStatistics);
+        (function initTheme() {
+            const themeToggle = document.getElementById('themeToggleCheckbox');
+            if (!themeToggle) return;
 
+            // 读取本地存储或系统偏好
+            const storedTheme = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            let isDark = false;
+            if (storedTheme === 'dark') {
+                isDark = true;
+            } else if (storedTheme === 'light') {
+                isDark = false;
+            } else {
+                isDark = prefersDark;
+            }
+
+            const applyTheme = (dark) => {
+                if (dark) {
+                    document.documentElement.setAttribute('data-theme', 'dark');
+                    if (themeToggle) themeToggle.checked = true;
+                    localStorage.setItem('theme', 'dark');
+                } else {
+                    document.documentElement.setAttribute('data-theme', 'light');
+                    if (themeToggle) themeToggle.checked = false;
+                    localStorage.setItem('theme', 'light');
+                }
+            };
+            applyTheme(isDark);
+
+            if (themeToggle) {
+                themeToggle.addEventListener('change', (e) => {
+                    applyTheme(e.target.checked);
+                });
+            }
+        })();
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const mobileToggle = document.querySelector('.mobile-toggle');
+            const navItems = document.querySelector('.nav-items');
+            if (mobileToggle && navItems) {
+                mobileToggle.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    this.classList.toggle('active');
+                    navItems.classList.toggle('active');
+                });
+                // 点击导航项后自动关闭菜单
+                const navItemLinks = document.querySelectorAll('.nav-item');
+                navItemLinks.forEach(item => {
+                    item.addEventListener('click', () => {
+                        if (navItems.classList.contains('active')) {
+                            navItems.classList.remove('active');
+                            mobileToggle.classList.remove('active');
+                        }
+                    });
+                });
+            }
+        });
+
+        const calculateBtn = document.getElementById('calculateBtn');
+        const numbersInput = document.getElementById('numbers');
+        const errorDiv = document.getElementById('errorMessage');
+        const resultsContainer = document.getElementById('results');
+
+        // 辅助：显示错误信息
+        function showError(message) {
+            errorDiv.textContent = message;
+            errorDiv.style.display = 'block';
+            // 清空结果区域占位 (但保留干净样式)
+            resultsContainer.innerHTML = `
+                <div class="result-item"><span class="result-label">和：</span><span class="result-value">—</span></div>
+                <div class="result-item"><span class="result-label">平均值：</span><span class="result-value">—</span></div>
+                <div class="result-item"><span class="result-label">中位数：</span><span class="result-value">—</span></div>
+                <div class="result-item"><span class="result-label">众数：</span><span class="result-value">—</span></div>
+                <div class="result-item"><span class="result-label">总体方差：</span><span class="result-value">—</span></div>
+                <div class="result-item"><span class="result-label">总体标准差：</span><span class="result-value">—</span></div>
+                <div class="result-item"><span class="result-label">极差：</span><span class="result-value">—</span></div>
+                <div class="result-item"><span class="result-label">最小值 / 最大值：</span><span class="result-value">— / —</span></div>
+            `;
+        }
+
+        // 格式化数字：保留最多6位小数，去除多余尾随零 (保持现代精确风格)
+        function formatNumber(value) {
+            if (value === undefined || value === null || isNaN(value)) return '—';
+            // 处理特别大的整数或极小值，使用 toFixed(6) 去除冗余尾零
+            let rounded = Number(value);
+            if (Math.abs(rounded) > 1e12) {
+                // 科学计数法更合适
+                return rounded.toExponential(6);
+            }
+            // 保留6位有效小数，同时剔除无意义的0
+            let fixed = rounded.toFixed(6);
+            // 去掉尾随的零以及可能的多余小数点
+            fixed = fixed.replace(/\.?0+$/, '');
+            if (fixed === '') fixed = '0';
+            // 如果原本是整数，不加小数点
+            return fixed;
+        }
+
+        // 众数专用格式化：保持每个数字统一精度
+        function formatModeValue(num) {
+            if (num === undefined) return '';
+            let val = Number(num);
+            if (Math.abs(val) > 1e12) return val.toExponential(6);
+            let fixed = val.toFixed(6).replace(/\.?0+$/, '');
+            return fixed === '' ? '0' : fixed;
+        }
+
+        // 主计算函数
         function calculateStatistics() {
-            // 隐藏之前的错误信息
-            const errorDiv = document.getElementById('errorMessage');
+            // 隐藏错误信息
             errorDiv.style.display = 'none';
-
-            // 获取输入值
-            const input = document.getElementById('numbers').value.trim();
-            if (!input) {
-                showError('请输入数字。');
+            const rawInput = numbersInput.value.trim();
+            if (!rawInput) {
+                showError('请输入数字，使用空格分隔。');
                 return;
             }
 
-            // 解析输入的数字
-            let numberArray = input.split(/\s+/).map(item => parseFloat(item)).filter(item => !isNaN(item));
+            // 解析数字 (支持负号、小数、科学计数法)
+            const parts = rawInput.split(/\s+/);
+            const numbers = [];
+            for (let part of parts) {
+                if (part === '') continue;
+                const num = parseFloat(part);
+                if (isNaN(num)) {
+                    showError(`无效数字: "${part}"，请确保只输入数字和空格。`);
+                    return;
+                }
+                numbers.push(num);
+            }
 
-            if (numberArray.length === 0) {
-                showError('输入的数字格式不正确，请确保只包含数字和空格。');
+            if (numbers.length === 0) {
+                showError('未检测到有效数字，请检查输入格式。');
                 return;
             }
 
-            // 计算各项统计值
-            const n = numberArray.length;
-            const sum = numberArray.reduce((acc, val) => acc + val, 0);
+            const n = numbers.length;
+            const sum = numbers.reduce((acc, v) => acc + v, 0);
             const mean = sum / n;
 
-            // 排序用于计算中位数和极值
-            const sortedNumbers = [...numberArray].sort((a, b) => a - b);
-            const min = sortedNumbers[0];
-            const max = sortedNumbers[n - 1];
+            // 排序数组用于中位数/极值
+            const sorted = [...numbers].sort((a, b) => a - b);
+            const minVal = sorted[0];
+            const maxVal = sorted[n - 1];
+            const rangeVal = maxVal - minVal;
 
+            // 中位数
             let median;
             if (n % 2 === 0) {
-                median = (sortedNumbers[n / 2 - 1] + sortedNumbers[n / 2]) / 2;
+                median = (sorted[n / 2 - 1] + sorted[n / 2]) / 2;
             } else {
-                median = sortedNumbers[Math.floor(n / 2)];
+                median = sorted[Math.floor(n / 2)];
             }
 
-            // 计算众数
-            const frequencyMap = {};
+            // 众数
+            const freqMap = new Map();
             let maxFreq = 0;
-            for (const num of numberArray) {
-                frequencyMap[num] = (frequencyMap[num] || 0) + 1;
-                if (frequencyMap[num] > maxFreq) {
-                    maxFreq = frequencyMap[num];
+            for (const num of numbers) {
+                // 由于浮点键可能不精确，使用字符串保留原值进行频率统计，但比较时使用原数值
+                const key = String(num);
+                const count = (freqMap.get(key) || 0) + 1;
+                freqMap.set(key, count);
+                if (count > maxFreq) maxFreq = count;
+            }
+            let modeValues = [];
+            if (maxFreq > 1) {
+                for (let [key, count] of freqMap.entries()) {
+                    if (count === maxFreq) {
+                        modeValues.push(parseFloat(key));
+                    }
                 }
             }
-            const modes = [];
-            for (const num in frequencyMap) {
-                if (frequencyMap[num] === maxFreq) {
-                    modes.push(parseFloat(num));
-                }
+            // 如果所有数字出现频率相同且maxFreq===1 或众数个数等于总数 -> 无众数
+            let modeDisplay = '';
+            if (modeValues.length === 0 || modeValues.length === numbers.length) {
+                modeDisplay = '无众数';
+            } else {
+                // 众数格式化，逗号连接
+                modeDisplay = modeValues.map(v => formatModeValue(v)).join(', ');
             }
-            const modeStr = modes.length === numberArray.length ? '-' : modes.join(', ');
 
-            // 计算方差和标准差
-            const variance = numberArray.reduce((acc, val) => acc + Math.pow(val - mean, 2), 0) / n; // 总体方差
+            // 总体方差 & 标准差 (总体)
+            let variance = 0;
+            for (let val of numbers) {
+                variance += Math.pow(val - mean, 2);
+            }
+            variance = variance / n;
             const stdDev = Math.sqrt(variance);
 
-            const range = max - min;
-
-            // 显示结果
-            const resultsDiv = document.getElementById('results');
-            resultsDiv.innerHTML = `
+            resultsContainer.innerHTML = `
                 <div class="result-item">
-                    <span class="result-label">和:</span>
-                    <span class="result-value">${sum.toFixed(4)}</span>
+                    <span class="result-label">和：</span>
+                    <span class="result-value">${formatNumber(sum)}</span>
                 </div>
                 <div class="result-item">
-                    <span class="result-label">平均值:</span>
-                    <span class="result-value">${mean.toFixed(4)}</span>
+                    <span class="result-label">平均值：</span>
+                    <span class="result-value">${formatNumber(mean)}</span>
                 </div>
                 <div class="result-item">
-                    <span class="result-label">中位数:</span>
-                    <span class="result-value">${median.toFixed(4)}</span>
+                    <span class="result-label">中位数：</span>
+                    <span class="result-value">${formatNumber(median)}</span>
                 </div>
                 <div class="result-item">
-                    <span class="result-label">众数:</span>
-                    <span class="result-value">${modeStr}</span>
+                    <span class="result-label">众数：</span>
+                    <span class="result-value">${modeDisplay}</span>
                 </div>
                 <div class="result-item">
-                    <span class="result-label">方差 (总体):</span>
-                    <span class="result-value">${variance.toFixed(4)}</span>
+                    <span class="result-label">总体方差：</span>
+                    <span class="result-value">${formatNumber(variance)}</span>
                 </div>
                 <div class="result-item">
-                    <span class="result-label">标准差 (总体):</span>
-                    <span class="result-value">${stdDev.toFixed(4)}</span>
+                    <span class="result-label">总体标准差：</span>
+                    <span class="result-value">${formatNumber(stdDev)}</span>
                 </div>
                 <div class="result-item">
-                    <span class="result-label">极差:</span>
-                    <span class="result-value">${range.toFixed(4)}</span>
+                    <span class="result-label">极差：</span>
+                    <span class="result-value">${formatNumber(rangeVal)}</span>
                 </div>
                 <div class="result-item">
-                    <span class="result-label">极值 (Min/Max):</span>
-                    <span class="result-value">${min.toFixed(4)} / ${max.toFixed(4)}</span>
+                    <span class="result-label">最小值 / 最大值：</span>
+                    <span class="result-value">${formatNumber(minVal)} / ${formatNumber(maxVal)}</span>
                 </div>
             `;
         }
 
-        function showError(message) {
-            const errorDiv = document.getElementById('errorMessage');
-            errorDiv.textContent = message;
-            errorDiv.style.display = 'block';
-        }
+        // 绑定计算事件
+        calculateBtn.addEventListener('click', calculateStatistics);
 
-        // --- 以下为响应式导航栏的示例JavaScript ---
-        document.addEventListener('DOMContentLoaded', function() {
-            const mobileToggle = document.querySelector('.mobile-toggle');
-            const navItems = document.querySelector('.nav-items');
-
-            if (mobileToggle && navItems) {
-                mobileToggle.addEventListener('click', function() {
-                    this.classList.toggle('active');
-                    navItems.classList.toggle('active');
-                });
+        // 允许回车快捷计算
+        numbersInput.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                calculateStatistics();
             }
         });
+
+        // 占位
+        if (!numbersInput.value.trim()) {
+            numbersInput.placeholder = "例如: 12.5 8 20.3 15 8 9.6";
+        }
     </script>
 </body>
 </html>

@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-04-06T21:16:01.442247",
-  "total_articles": 6,
-  "total_word_count": 14621,
+  "generated_at": "2026-04-11T15:26:55.157635",
+  "total_articles": 5,
+  "total_word_count": 14191,
   "articles": [
     {
       "title": "网站更新日志",
@@ -28,20 +28,6 @@
       "url": "/articles/从一株小草开始.html",
       "word_count": 951,
       "read_time": "2-5分钟"
-    },
-    {
-      "title": "测试文章",
-      "date": "2025-12-21",
-      "description": "这是一篇测试文章，它是被隐藏的",
-      "author": "高新炀",
-      "tags": [
-        "网站",
-        "隐藏"
-      ],
-      "category": "网站",
-      "url": "/articles/test.html",
-      "word_count": 430,
-      "read_time": "1-3分钟"
     },
     {
       "title": "雪中的思绪",

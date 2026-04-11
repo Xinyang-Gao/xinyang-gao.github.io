@@ -450,7 +450,7 @@ def process_markdown_file(md_file_path: Path, category: str = None) -> dict:
 def process_all_markdown_files() -> list:
     """
     处理 article/source/ 下所有分类子目录中的 markdown 文件
-    返回所有文章信息列表
+    返回所有文章信息列表（已过滤掉包含“隐藏”标签的文章）
     """
     if not SOURCE_DIR.exists():
         print(f"错误: 文章源目录不存在 - {SOURCE_DIR}")
@@ -470,6 +470,10 @@ def process_all_markdown_files() -> list:
         for md_file in md_files:
             try:
                 article_info = process_markdown_file(md_file, category=category_name)
+                # 如果文章包含“隐藏”标签，则不加入索引
+                if "隐藏" in article_info.get('tags', []):
+                    print(f"  信息：文章 '{article_info['title']}' 含有“隐藏”标签，已从 articles.json 中排除")
+                    continue
                 articles_info.append(article_info)
             except Exception as e:
                 print(f"  处理失败: {e}")
@@ -533,6 +537,7 @@ def update_single_article_json(new_article: dict):
     更新单个文章的JSON索引
     确保删除旧文章中的 id 字段，并重新计算总字数
     同时保留 read_time 和 category 字段
+    如果新文章包含“隐藏”标签，则从 JSON 中移除该文章（如果已存在）
     """
     json_path = BASE_DIR / 'articles.json'
     articles_info = []
@@ -548,17 +553,20 @@ def update_single_article_json(new_article: dict):
         if 'id' in article:
             del article['id']
 
-    # 更新或添加文章
-    found = False
-    for i, article in enumerate(articles_info):
-        # 通过 url 作为唯一标识
-        if article.get('url') == new_article.get('url'):
-            articles_info[i] = new_article
-            found = True
-            break
-
-    if not found:
-        articles_info.append(new_article)
+    # 如果新文章包含“隐藏”标签，则从列表中删除该文章（通过 url 匹配）
+    if "隐藏" in new_article.get('tags', []):
+        articles_info = [a for a in articles_info if a.get('url') != new_article.get('url')]
+        print(f"  信息：文章 '{new_article['title']}' 含有“隐藏”标签，已从 articles.json 中移除")
+    else:
+        # 更新或添加文章
+        found = False
+        for i, article in enumerate(articles_info):
+            if article.get('url') == new_article.get('url'):
+                articles_info[i] = new_article
+                found = True
+                break
+        if not found:
+            articles_info.append(new_article)
 
     # 排序并计算总字数
     articles_info.sort(key=lambda x: x.get('date', ''), reverse=True)
@@ -597,7 +605,7 @@ def main():
             else:
                 inferred_category = "未分类"
             article_info = process_markdown_file(md_file_path, category=inferred_category)
-            # 更新单个文件的JSON
+            # 更新单个文件的JSON（会自动处理“隐藏”标签）
             update_single_article_json(article_info)
         else:
             print(f"错误: 文件不存在或不是markdown文件 - {md_file_path}")

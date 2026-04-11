@@ -49,6 +49,11 @@ def main():
             print(f"警告：{metadata_path} 中的 'tag' 不是列表，将转为单元素列表", file=sys.stderr)
             tag = [tag] if tag else []
 
+        # 如果标签中包含“隐藏”，则跳过该作品，不写入 JSON
+        if "隐藏" in tag:
+            print(f"信息：作品 '{title}' 含有“隐藏”标签，已从 works.json 中排除", file=sys.stderr)
+            continue
+
         works_list.append({
             "title": title,
             "description": description,

@@ -252,11 +252,6 @@ class UIRenderer {
         }
 
         const items = type === 'works' ? data.works : data.articles;
-        const filteredItems = items.filter(item => {
-            const tags = Utils.getTags(item);
-            return !tags.includes('隐藏');
-        });
-        
         const html = `<div class="${type}-list">${filteredItems.map((item, idx) => UIRenderer.generateListItem(item, type.slice(0, -1), idx)).join('')}</div>`;
         perf.end(`生成${DataManager.TYPE_LABEL[type]}HTML`);
         return html;
@@ -473,9 +468,7 @@ class SearchController {
         items.forEach(item => {
             const itemTags = Utils.getTags(item);
             if (itemTags && Array.isArray(itemTags)) {
-                itemTags.forEach(t => {
-                    if (t !== '隐藏') tags.add(t);
-                });
+                itemTags.forEach(t => tags.add(t));
             }
         });
         return tags;
