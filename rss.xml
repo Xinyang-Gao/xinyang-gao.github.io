@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>高新炀的个人网站</title>
+    <link>https://xinyang-gao.github.io</link>
+    <description>学生 · 开发者 · 写作者，用代码和文字探索世界</description>
+    <lastBuildDate>Sat, 11 Apr 2026 16:51:55 GMT</lastBuildDate>
+    <language>zh-CN</language>
+    <generator>RssGenerator (Python)</generator>
+    <atom:link href="https://xinyang-gao.github.io/rss.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>从一株小草开始</title>
+      <link>https://xinyang-gao.github.io/articles/从一株小草开始.html</link>
+      <description><![CDATA[一篇随笔]]></description>
+      <pubDate>Wed, 18 Mar 2026 00:00:00 GMT</pubDate>
+      <author>高新炀</author>
+      <category>记叙文</category>
+    </item>
+    <item>
+      <title>马生复宋濂书</title>
+      <link>https://xinyang-gao.github.io/articles/马生复宋濂书.html</link>
+      <description><![CDATA[一篇文言文回信，学习《送东阳马生序》后，以文中马生的口吻回信]]></description>
+      <pubDate>Tue, 09 Dec 2025 00:00:00 GMT</pubDate>
+      <author>高新炀</author>
+      <category>文言文</category>
+    </item>
+    <item>
+      <title>论网络游戏的“功”与“过”</title>
+      <link>https://xinyang-gao.github.io/articles/论网络游戏的功与过.html</link>
+      <description><![CDATA[一篇议论文]]></description>
+      <pubDate>Sun, 30 Nov 2025 00:00:00 GMT</pubDate>
+      <author>高新炀</author>
+      <category>议论文</category>
+    </item>
+    <item>
+      <title>雪中的思绪</title>
+      <link>https://xinyang-gao.github.io/articles/雪中的思绪.html</link>
+      <description><![CDATA[一篇随笔]]></description>
+      <pubDate>Sun, 14 Dec 2025 00:00:00 GMT</pubDate>
+      <author>高新炀</author>
+      <category>记叙文</category>
+      <category>日常</category>
+    </item>
+    <item>
+      <title>网站更新日志</title>
+      <link>https://xinyang-gao.github.io/articles/网站更新日志.html</link>
+      <description><![CDATA[记录网站历次更新内容]]></description>
+      <pubDate>Sat, 28 Mar 2026 00:00:00 GMT</pubDate>
+      <author>高新炀</author>
+      <category>网站</category>
+    </item>
+  </channel>
+</rss>

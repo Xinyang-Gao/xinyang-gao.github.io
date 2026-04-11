@@ -251,8 +251,8 @@ class UIRenderer {
             return `<div class="${type}-list"><p>没有找到相关${DataManager.TYPE_LABEL[type]}！ >-<</p></div>`;
         }
 
-        const items = type === 'works' ? data.works : data.articles;
-        const html = `<div class="${type}-list">${filteredItems.map((item, idx) => UIRenderer.generateListItem(item, type.slice(0, -1), idx)).join('')}</div>`;
+    const items = type === 'works' ? data.works : data.articles;
+        const html = `<div class="${type}-list">${items.map((item, idx) => UIRenderer.generateListItem(item, type.slice(0, -1), idx)).join('')}</div>`;
         perf.end(`生成${DataManager.TYPE_LABEL[type]}HTML`);
         return html;
     }

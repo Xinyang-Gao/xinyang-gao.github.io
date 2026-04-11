@@ -5,7 +5,8 @@ import sys
 SCRIPTS_TO_RUN = [
     "ArticleManager.py",
     "WorkManager.py",
-    "Statistic.py"
+    "Statistic.py",
+    "RssGenerator.py"
 ]
 
 def main():
