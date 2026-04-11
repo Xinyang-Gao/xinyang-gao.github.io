@@ -322,9 +322,13 @@ class UIRenderer {
         const container = doc.querySelector(selector);
         if (container) {
             container.innerHTML = html;
-            return doc.documentElement.innerHTML;
+            // 优先返回 fetched 页面主内容（避免返回整个 document，导致 container 嵌套）
+            const fetchedMain = doc.querySelector('#mainContent') || doc.querySelector('main.main-content-area') || doc.querySelector('main') || container;
+            return fetchedMain ? fetchedMain.innerHTML : container.innerHTML;
         }
-        console.warn(`警告: ${selector} 未找到，追加内容`);
+        console.warn(`警告: ${selector} 未找到，尝试返回主内容或追加内容`);
+        const fetchedMain = doc.querySelector('#mainContent') || doc.querySelector('main.main-content-area') || doc.querySelector('main');
+        if (fetchedMain) return fetchedMain.innerHTML;
         return base + html;
     }
 }
@@ -697,7 +701,8 @@ class PageManager {
         let paper = document.querySelector('.draw-animation-paper');
         if (!paper) {
             paper = document.createElement('div');
-            paper.className = 'draw-animation-paper container';
+            // 不给动画纸张增加 container 类，避免与内容中的 .container 嵌套
+            paper.className = 'draw-animation-paper';
             document.body.appendChild(paper);
         }
         const rect = elements.container.getBoundingClientRect();
@@ -853,21 +858,52 @@ class NavigationManager {
     }
 
     static initNavigation() {
-        const currentPage = window.location.pathname.split('/').pop().replace('.html', '') || 'index';
+        const params = new URLSearchParams(window.location.search);
+        let currentPage = params.get('page');
+        if (!currentPage) {
+            currentPage = window.location.pathname.split('/').pop().replace('.html', '') || 'index';
+        }
         document.querySelectorAll('.nav-item').forEach(item => {
             const page = item.getAttribute('data-page');
-            if (page === currentPage) {
-                item.classList.add('active');
-            } else {
-                item.classList.remove('active');
-            }
+            item.classList.toggle('active', page === currentPage);
         });
     }
 
+    static bindNavLinks() {
+        const navItems = document.querySelectorAll('.nav-item[data-page]');
+        if (!navItems || navItems.length === 0) return;
+        navItems.forEach(item => {
+            try {
+                if (item._navHandler) item.removeEventListener('click', item._navHandler);
+            } catch (e) {}
+            const handler = (e) => {
+                e.preventDefault();
+                e.stopImmediatePropagation();
+                const page = item.dataset.page;
+                if (window.PageManager && typeof PageManager.loadPage === 'function') {
+                    PageManager.loadPage(page, true);
+                } else {
+                    const href = item.getAttribute('href') || `/${page}.html`;
+                    if (typeof fetchAndReplaceContent === 'function') fetchAndReplaceContent(href, true);
+                }
+            };
+            item.addEventListener('click', handler);
+            item._navHandler = handler;
+        });
+    }
     static initPopstate() {
+        if (this._popstateInitialized) return;
+        this._popstateInitialized = true;
         window.addEventListener('popstate', e => {
-            const p = e.state?.page || 'index';
-            PageManager.loadPage(p, false);
+            const statePage = e.state?.page;
+            const urlParams = new URLSearchParams(window.location.search);
+            const pageFromQuery = urlParams.get('page');
+            const p = statePage || pageFromQuery || getPageNameFromPath(window.location.pathname) || 'index';
+            if (window.PageManager && typeof PageManager.loadPage === 'function') {
+                PageManager.loadPage(p, false);
+            } else if (typeof fetchAndReplaceContent === 'function') {
+                fetchAndReplaceContent(window.location.href, false);
+            }
         });
     }
     
@@ -962,7 +998,12 @@ async function loadNavbar() {
         const placeholder = document.getElementById('navbar-placeholder');
         if (placeholder) {
             placeholder.innerHTML = navbarHTML;
+            // 初始化导航相关交互：主题开关、移动端菜单、绑定 nav 链接、导航高亮与 popstate
             NavigationManager.initThemeToggle();
+            NavigationManager.initMobileMenuToggle();
+            NavigationManager.bindNavLinks();
+            NavigationManager.initNavigation();
+            NavigationManager.initPopstate();
         } else {
             console.warn('Navbar placeholder not found');
         }
@@ -1654,3 +1695,238 @@ async function initializeWorksPage() {
         console.error('加载作品数据失败:', e);
     }
 }
+
+/* 无刷新导航：拦截内部链接，fetch 页面并替换主内容 */
+function isSameOrigin(href) {
+    try {
+        const url = new URL(href, window.location.href);
+        return url.origin === window.location.origin;
+    } catch {
+        return false;
+    }
+}
+
+function getPageNameFromPath(pathname) {
+    const name = pathname.split('/').pop() || 'index';
+    return name.replace('.html', '') || 'index';
+}
+
+async function fetchAndReplaceContent(url, pushState = true) {
+    try {
+        const res = await fetch(url, { credentials: 'same-origin' });
+        if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
+        const text = await res.text();
+        const doc = new DOMParser().parseFromString(text, 'text/html');
+        const fetchedTitle = doc.querySelector('title') ? doc.querySelector('title').textContent : document.title;
+
+        // 尽量寻找主内容节点
+        const fetchedMain = doc.querySelector('#mainContent') || doc.querySelector('main.main-content-area') || doc.querySelector('main');
+        const currentMain = document.getElementById('mainContent') || document.querySelector('main.main-content-area');
+        if (fetchedMain && currentMain) {
+            currentMain.innerHTML = fetchedMain.innerHTML;
+        } else if (fetchedMain && !currentMain) {
+            // 如果当前页面没有 mainContent，尝试将其放入第一个 container
+            const container = document.querySelector('.container') || document.body;
+            container.innerHTML = fetchedMain.innerHTML;
+        }
+
+        document.title = fetchedTitle;
+
+        // 在执行页面脚本或初始化依赖 URL 的模块前，先更新历史记录（若需要）。
+        // 这样可以确保后续初始化（如导航高亮、评论组件）读取到正确的 URL。
+        if (pushState) {
+            try {
+                window.history.pushState({ ajax: true }, fetchedTitle, url);
+            } catch (err) {
+                console.warn('pushState 失败:', err);
+            }
+        }
+
+        // 注入 fetched 文档中的样式到 head（避免样式仅存在于 fetched head 中而不生效）
+        try {
+            const headStyles = Array.from(doc.querySelectorAll('link[rel="stylesheet"], style'));
+            headStyles.forEach(h => {
+                if (h.tagName.toLowerCase() === 'link') {
+                    const href = h.getAttribute('href') || h.href;
+                    if (!href) return;
+                    // 若页面中已存在相同 href 的 link，则跳过
+                    if (document.querySelector(`link[href="${href}"]`)) return;
+                    const nl = document.createElement('link');
+                    nl.rel = 'stylesheet';
+                    nl.href = href;
+                    document.head.appendChild(nl);
+                } else if (h.tagName.toLowerCase() === 'style') {
+                    // 避免重复插入完全相同的 style
+                    const existing = Array.from(document.head.querySelectorAll('style')).some(s => s.textContent === h.textContent);
+                    if (!existing) {
+                        const ns = document.createElement('style');
+                        ns.textContent = h.textContent;
+                        document.head.appendChild(ns);
+                    }
+                }
+            });
+        } catch (e) {
+            console.warn('注入样式时出错', e);
+        }
+
+        // 执行 fetched 文档中 body 的脚本，并等待外部脚本加载完成后再继续初始化页面
+        const bodyScripts = Array.from(doc.body.querySelectorAll('script'));
+        const loadPromises = [];
+        bodyScripts.forEach(s => {
+            try {
+                if (s.src) {
+                    // 如果页面中已有相同 src 的 script，则跳过
+                    if (document.querySelector(`script[src="${s.src}"]`)) return;
+                    const newS = document.createElement('script');
+                    if (s.type) newS.type = s.type;
+                    newS.src = s.src;
+                    // 保证按顺序加载并执行
+                    newS.async = false;
+                    const p = new Promise(resolve => {
+                        newS.onload = () => resolve();
+                        newS.onerror = () => {
+                            console.warn('脚本加载失败:', s.src);
+                            resolve();
+                        };
+                    });
+                    document.body.appendChild(newS);
+                    loadPromises.push(p);
+                } else {
+                    const inline = document.createElement('script');
+                    if (s.type) inline.type = s.type;
+                    inline.textContent = s.textContent;
+                    document.body.appendChild(inline);
+                    // 保留执行效果后可移除，异步移除以免影响某些脚本依赖
+                    setTimeout(() => inline.parentNode && inline.parentNode.removeChild(inline), 0);
+                }
+            } catch (e) {
+                console.warn('插入脚本时出错', e);
+            }
+        });
+
+        // 等待所有外部脚本加载（若有），再进行后续初始化
+        if (loadPromises.length) {
+            try {
+                await Promise.all(loadPromises);
+            } catch (e) {
+                console.warn('等待脚本加载时发生错误', e);
+            }
+        }
+
+        // 确保页面存在 .container，某些被抓取页面样式依赖此容器
+        try {
+            if (!document.querySelector('.container')) {
+                const mainEl = document.querySelector('main') || document.getElementById('mainContent');
+                if (mainEl && !mainEl.closest('.container')) {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'container';
+                    // 将 mainEl 内部内容包裹进 container
+                    while (mainEl.firstChild) {
+                        wrapper.appendChild(mainEl.firstChild);
+                    }
+                    mainEl.appendChild(wrapper);
+                }
+            }
+        } catch (e) {
+            console.warn('修复缺失 .container 时出错', e);
+        }
+
+        // 如果页面中包含 Twikoo 评论容器，且 twikoo 可用，则尝试初始化（修复 inline 脚本不触发的问题）
+        try {
+            const twikooEl = document.querySelector('#twikoo-comments');
+            if (twikooEl) {
+                if (typeof twikoo !== 'undefined' && twikoo && typeof twikoo.init === 'function') {
+                    // 避免重复初始化
+                    if (!twikooEl.getAttribute('data-init')) {
+                        twikoo.init({
+                            envId: 'https://twikoo-gxy.netlify.app/.netlify/functions/twikoo',
+                            el: '#twikoo-comments',
+                            lang: 'zh-CN',
+                            enableComment: true,
+                        }).then(() => {
+                            twikooEl.setAttribute('data-init', 'true');
+                            console.log('Twikoo 初始化（自动）成功');
+                        }).catch(err => {
+                            console.warn('Twikoo 自动初始化失败:', err);
+                        });
+                    }
+                } else {
+                    // 若 twikoo 还未加载，延迟尝试初始化一次
+                    setTimeout(() => {
+                        try {
+                            if (typeof twikoo !== 'undefined' && twikoo && typeof twikoo.init === 'function' && !twikooEl.getAttribute('data-init')) {
+                                twikoo.init({ envId: 'https://twikoo-gxy.netlify.app/.netlify/functions/twikoo', el: '#twikoo-comments', lang: 'zh-CN', enableComment: true }).then(() => {
+                                    twikooEl.setAttribute('data-init', 'true');
+                                    console.log('Twikoo 延迟初始化成功');
+                                }).catch(() => {});
+                            }
+                        } catch (_) {}
+                    }, 300);
+                }
+            }
+        } catch (e) {
+            console.warn('尝试初始化 Twikoo 时出错', e);
+        }
+
+        // 更新导航激活状态并重新初始化页面功能
+        NavigationManager.initNavigation();
+        NavigationManager.initMobileMenuToggle();
+        ScrollManager.initBackToTopButton();
+
+        // 确保个人卡片存在
+        const personalCardContainer = document.getElementById('personal-card-container');
+        if (personalCardContainer) personalCardContainer.innerHTML = UIRenderer.generatePersonalCardHTML();
+
+        // 根据目标页面名称初始化特定功能
+        const pageName = getPageNameFromPath(new URL(url, window.location.href).pathname);
+        if (pageName === 'index') {
+            if (typeof updateDynamicGreeting === 'function') updateDynamicGreeting();
+            // index 页面的一些初始化函数可能在其内联脚本中，尽量调用常用函数
+        } else if (pageName === 'articles') {
+            await initializeArticlesPage();
+        } else if (pageName === 'works') {
+            await initializeWorksPage();
+        }
+
+        // 触发自定义事件，便于其他模块响应
+        window.dispatchEvent(new CustomEvent('ajax:navigation', { detail: { url, page: pageName } }));
+        return true;
+    } catch (e) {
+        console.error('无刷新导航加载失败:', e);
+        return false;
+    }
+}
+
+function enableAjaxNavigation() {
+    document.addEventListener('click', function (e) {
+        const a = e.target.closest('a');
+        if (!a) return;
+        const href = a.getAttribute('href');
+        if (!href) return;
+
+        // 忽略带有 data-no-ajax 的链接或外部链接或锚点
+        if (a.hasAttribute('data-no-ajax')) return;
+        if (href.startsWith('#')) return;
+        if (!isSameOrigin(href)) return;
+        // 允许下载或带有 target=_blank 的链接正常跳转
+        if (a.target === '_blank' || a.hasAttribute('download')) return;
+
+        // 只处理 HTML 页面请求
+        const isHtml = href.endsWith('.html') || href.indexOf('?') > -1 || href.endsWith('/');
+        if (!isHtml) return;
+
+        e.preventDefault();
+        const url = new URL(href, window.location.href).href;
+        if (url === window.location.href) return;
+        fetchAndReplaceContent(url, true);
+    }, { passive: false });
+
+    window.addEventListener('popstate', function (e) {
+        const url = window.location.href;
+        // popstate 不需要 pushState
+        fetchAndReplaceContent(url, false);
+    });
+}
+
+// 启动无刷新导航
+enableAjaxNavigation();

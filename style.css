@@ -88,10 +88,14 @@
   --text-color: #f0f0f2;
   --text-secondary: #b0b0c0;
   
-  /* 强调色 */
-  --accent-color: #e0b8b8;
-  --accent-light: #f0cccc;
-  --accent-dark: #d4a5a5;
+  /* 强调色（蓝色主题，保证对比度） */
+  --accent-color: #4ea8ff;
+  --accent-light: #9fd4ff;
+  --accent-dark: #2b7bd9;
+  /* RGB 备用变量，便于 rgba() 使用以保持透明度一致 */
+  --accent-rgb: 78,168,255;
+  --accent-light-rgb: 159,212,255;
+  --accent-dark-rgb: 43,123,217;
   
   /* 边框与分割线 */
   --border-color: #3a3a44;
@@ -100,7 +104,7 @@
   /* 阴影 */
   --shadow-color: rgba(0, 0, 0, 0.5);
   --shadow-color-dark: rgba(0, 0, 0, 0.7);
-  --shadow-color-offset: rgba(224, 184, 184, 0.12);
+  --shadow-color-offset: rgba(var(--accent-rgb), 0.12);
   
   /* 导航栏 */
   --nav-bg: rgba(10, 10, 15, 0.92);
@@ -116,9 +120,9 @@
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
   --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.5);
   --shadow-lg: 0 16px 36px -8px rgba(0, 0, 0, 0.7);
-  --shadow-offset: 6px 6px 0 -2px rgba(224, 184, 184, 0.1);
+  --shadow-offset: 6px 6px 0 -2px rgba(var(--accent-rgb), 0.10);
   --shadow-nav: 0 2px 12px rgba(0, 0, 0, 0.4);
-  --shadow-hover: 0 24px 36px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(224, 184, 184, 0.15);
+  --shadow-hover: 0 24px 36px -12px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(var(--accent-rgb), 0.15);
   
   /* 卡片悬浮边框色 */
   --card-border-hover: var(--accent-light);
@@ -148,12 +152,12 @@
 }
 
 [data-theme="dark"] .nav-item.active {
-  background-color: rgba(224, 184, 184, 0.15);
-  border-color: rgba(224, 184, 184, 0.3);
+  background-color: rgba(var(--accent-rgb), 0.15);
+  border-color: rgba(var(--accent-rgb), 0.3);
 }
 
 [data-theme="dark"] .nav-item:hover {
-  background-color: rgba(224, 184, 184, 0.12);
+  background-color: rgba(var(--accent-rgb), 0.12);
 }
 
 [data-theme="dark"] .tag {
@@ -191,7 +195,7 @@
 [data-theme="dark"] #search-input:focus,
 [data-theme="dark"] #search-field:focus {
   border-color: var(--accent-color);
-  box-shadow: 0 0 0 3px rgba(224, 184, 184, 0.2);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.2);
 }
 
 [data-theme="dark"] .tags-filter {
@@ -231,7 +235,7 @@
 }
 
 [data-theme="dark"] .work-details-close:hover {
-  background: rgba(224, 184, 184, 0.15);
+  background: rgba(var(--accent-rgb), 0.15);
 }
 
 [data-theme="dark"] .work-details-link {
@@ -258,7 +262,7 @@
 
 [data-theme="dark"] .social-link:hover {
   color: var(--accent-light);
-  background: rgba(224, 184, 184, 0.12);
+  background: rgba(var(--accent-rgb), 0.12);
 }
 
 [data-theme="dark"] .license-badge {
