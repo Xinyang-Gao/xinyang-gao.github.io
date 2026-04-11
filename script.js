@@ -755,7 +755,7 @@ class PageManager {
     }
 
     static handleListItemClick(e) {
-        const item = e.target.closest('.list-item');
+        const item = e.target.closest('.list-item, .recent-item');
         if (!item) return;
         const type = item.dataset.type;
         if (type === 'work') {
