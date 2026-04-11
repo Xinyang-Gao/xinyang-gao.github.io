@@ -10,9 +10,17 @@
 <body>
   <div id="navbar-placeholder"></div>
 
-  <div class="container">
-    <main id="mainContent" role="main" aria-live="polite" aria-busy="false">
-      <h2>作品</h2>
+  <!-- 双栏布局 -->
+  <div class="two-column-layout">
+    <!-- 左侧：个人信息栏 -->
+    <aside class="sidebar-profile">
+      <div id="personal-card-container"></div>
+    </aside>
+
+    <!-- 右侧主内容区 -->
+    <main class="main-content-area">
+      <div class="container">
+        <h2>作品</h2>
 <div id="search-container">
     <input type="text" id="search-input" placeholder="搜索作品...">
     <select id="search-field">
@@ -30,7 +38,8 @@
 <div id="works-list-container">
     <!-- 作品列表将被 JavaScript 动态插入到这里 -->
 </div>
- </main>
+      </div>
+    </main>
   </div>
 
   <button id="backToTopBtn" class="back-to-top-btn" title="返回顶部">↑</button>

@@ -12,13 +12,22 @@
 <body>
   <div id="navbar-placeholder"></div>
 
-  <div class="container">
-    <main id="mainContent" role="main" aria-live="polite" aria-busy="false">
-      <h2>留言板</h2>
-      <p>欢迎留下你的想法、建议或者随便说点什么~</p>
-      
-      <!-- 留言板容器 -->
-      <div id="twikoo-comments"></div>
+  <!-- 双栏布局 -->
+  <div class="two-column-layout">
+    <!-- 左侧：个人信息栏 -->
+    <aside class="sidebar-profile">
+      <div id="personal-card-container"></div>
+    </aside>
+
+    <!-- 右侧主内容区 -->
+    <main class="main-content-area">
+      <div class="container">
+        <h2>留言板</h2>
+        <p>欢迎留下你的想法、建议或者随便说点什么~</p>
+        
+        <!-- 留言板容器 -->
+        <div id="twikoo-comments"></div>
+      </div>
     </main>
   </div>
 

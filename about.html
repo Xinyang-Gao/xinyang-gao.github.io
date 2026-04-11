@@ -10,8 +10,16 @@
 <body>
   <div id="navbar-placeholder"></div>
 
-  <div class="container">
-    <main id="mainContent" role="main" aria-live="polite" aria-busy="false">
+  <!-- 双栏布局 -->
+  <div class="two-column-layout">
+    <!-- 左侧：个人信息栏 -->
+    <aside class="sidebar-profile">
+      <div id="personal-card-container"></div>
+    </aside>
+
+    <!-- 右侧主内容区 -->
+    <main class="main-content-area">
+      <div class="container">
       <h2>关于我</h2>
 <p>你好呀！我是高新炀，一名即将毕业的初三学生。</p>
 
@@ -27,7 +35,8 @@
 <p>很高兴认识你，随便逛逛吧！</p>
 
 <p>写于2026年03月29日</p>
- </main>
+      </div>
+    </main>
   </div>
 
   <button id="backToTopBtn" class="back-to-top-btn" title="返回顶部">↑</button>

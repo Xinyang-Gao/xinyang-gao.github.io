@@ -438,15 +438,23 @@
     <!-- 导航栏占位符 -->
     <div id="navbar-placeholder"></div>
 
-    <!-- 主容器 -->
-    <div class="container" id="mainContent">
-        <h1>我的朋友们</h1>
-        <p style="margin-bottom: 8px;">「 志合者，不以山海为远 」欢迎互访交流</p>
+    <!-- 双栏布局 -->
+    <div class="two-column-layout">
+        <!-- 左侧：个人信息栏 -->
+        <aside class="sidebar-profile">
+            <div id="personal-card-container"></div>
+        </aside>
 
-        <!-- 统计数据展示区 -->
-        <div id="friends-stats-area" class="friends-stats" style="display: none;"></div>
+        <!-- 右侧主内容区 -->
+        <main class="main-content-area">
+            <div class="container" id="mainContent">
+                <h1>我的朋友们</h1>
+                <p style="margin-bottom: 8px;">「 志合者，不以山海为远 」欢迎互访交流</p>
 
-        <!-- 友链卡片容器 -->
+                <!-- 统计数据展示区 -->
+                <div id="friends-stats-area" class="friends-stats" style="display: none;"></div>
+
+                <!-- 友链卡片容器 -->
         <div id="friends-list-container" class="friends-grid">
             <div class="friends-loading">
                 <div class="spinner"></div>
@@ -515,6 +523,8 @@
                 的友链申请要求，感谢~
             </p>
         </div>
+            </div>
+        </main>
     </div>
 
     <!-- 页脚占位符 -->

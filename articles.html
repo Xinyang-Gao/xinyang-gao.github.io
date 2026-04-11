@@ -10,9 +10,17 @@
 <body>
   <div id="navbar-placeholder"></div>
 
-  <div class="container">
-    <main id="mainContent" role="main" aria-live="polite" aria-busy="false">
-      <h2>文章</h2>
+  <!-- 双栏布局 -->
+  <div class="two-column-layout">
+    <!-- 左侧：个人信息栏 -->
+    <aside class="sidebar-profile">
+      <div id="personal-card-container"></div>
+    </aside>
+
+    <!-- 右侧主内容区 -->
+    <main class="main-content-area">
+      <div class="container">
+        <h2>文章</h2>
 <p>这里会列出我写的一些文章或随笔。</p>
 <div id="search-container">
   <input type="text" id="search-input" placeholder="搜索文章...">
@@ -30,7 +38,8 @@
 <div class="articles-list">
     <div id="articles-list-container"></div>
   </div>
- </main>
+      </div>
+    </main>
   </div>
 
   <button id="backToTopBtn" class="back-to-top-btn" title="返回顶部">↑</button>
