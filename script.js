@@ -720,7 +720,7 @@ class PageManager {
         const cfg = PageManager.pageConfig[page] || { title: "GXY's website", type: 'normal' };
         try {
             let content;
-            let title = `${cfg.title} - GaoXinYang's website`;
+            let title = `${cfg.title} - 高新炀的个人网站`;
             if (cfg.type === 'list') {
                 const base = await UIRenderer.fetchPageContent(`pages/${page}.html`);
                 const data = await DataManager.fetchData(page);

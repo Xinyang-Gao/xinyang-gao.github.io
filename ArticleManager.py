@@ -1,4 +1,3 @@
-# markdown2html.py
 import html
 import math
 import os
@@ -10,7 +9,6 @@ from datetime import datetime
 from urllib.parse import quote
 from typing import Dict
 
-# 尝试导入markdown库，如果没有则提示安装
 try:
     import markdown
 except ImportError:
@@ -308,7 +306,7 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
     <meta name="description" content="{meta_description}">
     <meta name="author" content="{author if author else 'GaoXinYang'}">
     {f'<meta name="keywords" content="{", ".join(tags) if tags else ""}">' if tags else ''}
-    <title>{title} - GaoXinYang's website</title>
+    <title>{title} - 高新炀的小站</title>
     <link rel="stylesheet" href="/style.css">
     <link rel="stylesheet" href="article.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
@@ -321,17 +319,16 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
         <div id="progress-bar" class="progress-bar"></div>
     </div>
 
-    <!-- 主内容区域 -->
+    <!-- 主内容 -->
     <div class="article-page-container">
-        <!-- 目录容器 - 将由JS动态生成 -->
+        <!-- 目录 - JS动态生成 -->
         <div class="toc-container">
             <h2 class="toc-title">目录</h2>
             <div id="toc-list-container"></div>
         </div>
 
-        <!-- 右侧内容列：文章卡片 + 评论卡片 -->
         <div class="article-right-column">
-            <!-- 主文章内容区 -->
+            <!-- 文章内容区 -->
             <div class="article-content-wrapper">
                 <h1 class="article-title" id="articleTitle">{title}</h1>
                 {subtitle_html}
@@ -343,7 +340,7 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
                 {footer_tags_html}
             </div>
 
-            <!-- 独立评论卡片 -->
+            <!-- 评论卡片 -->
             <div class="comments-card">
                 <div class="comments-container">
                     <h3>评论区</h3>
@@ -353,7 +350,7 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
         </div>
     </div>
 
-    <!-- 图片预览模态框 -->
+    <!-- 图片预览 -->
     <div id="imageModal" class="image-modal">
         <span class="close">&times;</span>
         <div class="modal-content">
@@ -655,7 +652,7 @@ def main():
     主函数
     """
     print("=" * 50)
-    print("Markdown 转 HTML 工具")
+    print("文章管理器")
     print("=" * 50)
 
     # 检查参数
