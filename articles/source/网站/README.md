@@ -1,3 +1,11 @@
+---
+title: README.md
+description: README.md
+author: 高新炀
+date: 2026-04-12
+tag: [网站]
+---
+
 # 个人网站项目 README
 
 本项目是一个功能完整的个人网站，融合了博客、作品集、留言板等功能，具有现代化的界面、动态页面切换、搜索筛选、暗黑模式、自定义光标等特性。文章通过 Markdown 文件生成，并集成 Twikoo 评论系统和不蒜子统计。

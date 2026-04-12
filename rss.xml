@@ -4,7 +4,7 @@
     <title>高新炀的个人网站</title>
     <link>https://xinyang-gao.github.io</link>
     <description>学生 · 开发者 · 写作者，用代码和文字探索世界</description>
-    <lastBuildDate>Sun, 12 Apr 2026 10:07:06 GMT</lastBuildDate>
+    <lastBuildDate>Sun, 12 Apr 2026 10:54:46 GMT</lastBuildDate>
     <language>zh-CN</language>
     <generator>RssGenerator (Python)</generator>
     <atom:link href="https://xinyang-gao.github.io/rss.xml" rel="self" type="application/rss+xml" />
@@ -40,6 +40,14 @@
       <author>高新炀</author>
       <category>记叙文</category>
       <category>日常</category>
+    </item>
+    <item>
+      <title>README.md</title>
+      <link>https://xinyang-gao.github.io/articles/README.html</link>
+      <description><![CDATA[README.md]]></description>
+      <pubDate>Sun, 12 Apr 2026 00:00:00 GMT</pubDate>
+      <author>高新炀</author>
+      <category>网站</category>
     </item>
     <item>
       <title>网站更新日志</title>

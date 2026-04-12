@@ -1714,6 +1714,21 @@ function getPageNameFromPath(pathname) {
     return name.replace('.html', '') || 'index';
 }
 
+// 在哪些页面应禁用无刷新导航（需做完整页面跳转）
+function shouldDisableAjaxNavigationForCurrentPage() {
+    const p = window.location.pathname || '';
+    const fileName = p.split('/').pop() || '';
+    // 文章详情页：路径包含 /articles/ 且 filename 不是 articles.html
+    if (p.includes('/articles/') && fileName && fileName !== 'articles.html' && fileName.endsWith('.html')) {
+        return true;
+    }
+    // 404 页面
+    if (fileName === '404.html' || p.endsWith('/404.html')) {
+        return true;
+    }
+    return false;
+}
+
 async function fetchAndReplaceContent(url, pushState = true) {
     try {
         const res = await fetch(url, { credentials: 'same-origin' });

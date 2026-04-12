@@ -1,8 +1,21 @@
 {
-  "generated_at": "2026-04-12T10:07:04.976218",
-  "total_articles": 6,
-  "total_word_count": 15593,
+  "generated_at": "2026-04-12T10:54:45.899568",
+  "total_articles": 7,
+  "total_word_count": 24076,
   "articles": [
+    {
+      "title": "README.md",
+      "date": "2026-04-12",
+      "description": "README.md",
+      "author": "高新炀",
+      "tags": [
+        "网站"
+      ],
+      "category": "网站",
+      "url": "/articles/README.html",
+      "word_count": 8483,
+      "read_time": "17-43分钟"
+    },
     {
       "title": "网站更新日志",
       "date": "2026-03-28",
