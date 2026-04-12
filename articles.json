@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-04-11T21:59:34.089353",
-  "total_articles": 5,
-  "total_word_count": 14385,
+  "generated_at": "2026-04-12T10:07:04.976218",
+  "total_articles": 6,
+  "total_word_count": 15593,
   "articles": [
     {
       "title": "网站更新日志",
@@ -13,8 +13,8 @@
       ],
       "category": "网站",
       "url": "/articles/网站更新日志.html",
-      "word_count": 8055,
-      "read_time": "17-41分钟"
+      "word_count": 8222,
+      "read_time": "17-42分钟"
     },
     {
       "title": "从一株小草开始",
@@ -28,6 +28,19 @@
       "url": "/articles/从一株小草开始.html",
       "word_count": 951,
       "read_time": "2-5分钟"
+    },
+    {
+      "title": "古诗扩写-十五从军征",
+      "date": "2026-01-09",
+      "description": "以首乐府诗《十五从军征》为蓝本，写一篇以老兵第一人称的记叙文",
+      "author": "高新炀",
+      "tags": [
+        "诗扩写"
+      ],
+      "category": "学习",
+      "url": "/articles/古诗扩写-十五从军征.html",
+      "word_count": 1041,
+      "read_time": "3-6分钟"
     },
     {
       "title": "雪中的思绪",

@@ -3,222 +3,192 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>页面未找到 · 留言反馈 - GaoXinYang's website</title>
+  <title>404 · 页面未找到 - GaoXinYang</title>
+  <meta name="description" content="404错误页面 - 您访问的页面不存在。您可以返回首页、返回上一页或通过留言板反馈问题。">
   <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-  <!-- Twikoo 评论样式（与contact保持一致） -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/twikoo@1.6.39/dist/twikoo.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
   <style>
-    /* 404 页面专属微调 - 优雅融合评论区 */
     .error-wrapper {
-      max-width: 850px;
-      margin: calc(var(--nav-height) + 35px) auto 50px auto;
-      transition: all 0.2s ease;
+      max-width: 900px;
+      margin: calc(var(--nav-height) + 40px) auto 60px auto;
+      padding: 0 20px;
     }
 
-    /* 404 主卡片（保持原有复古信封感） */
-    .error-container {
-      background: white;
-      border: var(--border-width) solid var(--border-color);
-      box-shadow: var(--shadow-main), var(--shadow-offset), -var(--shadow-offset);
-      padding: 55px 45px;
-      position: relative;
-      border-radius: var(--border-radius-container);
+    .error-card {
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md), var(--shadow-offset);
+      padding: 56px 48px;
       text-align: center;
-      transition: background-color var(--transition-normal) var(--transition-ease), 
-                  border-color var(--transition-normal) var(--transition-ease);
-      margin-bottom: 40px;
+      transition: background-color var(--transition-normal), 
+                  border-color var(--transition-normal),
+                  box-shadow var(--transition-normal);
     }
 
-    [data-theme="dark"] .error-container {
-      background: #222;
-    }
-
-    .error-container h1 {
-      font-size: 5rem;
-      margin: 0.3em 0 0.2em;
+    .error-icon {
+      font-size: 4.8rem;
       color: var(--accent-color);
-      font-weight: 700;
-      letter-spacing: 4px;
+      margin-bottom: 1rem;
+      opacity: 0.7;
+      display: inline-block;
     }
 
-    .error-container h2 {
+    .error-card h1 {
+      font-size: 6rem;
+      margin: 0.2em 0 0.1em;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--accent-color);
+      line-height: 1.1;
+    }
+
+    .error-card h2 {
       font-size: 1.9rem;
-      margin: 0.5em 0;
-      color: var(--accent-color);
+      font-weight: 550;
+      margin: 0.25em 0 0.5em;
       border-bottom: none;
       padding-bottom: 0;
-    }
-
-    .error-container p {
-      font-size: var(--font-size-base);
-      margin: 1.5em 0;
       color: var(--text-color);
+      letter-spacing: -0.3px;
     }
 
-    [data-theme="dark"] .error-container p {
-      color: #d0d0d0;
+    .error-desc {
+      font-size: 1.1rem;
+      margin: 1.6em 0 1.2em;
+      color: var(--text-secondary);
+      max-width: 480px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.6;
+    }
+
+    .error-desc i {
+      color: var(--accent-color);
+      margin-right: 6px;
     }
 
     .error-buttons {
       display: flex;
-      gap: 20px;
+      gap: 18px;
       justify-content: center;
-      margin-top: 30px;
+      margin-top: 36px;
       flex-wrap: wrap;
     }
 
     .error-btn {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
       background: var(--accent-color);
       color: white;
       padding: 12px 28px;
+      border-radius: var(--radius-full);
+      font-weight: 550;
+      font-size: 0.98rem;
       text-decoration: none;
-      border-radius: 6px;
-      transition: all var(--transition-fast) var(--transition-ease);
-      font-weight: 500;
-      font-size: 1rem;
+      transition: all var(--transition-fast) var(--transition-bounce);
       border: none;
       cursor: pointer;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    .error-btn i {
+      font-size: 1rem;
+      transition: transform 0.15s ease;
     }
 
     .error-btn:hover {
-      background: var(--link-hover);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px var(--item-hover-shadow);
+      background: var(--accent-light);
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-md);
+    }
+
+    .error-btn:hover i {
+      transform: translateX(-3px);
     }
 
     .error-btn.outline {
       background: transparent;
       color: var(--accent-color);
       border: 1px solid var(--accent-color);
+      box-shadow: none;
     }
 
     .error-btn.outline:hover {
       background: var(--accent-color);
       color: white;
+      transform: translateY(-3px);
     }
 
-    .decoration-emoji {
-      font-size: 4rem;
-      opacity: 0.25;
-      user-select: none;
-      margin: 10px 0;
+    .error-btn.outline:hover i {
+      transform: translateX(-3px);
+      color: white;
     }
 
-    /* 评论区容器 —— 风格与主容器一致，继承卡片质感 */
-    .comments-section {
-      background: white;
-      border: var(--border-width) solid var(--border-color);
-      box-shadow: var(--shadow-main), var(--shadow-offset), -var(--shadow-offset);
-      padding: 35px 45px;
-      border-radius: var(--border-radius-container);
-      transition: background-color var(--transition-normal) var(--transition-ease), 
-                  border-color var(--transition-normal) var(--transition-ease);
-      margin-top: 25px;
-    }
-
-    [data-theme="dark"] .comments-section {
-      background: #222;
-    }
-
-    .comments-section h3 {
-      font-size: 1.7rem;
-      margin-top: 0;
-      margin-bottom: 0.6rem;
-      color: var(--accent-color);
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      border-bottom: 2px solid var(--accent-color);
-      display: inline-block;
-      padding-bottom: 8px;
-    }
-
-    .comments-section .section-sub {
-      color: var(--text-color);
-      opacity: 0.75;
-      margin-bottom: 28px;
-      font-size: 0.95rem;
-    }
-
-    /* 针对 Twikoo 评论区暗色主题微调 */
-    [data-theme="dark"] .twikoo .tk-comment,
-    [data-theme="dark"] .twikoo .tk-submit,
-    [data-theme="dark"] .twikoo .tk-input {
-      background-color: #2c2c2c;
-      border-color: #555;
-    }
-
-    [data-theme="dark"] .twikoo .tk-content {
-      color: #e0e0e0;
-    }
-
-    [data-theme="dark"] .twikoo .tk-nick,
-    [data-theme="dark"] .twikoo .tk-mail {
-      background-color: #3a3a3a;
-      color: #f0f0f0;
-      border-color: #666;
-    }
-
-    /* 保持响应式 */
+    /* 响应式优化 */
     @media (max-width: 768px) {
-      .error-container {
-        padding: 35px 25px;
-        margin-bottom: 30px;
+      .error-card {
+        padding: 40px 28px;
       }
-      .error-container h1 { font-size: 4rem; }
-      .error-container h2 { font-size: 1.5rem; }
-      .comments-section {
-        padding: 28px 22px;
+      .error-card h1 {
+        font-size: 4.5rem;
       }
-      .comments-section h3 {
+      .error-card h2 {
         font-size: 1.5rem;
       }
       .error-wrapper {
-        margin: calc(var(--nav-height-mobile) + 25px) 20px 50px;
+        margin: calc(var(--nav-height-mobile) + 30px) auto 50px auto;
+      }
+      .error-buttons {
+        gap: 14px;
+      }
+      .error-btn {
+        padding: 10px 22px;
+        font-size: 0.9rem;
       }
     }
 
     @media (max-width: 480px) {
-      .comments-section {
-        padding: 20px 18px;
+      .error-card {
+        padding: 32px 20px;
       }
-      .error-container {
-        padding: 28px 20px;
+      .error-card h1 {
+        font-size: 3.6rem;
+      }
+      .error-btn {
+        padding: 9px 18px;
       }
     }
 
-    .twikoo-loading {
-      text-align: center;
-      padding: 40px 20px;
-      color: var(--text-color);
-      font-size: 0.95rem;
-      opacity: 0.7;
+    .error-card, .error-btn {
+      background: var(--surface-color);
+      background-color: var(--surface-color);
     }
   </style>
 </head>
 <body>
-  <!-- 全局导航占位符 -->
   <div id="navbar-placeholder"></div>
 
   <div class="error-wrapper">
-    <div class="error-container">
-      <div class="decoration-emoji">⚠️</div>
-      <h1>404</h1>
-      <h2>—————— 页面未找到 ——————</h2>
-      <p>诶呀……没找到这个页面呀，也许是网址输错了？<br>（或者我不小心写错代码了）</p>
-      <div class="error-buttons">
-        <a href="/index.html" class="error-btn"><i class="fas fa-home" style="margin-right: 8px;"></i>返回首页</a>
-        <a href="https://github.com/Xinyang-Gao/xinyang-gao.github.io/issues/new" target="_blank" class="error-btn outline"><i class="fas fa-bug" style="margin-right: 6px;"></i>反馈问题</a>
+    <div class="error-card">
+      <div class="error-icon">
+        <i class="fas fa-compass"></i>
       </div>
-    </div>
-
-  <div class="comments-section" id="commentsSection">
-      <h3>反馈</h3>
-      <div class="section-sub">找不到页面了？如果你觉得这是个问题，欢迎反馈</div>
-      <!-- Twikoo 评论容器 -->
-      <div id="twikoo-comments"></div>
+      <h1>404</h1>
+      <h2>页面未找到</h2>
+      <div class="error-desc"> 你访问的页面可能已被移动、删除，或网址输入有误</div>
+      <div class="error-buttons">
+        <button class="error-btn outline" id="goBackBtn">
+          <i class="fas fa-arrow-left"></i> 返回上一页
+        </button>
+        <a href="https://github.com/Xinyang-Gao/xinyang-gao.github.io/issues/new" target="_blank" rel="noopener noreferrer" class="error-btn outline">
+          <i class="fas fa-bug"></i> 反馈问题
+        </a>
+        <a href="/contact.html" class="error-btn outline">
+          <i class="fas fa-comment"></i> 留言板
+        </a>
+      </div>
     </div>
   </div>
 
@@ -226,221 +196,97 @@
   <div id="pageTransition" class="page-transition"></div>
   <div id="footer-placeholder"></div>
 
-  <script src="https://registry.npmmirror.com/twikoo/1.7.4/files/dist/twikoo.min.js"></script>
   <script src="//cdn.busuanzi.cc/busuanzi/3.6.9/busuanzi.min.js" defer></script>
   <script src="script.js"></script>
 
   <script>
     (function() {
-      // 确保主题在DOM加载前就应用（避免闪烁）
+      // 主题同步
       const savedTheme = localStorage.getItem('theme');
       const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
       if (savedTheme) {
         document.documentElement.setAttribute('data-theme', savedTheme);
       } else if (systemPrefersDark) {
         document.documentElement.setAttribute('data-theme', 'dark');
+      } else {
+        if(!document.documentElement.getAttribute('data-theme')) {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
       }
 
-      // 辅助函数：等待元素出现/等待navbar加载完成后再执行初始化（避免与script.js冲突但增强兼容）
-      async function waitForElement(selector, timeout = 3000) {
-        const startTime = Date.now();
-        while (Date.now() - startTime < timeout) {
-          const el = document.querySelector(selector);
-          if (el) return el;
-          await new Promise(r => setTimeout(r, 50));
-        }
-        return null;
-      }
-
-      // 初始化 Twikoo 评论区
-      function initTwikooComments() {
-        if (typeof twikoo === 'undefined') {
-          console.warn('Twikoo 脚本尚未加载完成，稍后重试');
-          setTimeout(() => initTwikooComments(), 300);
-          return;
-        }
-        const container = document.querySelector('#twikoo-comments');
-        if (!container) return;
-        // 显示加载占位
-        if (container.children.length === 0) {
-          const loadingDiv = document.createElement('div');
-          loadingDiv.className = 'twikoo-loading';
-          loadingDiv.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> 加载留言板中，稍等片刻...';
-          container.appendChild(loadingDiv);
-        }
-        
-        twikoo.init({
-          envId: 'https://twikoo-gxy.netlify.app/.netlify/functions/twikoo',
-          el: '#twikoo-comments',
-          lang: 'zh-CN',
-          enableComment: true,
-        }).then(() => {
-          // 移除占位loading (twikoo会接管容器)
-          const loadingHint = container.querySelector('.twikoo-loading');
-          if (loadingHint) loadingHint.remove();
-        }).catch(err => {
-          console.error('❌ Twikoo 初始化失败:', err);
-          const containerEl = document.querySelector('#twikoo-comments');
-          if (containerEl) {
-            containerEl.innerHTML = '<div style="padding: 20px; text-align: center; color: #a55860;"><i class="fas fa-exclamation-triangle"></i> 评论服务暂时不可用，请稍后再试~</div>';
-          }
-        });
-      }
-
-      // 加载导航栏以及公共组件 (与原有逻辑保持一致)
+      // 加载导航栏 + 页脚
       async function loadNavbarAndFooter() {
-        // 使用现有全局 loadNavbar 函数（如果存在）否则手动实现
         if (typeof loadNavbar === 'function') {
           try {
             await loadNavbar();
-          } catch(e) { console.warn(e); }
-        } else {
-          // 后备：手动获取导航栏html并注入（与script.js预期一致）
-          const navbarPlaceholder = document.getElementById('navbar-placeholder');
-          const footerPlaceholder = document.getElementById('footer-placeholder');
-          if (navbarPlaceholder) {
-            try {
-              const response = await fetch('/navbar.html');
-              if (response.ok) {
-                const html = await response.text();
-                navbarPlaceholder.innerHTML = html;
-              } else {
-                console.warn('未找到 navbar.html，使用简易导航结构');
-                navbarPlaceholder.innerHTML = getFallbackNavbar();
-              }
-            } catch (err) {
-              navbarPlaceholder.innerHTML = getFallbackNavbar();
-            }
-          }
-          if (footerPlaceholder) {
-            try {
-              const response = await fetch('/footer.html');
-              if (response.ok) {
-                const html = await response.text();
-                footerPlaceholder.innerHTML = html;
-              } else {
-                footerPlaceholder.innerHTML = getFallbackFooter();
-              }
-            } catch (err) {
-              footerPlaceholder.innerHTML = getFallbackFooter();
-            }
-          }
+          } catch(e) { console.warn('loadNavbar 执行失败', e); }
         }
-        
-        // 等待DOM更新，再触发导航高亮管理和主题切换同步 (若有 NavigationManager)
-        setTimeout(() => {
-          if (typeof NavigationManager !== 'undefined' && NavigationManager.initNavigation) {
-            NavigationManager.initNavigation();
-          } else {
-            // 基础高亮：当前页面不激活特殊项，但保证主题切换按钮存在并工作
-            setupThemeSwitchManually();
-          }
-          if (typeof ScrollManager !== 'undefined' && ScrollManager.initBackToTopButton) {
-            ScrollManager.initBackToTopButton();
-          } else {
-            setupBackToTopManually();
-          }
-        }, 100);
-      }
-
-      // 手动设置主题切换（当 NavigationManager 不存在时使用）
-      function setupThemeSwitchManually() {
-        const checkbox = document.getElementById('theme-toggle-checkbox');
-        if (!checkbox) return;
-        const currentTheme = document.documentElement.getAttribute('data-theme');
-        checkbox.checked = (currentTheme === 'dark');
-        checkbox.addEventListener('change', function(e) {
-          const newTheme = e.target.checked ? 'dark' : 'light';
-          document.documentElement.setAttribute('data-theme', newTheme);
-          localStorage.setItem('theme', newTheme);
-        });
-        // 移动端菜单
-        const mobileToggle = document.getElementById('mobileToggle');
-        const navItems = document.querySelector('.nav-items');
-        if (mobileToggle && navItems) {
-          mobileToggle.addEventListener('click', () => {
-            mobileToggle.classList.toggle('active');
-            navItems.classList.toggle('active');
-          });
+        if (typeof loadFooter === 'function') {
+          try {
+            await loadFooter();
+          } catch(e) { console.warn('loadFooter 执行失败', e); }
         }
-        // 高亮当前页面（404页面不激活具体导航，但如果有匹配的路径可加active）
-        const currentPath = window.location.pathname;
-        const navLinks = document.querySelectorAll('.nav-item');
-        navLinks.forEach(link => {
-          const href = link.getAttribute('href');
-          if (href && (currentPath === href || (href !== '/' && currentPath.includes(href)))) {
-            link.classList.add('active');
-          } else if (currentPath.includes('404') && link.getAttribute('data-page') === 'home') {
-            // 避免高亮错误
-          }
-        });
       }
-
-      function setupBackToTopManually() {
+      
+      // 返回顶部逻辑
+      function setupBackToTop() {
         const backBtn = document.getElementById('backToTopBtn');
         if (!backBtn) return;
-        window.addEventListener('scroll', () => {
+        const toggleBackBtn = () => {
           if (window.scrollY > 400) {
             backBtn.classList.add('show');
           } else {
             backBtn.classList.remove('show');
           }
-        });
+        };
+        window.addEventListener('scroll', toggleBackBtn);
         backBtn.addEventListener('click', () => {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         });
+        toggleBackBtn();
       }
 
-      // 页面主体启动
-      document.addEventListener('DOMContentLoaded', async () => {
-        // 确保主题持久化监听
-        const themeObserver = () => {
-          const stored = localStorage.getItem('theme');
-          if (stored && stored !== document.documentElement.getAttribute('data-theme')) {
-            document.documentElement.setAttribute('data-theme', stored);
+      // 返回上一页 若无法后退则跳转首页
+      function initGoBack() {
+        const backBtn = document.getElementById('goBackBtn');
+        if (!backBtn) return;
+        backBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          if (window.history.length > 1) {
+            window.history.back();
+          } else {
+            const fallbackUrl = '/index.html';
+            window.location.href = fallbackUrl;
           }
-        };
-        window.addEventListener('storage', themeObserver);
-        
-        // 加载导航栏和页脚
+        });
+      }
+
+      // 监听主题变更
+      window.addEventListener('storage', (e) => {
+        if (e.key === 'theme' && e.newValue) {
+          document.documentElement.setAttribute('data-theme', e.newValue);
+          const checkbox = document.getElementById('theme-toggle-checkbox');
+          if (checkbox) checkbox.checked = (e.newValue === 'dark');
+        }
+      });
+
+      // 页面加载完全后执行
+      document.addEventListener('DOMContentLoaded', async () => {
         await loadNavbarAndFooter();
+        setupBackToTop();
+        initGoBack();
         
-        // 延迟一小段时间确保导航栏的样式已经注入完成，再初始化评论区
-        setTimeout(() => {
-          initTwikooComments();
-        }, 200);
-        
-        // 若script.js中有自定义光标、其他功能，避免冲突；但不影响
-        document.body.setAttribute('data-loaded', 'true');
-        
-        // 处理404页面特有的页面过渡动画效果（可选，优雅消失）
         const pageTransitionDiv = document.getElementById('pageTransition');
         if (pageTransitionDiv) {
           setTimeout(() => {
             pageTransitionDiv.style.opacity = '0';
           }, 200);
         }
-      });
-      
-      // 当页面完全加载后再执行一次Twikoo确保资源到位（应对网络延迟）
-      window.addEventListener('load', () => {
-        // 再次确认Twikoo容器是否已存在评论组件，若未加载则重试
-        const twikooContainer = document.querySelector('#twikoo-comments');
-        if (twikooContainer && twikooContainer.children.length <= 1 && !twikooContainer.querySelector('.tk-comments')) {
-          // 看起来评论区还没成功渲染，二次调用
-          if (typeof twikoo !== 'undefined') {
-            twikoo.init({
-              envId: 'https://twikoo-gxy.netlify.app/.netlify/functions/twikoo',
-              el: '#twikoo-comments',
-              lang: 'zh-CN',
-              path: window.location.pathname,
-            }).catch(e => console.warn('二次初始化跳过', e));
-          }
-        }
+        
+        // 告知 body 已加载
+        document.body.setAttribute('data-loaded', 'true');
       });
     })();
   </script>
-  <!-- 保证不蒜子异步统计不报错且正常显示 -->
-  <noscript>请启用JavaScript以查看站点统计和留言功能。</noscript>
 </body>
 </html>

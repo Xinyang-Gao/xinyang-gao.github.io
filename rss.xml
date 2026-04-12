@@ -4,7 +4,7 @@
     <title>高新炀的个人网站</title>
     <link>https://xinyang-gao.github.io</link>
     <description>学生 · 开发者 · 写作者，用代码和文字探索世界</description>
-    <lastBuildDate>Sat, 11 Apr 2026 21:59:41 GMT</lastBuildDate>
+    <lastBuildDate>Sun, 12 Apr 2026 10:07:06 GMT</lastBuildDate>
     <language>zh-CN</language>
     <generator>RssGenerator (Python)</generator>
     <atom:link href="https://xinyang-gao.github.io/rss.xml" rel="self" type="application/rss+xml" />
@@ -48,6 +48,14 @@
       <pubDate>Sat, 28 Mar 2026 00:00:00 GMT</pubDate>
       <author>高新炀</author>
       <category>网站</category>
+    </item>
+    <item>
+      <title>古诗扩写-十五从军征</title>
+      <link>https://xinyang-gao.github.io/articles/古诗扩写-十五从军征.html</link>
+      <description><![CDATA[以首乐府诗《十五从军征》为蓝本，写一篇以老兵第一人称的记叙文]]></description>
+      <pubDate>Fri, 09 Jan 2026 00:00:00 GMT</pubDate>
+      <author>高新炀</author>
+      <category>诗扩写</category>
     </item>
   </channel>
 </rss>
