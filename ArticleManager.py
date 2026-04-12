@@ -374,7 +374,7 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
     
     <!-- Twikoo 评论系统 -->
-    <script src="https://registry.npmmirror.com/twikoo/1.7.4/files/dist/twikoo.min.js"></script>
+    <script src="https://registry.npmmirror.com/twikoo/1.7.7/files/dist/twikoo.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {{
             if (typeof twikoo !== 'undefined') {{
