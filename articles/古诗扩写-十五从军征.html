@@ -68,21 +68,20 @@
     </div>
     
                 <div class="article-body" id="articleBody">
-                    <h2 id="heading-0">原文</h2>
-<h3 id="heading-1">十五从军征</h3>
+                    <h2 id="原文">原文</h2>
+<h3 id="十五从军征">十五从军征</h3>
 <blockquote>
-<p>十五从军征，八十始得归。<br />
-道逢乡里人：“家中有阿谁？”<br />
-“遥看是君家，松柏冢累累。”<br />
-兔从狗窦入，雉从梁上飞。<br />
-中庭生旅谷，井上生旅葵。<br />
-舂谷持作饭，采葵持作羹。<br />
-羹饭一时熟，不知饴阿谁。<br />
+<p>十五从军征，八十始得归。
+道逢乡里人：“家中有阿谁？”
+“遥看是君家，松柏冢累累。”
+兔从狗窦入，雉从梁上飞。
+中庭生旅谷，井上生旅葵。
+舂谷持作饭，采葵持作羹。
+羹饭一时熟，不知饴阿谁。
 出门东向看，泪落沾我衣。</p>
 </blockquote>
-<h2 id="heading-2">扩写</h2>
-<h3 id="heading-3">**归冢**</h3>
-
+<h2 id="扩写">扩写</h2>
+<h3 id="归冢"><strong>归冢</strong></h3>
 <p>依稀记得，十五岁时我被征召去参军。这一去啊，就是六十五年。耄耋之年，我终于拖着这副枯朽的身躯，踏上回家的路。</p>
 <p>故乡在晨雾中渐渐浮现，似近似远，如梦似真。路上遇见一位乡里老人，面容沧桑，步履蹒跚。我心中激动，更涌起一阵莫名的惶恐，颤着声上前问道：“我……我家中还有人吗？”</p>
 <p>那人定睛看我许久，忽然眼里掠过一丝恍然：“你是当年那个十五岁出去参军的孩子……”</p>
@@ -132,11 +131,13 @@
 
     <script>
         // 将标题数据注入到全局变量
-        window.ARTICLE_HEADINGS = [{"level": 2, "text": "原文", "id": "heading-0"}, {"level": 3, "text": "十五从军征", "id": "heading-1"}, {"level": 2, "text": "扩写", "id": "heading-2"}, {"level": 3, "text": "**归冢**", "id": "heading-3"}];
+        window.ARTICLE_HEADINGS = [{"level": 2, "text": "原文", "id": "原文"}, {"level": 3, "text": "十五从军征", "id": "十五从军征"}, {"level": 2, "text": "扩写", "id": "扩写"}, {"level": 3, "text": "**归冢**", "id": "归冢"}];
     </script>
     <script src="/busuanzi.min.js" defer></script>
     <script src="/script.js"></script>
     <script src="article.js"></script>
+    <!-- KaTeX for math rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
     
     <!-- Twikoo 评论系统 -->
     <script src="https://registry.npmmirror.com/twikoo/1.7.4/files/dist/twikoo.min.js"></script>
@@ -151,6 +152,26 @@
                 });
             } else {
                 console.warn('Twikoo 加载失败，请检查网络或 CDN 地址');
+            }
+        });
+    </script>
+    <!-- KaTeX 自动渲染（支持 $...$ 和 $$...$$） -->
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.getElementById('articleBody'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+    <!-- Mermaid 支持 -->
+    <script defer src="https://cdn.jsdelivr.net/npm/mermaid@10.4.0/dist/mermaid.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            try {
+                if (window.mermaid) {
+                    window.mermaid.initialize({ startOnLoad: false });
+                    const els = document.querySelectorAll('.mermaid');
+                    els.forEach(el => {
+                        try { window.mermaid.init(undefined, el); } catch(e) { console.warn('Mermaid 渲染失败', e); }
+                    });
+                }
+            } catch (e) {
+                console.warn('Mermaid 初始化异常', e);
             }
         });
     </script>

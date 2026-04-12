@@ -68,8 +68,7 @@
     </div>
     
                 <div class="article-body" id="articleBody">
-                    <h2 id="heading-0">回信思路</h2>
-
+                    <h2 id="回信思路">回信思路</h2>
 <ol>
 <li>先感谢宋濂先生以亲身经历教导以及用心良苦，对先生早年勤苦求学的精神（颜回般安贫乐道）表示敬佩（尤其是“手自笔录”“趋百里问师”等细节）。表明自己将时时自省，不负厚望</li>
 <li>承认自己在太学条件优越，所以更应珍惜当前。然后反省自己是否因安逸而懈怠，然后承诺将以先生为榜样，更加刻苦学习</li>
@@ -79,13 +78,12 @@
 <li>落款</li>
 </ol>
 <hr />
-<h2 id="heading-1">正文</h2>
-
+<h2 id="正文">正文</h2>
 <p>濂公尊鉴：</p>
 <blockquote>
 <p>尊敬的宋濂先生：</p>
 </blockquote>
-<p>序文敬领，捧读再三，感佩不已。先生以少时勤苦经历勉励后学，用心良苦，~~晚生岂敢不谨记于心、常自反省~~（晚生敢不谨记于心、常自反省乎）？</p>
+<p>序文敬领，捧读再三，感佩不已。先生以少时勤苦经历勉励后学，用心良苦，<del>晚生岂敢不谨记于心、常自反省</del>（晚生敢不谨记于心、常自反省乎）？</p>
 <blockquote>
 <p>您赐予的序文（我）已恭敬地收下了，捧在手中反复阅读，内心非常的感动和敬佩。先生以自己年少时勤苦求学的经历勉励后辈的学子，用心良苦，晚辈怎敢不牢记在心，时时自我反省呢？</p>
 </blockquote>
@@ -93,7 +91,7 @@
 <blockquote>
 <p>看先生年少的时候，家境贫寒、没有书籍，在结冰的砚台旁亲手抄录；请教问题没有老师，徒步行走在深雪的山谷中。志向所在，不因饥饿寒冷而改变，不因困苦挫折而动摇，这真是颜回般的安贫乐道、贤德之士的风范啊！每当想到“手指冻得不能弯曲伸直也不停下抄写”“俯下身子侧着耳朵恭敬请教”这些事，我总会肃然起敬，内心深深向往。</p>
 </blockquote>
-<p>晚生幸入太学，廪稍日供，诗书满架，师友相伴，无冻馁奔走之苦。反观先生昔年之艰难，怎敢贪图安逸，稍忘专心勤学之志？当以先生为镜，常省己身：~~虽处广厦，能持陋巷之志否？虽得饱暖，能继寒窗之心否？~~（处广厦而能守颜回之志乎？得饱暖而能继程门之心乎？）</p>
+<p>晚生幸入太学，廪稍日供，诗书满架，师友相伴，无冻馁奔走之苦。反观先生昔年之艰难，怎敢贪图安逸，稍忘专心勤学之志？当以先生为镜，常省己身：<del>虽处广厦，能持陋巷之志否？虽得饱暖，能继寒窗之心否？</del>（处广厦而能守颜回之志乎？得饱暖而能继程门之心乎？）</p>
 <blockquote>
 <p>晚辈有幸进入太学，每天有官府供给的粮食，书架上堆满诗书，有老师和朋友相伴，没有受冻挨饿、奔波劳碌的苦楚。反过来看先生当年经历的艰难，我怎么敢贪图安逸，有丝毫忘记专心勤学的志向？应该以先生为镜子，常常反省我自己：身处宽敞的屋舍，能否坚守颜回那样甘居陋巷的志向？得到温饱之后，能否延续程门立雪那般求学的诚心？</p>
 </blockquote>
@@ -113,7 +111,7 @@
 <blockquote>
 <p>特此回信，恭祝您一切安好。</p>
 </blockquote>
-<p>学生 马生 谨上<br />
+<p>学生 马生 谨上
 时洪武八年腊月</p>
                 </div>
                 <!-- 标签 -->
@@ -145,11 +143,13 @@
 
     <script>
         // 将标题数据注入到全局变量
-        window.ARTICLE_HEADINGS = [{"level": 2, "text": "回信思路", "id": "heading-0"}, {"level": 2, "text": "正文", "id": "heading-1"}];
+        window.ARTICLE_HEADINGS = [{"level": 2, "text": "回信思路", "id": "回信思路"}, {"level": 2, "text": "正文", "id": "正文"}];
     </script>
     <script src="/busuanzi.min.js" defer></script>
     <script src="/script.js"></script>
     <script src="article.js"></script>
+    <!-- KaTeX for math rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
     
     <!-- Twikoo 评论系统 -->
     <script src="https://registry.npmmirror.com/twikoo/1.7.4/files/dist/twikoo.min.js"></script>
@@ -164,6 +164,26 @@
                 });
             } else {
                 console.warn('Twikoo 加载失败，请检查网络或 CDN 地址');
+            }
+        });
+    </script>
+    <!-- KaTeX 自动渲染（支持 $...$ 和 $$...$$） -->
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.getElementById('articleBody'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+    <!-- Mermaid 支持 -->
+    <script defer src="https://cdn.jsdelivr.net/npm/mermaid@10.4.0/dist/mermaid.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            try {
+                if (window.mermaid) {
+                    window.mermaid.initialize({ startOnLoad: false });
+                    const els = document.querySelectorAll('.mermaid');
+                    els.forEach(el => {
+                        try { window.mermaid.init(undefined, el); } catch(e) { console.warn('Mermaid 渲染失败', e); }
+                    });
+                }
+            } catch (e) {
+                console.warn('Mermaid 初始化异常', e);
             }
         });
     </script>

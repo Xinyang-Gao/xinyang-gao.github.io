@@ -389,6 +389,48 @@ function initScrollReveal() {
 }
 
 /**
+ * 渲染页面中的数学公式（KaTeX）与 Mermaid 流程图
+ * rootElement: 渲染范围，默认整个 document.body
+ */
+function renderMathAndMermaid(rootElement = document.body) {
+    try {
+        // KaTeX 自动渲染（如果 auto-render 已加载）
+        if (typeof renderMathInElement === 'function') {
+            try {
+                renderMathInElement(rootElement, {
+                    delimiters: [
+                        { left: '$$', right: '$$', display: true },
+                        { left: '$', right: '$', display: false }
+                    ],
+                    throwOnError: false
+                });
+            } catch (e) {
+                console.warn('KaTeX 渲染失败', e);
+            }
+        }
+
+        // Mermaid 渲染（如果 mermaid 已加载）
+        if (window.mermaid && typeof window.mermaid.init === 'function') {
+            try {
+                window.mermaid.initialize({ startOnLoad: false });
+                const mermaids = (rootElement.querySelectorAll ? rootElement.querySelectorAll('.mermaid') : []);
+                mermaids.forEach(el => {
+                    try {
+                        window.mermaid.init(undefined, el);
+                    } catch (err) {
+                        console.warn('Mermaid 渲染单个图失败', err);
+                    }
+                });
+            } catch (e) {
+                console.warn('Mermaid 初始化失败', e);
+            }
+        }
+    } catch (e) {
+        console.warn('renderMathAndMermaid 异常', e);
+    }
+}
+
+/**
  * 搜索控制器（支持 URL 参数同步）
  */
 class SearchController {
@@ -759,6 +801,15 @@ class PageManager {
         if (page === 'index') updateDynamicGreeting();
         PageManager.setupListItemsInteraction();
         if (typeof initScrollReveal === 'function') initScrollReveal();
+        // 渲染页面中的数学公式与 Mermaid 流程图（如果存在）
+        if (typeof renderMathAndMermaid === 'function') {
+            try {
+                const container = document.getElementById('mainContent') || document.querySelector('main') || document.body;
+                renderMathAndMermaid(container);
+            } catch (e) {
+                console.warn('renderMathAndMermaid 执行失败', e);
+            }
+        }
     }
 
     static setupListItemsInteraction() {
@@ -1265,7 +1316,82 @@ async function loadFooter() {
     const footerHTML = await response.text();
     const placeholder = document.getElementById('footer-placeholder');
     if (placeholder) {
-      placeholder.innerHTML = footerHTML;
+            // 将 footer HTML 临时解析到一个容器中，安全地提取资源
+            const tmp = document.createElement('div');
+            tmp.innerHTML = footerHTML;
+
+            // 注入样式（link）到 head，避免重复注入
+            tmp.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
+                const href = link.getAttribute('href');
+                if (!href) return;
+                const exists = Array.from(document.querySelectorAll('link[rel="stylesheet"]')).some(l => l.getAttribute('href') === href);
+                if (!exists) {
+                    const newLink = document.createElement('link');
+                    newLink.rel = 'stylesheet';
+                    newLink.href = href;
+                    document.head.appendChild(newLink);
+                }
+            });
+
+            // 将非脚本内容（比如 footer 的静态 HTML）放入占位符
+            // 先移除所有 script 标签，剩下的 HTML 就是可直接插入的内容
+            tmp.querySelectorAll('script').forEach(s => s.remove());
+            placeholder.innerHTML = tmp.innerHTML;
+
+            // 重新解析 footerHTML 用于提取并执行 script
+            const tmp2 = document.createElement('div');
+            tmp2.innerHTML = footerHTML;
+            const scripts = Array.from(tmp2.querySelectorAll('script'));
+
+            if (scripts.length === 0) return;
+
+            // 顺序加载脚本并在全部完成后触发回调
+            let loadedCount = 0;
+            const tryInvokeRender = () => {
+                // 在 footer 的脚本全部加载后，调用渲染函数（若存在）
+                if (typeof renderMathAndMermaid === 'function') {
+                    try {
+                        const container = document.getElementById('articleBody') || document.getElementById('mainContent') || document.body;
+                        renderMathAndMermaid(container);
+                    } catch (e) {
+                        console.warn('调用 renderMathAndMermaid 失败', e);
+                    }
+                }
+            };
+
+            const loadNextScript = (index) => {
+                if (index >= scripts.length) {
+                    tryInvokeRender();
+                    return;
+                }
+                const s = scripts[index];
+                const src = s.getAttribute('src');
+                if (src) {
+                    const newScript = document.createElement('script');
+                    // 复制常用属性
+                    if (s.hasAttribute('type')) newScript.type = s.getAttribute('type');
+                    if (s.hasAttribute('async')) newScript.async = true;
+                    if (s.hasAttribute('defer')) newScript.defer = true;
+                    newScript.src = src;
+                    newScript.onload = () => { loadedCount++; loadNextScript(index + 1); };
+                    newScript.onerror = () => { console.warn('脚本加载失败:', src); loadedCount++; loadNextScript(index + 1); };
+                    document.body.appendChild(newScript);
+                } else {
+                    // 内联脚本：直接执行
+                    try {
+                        const inline = document.createElement('script');
+                        if (s.hasAttribute('type')) inline.type = s.getAttribute('type');
+                        inline.text = s.textContent || s.innerText || '';
+                        document.body.appendChild(inline);
+                    } catch (e) {
+                        console.warn('执行内联脚本失败', e);
+                    }
+                    // 继续加载下一个
+                    loadNextScript(index + 1);
+                }
+            };
+
+            loadNextScript(0);
     } else {
       console.warn('页脚占位符未找到');
     }
@@ -1645,7 +1771,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await loadNavbar();
     await loadFooter();
-
+    // 在注入 footer 后尝试渲染页面内的数学公式与 Mermaid（延迟以等待外部脚本加载）
+    setTimeout(() => {
+        try { renderMathAndMermaid(document.body); } catch (e) { console.warn('初始 renderMathAndMermaid 失败', e); }
+    }, 300);
     startSiteAgeUpdater();
 
     const currentPage = window.location.pathname.split('/').pop().replace('.html', '') || 'index';

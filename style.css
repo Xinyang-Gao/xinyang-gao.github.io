@@ -18,6 +18,7 @@
   --tag-bg: #f0ebe5;
   --tag-color: #4a4a4a;
   --code-bg: #f2efe9;
+  --code-color: #2b2b2b;
   --blockquote-bg: #f5f2ef;
   --card-border-hover: var(--accent-color);
   
@@ -114,6 +115,7 @@
   --tag-bg: #25252d;
   --tag-color: #d0d0dc;
   --code-bg: #1a1a22;
+  --code-color: #e6eef6;
   --blockquote-bg: #121218;
   
   /* 卡片与交互元素阴影 */

@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-04-12T11:48:29.778587",
+  "generated_at": "2026-04-12T15:51:27.202808",
   "total_articles": 7,
-  "total_word_count": 24128,
+  "total_word_count": 24299,
   "articles": [
     {
       "title": "README.md",
@@ -26,8 +26,8 @@
       ],
       "category": "网站",
       "url": "/articles/网站更新日志.html",
-      "word_count": 8274,
-      "read_time": "17-42分钟"
+      "word_count": 8445,
+      "read_time": "17-43分钟"
     },
     {
       "title": "从一株小草开始",

@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 from datetime import datetime
 from urllib.parse import quote
+from typing import Dict
 
 # 尝试导入markdown库，如果没有则提示安装
 try:
@@ -16,6 +17,19 @@ except ImportError:
     print("请先安装markdown库: pip install markdown")
     sys.exit(1)
 
+# 为了支持 ~~删除线~~，使用 markdown 的扩展 API 定义一个小扩展
+try:
+    from markdown.extensions import Extension
+    from markdown.inlinepatterns import SimpleTagInlineProcessor
+
+    class StrikeExtension(Extension):
+        def extendMarkdown(self, md):
+            # 使用三个捕获组：开始标记、内容、结束标记，以符合 SimpleTagInlineProcessor 的期待
+            STRIKE_RE = r'(~~)(.+?)(~~)'
+            md.inlinePatterns.register(SimpleTagInlineProcessor(STRIKE_RE, 'del'), 'strikethrough', 175)
+except Exception:
+    # 如果环境中没有对应 API（非常罕见），我们仍然继续运行，但不会启用删除线扩展
+    StrikeExtension = None
 # 配置路径
 BASE_DIR = Path(__file__).parent                     # 脚本所在目录
 SOURCE_DIR = BASE_DIR / "articles" / "source"         # 分类源目录（内含各分类子目录）
@@ -78,17 +92,31 @@ def extract_headings(content: str) -> list:
     提取所有标题，用于生成目录
     返回: [{'level': 1, 'text': '标题', 'id': 'heading-0'}, ...]
     """
-    heading_pattern = r'^(#{1,4})\s+(.+)$'
-    headings = []
-    heading_counter = 0
+    heading_pattern = r'^(#{1,4})\s+(.+?)\s*$'
+    headings: list[dict] = []
+    seen: Dict[str, int] = {}
+
+    def slugify(text: str) -> str:
+        # 生成基于标题文本的锚点：小写、去除HTML/特殊字符、空格转短横
+        s = re.sub(r'<[^>]+>', '', text)  # 去除可能的HTML标签
+        s = s.strip().lower()
+        s = re.sub(r"[\s]+", '-', s)
+        s = re.sub(r"[^0-9a-zA-Z\u4e00-\u9fff\-]", '', s)
+        s = re.sub(r'-{2,}', '-', s).strip('-')
+        return s or 'heading'
 
     for line in content.split('\n'):
         match = re.match(heading_pattern, line)
         if match:
             heading_level = len(match.group(1))
             heading_text = match.group(2).strip()
-            heading_id = f"heading-{heading_counter}"
-            heading_counter += 1
+            base_id = slugify(heading_text)
+            count = seen.get(base_id, 0)
+            if count:
+                heading_id = f"{base_id}-{count}"
+            else:
+                heading_id = base_id
+            seen[base_id] = count + 1
 
             headings.append({
                 'level': heading_level,
@@ -103,19 +131,20 @@ def add_heading_ids(content: str, headings: list) -> str:
     """
     为内容中的标题添加id属性
     """
+    # 使用 attr_list 的语法将 id 注入到 markdown 标题末尾，例如：
+    # ## 标题文本 {#my-id}
     lines = content.split('\n')
-    heading_pattern = r'^(#{1,4})\s+(.+)$'
+    heading_pattern = r'^(#{1,4})\s+(.+?)\s*$'
     heading_idx = 0
 
     for i, line in enumerate(lines):
         match = re.match(heading_pattern, line)
-        if match:
-            if heading_idx < len(headings):
-                heading_id = headings[heading_idx]['id']
-                heading_level = len(match.group(1))
-                heading_text = match.group(2)
-                lines[i] = f'<h{heading_level} id="{heading_id}">{heading_text}</h{heading_level}>'
-                heading_idx += 1
+        if match and heading_idx < len(headings):
+            heading_id = headings[heading_idx]['id']
+            # 保留原始标题文本中的 markdown 格式，追加属性列表
+            heading_text = match.group(2)
+            lines[i] = f"{match.group(1)} {heading_text} {{#{heading_id}}}"
+            heading_idx += 1
 
     return '\n'.join(lines)
 
@@ -128,9 +157,23 @@ def convert_markdown_to_html(md_content: str) -> str:
     extensions = [
         'extra',           # 支持表格、脚注等
         'codehilite',      # 代码高亮
-        'nl2br',           # 换行转<br>
+        # 注意: 去掉 'nl2br'，避免将普通换行转换为 <br>，从而在 $$...$$ 块内插入 <br>，
+        # 导致 KaTeX auto-render 无法识别并渲染数学公式。
         'sane_lists',      # 更智能的列表支持（包括两空格缩进）
+        'fenced_code',     # 支持 ``` 代码块
+        'attr_list',       # 支持在标题后使用 {#id} 注入 id 属性
     ]
+
+    # 明确启用脚注扩展以确保生成规范的脚注结构
+    if 'footnotes' not in extensions:
+        extensions.append('footnotes')
+
+    # 如果 StrikeExtension 可用，添加其实例以支持 ~~删除线~~ 语法
+    try:
+        if StrikeExtension is not None:
+            extensions.append(StrikeExtension())
+    except NameError:
+        pass
 
     # tab_length=2 使制表符被视为2个空格，与两空格缩进风格一致
     html_content = markdown.markdown(md_content, extensions=extensions, tab_length=2)
@@ -330,6 +373,8 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
     <script src="/busuanzi.min.js" defer></script>
     <script src="/script.js"></script>
     <script src="article.js"></script>
+    <!-- KaTeX for math rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
     
     <!-- Twikoo 评论系统 -->
     <script src="https://registry.npmmirror.com/twikoo/1.7.4/files/dist/twikoo.min.js"></script>
@@ -344,6 +389,26 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
                 }});
             }} else {{
                 console.warn('Twikoo 加载失败，请检查网络或 CDN 地址');
+            }}
+        }});
+    </script>
+    <!-- KaTeX 自动渲染（支持 $...$ 和 $$...$$） -->
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.getElementById('articleBody'), {{delimiters: [{{left: '$$', right: '$$', display: true}}, {{left: '$', right: '$', display: false}}]}});"></script>
+    <!-- Mermaid 支持 -->
+    <script defer src="https://cdn.jsdelivr.net/npm/mermaid@10.4.0/dist/mermaid.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {{
+            try {{
+                if (window.mermaid) {{
+                    window.mermaid.initialize({{ startOnLoad: false }});
+                    const els = document.querySelectorAll('.mermaid');
+                    els.forEach(el => {{
+                        try {{ window.mermaid.init(undefined, el); }} catch(e) {{ console.warn('Mermaid 渲染失败', e); }}
+                    }});
+                }}
+            }} catch (e) {{
+                console.warn('Mermaid 初始化异常', e);
             }}
         }});
     </script>

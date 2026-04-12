@@ -278,6 +278,81 @@
   line-height: 1.5;
   scrollbar-width: thin;
 }
+.article-content-wrapper pre {
+  /* 更明显的代码块背景与边框，便于视觉区分 */
+  background: var(--code-bg, #0f1724);
+  color: var(--code-color);
+  border: 1px solid rgba(0,0,0,0.06);
+  padding: 18px 14px 14px 14px;
+  border-radius: 12px;
+  position: relative;
+}
+
+/* 行内代码与代码框一致化样式（浅色/深色兼容） */
+.article-content-wrapper code {
+  background: var(--code-bg);
+  color: var(--code-color);
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.92em;
+}
+
+/* 兼容其他页面的 code-block-wrapper ，让代码框更显眼 */
+.code-block-wrapper,
+.article-content-wrapper .code-block-wrapper {
+  background: var(--code-bg);
+  color: var(--code-color);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-light);
+  margin: 20px 0;
+  overflow: hidden;
+  position: relative;
+  transition: all 0.12s ease;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.03);
+}
+.code-block-wrapper pre {
+  margin: 0;
+  padding: 18px;
+  background: transparent;
+}
+
+/* 代码工具栏：展示文件类型与复制按钮 */
+.code-toolbar {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  z-index: 5;
+  font-size: 0.85rem;
+}
+.code-filetype {
+  background: rgba(255,255,255,0.06);
+  color: var(--code-color, #e6eef6);
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.03);
+}
+.code-copy-btn {
+  background: rgba(255,255,255,0.06);
+  color: var(--code-color, #e6eef6);
+  border: none;
+  padding: 6px 8px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.code-copy-btn:hover {
+  background: rgba(255,255,255,0.12);
+}
+
+/* 小屏幕上将工具栏移入代码块内底部右侧，避免遮挡 */
+@media (max-width: 480px) {
+  .code-toolbar { top: auto; bottom: 8px; right: 8px; }
+}
 .article-content-wrapper code {
   padding: 2px 6px;
   font-size: 0.9em;
@@ -597,7 +672,7 @@
   width: 100%;
   height: 100%;
   background: rgba(0, 0, 0, 0.92);
-  backdrop-filter: blur(20px);
+  backdrop-filter: blur(30px);
   cursor: pointer;
 }
 
@@ -795,6 +870,7 @@
 /* 暗色主题支持（自动适配） */
 [data-theme="dark"] .viewer-overlay {
   background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(30px);
 }
 
 /* 减少动画偏好 */
@@ -833,4 +909,38 @@
   margin: 1.5em auto 0 auto;
   max-width: 100%;
   height: auto;
+}
+
+.footnote, .footnotes {
+  margin-top: 2.4rem;
+  padding-top: 1rem;
+  border-top: 1px dashed var(--border-color);
+  font-size: 0.95rem;
+  color: var(--text-muted, #666);
+}
+.footnote hr,
+.footnotes hr {
+  display: none;
+}
+.footnote ol,
+.footnotes ol {
+  list-style: decimal;
+  padding-left: 1.2rem;
+  margin: 0.6rem 0 0 0;
+}
+.footnote li,
+.footnotes li {
+  margin: 0.6rem 0;
+  padding: 0.6rem;
+  background: rgba(0,0,0,0.02);
+  border-radius: 8px;
+}
+.footnote-backref {
+  margin-left: 8px;
+  text-decoration: none;
+  color: var(--accent-color);
+  font-weight: 600;
+}
+.footnote a[href^="#fnref"], .footnotes a[href^="#fnref"] {
+  text-decoration: none;
 }

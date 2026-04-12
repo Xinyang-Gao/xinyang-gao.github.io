@@ -115,6 +115,8 @@
     <script src="/busuanzi.min.js" defer></script>
     <script src="/script.js"></script>
     <script src="article.js"></script>
+    <!-- KaTeX for math rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
     
     <!-- Twikoo 评论系统 -->
     <script src="https://registry.npmmirror.com/twikoo/1.7.4/files/dist/twikoo.min.js"></script>
@@ -129,6 +131,26 @@
                 });
             } else {
                 console.warn('Twikoo 加载失败，请检查网络或 CDN 地址');
+            }
+        });
+    </script>
+    <!-- KaTeX 自动渲染（支持 $...$ 和 $$...$$） -->
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.getElementById('articleBody'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+    <!-- Mermaid 支持 -->
+    <script defer src="https://cdn.jsdelivr.net/npm/mermaid@10.4.0/dist/mermaid.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            try {
+                if (window.mermaid) {
+                    window.mermaid.initialize({ startOnLoad: false });
+                    const els = document.querySelectorAll('.mermaid');
+                    els.forEach(el => {
+                        try { window.mermaid.init(undefined, el); } catch(e) { console.warn('Mermaid 渲染失败', e); }
+                    });
+                }
+            } catch (e) {
+                console.warn('Mermaid 初始化异常', e);
             }
         });
     </script>
