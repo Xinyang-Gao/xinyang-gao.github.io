@@ -891,6 +891,8 @@ class NavigationManager {
                 if (item._navHandler) item.removeEventListener('click', item._navHandler);
             } catch (e) {}
             const handler = (e) => {
+                // 在文章详情页或 404 页面不拦截导航，交由浏览器直接跳转并完整加载页面
+                if (isArticleDetailOr404Page()) return;
                 e.preventDefault();
                 e.stopImmediatePropagation();
                 const page = item.dataset.page;
@@ -1714,19 +1716,18 @@ function getPageNameFromPath(pathname) {
     return name.replace('.html', '') || 'index';
 }
 
-// 在哪些页面应禁用无刷新导航（需做完整页面跳转）
-function shouldDisableAjaxNavigationForCurrentPage() {
-    const p = window.location.pathname || '';
-    const fileName = p.split('/').pop() || '';
-    // 文章详情页：路径包含 /articles/ 且 filename 不是 articles.html
-    if (p.includes('/articles/') && fileName && fileName !== 'articles.html' && fileName.endsWith('.html')) {
-        return true;
+// 判断当前页面是否为文章详情页（单篇文章）或 404 页面
+function isArticleDetailOr404Page() {
+    try {
+        const path = window.location.pathname || '';
+        const name = path.split('/').pop() || '';
+        // articles 列表页面为 articles.html，单篇文章位于 /articles/xxx.html
+        if (path.includes('/articles/') && name && name !== 'articles.html') return true;
+        if (name === '404.html' || name === '404') return true;
+        return false;
+    } catch (e) {
+        return false;
     }
-    // 404 页面
-    if (fileName === '404.html' || p.endsWith('/404.html')) {
-        return true;
-    }
-    return false;
 }
 
 async function fetchAndReplaceContent(url, pushState = true) {
@@ -1921,6 +1922,9 @@ function enableAjaxNavigation() {
         if (!a) return;
         const href = a.getAttribute('href');
         if (!href) return;
+
+        // 如果当前为文章详情页或 404 页，则不要拦截链接，使用浏览器默认行为进行完整跳转
+        if (isArticleDetailOr404Page()) return;
 
         // 忽略带有 data-no-ajax 的链接或外部链接或锚点
         if (a.hasAttribute('data-no-ajax')) return;
