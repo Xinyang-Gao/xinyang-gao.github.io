@@ -1933,10 +1933,10 @@ body.custom-cursor-enabled .list-item {
         max-width: 100%;
         position: relative;
         top: 0;
-        order: 1;
+        order: 2;
       }
       .main-content-area {
-        order: 2;
+        order: 1;
       }
       .avatar-img {
         width: 110px;

@@ -915,24 +915,33 @@ class PageManager {
  */
 class NavigationManager {
     static initMobileMenuToggle() {
-        const toggle = document.querySelector('.mobile-toggle');
+    // 避免重复绑定全局委托
+    if (this._mobileToggleBound) return;
+    this._mobileToggleBound = true;
+    
+    // 使用事件委托处理菜单开关
+    document.addEventListener('click', (e) => {
+        const toggle = e.target.closest('.mobile-toggle');
         const nav = document.getElementById('navbarNav');
-        if (!toggle || !nav) return;
-        toggle.addEventListener('click', function () { nav.classList.toggle('active'); this.classList.toggle('active'); });
-        document.querySelectorAll('.nav-item').forEach(i => i.addEventListener('click', () => { nav.classList.remove('active'); toggle.classList.remove('active'); }));
-    }
-
-    static initNavigation() {
-        const params = new URLSearchParams(window.location.search);
-        let currentPage = params.get('page');
-        if (!currentPage) {
-            currentPage = window.location.pathname.split('/').pop().replace('.html', '') || 'index';
+        if (!nav) return;
+        
+        // 点击汉堡菜单按钮
+        if (toggle) {
+            e.preventDefault();
+            nav.classList.toggle('active');
+            toggle.classList.toggle('active');
+            return;
         }
-        document.querySelectorAll('.nav-item').forEach(item => {
-            const page = item.getAttribute('data-page');
-            item.classList.toggle('active', page === currentPage);
-        });
-    }
+        
+        // 点击菜单项时关闭菜单
+        const isNavItem = e.target.closest('.nav-item');
+        if (isNavItem && nav.classList.contains('active')) {
+            nav.classList.remove('active');
+            const toggleBtn = document.querySelector('.mobile-toggle');
+            if (toggleBtn) toggleBtn.classList.remove('active');
+        }
+    });
+}
 
     static bindNavLinks() {
         const navItems = document.querySelectorAll('.nav-item[data-page]');

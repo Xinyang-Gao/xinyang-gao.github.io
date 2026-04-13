@@ -1,8 +1,21 @@
 {
-  "generated_at": "2026-04-12T19:44:26.202101",
+  "generated_at": "2026-04-13T22:39:58.281002",
   "total_articles": 7,
-  "total_word_count": 24306,
+  "total_word_count": 24440,
   "articles": [
+    {
+      "title": "网站更新日志",
+      "date": "2026-04-13",
+      "description": "记录网站历次更新内容",
+      "author": "高新炀",
+      "tags": [
+        "网站"
+      ],
+      "category": "网站",
+      "url": "/articles/网站更新日志.html",
+      "word_count": 8586,
+      "read_time": "18-43分钟"
+    },
     {
       "title": "README.md",
       "date": "2026-04-12",
@@ -14,19 +27,6 @@
       "category": "网站",
       "url": "/articles/README.html",
       "word_count": 8483,
-      "read_time": "17-43分钟"
-    },
-    {
-      "title": "网站更新日志",
-      "date": "2026-03-28",
-      "description": "记录网站历次更新内容",
-      "author": "高新炀",
-      "tags": [
-        "网站"
-      ],
-      "category": "网站",
-      "url": "/articles/网站更新日志.html",
-      "word_count": 8452,
       "read_time": "17-43分钟"
     },
     {
