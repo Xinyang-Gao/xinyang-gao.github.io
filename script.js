@@ -267,8 +267,7 @@ class UIRenderer {
           <div class="profile-avatar">
             <img src="/avatar.jpg" alt="高新炀的头像" class="avatar-img" onerror="this.src='https://via.placeholder.com/140?text=GXY'">
             <h2 class="profile-name">高新炀</h2>
-            <div class="profile-bio">
-              <i class="fas fa-map-marker-alt" style="margin-right: 6px;"></i> 初中生 · 开发者 · 写作者
+            <div class="profile-bio">一个15岁爱探索的小孩子~
             </div>
           </div>
           <div class="profile-details">
@@ -306,10 +305,16 @@ class UIRenderer {
               </a>
             </div>
             <div class="detail-item" style="justify-content: center; margin-top: 12px;">
-              <span class="tag" style="background: var(--accent-color); color: white;">保持好奇</span>
+              <span class="tag" style="background: var(--accent-color); color: white;">Python</span>
+              <span class="tag" style="background: var(--accent-color); color: white;">Html</span>
+              <span class="tag" style="background: var(--accent-color); color: white;">Scratch</span>
+              <span class="tag" style="background: var(--accent-color); color: white;">绘画</span>
+              <span class="tag" style="background: var(--accent-color); color: white;">轮滑</span>
+              <span class="tag" style="background: var(--accent-color); color: white;">Minecraft</span>
             </div>
           </div>
-        </div>`;
+        </div>
+        `;
     }
 
     static async fetchPageContent(url) {
@@ -1046,6 +1051,31 @@ class NavigationManager {
             }
         });
     }
+    static initNavigation() {
+    // 确保所有导航链接都能被无刷新拦截
+    this.bindNavLinks();
+
+    // 更新当前页面对应的导航项高亮
+    const navItems = document.querySelectorAll('.nav-item[data-page]');
+    // 获取当前页面标识：优先取 URL 参数 page，否则从路径解析
+    const urlParams = new URLSearchParams(window.location.search);
+    let currentPage = urlParams.get('page');
+    if (!currentPage) {
+        // 使用全局函数 getPageNameFromPath 解析路径
+        currentPage = typeof getPageNameFromPath === 'function' 
+            ? getPageNameFromPath(window.location.pathname) 
+            : 'index';
+    }
+
+    navItems.forEach(item => {
+        const page = item.dataset.page;
+        if (page === currentPage) {
+            item.classList.add('active');
+        } else {
+            item.classList.remove('active');
+        }
+    });
+}
 }
 
 /**
@@ -1780,6 +1810,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     await loadNavbar();
     await loadFooter();
+    await updateFooterUpdateTime();
     // 在注入 footer 后尝试渲染页面内的数学公式与 Mermaid（延迟以等待外部脚本加载）
     setTimeout(() => {
         try { renderMathAndMermaid(document.body); } catch (e) { console.warn('初始 renderMathAndMermaid 失败', e); }
@@ -2051,6 +2082,64 @@ async function fetchAndReplaceContent(url, pushState = true) {
     } catch (e) {
         console.error('无刷新导航加载失败:', e);
         return false;
+    }
+}
+
+/**
+ * 将 ISO 时间字符串转换为相对时间描述
+ * @param {string} isoString - 例如 "2026-04-13T12:34:56+08:00"
+ * @returns {string} - 如 "刚刚", "3小时前", "昨天", "前天", "5天前"
+ */
+function formatRelativeTime(isoString) {
+    const target = new Date(isoString);
+    const now = new Date();
+    const diffMs = now - target;
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+    if (diffMins < 1) return "刚刚";
+    if (diffMins < 60) return `${diffMins}分钟前`;
+    if (diffHours < 24) return `${diffHours}小时前`;
+    if (diffDays === 1) return "昨天";
+    if (diffDays === 2) return "前天";
+    if (diffDays <= 7) return `${diffDays}天前`;
+    // 超过一周显示具体日期
+    return target.toLocaleDateString('zh-CN', { year: 'numeric', month: 'numeric', day: 'numeric' });
+}
+
+/**
+ * 从 statistics.json 读取最后更新时间并更新到页脚
+ */
+async function updateFooterUpdateTime() {
+    const updateSpan = document.getElementById('footer-update-date');
+    if (!updateSpan) return;
+
+    try {
+        const response = await fetch('/statistics.json');
+        if (!response.ok) throw new Error('无法获取统计信息');
+        const stats = await response.json();
+        let fullTime = stats.last_updated_full;
+        let dateOnly = stats.last_updated;
+
+        if (fullTime) {
+            const relative = formatRelativeTime(fullTime);
+            updateSpan.textContent = relative;
+            // 鼠标悬停显示绝对时间（格式：2026年04月13日 14:30:00）
+            const absDate = new Date(fullTime);
+            const formatted = `${absDate.getFullYear()}年${(absDate.getMonth()+1).toString().padStart(2,'0')}月${absDate.getDate().toString().padStart(2,'0')}日 ${absDate.getHours().toString().padStart(2,'0')}:${absDate.getMinutes().toString().padStart(2,'0')}:${absDate.getSeconds().toString().padStart(2,'0')}`;
+            updateSpan.setAttribute('title', `最后统计时间：${formatted}`);
+        } else if (dateOnly) {
+            // 后备：没有精确时间时显示日期
+            updateSpan.textContent = dateOnly;
+            updateSpan.setAttribute('title', '数据最后更新日期');
+        } else {
+            updateSpan.textContent = '未知';
+        }
+    } catch (error) {
+        console.warn('加载统计时间失败:', error);
+        updateSpan.textContent = '获取失败';
+        updateSpan.setAttribute('title', '无法加载 statistics.json');
     }
 }
 

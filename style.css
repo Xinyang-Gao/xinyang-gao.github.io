@@ -1849,7 +1849,6 @@ body.custom-cursor-enabled .list-item {
     }
     
     .detail-item {
-      display: flex;
       align-items: center;
       gap: 14px;
       margin: 18px 0;

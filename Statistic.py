@@ -3,7 +3,7 @@
 
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 
 def load_json(filepath):
     """加载 JSON 文件，若文件不存在则返回 None"""
@@ -58,7 +58,8 @@ def main():
     all_dates.extend(extract_dates_from_articles(articles_data))
     all_dates.extend(extract_dates_from_works(works_data))
     last_updated = get_latest_date(all_dates)
-    
+    now_precise = datetime.now().astimezone().isoformat(timespec="seconds")
+
     # 3. 文章统计
     articles = articles_data.get('articles', [])
     total_articles = len(articles)
@@ -95,6 +96,7 @@ def main():
     # 8. 组装统计结果
     statistics = {
         "last_updated": last_updated,
+        "last_updated_full": now_precise,
         "total_articles": total_articles,
         "total_word_count": total_word_count,
         "total_works": total_works,
