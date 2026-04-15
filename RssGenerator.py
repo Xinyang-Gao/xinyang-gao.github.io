@@ -19,8 +19,8 @@ SITE_TITLE = "高新炀的个人网站"
 SITE_LINK = "https://xinyang-gao.github.io"
 SITE_DESCRIPTION = "学生 · 开发者 · 写作者，用代码和文字探索世界"
 
-INCLUDE_ARTICLES = True      # 是否包含文章
-INCLUDE_WORKS = False         # 是否包含作品
+INCLUDE_ARTICLES = True
+INCLUDE_WORKS = True
 # =====================================================================
 
 

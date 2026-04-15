@@ -4,10 +4,20 @@
     <title>高新炀的个人网站</title>
     <link>https://xinyang-gao.github.io</link>
     <description>学生 · 开发者 · 写作者，用代码和文字探索世界</description>
-    <lastBuildDate>Mon, 13 Apr 2026 23:27:01 GMT</lastBuildDate>
+    <lastBuildDate>Wed, 15 Apr 2026 23:40:10 GMT</lastBuildDate>
     <language>zh-CN</language>
     <generator>RssGenerator (Python)</generator>
     <atom:link href="https://xinyang-gao.github.io/rss.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>朗诵音乐</title>
+      <link>https://xinyang-gao.github.io/works/朗诵音乐/</link>
+      <description><![CDATA[一次语文朗诵比赛需要的朗诵背景，包含两个页面]]></description>
+      <pubDate>Wed, 22 Oct 2025 00:00:00 GMT</pubDate>
+      <author>高新炀</author>
+      <category>HTML</category>
+      <category>学习</category>
+      <category>语文</category>
+    </item>
     <item>
       <title>从一株小草开始</title>
       <link>https://xinyang-gao.github.io/articles/从一株小草开始.html</link>
@@ -25,12 +35,42 @@
       <category>文言文</category>
     </item>
     <item>
+      <title>文言文词汇闯关</title>
+      <link>https://xinyang-gao.github.io/works/文言文词汇闯关/</link>
+      <description><![CDATA[一个语文文言文词语闯关游戏]]></description>
+      <pubDate>Thu, 26 Mar 2026 00:00:00 GMT</pubDate>
+      <author>高新炀</author>
+      <category>语文</category>
+      <category>HTML</category>
+      <category>学习</category>
+    </item>
+    <item>
+      <title>寒假作业管理</title>
+      <link>https://xinyang-gao.github.io/works/寒假作业管理/</link>
+      <description><![CDATA[一个任务追踪系统]]></description>
+      <pubDate>Thu, 05 Feb 2026 00:00:00 GMT</pubDate>
+      <author>高新炀</author>
+      <category>寒假作业</category>
+      <category>HTML</category>
+      <category>学习</category>
+    </item>
+    <item>
       <title>论网络游戏的“功”与“过”</title>
       <link>https://xinyang-gao.github.io/articles/论网络游戏的功与过.html</link>
       <description><![CDATA[一篇议论文]]></description>
       <pubDate>Sun, 30 Nov 2025 00:00:00 GMT</pubDate>
       <author>高新炀</author>
       <category>议论文</category>
+    </item>
+    <item>
+      <title>车轮模拟</title>
+      <link>https://xinyang-gao.github.io/works/车轮模拟/</link>
+      <description><![CDATA[九上数学课本上的一个活动题。模拟圆形、椭圆、正方形、和长条车轮在平面上的运动情况]]></description>
+      <pubDate>Sun, 23 Nov 2025 00:00:00 GMT</pubDate>
+      <author>高新炀</author>
+      <category>Scratch</category>
+      <category>学习</category>
+      <category>数学</category>
     </item>
     <item>
       <title>雪中的思绪</title>
@@ -50,12 +90,62 @@
       <category>网站</category>
     </item>
     <item>
+      <title>地理默写-七年级上册第一章地球与地图</title>
+      <link>https://gaoxinyang.lanzouq.com/iULVh2v06ira</link>
+      <description><![CDATA[12月9日默写 密码：00]]></description>
+      <pubDate>Sun, 08 Dec 2024 00:00:00 GMT</pubDate>
+      <author>高新炀</author>
+      <category>PPT</category>
+      <category>地理</category>
+      <category>学习</category>
+    </item>
+    <item>
+      <title>地理默写-中国主要铁路干线</title>
+      <link>https://gaoxinyang.lanzouq.com/iFtCO2v06iqj</link>
+      <description><![CDATA[12月2日默写 密码：00]]></description>
+      <pubDate>Sat, 30 Nov 2024 00:00:00 GMT</pubDate>
+      <author>高新炀</author>
+      <category>PPT</category>
+      <category>地理</category>
+      <category>学习</category>
+    </item>
+    <item>
+      <title>地理默写-七年级上册P40-100</title>
+      <link>https://gaoxinyang.lanzouq.com/iZHqv2v06kza</link>
+      <description><![CDATA[原计划12月23日默写，但最终未默写 密码：00]]></description>
+      <pubDate>Mon, 23 Dec 2024 00:00:00 GMT</pubDate>
+      <author>高新炀</author>
+      <category>PPT</category>
+      <category>地理</category>
+      <category>学习</category>
+    </item>
+    <item>
+      <title>地理默写-七年级上册第二章-第一节</title>
+      <link>https://gaoxinyang.lanzouq.com/iSfYZ2v06j0j</link>
+      <description><![CDATA[12月16日默写 密码：00]]></description>
+      <pubDate>Mon, 16 Dec 2024 00:00:00 GMT</pubDate>
+      <author>高新炀</author>
+      <category>PPT</category>
+      <category>地理</category>
+      <category>学习</category>
+    </item>
+    <item>
       <title>网站更新日志</title>
       <link>https://xinyang-gao.github.io/articles/网站更新日志.html</link>
       <description><![CDATA[记录网站历次更新内容]]></description>
       <pubDate>Mon, 13 Apr 2026 00:00:00 GMT</pubDate>
       <author>高新炀</author>
       <category>网站</category>
+    </item>
+    <item>
+      <title>统计计算器</title>
+      <link>https://xinyang-gao.github.io/works/统计计算器/</link>
+      <description><![CDATA[数学课上学完这一课，一时兴起，做了这个。计算一些数据的和、平均值、中位数、众数、方差、标准差、极差、极值]]></description>
+      <pubDate>Fri, 30 May 2025 00:00:00 GMT</pubDate>
+      <author>高新炀</author>
+      <category>HTML</category>
+      <category>编程</category>
+      <category>数学</category>
     </item>
     <item>
       <title>古诗扩写-十五从军征</title>
