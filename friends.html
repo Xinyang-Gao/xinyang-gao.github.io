@@ -4,12 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>友情链接 - 高新炀的小站</title>
-    <!-- 复用主站样式 -->
     <link rel="stylesheet" href="/style.css">
-    <!-- Twikoo 评论系统样式 -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/twikoo@1.6.39/dist/twikoo.min.css">
     <style>
-        /* 友链卡片布局增强 (保留原有效果) */
         .friends-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
@@ -117,7 +114,6 @@
             overflow: hidden;
         }
 
-        /* 优化后的友情提示卡片 —— 现代化、清晰层级 */
         .info-card {
             background: var(--surface-color-secondary);
             border-radius: var(--radius-xl);
@@ -143,7 +139,6 @@
             padding-left: 18px;
         }
 
-        /* 申请要求区域 - 网格布局 */
         .requirements-section {
             margin: 8px 0 32px 0;
         }
@@ -203,7 +198,6 @@
             letter-spacing: -0.2px;
         }
         
-        /* 优雅的小圆点装饰，不使用 emoji */
         .requirement-title::before {
             content: '';
             width: 8px;
@@ -221,7 +215,6 @@
             margin: 0;
         }
         
-        /* 我的信息区域 */
         .myinfo-section {
             margin: 32px 0 20px;
             padding-top: 8px;
@@ -338,7 +331,6 @@
             margin: 36px 0 24px;
         }
 
-        /* 保留原联系卡片但调整位置与间隔 */
         .contact-note {
             margin-top: 48px;
             padding: 20px 0;
@@ -414,7 +406,6 @@
             }
         }
 
-        /* 暗色模式适配增强 */
         [data-theme="dark"] .info-card {
             background: var(--surface-color-secondary);
         }
@@ -435,38 +426,30 @@
 </head>
 <body>
 
-    <!-- 导航栏占位符 -->
     <div id="navbar-placeholder"></div>
-
-    <!-- 双栏布局 -->
+    
     <div class="two-column-layout">
-        <!-- 左侧：个人信息栏 -->
         <aside class="sidebar-profile">
             <div id="personal-card-container"></div>
         </aside>
 
-        <!-- 右侧主内容区 -->
         <main class="main-content-area">
             <div class="container" id="mainContent">
                 <h1>我的朋友们</h1>
                 <p style="margin-bottom: 8px;">「 志合者，不以山海为远 」欢迎互访交流</p>
 
-                <!-- 统计数据展示区 -->
                 <div id="friends-stats-area" class="friends-stats" style="display: none;"></div>
 
-                <!-- 友链卡片容器 -->
-        <div id="friends-list-container" class="friends-grid">
+            <div id="friends-list-container" class="friends-grid">
             <div class="friends-loading">
                 <div class="spinner"></div>
                 <div>正在加载小伙伴们的链接...</div>
             </div>
         </div>
 
-        <!-- ========= 优化后的友链须知卡片（柔和现代化，结构清晰） ========= -->
         <div class="info-card">
             <div class="info-title">友情提示</div>
             
-            <!-- 申请要求区域：现代网格布局 + 清晰卡片 -->
             <div class="requirements-section">
                 <div class="section-subtitle">申请要求</div>
                 <div class="requirements-grid">
@@ -484,15 +467,14 @@
                     </div>
                     <div class="requirement-item">
                         <div class="requirement-title">持续更新</div>
-                        <p class="requirement-desc">保持一定的更新频率，热爱分享与交流。不限内容类型，期待多元碰撞。</p>
+                        <p class="requirement-desc">建议保持一定的更新频率，热爱分享与交流。不限内容类型，期待多元碰撞。</p>
                     </div>
                 </div>
             </div>
             
-            <!-- 我的信息区域（JSON 格式示例） -->
             <div class="myinfo-section">
                 <div class="myinfo-header">我的信息</div>
-                <div class="info-hint">如果您希望交换友链，请按照以下 JSON 格式提供您的站点信息（可直接复制修改）</div>
+                <div class="info-hint">如果您希望交换友链，可以按照下面的 JSON 提供您的站点信息</div>
                 <div class="code-block-wrapper">
                     <div class="code-header">
                         <button class="copy-btn" id="copyJsonBtn">复制</button>
@@ -506,16 +488,14 @@
                 </div>
             </div>
             
-            <!-- 温馨提示与注意事项 -->
             <div class="warning-note">
-                <strong>注意</strong> — 如果有违法、侵权、恶意广告等违规内容将会被撤下链接，感谢理解与支持。
+                注意如果有<strong>违法、侵权、恶意广告</strong>等违规内容将会被撤下链接哟
             </div>
         </div>
 
-        <!-- 评论区容器 (Twikoo) -->
+        <!-- 评论区 -->
         <div id="twikoo-comments" class="twikoo-container"></div>
 
-        <!-- 补充联系说明 -->
         <div class="contact-note">
             <p>
                 友情提示部分参考了 
@@ -527,15 +507,11 @@
         </main>
     </div>
 
-    <!-- 页脚占位符 -->
     <div id="footer-placeholder"></div>
 
-    <!-- 共用脚本库 (主站核心) -->
     <script src="/script.js"></script>
-    <!-- Twikoo 核心库 -->
     <script src="https://registry.npmmirror.com/twikoo/1.7.4/files/dist/twikoo.min.js"></script>
 
-    <!-- 友链页面独立逻辑 + 评论区初始化 + 复制功能 -->
     <script>
         (function() {
             const FRIENDS_DATA_URL = '/friends.json';
