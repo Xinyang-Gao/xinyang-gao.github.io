@@ -20,7 +20,7 @@
             border-radius: var(--radius-lg);
             padding: 20px 24px;
             display: flex;
-            align-items: center;
+            align-items: stretch;
             gap: 20px;
             transition: all 0.35s var(--transition-bounce);
             box-shadow: var(--shadow-sm);
@@ -84,9 +84,13 @@
             text-transform: uppercase;
         }
 
+        /* 友链信息区域：flex列布局 + 高度自适应，实现右下角网址效果 */
         .friend-info {
             flex: 1;
             min-width: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
         }
 
         .friend-name {
@@ -107,11 +111,29 @@
             font-size: 0.9rem;
             line-height: 1.5;
             color: var(--text-secondary);
-            margin: 0;
+            margin: 0 0 6px 0;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
+        }
+        
+        .friend-url {
+            margin-top: auto;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            opacity: 0.75;
+            text-align: right;
+            letter-spacing: 0.2px;
+            font-family: var(--font-mono, monospace);
+            transition: opacity 0.2s ease;
+            word-break: break-all;
+            line-height: 1.4;
+        }
+
+        .friend-card:hover .friend-url {
+            opacity: 0.95;
+            color: var(--accent-color);
         }
 
         .info-card {
@@ -404,6 +426,9 @@
             .requirement-item {
                 padding: 16px;
             }
+            .friend-url {
+                font-size: 0.65rem;
+            }
         }
 
         [data-theme="dark"] .info-card {
@@ -533,7 +558,34 @@
                 return /[\u4e00-\u9fa5]/.test(firstChar) ? firstChar : firstChar;
             }
 
-            // 渲染友链卡片
+            /**
+             * 从友链 URL 中提取简洁域名用于显示 (右下角灰色小字)
+             * 规则: 去除 https:// 或 http:// 协议头，去除 www. 前缀，只保留域名部分（不含路径）
+             * 若解析失败则降级展示去除协议头的原始链接前段
+             */
+            function getDisplayUrlFromLink(link) {
+                if (!link || link === '#' || link === 'javascript:void(0)') return '';
+                let rawLink = link.trim();
+                try {
+                    // 补全协议便于 URL 解析
+                    let urlToParse = rawLink;
+                    if (!urlToParse.startsWith('http://') && !urlToParse.startsWith('https://')) {
+                        urlToParse = 'https://' + urlToParse;
+                    }
+                    const urlObj = new URL(urlToParse);
+                    let host = urlObj.hostname;
+                    if (host.startsWith('www.')) {
+                        host = host.slice(4);
+                    }
+                    return host;
+                } catch (e) {
+                    // 降级: 手动去除协议头和 www，取第一段
+                    let cleaned = rawLink.replace(/^https?:\/\//i, '').replace(/^www\./i, '').split('/')[0];
+                    return cleaned || '';
+                }
+            }
+
+            // 渲染友链卡片 (添加右下角网址显示)
             function renderFriends(friendsArray) {
                 const container = document.getElementById('friends-list-container');
                 if (!container) return;
@@ -547,7 +599,7 @@
 
                 const validFriends = friendsArray.filter(f => f.name && f.link);
                 if (validFriends.length === 0) {
-                    container.innerHTML = `<div class="friends-empty">✨ 暂无可展示的有效友链 (需包含名称与链接)</div>`;
+                    container.innerHTML = `<div class="friends-empty">暂无可展示的有效友链</div>`;
                     const statsDiv = document.getElementById('friends-stats-area');
                     if (statsDiv) statsDiv.style.display = 'none';
                     return;
@@ -569,12 +621,17 @@
                         avatarContent = `<div class="avatar-placeholder">${escapeHtml(initial)}</div>`;
                     }
 
+                    // 生成右下角简洁网址 (去协议, 去 www)
+                    const displayUrl = getDisplayUrlFromLink(link);
+                    const urlSection = displayUrl ? `<div class="friend-url">${escapeHtml(displayUrl)}</div>` : '';
+
                     cardsHtml += `
                         <a href="${escapeHtml(link)}" class="friend-card" data-friend-link="${escapeHtml(link)}" target="_blank" rel="noopener noreferrer">
                             <div class="friend-avatar">${avatarContent}</div>
                             <div class="friend-info">
                                 <h3 class="friend-name">${escapeHtml(name)}</h3>
                                 <p class="friend-desc">${escapeHtml(desc)}</p>
+                                ${urlSection}
                             </div>
                         </a>
                     `;
@@ -628,7 +685,7 @@
                     }
                     if (!friends || !Array.isArray(friends)) throw new Error('数据格式不正确');
                     renderFriends(friends);
-                    // 滚动渐显
+                    // 滚动渐显辅助 (确保新卡片触发动画)
                     setTimeout(() => {
                         if (typeof initScrollReveal === 'function') initScrollReveal();
                         else {

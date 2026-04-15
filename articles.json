@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-04-15T23:40:10.074306",
-  "total_articles": 7,
-  "total_word_count": 24552,
+  "generated_at": "2026-04-16T00:13:34.751072",
+  "total_articles": 8,
+  "total_word_count": 27011,
   "articles": [
     {
       "title": "网站更新日志",
-      "date": "2026-04-13",
+      "date": "2026-04-14",
       "description": "记录网站历次更新内容",
       "author": "高新炀",
       "tags": [
@@ -13,7 +13,7 @@
       ],
       "category": "网站",
       "url": "/articles/网站更新日志.html",
-      "word_count": 8698,
+      "word_count": 8758,
       "read_time": "18-44分钟"
     },
     {
@@ -54,6 +54,19 @@
       "url": "/articles/古诗扩写-十五从军征.html",
       "word_count": 1041,
       "read_time": "3-6分钟"
+    },
+    {
+      "title": "markdown 渲染测试",
+      "date": "2025-12-21",
+      "description": "这是一篇 markdown 解析器渲染测试",
+      "author": "高新炀 ＆ DEEPSEEK-V3",
+      "tags": [
+        "网站"
+      ],
+      "category": "网站",
+      "url": "/articles/test.html",
+      "word_count": 2399,
+      "read_time": "5-12分钟"
     },
     {
       "title": "雪中的思绪",

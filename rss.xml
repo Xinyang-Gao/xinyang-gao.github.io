@@ -4,7 +4,7 @@
     <title>高新炀的个人网站</title>
     <link>https://xinyang-gao.github.io</link>
     <description>学生 · 开发者 · 写作者，用代码和文字探索世界</description>
-    <lastBuildDate>Wed, 15 Apr 2026 23:40:10 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 16 Apr 2026 00:13:38 GMT</lastBuildDate>
     <language>zh-CN</language>
     <generator>RssGenerator (Python)</generator>
     <atom:link href="https://xinyang-gao.github.io/rss.xml" rel="self" type="application/rss+xml" />
@@ -25,6 +25,14 @@
       <pubDate>Wed, 18 Mar 2026 00:00:00 GMT</pubDate>
       <author>高新炀</author>
       <category>记叙文</category>
+    </item>
+    <item>
+      <title>网站更新日志</title>
+      <link>https://xinyang-gao.github.io/articles/网站更新日志.html</link>
+      <description><![CDATA[记录网站历次更新内容]]></description>
+      <pubDate>Tue, 14 Apr 2026 00:00:00 GMT</pubDate>
+      <author>高新炀</author>
+      <category>网站</category>
     </item>
     <item>
       <title>马生复宋濂书</title>
@@ -71,6 +79,14 @@
       <category>Scratch</category>
       <category>学习</category>
       <category>数学</category>
+    </item>
+    <item>
+      <title>markdown 渲染测试</title>
+      <link>https://xinyang-gao.github.io/articles/test.html</link>
+      <description><![CDATA[这是一篇 markdown 解析器渲染测试]]></description>
+      <pubDate>Sun, 21 Dec 2025 00:00:00 GMT</pubDate>
+      <author>高新炀 ＆ DEEPSEEK-V3</author>
+      <category>网站</category>
     </item>
     <item>
       <title>雪中的思绪</title>
@@ -128,14 +144,6 @@
       <category>PPT</category>
       <category>地理</category>
       <category>学习</category>
-    </item>
-    <item>
-      <title>网站更新日志</title>
-      <link>https://xinyang-gao.github.io/articles/网站更新日志.html</link>
-      <description><![CDATA[记录网站历次更新内容]]></description>
-      <pubDate>Mon, 13 Apr 2026 00:00:00 GMT</pubDate>
-      <author>高新炀</author>
-      <category>网站</category>
     </item>
     <item>
       <title>统计计算器</title>

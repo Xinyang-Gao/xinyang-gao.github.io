@@ -1,9 +1,9 @@
 ---
-title: 测试文章
-description: 这是一篇测试文章，它是被隐藏的
+title: markdown 渲染测试
+description: 这是一篇 markdown 解析器渲染测试
 author: 高新炀 ＆ DEEPSEEK-V3
 date: 2025-12-21
-tag: [网站][隐藏]
+tag: [网站]
 ---
 
 # Markdown 样式测试文档
