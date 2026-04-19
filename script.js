@@ -314,6 +314,11 @@ class UIRenderer {
             </div>
           </div>
         </div>
+                <div class="inspire-quote">
+                <h4>公告</h4>
+          <p><i class="fas fa-quote-left"></i>目前正在对一部分元素进行重写，可能会有偶然出现一些显示问题</p>
+          <div class="inspire-author">2026年4月19日</div>
+        </div>
         `;
     }
 
