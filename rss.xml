@@ -4,7 +4,7 @@
     <title>高新炀的个人网站</title>
     <link>https://xinyang-gao.github.io</link>
     <description>学生 · 开发者 · 写作者，用代码和文字探索世界</description>
-    <lastBuildDate>Sat, 18 Apr 2026 11:04:04 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 20 Apr 2026 23:03:47 GMT</lastBuildDate>
     <language>zh-CN</language>
     <generator>RssGenerator (Python)</generator>
     <atom:link href="https://xinyang-gao.github.io/rss.xml" rel="self" type="application/rss+xml" />
@@ -25,14 +25,6 @@
       <pubDate>Wed, 18 Mar 2026 00:00:00 GMT</pubDate>
       <author>高新炀</author>
       <category>记叙文</category>
-    </item>
-    <item>
-      <title>网站更新日志</title>
-      <link>https://xinyang-gao.github.io/articles/网站更新日志.html</link>
-      <description><![CDATA[记录网站历次更新内容]]></description>
-      <pubDate>Tue, 14 Apr 2026 00:00:00 GMT</pubDate>
-      <author>高新炀</author>
-      <category>网站</category>
     </item>
     <item>
       <title>马生复宋濂书</title>
@@ -126,6 +118,14 @@
       <category>学习</category>
     </item>
     <item>
+      <title>网站更新日志</title>
+      <link>https://xinyang-gao.github.io/articles/网站更新日志.html</link>
+      <description><![CDATA[记录网站历次更新内容]]></description>
+      <pubDate>Sat, 18 Apr 2026 00:00:00 GMT</pubDate>
+      <author>高新炀</author>
+      <category>网站</category>
+    </item>
+    <item>
       <title>地理默写-七年级上册P40-100</title>
       <link>https://gaoxinyang.lanzouq.com/iZHqv2v06kza</link>
       <description><![CDATA[原计划12月23日默写，但最终未默写 密码：00]]></description>
@@ -133,6 +133,15 @@
       <author>高新炀</author>
       <category>PPT</category>
       <category>地理</category>
+      <category>学习</category>
+    </item>
+    <item>
+      <title>中考倒计时</title>
+      <link>https://xinyang-gao.github.io/works/中考倒计时/</link>
+      <description><![CDATA[中考倒计时]]></description>
+      <pubDate>Mon, 20 Apr 2026 00:00:00 GMT</pubDate>
+      <author>高新炀</author>
+      <category>HTML</category>
       <category>学习</category>
     </item>
     <item>

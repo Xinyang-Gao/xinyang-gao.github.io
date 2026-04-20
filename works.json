@@ -1,6 +1,17 @@
 {
   "works": [
     {
+      "title": "中考倒计时",
+      "description": "中考倒计时",
+      "author": "高新炀",
+      "date": "2026-04-20",
+      "tag": [
+        "HTML",
+        "学习"
+      ],
+      "link": "./works/中考倒计时/"
+    },
+    {
       "title": "文言文词汇闯关",
       "description": "一个语文文言文词语闯关游戏",
       "author": "高新炀",

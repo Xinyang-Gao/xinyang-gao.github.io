@@ -1,0 +1,698 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>中考冲刺</title>
+    <!-- 引入现代数字字体：Space Grotesk (几何感) + Inter (完美可读) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ---------- 极致纯净 · 现代数字美学 ---------- */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(145deg, #F8FAFF 0%, #F0F4FA 100%);
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', 'Roboto', sans-serif;
+            color: #1A2C3E;
+            padding: 2rem 1.5rem;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1.4;
+        }
+
+        /* 主容器: 更大呼吸空间, 极致圆润 */
+        .dashboard {
+            max-width: 1200px;
+            width: 100%;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 2.5rem;
+            animation: floatReveal 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+        }
+
+        /* 进场动画更轻盈 */
+        @keyframes floatReveal {
+            0% {
+                opacity: 0;
+                transform: translateY(24px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 头部区域: 现代排版 */
+        .hero-section {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+        }
+
+        /* 主标题：微渐变字效+干净衬线感 */
+        .hero-title {
+            font-size: 3rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #1F2A44, #2E4A7C);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            text-shadow: none;
+            margin-bottom: 0.25rem;
+            display: inline-block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* 目标日期Pill: 精致现代 */
+        .target-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(37, 99, 235, 0.08);
+            backdrop-filter: blur(2px);
+            padding: 0.45rem 1.2rem;
+            border-radius: 80px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #2563EB;
+            border: 1px solid rgba(37, 99, 235, 0.2);
+            width: fit-content;
+            margin: 0 auto;
+            transition: all 0.2s;
+        }
+
+        .target-badge:hover {
+            background: rgba(37, 99, 235, 0.12);
+            border-color: rgba(37, 99, 235, 0.4);
+            transform: scale(1.01);
+        }
+
+        /* 倒计时网格: 更大呼吸感 */
+        .countdown-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 0.75rem;
+        }
+
+        /* 白色卡片 现代磨砂质感+细腻光影 */
+        .time-card {
+            flex: 1;
+            min-width: 130px;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(0px);
+            border-radius: 42px;
+            padding: 1.8rem 0.8rem;
+            text-align: center;
+            transition: all 0.3s cubic-bezier(0.2, 0.95, 0.4, 1.05);
+            box-shadow: 0 12px 28px -12px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+        }
+
+        .time-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 24px 40px -16px rgba(37, 99, 235, 0.2), 0 4px 12px rgba(0, 0, 0, 0.02);
+            border-color: rgba(37, 99, 235, 0.25);
+            background: #FFFFFF;
+        }
+
+        /* 现代数字字体核心 —— Space Grotesk 几何现代感 */
+        .digit {
+            font-family: 'Space Grotesk', 'Inter', 'Roboto Mono', monospace;
+            font-size: 5.6rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: #1E40AF;
+            line-height: 1.05;
+            transition: all 0.1s ease;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+        }
+
+        .unit {
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #5B6E8C;
+            margin-top: 0.75rem;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* 进度条区域: 现代无框玻璃感 */
+        .progress-section {
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(0px);
+            border-radius: 40px;
+            padding: 2rem 1.8rem;
+            box-shadow: 0 12px 30px -12px rgba(0, 0, 0, 0.06), 0 1px 1px rgba(0, 0, 0, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            transition: all 0.2s;
+        }
+
+        .progress-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .progress-item {
+            width: 100%;
+        }
+
+        /* 全新宽轨: 现代胶囊 + 光流动感 */
+        .progress-track-wide {
+            position: relative;
+            width: 100%;
+            height: 62px;
+            background: #EFF3FC;
+            border-radius: 80px;
+            overflow: hidden;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.02), 0 0 0 1px rgba(0, 0, 0, 0.02);
+            transition: all 0.2s;
+        }
+
+        /* 动态填充: 明亮渐变 + 流动质感 */
+        .progress-fill-wide {
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            width: 0%;
+            background: linear-gradient(105deg, #3B82F6 0%, #3A7BD5 20%, #60A5FA 80%, #3B82F6 100%);
+            background-size: 200% 100%;
+            border-radius: 80px;
+            transition: width 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.2);
+            z-index: 0;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.3);
+        }
+
+        /* 进度内文字: 现代胶囊标签 */
+        .progress-content {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            padding: 0 1.4rem;
+            font-weight: 500;
+            pointer-events: none;
+        }
+
+        .progress-label-left {
+            font-size: 0.9rem;
+            font-weight: 600;
+            background: rgba(20, 30, 55, 0.72);
+            backdrop-filter: blur(4px);
+            padding: 0.3rem 1.2rem;
+            border-radius: 60px;
+            color: white;
+            letter-spacing: 0.3px;
+            transition: all 0.1s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .progress-percent-right {
+            font-family: 'Space Grotesk', 'Inter', monospace;
+            font-size: 0.95rem;
+            font-weight: 700;
+            background: rgba(20, 30, 55, 0.72);
+            backdrop-filter: blur(4px);
+            padding: 0.3rem 1rem;
+            border-radius: 60px;
+            color: white;
+            letter-spacing: 0.5px;
+        }
+
+        /* 数字闪动: 现代脉冲 */
+        .digit-shine {
+            animation: modernGlow 0.22s ease-out;
+        }
+
+        @keyframes modernGlow {
+            0% {
+                transform: scale(1);
+                text-shadow: 0 0 0 rgba(59,130,246,0);
+                color: #1E40AF;
+            }
+            40% {
+                transform: scale(1.07);
+                color: #2563EB;
+                text-shadow: 0 0 8px rgba(59,130,246,0.5);
+            }
+            100% {
+                transform: scale(1);
+                text-shadow: 0 0 0 transparent;
+                color: #1E40AF;
+            }
+        }
+
+        /* 辅助微交互 */
+        @keyframes subtlePulse {
+            0% { opacity: 0.9; }
+            100% { opacity: 1; }
+        }
+
+        /* 响应式进阶: 完美适配各种屏幕 */
+        @media (max-width: 860px) {
+            .digit {
+                font-size: 4.2rem;
+            }
+            .time-card {
+                min-width: 110px;
+                padding: 1.4rem 0.5rem;
+                border-radius: 36px;
+            }
+            .countdown-grid {
+                gap: 1.2rem;
+            }
+            .progress-track-wide {
+                height: 56px;
+            }
+            .progress-label-left {
+                font-size: 0.8rem;
+                padding: 0.2rem 1rem;
+            }
+            .progress-percent-right {
+                font-size: 0.85rem;
+                padding: 0.2rem 0.9rem;
+            }
+            .hero-title {
+                font-size: 2.5rem;
+            }
+        }
+
+        @media (max-width: 640px) {
+            body {
+                padding: 1.2rem;
+            }
+            .hero-title {
+                font-size: 2.1rem;
+            }
+            .digit {
+                font-size: 3.4rem;
+            }
+            .time-card {
+                min-width: 85px;
+                padding: 1rem 0.2rem;
+                border-radius: 28px;
+            }
+            .unit {
+                font-size: 0.7rem;
+                letter-spacing: 1px;
+            }
+            .countdown-grid {
+                gap: 0.9rem;
+            }
+            .progress-section {
+                padding: 1.3rem 1rem;
+                border-radius: 32px;
+            }
+            .progress-track-wide {
+                height: 50px;
+            }
+            .progress-content {
+                padding: 0 0.9rem;
+            }
+            .progress-label-left {
+                font-size: 0.7rem;
+                padding: 0.15rem 0.8rem;
+            }
+            .progress-percent-right {
+                font-size: 0.7rem;
+                padding: 0.15rem 0.7rem;
+            }
+            .target-badge {
+                font-size: 0.75rem;
+                padding: 0.3rem 1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .digit {
+                font-size: 2.7rem;
+            }
+            .time-card {
+                min-width: 70px;
+            }
+            .hero-title {
+                font-size: 1.8rem;
+            }
+            .progress-track-wide {
+                height: 46px;
+            }
+            .progress-label-left {
+                font-size: 0.65rem;
+                padding: 0.1rem 0.6rem;
+            }
+            .progress-percent-right {
+                font-size: 0.65rem;
+                padding: 0.1rem 0.6rem;
+            }
+        }
+
+        /* 点缀细节: 优雅呼吸 */
+        .dashboard::after {
+            display: none;
+        }
+
+        /* 进度条填充微动效果 */
+        .progress-fill-wide {
+            animation: fillSmooth 0.3s ease-out;
+        }
+
+        @keyframes fillSmooth {
+            from { opacity: 0.8; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+<div class="dashboard">
+    <!-- 头部区域 增加目标日期标识提升现代感 -->
+    <div class="hero-section">
+        <h1 class="hero-title">中考倒计时</h1>
+        <div class="target-badge">GaoXinyang</div>
+        <div class="countdown-grid" id="countdownGrid">
+            <div class="time-card">
+                <div class="digit" id="daysDigit">00</div>
+                <div class="unit">天</div>
+            </div>
+            <div class="time-card">
+                <div class="digit" id="hoursDigit">00</div>
+                <div class="unit">时</div>
+            </div>
+            <div class="time-card">
+                <div class="digit" id="minutesDigit">00</div>
+                <div class="unit">分</div>
+            </div>
+            <div class="time-card">
+                <div class="digit" id="secondsDigit">00</div>
+                <div class="unit">秒</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 进度条区域：现代极简仪表盘 -->
+    <div class="progress-section">
+        <div class="progress-grid">
+            <!-- 一周进度条 -->
+            <div class="progress-item">
+                <div class="progress-track-wide">
+                    <div class="progress-fill-wide" id="weekFill" style="width: 0%;"></div>
+                    <div class="progress-content">
+                        <span class="progress-label-left">本周已过去</span>
+                        <span class="progress-percent-right" id="weekPercent">0%</span>
+                    </div>
+                </div>
+            </div>
+            <!-- 今日进度条 -->
+            <div class="progress-item">
+                <div class="progress-track-wide">
+                    <div class="progress-fill-wide" id="dayFill" style="width: 0%;"></div>
+                    <div class="progress-content">
+                        <span class="progress-label-left">今天还剩下</span>
+                        <span class="progress-percent-right" id="dayPercent">0%</span>
+                    </div>
+                </div>
+            </div>
+            <!-- 本小时进度条 -->
+            <div class="progress-item">
+                <div class="progress-track-wide">
+                    <div class="progress-fill-wide" id="hourFill" style="width: 0%;"></div>
+                    <div class="progress-content">
+                        <span class="progress-label-left">一小时已经过了</span>
+                        <span class="progress-percent-right" id="hourPercent">0%</span>
+                    </div>
+                </div>
+            </div>
+            <!-- 本分钟进度条 -->
+            <div class="progress-item">
+                <div class="progress-track-wide">
+                    <div class="progress-fill-wide" id="minuteFill" style="width: 0%;"></div>
+                    <div class="progress-content">
+                        <span class="progress-label-left">这一分钟</span>
+                        <span class="progress-percent-right" id="minutePercent">0%</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ======================= 核心模块 (完整保留逻辑，增强现代精度) =======================
+    // 模块1: 倒计时核心 (目标：2026年6月22日 08:20:00)
+    const TimeCalculator = (() => {
+        const TARGET_DATE = new Date(2026, 5, 22, 8, 20, 0); // 2026年6月22日 08:20:00
+        
+        function getRemainingTime() {
+            const now = new Date();
+            const diffMs = TARGET_DATE.getTime() - now.getTime();
+            const isExpired = diffMs <= 0;
+            const safeDiff = isExpired ? 0 : diffMs;
+            
+            const totalSeconds = Math.floor(safeDiff / 1000);
+            const days = Math.floor(totalSeconds / 86400);
+            const hours = Math.floor((totalSeconds % 86400) / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            
+            return { days, hours, minutes, seconds, isExpired };
+        }
+        
+        return { getRemainingTime, targetDate: TARGET_DATE };
+    })();
+    
+    // 模块2: UI 倒计时渲染 (现代数字闪动)
+    const CountdownUIManager = (() => {
+        const daysEl = document.getElementById('daysDigit');
+        const hoursEl = document.getElementById('hoursDigit');
+        const minutesEl = document.getElementById('minutesDigit');
+        const secondsEl = document.getElementById('secondsDigit');
+        let prevValues = { days: -1, hours: -1, minutes: -1, seconds: -1 };
+        
+        function formatTwoDigits(num) {
+            return num < 10 ? `0${num}` : `${num}`;
+        }
+        
+        function addShineEffect(el) {
+            if (!el) return;
+            el.classList.remove('digit-shine');
+            void el.offsetWidth;
+            el.classList.add('digit-shine');
+            setTimeout(() => el.classList.remove('digit-shine'), 230);
+        }
+        
+        function updateDisplay(timeData) {
+            const { days, hours, minutes, seconds, isExpired } = timeData;
+            let daysStr = formatTwoDigits(days);
+            let hoursStr = formatTwoDigits(hours);
+            let minutesStr = formatTwoDigits(minutes);
+            let secondsStr = formatTwoDigits(seconds);
+            
+            if (isExpired) {
+                daysStr = '00';
+                hoursStr = '00';
+                minutesStr = '00';
+                secondsStr = '00';
+            }
+            
+            if (daysEl.innerText !== daysStr) {
+                daysEl.innerText = daysStr;
+                if (prevValues.days !== days && !isExpired) addShineEffect(daysEl);
+            }
+            if (hoursEl.innerText !== hoursStr) {
+                hoursEl.innerText = hoursStr;
+                if (prevValues.hours !== hours && !isExpired) addShineEffect(hoursEl);
+            }
+            if (minutesEl.innerText !== minutesStr) {
+                minutesEl.innerText = minutesStr;
+                if (prevValues.minutes !== minutes && !isExpired) addShineEffect(minutesEl);
+            }
+            if (secondsEl.innerText !== secondsStr) {
+                secondsEl.innerText = secondsStr;
+                if (prevValues.seconds !== seconds && !isExpired) addShineEffect(secondsEl);
+            }
+            
+            prevValues = { days, hours, minutes, seconds };
+        }
+        
+        return { updateDisplay };
+    })();
+    
+    // 模块3: 进度条计算器 (基于实时时间，周/天/小时/分钟) —— 完全保留原始精密逻辑
+    const ProgressCalculator = (() => {
+        // 获取本周一 00:00:00 (周一为一周起始)
+        function getWeekStart() {
+            const now = new Date();
+            const dayOfWeek = now.getDay(); // 0周日 ~ 6周六
+            let daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+            const monday = new Date(now);
+            monday.setDate(now.getDate() - daysToMonday);
+            monday.setHours(0, 0, 0, 0);
+            return monday.getTime();
+        }
+        
+        const WEEK_MS = 7 * 24 * 3600 * 1000;
+        
+        function getWeekProgress() {
+            const now = new Date();
+            const weekStartMs = getWeekStart();
+            const elapsedMs = now.getTime() - weekStartMs;
+            let percent = (elapsedMs / WEEK_MS) * 100;
+            percent = Math.min(100, Math.max(0, percent));
+            return percent;
+        }
+        
+        function getDayProgress() {
+            const now = new Date();
+            const startOfDay = new Date(now);
+            startOfDay.setHours(0, 0, 0, 0);
+            const elapsedMs = now.getTime() - startOfDay.getTime();
+            const percent = (elapsedMs / 86400000) * 100;
+            return Math.min(100, Math.max(0, percent));
+        }
+        
+        function getHourProgress() {
+            const now = new Date();
+            const minutes = now.getMinutes();
+            const seconds = now.getSeconds();
+            const totalSecondsInHour = minutes * 60 + seconds;
+            const percent = (totalSecondsInHour / 3600) * 100;
+            return Math.min(100, percent);
+        }
+        
+        function getMinuteProgress() {
+            const now = new Date();
+            const seconds = now.getSeconds();
+            const percent = (seconds / 60) * 100;
+            return Math.min(100, percent);
+        }
+        
+        return {
+            getWeekProgress,
+            getDayProgress,
+            getHourProgress,
+            getMinuteProgress
+        };
+    })();
+    
+    // 模块4: 进度条 UI 更新器 (平滑渲染)
+    const ProgressUIManager = (() => {
+        const weekFill = document.getElementById('weekFill');
+        const weekPercentSpan = document.getElementById('weekPercent');
+        const dayFill = document.getElementById('dayFill');
+        const dayPercentSpan = document.getElementById('dayPercent');
+        const hourFill = document.getElementById('hourFill');
+        const hourPercentSpan = document.getElementById('hourPercent');
+        const minuteFill = document.getElementById('minuteFill');
+        const minutePercentSpan = document.getElementById('minutePercent');
+        
+        function updateAllProgress() {
+            const weekPct = ProgressCalculator.getWeekProgress();
+            const dayPct = ProgressCalculator.getDayProgress();
+            const hourPct = ProgressCalculator.getHourProgress();
+            const minutePct = ProgressCalculator.getMinuteProgress();
+            
+            if (weekFill) {
+                weekFill.style.width = `${weekPct}%`;
+                if (weekPercentSpan) weekPercentSpan.innerText = `${weekPct.toFixed(1)}%`;
+            }
+            if (dayFill) {
+                dayFill.style.width = `${dayPct}%`;
+                if (dayPercentSpan) dayPercentSpan.innerText = `${dayPct.toFixed(1)}%`;
+            }
+            if (hourFill) {
+                hourFill.style.width = `${hourPct}%`;
+                if (hourPercentSpan) hourPercentSpan.innerText = `${hourPct.toFixed(1)}%`;
+            }
+            if (minuteFill) {
+                minuteFill.style.width = `${minutePct}%`;
+                if (minutePercentSpan) minutePercentSpan.innerText = `${minutePct.toFixed(1)}%`;
+            }
+        }
+        
+        return { updateAllProgress };
+    })();
+    
+    // 模块5: 总控制器 (倒计时+进度条同步刷新)
+    const CountdownController = (() => {
+        let timerId = null;
+        let isExpiredFlag = false;
+        
+        function refreshAll() {
+            const timeData = TimeCalculator.getRemainingTime();
+            CountdownUIManager.updateDisplay(timeData);
+            ProgressUIManager.updateAllProgress();
+            
+            if (timeData.isExpired && !isExpiredFlag) {
+                isExpiredFlag = true;
+            }
+        }
+        
+        function startTimer() {
+            if (timerId) clearInterval(timerId);
+            refreshAll();
+            timerId = setInterval(() => {
+                refreshAll();
+            }, 1000);
+        }
+        
+        function stopTimer() {
+            if (timerId) {
+                clearInterval(timerId);
+                timerId = null;
+            }
+        }
+        
+        function handleVisibilityChange() {
+            if (!document.hidden) {
+                refreshAll();
+            }
+        }
+        
+        function init() {
+            startTimer();
+            document.addEventListener('visibilitychange', handleVisibilityChange);
+            window.addEventListener('beforeunload', () => {
+                stopTimer();
+            });
+        }
+        
+        return { init, stopTimer };
+    })();
+    
+    // 模块6: 启动引导 (额外初始化确保进度条细腻)
+    const AppBoot = (() => {
+        function init() {
+            CountdownController.init();
+            setTimeout(() => {
+                ProgressUIManager.updateAllProgress();
+                // 确保在首帧完美渲染
+            }, 30);
+        }
+        return { init };
+    })();
+    
+    // 启动倒计时与进度系统
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => AppBoot.init());
+    } else {
+        AppBoot.init();
+    }
+</script>
+</body>
+</html>
