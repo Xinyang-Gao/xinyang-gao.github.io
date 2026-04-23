@@ -1,11 +1,11 @@
 {
-  "generated_at": "2026-04-23T23:09:09.341207",
+  "generated_at": "2026-04-23T23:43:04.381002",
   "total_articles": 8,
-  "total_word_count": 27383,
+  "total_word_count": 27677,
   "articles": [
     {
       "title": "网站更新日志",
-      "date": "2026-04-18",
+      "date": "2026-04-23",
       "description": "记录网站历次更新内容",
       "author": "高新炀",
       "tags": [
@@ -13,8 +13,8 @@
       ],
       "category": "网站",
       "url": "/articles/网站更新日志.html",
-      "word_count": 9130,
-      "read_time": "19-46分钟"
+      "word_count": 9424,
+      "read_time": "19-48分钟"
     },
     {
       "title": "README.md",

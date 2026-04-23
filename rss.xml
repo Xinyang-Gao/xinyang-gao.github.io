@@ -4,7 +4,7 @@
     <title>高新炀的个人网站</title>
     <link>https://xinyang-gao.github.io</link>
     <description>学生 · 开发者 · 写作者，用代码和文字探索世界</description>
-    <lastBuildDate>Thu, 23 Apr 2026 23:09:12 GMT</lastBuildDate>
+    <lastBuildDate>Thu, 23 Apr 2026 23:43:06 GMT</lastBuildDate>
     <language>zh-CN</language>
     <generator>RssGenerator (Python)</generator>
     <atom:link href="https://xinyang-gao.github.io/rss.xml" rel="self" type="application/rss+xml" />
@@ -43,6 +43,14 @@
       <category>语文</category>
       <category>HTML</category>
       <category>学习</category>
+    </item>
+    <item>
+      <title>网站更新日志</title>
+      <link>https://xinyang-gao.github.io/articles/网站更新日志.html</link>
+      <description><![CDATA[记录网站历次更新内容]]></description>
+      <pubDate>Thu, 23 Apr 2026 00:00:00 GMT</pubDate>
+      <author>高新炀</author>
+      <category>网站</category>
     </item>
     <item>
       <title>寒假作业管理</title>
@@ -116,14 +124,6 @@
       <category>PPT</category>
       <category>地理</category>
       <category>学习</category>
-    </item>
-    <item>
-      <title>网站更新日志</title>
-      <link>https://xinyang-gao.github.io/articles/网站更新日志.html</link>
-      <description><![CDATA[记录网站历次更新内容]]></description>
-      <pubDate>Sat, 18 Apr 2026 00:00:00 GMT</pubDate>
-      <author>高新炀</author>
-      <category>网站</category>
     </item>
     <item>
       <title>地理默写-七年级上册P40-100</title>
