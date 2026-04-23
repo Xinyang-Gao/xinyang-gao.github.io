@@ -1,59 +1,759 @@
-<footer class="global-footer">
-  <div class="footer-content">
-    <div class="footer-info">
-      <p>&copy; 2025-2026 高新炀 , All Rights Reserved.</p>
-      <p>网站已运行<span id="site-age">很长时间</span></p>
-      <p class="footer-last-update">最后更新于 <span id="footer-update-date">加载中</span></p>
-      
-      <p class="icp-info">
-        <a href="https://icp.gov.moe/?keyword=20261221" target="_blank" rel="noopener noreferrer" class="icp-link">
-          <i class="fas fa-paw"></i> 萌ICP备20261221号
+<!DOCTYPE html>
+<footer class="global-footer glass-footer tri-column-footer">
+  <div class="footer-modern-grid tri-grid">
+    <!-- 快速链接列 -->
+    <div class="footer-col footer-links-col">
+      <h4 class="footer-heading">探索</h4>
+      <ul class="footer-link-list">
+        <li><a href="/" data-no-ajax="false">首页</a></li>
+        <li><a href="/articles" data-no-ajax="false">文章</a></li>
+        <li><a href="/works" data-no-ajax="false">作品</a></li>
+        <li><a href="/about" data-no-ajax="false">关于</a></li>
+        <li><a href="/contact" data-no-ajax="false">联系</a></li>
+        <li><a href="/articles/网站更新日志.html" class="update-log-link">更新日志</a></li>
+      </ul>
+    </div>
+
+    <!-- 社交互动列（胶囊式按钮增强） -->
+    <div class="footer-col footer-social-col">
+      <h4 class="footer-heading">联系</h4>
+      <div class="footer-social-grid">
+        <a href="https://github.com/Xinyang-Gao" target="_blank" rel="noopener noreferrer" class="footer-social-item" aria-label="GitHub">
+          <i class="fab fa-github"></i> <span>GitHub</span>
+          <span class="social-hover-bg"></span>
         </a>
-      </p>
-      
-      <div class="license-badges">
-        <a href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener noreferrer" class="license-badge">
-          <i class="fas fa-code"></i> MIT License
+        <a href="https://space.bilibili.com/1064600697" target="_blank" rel="noopener noreferrer" class="footer-social-item" aria-label="Bilibili">
+          <i class="bili-icon"></i> <span>Bilibili</span>
+          <span class="social-hover-bg"></span>
         </a>
-        <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" rel="noopener noreferrer" class="license-badge">
-          <i class="fas fa-pen-fancy"></i> CC BY-NC-ND 4.0
+        <a href="mailto:gao_xinyang@foxmail.com" class="footer-social-item" aria-label="邮箱">
+          <i class="fas fa-envelope"></i> <span>邮箱</span>
+          <span class="social-hover-bg"></span>
+        </a>
+        <a href="https://wpa.qq.com/msgrd?v=3&uin=2489083744&site=qq&menu=yes" target="_blank" rel="noopener noreferrer" class="footer-social-item" aria-label="QQ">
+          <i class="fab fa-qq"></i> <span>QQ</span>
+          <span class="social-hover-bg"></span>
+        </a>
+        <a href="/rss.xml" target="_blank" rel="noopener noreferrer" class="footer-social-item" aria-label="RSS">
+          <i class="fas fa-rss"></i> <span>RSS订阅</span>
+          <span class="social-hover-bg"></span>
         </a>
       </div>
     </div>
-    <div class="footer-right">
-      <div class="footer-social">
-        <a href="https://github.com/Xinyang-Gao" target="_blank" class="social-link" aria-label="GitHub" rel="noopener noreferrer">
-          <i class="fab fa-github"></i>
-        </a>
-        <a href="https://space.bilibili.com/1064600697" target="_blank" class="social-link" aria-label="Bilibili" rel="noopener noreferrer">
-          <i class="bili-icon"></i>
-        </a>
-        <a href="mailto:gao_xinyang@foxmail.com" class="social-link" aria-label="邮箱">
-          <i class="fas fa-envelope"></i>
-        </a>
-        <a href="2489083744" target="_blank" class="social-link" aria-label="QQ" rel="noopener noreferrer">
-          <i class="fab fa-qq"></i>
-        </a>
+
+    <!-- 统计与法律信息列 + 不蒜子计数展示 -->
+    <div class="footer-col footer-stats-col">
+      <h4 class="footer-heading">信息</h4>
+      <div class="footer-stat-item">
+        <i class="fas fa-heartbeat"></i>
+        <span>已运行<strong id="site-age">加载中...</strong>
+</span>
       </div>
-      <div class="footer-links">
-        <a href="/articles/网站更新日志.html" class="footer-link">更新日志</a>
+      <div class="footer-stat-item">
+        <i class="fas fa-sync-alt"></i>
+        <span>数据更新于<span id="footer-update-date">—</span></span>
+      </div>
+
+      <!-- 不蒜子计数区块：由脚本动态刷新 -->
+      <div class="footer-stat-item busuanzi-stats-item">
+        <i class="fas fa-chart-line"></i>
+        <div class="busuanzi-content">
+          <span class="stat-label">总访问量</span>
+          <strong id="busuanzi_value_site_pv">0</strong> <span class="stat-unit">次</span>
+          <span class="stat-divider">|</span>
+          <span class="stat-label">访客数</span>
+          <strong id="busuanzi_value_site_uv">0</strong> <span class="stat-unit">人</span>
+        </div>
+      </div>
+
+      <!-- MIT + CC 许可证 -->
+      <div class="footer-license-stack">
+        <div class="license-badge-wrapper">
+          <a href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener noreferrer" class="license-badge">
+            <i class="fas fa-code"></i> MIT License
+          </a>
+        </div>
+        <div class="license-badge-wrapper">
+          <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" rel="noopener noreferrer" class="license-badge">
+            <i class="fas fa-pen-fancy"></i> CC BY-NC-ND 4.0
+          </a>
+        </div>
       </div>
     </div>
   </div>
+
+  <!-- 底部版权栏 -->
+  <div class="footer-copyright-bar">
+    <div class="copyright-inner">
+      <span>© 2025-2026 高新炀</span>
+      <span class="copyright-spacer">✦</span>
+      <span>All rights reserved</span>
+    </div>
+    <div class="footer-tech-note">
+      <i class="fas fa-mug-hot"></i> 欢迎~
+      <span class="tech-glow"></span>
+    </div>
+  </div>
+
+  <!-- 萌备 + 异次元之旅 区域 -->
+  <div class="footer-copyright-extras">
+    <div class="extra-links-group">
+      <a href="https://icp.gov.moe/?keyword=20261221" target="_blank" rel="noopener noreferrer" class="license-badge extra-badge" aria-label="萌ICP备案">
+        <i class="fas fa-paw"></i> 萌ICP备20261221号
+      </a>
+      <a href="https://travel.moe/go.html?travel=on" target="_blank" rel="noopener noreferrer" class="license-badge travel-badge" title="异次元之旅 · 一起去萌站成员的星球旅行吧！">
+        <i class="fas fa-rocket"></i> 异次元之旅
+      </a>
+    </div>
+    <div class="travel-mini-quote">
+      <i class="fas fa-globe-asia"></i> 在异次元宇宙中遇见你，甚有缘分 ✧(≖ ◡ ≖)
+    </div>
+  </div>
+
+  <!-- 装饰性波浪线条 -->
+  <div class="footer-wave-decoration">
+    <svg viewBox="0 0 1200 20" preserveAspectRatio="none">
+      <path d="M0,10 Q30,5 60,10 T120,10 T180,10 T240,10 T300,10 T360,10 T420,10 T480,10 T540,10 T600,10 T660,10 T720,10 T780,10 T840,10 T900,10 T960,10 T1020,10 T1080,10 T1140,10 T1200,10" stroke="rgba(180, 91, 99, 0.25)" fill="none" stroke-width="1.5"/>
+    </svg>
+  </div>
 </footer>
 
-<!-- KaTeX & Mermaid 支持（用于数学公式与流程图） -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js"></script>
-<script defer src="https://cdn.jsdelivr.net/npm/mermaid@10.4.0/dist/mermaid.min.js"></script>
-<script>
-  // 若需要可在这里调整 Mermaid 配置
-  try {
-    if (window.mermaid) {
-      window.mermaid.initialize({ startOnLoad: false, theme: 'default' });
-    }
-  } catch (e) {
-    console.warn('初始化 Mermaid 失败', e);
+<style>
+/* ========== 三列玻璃态页脚 (重构版) ========== */
+.global-footer.glass-footer.tri-column-footer {
+  --footer-bg-alpha: rgba(var(--bg-color-rgb, 250, 248, 245), 0.88);
+  --footer-border-glow: rgba(180, 91, 99, 0.35);
+  --social-bg-hover: var(--accent-color);
+  position: relative;
+  margin-top: 4rem;
+  backdrop-filter: blur(3px);
+  transition: all 0.3s ease;
+  border-top: none;
+}
+
+/* 亮色/暗色玻璃态增强 */
+[data-theme="light"] .global-footer.glass-footer.tri-column-footer {
+  background: rgba(250, 248, 245, 0.92);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.02), inset 0 1px 0 rgba(255,255,255,0.9), 0 1px 0 rgba(255,255,255,0.5);
+  border-top: 1px solid rgba(232, 226, 219, 0.7);
+}
+
+[data-theme="dark"] .global-footer.glass-footer.tri-column-footer {
+  background: rgba(12, 12, 18, 0.94);
+  backdrop-filter: blur(16px);
+  border-top: 1px solid rgba(63, 63, 75, 0.8);
+  box-shadow: 0 -12px 32px rgba(0, 0, 0, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+/* 顶部渐变光晕 */
+.global-footer.glass-footer.tri-column-footer::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--accent-color), var(--accent-light), transparent);
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+/* 三列网格布局 */
+.footer-modern-grid.tri-grid {
+  max-width: 1320px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem 2rem;
+  padding: 3rem 2rem 2rem 2rem;
+  border-bottom: 1px solid var(--border-color);
+  position: relative;
+  z-index: 2;
+}
+
+/* 各列共用样式 */
+.footer-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* 标题装饰线 */
+.footer-heading {
+  font-size: 1.15rem;
+  font-weight: 650;
+  letter-spacing: -0.2px;
+  margin: 0 0 0.25rem 0;
+  color: var(--accent-color);
+  position: relative;
+  display: inline-block;
+  padding-bottom: 8px;
+}
+.footer-heading::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 38px;
+  height: 2.5px;
+  background: linear-gradient(90deg, var(--accent-color), var(--accent-light));
+  border-radius: 4px;
+  transition: width 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+}
+.footer-col:hover .footer-heading::after {
+  width: 68px;
+}
+
+/* 快速链接列表优化 */
+.footer-link-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.footer-link-list li a {
+  color: var(--text-color);
+  font-size: 0.93rem;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  padding: 0.2rem 0;
+  position: relative;
+}
+.footer-link-list li a::before {
+  content: "→";
+  opacity: 0;
+  transform: translateX(-8px);
+  transition: all 0.2s ease;
+  font-size: 0.8rem;
+  color: var(--accent-color);
+}
+.footer-link-list li a:hover {
+  color: var(--accent-color);
+  transform: translateX(8px);
+}
+.footer-link-list li a:hover::before {
+  opacity: 1;
+  transform: translateX(0);
+}
+.footer-link-list li a::after {
+  display: none;
+}
+
+/* 社交网格胶囊样式 */
+.footer-social-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.footer-social-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--surface-color-secondary);
+  padding: 8px 20px;
+  border-radius: 60px;
+  border: 1px solid var(--border-light);
+  color: var(--text-color);
+  font-size: 0.9rem;
+  transition: all 0.28s cubic-bezier(0.2, 0.9, 0.4, 1.2);
+  width: fit-content;
+  min-width: 150px;
+  position: relative;
+  overflow: hidden;
+  backdrop-filter: blur(4px);
+}
+.footer-social-item .social-hover-bg {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 30% 20%, var(--accent-color), transparent);
+  opacity: 0;
+  transition: opacity 0.3s;
+  pointer-events: none;
+}
+.footer-social-item i, .footer-social-item .bili-icon {
+  font-size: 1.25rem;
+  color: var(--accent-color);
+  z-index: 2;
+  transition: transform 0.2s;
+}
+.footer-social-item .bili-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  background-size: contain;
+}
+.footer-social-item span {
+  z-index: 2;
+}
+.footer-social-item:hover {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 12px 20px rgba(0, 0, 0, 0.12);
+  color: white;
+}
+.footer-social-item:hover i,
+.footer-social-item:hover .bili-icon {
+  color: white;
+  filter: brightness(0) invert(1);
+  transform: scale(1.1);
+}
+.footer-social-item:hover .social-hover-bg {
+  opacity: 0.15;
+}
+[data-theme="dark"] .footer-social-item:hover .bili-icon {
+  filter: brightness(0) invert(1);
+}
+
+/* 统计信息卡片样式 */
+.footer-stat-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.9rem;
+  background: var(--surface-color);
+  padding: 10px 16px;
+  border-radius: 44px;
+  border: 1px solid var(--border-light);
+  transition: all 0.25s;
+}
+.footer-stat-item i {
+  color: var(--accent-color);
+  width: 26px;
+  text-align: center;
+  font-size: 1rem;
+}
+.footer-stat-item strong {
+  color: var(--accent-color);
+  font-weight: 700;
+  margin: 0 4px;
+}
+.footer-stat-item:hover {
+  background: var(--surface-color-secondary);
+  transform: translateX(4px);
+  border-color: var(--accent-light);
+}
+.stat-refresh-icon {
+  margin-left: auto;
+  font-size: 0.8rem;
+  opacity: 0.6;
+  transition: transform 0.3s;
+}
+.footer-stat-item:hover .stat-refresh-icon {
+  transform: rotate(180deg);
+  opacity: 1;
+}
+
+/* 不蒜子统计专用样式 */
+.busuanzi-stats-item {
+  padding: 10px 16px;
+}
+.busuanzi-content {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  font-size: 0.9rem;
+}
+.stat-label {
+  font-weight: 500;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+}
+.stat-unit {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-right: 4px;
+}
+.stat-divider {
+  color: var(--border-color);
+  margin: 0 4px;
+  font-weight: 300;
+}
+.busuanzi-content strong {
+  font-size: 1rem;
+  min-width: 32px;
+  display: inline-block;
+  text-align: center;
+}
+
+/* 许可证徽章区 */
+.footer-license-stack {
+  margin-top: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.license-badge-wrapper .license-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--tag-bg);
+  padding: 6px 14px;
+  border-radius: 60px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: all 0.2s;
+  backdrop-filter: blur(2px);
+  border: 1px solid var(--border-light);
+}
+.license-badge.icp-modern i {
+  font-size: 0.8rem;
+}
+.license-badge-wrapper .license-badge:hover {
+  background: var(--accent-color);
+  color: white;
+  transform: translateY(-3px);
+  border-color: var(--accent-color);
+  box-shadow: 0 5px 12px rgba(0, 0, 0, 0.1);
+}
+.license-badge::after {
+  display: none !important;
+}
+
+/* 新增版权信息下方的萌备+异次元之旅区域 */
+.footer-copyright-extras {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 0.8rem 2rem 1.8rem 2rem;
+  text-align: center;
+  border-top: none;
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.extra-links-group {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  row-gap: 14px;
+}
+
+/* 公用徽章样式升级 */
+.extra-badge, .travel-badge {
+  background: var(--surface-color-secondary);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--border-light);
+  padding: 6px 20px;
+  border-radius: 60px;
+  font-size: 0.85rem;
+  font-weight: 550;
+  letter-spacing: 0.3px;
+  transition: all 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.2);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-color);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.extra-badge i, .travel-badge i {
+  font-size: 1rem;
+  color: var(--accent-color);
+  transition: transform 0.2s;
+}
+
+.travel-badge .travel-sparkle {
+  font-size: 0.9rem;
+  opacity: 0.7;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.extra-badge:hover, .travel-badge:hover {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: white;
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-sm), 0 8px 18px rgba(0, 0, 0, 0.1);
+}
+.extra-badge:hover i, .travel-badge:hover i {
+  color: white;
+  transform: scale(1.1) rotate(3deg);
+}
+.travel-badge:hover .travel-sparkle {
+  opacity: 1;
+  transform: scale(1.2);
+  animation: sparkleFade 0.4s ease;
+}
+
+@keyframes sparkleFade {
+  0% { opacity: 0.4; transform: scale(0.8);}
+  100% { opacity: 1; transform: scale(1.2);}
+}
+
+/* 异次元旅行寄语 */
+.travel-mini-quote {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(var(--accent-rgb, 98, 78, 162), 0.06);
+  padding: 4px 16px;
+  border-radius: 40px;
+  backdrop-filter: blur(2px);
+  transition: all 0.2s;
+}
+.travel-mini-quote i {
+  color: var(--accent-color);
+  font-size: 0.8rem;
+}
+.travel-mini-quote:hover {
+  background: rgba(var(--accent-rgb, 98, 78, 162), 0.12);
+  transform: translateY(-1px);
+}
+
+/* 底部版权栏原有样式微调 */
+.footer-copyright-bar {
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 1.5rem 2rem 0.5rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  position: relative;
+  z-index: 2;
+}
+.copyright-inner {
+  display: flex;
+  gap: 14px;
+  align-items: baseline;
+  flex-wrap: wrap;
+}
+.copyright-spacer {
+  font-size: 0.7rem;
+  opacity: 0.6;
+  animation: gentlePulse 2s infinite;
+}
+@keyframes gentlePulse {
+  0%,100% { opacity: 0.4; transform: scale(1);}
+  50% { opacity: 0.9; transform: scale(1.2);}
+}
+.footer-tech-note {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--tag-bg);
+  padding: 6px 18px;
+  border-radius: 60px;
+  transition: all 0.2s;
+  border: 1px solid var(--border-light);
+  position: relative;
+}
+.footer-tech-note i {
+  color: var(--accent-color);
+}
+.footer-tech-note:hover {
+  background: var(--accent-color);
+  color: white;
+  border-color: var(--accent-color);
+  transform: translateY(-2px);
+}
+.footer-tech-note:hover i {
+  color: white;
+}
+.tech-glow {
+  position: absolute;
+  inset: 0;
+  border-radius: 60px;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+  box-shadow: 0 0 8px var(--accent-light);
+}
+.footer-tech-note:hover .tech-glow {
+  opacity: 0.4;
+}
+
+/* 装饰性波浪 */
+.footer-wave-decoration {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 20px;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0.5;
+}
+.footer-wave-decoration svg {
+  width: 100%;
+  height: 20px;
+}
+[data-theme="dark"] .footer-wave-decoration svg path {
+  stroke: rgba(78, 168, 255, 0.3);
+}
+
+/* 响应式布局 */
+@media (max-width: 1024px) {
+  .footer-modern-grid.tri-grid {
+    gap: 1.8rem;
   }
+}
+@media (max-width: 900px) {
+  .footer-modern-grid.tri-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2rem 1.8rem;
+    padding: 2.2rem 1.8rem 1.8rem;
+  }
+  .footer-copyright-bar {
+    flex-direction: column;
+    text-align: center;
+    justify-content: center;
+    padding: 1.2rem 1.8rem 0.5rem;
+  }
+  .copyright-inner {
+    justify-content: center;
+  }
+  .footer-tech-note {
+    justify-content: center;
+  }
+  .footer-copyright-extras {
+    padding: 0.5rem 1.5rem 1.8rem;
+  }
+}
+@media (max-width: 620px) {
+  .footer-modern-grid.tri-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    padding: 2rem 1.5rem;
+  }
+  .footer-social-item {
+    width: 100%;
+    justify-content: flex-start;
+    min-width: auto;
+  }
+  .footer-copyright-bar {
+    padding: 1rem 1.5rem 0.2rem;
+  }
+  .footer-copyright-extras {
+    padding: 0.4rem 1.5rem 1.6rem;
+  }
+  .extra-links-group {
+    gap: 12px;
+  }
+  .travel-mini-quote {
+    font-size: 0.7rem;
+    padding: 4px 12px;
+  }
+  .footer-heading::after {
+    width: 28px;
+  }
+  .footer-wave-decoration {
+    opacity: 0.3;
+  }
+  .busuanzi-content {
+    flex-wrap: wrap;
+  }
+}
+
+/* 暗色模式微调 */
+[data-theme="dark"] .footer-stat-item {
+  background: var(--surface-color-secondary);
+  border-color: rgba(63, 63, 75, 0.6);
+}
+[data-theme="dark"] .footer-tech-note {
+  background: rgba(32, 32, 42, 0.8);
+}
+[data-theme="dark"] .footer-social-item {
+  background: rgba(28, 28, 36, 0.8);
+}
+[data-theme="dark"] .footer-social-item:hover {
+  background: var(--accent-color);
+}
+[data-theme="dark"] .footer-stat-item .busuanzi-content .stat-label {
+  color: #b6b9c6;
+}
+[data-theme="dark"] .extra-badge, 
+[data-theme="dark"] .travel-badge {
+  background: rgba(24, 24, 31, 0.9);
+  border-color: rgba(63, 63, 75, 0.7);
+}
+[data-theme="dark"] .travel-mini-quote {
+  background: rgba(78, 168, 255, 0.08);
+}
+</style>
+
+<!-- 页脚动态逻辑：站点年龄/更新时间/版权年份 + 不蒜子数据刷新（与 index.html 方法一致） -->
+<script>
+  (function() {
+    // ---------- 原有功能：站点年龄、更新时间、版权年份 ----------
+    const siteAgeSpan = document.getElementById('site-age');
+    const updateSpan = document.getElementById('footer-update-date');
+    if (siteAgeSpan && (!siteAgeSpan.innerText || siteAgeSpan.innerText.trim() === '')) siteAgeSpan.innerText = '加载中...';
+    if (updateSpan && (!updateSpan.innerText || updateSpan.innerText.trim() === '')) updateSpan.innerText = '统计中';
+    
+    if (typeof window.startSiteAgeUpdater === 'function') {
+      if (window.siteAgeInterval) clearInterval(window.siteAgeInterval);
+      window.startSiteAgeUpdater();
+    } else if (typeof startSiteAgeUpdater === 'function') {
+      if (window.siteAgeInterval) clearInterval(window.siteAgeInterval);
+      startSiteAgeUpdater();
+    }
+    
+    if (typeof window.updateFooterUpdateTime === 'function') {
+      window.updateFooterUpdateTime();
+    } else if (typeof updateFooterUpdateTime === 'function') {
+      updateFooterUpdateTime();
+    }
+    
+    const yearSpan = document.querySelector('.copyright-inner span:first-child');
+    if (yearSpan && yearSpan.innerText.includes('2025-2026')) {
+      const currentYear = new Date().getFullYear();
+      if (currentYear > 2026) yearSpan.innerText = `© 2025-${currentYear} 高新炀`;
+    }
+
+    // ---------- 新增：不蒜子数据显示刷新（与 index.html 实现一致） ----------
+    function initBusuanziFooter() {
+      // 检查是否已存在 busuanzi 对象且可用
+      if (typeof busuanzi !== 'undefined' && busuanzi && typeof busuanzi.fetch === 'function') {
+        busuanzi.fetch();   // 刷新页脚中的 PV/UV 数据
+        return;
+      }
+      
+      // 若未加载不蒜子脚本，则动态加载（与 index.html 路径一致）
+      if (!document.querySelector('script[src*="busuanzi.min.js"]')) {
+        var script = document.createElement('script');
+        script.src = '/js/busuanzi.min.js';
+        script.defer = true;
+        script.onload = function() {
+          if (typeof busuanzi !== 'undefined' && busuanzi.fetch) {
+            busuanzi.fetch();
+          }
+        };
+        document.head.appendChild(script);
+      } else {
+        // 脚本已存在于页面但尚未初始化完成，轮询等待
+        var checkInterval = setInterval(function() {
+          if (typeof busuanzi !== 'undefined' && busuanzi.fetch) {
+            clearInterval(checkInterval);
+            busuanzi.fetch();
+          }
+        }, 100);
+        setTimeout(function() { clearInterval(checkInterval); }, 3000);
+      }
+    }
+
+    // 确保页脚插入 DOM 后执行刷新（此时 footer 元素已存在）
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initBusuanziFooter);
+    } else {
+      initBusuanziFooter();
+    }
+  })();
 </script>

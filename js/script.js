@@ -1004,7 +1004,7 @@ function startSiteAgeUpdater() {
 
 class ExternalLinkManager {
     constructor() {
-        this.WHITELIST = new Set(["github.com", "vercel.com", "netlify.app", "wikipedia.org", "bilibili.com", "bing.com", "baidu.com", "zhihu.com", "csdn.net", "cloud.tencent.com", "aliyun.com", "gaoxinyang.lanzouq.com"]);
+        this.WHITELIST = new Set(["github.com", "vercel.com", "netlify.app", "wikipedia.org", "bilibili.com", "bing.com", "baidu.com", "zhihu.com", "csdn.net", "cloud.tencent.com", "aliyun.com", "gaoxinyang.lanzouq.com", "icp.gov.moe"]);
         this.currentModal = null; this.currentOverlay = null; this.countdownInterval = null; this.remainingSeconds = 3; this.pendingUrl = null; this.isSafe = false; this.redirectTriggered = false;
         this.internalDomains = [window.location.hostname, 'localhost', '127.0.0.1', 'xinyang-gao.github.io', 'www.xinyang-gao.github.io'];
         this.init();
