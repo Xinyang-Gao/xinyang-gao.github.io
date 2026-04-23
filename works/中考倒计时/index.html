@@ -97,13 +97,53 @@
             transform: scale(1.01);
         }
 
+        /* 实时时钟卡片 —— 全新玻璃质感，优雅融入 */
+        .real-time-card {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            background: rgba(255, 255, 255, 0.78);
+            backdrop-filter: blur(8px);
+            border-radius: 60px;
+            padding: 0.5rem 1.5rem;
+            width: fit-content;
+            margin: 0.25rem auto 0 auto;
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            box-shadow: 0 6px 14px -8px rgba(0, 0, 0, 0.05);
+            transition: all 0.2s ease;
+        }
+        
+        .real-time-card:hover {
+            background: rgba(255, 255, 255, 0.92);
+            border-color: rgba(37, 99, 235, 0.25);
+            box-shadow: 0 8px 20px -10px rgba(37, 99, 235, 0.12);
+            transform: translateY(-1px);
+        }
+
+        .clock-icon {
+            font-size: 1.1rem;
+            filter: drop-shadow(0 1px 1px rgba(0,0,0,0.05));
+        }
+
+        .current-time-text {
+            font-family: 'Space Grotesk', 'Inter', monospace;
+            font-weight: 500;
+            font-size: 0.9rem;
+            letter-spacing: 0.3px;
+            color: #1F3A5F;
+            background: transparent;
+            padding: 0.1rem 0;
+            white-space: nowrap;
+        }
+
         /* 倒计时网格: 更大呼吸感 */
         .countdown-grid {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
             gap: 2rem;
-            margin-top: 0.75rem;
+            margin-top: 0.2rem;
         }
 
         /* 白色卡片 现代磨砂质感+细腻光影 */
@@ -292,6 +332,12 @@
             .hero-title {
                 font-size: 2.5rem;
             }
+            .current-time-text {
+                font-size: 0.8rem;
+            }
+            .real-time-card {
+                padding: 0.4rem 1.2rem;
+            }
         }
 
         @media (max-width: 640px) {
@@ -338,6 +384,17 @@
                 font-size: 0.75rem;
                 padding: 0.3rem 1rem;
             }
+            .current-time-text {
+                font-size: 0.7rem;
+                white-space: nowrap;
+            }
+            .real-time-card {
+                padding: 0.3rem 1rem;
+                gap: 0.3rem;
+            }
+            .clock-icon {
+                font-size: 0.9rem;
+            }
         }
 
         @media (max-width: 480px) {
@@ -361,6 +418,10 @@
                 font-size: 0.65rem;
                 padding: 0.1rem 0.6rem;
             }
+            .current-time-text {
+                font-size: 0.65rem;
+                letter-spacing: 0.2px;
+            }
         }
 
         /* 点缀细节: 优雅呼吸 */
@@ -381,10 +442,14 @@
 </head>
 <body>
 <div class="dashboard">
-    <!-- 头部区域 增加目标日期标识提升现代感 -->
     <div class="hero-section">
-        <h1 class="hero-title">中考倒计时</h1>
-        <div class="target-badge">距离 6月22日08点20分 还有</div>
+        <h1 class="hero-title">中考冲刺</h1>
+        <div class="target-badge">距离 6月22日08:20 还有</div>
+        
+        <div class="real-time-card">
+            <span class="current-time-text" id="liveClockDisplay">--/--/-- --- --:--:--</span>
+        </div>
+        
         <div class="countdown-grid" id="countdownGrid">
             <div class="time-card">
                 <div class="digit" id="daysDigit">00</div>
@@ -413,7 +478,7 @@
                 <div class="progress-track-wide">
                     <div class="progress-fill-wide" id="weekFill" style="width: 0%;"></div>
                     <div class="progress-content">
-                        <span class="progress-label-left">本周已过去</span>
+                        <span class="progress-label-left">本周进度</span>
                         <span class="progress-percent-right" id="weekPercent">0%</span>
                     </div>
                 </div>
@@ -423,7 +488,7 @@
                 <div class="progress-track-wide">
                     <div class="progress-fill-wide" id="dayFill" style="width: 0%;"></div>
                     <div class="progress-content">
-                        <span class="progress-label-left">今天还剩下</span>
+                        <span class="progress-label-left">今天进度</span>
                         <span class="progress-percent-right" id="dayPercent">0%</span>
                     </div>
                 </div>
@@ -433,7 +498,7 @@
                 <div class="progress-track-wide">
                     <div class="progress-fill-wide" id="hourFill" style="width: 0%;"></div>
                     <div class="progress-content">
-                        <span class="progress-label-left">一小时已经过了</span>
+                        <span class="progress-label-left">小时进度</span>
                         <span class="progress-percent-right" id="hourPercent">0%</span>
                     </div>
                 </div>
@@ -443,7 +508,7 @@
                 <div class="progress-track-wide">
                     <div class="progress-fill-wide" id="minuteFill" style="width: 0%;"></div>
                     <div class="progress-content">
-                        <span class="progress-label-left">这一分钟</span>
+                        <span class="progress-label-left">分钟进度</span>
                         <span class="progress-percent-right" id="minutePercent">0%</span>
                     </div>
                 </div>
@@ -628,15 +693,52 @@
         return { updateAllProgress };
     })();
     
-    // 模块5: 总控制器 (倒计时+进度条同步刷新)
+    // 模块5: 实时时钟模块 (独立、优雅、每秒更新)
+    const CurrentTimeModule = (() => {
+        const clockElement = document.getElementById('liveClockDisplay');
+        
+        // 格式化当前时间 -> 示例: 2026.04.21 周二 15:38:09
+        function getFormattedCurrentTime() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+            const weekday = weekdays[now.getDay()];
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            // 现代简洁格式：2026.04.21 周二 15:38:09
+            return `${year}.${month}.${day} ${weekday} ${hours}:${minutes}:${seconds}`;
+        }
+        
+        function updateClockDisplay() {
+            if (clockElement) {
+                clockElement.innerText = getFormattedCurrentTime();
+            }
+        }
+        
+        // 立即刷新一次
+        function init() {
+            updateClockDisplay();
+        }
+        
+        return { updateClockDisplay, init };
+    })();
+    
+    // 模块6: 总控制器 (倒计时+进度条+实时时钟 同步刷新)
     const CountdownController = (() => {
         let timerId = null;
         let isExpiredFlag = false;
         
         function refreshAll() {
+            // 1. 更新倒计时
             const timeData = TimeCalculator.getRemainingTime();
             CountdownUIManager.updateDisplay(timeData);
+            // 2. 更新进度条（周/日/小时/分钟）
             ProgressUIManager.updateAllProgress();
+            // 3. 更新实时时钟 (与整体节奏保持一致，每秒刷新)
+            CurrentTimeModule.updateClockDisplay();
             
             if (timeData.isExpired && !isExpiredFlag) {
                 isExpiredFlag = true;
@@ -645,7 +747,7 @@
         
         function startTimer() {
             if (timerId) clearInterval(timerId);
-            refreshAll();
+            refreshAll(); // 立即渲染一次，避免空白
             timerId = setInterval(() => {
                 refreshAll();
             }, 1000);
@@ -660,7 +762,7 @@
         
         function handleVisibilityChange() {
             if (!document.hidden) {
-                refreshAll();
+                refreshAll(); // 页面可见时立即同步最新时间
             }
         }
         
@@ -675,19 +777,23 @@
         return { init, stopTimer };
     })();
     
-    // 模块6: 启动引导 (额外初始化确保进度条细腻)
+    // 模块7: 应用启动引导 (确保所有模块就绪)
     const AppBoot = (() => {
         function init() {
+            // 初始化实时时钟的首次展示
+            CurrentTimeModule.init();
+            // 启动倒计时总控 (内部会立刻刷新倒计时、进度条和时钟)
             CountdownController.init();
+            // 额外确保进度条完美显示
             setTimeout(() => {
                 ProgressUIManager.updateAllProgress();
-                // 确保在首帧完美渲染
+                CurrentTimeModule.updateClockDisplay();
             }, 30);
         }
         return { init };
     })();
     
-    // 启动倒计时与进度系统
+    // 启动整个应用 (DOM就绪后)
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', () => AppBoot.init());
     } else {

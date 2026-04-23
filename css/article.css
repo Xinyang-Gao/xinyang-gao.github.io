@@ -1,4 +1,4 @@
-/* ========== 文章页两栏布局 ========== */
+/* article.css (修改后，移除图片查看器样式) */
 .article-page-container {
   max-width: 1300px;
   margin: 94px auto 40px;
@@ -8,7 +8,6 @@
   position: relative;
 }
 
-/* 侧边目录 - 与主站卡片风格统一 */
 .toc-container {
   width: 26%;
   background: var(--surface-color-secondary);
@@ -38,7 +37,6 @@
   border-radius: 4px;
 }
 
-/* 右侧内容列 */
 .article-right-column {
   width: 74%;
   display: flex;
@@ -46,7 +44,6 @@
   gap: 32px;
 }
 
-/* 目录样式 - 优化层级与激活态 */
 .toc-title {
   font-size: 1.4rem;
   text-align: center;
@@ -101,7 +98,6 @@
   font-weight: 600;
 }
 
-/* 目录层级缩进 */
 .toc-list li.toc-h1 { margin-left: 0; font-weight: 700; }
 .toc-list li.toc-h2 { margin-left: 12px; font-weight: 600; }
 .toc-list li.toc-h3 { margin-left: 24px; font-weight: normal; }
@@ -112,7 +108,6 @@
   100% { opacity: 1; transform: translateX(0); }
 }
 
-/* ========== 文章卡片 - 同步主站卡片样式 ========== */
 .article-content-wrapper {
   background: var(--surface-color);
   border: 1px solid var(--border-color);
@@ -122,9 +117,7 @@
   transition: all var(--transition-normal);
 }
 
-/* 已删除鼠标悬停时的上移、边框变色、阴影增强、背景变化等强调效果 */
 .article-content-wrapper:hover {
-  /* 保持与默认状态完全一致，无任何强调效果 */
   border-color: var(--border-color);
   box-shadow: var(--shadow-md), var(--shadow-offset);
   transform: none;
@@ -135,7 +128,6 @@
   background: var(--surface-color);
 }
 
-/* 文章头部 */
 .article-content-wrapper h1 {
   font-size: 2.4rem;
   text-align: center;
@@ -162,7 +154,6 @@
   color: #aaa;
 }
 
-/* 现代化元数据区域 - 极简 + tooltip */
 .article-meta {
   margin-bottom: 32px;
   padding: 14px 0;
@@ -191,7 +182,6 @@
   font-size: 0.9rem;
   font-weight: 500;
 }
-/* tooltip 优化 */
 .meta-item:hover::after {
   content: attr(data-label);
   position: absolute;
@@ -219,6 +209,7 @@
   background: rgba(0, 0, 0, 0.85);
   z-index: 99;
 }
+
 [data-theme="dark"] .meta-item:hover::after {
   background: rgba(255, 255, 255, 0.9);
   color: #1e1e1e;
@@ -227,7 +218,6 @@
   background: rgba(255, 255, 255, 0.9);
 }
 
-/* 正文排版优化 */
 .article-content-wrapper {
   font-size: 1.05rem;
   line-height: 1.75;
@@ -277,9 +267,6 @@
   overflow-x: auto;
   line-height: 1.5;
   scrollbar-width: thin;
-}
-.article-content-wrapper pre {
-  /* 更明显的代码块背景与边框，便于视觉区分 */
   background: var(--code-bg, #0f1724);
   color: var(--code-color);
   border: 1px solid rgba(0,0,0,0.06);
@@ -287,8 +274,6 @@
   border-radius: 12px;
   position: relative;
 }
-
-/* 行内代码与代码框一致化样式（浅色/深色兼容） */
 .article-content-wrapper code {
   background: var(--code-bg);
   color: var(--code-color);
@@ -296,8 +281,6 @@
   border-radius: 6px;
   font-size: 0.92em;
 }
-
-/* 兼容其他页面的 code-block-wrapper ，让代码框更显眼 */
 .code-block-wrapper,
 .article-content-wrapper .code-block-wrapper {
   background: var(--code-bg);
@@ -315,8 +298,6 @@
   padding: 18px;
   background: transparent;
 }
-
-/* 代码工具栏：展示文件类型与复制按钮 */
 .code-toolbar {
   position: absolute;
   top: 10px;
@@ -348,8 +329,6 @@
 .code-copy-btn:hover {
   background: rgba(255,255,255,0.12);
 }
-
-/* 小屏幕上将工具栏移入代码块内底部右侧，避免遮挡 */
 @media (max-width: 480px) {
   .code-toolbar { top: auto; bottom: 8px; right: 8px; }
 }
@@ -357,7 +336,6 @@
   padding: 2px 6px;
   font-size: 0.9em;
 }
-/* 表格样式 */
 .article-content-wrapper table {
   width: 100%;
   border-collapse: collapse;
@@ -380,8 +358,6 @@
 [data-theme="dark"] .article-content-wrapper tr:nth-child(even) {
   background: rgba(255, 255, 255, 0.02);
 }
-
-/* 图片懒加载与预览 */
 .lazy-image {
   max-width: 100%;
   height: auto;
@@ -400,8 +376,6 @@
   transform: scale(1.01);
   box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
 }
-
-/* 图片预览模态框 */
 .image-modal {
   display: none;
   position: fixed;
@@ -439,8 +413,6 @@
 .close:hover {
   color: #ccc;
 }
-
-/* 文章底部标签 */
 .article-footer-tags {
   display: flex;
   flex-wrap: wrap;
@@ -464,8 +436,6 @@
   transform: translateY(-2px);
   border-color: var(--accent-color);
 }
-
-/* ========== 评论卡片 - 同步主站卡片样式 ========== */
 .comments-card {
   background: var(--surface-color);
   border: 1px solid var(--border-color);
@@ -474,19 +444,15 @@
   padding: 32px 36px;
   transition: all var(--transition-normal);
 }
-
-/* 已删除鼠标悬停时的上移、边框变色、阴影增强等强调效果 */
 .comments-card:hover {
   border-color: var(--border-color);
   box-shadow: var(--shadow-md), var(--shadow-offset);
   transform: none;
   background: var(--surface-color);
 }
-
 [data-theme="dark"] .comments-card {
   background: var(--surface-color);
 }
-
 .comments-container h3 {
   font-size: 1.4rem;
   margin-bottom: 1.2rem;
@@ -494,8 +460,6 @@
   border-left: 4px solid var(--accent-color);
   padding-left: 16px;
 }
-
-/* 阅读进度条 - 颜色调整为滚动条颜色（纯主色调） */
 .reading-progress-bar {
   position: fixed;
   top: 0;
@@ -508,13 +472,11 @@
 }
 .progress-bar {
   height: 100%;
-  background: var(--accent-color); /* 改为纯色，与滚动条滑块颜色一致 */
+  background: var(--accent-color);
   width: 0%;
   transition: width 0.1s linear;
   box-shadow: 0 0 8px rgba(165, 88, 96, 0.6);
 }
-
-/* 浮动按钮组 */
 .floating-buttons {
   position: fixed;
   bottom: 30px;
@@ -560,8 +522,6 @@
   font-size: 1.8rem;
   line-height: 1;
 }
-
-/* 响应式布局优化 */
 @media (max-width: 768px) {
   .article-page-container {
     flex-direction: column;
@@ -594,7 +554,6 @@
     height: 44px;
   }
 }
-
 @media (max-width: 480px) {
   .article-content-wrapper {
     padding: 20px;
@@ -609,8 +568,6 @@
     padding: 20px;
   }
 }
-
-/* 锚点高亮动画 */
 .article-content-wrapper h1:target,
 .article-content-wrapper h2:target,
 .article-content-wrapper h3:target {
@@ -620,16 +577,12 @@
   0% { background-color: rgba(165, 88, 96, 0.15); }
   100% { background-color: transparent; }
 }
-
-/* 标题滚动偏移 */
 .article-content-wrapper h1,
 .article-content-wrapper h2,
 .article-content-wrapper h3,
 .article-content-wrapper h4 {
   scroll-margin-top: 100px;
 }
-
-/* 额外优化：列表样式、水平线等 */
 .article-content-wrapper ul,
 .article-content-wrapper ol {
   padding-left: 1.5em;
@@ -646,246 +599,6 @@
   background: var(--border-color);
   opacity: 0.6;
 }
-
-/* ========== 现代化图片查看器样式 ========== */
-.modern-image-viewer {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: var(--z-modal, 9999);
-  visibility: hidden;
-  opacity: 0;
-  transition: visibility 0.3s, opacity 0.3s;
-}
-
-.modern-image-viewer.active {
-  visibility: visible;
-  opacity: 1;
-}
-
-.viewer-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0, 0, 0, 0.92);
-  backdrop-filter: blur(30px);
-  cursor: pointer;
-}
-
-.viewer-container {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-/* 导航按钮 */
-.viewer-prev,
-.viewer-next {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: white;
-  font-size: 32px;
-  font-weight: 300;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  z-index: 10;
-}
-
-.viewer-prev { left: 24px; }
-.viewer-next { right: 24px; }
-
-.viewer-prev:hover,
-.viewer-next:hover {
-  background: var(--accent-color, #b45b63);
-  border-color: var(--accent-color, #b45b63);
-  transform: translateY(-50%) scale(1.08);
-}
-
-/* 关闭按钮 */
-.viewer-close {
-  position: absolute;
-  top: 24px;
-  right: 24px;
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: white;
-  font-size: 28px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-  z-index: 10;
-}
-
-.viewer-close:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: scale(1.08);
-}
-
-/* 工具栏 */
-.viewer-toolbar {
-  position: absolute;
-  bottom: 24px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 12px;
-  padding: 10px 20px;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(12px);
-  border-radius: 60px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  z-index: 10;
-}
-
-.viewer-toolbar button {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.1);
-  border: none;
-  color: white;
-  font-size: 18px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.viewer-toolbar button:hover {
-  background: var(--accent-color, #b45b63);
-  transform: scale(1.05);
-}
-
-.viewer-counter {
-  padding: 0 16px;
-  color: white;
-  font-size: 14px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  letter-spacing: 1px;
-}
-
-/* 图片包装器 */
-.viewer-image-wrapper {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  cursor: grab;
-}
-
-.viewer-image-wrapper:active {
-  cursor: grabbing;
-}
-
-.viewer-image {
-  max-width: 90vw;
-  max-height: 85vh;
-  width: auto;
-  height: auto;
-  object-fit: contain;
-  transition: transform 0.1s cubic-bezier(0.2, 0.9, 0.4, 1.1);
-  cursor: grab;
-  user-select: none;
-  pointer-events: auto;
-  will-change: transform;
-}
-
-.viewer-image:active {
-  cursor: grabbing;
-}
-
-/* 移动端适配 */
-@media (max-width: 768px) {
-  .viewer-prev,
-  .viewer-next {
-    width: 44px;
-    height: 44px;
-    font-size: 28px;
-  }
-  
-  .viewer-prev { left: 12px; }
-  .viewer-next { right: 12px; }
-  
-  .viewer-close {
-    top: 16px;
-    right: 16px;
-    width: 40px;
-    height: 40px;
-    font-size: 24px;
-  }
-  
-  .viewer-toolbar {
-    bottom: 16px;
-    padding: 8px 16px;
-    gap: 8px;
-  }
-  
-  .viewer-toolbar button {
-    width: 36px;
-    height: 36px;
-    font-size: 16px;
-  }
-  
-  .viewer-counter {
-    padding: 0 12px;
-    font-size: 12px;
-  }
-  
-  .viewer-image {
-    max-width: 95vw;
-    max-height: 80vh;
-  }
-}
-
-/* 暗色主题支持（自动适配） */
-[data-theme="dark"] .viewer-overlay {
-  background: rgba(0, 0, 0, 0.95);
-  backdrop-filter: blur(30px);
-}
-
-/* 减少动画偏好 */
-@media (prefers-reduced-motion: reduce) {
-  .modern-image-viewer,
-  .viewer-image,
-  .viewer-toolbar button,
-  .viewer-prev,
-  .viewer-next,
-  .viewer-close {
-    transition: none;
-  }
-}
-
-/* 图片下方 alt 文本样式 */
 .image-alt-text {
   display: block;
   text-align: center;
@@ -897,20 +610,15 @@
   font-style: italic;
   letter-spacing: 0.3px;
 }
-
-/* 暗色主题适配 */
 [data-theme="dark"] .image-alt-text {
   color: #aaa;
 }
-
-/* 确保图片本身底部无多余间距 */
 .article-body img {
   display: block;
   margin: 1.5em auto 0 auto;
   max-width: 100%;
   height: auto;
 }
-
 .footnote, .footnotes {
   margin-top: 2.4rem;
   padding-top: 1rem;

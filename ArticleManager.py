@@ -307,8 +307,8 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
     <meta name="author" content="{author if author else 'GaoXinYang'}">
     {f'<meta name="keywords" content="{", ".join(tags) if tags else ""}">' if tags else ''}
     <title>{title} - 高新炀的小站</title>
-    <link rel="stylesheet" href="/style.css">
-    <link rel="stylesheet" href="article.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/article.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
@@ -367,9 +367,9 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
         // 将标题数据注入到全局变量
         window.ARTICLE_HEADINGS = {headings_json};
     </script>
-    <script src="/busuanzi.min.js" defer></script>
-    <script src="/script.js"></script>
-    <script src="article.js"></script>
+    <script src="/js/busuanzi.min.js" defer></script>
+    <script src="/js/script.js"></script>
+    <script src="/js/article.js"></script>
     <!-- KaTeX for math rendering -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
     
