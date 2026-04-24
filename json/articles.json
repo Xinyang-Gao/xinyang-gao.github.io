@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-04-24T22:47:11.945237",
+  "generated_at": "2026-04-24T23:03:11.406040",
   "total_articles": 8,
-  "total_word_count": 28082,
+  "total_word_count": 28035,
   "articles": [
     {
       "relative_path": "articles/source/网站/README.md",
-      "hash": "f0e1412247cd65de2687baf53da5c405",
-      "last_updated": "2026-04-12",
-      "modify_count": 5,
+      "hash": "19e24a559deb1350942bc1aca99d4273",
+      "last_updated": "2026-04-24",
+      "modify_count": 6,
       "hidden": false,
       "title": "README.md",
       "date": "2026-04-12",
@@ -18,8 +18,8 @@
       ],
       "category": "网站",
       "url": "/articles/README.html",
-      "word_count": 8483,
-      "read_time": "17-43分钟"
+      "word_count": 8392,
+      "read_time": "17-42分钟"
     },
     {
       "relative_path": "articles/source/学习/从一株小草开始.md",
@@ -59,9 +59,9 @@
     },
     {
       "relative_path": "articles/source/网站/网站更新日志.md",
-      "hash": "9435325cdf7bbf30517f9011d3b03668",
+      "hash": "51a125aef4791a6b6cc7a1ca9e716a74",
       "last_updated": "2026-04-24",
-      "modify_count": 85,
+      "modify_count": 86,
       "hidden": false,
       "title": "网站更新日志",
       "date": "2025-12-21",
@@ -72,7 +72,7 @@
       ],
       "category": "网站",
       "url": "/articles/网站更新日志.html",
-      "word_count": 9829,
+      "word_count": 9873,
       "read_time": "20-50分钟"
     },
     {
