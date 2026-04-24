@@ -221,7 +221,7 @@ class UIRenderer {
         return `
         <div class="profile-card">
           <div class="profile-avatar">
-            <img src="/avatar.jpg" alt="高新炀的头像" class="avatar-img" onerror="this.src='https://via.placeholder.com/140?text=GXY'">
+            <img src="/assets/avatar.jpg" alt="高新炀的头像" class="avatar-img" onerror="this.src='https://via.placeholder.com/140?text=GXY'">
             <h2 class="profile-name">高新炀</h2>
             <div class="profile-bio">一个15岁爱探索的小孩子~
             </div>

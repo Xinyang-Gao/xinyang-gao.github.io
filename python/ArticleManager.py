@@ -7,6 +7,7 @@ import os
 import re
 import sys
 import json
+import hashlib
 from pathlib import Path
 from datetime import datetime
 from urllib.parse import quote
@@ -49,6 +50,46 @@ JSON_OUTPUT_DIR = PROJECT_ROOT / "json"              # JSON输出目录
 # 确保目录存在
 HTML_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 JSON_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+
+# 文章数据统一存储文件（包含元数据、哈希、更新日期、修改次数、隐藏标记）
+ARTICLES_JSON_PATH = JSON_OUTPUT_DIR / "articles.json"
+
+# ========== 文章数据读写 ==========
+def load_articles() -> List[dict]:
+    """加载 articles.json，返回文章列表（若文件不存在则返回空列表）"""
+    if ARTICLES_JSON_PATH.exists():
+        with open(ARTICLES_JSON_PATH, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            return data.get('articles', [])
+    return []
+
+def save_articles(articles: List[dict]) -> None:
+    """
+    保存文章列表到 articles.json，自动计算统计数据（排除 hidden 文章）。
+    每篇文章需包含 relative_path、hash、last_updated、modify_count、hidden 等字段。
+    """
+    # 统计非隐藏文章
+    visible_articles = [a for a in articles if not a.get('hidden', False)]
+    total_articles = len(visible_articles)
+    total_word_count = sum(a.get('word_count', 0) for a in visible_articles)
+
+    json_data = {
+        'generated_at': datetime.now().isoformat(),
+        'total_articles': total_articles,
+        'total_word_count': total_word_count,
+        'articles': sorted(articles, key=lambda x: x.get('date', ''), reverse=True)
+    }
+    with open(ARTICLES_JSON_PATH, 'w', encoding='utf-8') as f:
+        json.dump(json_data, f, ensure_ascii=False, indent=2)
+    log_info(f"已保存文章索引到 {ARTICLES_JSON_PATH}")
+
+def compute_content_hash(content: str) -> str:
+    """计算文本内容的 MD5 哈希值"""
+    return hashlib.md5(content.encode('utf-8')).hexdigest()
+
+def get_relative_path(file_path: Path) -> str:
+    """获取相对于项目根目录的路径，用作文章的唯一标识"""
+    return file_path.relative_to(PROJECT_ROOT).as_posix()
 
 # ========== 元数据处理 ==========
 def extract_metadata(content: str) -> tuple[Dict[str, str], str]:
@@ -170,8 +211,9 @@ def count_words(text: str) -> int:
 
 def create_html_page(title: str, date: str, content_html: str, headings_json: str,
                      description: str = "", tags: Optional[List] = None, author: str = "",
-                     word_count: int = 0, read_time_str: str = None, category: str = "") -> str:
-    """生成完整HTML页面"""
+                     word_count: int = 0, read_time_str: str = None, category: str = "",
+                     last_updated: str = None, modify_count: int = None) -> str:
+    """生成完整HTML页面，增加最后更新日期和修改次数显示"""
     if read_time_str is None:
         read_time_str = calculate_read_time(word_count)
 
@@ -186,6 +228,18 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
             formatted_date = date
     except:
         formatted_date = date
+
+    # 格式化最后更新日期
+    formatted_last_updated = ""
+    if last_updated:
+        try:
+            if re.match(r'\d{4}-\d{1,2}-\d{1,2}', last_updated):
+                dt = datetime.strptime(last_updated, '%Y-%m-%d')
+                formatted_last_updated = dt.strftime("%Y年%m月%d日")
+            else:
+                formatted_last_updated = last_updated
+        except:
+            formatted_last_updated = last_updated
 
     # 标签HTML（正文末尾）
     footer_tags_html = ""
@@ -206,40 +260,29 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
 
     subtitle_html = f'<div class="article-subtitle">{description}</div>' if description else ""
 
-    meta_html = f'''
-    <div class="article-meta" id="articleMeta">
-        <div class="meta-grid">
-            <div class="meta-item" data-label="发布日期">
-                <i class="fas fa-calendar-alt"></i>
-                <span class="meta-value">{formatted_date}</span>
-            </div>
-            <div class="meta-item" data-label="作者">
-                <i class="fas fa-user"></i>
-                <span class="meta-value">{author if author else "高新炀"}</span>
-            </div>
-            <div class="meta-item" data-label="分类">
-                <i class="fas fa-folder-open"></i>
-                <span class="meta-value">{html.escape(category) if category else "未分类"}</span>
-            </div>
-            <div class="meta-item" data-label="字数">
-                <i class="fas fa-file-alt"></i>
-                <span class="meta-value">{word_count}</span>
-            </div>
-            <div class="meta-item" data-label="阅读时间（200~500字/分钟）">
-                <i class="fas fa-clock"></i>
-                <span class="meta-value">{read_time_str}</span>
-            </div>
-            <div class="meta-item" data-label="访客数">
-                <i class="fas fa-users"></i>
-                <span class="meta-value" id="busuanzi_page_uv">加载中...</span>
-            </div>
-            <div class="meta-item" data-label="阅读量">
-                <i class="fas fa-eye"></i>
-                <span class="meta-value" id="busuanzi_page_pv">加载中...</span>
-            </div>
-        </div>
-    </div>
-    '''
+    # 构建元数据网格（增加最后更新和修订次数）
+    meta_items = [
+        ('发布日期', 'fas fa-calendar-alt', formatted_date),
+        ('作者', 'fas fa-user', author if author else "高新炀"),
+        ('分类', 'fas fa-folder-open', html.escape(category) if category else "未分类"),
+        ('字数', 'fas fa-file-alt', str(word_count)),
+        ('阅读时间', 'fas fa-clock', read_time_str),
+        ('访客数', 'fas fa-users', '<span id="busuanzi_page_uv">加载中...</span>'),
+        ('阅读量', 'fas fa-eye', '<span id="busuanzi_page_pv">加载中...</span>')
+    ]
+    if formatted_last_updated:
+        meta_items.insert(1, ('最后更新', 'fas fa-edit', formatted_last_updated))  # 放在作者之前
+    if modify_count is not None:
+        meta_items.append(('修订次数', 'fas fa-code-branch', str(modify_count)))
+
+    meta_html = '<div class="article-meta" id="articleMeta"><div class="meta-grid">'
+    for label, icon, value in meta_items:
+        meta_html += f'''
+            <div class="meta-item" data-label="{label}">
+                <i class="{icon}"></i>
+                <span class="meta-value">{value}</span>
+            </div>'''
+    meta_html += '</div></div>'
 
     meta_description = description if description else f"{title} - GaoXinYang的文章"
 
@@ -305,11 +348,42 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
 
 
 def process_markdown_file(md_file_path: Path, category: str = None) -> dict:
-    """处理单个markdown文件，生成HTML，返回文章信息"""
+    """
+    处理单个markdown文件，生成HTML，返回文章信息（包含状态字段如 hash, last_updated, modify_count）
+    状态信息（哈希、更新日期、修改次数）将从现有的 articles.json 中读取并更新。
+    """
     log_info(f"处理文件: {md_file_path}")
 
     with open(md_file_path, 'r', encoding='utf-8') as f:
         md_content = f.read()
+
+    # 计算当前文件内容的哈希
+    current_hash = compute_content_hash(md_content)
+    relative_path = get_relative_path(md_file_path)
+
+    # 加载现有文章列表，查找当前文件的旧状态
+    articles = load_articles()
+    old_article = next((a for a in articles if a.get('relative_path') == relative_path), None)
+
+    if old_article:
+        old_hash = old_article.get('hash', '')
+        last_updated = old_article.get('last_updated', '')
+        modify_count = old_article.get('modify_count', 0)
+    else:
+        old_hash = ''
+        last_updated = ''
+        modify_count = 0
+
+    # 判断是否更新
+    is_updated = (current_hash != old_hash)
+    today_str = datetime.now().strftime('%Y-%m-%d')
+
+    if not old_article:          # 新文件
+        last_updated = today_str
+        modify_count = 1
+    elif is_updated:             # 内容发生变更
+        last_updated = today_str
+        modify_count += 1
 
     metadata, cleaned_content = extract_metadata(md_content)
 
@@ -337,9 +411,13 @@ def process_markdown_file(md_file_path: Path, category: str = None) -> dict:
     content_html = convert_markdown_to_html(content_with_ids)
     headings_json = json.dumps(headings, ensure_ascii=False)
 
-    full_html = create_html_page(title, date, content_html, headings_json,
-                                 description, tags, author, word_count, read_time_str,
-                                 category=final_category)
+    full_html = create_html_page(
+        title, date, content_html, headings_json,
+        description, tags, author, word_count, read_time_str,
+        category=final_category,
+        last_updated=last_updated,
+        modify_count=modify_count
+    )
 
     output_filename = md_file_path.stem + '.html'
     output_path = HTML_OUTPUT_DIR / output_filename
@@ -347,7 +425,15 @@ def process_markdown_file(md_file_path: Path, category: str = None) -> dict:
         f.write(full_html)
     log_info(f"已生成: {output_path}")
 
+    # 判断是否隐藏
+    hidden = "隐藏" in tags
+
     return {
+        'relative_path': relative_path,
+        'hash': current_hash,
+        'last_updated': last_updated,
+        'modify_count': modify_count,
+        'hidden': hidden,
         'title': title,
         'date': date,
         'description': description,
@@ -360,69 +446,35 @@ def process_markdown_file(md_file_path: Path, category: str = None) -> dict:
     }
 
 
-def generate_articles_json(articles_info: List[dict]) -> None:
-    """生成 articles.json 到 json/ 目录"""
-    if not articles_info:
-        return
-    json_data = {
-        'generated_at': datetime.now().isoformat(),
-        'total_articles': len(articles_info),
-        'total_word_count': sum(a.get('word_count', 0) for a in articles_info),
-        'articles': sorted(articles_info, key=lambda x: x.get('date', ''), reverse=True)
-    }
-    json_path = JSON_OUTPUT_DIR / 'articles.json'
-    with open(json_path, 'w', encoding='utf-8') as f:
-        json.dump(json_data, f, ensure_ascii=False, indent=2)
-    log_info(f"已生成文章JSON索引: {json_path}")
-
-
 def update_single_article_json(new_article: dict) -> None:
-    """更新单个文章的JSON索引"""
-    json_path = JSON_OUTPUT_DIR / 'articles.json'
-    articles_info = []
+    """更新单个文章的JSON索引（合并状态，包含隐藏文章）"""
+    articles = load_articles()
+    relative_path = new_article['relative_path']
 
-    if json_path.exists():
-        with open(json_path, 'r', encoding='utf-8') as f:
-            existing_data = json.load(f)
-            articles_info = existing_data.get('articles', [])
+    # 查找并替换或新增
+    replaced = False
+    for i, art in enumerate(articles):
+        if art.get('relative_path') == relative_path:
+            articles[i] = new_article
+            replaced = True
+            break
+    if not replaced:
+        articles.append(new_article)
 
-    # 删除旧 id 字段（如果有）
-    for article in articles_info:
-        article.pop('id', None)
-
-    # 处理隐藏标签
-    if "隐藏" in new_article.get('tags', []):
-        articles_info = [a for a in articles_info if a.get('url') != new_article.get('url')]
-        log_info(f"文章 '{new_article['title']}' 含有“隐藏”标签，已从 articles.json 中移除")
-    else:
-        found = False
-        for i, art in enumerate(articles_info):
-            if art.get('url') == new_article.get('url'):
-                articles_info[i] = new_article
-                found = True
-                break
-        if not found:
-            articles_info.append(new_article)
-
-    articles_info.sort(key=lambda x: x.get('date', ''), reverse=True)
-    json_data = {
-        'generated_at': datetime.now().isoformat(),
-        'total_articles': len(articles_info),
-        'total_word_count': sum(a.get('word_count', 0) for a in articles_info),
-        'articles': articles_info
-    }
-    with open(json_path, 'w', encoding='utf-8') as f:
-        json.dump(json_data, f, ensure_ascii=False, indent=2)
-    log_info(f"已更新文章JSON索引: {json_path}")
+    # 保存整个索引
+    save_articles(articles)
+    log_info(f"已更新文章 '{new_article['title']}' 到索引")
 
 
 def process_all_markdown_files() -> List[dict]:
-    """处理所有分类目录下的 markdown 文件"""
+    """处理所有分类目录下的 markdown 文件，返回所有文章信息（包括隐藏文章）"""
     if not SOURCE_DIR.exists():
         log_error(f"文章源目录不存在: {SOURCE_DIR}")
         return []
 
     articles_info = []
+    all_md_paths = set()   # 记录本次处理的所有md文件相对路径，用于后续清理无效记录
+
     for category_dir in SOURCE_DIR.iterdir():
         if not category_dir.is_dir():
             continue
@@ -433,24 +485,37 @@ def process_all_markdown_files() -> List[dict]:
             continue
         log_info(f"处理分类: {category_name} (共 {len(md_files)} 个文件)")
         for md_file in md_files:
+            rel_path = get_relative_path(md_file)
+            all_md_paths.add(rel_path)
             try:
                 article_info = process_markdown_file(md_file, category=category_name)
-                if "隐藏" not in article_info.get('tags', []):
-                    articles_info.append(article_info)
-                else:
-                    log_info(f"文章 '{article_info['title']}' 含有“隐藏”标签，已从索引中排除")
+                articles_info.append(article_info)
+                if article_info.get('hidden'):
+                    log_info(f"文章 '{article_info['title']}' 含有“隐藏”标签，将在索引中标记为 hidden")
             except Exception as e:
                 log_error(f"处理失败 {md_file.name}: {e}")
         print("-" * 40)
 
-    log_info(f"共找到 {len(articles_info)} 个有效 markdown 文件")
-    generate_articles_json(articles_info)
-    return articles_info
+    # 清理索引中已经不存在的文章记录（文件已被删除）
+    old_articles = load_articles()
+    cleaned_articles = [a for a in old_articles if a.get('relative_path') in all_md_paths]
+    if len(cleaned_articles) != len(old_articles):
+        log_info(f"清理了 {len(old_articles) - len(cleaned_articles)} 条已删除文章的记录")
+    # 合并本次新生成的记录（保留未变动的旧记录中可能存在的额外字段，但通常新记录更完整）
+    # 使用字典合并：以 relative_path 为键，新生成的记录优先
+    merged_articles = {a['relative_path']: a for a in cleaned_articles}
+    for a in articles_info:
+        merged_articles[a['relative_path']] = a
+    final_articles = list(merged_articles.values())
+
+    save_articles(final_articles)
+    log_info(f"共处理 {len(final_articles)} 篇文章（含隐藏）")
+    return final_articles
 
 
 def main():
     print("=" * 60)
-    log_info("文章管理器启动")
+    log_info("文章管理器启动（合并模式：状态存储在 articles.json 中）")
     print("=" * 60)
 
     if len(sys.argv) > 1:
@@ -461,10 +526,7 @@ def main():
             else:
                 inferred_category = "未分类"
             article_info = process_markdown_file(md_file_path, category=inferred_category)
-            if "隐藏" not in article_info.get('tags', []):
-                update_single_article_json(article_info)
-            else:
-                log_info(f"文章 '{article_info['title']}' 含有“隐藏”标签，跳过更新索引")
+            update_single_article_json(article_info)
         else:
             log_error(f"文件不存在或不是markdown文件: {md_file_path}")
     else:
