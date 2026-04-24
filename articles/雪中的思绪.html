@@ -13,22 +13,10 @@
 </head>
 <body>
     <div id="navbar-placeholder"></div>
-    
-    <!-- 阅读进度条 -->
-    <div id="reading-progress" class="reading-progress-bar">
-        <div id="progress-bar" class="progress-bar"></div>
-    </div>
-
-    <!-- 主内容 -->
+    <div id="reading-progress" class="reading-progress-bar"><div id="progress-bar" class="progress-bar"></div></div>
     <div class="article-page-container">
-        <!-- 目录 - JS动态生成 -->
-        <div class="toc-container">
-            <h2 class="toc-title">目录</h2>
-            <div id="toc-list-container"></div>
-        </div>
-
+        <div class="toc-container"><h2 class="toc-title">目录</h2><div id="toc-list-container"></div></div>
         <div class="article-right-column">
-            <!-- 文章内容区 -->
             <div class="article-content-wrapper">
                 <h1 class="article-title" id="articleTitle">雪中的思绪</h1>
                 <div class="article-subtitle">一篇随笔</div>
@@ -66,8 +54,7 @@
         </div>
     </div>
     
-                <div class="article-body" id="articleBody">
-                    <p>星期五的傍晚，雪越下越大。我坐在暖和的教室里，心不在焉地背着政治。窗外，漫天的雪花被云层后那最后一抹夕阳的余晖浸透，<strong>晕染出一片朦胧的橙黄</strong>，像是给整个世界罩上了一层滤镜。就在这时，提前放学的通知到了，教室里响起一阵难以克制的欢呼。</p>
+                <div class="article-body" id="articleBody"><p>星期五的傍晚，雪越下越大。我坐在暖和的教室里，心不在焉地背着政治。窗外，漫天的雪花被云层后那最后一抹夕阳的余晖浸透，<strong>晕染出一片朦胧的橙黄</strong>，像是给整个世界罩上了一层滤镜。就在这时，提前放学的通知到了，教室里响起一阵难以克制的欢呼。</p>
 <p>走出校门时，天光已彻底变了。夕阳沉没，冰冷的蓝调从四面八方涌来，吞噬了所有暖意。雪还在下，落在发热的脸颊上，激起一阵寒颤。和几个同学胡乱打了场雪仗，笑声尖锐地划开雪幕，又迅速消散。各自回家后，我骑上自行车，却忽然不想立刻回去。雪越下越大，扑在脸上，清冽而安静。我索性下了车，推着它，在这茫茫大雪中漫步。</p>
 <p>走着走着，竟绕到了我的小学。伸缩门还留着一个小口，值班室里透出一点<strong>昏黄的灯光</strong>。鬼使神差地，我向里面张望，值班的爷爷认出我似的，点了点头。于是，我走了进去，穿过那道熟悉的、光亮的、此刻却异常幽深的门洞，仿佛一脚踏回了三年前的时光。</p>
 <hr />
@@ -92,78 +79,37 @@
 <p>雪，还在下。它覆盖了来时的足迹，但也照亮了前行的路。车轮碾过积雪，像一道柔软的边界，隔开了过去与现在，又仿佛将它们温柔地连接。我向前骑去，不再回头。</p>
 <blockquote>
 <p>写作灵感：周五放学和同学打完雪仗 回家的路上，想到老师让写一篇作文——《雪中的思绪》，看着雪下着，于是骑着车想着路上转转能不能找到点素材，路过小学门口突然想看看，到门口从外向里张望，不由得回想起小学生活。一扭头发现值班室还有人，不知道当时怎么想的，我对值班的爷爷说想进去看看母校，可能是因为他知道我是十三中的学生（经常有初中生来看母校或老师）——我也不知道——反正就这么让我进去了，看着熟悉的景物，勾起我阵阵思绪，“素材肯定不愁了——”我这么想着。逛了一圈，决定回去，猛地想起还没看教室呐！不知道变化地大不大，于是从那不知走了多少遍的楼梯上去，走过不知走了多少遍的走廊，到教室门口了。“教室门锁着啊（失望）”[教室门不锁才怪的吧！]，于是趴在窗台上往里看（不趴着反光看不清……），但这一看，就勾起了我许多许多回忆，想起一件件往事、同学，开心的回忆、难过的经历、后悔的选择………………不知觉地，眼眶就湿了………………不知在哪里呆了多久——我只知道反应过来时天都黑了………………</p>
-</blockquote>
-                </div>
-                <!-- 标签 -->
+</blockquote></div>
                 <div class="article-footer-tags"><a class="footer-tag" href="/articles.html?tags=%E8%AE%B0%E5%8F%99%E6%96%87" style="text-decoration: none; color: inherit; cursor: pointer;" title="查看「记叙文」相关文章">#记叙文</a> <a class="footer-tag" href="/articles.html?tags=%E6%97%A5%E5%B8%B8" style="text-decoration: none; color: inherit; cursor: pointer;" title="查看「日常」相关文章">#日常</a></div>
             </div>
-
-            <!-- 评论卡片 -->
-            <div class="comments-card">
-                <div class="comments-container">
-                    <h3>评论区</h3>
-                    <div id="twikoo-comments"></div>
-                </div>
-            </div>
+            <div class="comments-card"><div class="comments-container"><h3>评论区</h3><div id="twikoo-comments"></div></div></div>
         </div>
     </div>
-
-    <!-- 图片预览 -->
-    <div id="imageModal" class="image-modal">
-        <span class="close">&times;</span>
-        <div class="modal-content">
-            <img id="modalImage" src="" alt="">
-        </div>
-        <div class="image-info">
-            <span id="imageCaption"></span>
-        </div>
-    </div>
-
-  <div id="footer-placeholder"></div>
-
-    <script>
-        // 将标题数据注入到全局变量
-        window.ARTICLE_HEADINGS = [];
-    </script>
+    <div id="imageModal" class="image-modal"><span class="close">&times;</span><div class="modal-content"><img id="modalImage" src="" alt=""></div><div class="image-info"><span id="imageCaption"></span></div></div>
+    <div id="footer-placeholder"></div>
+    <script>window.ARTICLE_HEADINGS = [];</script>
     <script src="/js/busuanzi.min.js" defer></script>
     <script src="/js/script.js"></script>
     <script src="/js/article.js"></script>
-    <!-- KaTeX for math rendering -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
-    
-    <!-- Twikoo 评论系统 -->
     <script src="https://registry.npmmirror.com/twikoo/1.7.7/files/dist/twikoo.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             if (typeof twikoo !== 'undefined') {
-                twikoo.init({
-                    envId: 'https://twikoo-gxy.netlify.app/.netlify/functions/twikoo',
-                    el: '#twikoo-comments',
-                    path: window.location.pathname,
-                    lang: 'zh-CN',
-                });
-            } else {
-                console.warn('Twikoo 加载失败，请检查网络或 CDN 地址');
-            }
+                twikoo.init({ envId: 'https://twikoo-gxy.netlify.app/.netlify/functions/twikoo', el: '#twikoo-comments', path: window.location.pathname, lang: 'zh-CN' });
+            } else { console.warn('Twikoo 加载失败'); }
         });
     </script>
-    <!-- KaTeX 自动渲染（支持 $...$ 和 $$...$$） -->
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.getElementById('articleBody'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
-    <!-- Mermaid 支持 -->
     <script defer src="https://cdn.jsdelivr.net/npm/mermaid@10.4.0/dist/mermaid.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            try {
-                if (window.mermaid) {
-                    window.mermaid.initialize({ startOnLoad: false });
-                    const els = document.querySelectorAll('.mermaid');
-                    els.forEach(el => {
-                        try { window.mermaid.init(undefined, el); } catch(e) { console.warn('Mermaid 渲染失败', e); }
-                    });
-                }
-            } catch (e) {
-                console.warn('Mermaid 初始化异常', e);
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.mermaid) {
+                window.mermaid.initialize({ startOnLoad: false });
+                document.querySelectorAll('.mermaid').forEach(el => {
+                    try { window.mermaid.init(undefined, el); } catch(e) { console.warn(e); }
+                });
             }
         });
     </script>

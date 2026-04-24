@@ -13,22 +13,10 @@
 </head>
 <body>
     <div id="navbar-placeholder"></div>
-    
-    <!-- 阅读进度条 -->
-    <div id="reading-progress" class="reading-progress-bar">
-        <div id="progress-bar" class="progress-bar"></div>
-    </div>
-
-    <!-- 主内容 -->
+    <div id="reading-progress" class="reading-progress-bar"><div id="progress-bar" class="progress-bar"></div></div>
     <div class="article-page-container">
-        <!-- 目录 - JS动态生成 -->
-        <div class="toc-container">
-            <h2 class="toc-title">目录</h2>
-            <div id="toc-list-container"></div>
-        </div>
-
+        <div class="toc-container"><h2 class="toc-title">目录</h2><div id="toc-list-container"></div></div>
         <div class="article-right-column">
-            <!-- 文章内容区 -->
             <div class="article-content-wrapper">
                 <h1 class="article-title" id="articleTitle">古诗扩写-十五从军征</h1>
                 <div class="article-subtitle">以首乐府诗《十五从军征》为蓝本，写一篇以老兵第一人称的记叙文</div>
@@ -66,8 +54,7 @@
         </div>
     </div>
     
-                <div class="article-body" id="articleBody">
-                    <h2 id="原文">原文</h2>
+                <div class="article-body" id="articleBody"><h2 id="原文">原文</h2>
 <h3 id="十五从军征">十五从军征</h3>
 <blockquote>
 <p>十五从军征，八十始得归。
@@ -99,78 +86,37 @@
 <p>六十五年，我走过尸山血海，熬过无数长夜，只为回到这里。</p>
 <p>可原来，我早已没有家了。</p>
 <p>家，已成冢。</p>
-<p>而我，成了故乡最后的守墓人。</p>
-                </div>
-                <!-- 标签 -->
+<p>而我，成了故乡最后的守墓人。</p></div>
                 <div class="article-footer-tags"><a class="footer-tag" href="/articles.html?tags=%E8%AF%97%E6%89%A9%E5%86%99" style="text-decoration: none; color: inherit; cursor: pointer;" title="查看「诗扩写」相关文章">#诗扩写</a></div>
             </div>
-
-            <!-- 评论卡片 -->
-            <div class="comments-card">
-                <div class="comments-container">
-                    <h3>评论区</h3>
-                    <div id="twikoo-comments"></div>
-                </div>
-            </div>
+            <div class="comments-card"><div class="comments-container"><h3>评论区</h3><div id="twikoo-comments"></div></div></div>
         </div>
     </div>
-
-    <!-- 图片预览 -->
-    <div id="imageModal" class="image-modal">
-        <span class="close">&times;</span>
-        <div class="modal-content">
-            <img id="modalImage" src="" alt="">
-        </div>
-        <div class="image-info">
-            <span id="imageCaption"></span>
-        </div>
-    </div>
-
-  <div id="footer-placeholder"></div>
-
-    <script>
-        // 将标题数据注入到全局变量
-        window.ARTICLE_HEADINGS = [{"level": 2, "text": "原文", "id": "原文"}, {"level": 3, "text": "十五从军征", "id": "十五从军征"}, {"level": 2, "text": "扩写", "id": "扩写"}, {"level": 3, "text": "**归冢**", "id": "归冢"}];
-    </script>
+    <div id="imageModal" class="image-modal"><span class="close">&times;</span><div class="modal-content"><img id="modalImage" src="" alt=""></div><div class="image-info"><span id="imageCaption"></span></div></div>
+    <div id="footer-placeholder"></div>
+    <script>window.ARTICLE_HEADINGS = [{"level": 2, "text": "原文", "id": "原文"}, {"level": 3, "text": "十五从军征", "id": "十五从军征"}, {"level": 2, "text": "扩写", "id": "扩写"}, {"level": 3, "text": "**归冢**", "id": "归冢"}];</script>
     <script src="/js/busuanzi.min.js" defer></script>
     <script src="/js/script.js"></script>
     <script src="/js/article.js"></script>
-    <!-- KaTeX for math rendering -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
-    
-    <!-- Twikoo 评论系统 -->
     <script src="https://registry.npmmirror.com/twikoo/1.7.7/files/dist/twikoo.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             if (typeof twikoo !== 'undefined') {
-                twikoo.init({
-                    envId: 'https://twikoo-gxy.netlify.app/.netlify/functions/twikoo',
-                    el: '#twikoo-comments',
-                    path: window.location.pathname,
-                    lang: 'zh-CN',
-                });
-            } else {
-                console.warn('Twikoo 加载失败，请检查网络或 CDN 地址');
-            }
+                twikoo.init({ envId: 'https://twikoo-gxy.netlify.app/.netlify/functions/twikoo', el: '#twikoo-comments', path: window.location.pathname, lang: 'zh-CN' });
+            } else { console.warn('Twikoo 加载失败'); }
         });
     </script>
-    <!-- KaTeX 自动渲染（支持 $...$ 和 $$...$$） -->
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.getElementById('articleBody'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
-    <!-- Mermaid 支持 -->
     <script defer src="https://cdn.jsdelivr.net/npm/mermaid@10.4.0/dist/mermaid.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            try {
-                if (window.mermaid) {
-                    window.mermaid.initialize({ startOnLoad: false });
-                    const els = document.querySelectorAll('.mermaid');
-                    els.forEach(el => {
-                        try { window.mermaid.init(undefined, el); } catch(e) { console.warn('Mermaid 渲染失败', e); }
-                    });
-                }
-            } catch (e) {
-                console.warn('Mermaid 初始化异常', e);
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.mermaid) {
+                window.mermaid.initialize({ startOnLoad: false });
+                document.querySelectorAll('.mermaid').forEach(el => {
+                    try { window.mermaid.init(undefined, el); } catch(e) { console.warn(e); }
+                });
             }
         });
     </script>

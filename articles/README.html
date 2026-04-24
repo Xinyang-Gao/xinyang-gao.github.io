@@ -13,22 +13,10 @@
 </head>
 <body>
     <div id="navbar-placeholder"></div>
-    
-    <!-- 阅读进度条 -->
-    <div id="reading-progress" class="reading-progress-bar">
-        <div id="progress-bar" class="progress-bar"></div>
-    </div>
-
-    <!-- 主内容 -->
+    <div id="reading-progress" class="reading-progress-bar"><div id="progress-bar" class="progress-bar"></div></div>
     <div class="article-page-container">
-        <!-- 目录 - JS动态生成 -->
-        <div class="toc-container">
-            <h2 class="toc-title">目录</h2>
-            <div id="toc-list-container"></div>
-        </div>
-
+        <div class="toc-container"><h2 class="toc-title">目录</h2><div id="toc-list-container"></div></div>
         <div class="article-right-column">
-            <!-- 文章内容区 -->
             <div class="article-content-wrapper">
                 <h1 class="article-title" id="articleTitle">README.md</h1>
                 <div class="article-subtitle">README.md</div>
@@ -66,8 +54,7 @@
         </div>
     </div>
     
-                <div class="article-body" id="articleBody">
-                    <h1 id="个人网站项目-readme">个人网站项目 README</h1>
+                <div class="article-body" id="articleBody"><h1 id="个人网站项目-readme">个人网站项目 README</h1>
 <p>本项目是一个功能完整的个人网站，融合了博客、作品集、留言板等功能，具有现代化的界面、动态页面切换、搜索筛选、暗黑模式、自定义光标等特性。文章通过 Markdown 文件生成，并集成 Twikoo 评论系统和不蒜子统计。</p>
 <h2 id="目录">目录</h2>
 <ul>
@@ -503,78 +490,37 @@ tag: [随笔, 生活]
 <p>MIT 许可证是一种宽松的自由软件许可证，允许任何人以任何目的使用、复制、修改、合并、出版发行、散布、再授权及销售软件及其副本，但必须包含版权声明和许可声明。</p>
 <p>完整的许可证文本请参阅仓库中的 <code>LICENSE</code> 文件。</p>
 <hr />
-<p>如有任何问题，欢迎通过网站留言板或邮箱联系我。</p>
-                </div>
-                <!-- 标签 -->
+<p>如有任何问题，欢迎通过网站留言板或邮箱联系我。</p></div>
                 <div class="article-footer-tags"><a class="footer-tag" href="/articles.html?tags=%E7%BD%91%E7%AB%99" style="text-decoration: none; color: inherit; cursor: pointer;" title="查看「网站」相关文章">#网站</a></div>
             </div>
-
-            <!-- 评论卡片 -->
-            <div class="comments-card">
-                <div class="comments-container">
-                    <h3>评论区</h3>
-                    <div id="twikoo-comments"></div>
-                </div>
-            </div>
+            <div class="comments-card"><div class="comments-container"><h3>评论区</h3><div id="twikoo-comments"></div></div></div>
         </div>
     </div>
-
-    <!-- 图片预览 -->
-    <div id="imageModal" class="image-modal">
-        <span class="close">&times;</span>
-        <div class="modal-content">
-            <img id="modalImage" src="" alt="">
-        </div>
-        <div class="image-info">
-            <span id="imageCaption"></span>
-        </div>
-    </div>
-
-  <div id="footer-placeholder"></div>
-
-    <script>
-        // 将标题数据注入到全局变量
-        window.ARTICLE_HEADINGS = [{"level": 1, "text": "个人网站项目 README", "id": "个人网站项目-readme"}, {"level": 2, "text": "目录", "id": "目录"}, {"level": 2, "text": "项目简介", "id": "项目简介"}, {"level": 2, "text": "功能特性", "id": "功能特性"}, {"level": 3, "text": "前端体验", "id": "前端体验"}, {"level": 3, "text": "文章阅读增强", "id": "文章阅读增强"}, {"level": 3, "text": "评论与统计", "id": "评论与统计"}, {"level": 3, "text": "安全与辅助功能", "id": "安全与辅助功能"}, {"level": 3, "text": "内容生成与自动化", "id": "内容生成与自动化"}, {"level": 2, "text": "技术栈", "id": "技术栈"}, {"level": 2, "text": "文件结构", "id": "文件结构"}, {"level": 2, "text": "快速开始", "id": "快速开始"}, {"level": 3, "text": "本地运行", "id": "本地运行"}, {"level": 3, "text": "部署到生产环境", "id": "部署到生产环境"}, {"level": 2, "text": "构建与数据更新", "id": "构建与数据更新"}, {"level": 3, "text": "文章管理", "id": "文章管理"}, {"level": 3, "text": "作品管理", "id": "作品管理"}, {"level": 3, "text": "统计数据更新", "id": "统计数据更新"}, {"level": 3, "text": "RSS Feed 更新", "id": "rss-feed-更新"}, {"level": 2, "text": "配置说明", "id": "配置说明"}, {"level": 3, "text": "1. Twikoo 评论系统", "id": "1-twikoo-评论系统"}, {"level": 3, "text": "2. 不蒜子统计", "id": "2-不蒜子统计"}, {"level": 3, "text": "3. 网站运行起始时间", "id": "3-网站运行起始时间"}, {"level": 3, "text": "4. 外链跳转确认", "id": "4-外链跳转确认"}, {"level": 3, "text": "5. 阅读进度条与目录", "id": "5-阅读进度条与目录"}, {"level": 3, "text": "6. RSS 生成配置", "id": "6-rss-生成配置"}, {"level": 2, "text": "数据格式", "id": "数据格式"}, {"level": 3, "text": "`works.json` 格式", "id": "worksjson-格式"}, {"level": 3, "text": "`metadata.json` 格式（位于 `works/作品名/` 下）", "id": "metadatajson-格式位于-works作品名-下"}, {"level": 3, "text": "`articles.json` 格式", "id": "articlesjson-格式"}, {"level": 3, "text": "Markdown 文件头部格式（YAML Front Matter）", "id": "markdown-文件头部格式yaml-front-matter"}, {"level": 1, "text": "正文标题", "id": "正文标题"}, {"level": 3, "text": "`statistics.json` 格式", "id": "statisticsjson-格式"}, {"level": 2, "text": "开发与扩展", "id": "开发与扩展"}, {"level": 3, "text": "修改样式", "id": "修改样式"}, {"level": 3, "text": "添加新页面", "id": "添加新页面"}, {"level": 3, "text": "修改数据缓存策略", "id": "修改数据缓存策略"}, {"level": 3, "text": "调试与性能", "id": "调试与性能"}, {"level": 3, "text": "自定义光标样式", "id": "自定义光标样式"}, {"level": 3, "text": "无刷新导航（AJAX）", "id": "无刷新导航ajax"}, {"level": 2, "text": "许可证", "id": "许可证"}];
-    </script>
+    <div id="imageModal" class="image-modal"><span class="close">&times;</span><div class="modal-content"><img id="modalImage" src="" alt=""></div><div class="image-info"><span id="imageCaption"></span></div></div>
+    <div id="footer-placeholder"></div>
+    <script>window.ARTICLE_HEADINGS = [{"level": 1, "text": "个人网站项目 README", "id": "个人网站项目-readme"}, {"level": 2, "text": "目录", "id": "目录"}, {"level": 2, "text": "项目简介", "id": "项目简介"}, {"level": 2, "text": "功能特性", "id": "功能特性"}, {"level": 3, "text": "前端体验", "id": "前端体验"}, {"level": 3, "text": "文章阅读增强", "id": "文章阅读增强"}, {"level": 3, "text": "评论与统计", "id": "评论与统计"}, {"level": 3, "text": "安全与辅助功能", "id": "安全与辅助功能"}, {"level": 3, "text": "内容生成与自动化", "id": "内容生成与自动化"}, {"level": 2, "text": "技术栈", "id": "技术栈"}, {"level": 2, "text": "文件结构", "id": "文件结构"}, {"level": 2, "text": "快速开始", "id": "快速开始"}, {"level": 3, "text": "本地运行", "id": "本地运行"}, {"level": 3, "text": "部署到生产环境", "id": "部署到生产环境"}, {"level": 2, "text": "构建与数据更新", "id": "构建与数据更新"}, {"level": 3, "text": "文章管理", "id": "文章管理"}, {"level": 3, "text": "作品管理", "id": "作品管理"}, {"level": 3, "text": "统计数据更新", "id": "统计数据更新"}, {"level": 3, "text": "RSS Feed 更新", "id": "rss-feed-更新"}, {"level": 2, "text": "配置说明", "id": "配置说明"}, {"level": 3, "text": "1. Twikoo 评论系统", "id": "1-twikoo-评论系统"}, {"level": 3, "text": "2. 不蒜子统计", "id": "2-不蒜子统计"}, {"level": 3, "text": "3. 网站运行起始时间", "id": "3-网站运行起始时间"}, {"level": 3, "text": "4. 外链跳转确认", "id": "4-外链跳转确认"}, {"level": 3, "text": "5. 阅读进度条与目录", "id": "5-阅读进度条与目录"}, {"level": 3, "text": "6. RSS 生成配置", "id": "6-rss-生成配置"}, {"level": 2, "text": "数据格式", "id": "数据格式"}, {"level": 3, "text": "`works.json` 格式", "id": "worksjson-格式"}, {"level": 3, "text": "`metadata.json` 格式（位于 `works/作品名/` 下）", "id": "metadatajson-格式位于-works作品名-下"}, {"level": 3, "text": "`articles.json` 格式", "id": "articlesjson-格式"}, {"level": 3, "text": "Markdown 文件头部格式（YAML Front Matter）", "id": "markdown-文件头部格式yaml-front-matter"}, {"level": 1, "text": "正文标题", "id": "正文标题"}, {"level": 3, "text": "`statistics.json` 格式", "id": "statisticsjson-格式"}, {"level": 2, "text": "开发与扩展", "id": "开发与扩展"}, {"level": 3, "text": "修改样式", "id": "修改样式"}, {"level": 3, "text": "添加新页面", "id": "添加新页面"}, {"level": 3, "text": "修改数据缓存策略", "id": "修改数据缓存策略"}, {"level": 3, "text": "调试与性能", "id": "调试与性能"}, {"level": 3, "text": "自定义光标样式", "id": "自定义光标样式"}, {"level": 3, "text": "无刷新导航（AJAX）", "id": "无刷新导航ajax"}, {"level": 2, "text": "许可证", "id": "许可证"}];</script>
     <script src="/js/busuanzi.min.js" defer></script>
     <script src="/js/script.js"></script>
     <script src="/js/article.js"></script>
-    <!-- KaTeX for math rendering -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
-    
-    <!-- Twikoo 评论系统 -->
     <script src="https://registry.npmmirror.com/twikoo/1.7.7/files/dist/twikoo.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             if (typeof twikoo !== 'undefined') {
-                twikoo.init({
-                    envId: 'https://twikoo-gxy.netlify.app/.netlify/functions/twikoo',
-                    el: '#twikoo-comments',
-                    path: window.location.pathname,
-                    lang: 'zh-CN',
-                });
-            } else {
-                console.warn('Twikoo 加载失败，请检查网络或 CDN 地址');
-            }
+                twikoo.init({ envId: 'https://twikoo-gxy.netlify.app/.netlify/functions/twikoo', el: '#twikoo-comments', path: window.location.pathname, lang: 'zh-CN' });
+            } else { console.warn('Twikoo 加载失败'); }
         });
     </script>
-    <!-- KaTeX 自动渲染（支持 $...$ 和 $$...$$） -->
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.getElementById('articleBody'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
-    <!-- Mermaid 支持 -->
     <script defer src="https://cdn.jsdelivr.net/npm/mermaid@10.4.0/dist/mermaid.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            try {
-                if (window.mermaid) {
-                    window.mermaid.initialize({ startOnLoad: false });
-                    const els = document.querySelectorAll('.mermaid');
-                    els.forEach(el => {
-                        try { window.mermaid.init(undefined, el); } catch(e) { console.warn('Mermaid 渲染失败', e); }
-                    });
-                }
-            } catch (e) {
-                console.warn('Mermaid 初始化异常', e);
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.mermaid) {
+                window.mermaid.initialize({ startOnLoad: false });
+                document.querySelectorAll('.mermaid').forEach(el => {
+                    try { window.mermaid.init(undefined, el); } catch(e) { console.warn(e); }
+                });
             }
         });
     </script>

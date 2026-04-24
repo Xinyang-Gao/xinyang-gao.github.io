@@ -562,7 +562,7 @@
       
       // 渲染统计卡片 + 标签云（增强版：添加可跳转属性）
       function loadStatisticsAndTags() {
-        fetch('/statistics.json')
+        fetch('/json/statistics.json')
           .then(res => {
             if (!res.ok) throw new Error('统计加载失败');
             return res.json();
@@ -616,8 +616,8 @@
 
       // 加载最新文章和作品
       function loadRecentContent() {
-        const fetchArticles = fetch('/articles.json').then(res => res.ok ? res.json() : Promise.reject('articles.json不可用'));
-        const fetchWorks = fetch('/works.json').then(res => res.ok ? res.json() : Promise.reject('works.json不可用'));
+        const fetchArticles = fetch('/json/articles.json').then(res => res.ok ? res.json() : Promise.reject('articles.json不可用'));
+        const fetchWorks = fetch('/json/works.json').then(res => res.ok ? res.json() : Promise.reject('works.json不可用'));
         
         Promise.allSettled([fetchArticles, fetchWorks]).then(results => {
           let articlesData = results[0].status === 'fulfilled' ? results[0].value : null;

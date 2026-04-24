@@ -4,18 +4,37 @@
 import json
 import sys
 from pathlib import Path
+from datetime import datetime
+
+# ========== 统一日志函数 ==========
+def log_info(msg: str) -> None:
+    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] [INFO] {msg}")
+
+def log_warning(msg: str) -> None:
+    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] [WARNING] {msg}")
+
+def log_error(msg: str) -> None:
+    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] [ERROR] {msg}")
+
+# ========== 路径配置 ==========
+PROJECT_ROOT = Path(__file__).parent.parent
+WORKS_ROOT = PROJECT_ROOT / "works"
+JSON_OUTPUT_DIR = PROJECT_ROOT / "json"
+
+JSON_OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 def main():
-    work_dir = Path.cwd()
-    works_root = work_dir / "works"
+    print("=" * 60)
+    log_info("作品管理器启动")
+    print("=" * 60)
 
-    if not works_root.exists() or not works_root.is_dir():
-        print(f"错误：目录 '{works_root}' 不存在或不是一个目录", file=sys.stderr)
+    if not WORKS_ROOT.exists() or not WORKS_ROOT.is_dir():
+        log_error(f"目录不存在: {WORKS_ROOT}")
         sys.exit(1)
 
     works_list = []
 
-    for subdir in works_root.iterdir():
+    for subdir in WORKS_ROOT.iterdir():
         if not subdir.is_dir():
             continue
 
@@ -38,20 +57,20 @@ def main():
                 tag = meta.get("tag", [])
                 link = meta.get("link", "")
             except (json.JSONDecodeError, OSError) as e:
-                print(f"警告：读取 {metadata_path} 失败 - {e}", file=sys.stderr)
+                log_warning(f"读取 {metadata_path} 失败: {e}")
         else:
-            print(f"警告：{metadata_path} 不存在，使用默认值", file=sys.stderr)
+            log_warning(f"{metadata_path} 不存在，使用默认值")
 
         if not link.strip():
             link = f"./works/{title}/"
 
         if not isinstance(tag, list):
-            print(f"警告：{metadata_path} 中的 'tag' 不是列表，将转为单元素列表", file=sys.stderr)
+            log_warning(f"{metadata_path} 中的 'tag' 不是列表，转为单元素列表")
             tag = [tag] if tag else []
 
-        # 如果标签中包含“隐藏”，则跳过该作品，不写入 JSON
+        # 隐藏标签过滤
         if "隐藏" in tag:
-            print(f"信息：作品 '{title}' 含有“隐藏”标签，已从 works.json 中排除", file=sys.stderr)
+            log_info(f"作品 '{title}' 含有“隐藏”标签，已排除")
             continue
 
         works_list.append({
@@ -63,17 +82,19 @@ def main():
             "link": link
         })
 
-    # 按日期降序排序（日期越晚越靠前），空日期排在最后
+    # 按日期降序排序
     works_list.sort(key=lambda x: x.get('date', ''), reverse=True)
 
-    output_path = work_dir / "works.json"
+    output_path = JSON_OUTPUT_DIR / "works.json"
     try:
         with open(output_path, "w", encoding="utf-8") as f:
             json.dump({"works": works_list}, f, ensure_ascii=False, indent=2)
-        print(f"成功生成 {output_path}")
+        log_info(f"成功生成 {output_path}")
     except OSError as e:
-        print(f"错误：无法写入 {output_path} - {e}", file=sys.stderr)
+        log_error(f"无法写入 {output_path}: {e}")
         sys.exit(1)
+
+    log_info("作品管理器完成")
 
 if __name__ == "__main__":
     main()

@@ -13,22 +13,10 @@
 </head>
 <body>
     <div id="navbar-placeholder"></div>
-    
-    <!-- 阅读进度条 -->
-    <div id="reading-progress" class="reading-progress-bar">
-        <div id="progress-bar" class="progress-bar"></div>
-    </div>
-
-    <!-- 主内容 -->
+    <div id="reading-progress" class="reading-progress-bar"><div id="progress-bar" class="progress-bar"></div></div>
     <div class="article-page-container">
-        <!-- 目录 - JS动态生成 -->
-        <div class="toc-container">
-            <h2 class="toc-title">目录</h2>
-            <div id="toc-list-container"></div>
-        </div>
-
+        <div class="toc-container"><h2 class="toc-title">目录</h2><div id="toc-list-container"></div></div>
         <div class="article-right-column">
-            <!-- 文章内容区 -->
             <div class="article-content-wrapper">
                 <h1 class="article-title" id="articleTitle">markdown 渲染测试</h1>
                 <div class="article-subtitle">这是一篇 markdown 解析器渲染测试</div>
@@ -66,8 +54,7 @@
         </div>
     </div>
     
-                <div class="article-body" id="articleBody">
-                    <h1 id="markdown-样式测试文档">Markdown 样式测试文档</h1>
+                <div class="article-body" id="articleBody"><h1 id="markdown-样式测试文档">Markdown 样式测试文档</h1>
 <p>本文档用于测试 Markdown 解析器对各种语法元素的支持情况。覆盖标题、段落、文本样式、列表、代码、表格、引用、媒体、脚注、公式等。</p>
 <h2 id="1-标题级别">1. 标题级别</h2>
 <h1 id="h1-一级标题">H1 一级标题</h1>
@@ -314,78 +301,37 @@ echo "Hello Markdown"</code></p>
 <p>第二个脚注，测试多个脚注。&#160;<a class="footnote-backref" href="#fnref:another" title="Jump back to footnote 2 in the text">&#8617;</a></p>
 </li>
 </ol>
-</div>
-                </div>
-                <!-- 标签 -->
+</div></div>
                 <div class="article-footer-tags"><a class="footer-tag" href="/articles.html?tags=%E7%BD%91%E7%AB%99" style="text-decoration: none; color: inherit; cursor: pointer;" title="查看「网站」相关文章">#网站</a></div>
             </div>
-
-            <!-- 评论卡片 -->
-            <div class="comments-card">
-                <div class="comments-container">
-                    <h3>评论区</h3>
-                    <div id="twikoo-comments"></div>
-                </div>
-            </div>
+            <div class="comments-card"><div class="comments-container"><h3>评论区</h3><div id="twikoo-comments"></div></div></div>
         </div>
     </div>
-
-    <!-- 图片预览 -->
-    <div id="imageModal" class="image-modal">
-        <span class="close">&times;</span>
-        <div class="modal-content">
-            <img id="modalImage" src="" alt="">
-        </div>
-        <div class="image-info">
-            <span id="imageCaption"></span>
-        </div>
-    </div>
-
-  <div id="footer-placeholder"></div>
-
-    <script>
-        // 将标题数据注入到全局变量
-        window.ARTICLE_HEADINGS = [{"level": 1, "text": "Markdown 样式测试文档", "id": "markdown-样式测试文档"}, {"level": 2, "text": "1. 标题级别", "id": "1-标题级别"}, {"level": 1, "text": "H1 一级标题", "id": "h1-一级标题"}, {"level": 2, "text": "H2 二级标题", "id": "h2-二级标题"}, {"level": 3, "text": "H3 三级标题", "id": "h3-三级标题"}, {"level": 4, "text": "H4 四级标题", "id": "h4-四级标题"}, {"level": 2, "text": "2. 文本样式与行内元素", "id": "2-文本样式与行内元素"}, {"level": 2, "text": "3. 段落与换行", "id": "3-段落与换行"}, {"level": 2, "text": "4. 列表", "id": "4-列表"}, {"level": 3, "text": "无序列表", "id": "无序列表"}, {"level": 3, "text": "有序列表", "id": "有序列表"}, {"level": 3, "text": "任务列表 (GFM)", "id": "任务列表-gfm"}, {"level": 3, "text": "定义列表 (某些扩展)", "id": "定义列表-某些扩展"}, {"level": 2, "text": "5. 代码块", "id": "5-代码块"}, {"level": 1, "text": "Python 示例", "id": "python-示例"}, {"level": 2, "text": "6. 引用块", "id": "6-引用块"}, {"level": 2, "text": "7. 表格 (GFM)", "id": "7-表格-gfm"}, {"level": 2, "text": "8. 图片", "id": "8-图片"}, {"level": 2, "text": "9. 水平线", "id": "9-水平线"}, {"level": 2, "text": "10. 链接与自动识别", "id": "10-链接与自动识别"}, {"level": 2, "text": "11. HTML 标签支持", "id": "11-html-标签支持"}, {"level": 2, "text": "12. 转义字符", "id": "12-转义字符"}, {"level": 2, "text": "13. 特殊符号与 Emoji", "id": "13-特殊符号与-emoji"}, {"level": 2, "text": "14. 数学公式", "id": "14-数学公式"}, {"level": 2, "text": "15. 图表与流程图", "id": "15-图表与流程图"}, {"level": 2, "text": "16. 脚注与引用", "id": "16-脚注与引用"}, {"level": 2, "text": "17. 嵌入文件（部分扩展）", "id": "17-嵌入文件部分扩展"}, {"level": 2, "text": "18. 其他扩展语法", "id": "18-其他扩展语法"}, {"level": 3, "text": "警告框 / 提示框 (某些主题)", "id": "警告框-提示框-某些主题"}, {"level": 3, "text": "折叠块 (details)", "id": "折叠块-details"}, {"level": 2, "text": "19. 综合测试：混合排版", "id": "19-综合测试混合排版"}];
-    </script>
+    <div id="imageModal" class="image-modal"><span class="close">&times;</span><div class="modal-content"><img id="modalImage" src="" alt=""></div><div class="image-info"><span id="imageCaption"></span></div></div>
+    <div id="footer-placeholder"></div>
+    <script>window.ARTICLE_HEADINGS = [{"level": 1, "text": "Markdown 样式测试文档", "id": "markdown-样式测试文档"}, {"level": 2, "text": "1. 标题级别", "id": "1-标题级别"}, {"level": 1, "text": "H1 一级标题", "id": "h1-一级标题"}, {"level": 2, "text": "H2 二级标题", "id": "h2-二级标题"}, {"level": 3, "text": "H3 三级标题", "id": "h3-三级标题"}, {"level": 4, "text": "H4 四级标题", "id": "h4-四级标题"}, {"level": 2, "text": "2. 文本样式与行内元素", "id": "2-文本样式与行内元素"}, {"level": 2, "text": "3. 段落与换行", "id": "3-段落与换行"}, {"level": 2, "text": "4. 列表", "id": "4-列表"}, {"level": 3, "text": "无序列表", "id": "无序列表"}, {"level": 3, "text": "有序列表", "id": "有序列表"}, {"level": 3, "text": "任务列表 (GFM)", "id": "任务列表-gfm"}, {"level": 3, "text": "定义列表 (某些扩展)", "id": "定义列表-某些扩展"}, {"level": 2, "text": "5. 代码块", "id": "5-代码块"}, {"level": 1, "text": "Python 示例", "id": "python-示例"}, {"level": 2, "text": "6. 引用块", "id": "6-引用块"}, {"level": 2, "text": "7. 表格 (GFM)", "id": "7-表格-gfm"}, {"level": 2, "text": "8. 图片", "id": "8-图片"}, {"level": 2, "text": "9. 水平线", "id": "9-水平线"}, {"level": 2, "text": "10. 链接与自动识别", "id": "10-链接与自动识别"}, {"level": 2, "text": "11. HTML 标签支持", "id": "11-html-标签支持"}, {"level": 2, "text": "12. 转义字符", "id": "12-转义字符"}, {"level": 2, "text": "13. 特殊符号与 Emoji", "id": "13-特殊符号与-emoji"}, {"level": 2, "text": "14. 数学公式", "id": "14-数学公式"}, {"level": 2, "text": "15. 图表与流程图", "id": "15-图表与流程图"}, {"level": 2, "text": "16. 脚注与引用", "id": "16-脚注与引用"}, {"level": 2, "text": "17. 嵌入文件（部分扩展）", "id": "17-嵌入文件部分扩展"}, {"level": 2, "text": "18. 其他扩展语法", "id": "18-其他扩展语法"}, {"level": 3, "text": "警告框 / 提示框 (某些主题)", "id": "警告框-提示框-某些主题"}, {"level": 3, "text": "折叠块 (details)", "id": "折叠块-details"}, {"level": 2, "text": "19. 综合测试：混合排版", "id": "19-综合测试混合排版"}];</script>
     <script src="/js/busuanzi.min.js" defer></script>
     <script src="/js/script.js"></script>
     <script src="/js/article.js"></script>
-    <!-- KaTeX for math rendering -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
-    
-    <!-- Twikoo 评论系统 -->
     <script src="https://registry.npmmirror.com/twikoo/1.7.7/files/dist/twikoo.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
+        document.addEventListener('DOMContentLoaded', function() {
             if (typeof twikoo !== 'undefined') {
-                twikoo.init({
-                    envId: 'https://twikoo-gxy.netlify.app/.netlify/functions/twikoo',
-                    el: '#twikoo-comments',
-                    path: window.location.pathname,
-                    lang: 'zh-CN',
-                });
-            } else {
-                console.warn('Twikoo 加载失败，请检查网络或 CDN 地址');
-            }
+                twikoo.init({ envId: 'https://twikoo-gxy.netlify.app/.netlify/functions/twikoo', el: '#twikoo-comments', path: window.location.pathname, lang: 'zh-CN' });
+            } else { console.warn('Twikoo 加载失败'); }
         });
     </script>
-    <!-- KaTeX 自动渲染（支持 $...$ 和 $$...$$） -->
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.getElementById('articleBody'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
-    <!-- Mermaid 支持 -->
     <script defer src="https://cdn.jsdelivr.net/npm/mermaid@10.4.0/dist/mermaid.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            try {
-                if (window.mermaid) {
-                    window.mermaid.initialize({ startOnLoad: false });
-                    const els = document.querySelectorAll('.mermaid');
-                    els.forEach(el => {
-                        try { window.mermaid.init(undefined, el); } catch(e) { console.warn('Mermaid 渲染失败', e); }
-                    });
-                }
-            } catch (e) {
-                console.warn('Mermaid 初始化异常', e);
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.mermaid) {
+                window.mermaid.initialize({ startOnLoad: false });
+                document.querySelectorAll('.mermaid').forEach(el => {
+                    try { window.mermaid.init(undefined, el); } catch(e) { console.warn(e); }
+                });
             }
         });
     </script>

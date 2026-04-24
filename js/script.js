@@ -98,8 +98,8 @@ class Utils {
 class DataManager {
     static TYPE_LABEL = { works: '作品', articles: '文章' };
     static config = {
-        works: { url: 'works.json', cacheKey: 'worksData', cacheControl: 'no-cache' },
-        articles: { url: 'articles.json', cacheKey: 'articlesData', cacheControl: 'default' }
+        works: { url: '/json/works.json', cacheKey: 'worksData', cacheControl: 'no-cache' },
+        articles: { url: '/json/articles.json', cacheKey: 'articlesData', cacheControl: 'default' }
     };
     static async fetchData(type, useCache = true) {
         const { url, cacheKey, cacheControl } = DataManager.config[type];
@@ -1074,7 +1074,7 @@ function formatRelativeTime(isoString) { const target = new Date(isoString); con
 
 async function updateFooterUpdateTime() {
     const updateSpan = document.getElementById('footer-update-date'); if (!updateSpan) return;
-    try { const response = await fetch('/statistics.json'); if (!response.ok) throw new Error('无法获取统计信息'); const stats = await response.json(); let fullTime = stats.last_updated_full; let dateOnly = stats.last_updated; if (fullTime) { const relative = formatRelativeTime(fullTime); updateSpan.textContent = relative; const absDate = new Date(fullTime); const formatted = `${absDate.getFullYear()}年${(absDate.getMonth() + 1).toString().padStart(2, '0')}月${absDate.getDate().toString().padStart(2, '0')}日 ${absDate.getHours().toString().padStart(2, '0')}:${absDate.getMinutes().toString().padStart(2, '0')}:${absDate.getSeconds().toString().padStart(2, '0')}`; updateSpan.setAttribute('title', `最后统计时间：${formatted}`); } else if (dateOnly) { updateSpan.textContent = dateOnly; updateSpan.setAttribute('title', '数据最后更新日期'); } else { updateSpan.textContent = '未知'; } } catch (error) { console.warn('[WARN] 加载统计时间失败:', error); updateSpan.textContent = '获取失败'; updateSpan.setAttribute('title', '无法加载 statistics.json'); }
+    try { const response = await fetch('/json/statistics.json'); if (!response.ok) throw new Error('无法获取统计信息'); const stats = await response.json(); let fullTime = stats.last_updated_full; let dateOnly = stats.last_updated; if (fullTime) { const relative = formatRelativeTime(fullTime); updateSpan.textContent = relative; const absDate = new Date(fullTime); const formatted = `${absDate.getFullYear()}年${(absDate.getMonth() + 1).toString().padStart(2, '0')}月${absDate.getDate().toString().padStart(2, '0')}日 ${absDate.getHours().toString().padStart(2, '0')}:${absDate.getMinutes().toString().padStart(2, '0')}:${absDate.getSeconds().toString().padStart(2, '0')}`; updateSpan.setAttribute('title', `最后统计时间：${formatted}`); } else if (dateOnly) { updateSpan.textContent = dateOnly; updateSpan.setAttribute('title', '数据最后更新日期'); } else { updateSpan.textContent = '未知'; } } catch (error) { console.warn('[WARN] 加载统计时间失败:', error); updateSpan.textContent = '获取失败'; updateSpan.setAttribute('title', '无法加载 statistics.json'); }
 }
 
 function enableAjaxNavigation() {
