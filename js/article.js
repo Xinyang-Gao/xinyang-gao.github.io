@@ -1,7 +1,7 @@
 class ArticlePageManager {
     constructor() {
         this.scrollPositionKey = `scrollPosition_${window.location.pathname}${window.location.search}`;
-        this.scrollTimer = null;
+        this.scrollTicking = false;
         this.observer = null;
         
         this.galleryImages = [];
@@ -19,7 +19,12 @@ class ArticlePageManager {
             this.initReadingProgress();
             this.initScrollSpy();
             this.addFloatingButtons();
-            this.resetAnimations();
+            this.addImageAltCaptions();
+            this.initCodeBlocks();
+        });
+        // 页面关闭前保存滚动位置
+        window.addEventListener('beforeunload', () => {
+            sessionStorage.setItem(this.scrollPositionKey, window.scrollY);
         });
     }
 
@@ -34,10 +39,13 @@ class ArticlePageManager {
 
     setupScrollListener() {
         window.addEventListener('scroll', () => {
-            clearTimeout(this.scrollTimer);
-            this.scrollTimer = setTimeout(() => {
-                sessionStorage.setItem(this.scrollPositionKey, window.scrollY);
-            }, 250);
+            if (!this.scrollTicking) {
+                requestAnimationFrame(() => {
+                    sessionStorage.setItem(this.scrollPositionKey, window.scrollY);
+                    this.scrollTicking = false;
+                });
+                this.scrollTicking = true;
+            }
         }, { passive: true });
     }
 
@@ -131,10 +139,11 @@ class ArticlePageManager {
     ensureTOCItemVisibility(activeItem) {
         const tocContainer = document.querySelector('.toc-container');
         if (!tocContainer) return;
-        const itemTop = activeItem.offsetTop;
-        const containerHeight = tocContainer.clientHeight;
-        if (itemTop > tocContainer.scrollTop + containerHeight - 50 || itemTop < tocContainer.scrollTop) {
-            tocContainer.scrollTo({ top: itemTop - 50, behavior: 'smooth' });
+        const containerRect = tocContainer.getBoundingClientRect();
+        const itemRect = activeItem.getBoundingClientRect();
+        const relativeTop = itemRect.top - containerRect.top + tocContainer.scrollTop;
+        if (relativeTop > tocContainer.clientHeight - 50 || relativeTop < 0) {
+            tocContainer.scrollTo({ top: relativeTop - 50, behavior: 'smooth' });
         }
     }
 
@@ -180,7 +189,18 @@ class ArticlePageManager {
 
     loadImage(img, onLoadCallback) {
         const src = img.dataset.src;
-        if (!src || (img.src === src && img.classList.contains('loaded'))) {
+        if (!src) {
+            if (onLoadCallback) onLoadCallback();
+            return;
+        }
+        const toAbs = (url) => {
+            try {
+                return new URL(url, window.location.href).href;
+            } catch(e) {
+                return url;
+            }
+        };
+        if (toAbs(img.src) === toAbs(src) && img.classList.contains('loaded')) {
             if (onLoadCallback) onLoadCallback();
             return;
         }
@@ -200,12 +220,19 @@ class ArticlePageManager {
         tempImage.src = src;
     }
 
+    // 保留以备将来使用，若没有 ImageViewer 则静默忽略
     openImageViewer(index) {
-        if (!this.galleryImages.length || typeof window.ImageViewer === 'undefined') return;
-        this.currentIndex = Math.min(Math.max(0, index), this.galleryImages.length - 1);
-        new window.ImageViewer(this.galleryImages, this.currentIndex, {
-            onClose: () => { /* 可在此添加关闭后的回调 */ }
-        });
+        if (!this.galleryImages.length) return;
+        if (typeof window.ImageViewer !== 'undefined') {
+            this.currentIndex = Math.min(Math.max(0, index), this.galleryImages.length - 1);
+            new window.ImageViewer(this.galleryImages, this.currentIndex, {
+                onClose: () => {}
+            });
+        } else {
+            // fallback: 在新窗口打开图片
+            const img = this.galleryImages[index];
+            if (img && img.src) window.open(img.src, '_blank');
+        }
     }
 
     initReadingProgress() {
@@ -218,30 +245,6 @@ class ArticlePageManager {
         };
         window.addEventListener('scroll', updateProgress, { passive: true });
         updateProgress();
-    }
-
-    resetAnimations() {
-        const elements = [
-            document.getElementById('articleTitle'),
-            document.getElementById('articleMeta'),
-            document.getElementById('articleBody')
-        ];
-        elements.forEach(el => {
-            if (el) {
-                el.style.animation = 'none';
-                void el.offsetWidth;
-                el.style.animation = '';
-            }
-        });
-        setTimeout(() => {
-            const tocItems = document.querySelectorAll('.toc-list li');
-            tocItems.forEach((item, index) => {
-                item.style.animation = 'none';
-                void item.offsetWidth;
-                item.style.animation = '';
-                item.style.animationDelay = `${index < 5 ? 0.1 + index * 0.1 : 0.6}s`;
-            });
-        }, 100);
     }
 
     addFloatingButtons() {
@@ -278,163 +281,78 @@ class ArticlePageManager {
         container.appendChild(topBtn);
         return container;
     }
-}
 
-function addImageAltCaptions() {
-    const articleBody = document.querySelector('.article-body');
-    if (!articleBody) return;
-    const images = articleBody.querySelectorAll('img');
-    images.forEach(img => {
-        const nextSibling = img.nextElementSibling;
-        if (nextSibling && nextSibling.classList && nextSibling.classList.contains('image-alt-text')) return;
-        const altText = img.getAttribute('alt');
-        if (!altText || altText.trim() === '') return;
-        const caption = document.createElement('span');
-        caption.className = 'image-alt-text';
-        caption.textContent = altText.trim();
-        img.insertAdjacentElement('afterend', caption);
-    });
-}
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', addImageAltCaptions);
-} else {
-    addImageAltCaptions();
-}
-
-new ArticlePageManager();
-
-function initCodeBlocks() {
-    const pres = document.querySelectorAll('.article-content-wrapper pre');
-    if (!pres || pres.length === 0) return;
-    pres.forEach(pre => {
-        if (pre.dataset.codeEnhanced === '1') return;
-        const code = pre.querySelector('code');
-        if (!code) return;
-        const toolbar = document.createElement('div');
-        toolbar.className = 'code-toolbar';
-        let lang = '';
-        if (code.classList && code.classList.length) {
-            code.classList.forEach(cl => {
-                if (cl.startsWith('language-')) lang = cl.replace('language-', '').trim();
-            });
-        }
-        if (lang) {
-            const ft = document.createElement('span');
-            ft.className = 'code-filetype';
-            ft.textContent = lang.toUpperCase();
-            toolbar.appendChild(ft);
-        }
-        const copyBtn = document.createElement('button');
-        copyBtn.type = 'button';
-        copyBtn.className = 'code-copy-btn';
-        copyBtn.title = '复制代码';
-        copyBtn.textContent = '复制';
-        copyBtn.addEventListener('click', async () => {
-            const text = code.innerText || code.textContent || '';
-            try {
-                if (navigator.clipboard && navigator.clipboard.writeText) {
-                    await navigator.clipboard.writeText(text);
-                } else {
-                    const ta = document.createElement('textarea');
-                    ta.value = text;
-                    document.body.appendChild(ta);
-                    ta.select();
-                    document.execCommand('copy');
-                    ta.remove();
-                }
-                const prev = copyBtn.textContent;
-                copyBtn.textContent = '已复制';
-                setTimeout(() => { copyBtn.textContent = prev; }, 1400);
-            } catch (err) {
-                copyBtn.textContent = '复制失败';
-                setTimeout(() => { copyBtn.textContent = '复制'; }, 1600);
-            }
+    // 新增：为图片添加 alt 文本作为说明
+    addImageAltCaptions() {
+        const articleBody = document.querySelector('.article-body');
+        if (!articleBody) return;
+        const images = articleBody.querySelectorAll('img');
+        images.forEach(img => {
+            const nextSibling = img.nextElementSibling;
+            if (nextSibling && nextSibling.classList && nextSibling.classList.contains('image-alt-text')) return;
+            const altText = img.getAttribute('alt');
+            if (!altText || altText.trim() === '') return;
+            const caption = document.createElement('span');
+            caption.className = 'image-alt-text';
+            caption.textContent = altText.trim();
+            img.insertAdjacentElement('afterend', caption);
         });
-        toolbar.appendChild(copyBtn);
-        pre.insertBefore(toolbar, pre.firstChild);
-        pre.dataset.codeEnhanced = '1';
-    });
-}
-
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initCodeBlocks);
-} else {
-    initCodeBlocks();
-}
-
-function initMermaidAndMath() {
-    const articleBody = document.getElementById('articleBody');
-    if (!articleBody) return;
-
-    const mermaidSelectors = ['pre code.language-mermaid', 'pre code.mermaid', 'code.language-mermaid'];
-    const mermaidNodes = articleBody.querySelectorAll(mermaidSelectors.join(','));
-    mermaidNodes.forEach(code => {
-        const pre = code.closest('pre');
-        const text = code.textContent || '';
-        const div = document.createElement('div');
-        div.className = 'mermaid';
-        div.textContent = text.trim();
-        if (pre && pre.parentNode) pre.parentNode.replaceChild(div, pre);
-        else if (code.parentNode) code.parentNode.replaceChild(div, code);
-    });
-
-    function runMermaid() {
-        try {
-            if (window.mermaid && window.mermaid.initialize) {
-                window.mermaid.initialize({ startOnLoad: false });
-                window.mermaid.init(undefined, articleBody.querySelectorAll('.mermaid'));
-            }
-        } catch (e) { console.warn('Mermaid 渲染失败', e); }
     }
 
-    if (document.querySelector('.mermaid')) {
-        if (window.mermaid) runMermaid();
-        else {
-            const s = document.createElement('script');
-            s.src = 'https://cdn.jsdelivr.net/npm/mermaid@10.4.0/dist/mermaid.min.js';
-            s.defer = true;
-            s.onload = runMermaid;
-            s.onerror = () => console.warn('无法加载 Mermaid 脚本');
-            document.head.appendChild(s);
-        }
-    }
-
-    function runMath() {
-        try {
-            if (typeof renderMathInElement === 'function') {
-                renderMathInElement(articleBody, {
-                    delimiters: [
-                        { left: '$$', right: '$$', display: true },
-                        { left: '$', right: '$', display: false }
-                    ]
+    // 新增：代码块增强（复制按钮等）
+    initCodeBlocks() {
+        const pres = document.querySelectorAll('.article-content-wrapper pre');
+        if (!pres || pres.length === 0) return;
+        pres.forEach(pre => {
+            if (pre.dataset.codeEnhanced === '1') return;
+            const code = pre.querySelector('code');
+            if (!code) return;
+            const toolbar = document.createElement('div');
+            toolbar.className = 'code-toolbar';
+            let lang = '';
+            if (code.classList && code.classList.length) {
+                code.classList.forEach(cl => {
+                    if (cl.startsWith('language-')) lang = cl.replace('language-', '').trim();
                 });
-            } else if (window.MathJax && window.MathJax.typesetPromise) {
-                window.MathJax.typesetPromise([articleBody]).catch(() => {});
-            } else if (window.katex && !window.renderMathInElement) {
-                const s2 = document.createElement('script');
-                s2.src = 'https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js';
-                s2.defer = true;
-                s2.onload = () => {
-                    try {
-                        renderMathInElement(articleBody, {
-                            delimiters: [
-                                { left: '$$', right: '$$', display: true },
-                                { left: '$', right: '$', display: false }
-                            ]
-                        });
-                    } catch (e) { console.warn('KaTeX auto-render 执行失败', e); }
-                };
-                s2.onerror = () => console.warn('无法加载 KaTeX auto-render 脚本');
-                document.head.appendChild(s2);
             }
-        } catch (e) { console.warn('数学公式渲染异常', e); }
+            if (lang) {
+                const ft = document.createElement('span');
+                ft.className = 'code-filetype';
+                ft.textContent = lang.toUpperCase();
+                toolbar.appendChild(ft);
+            }
+            const copyBtn = document.createElement('button');
+            copyBtn.type = 'button';
+            copyBtn.className = 'code-copy-btn';
+            copyBtn.title = '复制代码';
+            copyBtn.textContent = '复制';
+            copyBtn.addEventListener('click', async () => {
+                const text = code.innerText || code.textContent || '';
+                try {
+                    if (navigator.clipboard && navigator.clipboard.writeText) {
+                        await navigator.clipboard.writeText(text);
+                    } else {
+                        const ta = document.createElement('textarea');
+                        ta.value = text;
+                        document.body.appendChild(ta);
+                        ta.select();
+                        document.execCommand('copy');
+                        ta.remove();
+                    }
+                    const prev = copyBtn.textContent;
+                    copyBtn.textContent = '已复制';
+                    setTimeout(() => { copyBtn.textContent = prev; }, 1400);
+                } catch (err) {
+                    copyBtn.textContent = '复制失败';
+                    setTimeout(() => { copyBtn.textContent = '复制'; }, 1600);
+                }
+            });
+            toolbar.appendChild(copyBtn);
+            pre.insertBefore(toolbar, pre.firstChild);
+            pre.dataset.codeEnhanced = '1';
+        });
     }
-    runMath();
 }
 
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initMermaidAndMath);
-} else {
-    initMermaidAndMath();
-}
+// 启动管理器
+new ArticlePageManager();

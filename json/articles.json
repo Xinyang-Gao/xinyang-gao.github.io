@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-04-24T23:03:11.406040",
+  "generated_at": "2026-04-25T16:40:20.634016",
   "total_articles": 8,
-  "total_word_count": 28035,
+  "total_word_count": 28060,
   "articles": [
     {
       "relative_path": "articles/source/网站/README.md",
@@ -19,7 +19,7 @@
       "category": "网站",
       "url": "/articles/README.html",
       "word_count": 8392,
-      "read_time": "17-42分钟"
+      "read_time": "28分钟"
     },
     {
       "relative_path": "articles/source/学习/从一株小草开始.md",
@@ -37,7 +37,7 @@
       "category": "学习",
       "url": "/articles/从一株小草开始.html",
       "word_count": 951,
-      "read_time": "2-5分钟"
+      "read_time": "4分钟"
     },
     {
       "relative_path": "articles/source/学习/古诗扩写-十五从军征.md",
@@ -55,25 +55,7 @@
       "category": "学习",
       "url": "/articles/古诗扩写-十五从军征.html",
       "word_count": 1041,
-      "read_time": "3-6分钟"
-    },
-    {
-      "relative_path": "articles/source/网站/网站更新日志.md",
-      "hash": "51a125aef4791a6b6cc7a1ca9e716a74",
-      "last_updated": "2026-04-24",
-      "modify_count": 86,
-      "hidden": false,
-      "title": "网站更新日志",
-      "date": "2025-12-21",
-      "description": "记录网站历次更新内容",
-      "author": "高新炀",
-      "tags": [
-        "网站"
-      ],
-      "category": "网站",
-      "url": "/articles/网站更新日志.html",
-      "word_count": 9873,
-      "read_time": "20-50分钟"
+      "read_time": "4分钟"
     },
     {
       "relative_path": "articles/source/网站/test.md",
@@ -91,7 +73,25 @@
       "category": "网站",
       "url": "/articles/test.html",
       "word_count": 2399,
-      "read_time": "5-12分钟"
+      "read_time": "8分钟"
+    },
+    {
+      "relative_path": "articles/source/网站/网站更新日志.md",
+      "hash": "bb2cfed0e501fc125c833079fdd4b70d",
+      "last_updated": "2026-04-25",
+      "modify_count": 87,
+      "hidden": false,
+      "title": "网站更新日志",
+      "date": "2025-12-21",
+      "description": "记录网站历次更新内容",
+      "author": "高新炀",
+      "tags": [
+        "网站"
+      ],
+      "category": "网站",
+      "url": "/articles/网站更新日志.html",
+      "word_count": 9898,
+      "read_time": "33分钟"
     },
     {
       "relative_path": "articles/source/学习/雪中的思绪.md",
@@ -110,7 +110,7 @@
       "category": "学习",
       "url": "/articles/雪中的思绪.html",
       "word_count": 2410,
-      "read_time": "5-13分钟"
+      "read_time": "9分钟"
     },
     {
       "relative_path": "articles/source/学习/马生复宋濂书.md",
@@ -128,7 +128,7 @@
       "category": "学习",
       "url": "/articles/马生复宋濂书.html",
       "word_count": 1503,
-      "read_time": "4-8分钟"
+      "read_time": "6分钟"
     },
     {
       "relative_path": "articles/source/学习/论网络游戏的功与过.md",
@@ -146,7 +146,7 @@
       "category": "学习",
       "url": "/articles/论网络游戏的功与过.html",
       "word_count": 1466,
-      "read_time": "3-8分钟"
+      "read_time": "5分钟"
     }
   ]
 }

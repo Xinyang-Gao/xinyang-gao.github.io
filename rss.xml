@@ -4,7 +4,7 @@
     <title>高新炀的个人网站</title>
     <link>https://xinyang-gao.github.io</link>
     <description>学生 · 开发者 · 写作者，用代码和文字探索世界</description>
-    <lastBuildDate>Fri, 24 Apr 2026 21:28:10 GMT</lastBuildDate>
+    <lastBuildDate>Sat, 25 Apr 2026 15:28:16 GMT</lastBuildDate>
     <language>zh-CN</language>
     <generator>RssGenerator (Python)</generator>
     <atom:link href="https://xinyang-gao.github.io/rss.xml" rel="self" type="application/rss+xml" />
@@ -45,14 +45,6 @@
       <category>学习</category>
     </item>
     <item>
-      <title>网站更新日志</title>
-      <link>https://xinyang-gao.github.io/articles/网站更新日志.html</link>
-      <description><![CDATA[记录网站历次更新内容]]></description>
-      <pubDate>Thu, 23 Apr 2026 00:00:00 GMT</pubDate>
-      <author>高新炀</author>
-      <category>网站</category>
-    </item>
-    <item>
       <title>寒假作业管理</title>
       <link>https://xinyang-gao.github.io/works/寒假作业管理/</link>
       <description><![CDATA[一个任务追踪系统]]></description>
@@ -86,6 +78,14 @@
       <description><![CDATA[这是一篇 markdown 解析器渲染测试]]></description>
       <pubDate>Sun, 21 Dec 2025 00:00:00 GMT</pubDate>
       <author>高新炀 ＆ DEEPSEEK-V3</author>
+      <category>网站</category>
+    </item>
+    <item>
+      <title>网站更新日志</title>
+      <link>https://xinyang-gao.github.io/articles/网站更新日志.html</link>
+      <description><![CDATA[记录网站历次更新内容]]></description>
+      <pubDate>Sun, 21 Dec 2025 00:00:00 GMT</pubDate>
+      <author>高新炀</author>
       <category>网站</category>
     </item>
     <item>
