@@ -1,3 +1,4 @@
+/* image-viewer.css */
 .modern-image-viewer {
   position: fixed;
   top: 0;
@@ -21,8 +22,8 @@
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.92);
-  backdrop-filter: blur(30px);
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(3px);
   cursor: pointer;
 }
 
@@ -124,9 +125,44 @@
   justify-content: center;
 }
 
-.viewer-toolbar button:hover {
+.viewer-toolbar button:hover:not(:disabled) {
   background: var(--accent-color, #b45b63);
   transform: scale(1.05);
+}
+
+/* 禁用按钮样式：灰度、降低透明度 */
+.viewer-toolbar button:disabled {
+  opacity: 0.5;
+  filter: grayscale(0.3);
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* 正常状态下重载按钮灰度显示（可点击） */
+.viewer-toolbar button.viewer-reload:not(.highlight) {
+  filter: grayscale(0.7);
+  opacity: 0.8;
+  transition: all 0.2s ease;
+}
+
+.viewer-toolbar button.viewer-reload:not(.highlight):hover {
+  filter: grayscale(0.2);
+  opacity: 1;
+}
+
+/* 重载按钮高亮样式（错误时） */
+.viewer-toolbar button.viewer-reload.highlight {
+  background: var(--accent-color, #b45b63);
+  box-shadow: 0 0 8px rgba(180, 91, 99, 0.6);
+  animation: pulse-glow 1.2s infinite;
+  filter: none;
+  opacity: 1;
+}
+
+@keyframes pulse-glow {
+  0% { box-shadow: 0 0 0 0 rgba(180, 91, 99, 0.4); }
+  70% { box-shadow: 0 0 0 8px rgba(180, 91, 99, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(180, 91, 99, 0); }
 }
 
 .viewer-counter {
@@ -140,6 +176,7 @@
 }
 
 .viewer-image-wrapper {
+  position: relative;
   width: 100%;
   height: 100%;
   display: flex;
@@ -164,10 +201,82 @@
   user-select: none;
   pointer-events: auto;
   will-change: transform;
+  transform-origin: center center;
 }
 
 .viewer-image:active {
   cursor: grabbing;
+}
+
+/* 加载提示样式 */
+.viewer-loading {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  padding: 16px 24px;
+  border-radius: 40px;
+  color: white;
+  font-size: 16px;
+  font-weight: 500;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  z-index: 20;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.viewer-loading::before {
+  content: '';
+  width: 24px;
+  height: 24px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: viewer-spin 0.8s linear infinite;
+}
+
+@keyframes viewer-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* 错误提示样式 */
+.viewer-error {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(12px);
+  padding: 20px 28px;
+  border-radius: 20px;
+  color: #ff9f9f;
+  font-size: 15px;
+  text-align: center;
+  z-index: 20;
+  pointer-events: none;
+  max-width: 80vw;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  line-height: 1.5;
+  white-space: normal;
+  word-break: break-word;
+}
+
+.viewer-error .error-message {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #ff7b7b;
+}
+
+.viewer-error .error-info {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 8px;
+  word-break: break-all;
 }
 
 @media (max-width: 768px) {
@@ -204,10 +313,18 @@
     max-width: 95vw;
     max-height: 80vh;
   }
+  .viewer-loading {
+    padding: 12px 20px;
+    font-size: 14px;
+  }
+  .viewer-error {
+    padding: 16px 20px;
+    font-size: 13px;
+  }
 }
 
 [data-theme="dark"] .viewer-overlay {
-  background: rgba(0, 0, 0, 0.95);
+  background: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(30px);
 }
 
@@ -217,7 +334,23 @@
   .viewer-toolbar button,
   .viewer-prev,
   .viewer-next,
-  .viewer-close {
+  .viewer-close,
+  .viewer-loading::before,
+  .viewer-toolbar button.viewer-reload.highlight {
     transition: none;
+    animation: none;
   }
+}
+
+.viewer-toolbar button {
+  font-size: 14px;    /* 或 12px、1rem 等 */
+}
+
+.viewer-prev,
+.viewer-next {
+  font-size: 24px;
+}
+
+.viewer-close {
+  font-size: 22px;
 }
