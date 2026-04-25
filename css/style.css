@@ -1,5 +1,6 @@
 @import url("/css/image-viewer.css");
 @import url("/css/twikoo.css");
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 :root {
   /* 浅色主题 柔和的奶油色基调 */
   --bg-color: #faf8f5;

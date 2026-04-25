@@ -316,7 +316,6 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
     <title>{title} - 高新炀的小站</title>
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/article.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
     <div id="navbar-placeholder"></div>

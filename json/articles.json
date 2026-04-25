@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-04-25T16:40:20.634016",
+  "generated_at": "2026-04-25T16:58:31.449311",
   "total_articles": 8,
-  "total_word_count": 28060,
+  "total_word_count": 28200,
   "articles": [
     {
       "relative_path": "articles/source/网站/README.md",
@@ -77,9 +77,9 @@
     },
     {
       "relative_path": "articles/source/网站/网站更新日志.md",
-      "hash": "bb2cfed0e501fc125c833079fdd4b70d",
+      "hash": "8f471d48f68763af73a0d033fa3e8949",
       "last_updated": "2026-04-25",
-      "modify_count": 87,
+      "modify_count": 88,
       "hidden": false,
       "title": "网站更新日志",
       "date": "2025-12-21",
@@ -90,8 +90,8 @@
       ],
       "category": "网站",
       "url": "/articles/网站更新日志.html",
-      "word_count": 9898,
-      "read_time": "33分钟"
+      "word_count": 10038,
+      "read_time": "34分钟"
     },
     {
       "relative_path": "articles/source/学习/雪中的思绪.md",
