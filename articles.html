@@ -34,6 +34,17 @@
   <!-- 标签按钮将在这里动态生成 -->
   <span class="filter-label">按标签筛选:</span>
 </div>
+<div class="sort-controls">
+  <label for="sort-order">排序方式：</label>
+  <select id="sort-order">
+    <option value="updated_asc">按更新时间升序</option>
+    <option value="updated_desc" selected>按更新时间降序</option>
+    <option value="wordcount_asc">按字数升序</option>
+    <option value="wordcount_desc">按字数降序</option>
+    <option value="date_asc">按发布日期升序</option>
+    <option value="date_desc">按发布日期降序</option>
+  </select>
+</div>
 <div class="articles-list">
     <div id="articles-list-container"></div>
   </div>

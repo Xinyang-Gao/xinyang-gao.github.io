@@ -1,5 +1,4 @@
 @import url("/css/image-viewer.css");
-@import url("/css/twikoo.css");
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 :root {
   /* 浅色主题 柔和的奶油色基调 */
@@ -2066,4 +2065,70 @@ body.custom-cursor-enabled .list-item {
   .icp-link {
     font-size: 0.8rem;
   }
+}
+
+.sort-controls {
+  margin: 20px 0;
+  padding: 16px;
+  background: var(--surface-color-secondary);
+  border-radius: var(--radius-xl);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid var(--border-color);
+}
+
+.sort-controls label {
+  font-weight: 600;
+  color: var(--accent-color);
+  margin-right: 8px;
+  white-space: nowrap;
+}
+
+.sort-controls select {
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-family: var(--font-family);
+  font-size: 0.95rem;
+  background: var(--surface-color);
+  color: var(--text-color);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  min-width: 180px;
+}
+
+.sort-controls select:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(180, 91, 99, 0.15);
+}
+
+.sort-controls select:hover {
+  background: var(--surface-color-secondary);
+}
+
+.article-dates-top-right {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    text-align: right;
+    font-size: 0.85em;
+    color: #666;
+}
+
+.list-item-header {
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+@media (max-width: 768px) {
+    .article-dates-top-right {
+        position: static;
+        text-align: left;
+        margin-bottom: 5px;
+    }
 }

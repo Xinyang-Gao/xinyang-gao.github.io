@@ -101,10 +101,12 @@ class DataManager {
         works: { url: '/json/works.json', cacheKey: 'worksData', cacheControl: 'no-cache' },
         articles: { url: '/json/articles.json', cacheKey: 'articlesData', cacheControl: 'default' }
     };
+    
     static async fetchData(type, useCache = true) {
         const { url, cacheKey, cacheControl } = DataManager.config[type];
         const label = DataManager.TYPE_LABEL[type];
         perf.start(`获取${label}数据`);
+        
         if (useCache) {
             const raw = localStorage.getItem(cacheKey);
             if (raw && !Utils.isDataExpired(raw)) {
@@ -120,6 +122,7 @@ class DataManager {
                 }
             }
         }
+        
         try {
             console.log(`[INFO] 从服务器获取${label}数据`);
             const opts = { headers: { 'Cache-Control': cacheControl } };
@@ -128,6 +131,19 @@ class DataManager {
             if (!res.ok) throw new Error(res.statusText);
             const data = await res.json();
             if (!Utils.validateData(data, type)) throw new Error('数据格式无效');
+            
+            // 确保文章数据包含用于排序的字段
+            if (type === 'articles' && data.articles) {
+                data.articles = data.articles.map(article => ({
+                    ...article,
+                    // 如果没有 last_updated 字段，则使用 date 字段
+                    last_updated: article.last_updated || article.date,
+                    // 确保所有文章都有统一的日期格式
+                    date: article.date,
+                    updated_date: article.last_updated || article.date
+                }));
+            }
+            
             localStorage.setItem(cacheKey, JSON.stringify({ ...data, _timestamp: Date.now() }));
             perf.end(`获取${label}数据`);
             return data;
@@ -165,47 +181,54 @@ class UIRenderer {
     static escapeHtml(str) {
         return Utils.escapeHtml(str);
     }
-    static generateListItem(item, type, index) {
-        const tags = UIRenderer.generateTagsHTML(item);
-        if (type === 'article') {
-            const itemUrl = item.url || '';
-            return `
-            <div class="list-item" data-url="${this.escapeHtml(itemUrl)}" data-type="article" data-index="${index}">
-                <div class="list-item-header">
-                    <h3 class="list-item-title">${this.escapeHtml(item.title)}</h3>
-                    <div class="list-item-meta">
-                        <span class="list-item-date">${this.escapeHtml(item.date)}</span>
-                    </div>
+static generateListItem(item, type, index) {
+    const tags = UIRenderer.generateTagsHTML(item);
+    if (type === 'article') {
+        const itemUrl = item.url || '';
+        
+        // 时间信息移到右上角
+        const publishDate = item.date ? `<span class="publish-date">发布于 ${this.escapeHtml(item.date)}</span>` : '';
+        const updateDate = item.last_updated && item.last_updated !== item.date ? 
+            `<span class="update-date">更新: ${this.escapeHtml(item.last_updated)}</span>` : '';
+        const dateInfo = publishDate || updateDate ? 
+            `<div class="article-dates-top-right">${publishDate}${updateDate ? '<br/>' + updateDate : ''}</div>` : '';
+
+        return `
+        <div class="list-item" data-url="${this.escapeHtml(itemUrl)}" data-type="article" data-index="${index}">
+            <div class="list-item-header">
+                <h3 class="list-item-title">${this.escapeHtml(item.title)}</h3>
+                ${dateInfo}
+            </div>
+            <div class="article-meta-info">
+                <span class="article-author">${this.escapeHtml(item.author || '未知作者')}</span>
+                ${item.word_count ? `<span class="article-word-count">${item.word_count} 字</span>` : ''}
+                ${item.read_time ? `<span class="article-read-time"><i class="far fa-clock"></i> ${this.escapeHtml(item.read_time)}</span>` : ''}
+            </div>
+            <p class="list-item-description">${this.escapeHtml(item.description || '')}</p>
+            ${tags}
+        </div>`;
+    } else {
+        const workInfo = {
+            title: item.title,
+            description: item.description || '',
+            link: item.link || '',
+            tags: Utils.getTags(item)
+        };
+        const workInfoStr = encodeURIComponent(JSON.stringify(workInfo));
+        return `
+        <div class="list-item" data-work-info="${workInfoStr}" data-type="work" data-index="${index}">
+            <div class="list-item-header">
+                <h3 class="list-item-title">${this.escapeHtml(item.title)}</h3>
+                <div class="list-item-meta">
+                    <span class="list-item-date">${this.escapeHtml(item.date)}</span>
                 </div>
-                <div class="article-meta-info">
-                    <span class="article-author">${this.escapeHtml(item.author || '未知作者')}</span>
-                    ${item.word_count ? `<span class="article-word-count">${item.word_count} 字</span>` : ''}
-                    ${item.read_time ? `<span class="article-read-time"><i class="far fa-clock"></i> ${this.escapeHtml(item.read_time)}</span>` : ''}
-                </div>
-                <p class="list-item-description">${this.escapeHtml(item.description || '')}</p>
-                ${tags}
-            </div>`;
-        } else {
-            const workInfo = {
-                title: item.title,
-                description: item.description || '',
-                link: item.link || '',
-                tags: Utils.getTags(item)
-            };
-            const workInfoStr = encodeURIComponent(JSON.stringify(workInfo));
-            return `
-            <div class="list-item" data-work-info="${workInfoStr}" data-type="work" data-index="${index}">
-                <div class="list-item-header">
-                    <h3 class="list-item-title">${this.escapeHtml(item.title)}</h3>
-                    <div class="list-item-meta">
-                        <span class="list-item-date">${this.escapeHtml(item.date)}</span>
-                    </div>
-                </div>
-                <p class="list-item-description">${this.escapeHtml(item.description || '')}</p>
-                ${tags}
-            </div>`;
-        }
+            </div>
+            <p class="list-item-description">${this.escapeHtml(item.description || '')}</p>
+            ${tags}
+        </div>`;
     }
+}
+
     static generateListHTML(data, type) {
         perf.start(`生成${DataManager.TYPE_LABEL[type]}HTML`);
         if (!Utils.validateData(data, type)) {
@@ -367,15 +390,28 @@ class SearchController {
         this.input = null;
         this.field = null;
         this.selectedTags = [];
+        this.sortOrder = 'updated_desc'; // 默认按更新时间降序
         this.debounceTimer = null;
         this.popStateHandler = null;
         this.skipNextPopState = false;
         this.init();
     }
+    
     init() {
         requestAnimationFrame(() => {
             this.input = document.getElementById('search-input');
             this.field = document.getElementById('search-field');
+            
+            // 添加排序选择器
+            this.sortSelect = document.getElementById('sort-order');
+            if (this.sortSelect) {
+                this.sortSelect.addEventListener('change', () => {
+                    this.sortOrder = this.sortSelect.value;
+                    this.handleSearch();
+                    this.updateURL();
+                });
+            }
+            
             if (!this.input || !this.field) {
                 console.error(`[ERROR] 搜索元素未在 ${this.page} 页面中找到`);
                 return;
@@ -395,36 +431,43 @@ class SearchController {
             window.addEventListener('popstate', this.popStateHandler);
         });
     }
+    
     restoreFromURL() {
         const params = new URLSearchParams(window.location.search);
         const q = params.get('q') || '';
         const field = params.get('field') || 'all';
         const tagsParam = params.get('tags') || '';
+        const sortOrder = params.get('sort') || 'updated_desc'; // 默认按更新时间降序
+        
         if (this.input) this.input.value = q;
         if (this.field) this.field.value = field;
+        if (this.sortSelect) {
+            this.sortSelect.value = sortOrder;
+            this.sortOrder = sortOrder;
+        }
+        
         this.selectedTags = tagsParam ? tagsParam.split(',').filter(t => t.trim()) : [];
         this.applyTagsToButtons();
     }
-    applyTagsToButtons() {
-        const container = document.getElementById(`${this.page}-tags-filter`);
-        if (!container) return;
-        const btns = container.querySelectorAll('.tag-button:not(:last-child)');
-        btns.forEach(btn => {
-            const tag = btn.dataset.tag;
-            if (this.selectedTags.includes(tag)) btn.classList.add('active');
-            else btn.classList.remove('active');
-        });
-    }
+    
     updateURL() {
         const params = new URLSearchParams(window.location.search);
         const q = this.input ? this.input.value.trim() : '';
         const field = this.field ? this.field.value : 'all';
+        const sort = this.sortSelect ? this.sortSelect.value : 'updated_desc';
+        
         if (q) params.set('q', q);
         else params.delete('q');
+        
         if (field && field !== 'all') params.set('field', field);
         else params.delete('field');
+        
+        if (sort && sort !== 'updated_desc') params.set('sort', sort);
+        else params.delete('sort');
+        
         if (this.selectedTags.length) params.set('tags', this.selectedTags.join(','));
         else params.delete('tags');
+        
         const newUrl = `${window.location.pathname}?${params.toString()}`;
         const currentUrl = window.location.href.split('#')[0];
         if (newUrl !== currentUrl) {
@@ -432,12 +475,77 @@ class SearchController {
             window.history.pushState({}, '', newUrl);
         }
     }
+    
+    // 添加排序函数
+    sortByField(items, order) {
+        const sortedItems = [...items];
+        
+        switch(order) {
+            case 'updated_asc':
+                // 按更新时间升序 (last_updated)
+                sortedItems.sort((a, b) => {
+                    const dateA = new Date(a.last_updated);
+                    const dateB = new Date(b.last_updated);
+                    return dateA - dateB;
+                });
+                break;
+                
+            case 'updated_desc':
+                // 按更新时间降序 (last_updated)
+                sortedItems.sort((a, b) => {
+                    const dateA = new Date(a.last_updated);
+                    const dateB = new Date(b.last_updated);
+                    return dateB - dateA;
+                });
+                break;
+                
+            case 'wordcount_asc':
+                // 按字数升序
+                sortedItems.sort((a, b) => (a.word_count || 0) - (b.word_count || 0));
+                break;
+                
+            case 'wordcount_desc':
+                // 按字数降序
+                sortedItems.sort((a, b) => (b.word_count || 0) - (a.word_count || 0));
+                break;
+                
+            case 'date_asc':
+                // 按发布日期升序
+                sortedItems.sort((a, b) => {
+                    const dateA = new Date(a.date);
+                    const dateB = new Date(b.date);
+                    return dateA - dateB;
+                });
+                break;
+                
+            case 'date_desc':
+                // 按发布日期降序
+                sortedItems.sort((a, b) => {
+                    const dateA = new Date(a.date);
+                    const dateB = new Date(b.date);
+                    return dateB - dateA;
+                });
+                break;
+                
+            default:
+                // 默认按更新时间降序
+                sortedItems.sort((a, b) => {
+                    const dateA = new Date(a.last_updated);
+                    const dateB = new Date(b.last_updated);
+                    return dateB - dateA;
+                });
+        }
+        
+        return sortedItems;
+    }
+    
     handleSearch(skipUpdateURL = false) {
         const q = this.input.value.trim();
         const f = this.field.value;
         this.filterContent(this.page, q, f);
         if (!skipUpdateURL) this.updateURL();
     }
+    
     getCachedData(type) {
         const raw = localStorage.getItem(`${type}Data`);
         if (!raw) return null;
@@ -446,6 +554,7 @@ class SearchController {
             return Utils.validateData(data, type) ? data : null;
         } catch { return null; }
     }
+    
     getAllTags() {
         const data = this.getCachedData(this.page);
         const tags = new Set();
@@ -457,15 +566,18 @@ class SearchController {
         });
         return tags;
     }
+    
     updateTagFilters() {
         if (!['works', 'articles'].includes(this.page)) return;
         const container = document.getElementById(`${this.page}-tags-filter`);
         if (!container) return;
         container.innerHTML = '';
+        
         const label = document.createElement('span');
         label.className = 'filter-label';
         label.textContent = '按标签筛选:';
         container.appendChild(label);
+        
         const allTags = this.getAllTags();
         if (allTags.size === 0) {
             const msg = document.createElement('span');
@@ -474,6 +586,7 @@ class SearchController {
             container.appendChild(msg);
             return;
         }
+        
         const sortedTags = Array.from(allTags).sort();
         sortedTags.forEach(tag => {
             const btn = document.createElement('button');
@@ -484,6 +597,7 @@ class SearchController {
             btn.addEventListener('click', () => this.toggleTag(tag, btn));
             container.appendChild(btn);
         });
+        
         const clearBtn = document.createElement('button');
         clearBtn.type = 'button';
         clearBtn.className = 'tag-button';
@@ -491,8 +605,10 @@ class SearchController {
         clearBtn.style.marginLeft = 'auto';
         clearBtn.addEventListener('click', () => this.clearAllTags());
         container.appendChild(clearBtn);
+        
         this.applyTagsToButtons();
     }
+    
     toggleTag(tag, btn) {
         const idx = this.selectedTags.indexOf(tag);
         if (idx > -1) {
@@ -504,35 +620,51 @@ class SearchController {
         }
         this.handleSearch();
     }
+    
     clearAllTags() {
         this.selectedTags.length = 0;
         document.querySelectorAll(`#${this.page}-tags-filter .tag-button:not(:last-child)`).forEach(b => b.classList.remove('active'));
         this.handleSearch();
     }
+    
     filterContent(type, query, field) {
         const data = this.getCachedData(type);
         if (!data) return;
+        
         let items = type === 'works' ? [...data.works] : [...data.articles];
+        
+        // 应用标签筛选
         if (this.selectedTags.length) {
             items = items.filter(item => {
                 const itemTags = Utils.getTags(item);
                 return itemTags && Array.isArray(itemTags) && itemTags.some(t => this.selectedTags.includes(t));
             });
         }
+        
+        // 应用搜索查询
         if (query && query.trim() !== '') {
             const ql = query.toLowerCase().trim();
             items = items.filter(item => {
                 switch (field) {
-                    case 'title': return item.title.toLowerCase().includes(ql);
+                    case 'title': 
+                        return item.title.toLowerCase().includes(ql);
                     case 'tag': {
                         const itemTags = Utils.getTags(item);
                         return itemTags && Array.isArray(itemTags) && itemTags.some(t => t.toLowerCase().includes(ql));
                     }
-                    case 'date': return item.date.includes(query);
-                    default: return item.title.toLowerCase().includes(ql) || (Utils.getTags(item).some(t => t.toLowerCase().includes(ql))) || item.date.includes(query);
+                    case 'date': 
+                        return item.date.includes(query);
+                    default: 
+                        return item.title.toLowerCase().includes(ql) || 
+                               (Utils.getTags(item).some(t => t.toLowerCase().includes(ql))) || 
+                               item.date.includes(query);
                 }
             });
         }
+        
+        // 应用排序
+        items = this.sortByField(items, this.sortOrder);
+        
         const html = UIRenderer.generateListHTML({ [type]: items }, type);
         const container = document.getElementById(`${type}-list-container`);
         if (container) {
@@ -541,6 +673,7 @@ class SearchController {
             if (typeof initScrollReveal === 'function') initScrollReveal();
         }
     }
+    
     setupItemsInteraction() {
         const content = document.getElementById('mainContent') || document.querySelector('main.main-content-area') || document.querySelector('.container') || document.getElementById(`${this.page}-list-container`);
         if (content) {
@@ -551,9 +684,11 @@ class SearchController {
         document.removeEventListener('click', PageManager.handleListItemClick);
         document.addEventListener('click', PageManager.handleListItemClick);
     }
+    
     destroy() {
         if (this.input && this._inputHandler) this.input.removeEventListener('input', this._inputHandler);
         if (this.field && this._fieldHandler) this.field.removeEventListener('change', this._fieldHandler);
+        if (this.sortSelect) this.sortSelect.removeEventListener('change', this._sortHandler);
         if (this.popStateHandler) window.removeEventListener('popstate', this.popStateHandler);
         clearTimeout(this.debounceTimer);
     }

@@ -316,6 +316,7 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
     <title>{title} - 高新炀的小站</title>
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/article.css">
+    <link rel="stylesheet" href="/css/twikoo.css">
 </head>
 <body>
     <div id="navbar-placeholder"></div>
