@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-04-25T21:09:45.306802",
+  "generated_at": "2026-04-26T10:42:55.290506",
   "total_articles": 8,
-  "total_word_count": 28374,
+  "total_word_count": 28435,
   "articles": [
     {
       "relative_path": "articles/source/网站/README.md",
@@ -77,9 +77,9 @@
     },
     {
       "relative_path": "articles/source/网站/网站更新日志.md",
-      "hash": "61816563ffa05c64822d1f1747fd0ba7",
-      "last_updated": "2026-04-25",
-      "modify_count": 90,
+      "hash": "21b96318437d3950de3101220f88a0d3",
+      "last_updated": "2026-04-26",
+      "modify_count": 91,
       "hidden": false,
       "title": "网站更新日志",
       "date": "2025-12-21",
@@ -90,7 +90,7 @@
       ],
       "category": "网站",
       "url": "/articles/网站更新日志.html",
-      "word_count": 10212,
+      "word_count": 10273,
       "read_time": "35分钟"
     },
     {

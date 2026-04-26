@@ -566,6 +566,19 @@ class SearchController {
         });
         return tags;
     }
+
+    applyTagsToButtons() {
+    const container = document.getElementById(`${this.page}-tags-filter`);
+    if (!container) return;
+    const buttons = container.querySelectorAll('.tag-button:not(:last-child)');
+    buttons.forEach(btn => {
+        const tag = btn.dataset.tag;
+        if (this.selectedTags.includes(tag)) {
+            btn.classList.add('active');
+        } else {
+            btn.classList.remove('active');
+        }
+    })}
     
     updateTagFilters() {
         if (!['works', 'articles'].includes(this.page)) return;
