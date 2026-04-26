@@ -4,7 +4,7 @@
     <title>高新炀的个人网站</title>
     <link>https://xinyang-gao.github.io</link>
     <description>学生 · 开发者 · 写作者，用代码和文字探索世界</description>
-    <lastBuildDate>Sun, 26 Apr 2026 10:42:55 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 27 Apr 2026 00:08:00 GMT</lastBuildDate>
     <language>zh-CN</language>
     <generator>RssGenerator (Python)</generator>
     <atom:link href="https://xinyang-gao.github.io/rss.xml" rel="self" type="application/rss+xml" />
@@ -61,6 +61,15 @@
       <pubDate>Sun, 30 Nov 2025 00:00:00 GMT</pubDate>
       <author>高新炀</author>
       <category>议论文</category>
+    </item>
+    <item>
+      <title>中招体育考试记录</title>
+      <link>https://xinyang-gao.github.io/articles/体育考试记录.html</link>
+      <description><![CDATA[中招体育考试记录，算是一篇日记]]></description>
+      <pubDate>Sun, 26 Apr 2026 00:00:00 GMT</pubDate>
+      <author>高新炀</author>
+      <category>日记</category>
+      <category>体育</category>
     </item>
     <item>
       <title>车轮模拟</title>

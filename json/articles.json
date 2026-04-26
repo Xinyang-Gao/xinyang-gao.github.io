@@ -1,8 +1,27 @@
 {
-  "generated_at": "2026-04-26T10:42:55.290506",
-  "total_articles": 8,
-  "total_word_count": 28435,
+  "generated_at": "2026-04-27T00:07:59.990265",
+  "total_articles": 9,
+  "total_word_count": 29923,
   "articles": [
+    {
+      "relative_path": "articles/source/日记/体育考试记录.md",
+      "hash": "d1bb780d45315cdd1fc7b2fb03781e6a",
+      "last_updated": "2026-04-27",
+      "modify_count": 1,
+      "hidden": false,
+      "title": "中招体育考试记录",
+      "date": "2026-04-26",
+      "description": "中招体育考试记录，算是一篇日记",
+      "author": "高新炀",
+      "tags": [
+        "日记",
+        "体育"
+      ],
+      "category": "日记",
+      "url": "/articles/体育考试记录.html",
+      "word_count": 1488,
+      "read_time": "5分钟"
+    },
     {
       "relative_path": "articles/source/网站/README.md",
       "hash": "19e24a559deb1350942bc1aca99d4273",

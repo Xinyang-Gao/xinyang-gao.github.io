@@ -1,12 +1,14 @@
 {
-  "last_updated": "2026-04-26",
-  "last_updated_full": "2026-04-26T10:42:55+08:00",
-  "total_articles": 8,
-  "total_word_count": 28435,
+  "last_updated": "2026-04-27",
+  "last_updated_full": "2026-04-27T00:08:00+08:00",
+  "total_articles": 9,
+  "total_word_count": 29923,
   "total_works": 10,
   "article_tags": [
+    "体育",
     "文言文",
     "日常",
+    "日记",
     "网站",
     "议论文",
     "记叙文",
@@ -14,6 +16,7 @@
   ],
   "article_categories": [
     "学习",
+    "日记",
     "网站"
   ],
   "work_tags": [
