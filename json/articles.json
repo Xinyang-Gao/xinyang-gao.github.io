@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-04-27T21:07:33.698603",
-  "total_articles": 9,
-  "total_word_count": 29935,
+  "generated_at": "2026-04-28T06:48:13.362879",
+  "total_articles": 10,
+  "total_word_count": 30173,
   "articles": [
     {
       "relative_path": "articles/source/日记/体育考试记录.md",
@@ -59,6 +59,25 @@
       "read_time": "4分钟"
     },
     {
+      "relative_path": "articles/source/日记/就这样走过2025.md",
+      "hash": "32888214dda68d613624dcb72477e822",
+      "last_updated": "2026-04-28",
+      "modify_count": 2,
+      "hidden": false,
+      "title": "就这样走过二〇二五",
+      "date": "2026-02-10",
+      "description": "一次诗歌尝试",
+      "author": "高新炀",
+      "tags": [
+        "日记",
+        "诗"
+      ],
+      "category": "日记",
+      "url": "/articles/就这样走过2025.html",
+      "word_count": 260,
+      "read_time": "1分钟"
+    },
+    {
       "relative_path": "articles/source/学习/古诗扩写-十五从军征.md",
       "hash": "a858e662de65557c80ab941144b04f22",
       "last_updated": "2026-01-09",
@@ -96,9 +115,9 @@
     },
     {
       "relative_path": "articles/source/网站/网站更新日志.md",
-      "hash": "21b96318437d3950de3101220f88a0d3",
-      "last_updated": "2026-04-26",
-      "modify_count": 91,
+      "hash": "74bb822bb1b6a266b6b1d55215a3bfeb",
+      "last_updated": "2026-04-28",
+      "modify_count": 92,
       "hidden": false,
       "title": "网站更新日志",
       "date": "2025-12-21",
@@ -109,7 +128,7 @@
       ],
       "category": "网站",
       "url": "/articles/网站更新日志.html",
-      "word_count": 10273,
+      "word_count": 10251,
       "read_time": "35分钟"
     },
     {

@@ -4,7 +4,7 @@
     <title>高新炀的个人网站</title>
     <link>https://xinyang-gao.github.io</link>
     <description>学生 · 开发者 · 写作者，用代码和文字探索世界</description>
-    <lastBuildDate>Mon, 27 Apr 2026 21:07:34 GMT</lastBuildDate>
+    <lastBuildDate>Tue, 28 Apr 2026 06:48:13 GMT</lastBuildDate>
     <language>zh-CN</language>
     <generator>RssGenerator (Python)</generator>
     <atom:link href="https://xinyang-gao.github.io/rss.xml" rel="self" type="application/rss+xml" />
@@ -25,6 +25,15 @@
       <pubDate>Wed, 18 Mar 2026 00:00:00 GMT</pubDate>
       <author>高新炀</author>
       <category>记叙文</category>
+    </item>
+    <item>
+      <title>就这样走过二〇二五</title>
+      <link>https://xinyang-gao.github.io/articles/就这样走过2025.html</link>
+      <description><![CDATA[一次诗歌尝试]]></description>
+      <pubDate>Tue, 10 Feb 2026 00:00:00 GMT</pubDate>
+      <author>高新炀</author>
+      <category>日记</category>
+      <category>诗</category>
     </item>
     <item>
       <title>马生复宋濂书</title>
