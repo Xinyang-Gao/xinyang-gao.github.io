@@ -3,11 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>中考冲刺</title>
-    <!-- 引入现代数字字体：Space Grotesk (几何感) + Inter (完美可读) -->
+    <title>中考冲刺 · 新乡伴学同行 | 智慧预测+录取竞争指数</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* ---------- 极致纯净 · 现代数字美学 ---------- */
         * {
             margin: 0;
             padding: 0;
@@ -26,7 +24,6 @@
             line-height: 1.4;
         }
 
-        /* 主容器: 更大呼吸空间, 极致圆润 */
         .dashboard {
             max-width: 1200px;
             width: 100%;
@@ -37,19 +34,11 @@
             animation: floatReveal 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1);
         }
 
-        /* 进场动画更轻盈 */
         @keyframes floatReveal {
-            0% {
-                opacity: 0;
-                transform: translateY(24px);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0);
-            }
+            0% { opacity: 0; transform: translateY(24px); }
+            100% { opacity: 1; transform: translateY(0); }
         }
 
-        /* 头部区域: 现代排版 */
         .hero-section {
             text-align: center;
             display: flex;
@@ -57,7 +46,6 @@
             gap: 1.2rem;
         }
 
-        /* 主标题：微渐变字效+干净衬线感 */
         .hero-title {
             font-size: 3rem;
             font-weight: 700;
@@ -66,14 +54,11 @@
             background-clip: text;
             -webkit-background-clip: text;
             color: transparent;
-            text-shadow: none;
-            margin-bottom: 0.25rem;
             display: inline-block;
             margin-left: auto;
             margin-right: auto;
         }
 
-        /* 目标日期Pill: 精致现代 */
         .target-badge {
             display: inline-flex;
             align-items: center;
@@ -91,13 +76,6 @@
             transition: all 0.2s;
         }
 
-        .target-badge:hover {
-            background: rgba(37, 99, 235, 0.12);
-            border-color: rgba(37, 99, 235, 0.4);
-            transform: scale(1.01);
-        }
-
-        /* 实时时钟卡片 —— 全新玻璃质感，优雅融入 */
         .real-time-card {
             display: flex;
             align-items: center;
@@ -111,19 +89,6 @@
             margin: 0.25rem auto 0 auto;
             border: 1px solid rgba(255, 255, 255, 0.9);
             box-shadow: 0 6px 14px -8px rgba(0, 0, 0, 0.05);
-            transition: all 0.2s ease;
-        }
-        
-        .real-time-card:hover {
-            background: rgba(255, 255, 255, 0.92);
-            border-color: rgba(37, 99, 235, 0.25);
-            box-shadow: 0 8px 20px -10px rgba(37, 99, 235, 0.12);
-            transform: translateY(-1px);
-        }
-
-        .clock-icon {
-            font-size: 1.1rem;
-            filter: drop-shadow(0 1px 1px rgba(0,0,0,0.05));
         }
 
         .current-time-text {
@@ -132,12 +97,9 @@
             font-size: 0.9rem;
             letter-spacing: 0.3px;
             color: #1F3A5F;
-            background: transparent;
-            padding: 0.1rem 0;
             white-space: nowrap;
         }
 
-        /* 倒计时网格: 更大呼吸感 */
         .countdown-grid {
             display: flex;
             flex-wrap: wrap;
@@ -146,28 +108,25 @@
             margin-top: 0.2rem;
         }
 
-        /* 白色卡片 现代磨砂质感+细腻光影 */
         .time-card {
             flex: 1;
             min-width: 130px;
             background: rgba(255, 255, 255, 0.96);
-            backdrop-filter: blur(0px);
             border-radius: 42px;
             padding: 1.8rem 0.8rem;
             text-align: center;
             transition: all 0.3s cubic-bezier(0.2, 0.95, 0.4, 1.05);
-            box-shadow: 0 12px 28px -12px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.02);
+            box-shadow: 0 12px 28px -12px rgba(0, 0, 0, 0.08);
             border: 1px solid rgba(255, 255, 255, 0.6);
         }
 
         .time-card:hover {
             transform: translateY(-6px);
-            box-shadow: 0 24px 40px -16px rgba(37, 99, 235, 0.2), 0 4px 12px rgba(0, 0, 0, 0.02);
+            box-shadow: 0 24px 40px -16px rgba(37, 99, 235, 0.2);
             border-color: rgba(37, 99, 235, 0.25);
             background: #FFFFFF;
         }
 
-        /* 现代数字字体核心 —— Space Grotesk 几何现代感 */
         .digit {
             font-family: 'Space Grotesk', 'Inter', 'Roboto Mono', monospace;
             font-size: 5.6rem;
@@ -186,18 +145,14 @@
             letter-spacing: 1.5px;
             color: #5B6E8C;
             margin-top: 0.75rem;
-            font-family: 'Inter', sans-serif;
         }
 
-        /* 进度条区域: 现代无框玻璃感 */
         .progress-section {
             background: rgba(255, 255, 255, 0.92);
-            backdrop-filter: blur(0px);
             border-radius: 40px;
             padding: 2rem 1.8rem;
-            box-shadow: 0 12px 30px -12px rgba(0, 0, 0, 0.06), 0 1px 1px rgba(0, 0, 0, 0.02);
+            box-shadow: 0 12px 30px -12px rgba(0, 0, 0, 0.06);
             border: 1px solid rgba(255, 255, 255, 0.8);
-            transition: all 0.2s;
         }
 
         .progress-grid {
@@ -210,7 +165,6 @@
             width: 100%;
         }
 
-        /* 全新宽轨: 现代胶囊 + 光流动感 */
         .progress-track-wide {
             position: relative;
             width: 100%;
@@ -218,11 +172,9 @@
             background: #EFF3FC;
             border-radius: 80px;
             overflow: hidden;
-            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.02), 0 0 0 1px rgba(0, 0, 0, 0.02);
-            transition: all 0.2s;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.02);
         }
 
-        /* 动态填充: 明亮渐变 + 流动质感 */
         .progress-fill-wide {
             position: absolute;
             top: 0;
@@ -234,10 +186,8 @@
             border-radius: 80px;
             transition: width 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.2);
             z-index: 0;
-            box-shadow: inset 0 1px 0 rgba(255,255,255,0.3);
         }
 
-        /* 进度内文字: 现代胶囊标签 */
         .progress-content {
             position: relative;
             z-index: 2;
@@ -247,7 +197,6 @@
             width: 100%;
             height: 100%;
             padding: 0 1.4rem;
-            font-weight: 500;
             pointer-events: none;
         }
 
@@ -259,13 +208,10 @@
             padding: 0.3rem 1.2rem;
             border-radius: 60px;
             color: white;
-            letter-spacing: 0.3px;
-            transition: all 0.1s;
-            font-family: 'Inter', sans-serif;
         }
 
         .progress-percent-right {
-            font-family: 'Space Grotesk', 'Inter', monospace;
+            font-family: 'Space Grotesk', monospace;
             font-size: 0.95rem;
             font-weight: 700;
             background: rgba(20, 30, 55, 0.72);
@@ -273,170 +219,247 @@
             padding: 0.3rem 1rem;
             border-radius: 60px;
             color: white;
-            letter-spacing: 0.5px;
         }
 
-        /* 数字闪动: 现代脉冲 */
+        .companion-section {
+            background: rgba(255, 255, 255, 0.96);
+            border-radius: 44px;
+            padding: 1.8rem 2rem;
+            box-shadow: 0 16px 32px -14px rgba(0, 0, 0, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.8);
+            transition: all 0.25s ease;
+        }
+        
+        .companion-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 1.4rem;
+            border-bottom: 2px solid rgba(59,130,246,0.15);
+            padding-bottom: 0.6rem;
+        }
+        
+        .companion-header h3 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            background: linear-gradient(120deg, #1E3A8A, #3B82F6);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+        
+        .companion-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+        }
+        
+        .companion-item {
+            flex: 1;
+            min-width: 180px;
+            background: #F9FBFE;
+            border-radius: 28px;
+            padding: 1rem 1.2rem;
+            transition: all 0.2s;
+            border: 1px solid rgba(0,0,0,0.02);
+        }
+        
+        .companion-item:hover {
+            background: white;
+            transform: translateY(-3px);
+        }
+        
+        .greeting-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .greeting-icon {
+            font-size: 1rem;
+            font-weight: 600;
+            background: #EFF3FC;
+            padding: 0.2rem 0.8rem;
+            border-radius: 40px;
+            color: #1E3A8A;
+        }
+        
+        .greeting-text {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #1E293B;
+        }
+        
+        .timer-badge {
+            margin-top: 12px;
+            font-family: 'Space Grotesk', monospace;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #2563EB;
+        }
+        
+        .stat-value {
+            font-family: 'Space Grotesk', monospace;
+            font-weight: 700;
+            font-size: 1.8rem;
+            color: #0F2B4D;
+            line-height: 1.2;
+        }
+        
+        .stat-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 1px;
+            color: #5B6E8C;
+            margin-top: 0.3rem;
+        }
+        
+        .stat-note {
+            font-size: 0.7rem;
+            color: #6C86A3;
+            margin-top: 6px;
+            border-top: 1px dashed #E2E8F0;
+            padding-top: 6px;
+        }
+        
+        .health-tip {
+            background: #FFF5E8;
+            border-radius: 20px;
+            padding: 0.5rem 1rem;
+            margin-top: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #B45309;
+            border-left: 4px solid #F97316;
+        }
+        
+        .saying-box {
+            background: linear-gradient(105deg, #F0F7FF 0%, #F9FCFF 100%);
+            border-radius: 32px;
+            padding: 1rem 1.5rem;
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .saying-text {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: #1E3A5F;
+            flex: 1;
+            border-left: 3px solid #3B82F6;
+            padding-left: 1rem;
+        }
+        
+        .refresh-saying {
+            background: rgba(59,130,246,0.1);
+            border: none;
+            border-radius: 60px;
+            padding: 0.4rem 1rem;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #2563EB;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        
+        .refresh-saying:hover {
+            background: #3B82F6;
+            color: white;
+        }
+        
+        .trend-card {
+            margin-top: 1.2rem;
+            background: #F9FBFE;
+            border-radius: 28px;
+            padding: 0.8rem 1rem 1rem 1rem;
+            border: 1px solid rgba(59,130,246,0.1);
+        }
+        
+        .trend-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #2C3E66;
+            margin-bottom: 0.6rem;
+            letter-spacing: 0.3px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            justify-content: space-between;
+        }
+        
+        .influence-badge {
+            font-size: 0.7rem;
+            background: #EFF3FC;
+            padding: 0.2rem 0.6rem;
+            border-radius: 30px;
+            font-weight: 500;
+            color: #3B82F6;
+        }
+        
+        .chart-container {
+            width: 100%;
+            height: 180px;
+            position: relative;
+        }
+        
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            background: #FFFFFF;
+            border-radius: 20px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+        
+        .chart-note {
+            font-size: 0.65rem;
+            color: #6C86A3;
+            text-align: right;
+            margin-top: 6px;
+        }
+        
         .digit-shine {
             animation: modernGlow 0.22s ease-out;
         }
-
+        
         @keyframes modernGlow {
-            0% {
-                transform: scale(1);
-                text-shadow: 0 0 0 rgba(59,130,246,0);
-                color: #1E40AF;
-            }
-            40% {
-                transform: scale(1.07);
-                color: #2563EB;
-                text-shadow: 0 0 8px rgba(59,130,246,0.5);
-            }
-            100% {
-                transform: scale(1);
-                text-shadow: 0 0 0 transparent;
-                color: #1E40AF;
-            }
+            0% { transform: scale(1); text-shadow: 0 0 0 rgba(59,130,246,0); }
+            40% { transform: scale(1.07); color: #2563EB; text-shadow: 0 0 8px rgba(59,130,246,0.5); }
+            100% { transform: scale(1); text-shadow: 0 0 0 transparent; }
         }
-
-        /* 辅助微交互 */
-        @keyframes subtlePulse {
-            0% { opacity: 0.9; }
-            100% { opacity: 1; }
+        
+        .pulse-stat {
+            animation: subtleNumberPop 0.3s ease-out;
         }
-
-        /* 响应式进阶: 完美适配各种屏幕 */
+        
+        @keyframes subtleNumberPop {
+            0% { transform: scale(1); opacity: 0.7; }
+            70% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); }
+        }
+        
         @media (max-width: 860px) {
-            .digit {
-                font-size: 4.2rem;
-            }
-            .time-card {
-                min-width: 110px;
-                padding: 1.4rem 0.5rem;
-                border-radius: 36px;
-            }
-            .countdown-grid {
-                gap: 1.2rem;
-            }
-            .progress-track-wide {
-                height: 56px;
-            }
-            .progress-label-left {
-                font-size: 0.8rem;
-                padding: 0.2rem 1rem;
-            }
-            .progress-percent-right {
-                font-size: 0.85rem;
-                padding: 0.2rem 0.9rem;
-            }
-            .hero-title {
-                font-size: 2.5rem;
-            }
-            .current-time-text {
-                font-size: 0.8rem;
-            }
-            .real-time-card {
-                padding: 0.4rem 1.2rem;
-            }
+            .digit { font-size: 4.2rem; }
+            .time-card { min-width: 110px; padding: 1.4rem 0.5rem; }
+            .hero-title { font-size: 2.5rem; }
+            .stat-value { font-size: 1.5rem; }
         }
-
         @media (max-width: 640px) {
-            body {
-                padding: 1.2rem;
-            }
-            .hero-title {
-                font-size: 2.1rem;
-            }
-            .digit {
-                font-size: 3.4rem;
-            }
-            .time-card {
-                min-width: 85px;
-                padding: 1rem 0.2rem;
-                border-radius: 28px;
-            }
-            .unit {
-                font-size: 0.7rem;
-                letter-spacing: 1px;
-            }
-            .countdown-grid {
-                gap: 0.9rem;
-            }
-            .progress-section {
-                padding: 1.3rem 1rem;
-                border-radius: 32px;
-            }
-            .progress-track-wide {
-                height: 50px;
-            }
-            .progress-content {
-                padding: 0 0.9rem;
-            }
-            .progress-label-left {
-                font-size: 0.7rem;
-                padding: 0.15rem 0.8rem;
-            }
-            .progress-percent-right {
-                font-size: 0.7rem;
-                padding: 0.15rem 0.7rem;
-            }
-            .target-badge {
-                font-size: 0.75rem;
-                padding: 0.3rem 1rem;
-            }
-            .current-time-text {
-                font-size: 0.7rem;
-                white-space: nowrap;
-            }
-            .real-time-card {
-                padding: 0.3rem 1rem;
-                gap: 0.3rem;
-            }
-            .clock-icon {
-                font-size: 0.9rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .digit {
-                font-size: 2.7rem;
-            }
-            .time-card {
-                min-width: 70px;
-            }
-            .hero-title {
-                font-size: 1.8rem;
-            }
-            .progress-track-wide {
-                height: 46px;
-            }
-            .progress-label-left {
-                font-size: 0.65rem;
-                padding: 0.1rem 0.6rem;
-            }
-            .progress-percent-right {
-                font-size: 0.65rem;
-                padding: 0.1rem 0.6rem;
-            }
-            .current-time-text {
-                font-size: 0.65rem;
-                letter-spacing: 0.2px;
-            }
-        }
-
-        /* 点缀细节: 优雅呼吸 */
-        .dashboard::after {
-            display: none;
-        }
-
-        /* 进度条填充微动效果 */
-        .progress-fill-wide {
-            animation: fillSmooth 0.3s ease-out;
-        }
-
-        @keyframes fillSmooth {
-            from { opacity: 0.8; }
-            to { opacity: 1; }
+            .companion-grid { flex-direction: column; gap: 0.8rem; }
+            .saying-box { flex-direction: column; align-items: flex-start; }
+            .refresh-saying { align-self: flex-end; }
+            .digit { font-size: 3.4rem; }
         }
     </style>
 </head>
@@ -445,360 +468,427 @@
     <div class="hero-section">
         <h1 class="hero-title">中考冲刺</h1>
         <div class="target-badge">距离 6月22日08:20 还有</div>
-        
         <div class="real-time-card">
             <span class="current-time-text" id="liveClockDisplay">--/--/-- --- --:--:--</span>
         </div>
-        
-        <div class="countdown-grid" id="countdownGrid">
-            <div class="time-card">
-                <div class="digit" id="daysDigit">00</div>
-                <div class="unit">天</div>
-            </div>
-            <div class="time-card">
-                <div class="digit" id="hoursDigit">00</div>
-                <div class="unit">时</div>
-            </div>
-            <div class="time-card">
-                <div class="digit" id="minutesDigit">00</div>
-                <div class="unit">分</div>
-            </div>
-            <div class="time-card">
-                <div class="digit" id="secondsDigit">00</div>
-                <div class="unit">秒</div>
-            </div>
+        <div class="countdown-grid">
+            <div class="time-card"><div class="digit" id="daysDigit">00</div><div class="unit">天</div></div>
+            <div class="time-card"><div class="digit" id="hoursDigit">00</div><div class="unit">时</div></div>
+            <div class="time-card"><div class="digit" id="minutesDigit">00</div><div class="unit">分</div></div>
+            <div class="time-card"><div class="digit" id="secondsDigit">00</div><div class="unit">秒</div></div>
         </div>
     </div>
 
-    <!-- 进度条区域：现代极简仪表盘 -->
     <div class="progress-section">
         <div class="progress-grid">
-            <!-- 一周进度条 -->
-            <div class="progress-item">
-                <div class="progress-track-wide">
-                    <div class="progress-fill-wide" id="weekFill" style="width: 0%;"></div>
-                    <div class="progress-content">
-                        <span class="progress-label-left">本周进度</span>
-                        <span class="progress-percent-right" id="weekPercent">0%</span>
-                    </div>
+            <div class="progress-item"><div class="progress-track-wide"><div class="progress-fill-wide" id="weekFill"></div><div class="progress-content"><span class="progress-label-left">本周进度</span><span class="progress-percent-right" id="weekPercent">0%</span></div></div></div>
+            <div class="progress-item"><div class="progress-track-wide"><div class="progress-fill-wide" id="dayFill"></div><div class="progress-content"><span class="progress-label-left">今天进度</span><span class="progress-percent-right" id="dayPercent">0%</span></div></div></div>
+            <div class="progress-item"><div class="progress-track-wide"><div class="progress-fill-wide" id="hourFill"></div><div class="progress-content"><span class="progress-label-left">小时进度</span><span class="progress-percent-right" id="hourPercent">0%</span></div></div></div>
+            <div class="progress-item"><div class="progress-track-wide"><div class="progress-fill-wide" id="minuteFill"></div><div class="progress-content"><span class="progress-label-left">分钟进度</span><span class="progress-percent-right" id="minutePercent">0%</span></div></div></div>
+        </div>
+    </div>
+
+    <!-- 伴学同行模块 · 增强影响因子 + 30秒平均折线图 -->
+    <div class="companion-section">
+        <div class="companion-header">
+            <span>⚡</span>
+            <h3>伴学同行 · 新乡</h3>
+            <span>⚡</span>
+        </div>
+        <div class="companion-grid">
+            <div class="companion-item">
+                <div class="greeting-box">
+                    <span class="greeting-icon" id="greetingIcon">时段</span>
+                    <span class="greeting-text" id="greetingText">加载中...</span>
                 </div>
-            </div>
-            <!-- 今日进度条 -->
-            <div class="progress-item">
-                <div class="progress-track-wide">
-                    <div class="progress-fill-wide" id="dayFill" style="width: 0%;"></div>
-                    <div class="progress-content">
-                        <span class="progress-label-left">今天进度</span>
-                        <span class="progress-percent-right" id="dayPercent">0%</span>
-                    </div>
+                <div style="margin-top: 12px;">
+                    <div class="stat-label">专注陪伴时长</div>
+                    <div class="timer-badge" id="studyTimerDisplay">00:00:00</div>
                 </div>
+                <div id="lateNightAlert" class="health-tip" style="display: none;">[提醒] 熬夜警示</div>
             </div>
-            <!-- 本小时进度条 -->
-            <div class="progress-item">
-                <div class="progress-track-wide">
-                    <div class="progress-fill-wide" id="hourFill" style="width: 0%;"></div>
-                    <div class="progress-content">
-                        <span class="progress-label-left">小时进度</span>
-                        <span class="progress-percent-right" id="hourPercent">0%</span>
-                    </div>
-                </div>
+            <div class="companion-item">
+                <div class="stat-value" id="peerCountDisplay">--</div>
+                <div class="stat-label">此刻一同冲刺的同学</div>
+                <div class="stat-note">根据实时抽样数据计算</div>
+                <div class="stat-note" style="background:#F0F4FA; margin-top: 5px;">🎯 录取参考: 普高总计划2.8万 | 市区6952人 · 新乡市预计7万考生</div>
             </div>
-            <!-- 本分钟进度条 -->
-            <div class="progress-item">
-                <div class="progress-track-wide">
-                    <div class="progress-fill-wide" id="minuteFill" style="width: 0%;"></div>
-                    <div class="progress-content">
-                        <span class="progress-label-left">分钟进度</span>
-                        <span class="progress-percent-right" id="minutePercent">0%</span>
-                    </div>
-                </div>
+        </div>
+        
+        <!-- 折线图区域: 展示最近学习人数趋势 (每8秒采样，每点为过去30秒平均值) -->
+        <div class="trend-card">
+            <div class="trend-title">
+                <span>📈 实时在线趋势 (近20次记录 · 每点基于30秒均值)</span>
+                <span class="influence-badge" id="influenceFactorHint">竞争指数实时变化</span>
             </div>
+            <div class="chart-container">
+                <canvas id="trendCanvas" width="800" height="180" style="width:100%; height:180px"></canvas>
+            </div>
+            <div class="chart-note">每8秒采样一次</div>
+        </div>
+        
+        <div class="saying-box">
+            <div class="saying-text" id="dynamicSaying">星光不负赶路人，江河眷顾奋楫者。</div>
+            <button class="refresh-saying" id="refreshSayingBtn">换一句 ↻</button>
         </div>
     </div>
 </div>
 
 <script>
-    // ======================= 核心模块 (完整保留逻辑，增强现代精度) =======================
-    // 模块1: 倒计时核心 (目标：2026年6月22日 08:20:00)
-    const TimeCalculator = (() => {
-        const TARGET_DATE = new Date(2026, 5, 22, 8, 20, 0); // 2026年6月22日 08:20:00
-        
-        function getRemainingTime() {
-            const now = new Date();
-            const diffMs = TARGET_DATE.getTime() - now.getTime();
-            const isExpired = diffMs <= 0;
-            const safeDiff = isExpired ? 0 : diffMs;
-            
-            const totalSeconds = Math.floor(safeDiff / 1000);
-            const days = Math.floor(totalSeconds / 86400);
-            const hours = Math.floor((totalSeconds % 86400) / 3600);
-            const minutes = Math.floor((totalSeconds % 3600) / 60);
-            const seconds = totalSeconds % 60;
-            
-            return { days, hours, minutes, seconds, isExpired };
-        }
-        
-        return { getRemainingTime, targetDate: TARGET_DATE };
-    })();
+    // ================= 核心配置 =================
+    const TARGET_DATE = new Date(2026, 5, 22, 8, 20, 0);
+    const TOTAL_STUDENTS = 70000;        // 新乡市总考生预测7万人
+    const PLAN_TOTAL = 28000;             // 普高总招生计划2.8万人
+    const PLAN_URBAN = 6952;              // 市区招生计划
     
-    // 模块2: UI 倒计时渲染 (现代数字闪动)
-    const CountdownUIManager = (() => {
-        const daysEl = document.getElementById('daysDigit');
-        const hoursEl = document.getElementById('hoursDigit');
-        const minutesEl = document.getElementById('minutesDigit');
-        const secondsEl = document.getElementById('secondsDigit');
-        let prevValues = { days: -1, hours: -1, minutes: -1, seconds: -1 };
-        
-        function formatTwoDigits(num) {
-            return num < 10 ? `0${num}` : `${num}`;
-        }
-        
-        function addShineEffect(el) {
-            if (!el) return;
-            el.classList.remove('digit-shine');
-            void el.offsetWidth;
-            el.classList.add('digit-shine');
-            setTimeout(() => el.classList.remove('digit-shine'), 230);
-        }
-        
-        function updateDisplay(timeData) {
-            const { days, hours, minutes, seconds, isExpired } = timeData;
-            let daysStr = formatTwoDigits(days);
-            let hoursStr = formatTwoDigits(hours);
-            let minutesStr = formatTwoDigits(minutes);
-            let secondsStr = formatTwoDigits(seconds);
-            
-            if (isExpired) {
-                daysStr = '00';
-                hoursStr = '00';
-                minutesStr = '00';
-                secondsStr = '00';
-            }
-            
-            if (daysEl.innerText !== daysStr) {
-                daysEl.innerText = daysStr;
-                if (prevValues.days !== days && !isExpired) addShineEffect(daysEl);
-            }
-            if (hoursEl.innerText !== hoursStr) {
-                hoursEl.innerText = hoursStr;
-                if (prevValues.hours !== hours && !isExpired) addShineEffect(hoursEl);
-            }
-            if (minutesEl.innerText !== minutesStr) {
-                minutesEl.innerText = minutesStr;
-                if (prevValues.minutes !== minutes && !isExpired) addShineEffect(minutesEl);
-            }
-            if (secondsEl.innerText !== secondsStr) {
-                secondsEl.innerText = secondsStr;
-                if (prevValues.seconds !== seconds && !isExpired) addShineEffect(secondsEl);
-            }
-            
-            prevValues = { days, hours, minutes, seconds };
-        }
-        
-        return { updateDisplay };
-    })();
+    // 录取压力系数 (竞争越激烈，学生活跃时段积极性越高)
+    const ADMISSION_RATE = PLAN_TOTAL / TOTAL_STUDENTS;   // 0.4 ≈ 40%
+    // 竞争系数 = 1 + (1 - 录取率)*0.75， 最大限制1.5，最低1.0，让低录取率刺激学习强度
+    const COMPETITION_BASE = Math.min(1.48, Math.max(1.0, 1 + (1 - ADMISSION_RATE) * 0.75));
     
-    // 模块3: 进度条计算器 (基于实时时间，周/天/小时/分钟) —— 完全保留原始精密逻辑
-    const ProgressCalculator = (() => {
-        // 获取本周一 00:00:00 (周一为一周起始)
-        function getWeekStart() {
-            const now = new Date();
-            const dayOfWeek = now.getDay(); // 0周日 ~ 6周六
-            let daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-            const monday = new Date(now);
-            monday.setDate(now.getDate() - daysToMonday);
-            monday.setHours(0, 0, 0, 0);
-            return monday.getTime();
-        }
-        
-        const WEEK_MS = 7 * 24 * 3600 * 1000;
-        
-        function getWeekProgress() {
-            const now = new Date();
-            const weekStartMs = getWeekStart();
-            const elapsedMs = now.getTime() - weekStartMs;
-            let percent = (elapsedMs / WEEK_MS) * 100;
-            percent = Math.min(100, Math.max(0, percent));
-            return percent;
-        }
-        
-        function getDayProgress() {
-            const now = new Date();
-            const startOfDay = new Date(now);
-            startOfDay.setHours(0, 0, 0, 0);
-            const elapsedMs = now.getTime() - startOfDay.getTime();
-            const percent = (elapsedMs / 86400000) * 100;
-            return Math.min(100, Math.max(0, percent));
-        }
-        
-        function getHourProgress() {
-            const now = new Date();
-            const minutes = now.getMinutes();
-            const seconds = now.getSeconds();
-            const totalSecondsInHour = minutes * 60 + seconds;
-            const percent = (totalSecondsInHour / 3600) * 100;
-            return Math.min(100, percent);
-        }
-        
-        function getMinuteProgress() {
-            const now = new Date();
-            const seconds = now.getSeconds();
-            const percent = (seconds / 60) * 100;
-            return Math.min(100, percent);
-        }
-        
-        return {
-            getWeekProgress,
-            getDayProgress,
-            getHourProgress,
-            getMinuteProgress
-        };
-    })();
+    // ----- 全局变量 -----
+    let lastSmoothedCount = null;          // 用于瞬时预测平滑 (EWMA)
+    let instantHistoryQueue = [];            // 存储最近30秒的瞬时预测值 (每秒推入)
+    let chartHistoryData = [];               // 折线图存储: 每个元素 { avgCount, timestamp }
+    const MAX_HISTORY = 20;
+    let canvasEl, canvasCtx;
     
-    // 模块4: 进度条 UI 更新器 (平滑渲染)
-    const ProgressUIManager = (() => {
-        const weekFill = document.getElementById('weekFill');
-        const weekPercentSpan = document.getElementById('weekPercent');
-        const dayFill = document.getElementById('dayFill');
-        const dayPercentSpan = document.getElementById('dayPercent');
-        const hourFill = document.getElementById('hourFill');
-        const hourPercentSpan = document.getElementById('hourPercent');
-        const minuteFill = document.getElementById('minuteFill');
-        const minutePercentSpan = document.getElementById('minutePercent');
-        
-        function updateAllProgress() {
-            const weekPct = ProgressCalculator.getWeekProgress();
-            const dayPct = ProgressCalculator.getDayProgress();
-            const hourPct = ProgressCalculator.getHourProgress();
-            const minutePct = ProgressCalculator.getMinuteProgress();
-            
-            if (weekFill) {
-                weekFill.style.width = `${weekPct}%`;
-                if (weekPercentSpan) weekPercentSpan.innerText = `${weekPct.toFixed(1)}%`;
-            }
-            if (dayFill) {
-                dayFill.style.width = `${dayPct}%`;
-                if (dayPercentSpan) dayPercentSpan.innerText = `${dayPct.toFixed(1)}%`;
-            }
-            if (hourFill) {
-                hourFill.style.width = `${hourPct}%`;
-                if (hourPercentSpan) hourPercentSpan.innerText = `${hourPct.toFixed(1)}%`;
-            }
-            if (minuteFill) {
-                minuteFill.style.width = `${minutePct}%`;
-                if (minutePercentSpan) minutePercentSpan.innerText = `${minutePct.toFixed(1)}%`;
-            }
-        }
-        
-        return { updateAllProgress };
-    })();
+    // 伴学组件元素
+    const daysEl = document.getElementById('daysDigit'), hoursEl = document.getElementById('hoursDigit');
+    const minutesEl = document.getElementById('minutesDigit'), secondsEl = document.getElementById('secondsDigit');
+    const peerSpan = document.getElementById('peerCountDisplay');
+    const timerDisplay = document.getElementById('studyTimerDisplay');
+    const greetingIconSpan = document.getElementById('greetingIcon');
+    const greetingTextSpan = document.getElementById('greetingText');
+    const sayingElement = document.getElementById('dynamicSaying');
+    const lateNightAlertDiv = document.getElementById('lateNightAlert');
+    const influenceHintSpan = document.getElementById('influenceFactorHint');
     
-    // 模块5: 实时时钟模块 (独立、优雅、每秒更新)
-    const CurrentTimeModule = (() => {
-        const clockElement = document.getElementById('liveClockDisplay');
-        
-        // 格式化当前时间 -> 示例: 2026.04.21 周二 15:38:09
-        function getFormattedCurrentTime() {
-            const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
-            const weekday = weekdays[now.getDay()];
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            // 现代简洁格式：2026.04.21 周二 15:38:09
-            return `${year}.${month}.${day} ${weekday} ${hours}:${minutes}:${seconds}`;
-        }
-        
-        function updateClockDisplay() {
-            if (clockElement) {
-                clockElement.innerText = getFormattedCurrentTime();
-            }
-        }
-        
-        // 立即刷新一次
-        function init() {
-            updateClockDisplay();
-        }
-        
-        return { updateClockDisplay, init };
-    })();
+    let prevDigits = { days: -1, hours: -1, minutes: -1, seconds: -1 };
+    let sessionStart = Date.now();
+    let peerRefreshInterval = null;
+    let secondTickInterval = null;
     
-    // 模块6: 总控制器 (倒计时+进度条+实时时钟 同步刷新)
-    const CountdownController = (() => {
-        let timerId = null;
-        let isExpiredFlag = false;
-        
-        function refreshAll() {
-            // 1. 更新倒计时
-            const timeData = TimeCalculator.getRemainingTime();
-            CountdownUIManager.updateDisplay(timeData);
-            // 2. 更新进度条（周/日/小时/分钟）
-            ProgressUIManager.updateAllProgress();
-            // 3. 更新实时时钟 (与整体节奏保持一致，每秒刷新)
-            CurrentTimeModule.updateClockDisplay();
-            
-            if (timeData.isExpired && !isExpiredFlag) {
-                isExpiredFlag = true;
-            }
-        }
-        
-        function startTimer() {
-            if (timerId) clearInterval(timerId);
-            refreshAll(); // 立即渲染一次，避免空白
-            timerId = setInterval(() => {
-                refreshAll();
-            }, 1000);
-        }
-        
-        function stopTimer() {
-            if (timerId) {
-                clearInterval(timerId);
-                timerId = null;
-            }
-        }
-        
-        function handleVisibilityChange() {
-            if (!document.hidden) {
-                refreshAll(); // 页面可见时立即同步最新时间
-            }
-        }
-        
-        function init() {
-            startTimer();
-            document.addEventListener('visibilitychange', handleVisibilityChange);
-            window.addEventListener('beforeunload', () => {
-                stopTimer();
-            });
-        }
-        
-        return { init, stopTimer };
-    })();
+    // 倒计时辅助
+    function formatNum(n) { return n < 10 ? `0${n}` : `${n}`; }
+    function shineDigit(el) { if(!el) return; el.classList.remove('digit-shine'); void el.offsetWidth; el.classList.add('digit-shine'); setTimeout(() => el.classList.remove('digit-shine'), 200); }
     
-    // 模块7: 应用启动引导 (确保所有模块就绪)
-    const AppBoot = (() => {
-        function init() {
-            // 初始化实时时钟的首次展示
-            CurrentTimeModule.init();
-            // 启动倒计时总控 (内部会立刻刷新倒计时、进度条和时钟)
-            CountdownController.init();
-            // 额外确保进度条完美显示
-            setTimeout(() => {
-                ProgressUIManager.updateAllProgress();
-                CurrentTimeModule.updateClockDisplay();
-            }, 30);
-        }
-        return { init };
-    })();
-    
-    // 启动整个应用 (DOM就绪后)
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => AppBoot.init());
-    } else {
-        AppBoot.init();
+    function getRemainingTime() {
+        const now = new Date();
+        const diffMs = TARGET_DATE.getTime() - now.getTime();
+        const isExpired = diffMs <= 0;
+        const safeDiff = isExpired ? 0 : diffMs;
+        const totalSeconds = Math.floor(safeDiff / 1000);
+        const days = Math.floor(totalSeconds / 86400);
+        const hours = Math.floor((totalSeconds % 86400) / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+        return { days, hours, minutes, seconds, isExpired };
     }
+    
+    function updateCountdownUI({ days, hours, minutes, seconds, isExpired }) {
+        let dS = formatNum(days), hS = formatNum(hours), mS = formatNum(minutes), sS = formatNum(seconds);
+        if(isExpired) { dS='00'; hS='00'; mS='00'; sS='00'; }
+        if(daysEl.innerText !== dS) { daysEl.innerText = dS; if(prevDigits.days !== days && !isExpired) shineDigit(daysEl); }
+        if(hoursEl.innerText !== hS) { hoursEl.innerText = hS; if(prevDigits.hours !== hours && !isExpired) shineDigit(hoursEl); }
+        if(minutesEl.innerText !== mS) { minutesEl.innerText = mS; if(prevDigits.minutes !== minutes && !isExpired) shineDigit(minutesEl); }
+        if(secondsEl.innerText !== sS) { secondsEl.innerText = sS; if(prevDigits.seconds !== seconds && !isExpired) shineDigit(secondsEl); }
+        prevDigits = { days, hours, minutes, seconds };
+    }
+    
+    // 进度条 (保持原样)
+    const ProgressCalc = {
+        getWeekProgress() { const now = new Date(); let daysToMonday = now.getDay() === 0 ? 6 : now.getDay()-1; const monday = new Date(now); monday.setDate(now.getDate()-daysToMonday); monday.setHours(0,0,0,0); const elapsed = now.getTime() - monday.getTime(); return Math.min(100, (elapsed / (7*86400000))*100); },
+        getDayProgress() { const now = new Date(); const start = new Date(now); start.setHours(0,0,0,0); return Math.min(100, ((now.getTime()-start.getTime())/86400000)*100); },
+        getHourProgress() { const now = new Date(); return Math.min(100, ((now.getMinutes()*60+now.getSeconds())/3600)*100); },
+        getMinuteProgress() { return Math.min(100, (new Date().getSeconds()/60)*100); }
+    };
+    function updateProgressBars() {
+        const wp = ProgressCalc.getWeekProgress(), dp = ProgressCalc.getDayProgress(), hp = ProgressCalc.getHourProgress(), mp = ProgressCalc.getMinuteProgress();
+        document.getElementById('weekFill').style.width = `${wp}%`; document.getElementById('weekPercent').innerText = `${wp.toFixed(1)}%`;
+        document.getElementById('dayFill').style.width = `${dp}%`; document.getElementById('dayPercent').innerText = `${dp.toFixed(1)}%`;
+        document.getElementById('hourFill').style.width = `${hp}%`; document.getElementById('hourPercent').innerText = `${hp.toFixed(1)}%`;
+        document.getElementById('minuteFill').style.width = `${mp}%`; document.getElementById('minutePercent').innerText = `${mp.toFixed(1)}%`;
+    }
+    
+    function updateLiveClock() {
+        const now = new Date();
+        const y = now.getFullYear(), m = String(now.getMonth()+1).padStart(2,'0'), d = String(now.getDate()).padStart(2,'0');
+        const w = ['周日','周一','周二','周三','周四','周五','周六'][now.getDay()];
+        const timeStr = `${y}.${m}.${d} ${w} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+        document.getElementById('liveClockDisplay').innerText = timeStr;
+    }
+    
+    // ========== 增强因子1: 时段活跃基数 ==========
+    function getBaseActiveFactor(now) {
+        const hour = now.getHours();
+        const day = now.getDay();
+        const isWeekend = (day === 0 || day === 6);
+        let base = 0;
+        if (hour >= 0 && hour < 5) base = 0.045;
+        else if (hour >= 5 && hour < 6) base = 0.09;
+        else if (hour >= 6 && hour < 8) base = 0.24;
+        else if (hour >= 8 && hour < 11) base = 0.30;
+        else if (hour >= 11 && hour < 13) base = 0.22;
+        else if (hour >= 13 && hour < 15) base = 0.28;
+        else if (hour >= 15 && hour < 17) base = 0.34;
+        else if (hour >= 17 && hour < 19) base = 0.40;
+        else if (hour >= 19 && hour < 21) base = 0.50;
+        else if (hour >= 21 && hour < 23) base = 0.54;
+        else base = 0.15;
+        let weekendMul = isWeekend ? ((hour >= 8 && hour < 22) ? 1.22 : (hour >= 22 ? 0.94 : 1.08)) : 1.0;
+        return Math.min(0.68, Math.max(0.04, base * weekendMul));
+    }
+    
+    // 增强因子2: 中考倒计时激励 (临近考试冲刺效应)
+    function getCountdownBoost(now) {
+        const remainingMs = TARGET_DATE.getTime() - now.getTime();
+        if (remainingMs <= 0) return 1.0;
+        const daysLeft = remainingMs / (1000 * 3600 * 24);
+        if (daysLeft <= 7) return 1.20;
+        if (daysLeft <= 30) return 1.12;
+        if (daysLeft <= 60) return 1.06;
+        if (daysLeft <= 90) return 1.02;
+        return 1.0;
+    }
+    
+    // 增强因子3: 普高计划/竞争综合系数 (结合录取难度)
+    function getCompetitionMotivation() {
+        // 动态微调: 随着日期接近，竞争感知增强，再微增1~3%
+        const now = new Date();
+        const daysLeft = Math.max(0, (TARGET_DATE - now) / (1000*3600*24));
+        let nearFactor = daysLeft < 45 ? 1.04 : (daysLeft < 90 ? 1.02 : 1.0);
+        return COMPETITION_BASE * nearFactor;
+    }
+    
+    // 核心预测函数: 基于多因子 + EWMA平滑 (每秒调用，产生瞬时预测值)
+    function calculateInstantActiveStudents(now) {
+        let baseFactor = getBaseActiveFactor(now);
+        const countdownBoost = getCountdownBoost(now);
+        const competitionBoost = getCompetitionMotivation();
+        let finalFactor = baseFactor * countdownBoost * competitionBoost;
+        finalFactor = Math.min(0.82, Math.max(0.045, finalFactor));
+        let rawEstimate = Math.floor(TOTAL_STUDENTS * finalFactor);
+        rawEstimate = Math.min(TOTAL_STUDENTS, Math.max(1800, rawEstimate));
+        
+        // EWMA 平滑 (避免剧烈跳变)
+        if (lastSmoothedCount === null) {
+            lastSmoothedCount = rawEstimate;
+        } else {
+            let smoothed = Math.floor(lastSmoothedCount * 0.65 + rawEstimate * 0.35);
+            const microVar = 1 + (Math.sin(now.getMilliseconds() * 0.02) * 0.005);
+            let final = Math.floor(smoothed * microVar);
+            const maxChange = Math.max(120, Math.floor(lastSmoothedCount * 0.028));
+            final = Math.min(lastSmoothedCount + maxChange, Math.max(lastSmoothedCount - maxChange, final));
+            final = Math.min(TOTAL_STUDENTS, Math.max(1500, final));
+            lastSmoothedCount = final;
+        }
+        return lastSmoothedCount;
+    }
+    
+    // 每秒执行: 推入瞬时队列 (保留最近30个元素)
+    function pushInstantPrediction() {
+        const now = new Date();
+        const instantVal = calculateInstantActiveStudents(now);
+        instantHistoryQueue.push(instantVal);
+        if (instantHistoryQueue.length > 30) instantHistoryQueue.shift();
+        // 更新竞争因子显示 (仅供视觉参考)
+        if (influenceHintSpan) {
+            const compet = getCompetitionMotivation();
+            influenceHintSpan.innerText = `考生心理预测：竞争系数${compet.toFixed(2)}x · 倒计时激励${getCountdownBoost(now).toFixed(2)}x`;
+        }
+    }
+    
+    // 取过去30秒队列的平均值 (若无足够数据则取全部)
+    function getAverageFromQueue() {
+        if (instantHistoryQueue.length === 0) return TOTAL_STUDENTS * 0.22;
+        const sum = instantHistoryQueue.reduce((a,b) => a + b, 0);
+        return Math.round(sum / instantHistoryQueue.length);
+    }
+    
+    // 折线图绘制
+    function drawTrendChart() {
+        if (!canvasEl || !canvasCtx) return;
+        const canvas = canvasEl;
+        const ctx = canvasCtx;
+        const w = canvas.clientWidth, h = canvas.clientHeight;
+        canvas.width = w;
+        canvas.height = h;
+        if (chartHistoryData.length === 0) {
+            ctx.clearRect(0, 0, w, h);
+            ctx.font = "12px Inter";
+            ctx.fillStyle = "#9AA9C1";
+            ctx.fillText("等待数据...", w/2-40, h/2);
+            return;
+        }
+        const values = chartHistoryData.map(p => p.avgCount);
+        const maxVal = Math.max(...values, 5000);
+        const minVal = Math.min(...values, 2000);
+        const range = maxVal - minVal === 0 ? 1 : maxVal - minVal;
+        const paddingLeft = 38, paddingRight = 15, paddingTop = 15, paddingBottom = 25;
+        const drawW = w - paddingLeft - paddingRight;
+        const drawH = h - paddingTop - paddingBottom;
+        if (drawW <= 0 || drawH <= 0) return;
+        
+        ctx.clearRect(0, 0, w, h);
+        ctx.strokeStyle = "#E9EFF4";
+        ctx.lineWidth = 0.6;
+        for (let i = 0; i <= 4; i++) {
+            const y = paddingTop + (drawH * i / 4);
+            ctx.beginPath();
+            ctx.moveTo(paddingLeft, y);
+            ctx.lineTo(w - paddingRight, y);
+            ctx.stroke();
+        }
+        ctx.fillStyle = "#6B7C93";
+        ctx.font = "10px Inter";
+        for (let i = 0; i <= 4; i++) {
+            const yVal = Math.round(maxVal - (i/4)*range);
+            const y = paddingTop + (drawH * i / 4);
+            ctx.fillText(yVal.toLocaleString(), 5, y+3);
+        }
+        const step = Math.max(1, Math.floor(chartHistoryData.length / 8));
+        for (let i = 0; i < chartHistoryData.length; i+=step) {
+            const x = paddingLeft + (drawW * i / (chartHistoryData.length-1));
+            ctx.fillText(`-${chartHistoryData.length-i}`, x-8, h-paddingBottom+12);
+        }
+        ctx.beginPath();
+        ctx.strokeStyle = "#3B82F6";
+        ctx.lineWidth = 2.5;
+        ctx.lineJoin = "round";
+        let first = true;
+        for (let i = 0; i < chartHistoryData.length; i++) {
+            const x = paddingLeft + (drawW * i / (chartHistoryData.length-1));
+            const y = paddingTop + drawH - ( (chartHistoryData[i].avgCount - minVal) / range ) * drawH;
+            if (first) { ctx.moveTo(x, y); first = false; }
+            else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        ctx.fillStyle = "#1E40AF";
+        for (let i = 0; i < chartHistoryData.length; i++) {
+            const x = paddingLeft + (drawW * i / (chartHistoryData.length-1));
+            const y = paddingTop + drawH - ( (chartHistoryData[i].avgCount - minVal) / range ) * drawH;
+            ctx.beginPath();
+            ctx.arc(x, y, 3, 0, 2*Math.PI);
+            ctx.fillStyle = "#3B82F6";
+            ctx.fill();
+            ctx.fillStyle = "white";
+            ctx.beginPath();
+            ctx.arc(x, y, 1.3, 0, 2*Math.PI);
+            ctx.fill();
+        }
+        const lastVal = chartHistoryData[chartHistoryData.length-1].avgCount;
+        ctx.fillStyle = "#1F3A6E";
+        ctx.font = "bold 11px 'Space Grotesk'";
+        ctx.fillText(`最新均值:${lastVal.toLocaleString()}`, w-80, paddingTop-4);
+    }
+    
+    // 添加新的平均值点 (基于最近30秒队列平均)
+    function recordAveragePoint() {
+        const avg = getAverageFromQueue();
+        chartHistoryData.push({ avgCount: avg, timestamp: Date.now() });
+        if (chartHistoryData.length > MAX_HISTORY) chartHistoryData.shift();
+        drawTrendChart();
+        // 同时更新UI显示的人数（平滑平均，符合5-10秒更新频率）
+        if (peerSpan) {
+            peerSpan.innerText = avg.toLocaleString();
+            peerSpan.classList.add('pulse-stat');
+            setTimeout(() => peerSpan.classList.remove('pulse-stat'), 280);
+        }
+    }
+    
+    // 时段问候 + 健康提醒
+    function getPlainGreeting(now) {
+        const hour = now.getHours();
+        if (hour >= 23 || hour < 5) return { icon: "[深夜]", text: "夜深人静，蓄力之时。请早点休息，保持精力。", isLateNight: true };
+        if (hour >= 5 && hour < 6) return { icon: "[黎明]", text: "晨光微熹，早起的人儿最耀眼！", isLateNight: false };
+        if (hour >= 6 && hour < 8) return { icon: "[清晨]", text: "一日之计在于晨，大声朗读唤醒大脑！", isLateNight: false };
+        if (hour >= 8 && hour < 11) return { icon: "[上午]", text: "专注力巅峰，攻克理科或背诵重点。", isLateNight: false };
+        if (hour >= 11 && hour < 13) return { icon: "[午间]", text: "午餐营养均衡，小憩15分钟更高效。", isLateNight: false };
+        if (hour >= 13 && hour < 15) return { icon: "[午后]", text: "午后易犯困，起来走动，坚持复习。", isLateNight: false };
+        if (hour >= 15 && hour < 17) return { icon: "[下午]", text: "黄金复习区，冲刺重难点！", isLateNight: false };
+        if (hour >= 17 && hour < 19) return { icon: "[傍晚]", text: "复盘今日收获，放松片刻再出发。", isLateNight: false };
+        if (hour >= 19 && hour < 21) return { icon: "[晚间]", text: "梳理知识框架，效率巅峰时段。", isLateNight: false };
+        if (hour >= 21 && hour < 23) return { icon: "[深夜自习]", text: "合理作息，效率优先。保持节奏。", isLateNight: false };
+        return { icon: "[自习]", text: "稳住心态，中考加油！", isLateNight: false };
+    }
+    
+    function updateGreetingAndHealth() {
+        const now = new Date();
+        const { icon, text, isLateNight } = getPlainGreeting(now);
+        if(greetingIconSpan) greetingIconSpan.innerText = icon;
+        if(greetingTextSpan) greetingTextSpan.innerText = text;
+        const hour = now.getHours();
+        const isReallyLate = (hour >= 23 || hour < 5);
+        if(lateNightAlertDiv) {
+            if (isReallyLate) {
+                let advise = hour >= 23 && hour < 24 ? "已经深夜，大脑需要休息，明天效率更高。" : (hour >=0 && hour <3 ? "熬夜伤身，为了中考长久战，快去睡觉！" : "天快亮了，保证睡眠才能记住知识。");
+                lateNightAlertDiv.innerHTML = `[提醒] ${advise}`;
+                lateNightAlertDiv.style.display = "flex";
+            } else {
+                lateNightAlertDiv.style.display = "none";
+            }
+        }
+    }
+    
+    function updateStudyTimer() {
+        const elapsed = Math.floor((Date.now() - sessionStart) / 1000);
+        const hours = Math.floor(elapsed/3600), mins = Math.floor((elapsed%3600)/60), secs = elapsed%60;
+        if(timerDisplay) timerDisplay.innerText = `${hours.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+    }
+    
+    const sayingsPool = [
+        "乾坤未定，你我皆是黑马。", "每一道错题，都是未来的基石。", "坚持到今天，你已经很棒了！",
+        "新乡少年，提笔为剑，决胜中考。", "再微小的努力，乘以365天都会发光。", "你笔下写过的每一个字，都不会辜负你。",
+        "现在的痛，终将变成未来的勋章。", "中考是盛夏的果实，请用汗水浇灌。", "和时间赛跑，你就是赢家。",
+        "星光不问赶路人，时光不负有心人。", "心态稳住，你就战胜了一半对手。", "偶尔深呼吸，调整节奏再出发。"
+    ];
+    let currentSayingIdx = -1;
+    function randomSaying() { let newIdx = Math.floor(Math.random() * sayingsPool.length); while(sayingsPool.length>1 && newIdx===currentSayingIdx) newIdx = Math.floor(Math.random() * sayingsPool.length); currentSayingIdx = newIdx; return sayingsPool[currentSayingIdx]; }
+    function refreshSaying() { if(sayingElement) { sayingElement.innerText = randomSaying(); sayingElement.classList.add('pulse-stat'); setTimeout(() => sayingElement.classList.remove('pulse-stat'), 300); } }
+    
+    // ========== 初始化 ==========
+    function init() {
+        canvasEl = document.getElementById('trendCanvas');
+        if(canvasEl) canvasCtx = canvasEl.getContext('2d');
+        sessionStart = Date.now();
+        
+        // 预填充瞬时队列和历史数据 (构建平滑起始)
+        for(let i=0;i<25;i++) pushInstantPrediction();
+        // 预先记录3~4个平均值点，让图表不为空
+        for(let i=0;i<4;i++) {
+            const initialAvg = getAverageFromQueue();
+            chartHistoryData.push({ avgCount: initialAvg, timestamp: Date.now() - (4-i)*8000 });
+        }
+        while(chartHistoryData.length > MAX_HISTORY) chartHistoryData.shift();
+        drawTrendChart();
+        const currentAvg = getAverageFromQueue();
+        if(peerSpan) peerSpan.innerText = currentAvg.toLocaleString();
+        
+        // 1秒周期任务: 倒计时、进度、时钟、问候、瞬时队列
+        secondTickInterval = setInterval(() => {
+            updateCountdownUI(getRemainingTime());
+            updateProgressBars();
+            updateLiveClock();
+            updateStudyTimer();
+            updateGreetingAndHealth();
+            pushInstantPrediction();   // 每秒推入瞬时预测值 (保持30秒滑动窗口)
+        }, 1000);
+        
+        // 独立采样器: 每8秒记录一次30秒均值 (速度5-10秒区间, 满足需求)
+        peerRefreshInterval = setInterval(() => {
+            recordAveragePoint();   // 记录平均值并刷新UI
+        }, 8000);
+        
+        document.getElementById('refreshSayingBtn')?.addEventListener('click', refreshSaying);
+        window.addEventListener('resize', () => drawTrendChart());
+        refreshSaying();
+        // 显示竞争因子初始状态
+        if(influenceHintSpan) influenceHintSpan.innerText = `🔥 竞系${getCompetitionMotivation().toFixed(2)}x · 冲刺系数激活`;
+    }
+    
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
 </script>
 </body>
 </html>

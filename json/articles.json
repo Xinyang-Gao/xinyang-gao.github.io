@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-04-27T00:07:59.990265",
+  "generated_at": "2026-04-27T21:07:33.698603",
   "total_articles": 9,
-  "total_word_count": 29923,
+  "total_word_count": 29935,
   "articles": [
     {
       "relative_path": "articles/source/日记/体育考试记录.md",
-      "hash": "d1bb780d45315cdd1fc7b2fb03781e6a",
+      "hash": "86e72b713b4157033b4c48ae9d7c8117",
       "last_updated": "2026-04-27",
-      "modify_count": 1,
+      "modify_count": 2,
       "hidden": false,
       "title": "中招体育考试记录",
       "date": "2026-04-26",
@@ -19,7 +19,7 @@
       ],
       "category": "日记",
       "url": "/articles/体育考试记录.html",
-      "word_count": 1488,
+      "word_count": 1500,
       "read_time": "5分钟"
     },
     {
