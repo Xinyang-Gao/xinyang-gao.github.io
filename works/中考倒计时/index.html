@@ -84,6 +84,41 @@
             --btn-hover: #3B82F6;
         }
 
+        /* 全局平滑主题过渡 (增强深色/浅色切换视觉效果) */
+        body, 
+        .time-card, 
+        .progress-section, 
+        .companion-section, 
+        .companion-item, 
+        .trend-card, 
+        .saying-box, 
+        .real-time-card, 
+        .target-badge, 
+        .health-tip, 
+        .theme-toggle, 
+        .progress-track-wide, 
+        .progress-fill-wide,
+        .greeting-icon,
+        .greeting-text,
+        .stat-value,
+        .stat-label,
+        .digit,
+        .unit,
+        .progress-label-left,
+        .progress-percent-right,
+        .influence-badge,
+        .chart-note,
+        .refresh-saying,
+        .companion-header h3,
+        .hero-title {
+            transition: background-color 0.2s ease-in-out, 
+                        background 0.2s ease-in-out, 
+                        border-color 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1),
+                        color 0.2s ease-out, 
+                        box-shadow 0.2s ease-out,
+                        text-shadow 0.2s ease;
+        }
+
         body {
             background: linear-gradient(145deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
             font-family: system-ui, -apple-system, 'Inter', 'Segoe UI', 'Roboto', sans-serif;
@@ -214,7 +249,7 @@
             border-radius: 42px;
             padding: 1.8rem 0.8rem;
             text-align: center;
-            transition: all 0.3s cubic-bezier(0.2, 0.95, 0.4, 1.05);
+            transition: transform 0.3s cubic-bezier(0.2, 0.95, 0.4, 1.05), background 0.2s, box-shadow 0.2s, border-color 0.2s;
             box-shadow: var(--shadow-sm);
             border: 1px solid var(--card-border);
         }
@@ -230,7 +265,7 @@
             letter-spacing: -0.02em;
             color: var(--accent-light);
             line-height: 1.05;
-            transition: all 0.1s ease;
+            transition: color 0.2s ease, text-shadow 0.2s;
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
         }
         .unit {
@@ -259,6 +294,7 @@
             border-radius: 80px;
             overflow: hidden;
             box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
+            transition: background 0.2s ease;
         }
         .progress-fill-wide {
             position: absolute;
@@ -269,7 +305,7 @@
             background: var(--progress-fill);
             background-size: 200% 100%;
             border-radius: 80px;
-            transition: width 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.2);
+            transition: width 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.2), background 0.2s ease;
         }
         .progress-content {
             position: relative;
@@ -290,6 +326,7 @@
             padding: 0.3rem 1.2rem;
             border-radius: 60px;
             color: white;
+            transition: background 0.2s;
         }
         .progress-percent-right {
             font-family: 'Space Grotesk', monospace;
@@ -338,7 +375,7 @@
             background: var(--companion-item-bg);
             border-radius: 28px;
             padding: 1rem 1.2rem;
-            transition: all 0.2s;
+            transition: transform 0.2s, background 0.2s, border-color 0.2s;
             border: 1px solid var(--companion-item-border);
         }
         .companion-item:hover {
@@ -405,6 +442,7 @@
             gap: 8px;
             color: var(--health-tip-color);
             border-left: 4px solid var(--health-tip-border);
+            transition: background 0.2s, color 0.2s, border-left-color 0.2s;
         }
         .saying-box {
             background: var(--saying-bg);
@@ -424,6 +462,7 @@
             flex: 1;
             border-left: 3px solid var(--saying-border-left);
             padding-left: 1rem;
+            transition: color 0.2s, border-left-color 0.2s;
         }
         .refresh-saying {
             background: rgba(59,130,246,0.15);
@@ -447,6 +486,7 @@
             border-radius: 28px;
             padding: 0.8rem 1rem 1rem 1rem;
             border: 1px solid var(--trend-border);
+            transition: background 0.2s, border 0.2s;
         }
         .trend-title {
             font-size: 0.85rem;
@@ -479,6 +519,7 @@
             background: var(--canvas-bg);
             border-radius: 20px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            transition: background 0.2s ease;
         }
         .chart-note {
             font-size: 0.65rem;
@@ -596,18 +637,12 @@
     const ADMISSION_RATE = PLAN_TOTAL / TOTAL_STUDENTS;
     const COMPETITION_BASE = Math.min(1.48, Math.max(1.0, 1 + (1 - ADMISSION_RATE) * 0.75));
 
-    // 五分钟长周期配置: 24个点 = 2小时
     const LONG_HISTORY_SIZE = 24;  
-    let chartHistoryData = [];       // 储存每5分钟的聚合点 { avgCount, timestamp }
-    
-    // 实时瞬时平滑引擎 (用于“此刻同学数”)
+    let chartHistoryData = [];       
     let lastSmoothedCount = null;
-    let instantHistoryQueue = [];     // 存储最近高频率瞬时值(限30个)
+    let instantHistoryQueue = [];     
+    let fiveMinuteWindow = [];        
     
-    // 五分钟窗口收集高频瞬时数据
-    let fiveMinuteWindow = [];        // 存储这5分钟内每次pushInstantPrediction的值
-    
-    // DOM 元素
     const daysEl = document.getElementById('daysDigit'), hoursEl = document.getElementById('hoursDigit');
     const minutesEl = document.getElementById('minutesDigit'), secondsEl = document.getElementById('secondsDigit');
     const peerSpan = document.getElementById('peerCountDisplay');
@@ -618,48 +653,19 @@
     const lateNightAlertDiv = document.getElementById('lateNightAlert');
     const influenceHintSpan = document.getElementById('influenceFactorHint');
     let canvasEl, canvasCtx;
-    
     let prevDigits = { days: -1, hours: -1, minutes: -1, seconds: -1 };
     let sessionStart = Date.now();
-    let longTermInterval = null;
-    let realtimePeerInterval = null;
-    let secondTickHandler = null;
+    let longTermInterval = null, realtimePeerInterval = null, secondTickHandler = null;
     
-    // ========== 连续平滑活跃因子模型 (消除整点突变) ==========
-    // 定义24个整点的基准活跃因子 (基于中考冲刺人群行为大数据模拟，平滑过渡)
     const HOURLY_BASE_FACTORS = [
-        0.07,   // 0:00
-        0.045,  // 1:00
-        0.035,  // 2:00
-        0.03,   // 3:00
-        0.04,   // 4:00
-        0.09,   // 5:00
-        0.22,   // 6:00
-        0.27,   // 7:00
-        0.33,   // 8:00
-        0.38,   // 9:00
-        0.39,   // 10:00
-        0.34,   // 11:00
-        0.28,   // 12:00
-        0.32,   // 13:00
-        0.36,   // 14:00
-        0.41,   // 15:00
-        0.43,   // 16:00
-        0.47,   // 17:00
-        0.48,   // 18:00
-        0.54,   // 19:00
-        0.56,   // 20:00
-        0.54,   // 21:00
-        0.46,   // 22:00
-        0.28    // 23:00
+        0.07, 0.045, 0.035, 0.03, 0.04, 0.09, 0.22, 0.27, 0.33, 0.38, 0.39, 0.34,
+        0.28, 0.32, 0.36, 0.41, 0.43, 0.47, 0.48, 0.54, 0.56, 0.54, 0.46, 0.28
     ];
     
-    // 平滑插值函数: 根据当前时间(精确到分钟)返回连续活跃因子
     function getSmoothActiveFactor(now) {
         const hour = now.getHours();
         const minute = now.getMinutes();
         const totalMinutes = hour * 60 + minute;
-        // 前一整点的小时索引 和 后一整点的小时索引 (跨天处理)
         const prevHourIndex = Math.floor(hour);
         const nextHourIndex = (prevHourIndex + 1) % 24;
         const prevTotalMin = prevHourIndex * 60;
@@ -670,17 +676,14 @@
         if (nextTotalMin > prevTotalMin) {
             t = (totalMinutes - prevTotalMin) / (nextTotalMin - prevTotalMin);
         } else {
-            // 跨午夜情况 (例如 23:30 -> 下一整点为0:00，间隔60分钟)
-            const segLen = (24 * 60 - prevTotalMin) + nextTotalMin; // 60分钟
+            const segLen = (24 * 60 - prevTotalMin) + nextTotalMin;
             t = (totalMinutes - prevTotalMin) / segLen;
         }
         t = Math.min(1.0, Math.max(0.0, t));
         const interpolated = factorPrev * (1 - t) + factorNext * t;
-        // 确保极小值不低于0.025 (凌晨仍有极少数学子)
         return Math.min(0.62, Math.max(0.025, interpolated));
     }
     
-    // 周末调节因子: 保持原有逻辑但避免额外突变 (不影响时段平滑性)
     function getWeekendMultiplier(now) {
         const day = now.getDay();
         const isWeekend = (day === 0 || day === 6);
@@ -691,7 +694,6 @@
         return 1.08;
     }
     
-    // 倒计时激励因子 (临近中考逐步上升)
     function getCountdownBoost(now) {
         const remainingMs = TARGET_DATE.getTime() - now.getTime();
         if (remainingMs <= 0) return 1.0;
@@ -703,36 +705,29 @@
         return 1.0;
     }
     
-    // 竞争压力系数 (动态调节)
     function getCompetitionMotivation(now) {
         const daysLeft = Math.max(0, (TARGET_DATE - now) / (1000*3600*24));
         let nearFactor = daysLeft < 45 ? 1.04 : (daysLeft < 90 ? 1.02 : 1.0);
         return COMPETITION_BASE * nearFactor;
     }
     
-    // 核心预测函数 (基于连续活跃因子+周末+倒计时+竞争) 
     function calculateInstantRaw(now) {
         let baseFactor = getSmoothActiveFactor(now);
         const weekendMul = getWeekendMultiplier(now);
         const countdownBoost = getCountdownBoost(now);
         const competitionBoost = getCompetitionMotivation(now);
         let finalFactor = baseFactor * weekendMul * countdownBoost * competitionBoost;
-        // 夜间与峰值约束 (合理范围)
         finalFactor = Math.min(0.82, Math.max(0.03, finalFactor));
         let rawEstimate = Math.floor(TOTAL_STUDENTS * finalFactor);
-        // 保证最低值不少于 1600 人 (深夜仍有奋斗者)
         return Math.min(TOTAL_STUDENTS, Math.max(1600, rawEstimate));
     }
     
-    // 实时平滑预测 (用于实时显示, 加入平滑波动，消除高频噪点)
     function pushInstantPrediction() {
         const now = new Date();
         const rawVal = calculateInstantRaw(now);
-        // 指数平滑 + 微小抖动，使数字更自然
         if (lastSmoothedCount === null) lastSmoothedCount = rawVal;
         else {
             let smoothed = Math.floor(lastSmoothedCount * 0.68 + rawVal * 0.32);
-            // 微小自然波动 (模拟实时动态)
             const microVar = 1 + (Math.sin(now.getMilliseconds() * 0.012) * 0.004);
             let final = Math.floor(smoothed * microVar);
             const maxChange = Math.max(80, Math.floor(lastSmoothedCount * 0.022));
@@ -747,22 +742,18 @@
         return finalVal;
     }
     
-    // 获取实时瞬时平均值 (高频刷新UI)
     function getCurrentRealtimeAvg() {
         if (instantHistoryQueue.length === 0) return TOTAL_STUDENTS * 0.22;
         const sum = instantHistoryQueue.reduce((a,b)=>a+b,0);
         return Math.round(sum / instantHistoryQueue.length);
     }
     
-    // 每5分钟记录长周期趋势点
     function recordLongTermPoint() {
         let avgVal = 0;
         if (fiveMinuteWindow.length > 0) {
             const sum = fiveMinuteWindow.reduce((a,b)=>a+b,0);
             avgVal = Math.round(sum / fiveMinuteWindow.length);
-        } else {
-            avgVal = getCurrentRealtimeAvg();
-        }
+        } else { avgVal = getCurrentRealtimeAvg(); }
         fiveMinuteWindow = [];
         chartHistoryData.push({ avgCount: avgVal, timestamp: Date.now() });
         if (chartHistoryData.length > LONG_HISTORY_SIZE) chartHistoryData.shift();
@@ -773,14 +764,12 @@
         }
     }
     
-    // 填充历史曲线数据: 基于连续模型补全过去2小时 (平滑历史)
     function fillPastHistory() {
         const now = new Date();
         const points = [];
         for (let i = LONG_HISTORY_SIZE - 1; i >= 0; i--) {
             const pointDate = new Date(now.getTime() - (i * 5 * 60 * 1000));
             let raw = calculateInstantRaw(pointDate);
-            // 极小扰动使曲线更自然 (±1.5%)
             const variation = 0.985 + (Math.sin(pointDate.getTime() * 0.0006) * 0.015);
             raw = Math.floor(raw * variation);
             points.push({ avgCount: Math.min(TOTAL_STUDENTS, Math.max(1600, raw)), timestamp: pointDate.getTime() });
@@ -789,7 +778,6 @@
         if (chartHistoryData.length > LONG_HISTORY_SIZE) chartHistoryData = chartHistoryData.slice(-LONG_HISTORY_SIZE);
     }
     
-    // 折线图绘制 (支持时间轴标注)
     function drawTrendChart() {
         if (!canvasEl || !canvasCtx) return;
         const canvas = canvasEl;
@@ -797,12 +785,7 @@
         const w = canvas.clientWidth, h = canvas.clientHeight;
         canvas.width = w;
         canvas.height = h;
-        if (chartHistoryData.length === 0) {
-            ctx.clearRect(0, 0, w, h);
-            ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--canvas-text') || '#6B7C93';
-            ctx.fillText("等待趋势数据...", w/2-50, h/2);
-            return;
-        }
+        if (chartHistoryData.length === 0) { ctx.clearRect(0, 0, w, h); return; }
         const values = chartHistoryData.map(p => p.avgCount);
         const maxVal = Math.max(...values, 5000);
         const minVal = Math.min(...values, 2000);
@@ -811,7 +794,6 @@
         const drawW = w - paddingLeft - paddingRight;
         const drawH = h - paddingTop - paddingBottom;
         if (drawW <= 0 || drawH <= 0) return;
-        
         ctx.clearRect(0, 0, w, h);
         const gridColor = getComputedStyle(document.body).getPropertyValue('--canvas-grid') || '#E9EFF4';
         const textColor = getComputedStyle(document.body).getPropertyValue('--canvas-text') || '#6B7C93';
@@ -819,10 +801,7 @@
         ctx.lineWidth = 0.6;
         for (let i = 0; i <= 4; i++) {
             const y = paddingTop + (drawH * i / 4);
-            ctx.beginPath();
-            ctx.moveTo(paddingLeft, y);
-            ctx.lineTo(w - paddingRight, y);
-            ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(paddingLeft, y); ctx.lineTo(w - paddingRight, y); ctx.stroke();
         }
         ctx.fillStyle = textColor;
         ctx.font = "10px Inter";
@@ -831,41 +810,28 @@
             const y = paddingTop + (drawH * i / 4);
             ctx.fillText(yVal.toLocaleString(), 5, y+3);
         }
-        const totalMins = (chartHistoryData.length-1)*5;
         for (let i = 0; i < chartHistoryData.length; i+= Math.max(1, Math.floor(chartHistoryData.length/6))) {
             const x = paddingLeft + (drawW * i / (chartHistoryData.length-1));
             const offsetMins = (chartHistoryData.length-1 - i) * 5;
-            let label = "";
-            if (offsetMins === 0) label = "现在";
-            else if (offsetMins >= 60) label = `-${Math.floor(offsetMins/60)}h`;
-            else label = `-${offsetMins}m`;
+            let label = offsetMins === 0 ? "现在" : (offsetMins >= 60 ? `-${Math.floor(offsetMins/60)}h` : `-${offsetMins}m`);
             ctx.fillText(label, x-12, h-paddingBottom+12);
         }
         ctx.beginPath();
         const lineColor = getComputedStyle(document.body).getPropertyValue('--canvas-line') || '#3B82F6';
         ctx.strokeStyle = lineColor;
         ctx.lineWidth = 2.4;
-        ctx.lineJoin = "round";
         let first = true;
         for (let i = 0; i < chartHistoryData.length; i++) {
             const x = paddingLeft + (drawW * i / (chartHistoryData.length-1));
             const y = paddingTop + drawH - ( (chartHistoryData[i].avgCount - minVal) / range ) * drawH;
-            if (first) { ctx.moveTo(x, y); first = false; }
-            else ctx.lineTo(x, y);
+            if (first) { ctx.moveTo(x, y); first = false; } else ctx.lineTo(x, y);
         }
         ctx.stroke();
-        const pointColor = getComputedStyle(document.body).getPropertyValue('--canvas-point') || '#1E40AF';
         for (let i = 0; i < chartHistoryData.length; i++) {
             const x = paddingLeft + (drawW * i / (chartHistoryData.length-1));
             const y = paddingTop + drawH - ( (chartHistoryData[i].avgCount - minVal) / range ) * drawH;
-            ctx.beginPath();
-            ctx.arc(x, y, 3.2, 0, 2*Math.PI);
-            ctx.fillStyle = lineColor;
-            ctx.fill();
-            ctx.fillStyle = "white";
-            ctx.beginPath();
-            ctx.arc(x, y, 1.5, 0, 2*Math.PI);
-            ctx.fill();
+            ctx.beginPath(); ctx.arc(x, y, 3.2, 0, 2*Math.PI); ctx.fillStyle = lineColor; ctx.fill();
+            ctx.beginPath(); ctx.arc(x, y, 1.5, 0, 2*Math.PI); ctx.fillStyle = "white"; ctx.fill();
         }
         const lastVal = chartHistoryData[chartHistoryData.length-1].avgCount;
         ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--accent-blue') || '#1F3A6E';
@@ -873,24 +839,11 @@
         ctx.fillText(`最新聚合:${lastVal.toLocaleString()}`, w-86, paddingTop-2);
     }
     
-
-    // UI通用函数 (倒计时，进度条，时钟等)
     function formatNum(n) { return n < 10 ? `0${n}` : `${n}`; }
     function shineDigit(el) { if(!el) return; el.classList.remove('digit-shine'); void el.offsetWidth; el.classList.add('digit-shine'); setTimeout(() => el.classList.remove('digit-shine'), 200); }
-    function getRemainingTime() {
-        const now = new Date();
-        const diffMs = TARGET_DATE.getTime() - now.getTime();
-        const isExpired = diffMs <= 0;
-        const safeDiff = isExpired ? 0 : diffMs;
-        const totalSeconds = Math.floor(safeDiff / 1000);
-        const days = Math.floor(totalSeconds / 86400);
-        const hours = Math.floor((totalSeconds % 86400) / 3600);
-        const minutes = Math.floor((totalSeconds % 3600) / 60);
-        const seconds = totalSeconds % 60;
-        return { days, hours, minutes, seconds, isExpired };
-    }
+    function getRemainingTime() { const now=new Date(); const diffMs=TARGET_DATE-now; const safeDiff=diffMs<=0?0:diffMs; const totalSeconds=Math.floor(safeDiff/1000); const days=Math.floor(totalSeconds/86400); const hours=Math.floor((totalSeconds%86400)/3600); const minutes=Math.floor((totalSeconds%3600)/60); const seconds=totalSeconds%60; return { days, hours, minutes, seconds, isExpired:diffMs<=0 }; }
     function updateCountdownUI({ days, hours, minutes, seconds, isExpired }) {
-        let dS = formatNum(days), hS = formatNum(hours), mS = formatNum(minutes), sS = formatNum(seconds);
+        let dS=formatNum(days), hS=formatNum(hours), mS=formatNum(minutes), sS=formatNum(seconds);
         if(isExpired) { dS='00'; hS='00'; mS='00'; sS='00'; }
         if(daysEl.innerText !== dS) { daysEl.innerText = dS; if(prevDigits.days !== days && !isExpired) shineDigit(daysEl); }
         if(hoursEl.innerText !== hS) { hoursEl.innerText = hS; if(prevDigits.hours !== hours && !isExpired) shineDigit(hoursEl); }
@@ -899,80 +852,55 @@
         prevDigits = { days, hours, minutes, seconds };
     }
     const ProgressCalc = {
-        getWeekProgress() { const now = new Date(); let daysToMonday = now.getDay() === 0 ? 6 : now.getDay()-1; const monday = new Date(now); monday.setDate(now.getDate()-daysToMonday); monday.setHours(0,0,0,0); const elapsed = now.getTime() - monday.getTime(); return Math.min(100, (elapsed / (7*86400000))*100); },
-        getDayProgress() { const now = new Date(); const start = new Date(now); start.setHours(0,0,0,0); return Math.min(100, ((now.getTime()-start.getTime())/86400000)*100); },
-        getHourProgress() { const now = new Date(); return Math.min(100, ((now.getMinutes()*60+now.getSeconds())/3600)*100); },
+        getWeekProgress() { const now=new Date(); let daysToMonday=now.getDay()===0?6:now.getDay()-1; const monday=new Date(now); monday.setDate(now.getDate()-daysToMonday); monday.setHours(0,0,0,0); const elapsed=now-monday; return Math.min(100, (elapsed/(7*86400000))*100); },
+        getDayProgress() { const now=new Date(); const start=new Date(now); start.setHours(0,0,0,0); return Math.min(100, ((now-start)/86400000)*100); },
+        getHourProgress() { const now=new Date(); return Math.min(100, ((now.getMinutes()*60+now.getSeconds())/3600)*100); },
         getMinuteProgress() { return Math.min(100, (new Date().getSeconds()/60)*100); }
     };
     function updateProgressBars() {
-        const wp = ProgressCalc.getWeekProgress(), dp = ProgressCalc.getDayProgress(), hp = ProgressCalc.getHourProgress(), mp = ProgressCalc.getMinuteProgress();
-        document.getElementById('weekFill').style.width = `${wp}%`; document.getElementById('weekPercent').innerText = `${wp.toFixed(1)}%`;
-        document.getElementById('dayFill').style.width = `${dp}%`; document.getElementById('dayPercent').innerText = `${dp.toFixed(1)}%`;
-        document.getElementById('hourFill').style.width = `${hp}%`; document.getElementById('hourPercent').innerText = `${hp.toFixed(1)}%`;
-        document.getElementById('minuteFill').style.width = `${mp}%`; document.getElementById('minutePercent').innerText = `${mp.toFixed(1)}%`;
+        const wp=ProgressCalc.getWeekProgress(), dp=ProgressCalc.getDayProgress(), hp=ProgressCalc.getHourProgress(), mp=ProgressCalc.getMinuteProgress();
+        document.getElementById('weekFill').style.width=`${wp}%`; document.getElementById('weekPercent').innerText=`${wp.toFixed(1)}%`;
+        document.getElementById('dayFill').style.width=`${dp}%`; document.getElementById('dayPercent').innerText=`${dp.toFixed(1)}%`;
+        document.getElementById('hourFill').style.width=`${hp}%`; document.getElementById('hourPercent').innerText=`${hp.toFixed(1)}%`;
+        document.getElementById('minuteFill').style.width=`${mp}%`; document.getElementById('minutePercent').innerText=`${mp.toFixed(1)}%`;
     }
-    function updateLiveClock() {
-        const now = new Date();
-        const y = now.getFullYear(), m = String(now.getMonth()+1).padStart(2,'0'), d = String(now.getDate()).padStart(2,'0');
-        const w = ['周日','周一','周二','周三','周四','周五','周六'][now.getDay()];
-        const timeStr = `${y}.${m}.${d} ${w} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
-        document.getElementById('liveClockDisplay').innerText = timeStr;
-    }
-    function updateStudyTimer() {
-        const elapsed = Math.floor((Date.now() - sessionStart) / 1000);
-        const hours = Math.floor(elapsed/3600), mins = Math.floor((elapsed%3600)/60), secs = elapsed%60;
-        if(timerDisplay) timerDisplay.innerText = `${hours.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
-    }
+    function updateLiveClock() { const now=new Date(); const y=now.getFullYear(), m=String(now.getMonth()+1).padStart(2,'0'), d=String(now.getDate()).padStart(2,'0'); const w=['周日','周一','周二','周三','周四','周五','周六'][now.getDay()]; document.getElementById('liveClockDisplay').innerText=`${y}.${m}.${d} ${w} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`; }
+    function updateStudyTimer() { const elapsed=Math.floor((Date.now()-sessionStart)/1000); const hours=Math.floor(elapsed/3600), mins=Math.floor((elapsed%3600)/60), secs=elapsed%60; if(timerDisplay) timerDisplay.innerText=`${hours.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`; }
     function updateGreetingAndHealth() {
-        const now = new Date();
-        const hour = now.getHours();
-        let icon, text, isLateNight=false;
-        if (hour >= 23 || hour < 5) { icon="[深夜]"; text="深夜静心，休息为重，积蓄能量。"; isLateNight=true; }
-        else if (hour >=5 && hour<6) { icon="[黎明]"; text="晨光微熹，早起的人儿最耀眼！"; }
-        else if (hour>=6 && hour<8) { icon="[清晨]"; text="一日之计在于晨，大声朗读唤醒大脑！"; }
-        else if (hour>=8 && hour<11) { icon="[上午]"; text="专注力巅峰，攻克理科或背诵重点。"; }
-        else if (hour>=11 && hour<13) { icon="[午间]"; text="午餐营养均衡，小憩15分钟更高效。"; }
-        else if (hour>=13 && hour<15) { icon="[午后]"; text="午后易犯困，起来走动，坚持复习。"; }
-        else if (hour>=15 && hour<17) { icon="[下午]"; text="黄金复习区，冲刺重难点！"; }
-        else if (hour>=17 && hour<19) { icon="[傍晚]"; text="复盘今日收获，放松片刻再出发。"; }
-        else if (hour>=19 && hour<21) { icon="[晚间]"; text="梳理知识框架，效率巅峰时段。"; }
+        const now=new Date(); const hour=now.getHours(); let icon,text,isLateNight=false;
+        if(hour>=23||hour<5){ icon="[深夜]"; text="深夜静心，休息为重，积蓄能量。"; isLateNight=true; }
+        else if(hour>=5&&hour<6){ icon="[黎明]"; text="晨光微熹，早起的人儿最耀眼！"; }
+        else if(hour>=6&&hour<8){ icon="[清晨]"; text="一日之计在于晨，大声朗读唤醒大脑！"; }
+        else if(hour>=8&&hour<11){ icon="[上午]"; text="专注力巅峰，攻克理科或背诵重点。"; }
+        else if(hour>=11&&hour<13){ icon="[午间]"; text="午餐营养均衡，小憩15分钟更高效。"; }
+        else if(hour>=13&&hour<15){ icon="[午后]"; text="午后易犯困，起来走动，坚持复习。"; }
+        else if(hour>=15&&hour<17){ icon="[下午]"; text="黄金复习区，冲刺重难点！"; }
+        else if(hour>=17&&hour<19){ icon="[傍晚]"; text="复盘今日收获，放松片刻再出发。"; }
+        else if(hour>=19&&hour<21){ icon="[晚间]"; text="梳理知识框架，效率巅峰时段。"; }
         else { icon="[自习]"; text="稳住心态，中考加油！"; }
-        greetingIconSpan.innerText = icon;
-        greetingTextSpan.innerText = text;
-        if(lateNightAlertDiv) {
-            if(isLateNight) { lateNightAlertDiv.innerHTML = `[提醒] 深夜时段，保证睡眠才是高效复习的基础。`; lateNightAlertDiv.style.display = "flex"; }
-            else lateNightAlertDiv.style.display = "none";
-        }
+        greetingIconSpan.innerText=icon; greetingTextSpan.innerText=text;
+        if(lateNightAlertDiv) { if(isLateNight) { lateNightAlertDiv.innerHTML=`[提醒] 深夜时段，保证睡眠才是高效复习的基础。`; lateNightAlertDiv.style.display="flex"; } else lateNightAlertDiv.style.display="none"; }
     }
-    
-    function updateRealtimePeerDisplay() {
-        if(peerSpan) {
-            const realtime = getCurrentRealtimeAvg();
-            peerSpan.innerText = realtime.toLocaleString();
-            peerSpan.classList.add('pulse-stat');
-            setTimeout(() => peerSpan.classList.remove('pulse-stat'), 200);
-        }
-    }
-    
-    const sayingsPool = ["乾坤未定，你我皆是黑马。", "每一道错题，都是未来的基石。", "坚持到今天，你已经很棒了！","新乡少年，提笔为剑，决胜中考。","再微小的努力，乘以365天都会发光。","你笔下写过的每一个字，都不会辜负你。","现在的痛，终将变成未来的勋章。","中考是盛夏的果实，请用汗水浇灌。","和时间赛跑，你就是赢家。","星光不问赶路人，时光不负有心人。","心态稳住，你就战胜了一半对手。","偶尔深呼吸，调整节奏再出发。"];
-    let currentSayingIdx = -1;
-    function randomSaying() { let newIdx = Math.floor(Math.random() * sayingsPool.length); while(sayingsPool.length>1 && newIdx===currentSayingIdx) newIdx = Math.floor(Math.random() * sayingsPool.length); currentSayingIdx = newIdx; return sayingsPool[currentSayingIdx]; }
-    function refreshSaying() { if(sayingElement) { sayingElement.innerText = randomSaying(); sayingElement.classList.add('pulse-stat'); setTimeout(() => sayingElement.classList.remove('pulse-stat'), 300); } }
+    function updateRealtimePeerDisplay() { if(peerSpan){ const realtime=getCurrentRealtimeAvg(); peerSpan.innerText=realtime.toLocaleString(); peerSpan.classList.add('pulse-stat'); setTimeout(()=>peerSpan.classList.remove('pulse-stat'),200); } }
+    const sayingsPool=["乾坤未定，你我皆是黑马。","每一道错题，都是未来的基石。","坚持到今天，你已经很棒了！","新乡少年，提笔为剑，决胜中考。","再微小的努力，乘以365天都会发光。","你笔下写过的每一个字，都不会辜负你。","现在的痛，终将变成未来的勋章。","中考是盛夏的果实，请用汗水浇灌。","和时间赛跑，你就是赢家。","星光不问赶路人，时光不负有心人。","心态稳住，你就战胜了一半对手。","偶尔深呼吸，调整节奏再出发。"];
+    let currentSayingIdx=-1;
+    function randomSaying() { let newIdx=Math.floor(Math.random()*sayingsPool.length); while(sayingsPool.length>1 && newIdx===currentSayingIdx) newIdx=Math.floor(Math.random()*sayingsPool.length); currentSayingIdx=newIdx; return sayingsPool[currentSayingIdx]; }
+    function refreshSaying() { if(sayingElement){ sayingElement.innerText=randomSaying(); sayingElement.classList.add('pulse-stat'); setTimeout(()=>sayingElement.classList.remove('pulse-stat'),300); } }
     
     function initTheme() {
-        const stored = localStorage.getItem('theme');
-        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const isDark = stored === 'dark' || (stored === null && prefersDark);
-        if (isDark) { document.body.classList.add('dark'); document.getElementById('themeToggleBtn').innerText = '☀️'; }
-        else { document.body.classList.remove('dark'); document.getElementById('themeToggleBtn').innerText = '🌙'; }
-        if (canvasCtx && chartHistoryData.length) drawTrendChart();
+        const stored=localStorage.getItem('theme');
+        const prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;
+        const isDark=stored==='dark' || (stored===null && prefersDark);
+        if(isDark){ document.body.classList.add('dark'); document.getElementById('themeToggleBtn').innerText='☀️'; }
+        else { document.body.classList.remove('dark'); document.getElementById('themeToggleBtn').innerText='🌙'; }
+        if(canvasCtx && chartHistoryData.length) drawTrendChart();
     }
     function toggleTheme() {
-        const body = document.body;
-        const btn = document.getElementById('themeToggleBtn');
-        if (body.classList.contains('dark')) { body.classList.remove('dark'); localStorage.setItem('theme', 'light'); btn.innerText = '🌙'; }
-        else { body.classList.add('dark'); localStorage.setItem('theme', 'dark'); btn.innerText = '☀️'; }
-        if (canvasCtx && chartHistoryData.length) drawTrendChart();
+        const body=document.body;
+        const btn=document.getElementById('themeToggleBtn');
+        if(body.classList.contains('dark')){ body.classList.remove('dark'); localStorage.setItem('theme','light'); btn.innerText='🌙'; }
+        else { body.classList.add('dark'); localStorage.setItem('theme','dark'); btn.innerText='☀️'; }
+        if(canvasCtx && chartHistoryData.length) drawTrendChart();
     }
     
     function init() {
@@ -993,6 +921,8 @@
         }, 1000);
         longTermInterval = setInterval(() => { recordLongTermPoint(); }, 5 * 60 * 1000);
         document.getElementById('refreshSayingBtn')?.addEventListener('click', refreshSaying);
+        const themeBtn = document.getElementById('themeToggleBtn');
+        if(themeBtn) themeBtn.addEventListener('click', toggleTheme);
         window.addEventListener('resize', () => drawTrendChart());
         refreshSaying();
         initTheme();
