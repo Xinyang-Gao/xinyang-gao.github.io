@@ -12,7 +12,6 @@
             box-sizing: border-box;
         }
 
-        /* 浅色模式 (默认) */
         :root {
             --bg-gradient-start: #F8FAFF;
             --bg-gradient-end: #F0F4FA;
@@ -30,14 +29,16 @@
             --label-bg: rgba(20, 30, 55, 0.72);
             --secondary-text: #5B6E8C;
             --companion-item-bg: #F9FBFE;
-            --companion-item-border: rgba(0,0,0,0.02);
+            --companion-item-border: rgba(0, 0, 0, 0.02);
             --trend-card-bg: #F9FBFE;
-            --trend-border: rgba(59,130,246,0.1);
+            --trend-border: rgba(59, 130, 246, 0.1);
             --canvas-bg: #FFFFFF;
             --canvas-grid: #E9EFF4;
             --canvas-text: #6B7C93;
             --canvas-line: #3B82F6;
+            --canvas-line-home: #F97316;
             --canvas-point: #1E40AF;
+            --canvas-point-home: #EA580C;
             --health-tip-bg: #FFF5E8;
             --health-tip-border: #F97316;
             --health-tip-color: #B45309;
@@ -46,9 +47,12 @@
             --shadow-sm: 0 12px 28px -12px rgba(0, 0, 0, 0.08);
             --shadow-md: 0 16px 32px -14px rgba(0, 0, 0, 0.08);
             --btn-hover: #3B82F6;
+            --legend-school-dot: #3B82F6;
+            --legend-home-dot: #F97316;
+            --card-accent-school: #3B82F6;
+            --card-accent-home: #F97316;
         }
 
-        /* 深色模式 */
         body.dark {
             --bg-gradient-start: #0B1120;
             --bg-gradient-end: #111827;
@@ -66,14 +70,16 @@
             --label-bg: rgba(0, 0, 0, 0.65);
             --secondary-text: #9CA3AF;
             --companion-item-bg: #1E293B;
-            --companion-item-border: rgba(255,255,255,0.05);
+            --companion-item-border: rgba(255, 255, 255, 0.05);
             --trend-card-bg: #0F172A;
             --trend-border: rgba(59, 130, 246, 0.25);
             --canvas-bg: #0F172A;
             --canvas-grid: #334155;
             --canvas-text: #94A3B8;
             --canvas-line: #60A5FA;
+            --canvas-line-home: #FB923C;
             --canvas-point: #93C5FD;
+            --canvas-point-home: #FDBA74;
             --health-tip-bg: #2D1F0D;
             --health-tip-border: #F97316;
             --health-tip-color: #FDE68A;
@@ -82,21 +88,24 @@
             --shadow-sm: 0 12px 28px -12px rgba(0, 0, 0, 0.4);
             --shadow-md: 0 16px 32px -14px rgba(0, 0, 0, 0.5);
             --btn-hover: #3B82F6;
+            --legend-school-dot: #60A5FA;
+            --legend-home-dot: #FB923C;
+            --card-accent-school: #60A5FA;
+            --card-accent-home: #FB923C;
         }
 
-        /* 全局平滑主题过渡 (增强深色/浅色切换视觉效果) */
-        body, 
-        .time-card, 
-        .progress-section, 
-        .companion-section, 
-        .companion-item, 
-        .trend-card, 
-        .saying-box, 
-        .real-time-card, 
-        .target-badge, 
-        .health-tip, 
-        .theme-toggle, 
-        .progress-track-wide, 
+        body,
+        .time-card,
+        .progress-section,
+        .companion-section,
+        .companion-item,
+        .trend-card,
+        .saying-box,
+        .real-time-card,
+        .target-badge,
+        .health-tip,
+        .theme-toggle,
+        .progress-track-wide,
         .progress-fill-wide,
         .greeting-icon,
         .greeting-text,
@@ -110,13 +119,11 @@
         .chart-note,
         .refresh-saying,
         .companion-header h3,
-        .hero-title {
-            transition: background-color 0.2s ease-in-out, 
-                        background 0.2s ease-in-out, 
-                        border-color 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1),
-                        color 0.2s ease-out, 
-                        box-shadow 0.2s ease-out,
-                        text-shadow 0.2s ease;
+        .hero-title,
+        .legend-dot,
+        .legend-label,
+        .stat-card-accent {
+            transition: background-color 0.2s ease-in-out, background 0.2s ease-in-out, border-color 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1), color 0.2s ease-out, box-shadow 0.2s ease-out, text-shadow 0.2s ease;
         }
 
         body {
@@ -143,8 +150,14 @@
         }
 
         @keyframes floatReveal {
-            0% { opacity: 0; transform: translateY(24px); }
-            100% { opacity: 1; transform: translateY(0); }
+            0% {
+                opacity: 0;
+                transform: translateY(24px);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
         .hero-section {
@@ -284,8 +297,14 @@
             box-shadow: var(--shadow-sm);
             border: 1px solid var(--card-border);
         }
-        .progress-grid { display: flex; flex-direction: column; gap: 1.5rem; }
-        .progress-item { width: 100%; }
+        .progress-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .progress-item {
+            width: 100%;
+        }
         .progress-track-wide {
             position: relative;
             width: 100%;
@@ -351,7 +370,7 @@
             align-items: center;
             gap: 8px;
             margin-bottom: 1.4rem;
-            border-bottom: 2px solid rgba(59,130,246,0.3);
+            border-bottom: 2px solid rgba(59, 130, 246, 0.3);
             padding-bottom: 0.6rem;
         }
         .companion-header h3 {
@@ -365,13 +384,13 @@
         .companion-grid {
             display: flex;
             flex-wrap: wrap;
-            gap: 1.5rem;
+            gap: 1.2rem;
             justify-content: space-between;
             margin-bottom: 1.5rem;
         }
         .companion-item {
             flex: 1;
-            min-width: 180px;
+            min-width: 150px;
             background: var(--companion-item-bg);
             border-radius: 28px;
             padding: 1rem 1.2rem;
@@ -381,6 +400,19 @@
         .companion-item:hover {
             background: var(--card-bg);
             transform: translateY(-3px);
+        }
+        .stat-card-accent {
+            width: 100%;
+            height: 4px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            transition: background-color 0.2s ease;
+        }
+        .stat-card-accent.school {
+            background: var(--card-accent-school);
+        }
+        .stat-card-accent.home {
+            background: var(--card-accent-home);
         }
         .greeting-box {
             display: flex;
@@ -414,6 +446,12 @@
             font-size: 1.8rem;
             color: var(--accent-blue);
             line-height: 1.2;
+        }
+        .stat-value.school-color {
+            color: var(--card-accent-school);
+        }
+        .stat-value.home-color {
+            color: var(--card-accent-home);
         }
         .stat-label {
             font-size: 0.75rem;
@@ -465,7 +503,7 @@
             transition: color 0.2s, border-left-color 0.2s;
         }
         .refresh-saying {
-            background: rgba(59,130,246,0.15);
+            background: rgba(59, 130, 246, 0.15);
             border: none;
             border-radius: 60px;
             padding: 0.4rem 1rem;
@@ -492,12 +530,41 @@
             font-size: 0.85rem;
             font-weight: 600;
             color: var(--text-primary);
-            margin-bottom: 0.6rem;
+            margin-bottom: 0.3rem;
             letter-spacing: 0.3px;
             display: flex;
             align-items: center;
             gap: 6px;
             justify-content: space-between;
+            flex-wrap: wrap;
+        }
+        .trend-legend {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: var(--secondary-text);
+            margin-bottom: 0.4rem;
+        }
+        .legend-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 4px;
+            transition: background-color 0.2s ease;
+        }
+        .legend-dot.school {
+            background: var(--legend-school-dot);
+        }
+        .legend-dot.home {
+            background: var(--legend-home-dot);
+        }
+        .legend-label {
+            font-size: 0.7rem;
+            color: var(--secondary-text);
+            transition: color 0.2s ease;
         }
         .influence-badge {
             font-size: 0.7rem;
@@ -509,7 +576,7 @@
         }
         .chart-container {
             width: 100%;
-            height: 180px;
+            height: 200px;
             position: relative;
         }
         canvas {
@@ -518,7 +585,7 @@
             display: block;
             background: var(--canvas-bg);
             border-radius: 20px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
             transition: background 0.2s ease;
         }
         .chart-note {
@@ -532,403 +599,835 @@
             animation: modernGlow 0.22s ease-out;
         }
         @keyframes modernGlow {
-            0% { transform: scale(1); text-shadow: 0 0 0 transparent; }
-            40% { transform: scale(1.07); color: var(--accent-light); text-shadow: 0 0 8px rgba(59,130,246,0.5); }
-            100% { transform: scale(1); text-shadow: 0 0 0 transparent; }
+            0% {
+                transform: scale(1);
+                text-shadow: 0 0 0 transparent;
+            }
+            40% {
+                transform: scale(1.07);
+                color: var(--accent-light);
+                text-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
+            }
+            100% {
+                transform: scale(1);
+                text-shadow: 0 0 0 transparent;
+            }
         }
         .pulse-stat {
             animation: subtleNumberPop 0.3s ease-out;
         }
         @keyframes subtleNumberPop {
-            0% { transform: scale(1); opacity: 0.7; }
-            70% { transform: scale(1.05); opacity: 1; }
-            100% { transform: scale(1); }
+            0% {
+                transform: scale(1);
+                opacity: 0.7;
+            }
+            70% {
+                transform: scale(1.05);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(1);
+            }
         }
         @media (max-width: 860px) {
-            .digit { font-size: 4.2rem; }
-            .time-card { min-width: 110px; padding: 1.4rem 0.5rem; }
-            .hero-title { font-size: 2.5rem; }
-            .stat-value { font-size: 1.5rem; }
+            .digit {
+                font-size: 4.2rem;
+            }
+            .time-card {
+                min-width: 110px;
+                padding: 1.4rem 0.5rem;
+            }
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            .stat-value {
+                font-size: 1.5rem;
+            }
+            .companion-item {
+                min-width: 120px;
+                padding: 0.8rem 1rem;
+            }
+            .chart-container {
+                height: 170px;
+            }
         }
         @media (max-width: 640px) {
-            .companion-grid { flex-direction: column; gap: 0.8rem; }
-            .saying-box { flex-direction: column; align-items: flex-start; }
-            .refresh-saying { align-self: flex-end; }
-            .digit { font-size: 3.4rem; }
-            .theme-toggle { width: 38px; height: 38px; font-size: 1.2rem; top: -10px; right: -5px; }
+            .companion-grid {
+                flex-direction: column;
+                gap: 0.8rem;
+            }
+            .saying-box {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .refresh-saying {
+                align-self: flex-end;
+            }
+            .digit {
+                font-size: 3.4rem;
+            }
+            .theme-toggle {
+                width: 38px;
+                height: 38px;
+                font-size: 1.2rem;
+                top: -10px;
+                right: -5px;
+            }
+            .trend-legend {
+                gap: 10px;
+                font-size: 0.65rem;
+            }
+            .chart-container {
+                height: 150px;
+            }
         }
     </style>
 </head>
 <body>
-<div class="dashboard">
-    <div class="hero-section">
-        <div class="theme-toggle" id="themeToggleBtn" aria-label="切换夜间模式" role="button">🌙</div>
-        <h1 class="hero-title">中考冲刺</h1>
-        <div class="target-badge">距离 6月22日08:20 还有</div>
-        <div class="real-time-card">
-            <span class="current-time-text" id="liveClockDisplay">--/--/-- --- --:--:--</span>
+    <div class="dashboard">
+        <div class="hero-section">
+            <div class="theme-toggle" id="themeToggleBtn" aria-label="切换夜间模式" role="button">🌙</div>
+            <h1 class="hero-title">中考冲刺</h1>
+            <div class="target-badge">距离 6月22日08:20 还有</div>
+            <div class="real-time-card">
+                <span class="current-time-text" id="liveClockDisplay">--/--/-- --- --:--:--</span>
+            </div>
+            <div class="countdown-grid">
+                <div class="time-card"><div class="digit" id="daysDigit">00</div><div class="unit">天</div></div>
+                <div class="time-card"><div class="digit" id="hoursDigit">00</div><div class="unit">时</div></div>
+                <div class="time-card"><div class="digit" id="minutesDigit">00</div><div class="unit">分</div></div>
+                <div class="time-card"><div class="digit" id="secondsDigit">00</div><div class="unit">秒</div></div>
+            </div>
         </div>
-        <div class="countdown-grid">
-            <div class="time-card"><div class="digit" id="daysDigit">00</div><div class="unit">天</div></div>
-            <div class="time-card"><div class="digit" id="hoursDigit">00</div><div class="unit">时</div></div>
-            <div class="time-card"><div class="digit" id="minutesDigit">00</div><div class="unit">分</div></div>
-            <div class="time-card"><div class="digit" id="secondsDigit">00</div><div class="unit">秒</div></div>
-        </div>
-    </div>
 
-    <div class="progress-section">
-        <div class="progress-grid">
-            <div class="progress-item"><div class="progress-track-wide"><div class="progress-fill-wide" id="weekFill"></div><div class="progress-content"><span class="progress-label-left">本周进度</span><span class="progress-percent-right" id="weekPercent">0%</span></div></div></div>
-            <div class="progress-item"><div class="progress-track-wide"><div class="progress-fill-wide" id="dayFill"></div><div class="progress-content"><span class="progress-label-left">今天进度</span><span class="progress-percent-right" id="dayPercent">0%</span></div></div></div>
-            <div class="progress-item"><div class="progress-track-wide"><div class="progress-fill-wide" id="hourFill"></div><div class="progress-content"><span class="progress-label-left">小时进度</span><span class="progress-percent-right" id="hourPercent">0%</span></div></div></div>
-            <div class="progress-item"><div class="progress-track-wide"><div class="progress-fill-wide" id="minuteFill"></div><div class="progress-content"><span class="progress-label-left">分钟进度</span><span class="progress-percent-right" id="minutePercent">0%</span></div></div></div>
+        <div class="progress-section">
+            <div class="progress-grid">
+                <div class="progress-item"><div class="progress-track-wide"><div class="progress-fill-wide" id="weekFill"></div><div class="progress-content"><span class="progress-label-left">本周进度</span><span class="progress-percent-right" id="weekPercent">0%</span></div></div></div>
+                <div class="progress-item"><div class="progress-track-wide"><div class="progress-fill-wide" id="dayFill"></div><div class="progress-content"><span class="progress-label-left">今天进度</span><span class="progress-percent-right" id="dayPercent">0%</span></div></div></div>
+                <div class="progress-item"><div class="progress-track-wide"><div class="progress-fill-wide" id="hourFill"></div><div class="progress-content"><span class="progress-label-left">小时进度</span><span class="progress-percent-right" id="hourPercent">0%</span></div></div></div>
+                <div class="progress-item"><div class="progress-track-wide"><div class="progress-fill-wide" id="minuteFill"></div><div class="progress-content"><span class="progress-label-left">分钟进度</span><span class="progress-percent-right" id="minutePercent">0%</span></div></div></div>
+            </div>
         </div>
-    </div>
 
-    <div class="companion-section">
-        <div class="companion-header">
-            <span>⚡</span>
-            <h3>伴学同行 · 新乡</h3>
-            <span>⚡</span>
-        </div>
-        <div class="companion-grid">
-            <div class="companion-item">
-                <div class="greeting-box">
-                    <span class="greeting-icon" id="greetingIcon">时段</span>
-                    <span class="greeting-text" id="greetingText">加载中...</span>
+        <div class="companion-section">
+            <div class="companion-header">
+                <span>⚡</span>
+                <h3>伴学同行 · 新乡</h3>
+                <span>⚡</span>
+            </div>
+            <div class="companion-grid">
+                <div class="companion-item">
+                    <div class="greeting-box">
+                        <span class="greeting-icon" id="greetingIcon">时段</span>
+                        <span class="greeting-text" id="greetingText">加载中...</span>
+                    </div>
+                    <div style="margin-top:12px;">
+                        <div class="stat-label">专注陪伴时长</div>
+                        <div class="timer-badge" id="studyTimerDisplay">00:00:00</div>
+                    </div>
+                    <div id="lateNightAlert" class="health-tip" style="display:none;">[提醒] 熬夜警示</div>
                 </div>
-                <div style="margin-top: 12px;">
-                    <div class="stat-label">专注陪伴时长</div>
-                    <div class="timer-badge" id="studyTimerDisplay">00:00:00</div>
+                <div class="companion-item">
+                    <div class="stat-card-accent school"></div>
+                    <div class="stat-value school-color" id="inSchoolDisplay">--</div>
+                    <div class="stat-label">🏠 在校冲刺学生 (实时)</div>
+                    <div class="stat-note">含延时·培优·住校晚自习</div>
                 </div>
-                <div id="lateNightAlert" class="health-tip" style="display: none;">[提醒] 熬夜警示</div>
+                <div class="companion-item">
+                    <div class="stat-card-accent home"></div>
+                    <div class="stat-value home-color" id="atHomeDisplay">--</div>
+                    <div class="stat-label">📚 在家冲刺学生 (实时)</div>
+                    <div class="stat-note">含走读生·周末居家</div>
+                </div>
             </div>
-            <div class="companion-item">
-                <div class="stat-value" id="peerCountDisplay">--</div>
-                <div class="stat-label">此刻一同冲刺的同学 (实时)</div>
-                <div class="stat-note">基于行为模型动态预测</div>
-                <div class="stat-note" style="margin-top: 5px;">🎯 录取参考: 普高总计划2.8万 | 市区6952人 · 新乡市预计7万考生</div>
+
+            <div class="trend-card">
+                <div class="trend-title">
+                    <span>📈 近3小时冲刺趋势 (每 5min 聚合)</span>
+                    <span class="influence-badge" id="influenceFactorHint">正在实时计算</span>
+                </div>
+                <div class="trend-legend">
+                    <span><span class="legend-dot school"></span><span class="legend-label">在校</span></span>
+                    <span><span class="legend-dot home"></span><span class="legend-label">在家</span></span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="trendCanvas" width="800" height="200" style="width:100%;height:200px"></canvas>
+                </div>
+                <div class="chart-note">每5分钟聚合一次历史数据 | 平滑趋势展示过去3小时在校/在家冲刺热度</div>
             </div>
-        </div>
-        
-        <div class="trend-card">
-            <div class="trend-title">
-                <span>📈 近2小时在线趋势 (每5分钟预测均值 · 共24个周期点)</span>
-                <span class="influence-badge" id="influenceFactorHint">竞争指数实时变化</span>
+
+            <div class="saying-box">
+                <div class="saying-text" id="dynamicSaying">星光不负赶路人，江河眷顾奋楫者。</div>
+                <button class="refresh-saying" id="refreshSayingBtn">换一句 ↻</button>
             </div>
-            <div class="chart-container">
-                <canvas id="trendCanvas" width="800" height="180" style="width:100%; height:180px"></canvas>
-            </div>
-            <div class="chart-note">每5分钟聚合一次历史数据 | 平滑趋势展示过去2小时冲刺热度</div>
-        </div>
-        
-        <div class="saying-box">
-            <div class="saying-text" id="dynamicSaying">星光不负赶路人，江河眷顾奋楫者。</div>
-            <button class="refresh-saying" id="refreshSayingBtn">换一句 ↻</button>
         </div>
     </div>
-</div>
 
-<script>
-    // ========== 核心配置 ==========
-    const TARGET_DATE = new Date(2026, 5, 22, 8, 20, 0);
-    const TOTAL_STUDENTS = 70000;
-    const PLAN_TOTAL = 28000;
-    const ADMISSION_RATE = PLAN_TOTAL / TOTAL_STUDENTS;
-    const COMPETITION_BASE = Math.min(1.48, Math.max(1.0, 1 + (1 - ADMISSION_RATE) * 0.75));
+    <script>
+        // ========== 核心配置 ==========
+        const TARGET_DATE = new Date(2026, 5, 22, 8, 20, 0);
+        const TOTAL_STUDENTS = 70000;
+        const PLAN_TOTAL = 28000;
+        const ADMISSION_RATE = PLAN_TOTAL / TOTAL_STUDENTS;
+        const COMPETITION_BASE = Math.min(1.48, Math.max(1.0, 1 + (1 - ADMISSION_RATE) * 0.75));
 
-    const LONG_HISTORY_SIZE = 24;  
-    let chartHistoryData = [];       
-    let lastSmoothedCount = null;
-    let instantHistoryQueue = [];     
-    let fiveMinuteWindow = [];        
-    
-    const daysEl = document.getElementById('daysDigit'), hoursEl = document.getElementById('hoursDigit');
-    const minutesEl = document.getElementById('minutesDigit'), secondsEl = document.getElementById('secondsDigit');
-    const peerSpan = document.getElementById('peerCountDisplay');
-    const timerDisplay = document.getElementById('studyTimerDisplay');
-    const greetingIconSpan = document.getElementById('greetingIcon');
-    const greetingTextSpan = document.getElementById('greetingText');
-    const sayingElement = document.getElementById('dynamicSaying');
-    const lateNightAlertDiv = document.getElementById('lateNightAlert');
-    const influenceHintSpan = document.getElementById('influenceFactorHint');
-    let canvasEl, canvasCtx;
-    let prevDigits = { days: -1, hours: -1, minutes: -1, seconds: -1 };
-    let sessionStart = Date.now();
-    let longTermInterval = null, realtimePeerInterval = null, secondTickHandler = null;
-    
-    const HOURLY_BASE_FACTORS = [
-        0.07, 0.045, 0.035, 0.03, 0.04, 0.09, 0.22, 0.27, 0.33, 0.38, 0.39, 0.34,
-        0.28, 0.32, 0.36, 0.41, 0.43, 0.47, 0.48, 0.54, 0.56, 0.54, 0.46, 0.28
-    ];
-    
-    function getSmoothActiveFactor(now) {
-        const hour = now.getHours();
-        const minute = now.getMinutes();
-        const totalMinutes = hour * 60 + minute;
-        const prevHourIndex = Math.floor(hour);
-        const nextHourIndex = (prevHourIndex + 1) % 24;
-        const prevTotalMin = prevHourIndex * 60;
-        const nextTotalMin = nextHourIndex === 0 ? 24 * 60 : nextHourIndex * 60;
-        const factorPrev = HOURLY_BASE_FACTORS[prevHourIndex];
-        const factorNext = HOURLY_BASE_FACTORS[nextHourIndex];
-        let t = 0;
-        if (nextTotalMin > prevTotalMin) {
-            t = (totalMinutes - prevTotalMin) / (nextTotalMin - prevTotalMin);
-        } else {
-            const segLen = (24 * 60 - prevTotalMin) + nextTotalMin;
-            t = (totalMinutes - prevTotalMin) / segLen;
+        // 学生分类比例
+        const BOARDING_RATIO = 0.22;
+        const NON_CITY_RATIO = 0.03;
+        const ELITE_CLASS_RATIO = 0.20;
+        const DELAY_CLASS_RATIO = 0.90;
+        const NORMAL_ONLY_RATIO = 1.0 - DELAY_CLASS_RATIO;
+
+        const LONG_HISTORY_SIZE = 36; //36为3小时，288为24小时
+        let chartHistoryData = [];
+        let lastSmoothedInSchool = null;
+        let lastSmoothedAtHome = null;
+        let instantInSchoolQueue = [];
+        let instantAtHomeQueue = [];
+        let fiveMinInSchoolWindow = [];
+        let fiveMinAtHomeWindow = [];
+
+        const daysEl = document.getElementById('daysDigit'),
+            hoursEl = document.getElementById('hoursDigit');
+        const minutesEl = document.getElementById('minutesDigit'),
+            secondsEl = document.getElementById('secondsDigit');
+        const inSchoolDisplay = document.getElementById('inSchoolDisplay');
+        const atHomeDisplay = document.getElementById('atHomeDisplay');
+        const timerDisplay = document.getElementById('studyTimerDisplay');
+        const greetingIconSpan = document.getElementById('greetingIcon');
+        const greetingTextSpan = document.getElementById('greetingText');
+        const sayingElement = document.getElementById('dynamicSaying');
+        const lateNightAlertDiv = document.getElementById('lateNightAlert');
+        const influenceHintSpan = document.getElementById('influenceFactorHint');
+        let canvasEl, canvasCtx;
+        let prevDigits = { days: -1, hours: -1, minutes: -1, seconds: -1 };
+        let sessionStart = Date.now();
+        let longTermInterval = null,
+            realtimePeerInterval = null,
+            secondTickHandler = null;
+
+        function isSummerSchedule(now) {
+            const month = now.getMonth() + 1;
+            const day = now.getDate();
+            if (month >= 5 && month <= 9) {
+                if (month === 5 && day < 1) return false;
+                if (month === 9 && day > 30) return false;
+                return true;
+            }
+            return false;
         }
-        t = Math.min(1.0, Math.max(0.0, t));
-        const interpolated = factorPrev * (1 - t) + factorNext * t;
-        return Math.min(0.62, Math.max(0.025, interpolated));
-    }
-    
-    function getWeekendMultiplier(now) {
-        const day = now.getDay();
-        const isWeekend = (day === 0 || day === 6);
-        const hour = now.getHours();
-        if (!isWeekend) return 1.0;
-        if (hour >= 8 && hour < 22) return 1.22;
-        if (hour >= 22) return 0.94;
-        return 1.08;
-    }
-    
-    function getCountdownBoost(now) {
-        const remainingMs = TARGET_DATE.getTime() - now.getTime();
-        if (remainingMs <= 0) return 1.0;
-        const daysLeft = remainingMs / (1000 * 3600 * 24);
-        if (daysLeft <= 7) return 1.20;
-        if (daysLeft <= 30) return 1.12;
-        if (daysLeft <= 60) return 1.06;
-        if (daysLeft <= 90) return 1.02;
-        return 1.0;
-    }
-    
-    function getCompetitionMotivation(now) {
-        const daysLeft = Math.max(0, (TARGET_DATE - now) / (1000*3600*24));
-        let nearFactor = daysLeft < 45 ? 1.04 : (daysLeft < 90 ? 1.02 : 1.0);
-        return COMPETITION_BASE * nearFactor;
-    }
-    
-    function calculateInstantRaw(now) {
-        let baseFactor = getSmoothActiveFactor(now);
-        const weekendMul = getWeekendMultiplier(now);
-        const countdownBoost = getCountdownBoost(now);
-        const competitionBoost = getCompetitionMotivation(now);
-        let finalFactor = baseFactor * weekendMul * countdownBoost * competitionBoost;
-        finalFactor = Math.min(0.82, Math.max(0.03, finalFactor));
-        let rawEstimate = Math.floor(TOTAL_STUDENTS * finalFactor);
-        return Math.min(TOTAL_STUDENTS, Math.max(1600, rawEstimate));
-    }
-    
-    function pushInstantPrediction() {
-        const now = new Date();
-        const rawVal = calculateInstantRaw(now);
-        if (lastSmoothedCount === null) lastSmoothedCount = rawVal;
-        else {
-            let smoothed = Math.floor(lastSmoothedCount * 0.68 + rawVal * 0.32);
-            const microVar = 1 + (Math.sin(now.getMilliseconds() * 0.012) * 0.004);
-            let final = Math.floor(smoothed * microVar);
-            const maxChange = Math.max(80, Math.floor(lastSmoothedCount * 0.022));
-            final = Math.min(lastSmoothedCount + maxChange, Math.max(lastSmoothedCount - maxChange, final));
-            final = Math.min(TOTAL_STUDENTS, Math.max(1500, final));
-            lastSmoothedCount = final;
+
+        function getScheduleKeyTimes(now) {
+            const isSummer = isSummerSchedule(now);
+            const dayOfWeek = now.getDay();
+            const isFriday = dayOfWeek === 5;
+            const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+            const BOARDING_SLEEP_TIME = 22 * 60;
+            if (isSummer) {
+                return {
+                    schoolStartMin: 7 * 60,
+                    schoolStartMax: 7 * 60 + 30,
+                    normalEndMin: 17 * 60,
+                    normalEndMax: 17 * 60 + 30,
+                    delayEndMin: 19 * 60 + 10,
+                    delayEndMax: 19 * 60 + 40,
+                    eliteEndWeekday: 20 * 60 + 40,
+                    eliteEndFriday: 20 * 60 + 20,
+                    eliteEndSpecial: 21 * 60,
+                    nonCityEnd: 22 * 60,
+                    boardingDormTime: 21 * 60 + 30,
+                    boardingSleepTime: BOARDING_SLEEP_TIME,
+                    isSummer: true,
+                    commuteMinutesCity: 18,
+                    commuteMinutesNonCity: 40,
+                    settleMinutes: 20
+                };
+            } else {
+                return {
+                    schoolStartMin: 7 * 60 + 30,
+                    schoolStartMax: 8 * 60,
+                    normalEndMin: 16 * 60 + 30,
+                    normalEndMax: 17 * 60,
+                    delayEndMin: 18 * 60 + 40,
+                    delayEndMax: 19 * 60 + 10,
+                    eliteEndWeekday: 20 * 60 + 10,
+                    eliteEndFriday: 19 * 60 + 50,
+                    eliteEndSpecial: 20 * 60 + 30,
+                    nonCityEnd: 21 * 60 + 30,
+                    boardingDormTime: 21 * 60,
+                    boardingSleepTime: BOARDING_SLEEP_TIME,
+                    isSummer: false,
+                    commuteMinutesCity: 16,
+                    commuteMinutesNonCity: 35,
+                    settleMinutes: 18
+                };
+            }
         }
-        const finalVal = lastSmoothedCount;
-        instantHistoryQueue.push(finalVal);
-        if (instantHistoryQueue.length > 30) instantHistoryQueue.shift();
-        fiveMinuteWindow.push(finalVal);
-        return finalVal;
-    }
-    
-    function getCurrentRealtimeAvg() {
-        if (instantHistoryQueue.length === 0) return TOTAL_STUDENTS * 0.22;
-        const sum = instantHistoryQueue.reduce((a,b)=>a+b,0);
-        return Math.round(sum / instantHistoryQueue.length);
-    }
-    
-    function recordLongTermPoint() {
-        let avgVal = 0;
-        if (fiveMinuteWindow.length > 0) {
-            const sum = fiveMinuteWindow.reduce((a,b)=>a+b,0);
-            avgVal = Math.round(sum / fiveMinuteWindow.length);
-        } else { avgVal = getCurrentRealtimeAvg(); }
-        fiveMinuteWindow = [];
-        chartHistoryData.push({ avgCount: avgVal, timestamp: Date.now() });
-        if (chartHistoryData.length > LONG_HISTORY_SIZE) chartHistoryData.shift();
-        drawTrendChart();
-        if (influenceHintSpan) {
+
+        // 【修复1】重排条件顺序：凌晨时段优先判断，彻底消除零点后在家学生数回弹
+        function getLateNightStudyRate(totalMinutes) {
+            // 凌晨 03:00 - 05:29 → 极低学习率
+            if (totalMinutes >= 3 * 60 && totalMinutes < 5 * 60 + 30) return 0.01;
+            // 凌晨 01:00 - 03:00 → 很低学习率
+            if (totalMinutes >= 1 * 60 && totalMinutes < 3 * 60) return 0.02;
+            // 凌晨 00:00 - 01:00 → 低学习率（原先此条件被 <23*60 错误吞掉，现已提前）
+            if (totalMinutes < 1 * 60) return 0.06;
+            // 深夜 23:00 - 24:00 → 中等偏低
+            if (totalMinutes < 24 * 60 && totalMinutes >= 23 * 60) return 0.15;
+            // 晚间 05:30 - 22:59 → 正常晚间学习率
+            if (totalMinutes < 23 * 60) return 0.35;
+            // fallback
+            return 0.01;
+        }
+
+        // 【修复2】添加过渡带平滑 + 减小深睡噪声幅度
+        function calculateStudentDistribution(now) {
+            const sched = getScheduleKeyTimes(now);
+            const totalMinutes = now.getHours() * 60 + now.getMinutes();
+            const dayOfWeek = now.getDay();
+            const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+
+            // 过渡带定义：晚间 21:50-22:10，晨间 05:20-05:40
+            const EVENING_TRANS_START = 21 * 60 + 50; // 21:50
+            const EVENING_TRANS_END = 22 * 60 + 10; // 22:10
+            const MORNING_TRANS_START = 5 * 60 + 20; // 05:20
+            const MORNING_TRANS_END = 5 * 60 + 40; // 05:40
+
+            const inEveningTransition = totalMinutes >= EVENING_TRANS_START && totalMinutes <= EVENING_TRANS_END;
+            const inMorningTransition = totalMinutes >= MORNING_TRANS_START && totalMinutes <= MORNING_TRANS_END;
+            const inTransition = inEveningTransition || inMorningTransition;
+
+            // 过渡带：分别计算深睡和非深睡结果，按权重混合
+            if (inTransition) {
+                let deepWeight;
+                if (inEveningTransition) {
+                    // 21:50→0, 22:00→0.5, 22:10→1
+                    deepWeight = (totalMinutes - EVENING_TRANS_START) / (EVENING_TRANS_END - EVENING_TRANS_START);
+                } else {
+                    // 05:20→1, 05:30→0.5, 05:40→0
+                    deepWeight = 1 - (totalMinutes - MORNING_TRANS_START) / (MORNING_TRANS_END - MORNING_TRANS_START);
+                }
+                deepWeight = Math.max(0, Math.min(1, deepWeight));
+
+                const deepResult = computeDeepSleepResult(now, totalMinutes);
+                const normalResult = computeNormalResult(now, totalMinutes, dayOfWeek, isWeekend, sched);
+
+                return {
+                    inSchool: Math.round(deepResult.inSchool * deepWeight + normalResult.inSchool * (1 - deepWeight)),
+                    atHome: Math.round(deepResult.atHome * deepWeight + normalResult.atHome * (1 - deepWeight))
+                };
+            }
+
+            // 非过渡带：走原有逻辑
+            const isDeepSleep = totalMinutes >= (22 * 60) || totalMinutes < (5 * 60 + 30);
+            if (isDeepSleep) {
+                return computeDeepSleepResult(now, totalMinutes);
+            }
+
+            return computeNormalResult(now, totalMinutes, dayOfWeek, isWeekend, sched);
+        }
+
+        // 提取深睡时段计算（减小噪声幅度，使曲线更平滑）
+        function computeDeepSleepResult(now, totalMinutes) {
+            const boardingCount = Math.floor(TOTAL_STUDENTS * BOARDING_RATIO);
+            const dayStudentCount = TOTAL_STUDENTS - boardingCount;
+            let inSchool = Math.floor(boardingCount * 0.008) + Math.floor(dayStudentCount * 0.002);
+            let atHome = Math.floor(dayStudentCount * getLateNightStudyRate(totalMinutes)) +
+                Math.floor(boardingCount * 0.01 * getLateNightStudyRate(totalMinutes));
+            inSchool = Math.min(TOTAL_STUDENTS, Math.max(15, inSchool));
+            atHome = Math.min(TOTAL_STUDENTS, Math.max(40, atHome));
+            // 噪声从 ±8% 减小到 ±3.5%，深睡时段曲线更平滑
+            const noiseSchool = Math.floor((Math.sin(now.getTime() * 0.0025) * 0.035) * inSchool);
+            const noiseHome = Math.floor((Math.cos(now.getTime() * 0.0031) * 0.035) * atHome);
+            return {
+                inSchool: Math.min(TOTAL_STUDENTS, Math.max(8, inSchool + noiseSchool)),
+                atHome: Math.min(TOTAL_STUDENTS, Math.max(30, atHome + noiseHome))
+            };
+        }
+
+        // 提取非深睡时段计算（原有逻辑完整保留）
+        function computeNormalResult(now, totalMinutes, dayOfWeek, isWeekend, sched) {
+            const boardingCount = Math.floor(TOTAL_STUDENTS * BOARDING_RATIO);
+            const nonCityCount = Math.floor(TOTAL_STUDENTS * NON_CITY_RATIO);
+            const dayStudentCount = TOTAL_STUDENTS - boardingCount;
+            const normalOnlyCount = Math.floor(TOTAL_STUDENTS * NORMAL_ONLY_RATIO);
+            const eliteCount = Math.floor(TOTAL_STUDENTS * ELITE_CLASS_RATIO);
+            const delayOnlyCount = Math.floor(TOTAL_STUDENTS * (DELAY_CLASS_RATIO - ELITE_CLASS_RATIO));
+
+            let inSchool = 0,
+                atHome = 0;
+            const isBoardingAtSchool = (() => {
+                if (isWeekend) {
+                    if (dayOfWeek === 0 && totalMinutes >= 15 * 60) return true;
+                    if (dayOfWeek === 0 && totalMinutes < 15 * 60) return false;
+                    if (dayOfWeek === 6 && totalMinutes < 11 * 60) return true;
+                    if (dayOfWeek === 6 && totalMinutes >= 11 * 60) return false;
+                    return false;
+                }
+                if (dayOfWeek === 5 && totalMinutes >= 16 * 60 + 30) return false;
+                return true;
+            })();
+
+            if (isWeekend) {
+                const weekendBoardingInSchool = Math.floor(boardingCount * 0.65);
+                inSchool = isBoardingAtSchool ? weekendBoardingInSchool : Math.floor(weekendBoardingInSchool * 0.3);
+                const weekendStudyRate = (() => {
+                    const daysLeft = Math.max(0, (TARGET_DATE - now) / (1000 * 3600 * 24));
+                    const baseRate = daysLeft < 30 ? 0.62 : (daysLeft < 60 ? 0.55 : 0.48);
+                    if (totalMinutes >= 8 * 60 && totalMinutes < 12 * 60) return baseRate * 1.2;
+                    if (totalMinutes >= 14 * 60 && totalMinutes < 17 * 60) return baseRate * 1.15;
+                    if (totalMinutes >= 19 * 60 && totalMinutes < 22 * 60) return baseRate * 1.1;
+                    if (totalMinutes >= 22 * 60 || totalMinutes < 6 * 60) return baseRate * 0.25;
+                    return baseRate;
+                })();
+                const weekendDayStudentsStudying = Math.floor(dayStudentCount * weekendStudyRate);
+                atHome = weekendDayStudentsStudying + Math.floor(boardingCount * 0.35 * weekendStudyRate);
+                const noiseSchool = Math.floor((Math.sin(now.getTime() * 0.003) * 0.04 + 0.02) * inSchool);
+                const noiseHome = Math.floor((Math.cos(now.getTime() * 0.0037) * 0.04 + 0.02) * atHome);
+                inSchool = Math.min(TOTAL_STUDENTS, Math.max(200, inSchool + noiseSchool));
+                atHome = Math.min(TOTAL_STUDENTS, Math.max(300, atHome + noiseHome));
+                return { inSchool, atHome };
+            }
+
+            if (totalMinutes < sched.schoolStartMin) {
+                inSchool = isBoardingAtSchool ? Math.floor(boardingCount * 0.9) : Math.floor(boardingCount * 0.2);
+                atHome = Math.floor(dayStudentCount * 0.22);
+            } else if (totalMinutes < sched.schoolStartMax) {
+                const progress = (totalMinutes - sched.schoolStartMin) / (sched.schoolStartMax - sched.schoolStartMin);
+                const arrivingStudents = Math.floor(dayStudentCount * progress);
+                inSchool = (isBoardingAtSchool ? boardingCount : Math.floor(boardingCount * 0.7)) + arrivingStudents;
+                atHome = Math.floor((dayStudentCount - arrivingStudents) * 0.15);
+            } else if (totalMinutes < sched.normalEndMin) {
+                inSchool = (isBoardingAtSchool ? boardingCount : Math.floor(boardingCount * 0.7)) + Math.floor(
+                    dayStudentCount * 0.97);
+                atHome = Math.floor(dayStudentCount * 0.02);
+            } else if (totalMinutes < sched.normalEndMax) {
+                const progress = (totalMinutes - sched.normalEndMin) / (sched.normalEndMax - sched.normalEndMin);
+                const normalOnlyLeaving = Math.floor(normalOnlyCount * progress);
+                const stillInSchool = dayStudentCount - normalOnlyLeaving;
+                inSchool = (isBoardingAtSchool ? boardingCount : Math.floor(boardingCount * 0.7)) + stillInSchool;
+                const arrivedHome = Math.floor(normalOnlyLeaving * Math.max(0, progress - 0.3));
+                atHome = Math.floor(arrivedHome * 0.6);
+            } else if (totalMinutes < sched.delayEndMin) {
+                const delayStudents = delayOnlyCount + eliteCount;
+                inSchool = (isBoardingAtSchool ? boardingCount : Math.floor(boardingCount * 0.7)) + delayStudents;
+                atHome = Math.floor(normalOnlyCount * 0.55);
+            } else if (totalMinutes < sched.delayEndMax) {
+                const progress = (totalMinutes - sched.delayEndMin) / (sched.delayEndMax - sched.delayEndMin);
+                const delayOnlyLeaving = Math.floor(delayOnlyCount * progress);
+                const stillInSchool = eliteCount + (delayOnlyCount - delayOnlyLeaving);
+                inSchool = (isBoardingAtSchool ? boardingCount : Math.floor(boardingCount * 0.7)) + stillInSchool;
+                const arrivedHomeFromDelay = Math.floor(delayOnlyLeaving * Math.max(0, progress - 0.25));
+                atHome = Math.floor(normalOnlyCount * 0.62) + Math.floor(arrivedHomeFromDelay * 0.55);
+            } else {
+                const eliteEndTime = (dayOfWeek === 5) ? sched.eliteEndFriday : sched.eliteEndWeekday;
+                if (totalMinutes < eliteEndTime) {
+                    inSchool = (isBoardingAtSchool ? boardingCount : Math.floor(boardingCount * 0.7)) + eliteCount;
+                    atHome = Math.floor((normalOnlyCount + delayOnlyCount) * 0.7);
+                } else if (totalMinutes < sched.eliteEndSpecial) {
+                    const specialStillIn = Math.floor(eliteCount * 0.35);
+                    inSchool = (isBoardingAtSchool ? boardingCount : Math.floor(boardingCount * 0.7)) + specialStillIn +
+                        nonCityCount;
+                    atHome = Math.floor((normalOnlyCount + delayOnlyCount + (eliteCount - specialStillIn - nonCityCount)) *
+                        0.72);
+                } else if (totalMinutes < sched.nonCityEnd) {
+                    inSchool = (isBoardingAtSchool ? boardingCount : Math.floor(boardingCount * 0.7)) + nonCityCount;
+                    atHome = Math.floor((TOTAL_STUDENTS - inSchool) * 0.68);
+                } else {
+                    inSchool = isBoardingAtSchool ? Math.floor(boardingCount * 0.4) : Math.floor(boardingCount * 0.2);
+                    atHome = Math.floor(dayStudentCount * 0.45);
+                }
+            }
+            const daysLeft = Math.max(0, (TARGET_DATE - now) / (1000 * 3600 * 24));
+            const examProximityBoost = daysLeft < 30 ? 1.08 : (daysLeft < 60 ? 1.05 : (daysLeft < 90 ? 1.03 : 1.0));
+            atHome = Math.floor(atHome * examProximityBoost);
+            const weatherFactor = 0.97 + (Math.sin(now.getDate() * 1.7 + now.getMonth() * 3.1) * 0.04);
+            atHome = Math.floor(atHome * weatherFactor);
+            const noiseSchool = Math.floor((Math.sin(now.getTime() * 0.0025) * 0.03) * inSchool);
+            const noiseHome = Math.floor((Math.cos(now.getTime() * 0.0031) * 0.03) * atHome);
+            inSchool = Math.min(TOTAL_STUDENTS, Math.max(150, inSchool + noiseSchool));
+            atHome = Math.min(TOTAL_STUDENTS, Math.max(200, atHome + noiseHome));
+            return { inSchool, atHome };
+        }
+
+        // 【修复3】增强实时EMA平滑：系数从 0.65/0.35 调整为 0.72/0.28
+        function pushInstantPrediction() {
             const now = new Date();
-            influenceHintSpan.innerText = `🔥 冲刺系数${getCompetitionMotivation(now).toFixed(2)}x · 每5min聚合`;
+            const raw = calculateStudentDistribution(now);
+            if (lastSmoothedInSchool === null) lastSmoothedInSchool = raw.inSchool;
+            else lastSmoothedInSchool = Math.floor(lastSmoothedInSchool * 0.72 + raw.inSchool * 0.28);
+            const finalInSchool = Math.min(TOTAL_STUDENTS, Math.max(100, lastSmoothedInSchool));
+            if (lastSmoothedAtHome === null) lastSmoothedAtHome = raw.atHome;
+            else lastSmoothedAtHome = Math.floor(lastSmoothedAtHome * 0.72 + raw.atHome * 0.28);
+            const finalAtHome = Math.min(TOTAL_STUDENTS, Math.max(100, lastSmoothedAtHome));
+            instantInSchoolQueue.push(finalInSchool);
+            instantAtHomeQueue.push(finalAtHome);
+            if (instantInSchoolQueue.length > 30) instantInSchoolQueue.shift();
+            if (instantAtHomeQueue.length > 30) instantAtHomeQueue.shift();
+            fiveMinInSchoolWindow.push(finalInSchool);
+            fiveMinAtHomeWindow.push(finalAtHome);
+            return { inSchool: finalInSchool, atHome: finalAtHome };
         }
-    }
-    
-    function fillPastHistory() {
-        const now = new Date();
-        const points = [];
-        for (let i = LONG_HISTORY_SIZE - 1; i >= 0; i--) {
-            const pointDate = new Date(now.getTime() - (i * 5 * 60 * 1000));
-            let raw = calculateInstantRaw(pointDate);
-            const variation = 0.985 + (Math.sin(pointDate.getTime() * 0.0006) * 0.015);
-            raw = Math.floor(raw * variation);
-            points.push({ avgCount: Math.min(TOTAL_STUDENTS, Math.max(1600, raw)), timestamp: pointDate.getTime() });
+
+        function getCurrentRealtimeInSchool() {
+            if (instantInSchoolQueue.length === 0) return Math.floor(TOTAL_STUDENTS * 0.3);
+            const sum = instantInSchoolQueue.reduce((a, b) => a + b, 0);
+            return Math.round(sum / instantInSchoolQueue.length);
         }
-        chartHistoryData.push(...points);
-        if (chartHistoryData.length > LONG_HISTORY_SIZE) chartHistoryData = chartHistoryData.slice(-LONG_HISTORY_SIZE);
-    }
-    
-    function drawTrendChart() {
-        if (!canvasEl || !canvasCtx) return;
-        const canvas = canvasEl;
-        const ctx = canvasCtx;
-        const w = canvas.clientWidth, h = canvas.clientHeight;
-        canvas.width = w;
-        canvas.height = h;
-        if (chartHistoryData.length === 0) { ctx.clearRect(0, 0, w, h); return; }
-        const values = chartHistoryData.map(p => p.avgCount);
-        const maxVal = Math.max(...values, 5000);
-        const minVal = Math.min(...values, 2000);
-        const range = maxVal - minVal === 0 ? 1 : maxVal - minVal;
-        const paddingLeft = 44, paddingRight = 18, paddingTop = 18, paddingBottom = 26;
-        const drawW = w - paddingLeft - paddingRight;
-        const drawH = h - paddingTop - paddingBottom;
-        if (drawW <= 0 || drawH <= 0) return;
-        ctx.clearRect(0, 0, w, h);
-        const gridColor = getComputedStyle(document.body).getPropertyValue('--canvas-grid') || '#E9EFF4';
-        const textColor = getComputedStyle(document.body).getPropertyValue('--canvas-text') || '#6B7C93';
-        ctx.strokeStyle = gridColor;
-        ctx.lineWidth = 0.6;
-        for (let i = 0; i <= 4; i++) {
-            const y = paddingTop + (drawH * i / 4);
-            ctx.beginPath(); ctx.moveTo(paddingLeft, y); ctx.lineTo(w - paddingRight, y); ctx.stroke();
+
+        function getCurrentRealtimeAtHome() {
+            if (instantAtHomeQueue.length === 0) return Math.floor(TOTAL_STUDENTS * 0.15);
+            const sum = instantAtHomeQueue.reduce((a, b) => a + b, 0);
+            return Math.round(sum / instantAtHomeQueue.length);
         }
-        ctx.fillStyle = textColor;
-        ctx.font = "10px Inter";
-        for (let i = 0; i <= 4; i++) {
-            const yVal = Math.round(maxVal - (i/4)*range);
-            const y = paddingTop + (drawH * i / 4);
-            ctx.fillText(yVal.toLocaleString(), 5, y+3);
+
+        function recordLongTermPoint() {
+            let avgInSchool = 0,
+                avgAtHome = 0;
+            if (fiveMinInSchoolWindow.length > 0) {
+                avgInSchool = Math.round(fiveMinInSchoolWindow.reduce((a, b) => a + b, 0) / fiveMinInSchoolWindow
+                .length);
+                avgAtHome = Math.round(fiveMinAtHomeWindow.reduce((a, b) => a + b, 0) / fiveMinAtHomeWindow.length);
+            } else {
+                avgInSchool = getCurrentRealtimeInSchool();
+                avgAtHome = getCurrentRealtimeAtHome();
+            }
+            fiveMinInSchoolWindow = [];
+            fiveMinAtHomeWindow = [];
+            chartHistoryData.push({ inSchool: avgInSchool, atHome: avgAtHome, timestamp: Date.now() });
+            if (chartHistoryData.length > LONG_HISTORY_SIZE) chartHistoryData.shift();
+            drawTrendChart();
+            if (influenceHintSpan) {
+                const now = new Date();
+                const sched = getScheduleKeyTimes(now);
+                influenceHintSpan.innerText =
+                    `🔥 冲刺系数${COMPETITION_BASE.toFixed(2)}x · ${sched.isSummer ? '夏季' : '冬季'}作息 · 每5min聚合`;
+            }
         }
-        for (let i = 0; i < chartHistoryData.length; i+= Math.max(1, Math.floor(chartHistoryData.length/6))) {
-            const x = paddingLeft + (drawW * i / (chartHistoryData.length-1));
-            const offsetMins = (chartHistoryData.length-1 - i) * 5;
-            let label = offsetMins === 0 ? "现在" : (offsetMins >= 60 ? `-${Math.floor(offsetMins/60)}h` : `-${offsetMins}m`);
-            ctx.fillText(label, x-12, h-paddingBottom+12);
+
+        // 【修复4】fillPastHistory 使用EMA平滑，消除初始锯齿
+        function fillPastHistory() {
+            chartHistoryData = [];
+            const now = new Date();
+            let prevInSchool = null,
+                prevAtHome = null;
+            for (let i = LONG_HISTORY_SIZE - 1; i >= 0; i--) {
+                const pointDate = new Date(now.getTime() - (i * 5 * 60 * 1000));
+                const raw = calculateStudentDistribution(pointDate);
+                // EMA平滑：历史权重0.65，当前权重0.35，让历史曲线更平滑
+                if (prevInSchool !== null) {
+                    raw.inSchool = Math.floor(prevInSchool * 0.65 + raw.inSchool * 0.35);
+                    raw.atHome = Math.floor(prevAtHome * 0.65 + raw.atHome * 0.35);
+                }
+                prevInSchool = raw.inSchool;
+                prevAtHome = raw.atHome;
+                chartHistoryData.push({ inSchool: raw.inSchool, atHome: raw.atHome, timestamp: pointDate.getTime() });
+            }
         }
-        ctx.beginPath();
-        const lineColor = getComputedStyle(document.body).getPropertyValue('--canvas-line') || '#3B82F6';
-        ctx.strokeStyle = lineColor;
-        ctx.lineWidth = 2.4;
-        let first = true;
-        for (let i = 0; i < chartHistoryData.length; i++) {
-            const x = paddingLeft + (drawW * i / (chartHistoryData.length-1));
-            const y = paddingTop + drawH - ( (chartHistoryData[i].avgCount - minVal) / range ) * drawH;
-            if (first) { ctx.moveTo(x, y); first = false; } else ctx.lineTo(x, y);
+
+        function drawTrendChart() {
+            if (!canvasEl || !canvasCtx) return;
+            const canvas = canvasEl;
+            const ctx = canvasCtx;
+            const w = canvas.clientWidth,
+                h = canvas.clientHeight;
+            canvas.width = w;
+            canvas.height = h;
+            if (chartHistoryData.length === 0) { ctx.clearRect(0, 0, w, h); return; }
+            const allValues = [];
+            chartHistoryData.forEach(p => { allValues.push(p.inSchool);
+                allValues.push(p.atHome); });
+            const maxVal = Math.max(...allValues, 3000);
+            const minVal = Math.min(...allValues, 500);
+            const range = maxVal - minVal === 0 ? 1 : maxVal - minVal;
+            const paddingLeft = 48,
+                paddingRight = 20,
+                paddingTop = 22,
+                paddingBottom = 28;
+            const drawW = w - paddingLeft - paddingRight,
+                drawH = h - paddingTop - paddingBottom;
+            if (drawW <= 0 || drawH <= 0) return;
+            ctx.clearRect(0, 0, w, h);
+            const gridColor = getComputedStyle(document.body).getPropertyValue('--canvas-grid') || '#E9EFF4';
+            const textColor = getComputedStyle(document.body).getPropertyValue('--canvas-text') || '#6B7C93';
+            ctx.strokeStyle = gridColor;
+            ctx.lineWidth = 0.6;
+            for (let i = 0; i <= 4; i++) {
+                const y = paddingTop + (drawH * i / 4);
+                ctx.beginPath();
+                ctx.moveTo(paddingLeft, y);
+                ctx.lineTo(w - paddingRight, y);
+                ctx.stroke();
+            }
+            ctx.fillStyle = textColor;
+            ctx.font = "10px Inter";
+            for (let i = 0; i <= 4; i++) {
+                const yVal = Math.round(maxVal - (i / 4) * range);
+                const y = paddingTop + (drawH * i / 4);
+                ctx.fillText(yVal.toLocaleString(), 5, y + 3);
+            }
+            const labelStep = Math.max(1, Math.floor(chartHistoryData.length / 6));
+            for (let i = 0; i < chartHistoryData.length; i += labelStep) {
+                const x = paddingLeft + (drawW * i / (chartHistoryData.length - 1));
+                const offsetMins = (chartHistoryData.length - 1 - i) * 5;
+                let label = offsetMins === 0 ? "现在" : (offsetMins >= 60 ? `-${Math.floor(offsetMins/60)}h` :
+                    `-${offsetMins}m`);
+                ctx.fillText(label, x - 14, h - paddingBottom + 13);
+            }
+            const lineColorSchool = getComputedStyle(document.body).getPropertyValue('--canvas-line') || '#3B82F6';
+            const lineColorHome = getComputedStyle(document.body).getPropertyValue('--canvas-line-home') || '#F97316';
+            const pointColorSchool = getComputedStyle(document.body).getPropertyValue('--canvas-point') || '#1E40AF';
+            const pointColorHome = getComputedStyle(document.body).getPropertyValue('--canvas-point-home') || '#EA580C';
+            const drawLine = (key, col, ptCol) => {
+                ctx.beginPath();
+                ctx.strokeStyle = col;
+                ctx.lineWidth = 2.2;
+                let first = true;
+                for (let i = 0; i < chartHistoryData.length; i++) {
+                    const x = paddingLeft + (drawW * i / (chartHistoryData.length - 1));
+                    const y = paddingTop + drawH - ((chartHistoryData[i][key] - minVal) / range) * drawH;
+                    if (first) { ctx.moveTo(x, y);
+                        first = false; } else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+                for (let i = 0; i < chartHistoryData.length; i++) {
+                    const x = paddingLeft + (drawW * i / (chartHistoryData.length - 1));
+                    const y = paddingTop + drawH - ((chartHistoryData[i][key] - minVal) / range) * drawH;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 2.8, 0, 2 * Math.PI);
+                    ctx.fillStyle = ptCol;
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(x, y, 1.3, 0, 2 * Math.PI);
+                    ctx.fillStyle = "white";
+                    ctx.fill();
+                }
+            };
+            drawLine('inSchool', lineColorSchool, pointColorSchool);
+            drawLine('atHome', lineColorHome, pointColorHome);
+            const last = chartHistoryData[chartHistoryData.length - 1];
+            ctx.fillStyle = lineColorSchool;
+            ctx.font = "bold 10px 'Space Grotesk'";
+            ctx.fillText(`在校:${last.inSchool.toLocaleString()}`, paddingLeft + 4, paddingTop - 4);
+            ctx.fillStyle = lineColorHome;
+            ctx.fillText(`在家:${last.atHome.toLocaleString()}`, paddingLeft + 120, paddingTop - 4);
         }
-        ctx.stroke();
-        for (let i = 0; i < chartHistoryData.length; i++) {
-            const x = paddingLeft + (drawW * i / (chartHistoryData.length-1));
-            const y = paddingTop + drawH - ( (chartHistoryData[i].avgCount - minVal) / range ) * drawH;
-            ctx.beginPath(); ctx.arc(x, y, 3.2, 0, 2*Math.PI); ctx.fillStyle = lineColor; ctx.fill();
-            ctx.beginPath(); ctx.arc(x, y, 1.5, 0, 2*Math.PI); ctx.fillStyle = "white"; ctx.fill();
+
+        function formatNum(n) { return n < 10 ? `0${n}` : `${n}`; }
+
+        function shineDigit(el) {
+            if (!el) return;
+            el.classList.remove('digit-shine');
+            void el.offsetWidth;
+            el.classList.add('digit-shine');
+            setTimeout(() => el.classList.remove('digit-shine'), 200);
         }
-        const lastVal = chartHistoryData[chartHistoryData.length-1].avgCount;
-        ctx.fillStyle = getComputedStyle(document.body).getPropertyValue('--accent-blue') || '#1F3A6E';
-        ctx.font = "bold 11px 'Space Grotesk'";
-        ctx.fillText(`最新聚合:${lastVal.toLocaleString()}`, w-86, paddingTop-2);
-    }
-    
-    function formatNum(n) { return n < 10 ? `0${n}` : `${n}`; }
-    function shineDigit(el) { if(!el) return; el.classList.remove('digit-shine'); void el.offsetWidth; el.classList.add('digit-shine'); setTimeout(() => el.classList.remove('digit-shine'), 200); }
-    function getRemainingTime() { const now=new Date(); const diffMs=TARGET_DATE-now; const safeDiff=diffMs<=0?0:diffMs; const totalSeconds=Math.floor(safeDiff/1000); const days=Math.floor(totalSeconds/86400); const hours=Math.floor((totalSeconds%86400)/3600); const minutes=Math.floor((totalSeconds%3600)/60); const seconds=totalSeconds%60; return { days, hours, minutes, seconds, isExpired:diffMs<=0 }; }
-    function updateCountdownUI({ days, hours, minutes, seconds, isExpired }) {
-        let dS=formatNum(days), hS=formatNum(hours), mS=formatNum(minutes), sS=formatNum(seconds);
-        if(isExpired) { dS='00'; hS='00'; mS='00'; sS='00'; }
-        if(daysEl.innerText !== dS) { daysEl.innerText = dS; if(prevDigits.days !== days && !isExpired) shineDigit(daysEl); }
-        if(hoursEl.innerText !== hS) { hoursEl.innerText = hS; if(prevDigits.hours !== hours && !isExpired) shineDigit(hoursEl); }
-        if(minutesEl.innerText !== mS) { minutesEl.innerText = mS; if(prevDigits.minutes !== minutes && !isExpired) shineDigit(minutesEl); }
-        if(secondsEl.innerText !== sS) { secondsEl.innerText = sS; if(prevDigits.seconds !== seconds && !isExpired) shineDigit(secondsEl); }
-        prevDigits = { days, hours, minutes, seconds };
-    }
-    const ProgressCalc = {
-        getWeekProgress() { const now=new Date(); let daysToMonday=now.getDay()===0?6:now.getDay()-1; const monday=new Date(now); monday.setDate(now.getDate()-daysToMonday); monday.setHours(0,0,0,0); const elapsed=now-monday; return Math.min(100, (elapsed/(7*86400000))*100); },
-        getDayProgress() { const now=new Date(); const start=new Date(now); start.setHours(0,0,0,0); return Math.min(100, ((now-start)/86400000)*100); },
-        getHourProgress() { const now=new Date(); return Math.min(100, ((now.getMinutes()*60+now.getSeconds())/3600)*100); },
-        getMinuteProgress() { return Math.min(100, (new Date().getSeconds()/60)*100); }
-    };
-    function updateProgressBars() {
-        const wp=ProgressCalc.getWeekProgress(), dp=ProgressCalc.getDayProgress(), hp=ProgressCalc.getHourProgress(), mp=ProgressCalc.getMinuteProgress();
-        document.getElementById('weekFill').style.width=`${wp}%`; document.getElementById('weekPercent').innerText=`${wp.toFixed(1)}%`;
-        document.getElementById('dayFill').style.width=`${dp}%`; document.getElementById('dayPercent').innerText=`${dp.toFixed(1)}%`;
-        document.getElementById('hourFill').style.width=`${hp}%`; document.getElementById('hourPercent').innerText=`${hp.toFixed(1)}%`;
-        document.getElementById('minuteFill').style.width=`${mp}%`; document.getElementById('minutePercent').innerText=`${mp.toFixed(1)}%`;
-    }
-    function updateLiveClock() { const now=new Date(); const y=now.getFullYear(), m=String(now.getMonth()+1).padStart(2,'0'), d=String(now.getDate()).padStart(2,'0'); const w=['周日','周一','周二','周三','周四','周五','周六'][now.getDay()]; document.getElementById('liveClockDisplay').innerText=`${y}.${m}.${d} ${w} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`; }
-    function updateStudyTimer() { const elapsed=Math.floor((Date.now()-sessionStart)/1000); const hours=Math.floor(elapsed/3600), mins=Math.floor((elapsed%3600)/60), secs=elapsed%60; if(timerDisplay) timerDisplay.innerText=`${hours.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`; }
-    function updateGreetingAndHealth() {
-        const now=new Date(); const hour=now.getHours(); let icon,text,isLateNight=false;
-        if(hour>=23||hour<5){ icon="[深夜]"; text="深夜静心，休息为重，积蓄能量。"; isLateNight=true; }
-        else if(hour>=5&&hour<6){ icon="[黎明]"; text="晨光微熹，早起的人儿最耀眼！"; }
-        else if(hour>=6&&hour<8){ icon="[清晨]"; text="一日之计在于晨，大声朗读唤醒大脑！"; }
-        else if(hour>=8&&hour<11){ icon="[上午]"; text="专注力巅峰，攻克理科或背诵重点。"; }
-        else if(hour>=11&&hour<13){ icon="[午间]"; text="午餐营养均衡，小憩15分钟更高效。"; }
-        else if(hour>=13&&hour<15){ icon="[午后]"; text="午后易犯困，起来走动，坚持复习。"; }
-        else if(hour>=15&&hour<17){ icon="[下午]"; text="黄金复习区，冲刺重难点！"; }
-        else if(hour>=17&&hour<19){ icon="[傍晚]"; text="复盘今日收获，放松片刻再出发。"; }
-        else if(hour>=19&&hour<21){ icon="[晚间]"; text="梳理知识框架，效率巅峰时段。"; }
-        else { icon="[自习]"; text="稳住心态，中考加油！"; }
-        greetingIconSpan.innerText=icon; greetingTextSpan.innerText=text;
-        if(lateNightAlertDiv) { if(isLateNight) { lateNightAlertDiv.innerHTML=`[提醒] 深夜时段，保证睡眠才是高效复习的基础。`; lateNightAlertDiv.style.display="flex"; } else lateNightAlertDiv.style.display="none"; }
-    }
-    function updateRealtimePeerDisplay() { if(peerSpan){ const realtime=getCurrentRealtimeAvg(); peerSpan.innerText=realtime.toLocaleString(); peerSpan.classList.add('pulse-stat'); setTimeout(()=>peerSpan.classList.remove('pulse-stat'),200); } }
-    const sayingsPool=["乾坤未定，你我皆是黑马。","每一道错题，都是未来的基石。","坚持到今天，你已经很棒了！","新乡少年，提笔为剑，决胜中考。","再微小的努力，乘以365天都会发光。","你笔下写过的每一个字，都不会辜负你。","现在的痛，终将变成未来的勋章。","中考是盛夏的果实，请用汗水浇灌。","和时间赛跑，你就是赢家。","星光不问赶路人，时光不负有心人。","心态稳住，你就战胜了一半对手。","偶尔深呼吸，调整节奏再出发。"];
-    let currentSayingIdx=-1;
-    function randomSaying() { let newIdx=Math.floor(Math.random()*sayingsPool.length); while(sayingsPool.length>1 && newIdx===currentSayingIdx) newIdx=Math.floor(Math.random()*sayingsPool.length); currentSayingIdx=newIdx; return sayingsPool[currentSayingIdx]; }
-    function refreshSaying() { if(sayingElement){ sayingElement.innerText=randomSaying(); sayingElement.classList.add('pulse-stat'); setTimeout(()=>sayingElement.classList.remove('pulse-stat'),300); } }
-    
-    function initTheme() {
-        const stored=localStorage.getItem('theme');
-        const prefersDark=window.matchMedia('(prefers-color-scheme: dark)').matches;
-        const isDark=stored==='dark' || (stored===null && prefersDark);
-        if(isDark){ document.body.classList.add('dark'); document.getElementById('themeToggleBtn').innerText='☀️'; }
-        else { document.body.classList.remove('dark'); document.getElementById('themeToggleBtn').innerText='🌙'; }
-        if(canvasCtx && chartHistoryData.length) drawTrendChart();
-    }
-    function toggleTheme() {
-        const body=document.body;
-        const btn=document.getElementById('themeToggleBtn');
-        if(body.classList.contains('dark')){ body.classList.remove('dark'); localStorage.setItem('theme','light'); btn.innerText='🌙'; }
-        else { body.classList.add('dark'); localStorage.setItem('theme','dark'); btn.innerText='☀️'; }
-        if(canvasCtx && chartHistoryData.length) drawTrendChart();
-    }
-    
-    function init() {
-        canvasEl = document.getElementById('trendCanvas');
-        if(canvasEl) canvasCtx = canvasEl.getContext('2d');
-        sessionStart = Date.now();
-        for(let i=0;i<20;i++) pushInstantPrediction();
-        fillPastHistory();
-        drawTrendChart();
-        realtimePeerInterval = setInterval(() => { updateRealtimePeerDisplay(); }, 1500);
-        secondTickHandler = setInterval(() => {
-            pushInstantPrediction();
-            updateCountdownUI(getRemainingTime());
-            updateProgressBars();
-            updateLiveClock();
-            updateStudyTimer();
-            updateGreetingAndHealth();
-        }, 1000);
-        longTermInterval = setInterval(() => { recordLongTermPoint(); }, 5 * 60 * 1000);
-        document.getElementById('refreshSayingBtn')?.addEventListener('click', refreshSaying);
-        const themeBtn = document.getElementById('themeToggleBtn');
-        if(themeBtn) themeBtn.addEventListener('click', toggleTheme);
-        window.addEventListener('resize', () => drawTrendChart());
-        refreshSaying();
-        initTheme();
-    }
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
-    else init();
-</script>
+
+        function getRemainingTime() {
+            const now = new Date();
+            const diffMs = TARGET_DATE - now;
+            const safeDiff = diffMs <= 0 ? 0 : diffMs;
+            const totalSeconds = Math.floor(safeDiff / 1000);
+            const days = Math.floor(totalSeconds / 86400);
+            const hours = Math.floor((totalSeconds % 86400) / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            return { days, hours, minutes, seconds, isExpired: diffMs <= 0 };
+        }
+
+        function updateCountdownUI({ days, hours, minutes, seconds, isExpired }) {
+            let dS = formatNum(days),
+                hS = formatNum(hours),
+                mS = formatNum(minutes),
+                sS = formatNum(seconds);
+            if (isExpired) { dS = '00';
+                hS = '00';
+                mS = '00';
+                sS = '00'; }
+            if (daysEl.innerText !== dS) { daysEl.innerText = dS; if (prevDigits.days !== days && !isExpired) shineDigit(
+                    daysEl); }
+            if (hoursEl.innerText !== hS) { hoursEl.innerText = hS; if (prevDigits.hours !== hours && !isExpired) shineDigit(
+                    hoursEl); }
+            if (minutesEl.innerText !== mS) { minutesEl.innerText = mS; if (prevDigits.minutes !== minutes && !isExpired)
+                    shineDigit(minutesEl); }
+            if (secondsEl.innerText !== sS) { secondsEl.innerText = sS; if (prevDigits.seconds !== seconds && !isExpired)
+                    shineDigit(secondsEl); }
+            prevDigits = { days, hours, minutes, seconds };
+        }
+        const ProgressCalc = {
+            getWeekProgress() {
+                const now = new Date();
+                let daysToMonday = now.getDay() === 0 ? 6 : now.getDay() - 1;
+                const monday = new Date(now);
+                monday.setDate(now.getDate() - daysToMonday);
+                monday.setHours(0, 0, 0, 0);
+                const elapsed = now - monday;
+                return Math.min(100, (elapsed / (7 * 86400000)) * 100);
+            },
+            getDayProgress() {
+                const now = new Date();
+                const start = new Date(now);
+                start.setHours(0, 0, 0, 0);
+                return Math.min(100, ((now - start) / 86400000) * 100);
+            },
+            getHourProgress() {
+                const now = new Date();
+                return Math.min(100, ((now.getMinutes() * 60 + now.getSeconds()) / 3600) * 100);
+            },
+            getMinuteProgress() { return Math.min(100, (new Date().getSeconds() / 60) * 100); }
+        };
+
+        function updateProgressBars() {
+            const wp = ProgressCalc.getWeekProgress(),
+                dp = ProgressCalc.getDayProgress(),
+                hp = ProgressCalc.getHourProgress(),
+                mp = ProgressCalc.getMinuteProgress();
+            document.getElementById('weekFill').style.width = `${wp}%`;
+            document.getElementById('weekPercent').innerText = `${wp.toFixed(1)}%`;
+            document.getElementById('dayFill').style.width = `${dp}%`;
+            document.getElementById('dayPercent').innerText = `${dp.toFixed(1)}%`;
+            document.getElementById('hourFill').style.width = `${hp}%`;
+            document.getElementById('hourPercent').innerText = `${hp.toFixed(1)}%`;
+            document.getElementById('minuteFill').style.width = `${mp}%`;
+            document.getElementById('minutePercent').innerText = `${mp.toFixed(1)}%`;
+        }
+
+        function updateLiveClock() {
+            const now = new Date();
+            const y = now.getFullYear(),
+                m = String(now.getMonth() + 1).padStart(2, '0'),
+                d = String(now.getDate()).padStart(2, '0');
+            const w = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][now.getDay()];
+            document.getElementById('liveClockDisplay').innerText =
+                `${y}.${m}.${d} ${w} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+        }
+
+        function updateStudyTimer() {
+            const elapsed = Math.floor((Date.now() - sessionStart) / 1000);
+            const hours = Math.floor(elapsed / 3600),
+                mins = Math.floor((elapsed % 3600) / 60),
+                secs = elapsed % 60;
+            if (timerDisplay) timerDisplay.innerText =
+                `${hours.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+        }
+
+        function updateGreetingAndHealth() {
+            const now = new Date();
+            const hour = now.getHours();
+            let icon, text, isLateNight = false;
+            if (hour >= 23 || hour < 5) { icon = "[深夜]";
+                text = "深夜静心，休息为重，积蓄能量。";
+                isLateNight = true; } else if (hour >= 5 && hour < 6) { icon = "[黎明]";
+                text = "晨光微熹，早起的人儿最耀眼！"; } else if (hour >= 6 && hour < 8) { icon = "[清晨]";
+                text = "一日之计在于晨，大声朗读唤醒大脑！"; } else if (hour >= 8 && hour < 11) { icon = "[上午]";
+                text = "专注力巅峰，攻克理科或背诵重点。"; } else if (hour >= 11 && hour < 13) { icon = "[午间]";
+                text = "午餐营养均衡，小憩15分钟更高效。"; } else if (hour >= 13 && hour < 15) { icon = "[午后]";
+                text = "午后易犯困，起来走动，坚持复习。"; } else if (hour >= 15 && hour < 17) { icon = "[下午]";
+                text = "黄金复习区，冲刺重难点！"; } else if (hour >= 17 && hour < 19) { icon = "[傍晚]";
+                text = "复盘今日收获，放松片刻再出发。"; } else if (hour >= 19 && hour < 21) { icon = "[晚间]";
+                text = "梳理知识框架，效率巅峰时段。"; } else { icon = "[自习]";
+                text = "稳住心态，中考加油！"; }
+            greetingIconSpan.innerText = icon;
+            greetingTextSpan.innerText = text;
+            if (lateNightAlertDiv) {
+                if (isLateNight) {
+                    lateNightAlertDiv.innerHTML = `[提醒] 已经深夜了，保证睡眠能高效复习呦。`;
+                    lateNightAlertDiv.style.display = "flex";
+                } else lateNightAlertDiv.style.display = "none";
+            }
+        }
+
+        function updateRealtimePeerDisplay() {
+            if (inSchoolDisplay) {
+                const realtimeInSchool = getCurrentRealtimeInSchool();
+                inSchoolDisplay.innerText = realtimeInSchool.toLocaleString();
+                inSchoolDisplay.classList.add('pulse-stat');
+                setTimeout(() => inSchoolDisplay.classList.remove('pulse-stat'), 200);
+            }
+            if (atHomeDisplay) {
+                const realtimeAtHome = getCurrentRealtimeAtHome();
+                atHomeDisplay.innerText = realtimeAtHome.toLocaleString();
+                atHomeDisplay.classList.add('pulse-stat');
+                setTimeout(() => atHomeDisplay.classList.remove('pulse-stat'), 200);
+            }
+        }
+        const sayingsPool = ["乾坤未定，你我皆是黑马。", "每一道错题，都是未来的基石。", "坚持到今天，你已经很棒了！", "新乡少年，提笔为剑，决胜中考。", "再微小的努力，乘以365天都会发光。",
+            "你笔下写过的每一个字，都不会辜负你。", "现在的痛，终将变成未来的勋章。", "中考是盛夏的果实，请用汗水浇灌。", "和时间赛跑，你就是赢家。", "星光不问赶路人，时光不负有心人。",
+            "心态稳住，你就战胜了一半对手。", "偶尔深呼吸，调整节奏再出发。"
+        ];
+        let currentSayingIdx = -1;
+
+        function randomSaying() {
+            let newIdx = Math.floor(Math.random() * sayingsPool.length);
+            while (sayingsPool.length > 1 && newIdx === currentSayingIdx) newIdx = Math.floor(Math.random() * sayingsPool
+                .length);
+            currentSayingIdx = newIdx;
+            return sayingsPool[currentSayingIdx];
+        }
+
+        function refreshSaying() {
+            if (sayingElement) {
+                sayingElement.innerText = randomSaying();
+                sayingElement.classList.add('pulse-stat');
+                setTimeout(() => sayingElement.classList.remove('pulse-stat'), 300);
+            }
+        }
+
+        function initTheme() {
+            const stored = localStorage.getItem('theme');
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            const isDark = stored === 'dark' || (stored === null && prefersDark);
+            if (isDark) {
+                document.body.classList.add('dark');
+                document.getElementById('themeToggleBtn').innerText = '☀️';
+            } else {
+                document.body.classList.remove('dark');
+                document.getElementById('themeToggleBtn').innerText = '🌙';
+            }
+            if (canvasCtx && chartHistoryData.length) drawTrendChart();
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            const btn = document.getElementById('themeToggleBtn');
+            if (body.classList.contains('dark')) {
+                body.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+                btn.innerText = '🌙';
+            } else {
+                body.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+                btn.innerText = '☀️';
+            }
+            if (canvasCtx && chartHistoryData.length) drawTrendChart();
+        }
+
+        function init() {
+            canvasEl = document.getElementById('trendCanvas');
+            if (canvasEl) canvasCtx = canvasEl.getContext('2d');
+            sessionStart = Date.now();
+            for (let i = 0; i < 20; i++) pushInstantPrediction();
+            fillPastHistory();
+            drawTrendChart();
+            realtimePeerInterval = setInterval(() => { updateRealtimePeerDisplay(); }, 5000);
+            secondTickHandler = setInterval(() => {
+                pushInstantPrediction();
+                updateCountdownUI(getRemainingTime());
+                updateProgressBars();
+                updateLiveClock();
+                updateStudyTimer();
+                updateGreetingAndHealth();
+            }, 1000);
+            longTermInterval = setInterval(() => { recordLongTermPoint(); }, 5 * 60 * 1000);
+            document.getElementById('refreshSayingBtn')?.addEventListener('click', refreshSaying);
+            const themeBtn = document.getElementById('themeToggleBtn');
+            if (themeBtn) themeBtn.addEventListener('click', toggleTheme);
+            window.addEventListener('resize', () => drawTrendChart());
+            refreshSaying();
+            initTheme();
+        }
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+        else init();
+    </script>
 </body>
 </html>
