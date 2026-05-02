@@ -1,8 +1,27 @@
 {
-  "generated_at": "2026-05-02T15:22:58.031112",
-  "total_articles": 10,
-  "total_word_count": 30228,
+  "generated_at": "2026-05-02T18:49:52.294356",
+  "total_articles": 11,
+  "total_word_count": 35387,
   "articles": [
+    {
+      "relative_path": "articles/source/分享/bing壁纸.md",
+      "hash": "4c7eaa1ba74852ee56f63bc21b72bfad",
+      "last_updated": "2026-05-02",
+      "modify_count": 8,
+      "hidden": false,
+      "title": "将 Bing 每日壁纸变成你网站的背景",
+      "date": "2026-05-02",
+      "description": "Bing 壁纸 API 的调用、壁纸存档库以及实现方法",
+      "author": "高新炀",
+      "tags": [
+        "分享",
+        "网站"
+      ],
+      "category": "分享",
+      "url": "/articles/bing壁纸.html",
+      "word_count": 4912,
+      "read_time": "17分钟"
+    },
     {
       "relative_path": "articles/source/日记/体育考试记录.md",
       "hash": "86e72b713b4157033b4c48ae9d7c8117",
@@ -115,9 +134,9 @@
     },
     {
       "relative_path": "articles/source/网站/网站更新日志.md",
-      "hash": "fbbe7c5c93c2c352f55e3d02f7fb72cb",
+      "hash": "93707e1b6f1e7ba49f1cddc9422bf5ab",
       "last_updated": "2026-05-02",
-      "modify_count": 93,
+      "modify_count": 95,
       "hidden": false,
       "title": "网站更新日志",
       "date": "2025-12-21",
@@ -128,8 +147,8 @@
       ],
       "category": "网站",
       "url": "/articles/网站更新日志.html",
-      "word_count": 10306,
-      "read_time": "35分钟"
+      "word_count": 10553,
+      "read_time": "36分钟"
     },
     {
       "relative_path": "articles/source/学习/雪中的思绪.md",

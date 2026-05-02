@@ -3,8 +3,8 @@
 :root {
   /* 浅色主题 柔和的奶油色基调 */
   --bg-color: #faf8f5;
-  --surface-color: #ffffff;
-  --surface-color-secondary: #f5f2ef;
+  --surface-color: rgb(255, 255, 255);
+  --surface-color-secondary: rgba(245, 242, 239);
   --text-color: #2c2c2c;
   --text-secondary: #6b6b6b;
   --accent-color: #b45b63;
@@ -65,6 +65,7 @@
   --transition-normal: 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
   --transition-slow: 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1);
   --transition-bounce: cubic-bezier(0.34, 1.2, 0.64, 1);
+  --background-overlay-filter: brightness(1.05) saturate(1.05);
   
   /* 布局变量 */
   --nav-height: 70px;
@@ -93,7 +94,7 @@
   /* 基础色调：提高背景与表面对比，增强层次 */
   --bg-color: #0c0c12;
   --surface-color: #18181f;
-  --surface-color-secondary: #20202a;
+  --surface-color-secondary: rgba(32, 32, 42);
   --text-color: #eceef2;
   --text-secondary: #b6b9c6;
   
@@ -135,6 +136,7 @@
   --shadow-offset: 6px 6px 0 -2px rgba(var(--accent-rgb), 0.12);
   --shadow-nav: 0 2px 12px rgba(0, 0, 0, 0.6);
   --shadow-hover: 0 24px 40px -12px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(var(--accent-rgb), 0.25);
+  --background-overlay-filter: brightness(0.78) saturate(1.05);
 }
 
 /* ========== 暗色模式核心：卡片边界突出 + 视觉层次优化 ========== */
@@ -404,7 +406,7 @@ body::before {
   background-position: inherit;
   background-repeat: inherit;
   background-attachment: inherit;
-  filter: blur(2px) saturate(1.05);
+  filter: var(--background-overlay-filter);
   transform: scale(1.04);
   pointer-events: none;
 }
@@ -1038,14 +1040,27 @@ input:checked + .slider:after {
   display: grid;
   place-items: center;
   padding: 24px;
-  background: rgba(10, 14, 24, 0.82);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  background: rgba(10, 14, 24, 0.52);
   z-index: calc(var(--z-modal-overlay) + 10);
   opacity: 0;
   transform: scale(1.02);
   transition: opacity 0.25s ease, transform 0.25s ease;
   cursor: pointer;
+  overflow: hidden;
+}
+
+.welcome-overlay::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-color: inherit;
+  background-image: inherit;
+  background-size: inherit;
+  background-position: inherit;
+  background-repeat: inherit;
+  background-attachment: inherit;
+  filter: var(--background-overlay-filter);
 }
 
 .welcome-overlay.active {

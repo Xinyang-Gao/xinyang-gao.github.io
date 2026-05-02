@@ -186,11 +186,7 @@ class StatisticsManager {
         const now = Date.now();
         const currentVersion = version || '未知版本';
         const missingLocalVersion = !cached.version;
-        const forceDarkTheme = missingLocalVersion;
-
-        if (forceDarkTheme) {
-            localStorage.setItem('theme', 'dark');
-        }
+        const forceDarkTheme = false;
 
         this.saveRecord({
             version: version || previousVersion || '',
@@ -248,7 +244,7 @@ class StatisticsManager {
         const versionText = previousVersion && previousVersion !== currentVersion
             ? `在你离开的这段时间里，网站已从版本编号 ${previousVersion} 更新到版本编号 ${currentVersion}`
             : `当前版本编号：${currentVersion}`;
-        const warningText = missingLocalVersion ? '<p class="welcome-overlay-warning">已经自动配置好主题啦~</p>' : '';
+        const warningText = missingLocalVersion ? '<p class="welcome-overlay-warning">已根据当前时间自动选择主题~</p>' : '';
         const titleText = `${Utils.getGreetingMessage()}<br>欢迎回来`;
 
         overlay.innerHTML = `
@@ -1127,11 +1123,11 @@ class NavigationManager {
         const handleChange = (e) => { setTheme(e.target.checked ? 'dark' : 'light', false); };
         checkbox.addEventListener('change', handleChange);
         const savedTheme = localStorage.getItem('theme');
-        let initialTheme = savedTheme || 'dark';
+        let initialTheme = savedTheme || getTimeBasedTheme();
         document.documentElement.setAttribute('data-theme', initialTheme);
         checkbox.checked = (initialTheme === 'dark');
-        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
-            if (!localStorage.getItem('theme')) setTheme(e.matches ? 'dark' : 'light', true);
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+            if (!localStorage.getItem('theme')) setTheme(getTimeBasedTheme(), true);
         });
     }
     static initNavigation() {
@@ -1323,6 +1319,10 @@ class ExternalLinkManager {
 }
 
 function isSameOrigin(href) { try { const url = new URL(href, window.location.href); return url.origin === window.location.origin; } catch { return false; } }
+function getTimeBasedTheme() {
+    const hour = new Date().getHours();
+    return (hour >= 6 && hour < 18) ? 'light' : 'dark';
+}
 function getPageNameFromPath(pathname) { const name = pathname.split('/').pop() || 'index'; return name.replace('.html', '') || 'index'; }
 function isArticleDetailOr404Page() { try { const path = window.location.pathname || ''; const name = path.split('/').pop() || ''; if (path.includes('/articles/') && name && name !== 'articles.html') return true; if (name === '404.html' || name === '404') return true; return false; } catch (e) { return false; } }
 
@@ -1414,11 +1414,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.ExternalLinkManager = new ExternalLinkManager();
     // 加载图片查看器组件（满足主站js引用要求）
     await loadImageViewer();
-    const statResult = await StatisticsManager.syncVisitRecord();
+    await StatisticsManager.syncVisitRecord();
     const savedTheme = localStorage.getItem('theme');
-    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    let initialTheme = savedTheme || (statResult.forceDarkTheme ? 'dark' : null);
-    if (!initialTheme) initialTheme = systemPrefersDark ? 'dark' : 'light';
+    const initialTheme = savedTheme || getTimeBasedTheme();
     document.documentElement.setAttribute('data-theme', initialTheme);
     await loadNavbar(); await loadFooter(); await updateFooterUpdateTime();
     setTimeout(() => { try { renderMathAndMermaid(document.body); } catch (e) { console.warn('[WARN] 初始 renderMathAndMermaid 失败', e); } }, 300);

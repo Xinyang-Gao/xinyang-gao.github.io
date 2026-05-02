@@ -1,12 +1,13 @@
 {
-  "version": 2,
+  "version": 11,
   "last_updated": "2026-05-02",
-  "last_updated_full": "2026-05-02T15:22:58+08:00",
-  "total_articles": 10,
-  "total_word_count": 30228,
+  "last_updated_full": "2026-05-02T18:49:53+08:00",
+  "total_articles": 11,
+  "total_word_count": 35387,
   "total_works": 10,
   "article_tags": [
     "体育",
+    "分享",
     "文言文",
     "日常",
     "日记",
@@ -17,6 +18,7 @@
     "诗扩写"
   ],
   "article_categories": [
+    "分享",
     "学习",
     "日记",
     "网站"
