@@ -306,53 +306,7 @@
   margin: 0 4px;
 }
 
-/* Hero 区域微调（使问候与简介更协调） */
-.hero {
-  text-align: center;
-  margin-bottom: 32px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--border-light);
-}
-
-.hero h1 {
-  font-size: 3rem;
-  margin: 0.2em 0 0.2em;
-  letter-spacing: -1px;
-  background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-light) 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-}
-
-.greeting-text {
-  font-size: 1.2rem;
-  font-weight: 500;
-  color: var(--accent-color);
-  margin: 8px 0 12px;
-}
-
-.bio {
-  font-size: 1rem;
-  color: var(--text-secondary);
-  max-width: 80%;
-  margin: 0 auto 12px;
-}
-
-.hero-signature {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  background: var(--tag-bg);
-  padding: 8px 20px;
-  border-radius: var(--radius-full);
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  border: 1px solid var(--border-light);
-}
-
-.hero-signature i {
-  color: var(--accent-color);
-}
+/* Hero landing page 样式已在全局 CSS 内定义 */
 
 /* 响应式适配（移动端调整） */
 @media (max-width: 768px) {
@@ -459,14 +413,22 @@
     <!-- 右侧主内容区 -->
     <main class="main-content-area" id="mainContent" role="main" aria-live="polite">
       <div class="container">
-        <div class="hero">
-          <p id="dynamic-greeting" class="greeting-text">早上好！中午好！晚上好！</p>
-          <p class="bio">「 学生 · 技术爱好者 · 把想象编译成现实 」</p>
-          <div class="hero-signature">
-            <i class="fas fa-terminal"></i> 代码 | 文字 | 探索
-            <i class="fas fa-feather-alt" style="margin-left: 6px;"></i>
+        <div class="hero landing-hero">
+          <div class="eyebrow">WELCOME</div>
+          <h1>GaoXinYang's Website</h1>
+          <p class="hero-copy">谢谢你在茫茫互联网世界中找到我</p>
+          <div class="hero-actions">
+            <a href="#blogHome" class="button button-primary">进入首页</a>
+            <a href="/about.html" class="button button-secondary">了解我</a>
           </div>
+          <div class="scroll-indicator"><i class="fas fa-chevron-down"></i> 继续下滑，进入博客</div>
         </div>
+
+        <section class="blog-home-intro" id="blogHome">
+          <div class="section-eyebrow">HOME</div>
+          <h2>最新文章与作品</h2>
+          <p class="section-copy">这里有最新文章、作品与主题标签。每次下滑，都是一段新的文字旅程。</p>
+        </section>
 
         <!-- 统计卡片容器（由 statistics.json 填充） -->
         <div class="stats-grid" id="statsContainer">
@@ -474,7 +436,6 @@
           <div class="stat-card"><div class="stat-icon"><i class="fas fa-feather-alt"></i></div><div class="stat-number">—</div><div class="stat-label">总字数</div><div class="stat-sub">字里行间</div></div>
           <div class="stat-card"><div class="stat-icon"><i class="fas fa-cube"></i></div><div class="stat-number">—</div><div class="stat-label">作品数量</div></div>
         </div>
-
         <!-- 标签云区域 -->
         <div class="tags-showcase">
           <div class="tags-section">
@@ -491,24 +452,18 @@
           </div>
         </div>
 
-        <!-- 灵感箴言区（保留原引子） -->
-        <div class="inspire-quote">
-          <p><i class="fas fa-quote-left"></i> 新样式上新！改了许多东西呢~</p>
-          <div class="inspire-author">—— 高新炀</div>
-        </div>
-
         <!-- 最近更新区域 (文章&作品) -->
         <div class="recent-section">
           <h2><i class="fas fa-history"></i> 最近更新</h2>
           <div class="recent-grid">
             <div class="recent-posts">
-              <h3><i class="fas fa-pen-fancy"></i> 最新墨迹</h3>
+              <h3><i class="fas fa-pen-fancy"></i> 文章 </h3>
               <div id="recentArticlesList">
                 <div class="recent-empty"><i class="fas fa-hourglass-half"></i> 正在拾取星光...</div>
               </div>
             </div>
             <div class="recent-works">
-              <h3><i class="fas fa-laptop-code"></i> 最新创作</h3>
+              <h3><i class="fas fa-laptop-code"></i>作品</h3>
               <div id="recentWorksList">
                 <div class="recent-empty"><i class="fas fa-microchip"></i> 正在编译创意...</div>
               </div>
@@ -665,7 +620,6 @@
                   ${date ? `<span class="recent-badge">${date}</span>` : ''}
                 </div>
                 ${desc ? `<div class="recent-meta"><i class="fas fa-feather"></i> ${desc}</div>` : ''}
-                <div class="recent-meta" style="margin-top: 8px;"><i class="far fa-clock"></i> 点击阅读</div>
               </div>
             `;
           } else {
@@ -683,7 +637,6 @@
                   ${date ? `<span class="recent-badge">${date}</span>` : ''}
                 </div>
                 ${desc ? `<div class="recent-meta"><i class="fas fa-code-branch"></i> ${desc}</div>` : ''}
-                <div class="recent-meta" style="margin-top: 8px;"><i class="fas fa-mouse-pointer"></i> 点击查看详情</div>
               </div>
             `;
           }

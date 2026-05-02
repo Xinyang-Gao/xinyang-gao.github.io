@@ -86,7 +86,14 @@ def main():
     # 作品标签
     work_tags = unique_sorted([tag for work in works for tag in work.get('tag', []) if isinstance(work.get('tag'), list)])
 
+    output_path = JSON_DIR / 'statistics.json'
+    existing_statistics = load_json(output_path)
+    version = 1
+    if isinstance(existing_statistics, dict) and isinstance(existing_statistics.get('version'), int):
+        version = existing_statistics['version'] + 1
+
     statistics = {
+        "version": version,
         "last_updated": last_updated,
         "last_updated_full": now_precise,
         "total_articles": total_articles,
@@ -97,7 +104,6 @@ def main():
         "work_tags": work_tags
     }
 
-    output_path = JSON_DIR / 'statistics.json'
     with open(output_path, 'w', encoding='utf-8') as f:
         json.dump(statistics, f, ensure_ascii=False, indent=2)
 

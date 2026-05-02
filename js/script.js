@@ -37,6 +37,16 @@ class Utils {
     static getUrlParam(name) {
         return new URLSearchParams(window.location.search).get(name);
     }
+    static getGreetingMessage() {
+        const h = new Date().getHours();
+        if (h < 5) return '深夜灵感迸发，也要记得休息～';
+        if (h < 8) return '晨光熹微，今天也要闪闪发光！';
+        if (h < 11) return '早上好！元气满满的一天开始啦';
+        if (h < 14) return '中午好，记得补充能量~';
+        if (h < 18) return '午后时光，适合创造';
+        if (h < 21) return '傍晚好，享受此刻宁静';
+        return '星河在上，愿你今夜好梦';
+    }
     static isDataExpired(raw, minutes = 5) {
         if (!raw) return true;
         try {
@@ -149,24 +159,150 @@ class DataManager {
             return data;
         } catch (e) {
             console.error(`[ERROR] 获取${label}数据失败:`, e);
-            perf.end(`获取${label}数据`);
+            perf.end(`获取${label} 数据`);
             throw e;
         }
     }
 }
 
+class StatisticsManager {
+    static STORAGE_KEY = 'statisticsVisitRecord';
+
+    static async syncVisitRecord() {
+        let stats;
+        try {
+            const response = await fetch(`/json/statistics.json?t=${Date.now()}`, { cache: 'no-store', headers: { 'Cache-Control': 'no-cache' } });
+            if (!response.ok) throw new Error(response.statusText);
+            stats = await response.json();
+        } catch (error) {
+            console.warn('[WARN] 加载 statistics.json 失败:', error);
+            return { forceDarkTheme: false };
+        }
+
+        const version = stats.version != null ? String(stats.version).trim() : null;
+        const cached = this.getRecord();
+        const previousVisit = cached.lastVisit ? Number(cached.lastVisit) : null;
+        const previousVersion = cached.version || null;
+        const now = Date.now();
+        const currentVersion = version || '未知版本';
+        const missingLocalVersion = !cached.version;
+        const forceDarkTheme = missingLocalVersion;
+
+        if (forceDarkTheme) {
+            localStorage.setItem('theme', 'dark');
+        }
+
+        this.saveRecord({
+            version: version || previousVersion || '',
+            lastVisit: now
+        });
+
+        const awayMs = previousVisit ? now - previousVisit : null;
+        if (!awayMs || awayMs >= 300 * 1000) {//多长时间显示欢迎页面 5min
+            this.showWelcomeOverlay({
+                previousVisit,
+                previousVersion,
+                currentVersion,
+                missingLocalVersion,
+                hasVersion: !!version
+            });
+        }
+
+        return { forceDarkTheme };
+    }
+
+    static getRecord() {
+        try {
+            return JSON.parse(localStorage.getItem(this.STORAGE_KEY) || '{}') || {};
+        } catch {
+            return {};
+        }
+    }
+
+    static saveRecord(record) {
+        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(record));
+    }
+
+    static formatAwayTime(milliseconds) {
+        if (!milliseconds || milliseconds < 0) return '刚刚离开';
+        const seconds = Math.floor(milliseconds / 1000);
+        if (seconds < 60) return `${seconds} 秒`;
+        const minutes = Math.floor(seconds / 60);
+        if (minutes < 60) return `${minutes} 分钟`;
+        const hours = Math.floor(minutes / 60);
+        if (hours < 24) {
+            const remain = minutes % 60;
+            return `${hours} 小时${remain ? ` ${remain} 分钟` : ''}`;
+        }
+        const days = Math.floor(hours / 24);
+        const remainHours = hours % 24;
+        return `${days} 天${remainHours ? ` ${remainHours} 小时` : ''}`;
+    }
+
+    static showWelcomeOverlay({ previousVisit, previousVersion, currentVersion, hasVersion, missingLocalVersion }) {
+        const overlay = document.createElement('div');
+        overlay.className = 'welcome-overlay active';
+        const awayText = previousVisit
+            ? `你已经离开 ${this.formatAwayTime(Date.now() - previousVisit)} 了，欢迎回来！`
+            : '欢迎来到本站，这是你第一次访问。';
+        const versionText = previousVersion && previousVersion !== currentVersion
+            ? `在你离开的这段时间里，网站已从版本编号 ${previousVersion} 更新到版本编号 ${currentVersion}`
+            : `当前版本编号：${currentVersion}`;
+        const warningText = missingLocalVersion ? '<p class="welcome-overlay-warning">已经自动配置好主题啦~</p>' : '';
+        const titleText = `${Utils.getGreetingMessage()}<br>欢迎回来`;
+
+        overlay.innerHTML = `
+            <div class="welcome-overlay-hero">
+                <div class="welcome-overlay-eyebrow">WELCOME</div>
+                <h1 class="welcome-overlay-title">${titleText}</h1>
+                <p class="welcome-overlay-copy">${awayText}</p>
+                <p class="welcome-overlay-copy">${versionText}</p>
+                ${warningText}
+                <p class="welcome-overlay-note">点击任意位置继续浏览</p>
+            </div>
+        `;
+
+        const removeOverlay = () => {
+            if (!overlay.parentNode) return;
+            overlay.classList.remove('active');
+            setTimeout(() => overlay.remove(), 250);
+        };
+
+        overlay.addEventListener('click', removeOverlay);
+
+        document.body.appendChild(overlay);
+    }
+
+    static markLeaving() {
+        const record = this.getRecord();
+        const now = Date.now();
+        this.saveRecord({
+            ...record,
+            lastVisit: now
+        });
+    }
+}
+
+const BACKGROUND_IMAGE_URLS = [
+    'https://cn.bing.com/th?id=OHR.MayLaborDayY26_ZH-CN7554485395_UHD.jpg&pid=hp',
+    'https://cn.bing.com/th?id=OHR.OloupenaFalls_ZH-CN2980118660_UHD.jpg&pid=hp',
+    'https://cn.bing.com/th?id=OHR.LoganCreek_ZH-CN5372283365_UHD.jpg&pid=hp',
+    'https://cn.bing.com/th?id=OHR.PeggysLighthouse_ZH-CN5730463973_UHD.jpg&pid=hp',
+    'https://cn.bing.com/th?id=OHR.MendenhallCave_ZH-CN1850649760_UHD.jpg&pid=hp',
+    'https://cn.bing.com/th?id=OHR.FanetteIsland_ZH-CN6466809551_UHD.jpg&pid=hp'
+];
+
+function applyRandomBackgroundImage() {
+    if (!Array.isArray(BACKGROUND_IMAGE_URLS) || BACKGROUND_IMAGE_URLS.length === 0) return;
+    const randomIndex = Math.floor(Math.random() * BACKGROUND_IMAGE_URLS.length);
+    const imageUrl = BACKGROUND_IMAGE_URLS[randomIndex];
+    document.body.style.backgroundImage = `url('${imageUrl}')`;
+}
+
 function updateDynamicGreeting() {
     const greetingEl = document.getElementById('dynamic-greeting');
     if (!greetingEl) return;
-    const h = new Date().getHours();
-    let msg = '';
-    if (h < 5) msg = '深夜灵感迸发，也要记得休息～';
-    else if (h < 8) msg = '晨光熹微，今天也要闪闪发光！';
-    else if (h < 11) msg = '早上好！元气满满的一天开始啦';
-    else if (h < 14) msg = '中午好，记得补充能量~';
-    else if (h < 18) msg = '午后时光，适合创造';
-    else if (h < 21) msg = '傍晚好，享受此刻宁静';
-    else msg = '星河在上，愿你今夜好梦';
+    const msg = Utils.getGreetingMessage();
     greetingEl.textContent = msg;
     greetingEl.style.fontWeight = 'bold';
 }
@@ -991,9 +1127,7 @@ class NavigationManager {
         const handleChange = (e) => { setTheme(e.target.checked ? 'dark' : 'light', false); };
         checkbox.addEventListener('change', handleChange);
         const savedTheme = localStorage.getItem('theme');
-        const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-        let initialTheme = savedTheme;
-        if (!initialTheme) initialTheme = systemPrefersDark ? 'dark' : 'light';
+        let initialTheme = savedTheme || 'dark';
         document.documentElement.setAttribute('data-theme', initialTheme);
         checkbox.checked = (initialTheme === 'dark');
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', e => {
@@ -1213,6 +1347,11 @@ async function fetchAndReplaceContent(url, pushState = true) {
         if (pageName === 'index') { if (typeof updateDynamicGreeting === 'function') updateDynamicGreeting(); }
         else if (pageName === 'articles') await initializeArticlesPage();
         else if (pageName === 'works') await initializeWorksPage();
+        const currentPath = window.location.pathname;
+        const newPath = new URL(url, window.location.href).pathname;
+        if (currentPath !== newPath) {
+            applyRandomBackgroundImage();
+        }
         window.dispatchEvent(new CustomEvent('ajax:navigation', { detail: { url, page: pageName } }));
         return true;
     } catch (e) { console.error('[ERROR] 无刷新导航加载失败:', e); return false; }
@@ -1226,7 +1365,33 @@ async function updateFooterUpdateTime() {
 }
 
 function enableAjaxNavigation() {
-    document.addEventListener('click', function (e) { const a = e.target.closest('a'); if (!a) return; const href = a.getAttribute('href'); if (!href) return; if (isArticleDetailOr404Page()) return; if (a.hasAttribute('data-no-ajax')) return; if (href.startsWith('#')) return; if (!isSameOrigin(href)) return; if (a.target === '_blank' || a.hasAttribute('download')) return; const isHtml = href.endsWith('.html') || href.indexOf('?') > -1 || href.endsWith('/'); if (!isHtml) return; e.preventDefault(); const url = new URL(href, window.location.href).href; if (url === window.location.href) return; fetchAndReplaceContent(url, true); }, { passive: false });
+    document.addEventListener('click', function (e) {
+        const a = e.target.closest('a');
+        if (!a) return;
+        const href = a.getAttribute('href');
+        if (!href) return;
+        if (a.target === '_blank' || a.hasAttribute('download')) {
+            StatisticsManager.markLeaving();
+            return;
+        }
+        if (isArticleDetailOr404Page()) return;
+        if (href.startsWith('#')) return;
+        if (a.hasAttribute('data-no-ajax')) {
+            StatisticsManager.markLeaving();
+            return;
+        }
+        if (!isSameOrigin(href)) {
+            StatisticsManager.markLeaving();
+            return;
+        }
+        const isHtml = href.endsWith('.html') || href.indexOf('?') > -1 || href.endsWith('/');
+        if (!isHtml) return;
+        e.preventDefault();
+        StatisticsManager.markLeaving();
+        const url = new URL(href, window.location.href).href;
+        if (url === window.location.href) return;
+        fetchAndReplaceContent(url, true);
+    }, { passive: false });
     window.addEventListener('popstate', function (e) { fetchAndReplaceContent(window.location.href, false); });
 }
 
@@ -1249,10 +1414,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     window.ExternalLinkManager = new ExternalLinkManager();
     // 加载图片查看器组件（满足主站js引用要求）
     await loadImageViewer();
-    const savedTheme = localStorage.getItem('theme'); const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches; let initialTheme = savedTheme; if (!initialTheme) initialTheme = systemPrefersDark ? 'dark' : 'light'; document.documentElement.setAttribute('data-theme', initialTheme);
+    const statResult = await StatisticsManager.syncVisitRecord();
+    const savedTheme = localStorage.getItem('theme');
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    let initialTheme = savedTheme || (statResult.forceDarkTheme ? 'dark' : null);
+    if (!initialTheme) initialTheme = systemPrefersDark ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', initialTheme);
     await loadNavbar(); await loadFooter(); await updateFooterUpdateTime();
     setTimeout(() => { try { renderMathAndMermaid(document.body); } catch (e) { console.warn('[WARN] 初始 renderMathAndMermaid 失败', e); } }, 300);
     startSiteAgeUpdater();
+    applyRandomBackgroundImage();
     const currentPage = window.location.pathname.split('/').pop().replace('.html', '') || 'index';
     if (currentPage === 'index') { updateDynamicGreeting(); setInterval(updateDynamicGreeting, 60000); }
     else if (currentPage === 'articles') initializeArticlesPage();
