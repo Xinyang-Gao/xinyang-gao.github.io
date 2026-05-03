@@ -1,10 +1,13 @@
 ﻿<!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>中考冲刺 · 新乡伴学同行 | 智慧长周期趋势 · 深色模式</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -16,127 +19,170 @@
             --bg-gradient-start: #F8FAFF;
             --bg-gradient-end: #F0F4FA;
             --text-primary: #1A2C3E;
-            --card-bg: rgba(255, 255, 255, 0.96);
-            --card-bg-glass: rgba(255, 255, 255, 0.78);
-            --card-border: rgba(255, 255, 255, 0.8);
-            --accent-blue: #1E40AF;
+            --text-secondary: #5B6E8C;
+            --card-bg: rgba(255, 255, 255, 0.2);
+            --card-bg-glass: rgba(255, 255, 255, 0.15);
+            --card-border: rgba(255, 255, 255, 0.3);
+            --accent-blue: #4e6fd8;
             --accent-light: #2563EB;
-            --badge-bg: rgba(37, 99, 235, 0.08);
-            --badge-border: rgba(37, 99, 235, 0.2);
+            --badge-bg: rgba(37, 99, 235, 0.15);
+            --badge-border: rgba(37, 99, 235, 0.3);
             --badge-text: #2563EB;
-            --progress-track: #EFF3FC;
-            --progress-fill: linear-gradient(105deg, #3B82F6 0%, #3A7BD5 20%, #60A5FA 80%, #3B82F6 100%);
-            --label-bg: rgba(20, 30, 55, 0.72);
+            --progress-track: rgba(239, 243, 252, 0.6);
+            --progress-fill: linear-gradient(105deg, rgba(59, 130, 246, 0.8) 0%, rgba(58, 123, 213, 0.8) 20%, rgba(96, 165, 250, 0.8) 80%, rgba(59, 130, 246, 0.8) 100%);
+            --label-bg: rgba(20, 30, 55, 0.3);
             --secondary-text: #5B6E8C;
-            --companion-item-bg: #F9FBFE;
-            --companion-item-border: rgba(0, 0, 0, 0.02);
-            --trend-card-bg: #F9FBFE;
-            --trend-border: rgba(59, 130, 246, 0.1);
-            --canvas-bg: #FFFFFF;
-            --canvas-grid: #E9EFF4;
+            --companion-item-bg: rgba(249, 251, 254, 0.3);
+            --companion-item-border: rgba(0, 0, 0, 0.05);
+            --trend-card-bg: rgba(249, 251, 254, 0.3);
+            --trend-border: rgba(59, 130, 246, 0.2);
+            --canvas-bg: rgba(255, 255, 255, 0.4);
+            --canvas-grid: rgba(233, 239, 244, 0.5);
             --canvas-text: #6B7C93;
             --canvas-line: #3B82F6;
             --canvas-line-home: #F97316;
             --canvas-point: #1E40AF;
             --canvas-point-home: #EA580C;
-            --health-tip-bg: #FFF5E8;
+            --health-tip-bg: rgba(255, 245, 232, 0.4);
             --health-tip-border: #F97316;
             --health-tip-color: #B45309;
-            --saying-bg: linear-gradient(105deg, #F0F7FF 0%, #F9FCFF 100%);
+            --saying-bg: linear-gradient(105deg, rgba(240, 247, 255, 0.5) 0%, rgba(249, 252, 255, 0.5) 100%);
             --saying-border-left: #3B82F6;
-            --shadow-sm: 0 12px 28px -12px rgba(0, 0, 0, 0.08);
-            --shadow-md: 0 16px 32px -14px rgba(0, 0, 0, 0.08);
-            --btn-hover: #3B82F6;
+            --shadow-sm: 0 12px 28px -12px rgba(0, 0, 0, 0.1);
+            --shadow-md: 0 16px 32px -14px rgba(0, 0, 0, 0.15);
+            --btn-hover: rgba(59, 130, 246, 0.3);
             --legend-school-dot: #3B82F6;
             --legend-home-dot: #F97316;
             --card-accent-school: #3B82F6;
             --card-accent-home: #F97316;
+            --border-radius-xs: 8px;
+            --border-radius-sm: 12px;
+            --border-radius-md: 16px;
+            --border-radius-lg: 20px;
+            --border-radius-xl: 24px;
+            --border-radius-xxl: 28px;
+            --border-radius-xxxl: 32px;
+            --border-radius-full: 50px;
+            --font-size-xs: 0.7rem;
+            --font-size-sm: 0.8rem;
+            --font-size-base: 0.9rem;
+            --font-size-lg: 0.95rem;
+            --font-size-xl: 1rem;
+            --font-size-2xl: 1.2rem;
+            --font-size-3xl: 1.4rem;
+            --font-size-4xl: 1.8rem;
+            --font-size-5xl: 2.2rem;
+            --font-size-hero: 3rem;
+            --spacing-xs: 0.25rem;
+            --spacing-sm: 0.5rem;
+            --spacing-md: 0.75rem;
+            --spacing-lg: 1rem;
+            --spacing-xl: 1.25rem;
+            --spacing-2xl: 1.5rem;
+            --spacing-3xl: 1.8rem;
+            --spacing-4xl: 2rem;
+            --spacing-5xl: 2.5rem;
+            --transition-fast: 0.15s ease;
+            --transition-normal: 0.2s ease;
+            --transition-slow: 0.3s ease;
+            --transition-bounce: 0.3s cubic-bezier(0.2, 0.95, 0.4, 1.05);
+            --glass-blur: 10px;
+            --saturation-factor: 150%;
+            --brightness-factor: 120%;
         }
 
         body.dark {
             --bg-gradient-start: #0B1120;
             --bg-gradient-end: #111827;
             --text-primary: #F1F5F9;
-            --card-bg: rgba(18, 25, 40, 0.96);
-            --card-bg-glass: rgba(15, 23, 42, 0.85);
-            --card-border: rgba(51, 65, 85, 0.6);
+            --text-secondary: #9CA3AF;
+            --card-bg: rgba(18, 25, 40, 0.25);
+            --card-bg-glass: rgba(15, 23, 42, 0.2);
+            --card-border: rgba(51, 65, 85, 0.4);
             --accent-blue: #60A5FA;
             --accent-light: #3B82F6;
-            --badge-bg: rgba(59, 130, 246, 0.2);
-            --badge-border: rgba(59, 130, 246, 0.4);
+            --badge-bg: rgba(59, 130, 246, 0.3);
+            --badge-border: rgba(59, 130, 246, 0.5);
             --badge-text: #93C5FD;
-            --progress-track: #1E293B;
-            --progress-fill: linear-gradient(105deg, #2563EB 0%, #3B82F6 30%, #60A5FA 80%);
-            --label-bg: rgba(0, 0, 0, 0.65);
-            --secondary-text: #9CA3AF;
-            --companion-item-bg: #1E293B;
-            --companion-item-border: rgba(255, 255, 255, 0.05);
-            --trend-card-bg: #0F172A;
-            --trend-border: rgba(59, 130, 246, 0.25);
-            --canvas-bg: #0F172A;
-            --canvas-grid: #334155;
+            --progress-track: rgba(30, 41, 59, 0.6);
+            --progress-fill: linear-gradient(105deg, rgba(37, 99, 235, 0.8) 0%, rgba(59, 130, 246, 0.8) 30%, rgba(96, 165, 250, 0.8) 80%);
+            --label-bg: rgba(0, 0, 0, 0.4);
+            --companion-item-bg: rgba(30, 41, 59, 0.4);
+            --companion-item-border: rgba(255, 255, 255, 0.1);
+            --trend-card-bg: rgba(15, 23, 42, 0.3);
+            --trend-border: rgba(59, 130, 246, 0.35);
+            --canvas-bg: rgba(15, 23, 42, 0.4);
+            --canvas-grid: rgba(51, 65, 85, 0.5);
             --canvas-text: #94A3B8;
             --canvas-line: #60A5FA;
             --canvas-line-home: #FB923C;
             --canvas-point: #93C5FD;
             --canvas-point-home: #FDBA74;
-            --health-tip-bg: #2D1F0D;
+            --health-tip-bg: rgba(45, 31, 13, 0.4);
             --health-tip-border: #F97316;
             --health-tip-color: #FDE68A;
-            --saying-bg: linear-gradient(105deg, #111827 0%, #1E293B 100%);
+            --saying-bg: linear-gradient(105deg, rgba(17, 24, 39, 0.5) 0%, rgba(30, 41, 59, 0.5) 100%);
             --saying-border-left: #60A5FA;
-            --shadow-sm: 0 12px 28px -12px rgba(0, 0, 0, 0.4);
-            --shadow-md: 0 16px 32px -14px rgba(0, 0, 0, 0.5);
-            --btn-hover: #3B82F6;
+            --shadow-sm: 0 12px 28px -12px rgba(0, 0, 0, 0.5);
+            --shadow-md: 0 16px 32px -14px rgba(0, 0, 0, 0.6);
+            --btn-hover: rgba(59, 130, 246, 0.5);
             --legend-school-dot: #60A5FA;
             --legend-home-dot: #FB923C;
             --card-accent-school: #60A5FA;
             --card-accent-home: #FB923C;
         }
 
-        body,
-        .time-card,
-        .progress-section,
-        .companion-section,
-        .companion-item,
-        .trend-card,
-        .saying-box,
-        .real-time-card,
-        .target-badge,
-        .health-tip,
-        .theme-toggle,
-        .progress-track-wide,
-        .progress-fill-wide,
-        .greeting-icon,
-        .greeting-text,
-        .stat-value,
-        .stat-label,
-        .digit,
-        .unit,
-        .progress-label-left,
-        .progress-percent-right,
-        .influence-badge,
-        .chart-note,
-        .refresh-saying,
-        .companion-header h3,
-        .hero-title,
-        .legend-dot,
-        .legend-label,
-        .stat-card-accent {
-            transition: background-color 0.2s ease-in-out, background 0.2s ease-in-out, border-color 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1), color 0.2s ease-out, box-shadow 0.2s ease-out, text-shadow 0.2s ease;
-        }
-
+        /* 液态玻璃效果 */
         body {
             background: linear-gradient(145deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            background-size: 400% 400%;
+            background-position: center;
             font-family: system-ui, -apple-system, 'Inter', 'Segoe UI', 'Roboto', sans-serif;
             color: var(--text-primary);
-            padding: 2rem 1.5rem;
+            padding: var(--spacing-4xl) var(--spacing-3xl);
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
             line-height: 1.4;
-            transition: background 0.3s ease, color 0.2s ease;
+            transition: background var(--transition-normal), color var(--transition-normal);
+            animation: gradientShift 15s ease infinite;
+        }
+
+        /* 壁纸背景 */
+        body.has-wallpaper {
+            background: linear-gradient(145deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            background-size: 400% 400%;
+            background-position: center;
+        }
+
+        body.has-wallpaper::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: var(--wallpaper-url);
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            z-index: -1;
+            filter: brightness(0.85);
+        }
+
+        @keyframes gradientShift {
+            0% {
+                background-position: 0% 50%;
+            }
+
+            50% {
+                background-position: 100% 50%;
+            }
+
+            100% {
+                background-position: 0% 50%;
+            }
         }
 
         .dashboard {
@@ -145,8 +191,8 @@
             margin: 0 auto;
             display: flex;
             flex-direction: column;
-            gap: 2.5rem;
-            animation: floatReveal 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+            gap: var(--spacing-5xl);
+            animation: floatReveal var(--transition-slow) cubic-bezier(0.2, 0.9, 0.4, 1.1);
         }
 
         @keyframes floatReveal {
@@ -154,6 +200,7 @@
                 opacity: 0;
                 transform: translateY(24px);
             }
+
             100% {
                 opacity: 1;
                 transform: translateY(0);
@@ -164,30 +211,53 @@
             text-align: center;
             display: flex;
             flex-direction: column;
-            gap: 1.2rem;
+            gap: var(--spacing-xl);
             position: relative;
         }
 
-        .theme-toggle {
+        .theme-toggle,
+        .wallpaper-toggle,
+        .fullscreen-toggle,
+        .settings-toggle {
             position: absolute;
             top: 0;
-            right: 0;
             background: var(--card-bg-glass);
-            backdrop-filter: blur(8px);
+            backdrop-filter: blur(var(--glass-blur)) saturate(var(--saturation-factor)) brightness(var(--brightness-factor));
+            -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--saturation-factor)) brightness(var(--brightness-factor));
             border: 1px solid var(--card-border);
-            border-radius: 60px;
+            border-radius: var(--border-radius-full);
             width: 44px;
             height: 44px;
             display: flex;
             align-items: center;
             justify-content: center;
             cursor: pointer;
-            font-size: 1.5rem;
-            transition: all 0.2s ease;
+            font-size: var(--font-size-xl);
+            transition: all var(--transition-fast);
             box-shadow: var(--shadow-sm);
             z-index: 10;
         }
-        .theme-toggle:hover {
+
+        .theme-toggle {
+            right: 0;
+        }
+
+        .wallpaper-toggle {
+            right: 50px;
+        }
+
+        .fullscreen-toggle {
+            right: 95px;
+        }
+
+        .settings-toggle {
+            right: 140px;
+        }
+
+        .theme-toggle:hover,
+        .wallpaper-toggle:hover,
+        .fullscreen-toggle:hover,
+        .settings-toggle:hover {
             transform: scale(1.05);
             background: var(--btn-hover);
             color: white;
@@ -195,7 +265,7 @@
         }
 
         .hero-title {
-            font-size: 3rem;
+            font-size: var(--font-size-hero);
             font-weight: 700;
             letter-spacing: -0.02em;
             background: linear-gradient(135deg, var(--accent-blue), var(--accent-light));
@@ -210,12 +280,13 @@
         .target-badge {
             display: inline-flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: var(--spacing-sm);
             background: var(--badge-bg);
-            backdrop-filter: blur(2px);
-            padding: 0.45rem 1.2rem;
-            border-radius: 80px;
-            font-size: 0.9rem;
+            backdrop-filter: blur(8px) saturate(150%);
+            -webkit-backdrop-filter: blur(8px) saturate(150%);
+            padding: calc(var(--spacing-sm) + 0.15rem) var(--spacing-2xl);
+            border-radius: var(--border-radius-full);
+            font-size: var(--font-size-base);
             font-weight: 500;
             color: var(--badge-text);
             border: 1px solid var(--badge-border);
@@ -227,13 +298,14 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 0.6rem;
+            gap: var(--spacing-md);
             background: var(--card-bg-glass);
-            backdrop-filter: blur(8px);
-            border-radius: 60px;
-            padding: 0.5rem 1.5rem;
+            backdrop-filter: blur(var(--glass-blur)) saturate(var(--saturation-factor));
+            -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--saturation-factor));
+            border-radius: var(--border-radius-full);
+            padding: var(--spacing-sm) var(--spacing-2xl);
             width: fit-content;
-            margin: 0.25rem auto 0 auto;
+            margin: var(--spacing-xs) auto 0 auto;
             border: 1px solid var(--card-border);
             box-shadow: 0 6px 14px -8px rgba(0, 0, 0, 0.05);
         }
@@ -241,7 +313,7 @@
         .current-time-text {
             font-family: 'Space Grotesk', 'Inter', monospace;
             font-weight: 500;
-            font-size: 0.9rem;
+            font-size: var(--font-size-base);
             letter-spacing: 0.3px;
             color: var(--text-primary);
             white-space: nowrap;
@@ -251,26 +323,30 @@
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 2rem;
-            margin-top: 0.2rem;
+            gap: var(--spacing-4xl);
+            margin-top: var(--spacing-xs);
         }
 
         .time-card {
             flex: 1;
             min-width: 130px;
             background: var(--card-bg);
-            border-radius: 42px;
-            padding: 1.8rem 0.8rem;
+            backdrop-filter: blur(var(--glass-blur)) saturate(var(--saturation-factor));
+            -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--saturation-factor));
+            border-radius: var(--border-radius-xxxl);
+            padding: var(--spacing-3xl) var(--spacing-md);
             text-align: center;
-            transition: transform 0.3s cubic-bezier(0.2, 0.95, 0.4, 1.05), background 0.2s, box-shadow 0.2s, border-color 0.2s;
+            transition: transform var(--transition-bounce), background var(--transition-normal), box-shadow var(--transition-normal), border-color var(--transition-normal);
             box-shadow: var(--shadow-sm);
             border: 1px solid var(--card-border);
         }
+
         .time-card:hover {
             transform: translateY(-6px);
             box-shadow: 0 24px 40px -16px var(--accent-light);
             border-color: var(--accent-light);
         }
+
         .digit {
             font-family: 'Space Grotesk', 'Inter', monospace;
             font-size: 5.6rem;
@@ -278,43 +354,50 @@
             letter-spacing: -0.02em;
             color: var(--accent-light);
             line-height: 1.05;
-            transition: color 0.2s ease, text-shadow 0.2s;
+            transition: color var(--transition-fast), text-shadow var(--transition-fast);
             text-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
         }
+
         .unit {
-            font-size: 0.9rem;
+            font-size: var(--font-size-base);
             font-weight: 600;
             text-transform: uppercase;
             letter-spacing: 1.5px;
             color: var(--secondary-text);
-            margin-top: 0.75rem;
+            margin-top: var(--spacing-lg);
         }
 
         .progress-section {
             background: var(--card-bg);
-            border-radius: 40px;
-            padding: 2rem 1.8rem;
+            backdrop-filter: blur(var(--glass-blur)) saturate(var(--saturation-factor));
+            -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--saturation-factor));
+            border-radius: var(--border-radius-xl);
+            padding: var(--spacing-3xl) var(--spacing-2xl);
             box-shadow: var(--shadow-sm);
             border: 1px solid var(--card-border);
         }
+
         .progress-grid {
             display: flex;
             flex-direction: column;
-            gap: 1.5rem;
+            gap: var(--spacing-2xl);
         }
+
         .progress-item {
             width: 100%;
         }
+
         .progress-track-wide {
             position: relative;
             width: 100%;
             height: 62px;
             background: var(--progress-track);
-            border-radius: 80px;
+            border-radius: var(--border-radius-full);
             overflow: hidden;
             box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
-            transition: background 0.2s ease;
+            transition: background var(--transition-normal);
         }
+
         .progress-fill-wide {
             position: absolute;
             top: 0;
@@ -323,9 +406,10 @@
             width: 0%;
             background: var(--progress-fill);
             background-size: 200% 100%;
-            border-radius: 80px;
-            transition: width 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.2), background 0.2s ease;
+            border-radius: var(--border-radius-full);
+            transition: width 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.2), background var(--transition-normal);
         }
+
         .progress-content {
             position: relative;
             z-index: 2;
@@ -334,386 +418,726 @@
             align-items: center;
             width: 100%;
             height: 100%;
-            padding: 0 1.4rem;
+            padding: 0 var(--spacing-xl);
             pointer-events: none;
         }
+
         .progress-label-left {
-            font-size: 0.9rem;
+            font-size: var(--font-size-base);
             font-weight: 600;
             background: var(--label-bg);
-            backdrop-filter: blur(4px);
-            padding: 0.3rem 1.2rem;
-            border-radius: 60px;
+            backdrop-filter: blur(8px) saturate(150%);
+            -webkit-backdrop-filter: blur(8px) saturate(150%);
+            padding: var(--spacing-xs) var(--spacing-2xl);
+            border-radius: var(--border-radius-full);
             color: white;
-            transition: background 0.2s;
+            transition: background var(--transition-normal);
         }
+
         .progress-percent-right {
             font-family: 'Space Grotesk', monospace;
-            font-size: 0.95rem;
+            font-size: var(--font-size-lg);
             font-weight: 700;
             background: var(--label-bg);
-            backdrop-filter: blur(4px);
-            padding: 0.3rem 1rem;
-            border-radius: 60px;
+            backdrop-filter: blur(8px) saturate(150%);
+            -webkit-backdrop-filter: blur(8px) saturate(150%);
+            padding: var(--spacing-xs) var(--spacing-lg);
+            border-radius: var(--border-radius-full);
             color: white;
         }
 
         .companion-section {
             background: var(--card-bg);
-            border-radius: 44px;
-            padding: 1.8rem 2rem;
+            backdrop-filter: blur(var(--glass-blur)) saturate(var(--saturation-factor));
+            -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--saturation-factor));
+            border-radius: var(--border-radius-xxl);
+            padding: var(--spacing-3xl) var(--spacing-2xl);
             box-shadow: var(--shadow-md);
             border: 1px solid var(--card-border);
         }
+
         .companion-header {
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin-bottom: 1.4rem;
+            gap: var(--spacing-md);
+            margin-bottom: var(--spacing-2xl);
             border-bottom: 2px solid rgba(59, 130, 246, 0.3);
-            padding-bottom: 0.6rem;
+            padding-bottom: var(--spacing-md);
         }
+
         .companion-header h3 {
-            font-size: 1.4rem;
+            font-size: var(--font-size-3xl);
             font-weight: 600;
             background: linear-gradient(120deg, var(--accent-blue), var(--accent-light));
             background-clip: text;
             -webkit-background-clip: text;
             color: transparent;
         }
+
         .companion-grid {
             display: flex;
             flex-wrap: wrap;
-            gap: 1.2rem;
+            gap: var(--spacing-xl);
             justify-content: space-between;
-            margin-bottom: 1.5rem;
+            margin-bottom: var(--spacing-2xl);
         }
+
         .companion-item {
             flex: 1;
             min-width: 150px;
             background: var(--companion-item-bg);
-            border-radius: 28px;
-            padding: 1rem 1.2rem;
-            transition: transform 0.2s, background 0.2s, border-color 0.2s;
+            backdrop-filter: blur(var(--glass-blur)) saturate(var(--saturation-factor));
+            -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--saturation-factor));
+            border-radius: var(--border-radius-lg);
+            padding: var(--spacing-lg) var(--spacing-xl);
+            transition: transform var(--transition-fast), background var(--transition-normal), border-color var(--transition-normal);
             border: 1px solid var(--companion-item-border);
         }
+
         .companion-item:hover {
             background: var(--card-bg);
             transform: translateY(-3px);
         }
+
         .stat-card-accent {
             width: 100%;
             height: 4px;
-            border-radius: 4px;
-            margin-bottom: 10px;
-            transition: background-color 0.2s ease;
+            border-radius: var(--border-radius-xs);
+            margin-bottom: var(--spacing-md);
+            transition: background-color var(--transition-normal);
         }
+
         .stat-card-accent.school {
             background: var(--card-accent-school);
         }
+
         .stat-card-accent.home {
             background: var(--card-accent-home);
         }
+
         .greeting-box {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: var(--spacing-md);
             flex-wrap: wrap;
         }
+
         .greeting-icon {
-            font-size: 1rem;
+            font-size: var(--font-size-lg);
             font-weight: 600;
             background: var(--progress-track);
-            padding: 0.2rem 0.8rem;
-            border-radius: 40px;
+            padding: var(--spacing-xs) var(--spacing-md);
+            border-radius: var(--border-radius-full);
             color: var(--accent-light);
         }
+
         .greeting-text {
             font-weight: 600;
-            font-size: 0.95rem;
+            font-size: var(--font-size-lg);
             color: var(--text-primary);
         }
+
         .timer-badge {
-            margin-top: 12px;
+            margin-top: var(--spacing-xl);
             font-family: 'Space Grotesk', monospace;
-            font-size: 1.4rem;
+            font-size: var(--font-size-3xl);
             font-weight: 700;
             color: var(--accent-light);
         }
+
         .stat-value {
             font-family: 'Space Grotesk', monospace;
             font-weight: 700;
-            font-size: 1.8rem;
+            font-size: var(--font-size-4xl);
             color: var(--accent-blue);
             line-height: 1.2;
         }
+
         .stat-value.school-color {
             color: var(--card-accent-school);
         }
+
         .stat-value.home-color {
             color: var(--card-accent-home);
         }
+
         .stat-label {
-            font-size: 0.75rem;
+            font-size: var(--font-size-xs);
             text-transform: uppercase;
             font-weight: 600;
             letter-spacing: 1px;
             color: var(--secondary-text);
-            margin-top: 0.3rem;
+            margin-top: var(--spacing-xs);
         }
+
         .stat-note {
-            font-size: 0.7rem;
+            font-size: var(--font-size-xs);
             color: var(--secondary-text);
-            margin-top: 6px;
+            margin-top: var(--spacing-md);
             border-top: 1px dashed var(--progress-track);
-            padding-top: 6px;
+            padding-top: var(--spacing-md);
         }
+
         .health-tip {
             background: var(--health-tip-bg);
-            border-radius: 20px;
-            padding: 0.5rem 1rem;
-            margin-top: 12px;
-            font-size: 0.8rem;
+            backdrop-filter: blur(6px) saturate(150%);
+            -webkit-backdrop-filter: blur(6px) saturate(150%);
+            border-radius: var(--border-radius-lg);
+            padding: var(--spacing-xs) var(--spacing-lg);
+            margin-top: var(--spacing-xl);
+            font-size: var(--font-size-sm);
             font-weight: 500;
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: var(--spacing-md);
             color: var(--health-tip-color);
             border-left: 4px solid var(--health-tip-border);
-            transition: background 0.2s, color 0.2s, border-left-color 0.2s;
+            transition: background var(--transition-normal), color var(--transition-normal), border-left-color var(--transition-normal);
         }
+
         .saying-box {
             background: var(--saying-bg);
-            border-radius: 32px;
-            padding: 1rem 1.5rem;
-            margin-top: 1rem;
+            backdrop-filter: blur(10px) saturate(150%);
+            -webkit-backdrop-filter: blur(10px) saturate(150%);
+            border-radius: var(--border-radius-xxxl);
+            padding: var(--spacing-lg) var(--spacing-2xl);
+            margin-top: var(--spacing-xl);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 1rem;
+            gap: var(--spacing-xl);
             flex-wrap: wrap;
         }
+
         .saying-text {
-            font-size: 0.95rem;
+            font-size: var(--font-size-lg);
             font-weight: 500;
             color: var(--text-primary);
             flex: 1;
             border-left: 3px solid var(--saying-border-left);
-            padding-left: 1rem;
-            transition: color 0.2s, border-left-color 0.2s;
+            padding-left: var(--spacing-xl);
+            transition: color var(--transition-normal), border-left-color var(--transition-normal);
         }
+
         .refresh-saying {
             background: rgba(59, 130, 246, 0.15);
             border: none;
-            border-radius: 60px;
-            padding: 0.4rem 1rem;
-            font-size: 0.75rem;
+            border-radius: var(--border-radius-full);
+            padding: var(--spacing-sm) var(--spacing-lg);
+            font-size: var(--font-size-xs);
             font-weight: 500;
             color: var(--accent-light);
             cursor: pointer;
-            transition: all 0.15s;
+            transition: all var(--transition-fast);
         }
+
         .refresh-saying:hover {
             background: var(--accent-light);
             color: white;
         }
 
         .trend-card {
-            margin-top: 1.2rem;
+            margin-top: var(--spacing-xl);
             background: var(--trend-card-bg);
-            border-radius: 28px;
-            padding: 0.8rem 1rem 1rem 1rem;
+            backdrop-filter: blur(8px) saturate(150%);
+            -webkit-backdrop-filter: blur(8px) saturate(150%);
+            border-radius: var(--border-radius-lg);
+            padding: var(--spacing-md) var(--spacing-lg) var(--spacing-lg) var(--spacing-lg);
             border: 1px solid var(--trend-border);
-            transition: background 0.2s, border 0.2s;
+            transition: background var(--transition-normal), border var(--transition-normal);
         }
+
         .trend-title {
-            font-size: 0.85rem;
+            font-size: var(--font-size-lg);
             font-weight: 600;
             color: var(--text-primary);
-            margin-bottom: 0.3rem;
+            margin-bottom: var(--spacing-xs);
             letter-spacing: 0.3px;
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: var(--spacing-md);
             justify-content: space-between;
             flex-wrap: wrap;
         }
+
         .trend-legend {
             display: flex;
             align-items: center;
-            gap: 16px;
-            font-size: 0.7rem;
+            gap: var(--spacing-3xl);
+            font-size: var(--font-size-xs);
             font-weight: 500;
             color: var(--secondary-text);
-            margin-bottom: 0.4rem;
+            margin-bottom: var(--spacing-sm);
         }
+
         .legend-dot {
             display: inline-block;
             width: 10px;
             height: 10px;
             border-radius: 50%;
-            margin-right: 4px;
-            transition: background-color 0.2s ease;
+            margin-right: var(--spacing-xs);
+            transition: background-color var(--transition-normal);
         }
+
         .legend-dot.school {
             background: var(--legend-school-dot);
         }
+
         .legend-dot.home {
             background: var(--legend-home-dot);
         }
+
         .legend-label {
-            font-size: 0.7rem;
+            font-size: var(--font-size-xs);
             color: var(--secondary-text);
-            transition: color 0.2s ease;
+            transition: color var(--transition-normal);
         }
+
         .influence-badge {
-            font-size: 0.7rem;
+            font-size: var(--font-size-xs);
             background: var(--badge-bg);
-            padding: 0.2rem 0.6rem;
-            border-radius: 30px;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: var(--border-radius-full);
             font-weight: 500;
             color: var(--badge-text);
         }
+
         .chart-container {
             width: 100%;
             height: 200px;
             position: relative;
         }
+
         canvas {
             width: 100%;
             height: 100%;
             display: block;
             background: var(--canvas-bg);
-            border-radius: 20px;
+            backdrop-filter: blur(6px) saturate(150%);
+            -webkit-backdrop-filter: blur(6px) saturate(150%);
+            border-radius: var(--border-radius-lg);
             box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-            transition: background 0.2s ease;
+            transition: background var(--transition-normal);
         }
+
         .chart-note {
-            font-size: 0.65rem;
+            font-size: var(--font-size-xs);
             color: var(--secondary-text);
             text-align: right;
-            margin-top: 6px;
+            margin-top: var(--spacing-md);
         }
 
         .digit-shine {
             animation: modernGlow 0.22s ease-out;
         }
+
         @keyframes modernGlow {
             0% {
                 transform: scale(1);
                 text-shadow: 0 0 0 transparent;
             }
+
             40% {
                 transform: scale(1.07);
                 color: var(--accent-light);
                 text-shadow: 0 0 8px rgba(59, 130, 246, 0.5);
             }
+
             100% {
                 transform: scale(1);
                 text-shadow: 0 0 0 transparent;
             }
         }
+
         .pulse-stat {
             animation: subtleNumberPop 0.3s ease-out;
         }
+
         @keyframes subtleNumberPop {
             0% {
                 transform: scale(1);
                 opacity: 0.7;
             }
+
             70% {
                 transform: scale(1.05);
                 opacity: 1;
             }
+
             100% {
                 transform: scale(1);
             }
         }
+
+        /* 设置面板 */
+        .settings-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--card-bg);
+            backdrop-filter: blur(var(--glass-blur)) saturate(var(--saturation-factor)) brightness(var(--brightness-factor));
+            -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--saturation-factor)) brightness(var(--brightness-factor));
+            border-radius: var(--border-radius-xl);
+            padding: var(--spacing-3xl);
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--card-border);
+            z-index: 1000;
+            width: 90%;
+            max-width: 500px;
+            display: none;
+        }
+
+        .settings-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--spacing-2xl);
+        }
+
+        .settings-title {
+            font-size: var(--font-size-2xl);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .close-settings {
+            background: none;
+            border: none;
+            font-size: var(--font-size-xl);
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: color var(--transition-fast);
+        }
+
+        .close-settings:hover {
+            color: var(--text-primary);
+        }
+
+        .setting-group {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .setting-label {
+            display: block;
+            margin-bottom: var(--spacing-sm);
+            font-size: var(--font-size-base);
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        .setting-input {
+            width: 100%;
+            padding: var(--spacing-md);
+            border-radius: var(--border-radius-sm);
+            border: 1px solid var(--card-border);
+            background: var(--card-bg-glass);
+            color: var(--text-primary);
+            font-size: var(--font-size-base);
+        }
+
+        .color-picker {
+            display: flex;
+            gap: var(--spacing-sm);
+            flex-wrap: wrap;
+        }
+
+        .color-option {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: border-color var(--transition-fast);
+        }
+
+        .color-option.active {
+            border-color: var(--text-primary);
+        }
+
+        .settings-buttons {
+            display: flex;
+            gap: var(--spacing-md);
+            justify-content: flex-end;
+            margin-top: var(--spacing-2xl);
+        }
+
+        .settings-btn {
+            padding: var(--spacing-md) var(--spacing-xl);
+            border-radius: var(--border-radius-full);
+            border: none;
+            font-size: var(--font-size-base);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .save-btn {
+            background: var(--accent-light);
+            color: white;
+        }
+
+        .reset-btn {
+            background: var(--card-bg-glass);
+            color: var(--text-primary);
+            border: 1px solid var(--card-border);
+        }
+
+        .save-btn:hover {
+            background: var(--btn-hover);
+        }
+
+        .reset-btn:hover {
+            background: var(--card-bg);
+        }
+
         @media (max-width: 860px) {
             .digit {
                 font-size: 4.2rem;
             }
+
             .time-card {
                 min-width: 110px;
-                padding: 1.4rem 0.5rem;
+                padding: var(--spacing-xl) var(--spacing-xs);
             }
+
             .hero-title {
                 font-size: 2.5rem;
             }
+
             .stat-value {
-                font-size: 1.5rem;
+                font-size: var(--font-size-4xl);
             }
+
             .companion-item {
                 min-width: 120px;
-                padding: 0.8rem 1rem;
+                padding: var(--spacing-md) var(--spacing-lg);
             }
+
             .chart-container {
                 height: 170px;
             }
+
+            .wallpaper-toggle {
+                right: 45px;
+            }
+            
+            .fullscreen-toggle {
+                right: 85px;
+            }
+            
+            .settings-toggle {
+                right: 125px;
+            }
         }
+
         @media (max-width: 640px) {
             .companion-grid {
                 flex-direction: column;
-                gap: 0.8rem;
+                gap: var(--spacing-md);
             }
+
             .saying-box {
                 flex-direction: column;
                 align-items: flex-start;
             }
+
             .refresh-saying {
                 align-self: flex-end;
             }
+
             .digit {
                 font-size: 3.4rem;
             }
+
             .theme-toggle {
                 width: 38px;
                 height: 38px;
-                font-size: 1.2rem;
+                font-size: var(--font-size-xl);
                 top: -10px;
                 right: -5px;
             }
-            .trend-legend {
-                gap: 10px;
-                font-size: 0.65rem;
+
+            .wallpaper-toggle {
+                width: 38px;
+                height: 38px;
+                font-size: var(--font-size-xl);
+                top: -10px;
+                right: 35px;
             }
+
+            .fullscreen-toggle {
+                width: 38px;
+                height: 38px;
+                font-size: var(--font-size-xl);
+                top: -10px;
+                right: 75px;
+            }
+            
+            .settings-toggle {
+                width: 38px;
+                height: 38px;
+                font-size: var(--font-size-xl);
+                top: -10px;
+                right: 115px;
+            }
+
+            .trend-legend {
+                gap: var(--spacing-md);
+                font-size: var(--font-size-xs);
+            }
+
             .chart-container {
                 height: 150px;
+            }
+
+            .countdown-grid {
+                gap: var(--spacing-xl);
+            }
+
+            .time-card {
+                min-width: 100px;
+                padding: var(--spacing-lg) var(--spacing-xs);
+            }
+
+            .progress-section {
+                padding: var(--spacing-2xl) var(--spacing-xl);
+            }
+
+            .companion-section {
+                padding: var(--spacing-2xl) var(--spacing-2xl);
+            }
+
+            .hero-title {
+                font-size: var(--font-size-5xl);
+            }
+
+            .target-badge {
+                font-size: var(--font-size-sm);
+                padding: var(--spacing-xs) var(--spacing-lg);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .dashboard {
+                padding: var(--spacing-3xl) var(--spacing-lg);
+            }
+
+            .hero-title {
+                font-size: var(--font-size-4xl);
+            }
+
+            .digit {
+                font-size: 2.8rem;
+            }
+
+            .unit {
+                font-size: var(--font-size-sm);
+            }
+
+            .time-card {
+                min-width: 80px;
+                padding: var(--spacing-lg) var(--spacing-xs);
+            }
+
+            .progress-track-wide {
+                height: 52px;
+            }
+
+            .companion-item {
+                min-width: 100%;
+                padding: var(--spacing-md) var(--spacing-md);
+            }
+
+            .stat-value {
+                font-size: var(--font-size-3xl);
+            }
+
+            .greeting-box {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .greeting-icon {
+                align-self: flex-start;
+            }
+            
+            .fullscreen-toggle {
+                right: 65px;
+            }
+            
+            .settings-toggle {
+                right: 105px;
             }
         }
     </style>
 </head>
+
 <body>
     <div class="dashboard">
         <div class="hero-section">
+            <div class="settings-toggle" id="settingsToggleBtn" aria-label="设置" role="button">⚙️</div>
+            <div class="fullscreen-toggle" id="fullscreenToggleBtn" aria-label="全屏显示" role="button">⛶</div>
+            <div class="wallpaper-toggle" id="wallpaperToggleBtn" aria-label="切换背景壁纸" role="button">🖼️</div>
             <div class="theme-toggle" id="themeToggleBtn" aria-label="切换夜间模式" role="button">🌙</div>
-            <h1 class="hero-title">中考冲刺</h1>
+            <div class="real-time-card"><span class="current-time-text" id="liveClockDisplay">--/--/-- --- --:--:--</span></div>
             <div class="target-badge">距离 6月22日08:20 还有</div>
-            <div class="real-time-card">
-                <span class="current-time-text" id="liveClockDisplay">--/--/-- --- --:--:--</span>
-            </div>
             <div class="countdown-grid">
-                <div class="time-card"><div class="digit" id="daysDigit">00</div><div class="unit">天</div></div>
-                <div class="time-card"><div class="digit" id="hoursDigit">00</div><div class="unit">时</div></div>
-                <div class="time-card"><div class="digit" id="minutesDigit">00</div><div class="unit">分</div></div>
-                <div class="time-card"><div class="digit" id="secondsDigit">00</div><div class="unit">秒</div></div>
+                <div class="time-card">
+                    <div class="digit" id="daysDigit">00</div>
+                    <div class="unit">天</div>
+                </div>
+                <div class="time-card">
+                    <div class="digit" id="hoursDigit">00</div>
+                    <div class="unit">时</div>
+                </div>
+                <div class="time-card">
+                    <div class="digit" id="minutesDigit">00</div>
+                    <div class="unit">分</div>
+                </div>
+                <div class="time-card">
+                    <div class="digit" id="secondsDigit">00</div>
+                    <div class="unit">秒</div>
+                </div>
             </div>
         </div>
 
         <div class="progress-section">
             <div class="progress-grid">
-                <div class="progress-item"><div class="progress-track-wide"><div class="progress-fill-wide" id="weekFill"></div><div class="progress-content"><span class="progress-label-left">本周进度</span><span class="progress-percent-right" id="weekPercent">0%</span></div></div></div>
-                <div class="progress-item"><div class="progress-track-wide"><div class="progress-fill-wide" id="dayFill"></div><div class="progress-content"><span class="progress-label-left">今天进度</span><span class="progress-percent-right" id="dayPercent">0%</span></div></div></div>
-                <div class="progress-item"><div class="progress-track-wide"><div class="progress-fill-wide" id="hourFill"></div><div class="progress-content"><span class="progress-label-left">小时进度</span><span class="progress-percent-right" id="hourPercent">0%</span></div></div></div>
-                <div class="progress-item"><div class="progress-track-wide"><div class="progress-fill-wide" id="minuteFill"></div><div class="progress-content"><span class="progress-label-left">分钟进度</span><span class="progress-percent-right" id="minutePercent">0%</span></div></div></div>
+                <div class="progress-item">
+                    <div class="progress-track-wide">
+                        <div class="progress-fill-wide" id="weekFill"></div>
+                        <div class="progress-content"><span class="progress-label-left">本周剩余</span><span
+                                class="progress-percent-right" id="weekPercent">100%</span></div>
+                    </div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-track-wide">
+                        <div class="progress-fill-wide" id="dayFill"></div>
+                        <div class="progress-content"><span class="progress-label-left">今天剩余</span><span
+                                class="progress-percent-right" id="dayPercent">100%</span></div>
+                    </div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-track-wide">
+                        <div class="progress-fill-wide" id="hourFill"></div>
+                        <div class="progress-content"><span class="progress-label-left">小时剩余</span><span
+                                class="progress-percent-right" id="hourPercent">100%</span></div>
+                    </div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-track-wide">
+                        <div class="progress-fill-wide" id="minuteFill"></div>
+                        <div class="progress-content"><span class="progress-label-left">分钟剩余</span><span
+                                class="progress-percent-right" id="minutePercent">100%</span></div>
+                    </div>
+                </div>
             </div>
         </div>
 
         <div class="companion-section">
             <div class="companion-header">
-                <span>⚡</span>
-                <h3>伴学同行 · 新乡</h3>
-                <span>⚡</span>
+                <h3>一起学习</h3>
             </div>
             <div class="companion-grid">
                 <div class="companion-item">
@@ -721,22 +1145,22 @@
                         <span class="greeting-icon" id="greetingIcon">时段</span>
                         <span class="greeting-text" id="greetingText">加载中...</span>
                     </div>
-                    <div style="margin-top:12px;">
-                        <div class="stat-label">专注陪伴时长</div>
-                        <div class="timer-badge" id="studyTimerDisplay">00:00:00</div>
+                    <div style="margin-top:var(--spacing-xl);">
+                        <div class="stat-label">当前时间</div>
+                        <div class="timer-badge" id="currentTimeDisplay">00:00:00</div>
                     </div>
                     <div id="lateNightAlert" class="health-tip" style="display:none;">[提醒] 熬夜警示</div>
                 </div>
                 <div class="companion-item">
                     <div class="stat-card-accent school"></div>
                     <div class="stat-value school-color" id="inSchoolDisplay">--</div>
-                    <div class="stat-label">🏠 在校冲刺学生 (实时)</div>
+                    <div class="stat-label">🏠 在校学习学生 (实时)</div>
                     <div class="stat-note">含延时·培优·住校晚自习</div>
                 </div>
                 <div class="companion-item">
                     <div class="stat-card-accent home"></div>
                     <div class="stat-value home-color" id="atHomeDisplay">--</div>
-                    <div class="stat-label">📚 在家冲刺学生 (实时)</div>
+                    <div class="stat-label">📚 在家学习学生 (实时)</div>
                     <div class="stat-note">含走读生·周末居家</div>
                 </div>
             </div>
@@ -763,6 +1187,53 @@
         </div>
     </div>
 
+    <!-- 设置面板 -->
+    <div class="settings-panel" id="settingsPanel">
+        <div class="settings-header">
+            <h2 class="settings-title">个性化设置</h2>
+            <button class="close-settings" id="closeSettingsBtn">×</button>
+        </div>
+        
+        <div class="setting-group">
+            <label class="setting-label">卡片模糊程度</label>
+            <input type="range" id="blurSlider" class="setting-input" min="0" max="20" value="10">
+            <div>当前值: <span id="blurValue">10</span>px</div>
+        </div>
+        
+        <div class="setting-group">
+            <label class="setting-label">饱和度</label>
+            <input type="range" id="saturationSlider" class="setting-input" min="100" max="200" value="150">
+            <div>当前值: <span id="saturationValue">150</span>%</div>
+        </div>
+        
+        <div class="setting-group">
+            <label class="setting-label">亮度</label>
+            <input type="range" id="brightnessSlider" class="setting-input" min="100" max="150" value="120">
+            <div>当前值: <span id="brightnessValue">120</span>%</div>
+        </div>
+        
+        <div class="setting-group">
+            <label class="setting-label">主题色</label>
+            <div class="color-picker">
+                <div class="color-option active" style="background-color: #4e6fd8;" data-color="#4e6fd8"></div>
+                <div class="color-option" style="background-color: #6366f1;" data-color="#6366f1"></div>
+                <div class="color-option" style="background-color: #8b5cf6;" data-color="#8b5cf6"></div>
+                <div class="color-option" style="background-color: #ec4899;" data-color="#ec4899"></div>
+                <div class="color-option" style="background-color: #f43f5e;" data-color="#f43f5e"></div>
+                <div class="color-option" style="background-color: #ef4444;" data-color="#ef4444"></div>
+                <div class="color-option" style="background-color: #f97316;" data-color="#f97316"></div>
+                <div class="color-option" style="background-color: #eab308;" data-color="#eab308"></div>
+                <div class="color-option" style="background-color: #22c55e;" data-color="#22c55e"></div>
+                <div class="color-option" style="background-color: #14b8a6;" data-color="#14b8a6"></div>
+            </div>
+        </div>
+        
+        <div class="settings-buttons">
+            <button class="settings-btn reset-btn" id="resetSettingsBtn">恢复默认</button>
+            <button class="settings-btn save-btn" id="saveSettingsBtn">保存设置</button>
+        </div>
+    </div>
+
     <script>
         // ========== 核心配置 ==========
         const TARGET_DATE = new Date(2026, 5, 22, 8, 20, 0);
@@ -778,7 +1249,7 @@
         const DELAY_CLASS_RATIO = 0.90;
         const NORMAL_ONLY_RATIO = 1.0 - DELAY_CLASS_RATIO;
 
-        const LONG_HISTORY_SIZE = 36; //36为3小时，288为24小时
+        const LONG_HISTORY_SIZE = 288; //36为3小时，288为24小时
         let chartHistoryData = [];
         let lastSmoothedInSchool = null;
         let lastSmoothedAtHome = null;
@@ -787,13 +1258,23 @@
         let fiveMinInSchoolWindow = [];
         let fiveMinAtHomeWindow = [];
 
+        // 壁纸配置
+        const BACKGROUND_IMAGE_URLS = [
+            'https://cn.bing.com/th?id=OHR.MayLaborDayY26_ZH-CN7554485395_UHD.jpg&pid=hp',
+            'https://cn.bing.com/th?id=OHR.OloupenaFalls_ZH-CN2980118660_UHD.jpg&pid=hp',
+            'https://cn.bing.com/th?id=OHR.LoganCreek_ZH-CN5372283365_UHD.jpg&pid=hp',
+            'https://cn.bing.com/th?id=OHR.PeggysLighthouse_ZH-CN5730463973_UHD.jpg&pid=hp',
+            'https://cn.bing.com/th?id=OHR.MendenhallCave_ZH-CN1850649760_UHD.jpg&pid=hp',
+            'https://cn.bing.com/th?id=OHR.FanetteIsland_ZH-CN6466809551_UHD.jpg&pid=hp'
+        ];
+
         const daysEl = document.getElementById('daysDigit'),
             hoursEl = document.getElementById('hoursDigit');
         const minutesEl = document.getElementById('minutesDigit'),
             secondsEl = document.getElementById('secondsDigit');
         const inSchoolDisplay = document.getElementById('inSchoolDisplay');
         const atHomeDisplay = document.getElementById('atHomeDisplay');
-        const timerDisplay = document.getElementById('studyTimerDisplay');
+        const timerDisplay = document.getElementById('currentTimeDisplay'); // 修改ID
         const greetingIconSpan = document.getElementById('greetingIcon');
         const greetingTextSpan = document.getElementById('greetingText');
         const sayingElement = document.getElementById('dynamicSaying');
@@ -805,6 +1286,162 @@
         let longTermInterval = null,
             realtimePeerInterval = null,
             secondTickHandler = null;
+
+        // 设置面板相关元素
+        const settingsPanel = document.getElementById('settingsPanel');
+        const settingsToggleBtn = document.getElementById('settingsToggleBtn');
+        const closeSettingsBtn = document.getElementById('closeSettingsBtn');
+        const blurSlider = document.getElementById('blurSlider');
+        const saturationSlider = document.getElementById('saturationSlider');
+        const brightnessSlider = document.getElementById('brightnessSlider');
+        const blurValue = document.getElementById('blurValue');
+        const saturationValue = document.getElementById('saturationValue');
+        const brightnessValue = document.getElementById('brightnessValue');
+        const colorOptions = document.querySelectorAll('.color-option');
+        const saveSettingsBtn = document.getElementById('saveSettingsBtn');
+        const resetSettingsBtn = document.getElementById('resetSettingsBtn');
+
+        // ---------- 基于当天 seed 的确定性伪随机函数 ----------
+        // 使用线性同余生成器 (LCG)，给定种子返回 [0,1) 之间的伪随机数
+        function lcgRandom(seed) {
+            // 参数取自 glibc 的典型 LCG
+            const a = 1103515245;
+            const c = 12345;
+            const m = 2147483648;
+            let state = (seed * a + c) % m;
+            return state / m;
+        }
+
+        // 根据日期和时间生成确定性种子
+        // 种子组成：年*10000 + 月*100 + 日，再乘以 1440 加上当天分钟，确保不同分钟不同值，同一天内相同分钟种子一致
+        function getDeterministicSeed(date) {
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1;
+            const day = date.getDate();
+            const minutesSinceMidnight = date.getHours() * 60 + date.getMinutes();
+            // 基础种子：日期唯一
+            const dateSeed = year * 366 + month * 31 + day;
+            // 最终种子，考虑分钟级别，保证同一天不同分钟结果不同
+            return dateSeed * 1440 + minutesSinceMidnight;
+        }
+
+        // 产生基于当前时刻的伪随机波动系数，范围 [-maxFactor, +maxFactor] 之间均匀分布
+        function getNoiseFactor(date, maxFactor) {
+            const seed = getDeterministicSeed(date);
+            // 使用两个不同的LCG偏移，得到独立的正负波动
+            let r1 = lcgRandom(seed);
+            let r2 = lcgRandom(seed + 1234567);
+            // 让波动在 [-maxFactor, maxFactor] 内均匀分布
+            const noise = (r1 * 2 - 1) * maxFactor;
+            // 再乘以一个与分钟相关的细微变化，避免不同变量间完全线性相关
+            const extra = (r2 - 0.5) * 0.1;
+            return noise + extra;
+        }
+
+        // ---------- 平滑时段学习率（用于周末/假期在家学习比例，线性插值避免突变）----------
+        const TIME_RATE_POINTS = [
+            { t: 0 * 60, rate: 0.062 },     // 00:00 深夜
+            { t: 1 * 60, rate: 0.035 },
+            { t: 2 * 60, rate: 0.008 },
+            { t: 2 * 60 + 30, rate: 0.008 },
+            { t: 3 * 60, rate: 0.017 },
+            { t: 4 * 60, rate: 0.034 },
+            { t: 5 * 60, rate: 0.06 },
+            { t: 5 * 60 + 30, rate: 0.062 }, // 05:30 深夜结束
+            { t: 6 * 60 + 30, rate: 0.21 }, // 06:30 清晨起床
+            { t: 7 * 60, rate: 0.35 },      // 07:00 晨读
+            { t: 8 * 60, rate: 0.53 },      // 08:00 黄金上午
+            { t: 9 * 60, rate: 0.6 },
+            { t: 10 * 60, rate: 0.62 },
+            { t: 11 * 60 + 30, rate: 0.7 },// 11:30 午前
+            { t: 12 * 60, rate: 0.4 },     // 12:00 午餐
+            { t: 12 * 60 + 30, rate: 0.35 },
+            { t: 13 * 60, rate: 0.3 },     // 13:00 午休尾声
+            { t: 13 * 60 + 30, rate: 0.4 },// 13:30 下午高效
+            { t: 14 * 60, rate: 0.5 },
+            { t: 15 * 60, rate: 0.6 },
+            { t: 16 * 60, rate: 0.62 },
+            { t: 17 * 60 + 30, rate: 0.65 },// 17:30 傍晚前
+            { t: 18 * 60, rate: 0.44 },     // 18:00 晚餐
+            { t: 19 * 60, rate: 0.4 },     // 19:00 晚间开始
+            { t: 20 * 60, rate: 0.5 },     // 20:00 晚自习高峰
+            { t: 21 * 60, rate: 0.53 },
+            { t: 22 * 60, rate: 0.6 },     // 22:00 晚自习结束
+            { t: 23 * 60, rate: 0.2 },     // 23:00 准备休息
+            { t: 24 * 60, rate: 0.07 }      // 24:00 深夜
+        ];
+
+        function getSmoothHomeStudyRate(totalMinutes) {
+            let t = totalMinutes % 1440;
+            let prevPoint = TIME_RATE_POINTS[0];
+            let nextPoint = TIME_RATE_POINTS[TIME_RATE_POINTS.length - 1];
+            for (let i = 0; i < TIME_RATE_POINTS.length - 1; i++) {
+                if (t >= TIME_RATE_POINTS[i].t && t <= TIME_RATE_POINTS[i + 1].t) {
+                    prevPoint = TIME_RATE_POINTS[i];
+                    nextPoint = TIME_RATE_POINTS[i + 1];
+                    break;
+                }
+            }
+            const delta = nextPoint.t - prevPoint.t;
+            if (delta === 0) return prevPoint.rate;
+            const ratio = (t - prevPoint.t) / delta;
+            return prevPoint.rate + (nextPoint.rate - prevPoint.rate) * ratio;
+        }
+
+        // ---------- 五一假期判断 ----------
+        function isMayDayHoliday(date) {
+            const month = date.getMonth(); // 0-indexed, 4 = May
+            const day = date.getDate();
+            if (month === 4) { // May
+                return day >= 1 && day <= 5;
+            }
+            return false;
+        }
+
+        // 假期模式：极低在校人数 + 在家学习人数平滑变化，使用确定性噪声
+        function getHolidayDistribution(now) {
+            const totalMinutes = now.getHours() * 60 + now.getMinutes();
+            const boardingCount = Math.floor(TOTAL_STUDENTS * BOARDING_RATIO);
+            const dayStudentCount = TOTAL_STUDENTS - boardingCount;
+
+            // ---------- 大幅降低五一假期在校比例 ----------
+            let schoolRatio = 0.002;                     // 基础比例极低
+            if (totalMinutes >= 8 * 60 && totalMinutes < 20 * 60) {
+                schoolRatio = 0.016;                     // 白天最高也仅 0.8%
+            } else if (totalMinutes >= 22 * 60 || totalMinutes < 6 * 60) {
+                schoolRatio = 0.002;                     // 深夜更低
+            } else if (totalMinutes >= 6 * 60 && totalMinutes < 8 * 60) {
+                schoolRatio = 0.006;                     // 清晨少量
+            }
+
+            // 住校生在校人数
+            let inSchool = Math.floor(boardingCount * schoolRatio);
+            // 走读生几乎不留校（系数从0.003大幅降到0.0002）
+            inSchool += Math.floor(dayStudentCount * 0.0005);
+            inSchool = Math.min(TOTAL_STUDENTS, Math.max(0, inSchool));   // 下限5人，上限仍受全局控制
+
+            // 在家学习率复用正常时段曲线（符合假期自主复习规律）
+            const homeStudyRate = getSmoothHomeStudyRate(totalMinutes);
+            let atHome = Math.floor(dayStudentCount * homeStudyRate);
+            // 住校生中未在校的部分，部分转为在家学习
+            const boardingAtHome = Math.floor(boardingCount * (1 - schoolRatio) * homeStudyRate * 0.85);
+            atHome += boardingAtHome;
+            // 确保总人数不溢出，且在家人数不少于200（保持数据显示合理）
+            let maxPossibleHome = TOTAL_STUDENTS - inSchool;
+            atHome = Math.min(maxPossibleHome, Math.max(200, atHome));
+
+            // 确定性波动幅度由 0.02 降至 0.01，避免极端值
+            const noiseSchoolFactor = getNoiseFactor(now, 0.01);
+            const noiseHomeFactor = getNoiseFactor(now, 0.01);
+            let finalInSchool = Math.floor(inSchool * (1 + noiseSchoolFactor));
+            let finalAtHome = Math.floor(atHome * (1 + noiseHomeFactor));
+
+            // 额外加一道安全上限：假期在校人数不超过300人，在家不超过总人数
+            finalInSchool = Math.min(500, Math.max(5, finalInSchool));
+            finalAtHome = Math.min(TOTAL_STUDENTS - finalInSchool, Math.max(200, finalAtHome));
+
+            return { inSchool: finalInSchool, atHome: finalAtHome };
+        }
 
         function isSummerSchedule(now) {
             const month = now.getMonth() + 1;
@@ -864,70 +1501,85 @@
             }
         }
 
-        // 【修复1】重排条件顺序：凌晨时段优先判断，彻底消除零点后在家学生数回弹
         function getLateNightStudyRate(totalMinutes) {
-            // 凌晨 03:00 - 05:29 → 极低学习率
             if (totalMinutes >= 3 * 60 && totalMinutes < 5 * 60 + 30) return 0.01;
-            // 凌晨 01:00 - 03:00 → 很低学习率
             if (totalMinutes >= 1 * 60 && totalMinutes < 3 * 60) return 0.02;
-            // 凌晨 00:00 - 01:00 → 低学习率（原先此条件被 <23*60 错误吞掉，现已提前）
             if (totalMinutes < 1 * 60) return 0.06;
-            // 深夜 23:00 - 24:00 → 中等偏低
             if (totalMinutes < 24 * 60 && totalMinutes >= 23 * 60) return 0.15;
-            // 晚间 05:30 - 22:59 → 正常晚间学习率
             if (totalMinutes < 23 * 60) return 0.35;
-            // fallback
             return 0.01;
         }
 
-        // 【修复2】添加过渡带平滑 + 减小深睡噪声幅度
+        // 主分布计算（假期优先，然后是周末特殊处理，最后工作日）
         function calculateStudentDistribution(now) {
+            if (isMayDayHoliday(now)) {
+                return getHolidayDistribution(now);
+            }
+
             const sched = getScheduleKeyTimes(now);
             const totalMinutes = now.getHours() * 60 + now.getMinutes();
             const dayOfWeek = now.getDay();
             const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
 
-            // 过渡带定义：晚间 21:50-22:10，晨间 05:20-05:40
-            const EVENING_TRANS_START = 21 * 60 + 50; // 21:50
-            const EVENING_TRANS_END = 22 * 60 + 10; // 22:10
-            const MORNING_TRANS_START = 5 * 60 + 20; // 05:20
-            const MORNING_TRANS_END = 5 * 60 + 40; // 05:40
+            if (isWeekend) {
+                const boardingCount = Math.floor(TOTAL_STUDENTS * BOARDING_RATIO);
+                const dayStudentCount = TOTAL_STUDENTS - boardingCount;
+                let schoolRatio = 0.30;
+                if (totalMinutes < 8 * 60 || totalMinutes >= 21 * 60) schoolRatio = 0.20;
+                else if (totalMinutes >= 12 * 60 && totalMinutes < 14 * 60) schoolRatio = 0.35;
+                let inSchool = Math.floor(boardingCount * schoolRatio);
+                inSchool += Math.floor(dayStudentCount * 0.01);
+                inSchool = Math.min(TOTAL_STUDENTS, Math.max(80, inSchool));
 
+                const weekendHomeRate = getSmoothHomeStudyRate(totalMinutes);
+                let atHome = Math.floor(dayStudentCount * weekendHomeRate);
+                const boardingAtHome = Math.floor(boardingCount * (1 - schoolRatio) * weekendHomeRate * 0.9);
+                atHome += boardingAtHome;
+                atHome = Math.min(TOTAL_STUDENTS - inSchool, Math.max(600, atHome));
+
+                // 确定性波动 (±3%)
+                const noiseSchoolFactor = getNoiseFactor(now, 0.03);
+                const noiseHomeFactor = getNoiseFactor(now, 0.03);
+                let finalInSchool = Math.floor(inSchool * (1 + noiseSchoolFactor));
+                let finalAtHome = Math.floor(atHome * (1 + noiseHomeFactor));
+                finalInSchool = Math.min(TOTAL_STUDENTS, Math.max(50, finalInSchool));
+                finalAtHome = Math.min(TOTAL_STUDENTS, Math.max(300, finalAtHome));
+                return { inSchool: finalInSchool, atHome: finalAtHome };
+            }
+
+            // 工作日过渡带逻辑
+            const EVENING_TRANS_START = 21 * 60 + 50;
+            const EVENING_TRANS_END = 22 * 60 + 10;
+            const MORNING_TRANS_START = 5 * 60 + 20;
+            const MORNING_TRANS_END = 5 * 60 + 40;
             const inEveningTransition = totalMinutes >= EVENING_TRANS_START && totalMinutes <= EVENING_TRANS_END;
             const inMorningTransition = totalMinutes >= MORNING_TRANS_START && totalMinutes <= MORNING_TRANS_END;
             const inTransition = inEveningTransition || inMorningTransition;
 
-            // 过渡带：分别计算深睡和非深睡结果，按权重混合
             if (inTransition) {
                 let deepWeight;
                 if (inEveningTransition) {
-                    // 21:50→0, 22:00→0.5, 22:10→1
                     deepWeight = (totalMinutes - EVENING_TRANS_START) / (EVENING_TRANS_END - EVENING_TRANS_START);
                 } else {
-                    // 05:20→1, 05:30→0.5, 05:40→0
                     deepWeight = 1 - (totalMinutes - MORNING_TRANS_START) / (MORNING_TRANS_END - MORNING_TRANS_START);
                 }
                 deepWeight = Math.max(0, Math.min(1, deepWeight));
-
                 const deepResult = computeDeepSleepResult(now, totalMinutes);
-                const normalResult = computeNormalResult(now, totalMinutes, dayOfWeek, isWeekend, sched);
-
+                const normalResult = computeNormalResult(now, totalMinutes, dayOfWeek, false, sched);
                 return {
                     inSchool: Math.round(deepResult.inSchool * deepWeight + normalResult.inSchool * (1 - deepWeight)),
                     atHome: Math.round(deepResult.atHome * deepWeight + normalResult.atHome * (1 - deepWeight))
                 };
             }
 
-            // 非过渡带：走原有逻辑
             const isDeepSleep = totalMinutes >= (22 * 60) || totalMinutes < (5 * 60 + 30);
             if (isDeepSleep) {
                 return computeDeepSleepResult(now, totalMinutes);
             }
-
-            return computeNormalResult(now, totalMinutes, dayOfWeek, isWeekend, sched);
+            return computeNormalResult(now, totalMinutes, dayOfWeek, false, sched);
         }
 
-        // 提取深睡时段计算（减小噪声幅度，使曲线更平滑）
+        // 深睡时段计算（使用确定性噪声，幅度 ±3.5%）
         function computeDeepSleepResult(now, totalMinutes) {
             const boardingCount = Math.floor(TOTAL_STUDENTS * BOARDING_RATIO);
             const dayStudentCount = TOTAL_STUDENTS - boardingCount;
@@ -936,16 +1588,17 @@
                 Math.floor(boardingCount * 0.01 * getLateNightStudyRate(totalMinutes));
             inSchool = Math.min(TOTAL_STUDENTS, Math.max(15, inSchool));
             atHome = Math.min(TOTAL_STUDENTS, Math.max(40, atHome));
-            // 噪声从 ±8% 减小到 ±3.5%，深睡时段曲线更平滑
-            const noiseSchool = Math.floor((Math.sin(now.getTime() * 0.0025) * 0.035) * inSchool);
-            const noiseHome = Math.floor((Math.cos(now.getTime() * 0.0031) * 0.035) * atHome);
-            return {
-                inSchool: Math.min(TOTAL_STUDENTS, Math.max(8, inSchool + noiseSchool)),
-                atHome: Math.min(TOTAL_STUDENTS, Math.max(30, atHome + noiseHome))
-            };
+
+            const noiseSchoolFactor = getNoiseFactor(now, 0.035);
+            const noiseHomeFactor = getNoiseFactor(now, 0.035);
+            let finalInSchool = Math.floor(inSchool * (1 + noiseSchoolFactor));
+            let finalAtHome = Math.floor(atHome * (1 + noiseHomeFactor));
+            finalInSchool = Math.min(TOTAL_STUDENTS, Math.max(8, finalInSchool));
+            finalAtHome = Math.min(TOTAL_STUDENTS, Math.max(30, finalAtHome));
+            return { inSchool: finalInSchool, atHome: finalAtHome };
         }
 
-        // 提取非深睡时段计算（原有逻辑完整保留）
+        // 工作日正常时段计算（确定性噪声 ±3%）
         function computeNormalResult(now, totalMinutes, dayOfWeek, isWeekend, sched) {
             const boardingCount = Math.floor(TOTAL_STUDENTS * BOARDING_RATIO);
             const nonCityCount = Math.floor(TOTAL_STUDENTS * NON_CITY_RATIO);
@@ -954,40 +1607,12 @@
             const eliteCount = Math.floor(TOTAL_STUDENTS * ELITE_CLASS_RATIO);
             const delayOnlyCount = Math.floor(TOTAL_STUDENTS * (DELAY_CLASS_RATIO - ELITE_CLASS_RATIO));
 
-            let inSchool = 0,
-                atHome = 0;
+            let inSchool = 0, atHome = 0;
             const isBoardingAtSchool = (() => {
-                if (isWeekend) {
-                    if (dayOfWeek === 0 && totalMinutes >= 15 * 60) return true;
-                    if (dayOfWeek === 0 && totalMinutes < 15 * 60) return false;
-                    if (dayOfWeek === 6 && totalMinutes < 11 * 60) return true;
-                    if (dayOfWeek === 6 && totalMinutes >= 11 * 60) return false;
-                    return false;
-                }
+                if (isWeekend) return false;
                 if (dayOfWeek === 5 && totalMinutes >= 16 * 60 + 30) return false;
                 return true;
             })();
-
-            if (isWeekend) {
-                const weekendBoardingInSchool = Math.floor(boardingCount * 0.65);
-                inSchool = isBoardingAtSchool ? weekendBoardingInSchool : Math.floor(weekendBoardingInSchool * 0.3);
-                const weekendStudyRate = (() => {
-                    const daysLeft = Math.max(0, (TARGET_DATE - now) / (1000 * 3600 * 24));
-                    const baseRate = daysLeft < 30 ? 0.62 : (daysLeft < 60 ? 0.55 : 0.48);
-                    if (totalMinutes >= 8 * 60 && totalMinutes < 12 * 60) return baseRate * 1.2;
-                    if (totalMinutes >= 14 * 60 && totalMinutes < 17 * 60) return baseRate * 1.15;
-                    if (totalMinutes >= 19 * 60 && totalMinutes < 22 * 60) return baseRate * 1.1;
-                    if (totalMinutes >= 22 * 60 || totalMinutes < 6 * 60) return baseRate * 0.25;
-                    return baseRate;
-                })();
-                const weekendDayStudentsStudying = Math.floor(dayStudentCount * weekendStudyRate);
-                atHome = weekendDayStudentsStudying + Math.floor(boardingCount * 0.35 * weekendStudyRate);
-                const noiseSchool = Math.floor((Math.sin(now.getTime() * 0.003) * 0.04 + 0.02) * inSchool);
-                const noiseHome = Math.floor((Math.cos(now.getTime() * 0.0037) * 0.04 + 0.02) * atHome);
-                inSchool = Math.min(TOTAL_STUDENTS, Math.max(200, inSchool + noiseSchool));
-                atHome = Math.min(TOTAL_STUDENTS, Math.max(300, atHome + noiseHome));
-                return { inSchool, atHome };
-            }
 
             if (totalMinutes < sched.schoolStartMin) {
                 inSchool = isBoardingAtSchool ? Math.floor(boardingCount * 0.9) : Math.floor(boardingCount * 0.2);
@@ -998,8 +1623,7 @@
                 inSchool = (isBoardingAtSchool ? boardingCount : Math.floor(boardingCount * 0.7)) + arrivingStudents;
                 atHome = Math.floor((dayStudentCount - arrivingStudents) * 0.15);
             } else if (totalMinutes < sched.normalEndMin) {
-                inSchool = (isBoardingAtSchool ? boardingCount : Math.floor(boardingCount * 0.7)) + Math.floor(
-                    dayStudentCount * 0.97);
+                inSchool = (isBoardingAtSchool ? boardingCount : Math.floor(boardingCount * 0.7)) + Math.floor(dayStudentCount * 0.97);
                 atHome = Math.floor(dayStudentCount * 0.02);
             } else if (totalMinutes < sched.normalEndMax) {
                 const progress = (totalMinutes - sched.normalEndMin) / (sched.normalEndMax - sched.normalEndMin);
@@ -1026,10 +1650,8 @@
                     atHome = Math.floor((normalOnlyCount + delayOnlyCount) * 0.7);
                 } else if (totalMinutes < sched.eliteEndSpecial) {
                     const specialStillIn = Math.floor(eliteCount * 0.35);
-                    inSchool = (isBoardingAtSchool ? boardingCount : Math.floor(boardingCount * 0.7)) + specialStillIn +
-                        nonCityCount;
-                    atHome = Math.floor((normalOnlyCount + delayOnlyCount + (eliteCount - specialStillIn - nonCityCount)) *
-                        0.72);
+                    inSchool = (isBoardingAtSchool ? boardingCount : Math.floor(boardingCount * 0.7)) + specialStillIn + nonCityCount;
+                    atHome = Math.floor((normalOnlyCount + delayOnlyCount + (eliteCount - specialStillIn - nonCityCount)) * 0.72);
                 } else if (totalMinutes < sched.nonCityEnd) {
                     inSchool = (isBoardingAtSchool ? boardingCount : Math.floor(boardingCount * 0.7)) + nonCityCount;
                     atHome = Math.floor((TOTAL_STUDENTS - inSchool) * 0.68);
@@ -1041,19 +1663,63 @@
             const daysLeft = Math.max(0, (TARGET_DATE - now) / (1000 * 3600 * 24));
             const examProximityBoost = daysLeft < 30 ? 1.08 : (daysLeft < 60 ? 1.05 : (daysLeft < 90 ? 1.03 : 1.0));
             atHome = Math.floor(atHome * examProximityBoost);
-            const weatherFactor = 0.97 + (Math.sin(now.getDate() * 1.7 + now.getMonth() * 3.1) * 0.04);
-            atHome = Math.floor(atHome * weatherFactor);
-            const noiseSchool = Math.floor((Math.sin(now.getTime() * 0.0025) * 0.03) * inSchool);
-            const noiseHome = Math.floor((Math.cos(now.getTime() * 0.0031) * 0.03) * atHome);
-            inSchool = Math.min(TOTAL_STUDENTS, Math.max(150, inSchool + noiseSchool));
-            atHome = Math.min(TOTAL_STUDENTS, Math.max(200, atHome + noiseHome));
-            return { inSchool, atHome };
+            const weatherFactor = 0.97 + (getNoiseFactor(now, 0.02) * 0.5); // 天气因子也改用确定性噪声，范围±1%
+            atHome = Math.floor(atHome * (0.97 + weatherFactor * 0.04));
+
+            // 确定性噪声 ±3%
+            const noiseSchoolFactor = getNoiseFactor(now, 0.03);
+            const noiseHomeFactor = getNoiseFactor(now, 0.03);
+            let finalInSchool = Math.floor(inSchool * (1 + noiseSchoolFactor));
+            let finalAtHome = Math.floor(atHome * (1 + noiseHomeFactor));
+            finalInSchool = Math.min(TOTAL_STUDENTS, Math.max(150, finalInSchool));
+            finalAtHome = Math.min(TOTAL_STUDENTS, Math.max(200, finalAtHome));
+            return { inSchool: finalInSchool, atHome: finalAtHome };
         }
 
-        // 【修复3】增强实时EMA平滑：系数从 0.65/0.35 调整为 0.72/0.28
+        // ---------- 补丁：作业冲刺（周日或假期最后一天的22:00-03:00）----------
+        function isLastDayOfHoliday(now) {
+            if (!isMayDayHoliday(now)) return false;
+            const tomorrow = new Date(now);
+            tomorrow.setDate(now.getDate() + 1);
+            return !isMayDayHoliday(tomorrow);
+        }
+
+        function isCramDeadline(now) {
+            const dayOfWeek = now.getDay();
+            const isSunday = dayOfWeek === 0;
+            const isHolidayEnd = isLastDayOfHoliday(now);
+            if (!isSunday && !isHolidayEnd) return false;
+            const hour = now.getHours();
+            // 22:00 到次日 03:00
+            return hour >= 22 || hour < 3;
+        }
+
+        function applyDeadlineBoost(distribution, now) {
+            if (!isCramDeadline(now)) return distribution;
+            let { inSchool, atHome } = distribution;
+            const boostFactor = 1.5; // 赶作业人数激增
+            let boostedAtHome = Math.floor(atHome * boostFactor);
+            // 在家最多不超过总学生减去在校最低保留数
+            let maxHome = TOTAL_STUDENTS - Math.floor(inSchool * 0.7);
+            boostedAtHome = Math.min(boostedAtHome, maxHome);
+            // 调整在校人数，部分住校生也可能熬夜赶作业
+            let newInSchool = Math.max(100, Math.floor(inSchool * 0.85));
+            const totalAfter = newInSchool + boostedAtHome;
+            if (totalAfter > TOTAL_STUDENTS) {
+                boostedAtHome = TOTAL_STUDENTS - newInSchool;
+            }
+            return { inSchool: newInSchool, atHome: boostedAtHome };
+        }
+
+        function getPatchedDistribution(now) {
+            const raw = calculateStudentDistribution(now);
+            return applyDeadlineBoost(raw, now);
+        }
+
+        // 实时平滑推送
         function pushInstantPrediction() {
             const now = new Date();
-            const raw = calculateStudentDistribution(now);
+            const raw = getPatchedDistribution(now);
             if (lastSmoothedInSchool === null) lastSmoothedInSchool = raw.inSchool;
             else lastSmoothedInSchool = Math.floor(lastSmoothedInSchool * 0.72 + raw.inSchool * 0.28);
             const finalInSchool = Math.min(TOTAL_STUDENTS, Math.max(100, lastSmoothedInSchool));
@@ -1082,11 +1748,9 @@
         }
 
         function recordLongTermPoint() {
-            let avgInSchool = 0,
-                avgAtHome = 0;
+            let avgInSchool = 0, avgAtHome = 0;
             if (fiveMinInSchoolWindow.length > 0) {
-                avgInSchool = Math.round(fiveMinInSchoolWindow.reduce((a, b) => a + b, 0) / fiveMinInSchoolWindow
-                .length);
+                avgInSchool = Math.round(fiveMinInSchoolWindow.reduce((a, b) => a + b, 0) / fiveMinInSchoolWindow.length);
                 avgAtHome = Math.round(fiveMinAtHomeWindow.reduce((a, b) => a + b, 0) / fiveMinAtHomeWindow.length);
             } else {
                 avgInSchool = getCurrentRealtimeInSchool();
@@ -1100,21 +1764,17 @@
             if (influenceHintSpan) {
                 const now = new Date();
                 const sched = getScheduleKeyTimes(now);
-                influenceHintSpan.innerText =
-                    `🔥 冲刺系数${COMPETITION_BASE.toFixed(2)}x · ${sched.isSummer ? '夏季' : '冬季'}作息 · 每5min聚合`;
+                influenceHintSpan.innerText = `🔥 冲刺系数${COMPETITION_BASE.toFixed(2)}x · ${sched.isSummer ? '夏季' : '冬季'}作息 · 每5min聚合`;
             }
         }
 
-        // 【修复4】fillPastHistory 使用EMA平滑，消除初始锯齿
         function fillPastHistory() {
             chartHistoryData = [];
             const now = new Date();
-            let prevInSchool = null,
-                prevAtHome = null;
+            let prevInSchool = null, prevAtHome = null;
             for (let i = LONG_HISTORY_SIZE - 1; i >= 0; i--) {
                 const pointDate = new Date(now.getTime() - (i * 5 * 60 * 1000));
-                const raw = calculateStudentDistribution(pointDate);
-                // EMA平滑：历史权重0.65，当前权重0.35，让历史曲线更平滑
+                const raw = getPatchedDistribution(pointDate);
                 if (prevInSchool !== null) {
                     raw.inSchool = Math.floor(prevInSchool * 0.65 + raw.inSchool * 0.35);
                     raw.atHome = Math.floor(prevAtHome * 0.65 + raw.atHome * 0.35);
@@ -1129,23 +1789,17 @@
             if (!canvasEl || !canvasCtx) return;
             const canvas = canvasEl;
             const ctx = canvasCtx;
-            const w = canvas.clientWidth,
-                h = canvas.clientHeight;
+            const w = canvas.clientWidth, h = canvas.clientHeight;
             canvas.width = w;
             canvas.height = h;
             if (chartHistoryData.length === 0) { ctx.clearRect(0, 0, w, h); return; }
             const allValues = [];
-            chartHistoryData.forEach(p => { allValues.push(p.inSchool);
-                allValues.push(p.atHome); });
+            chartHistoryData.forEach(p => { allValues.push(p.inSchool); allValues.push(p.atHome); });
             const maxVal = Math.max(...allValues, 3000);
             const minVal = Math.min(...allValues, 500);
             const range = maxVal - minVal === 0 ? 1 : maxVal - minVal;
-            const paddingLeft = 48,
-                paddingRight = 20,
-                paddingTop = 22,
-                paddingBottom = 28;
-            const drawW = w - paddingLeft - paddingRight,
-                drawH = h - paddingTop - paddingBottom;
+            const paddingLeft = 48, paddingRight = 20, paddingTop = 22, paddingBottom = 28;
+            const drawW = w - paddingLeft - paddingRight, drawH = h - paddingTop - paddingBottom;
             if (drawW <= 0 || drawH <= 0) return;
             ctx.clearRect(0, 0, w, h);
             const gridColor = getComputedStyle(document.body).getPropertyValue('--canvas-grid') || '#E9EFF4';
@@ -1170,8 +1824,7 @@
             for (let i = 0; i < chartHistoryData.length; i += labelStep) {
                 const x = paddingLeft + (drawW * i / (chartHistoryData.length - 1));
                 const offsetMins = (chartHistoryData.length - 1 - i) * 5;
-                let label = offsetMins === 0 ? "现在" : (offsetMins >= 60 ? `-${Math.floor(offsetMins/60)}h` :
-                    `-${offsetMins}m`);
+                let label = offsetMins === 0 ? "现在" : (offsetMins >= 60 ? `-${Math.floor(offsetMins / 60)}h` : `-${offsetMins}m`);
                 ctx.fillText(label, x - 14, h - paddingBottom + 13);
             }
             const lineColorSchool = getComputedStyle(document.body).getPropertyValue('--canvas-line') || '#3B82F6';
@@ -1186,8 +1839,7 @@
                 for (let i = 0; i < chartHistoryData.length; i++) {
                     const x = paddingLeft + (drawW * i / (chartHistoryData.length - 1));
                     const y = paddingTop + drawH - ((chartHistoryData[i][key] - minVal) / range) * drawH;
-                    if (first) { ctx.moveTo(x, y);
-                        first = false; } else ctx.lineTo(x, y);
+                    if (first) { ctx.moveTo(x, y); first = false; } else ctx.lineTo(x, y);
                 }
                 ctx.stroke();
                 for (let i = 0; i < chartHistoryData.length; i++) {
@@ -1213,8 +1865,147 @@
             ctx.fillText(`在家:${last.atHome.toLocaleString()}`, paddingLeft + 120, paddingTop - 4);
         }
 
-        function formatNum(n) { return n < 10 ? `0${n}` : `${n}`; }
+        // 壁纸功能
+        function applyRandomBackgroundImage() {
+            const randomIndex = Math.floor(Math.random() * BACKGROUND_IMAGE_URLS.length);
+            const imageUrl = BACKGROUND_IMAGE_URLS[randomIndex];
+            document.documentElement.style.setProperty('--wallpaper-url', `url('${imageUrl}')`);
+            document.body.classList.add('has-wallpaper');
+            localStorage.setItem('backgroundImageUrl', imageUrl);
+        }
 
+        function toggleWallpaper() {
+            applyRandomBackgroundImage();
+        }
+
+        // 全屏功能
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    console.error(`无法进入全屏模式: ${err.message}`);
+                });
+            } else {
+                if (document.exitFullscreen) {
+                    document.exitFullscreen();
+                }
+            }
+        }
+
+        // 设置面板功能
+        function showSettingsPanel() {
+            settingsPanel.style.display = 'block';
+        }
+
+        function hideSettingsPanel() {
+            settingsPanel.style.display = 'none';
+        }
+
+        // 更新CSS变量
+        function updateCSSVariables() {
+            document.documentElement.style.setProperty('--glass-blur', `${blurSlider.value}px`);
+            document.documentElement.style.setProperty('--saturation-factor', `${saturationSlider.value}%`);
+            document.documentElement.style.setProperty('--brightness-factor', `${brightnessSlider.value}%`);
+            
+            // 获取选中的颜色
+            const selectedColorOption = document.querySelector('.color-option.active');
+            if (selectedColorOption) {
+                const selectedColor = selectedColorOption.dataset.color;
+                
+                // 更新主题色
+                document.documentElement.style.setProperty('--accent-blue', selectedColor);
+                document.documentElement.style.setProperty('--accent-light', selectedColor);
+                document.documentElement.style.setProperty('--badge-text', selectedColor);
+                document.documentElement.style.setProperty('--saying-border-left', selectedColor);
+                document.documentElement.style.setProperty('--legend-school-dot', selectedColor);
+                document.documentElement.style.setProperty('--card-accent-school', selectedColor);
+                document.documentElement.style.setProperty('--canvas-line', selectedColor);
+                document.documentElement.style.setProperty('--canvas-point', selectedColor);
+                
+                // 更新进度条颜色
+                document.documentElement.style.setProperty('--progress-fill', `linear-gradient(105deg, ${selectedColor} 0%, ${adjustColor(selectedColor, -20)} 20%, ${adjustColor(selectedColor, 20)} 80%, ${selectedColor} 100%)`);
+            }
+        }
+
+        // 颜色调整辅助函数
+        function adjustColor(hex, percent) {
+            // 将十六进制颜色转换为RGB
+            let R = parseInt(hex.substring(1, 3), 16);
+            let G = parseInt(hex.substring(3, 5), 16);
+            let B = parseInt(hex.substring(5, 7), 16);
+
+            // 调整颜色
+            R = Math.min(255, Math.max(0, R + Math.floor(R * percent / 100)));
+            G = Math.min(255, Math.max(0, G + Math.floor(G * percent / 100)));
+            B = Math.min(255, Math.max(0, B + Math.floor(B * percent / 100)));
+
+            // 返回新的十六进制颜色
+            return "#" + ((1 << 24) + (R << 16) + (G << 8) + B).toString(16).slice(1);
+        }
+
+        // 保存设置到localStorage
+        function saveSettings() {
+            const selectedColorOption = document.querySelector('.color-option.active');
+            if (!selectedColorOption) return;
+            
+            const settings = {
+                glassBlur: blurSlider.value,
+                saturationFactor: saturationSlider.value,
+                brightnessFactor: brightnessSlider.value,
+                accentColor: selectedColorOption.dataset.color
+            };
+            localStorage.setItem('dashboardSettings', JSON.stringify(settings));
+            updateCSSVariables();
+        }
+
+        // 恢复默认设置
+        function resetSettings() {
+            blurSlider.value = 10;
+            saturationSlider.value = 150;
+            brightnessSlider.value = 120;
+            blurValue.textContent = 10;
+            saturationValue.textContent = 150;
+            brightnessValue.textContent = 120;
+            
+            // 重置颜色选择
+            colorOptions.forEach(option => {
+                option.classList.remove('active');
+            });
+            document.querySelector('.color-option[data-color="#4e6fd8"]').classList.add('active');
+            
+            updateCSSVariables();
+        }
+
+        // 加载保存的设置
+        function loadSettings() {
+            const savedSettings = localStorage.getItem('dashboardSettings');
+            if (savedSettings) {
+                try {
+                    const settings = JSON.parse(savedSettings);
+                    blurSlider.value = settings.glassBlur || 10;
+                    saturationSlider.value = settings.saturationFactor || 150;
+                    brightnessSlider.value = settings.brightnessFactor || 120;
+                    
+                    blurValue.textContent = blurSlider.value;
+                    saturationValue.textContent = saturationSlider.value;
+                    brightnessValue.textContent = brightnessSlider.value;
+                    
+                    // 设置颜色
+                    colorOptions.forEach(option => {
+                        option.classList.remove('active');
+                        if (option.dataset.color === settings.accentColor) {
+                            option.classList.add('active');
+                        }
+                    });
+                    
+                    updateCSSVariables();
+                } catch (e) {
+                    console.error('加载设置失败:', e);
+                }
+            }
+        }
+
+        // 辅助函数
+        function formatNum(n) { return n < 10 ? `0${n}` : `${n}`; }
         function shineDigit(el) {
             if (!el) return;
             el.classList.remove('digit-shine');
@@ -1222,7 +2013,6 @@
             el.classList.add('digit-shine');
             setTimeout(() => el.classList.remove('digit-shine'), 200);
         }
-
         function getRemainingTime() {
             const now = new Date();
             const diffMs = TARGET_DATE - now;
@@ -1234,24 +2024,13 @@
             const seconds = totalSeconds % 60;
             return { days, hours, minutes, seconds, isExpired: diffMs <= 0 };
         }
-
         function updateCountdownUI({ days, hours, minutes, seconds, isExpired }) {
-            let dS = formatNum(days),
-                hS = formatNum(hours),
-                mS = formatNum(minutes),
-                sS = formatNum(seconds);
-            if (isExpired) { dS = '00';
-                hS = '00';
-                mS = '00';
-                sS = '00'; }
-            if (daysEl.innerText !== dS) { daysEl.innerText = dS; if (prevDigits.days !== days && !isExpired) shineDigit(
-                    daysEl); }
-            if (hoursEl.innerText !== hS) { hoursEl.innerText = hS; if (prevDigits.hours !== hours && !isExpired) shineDigit(
-                    hoursEl); }
-            if (minutesEl.innerText !== mS) { minutesEl.innerText = mS; if (prevDigits.minutes !== minutes && !isExpired)
-                    shineDigit(minutesEl); }
-            if (secondsEl.innerText !== sS) { secondsEl.innerText = sS; if (prevDigits.seconds !== seconds && !isExpired)
-                    shineDigit(secondsEl); }
+            let dS = formatNum(days), hS = formatNum(hours), mS = formatNum(minutes), sS = formatNum(seconds);
+            if (isExpired) { dS = '00'; hS = '00'; mS = '00'; sS = '00'; }
+            if (daysEl.innerText !== dS) { daysEl.innerText = dS; if (prevDigits.days !== days && !isExpired) shineDigit(daysEl); }
+            if (hoursEl.innerText !== hS) { hoursEl.innerText = hS; if (prevDigits.hours !== hours && !isExpired) shineDigit(hoursEl); }
+            if (minutesEl.innerText !== mS) { minutesEl.innerText = mS; if (prevDigits.minutes !== minutes && !isExpired) shineDigit(minutesEl); }
+            if (secondsEl.innerText !== sS) { secondsEl.innerText = sS; if (prevDigits.seconds !== seconds && !isExpired) shineDigit(secondsEl); }
             prevDigits = { days, hours, minutes, seconds };
         }
         const ProgressCalc = {
@@ -1262,26 +2041,28 @@
                 monday.setDate(now.getDate() - daysToMonday);
                 monday.setHours(0, 0, 0, 0);
                 const elapsed = now - monday;
-                return Math.min(100, (elapsed / (7 * 86400000)) * 100);
+                const weekProgress = Math.min(100, (elapsed / (7 * 86400000)) * 100);
+                return 100 - weekProgress;
             },
             getDayProgress() {
                 const now = new Date();
                 const start = new Date(now);
                 start.setHours(0, 0, 0, 0);
-                return Math.min(100, ((now - start) / 86400000) * 100);
+                const dayProgress = Math.min(100, ((now - start) / 86400000) * 100);
+                return 100 - dayProgress;
             },
             getHourProgress() {
                 const now = new Date();
-                return Math.min(100, ((now.getMinutes() * 60 + now.getSeconds()) / 3600) * 100);
+                const hourProgress = Math.min(100, ((now.getMinutes() * 60 + now.getSeconds()) / 3600) * 100);
+                return 100 - hourProgress;
             },
-            getMinuteProgress() { return Math.min(100, (new Date().getSeconds() / 60) * 100); }
+            getMinuteProgress() {
+                const minuteProgress = Math.min(100, (new Date().getSeconds() / 60) * 100);
+                return 100 - minuteProgress;
+            }
         };
-
         function updateProgressBars() {
-            const wp = ProgressCalc.getWeekProgress(),
-                dp = ProgressCalc.getDayProgress(),
-                hp = ProgressCalc.getHourProgress(),
-                mp = ProgressCalc.getMinuteProgress();
+            const wp = ProgressCalc.getWeekProgress(), dp = ProgressCalc.getDayProgress(), hp = ProgressCalc.getHourProgress(), mp = ProgressCalc.getMinuteProgress();
             document.getElementById('weekFill').style.width = `${wp}%`;
             document.getElementById('weekPercent').innerText = `${wp.toFixed(1)}%`;
             document.getElementById('dayFill').style.width = `${dp}%`;
@@ -1291,52 +2072,40 @@
             document.getElementById('minuteFill').style.width = `${mp}%`;
             document.getElementById('minutePercent').innerText = `${mp.toFixed(1)}%`;
         }
-
         function updateLiveClock() {
             const now = new Date();
-            const y = now.getFullYear(),
-                m = String(now.getMonth() + 1).padStart(2, '0'),
-                d = String(now.getDate()).padStart(2, '0');
+            const y = now.getFullYear(), m = String(now.getMonth() + 1).padStart(2, '0'), d = String(now.getDate()).padStart(2, '0');
             const w = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'][now.getDay()];
-            document.getElementById('liveClockDisplay').innerText =
-                `${y}.${m}.${d} ${w} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+            document.getElementById('liveClockDisplay').innerText = `${y}.${m}.${d} ${w} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
         }
-
-        function updateStudyTimer() {
-            const elapsed = Math.floor((Date.now() - sessionStart) / 1000);
-            const hours = Math.floor(elapsed / 3600),
-                mins = Math.floor((elapsed % 3600) / 60),
-                secs = elapsed % 60;
-            if (timerDisplay) timerDisplay.innerText =
-                `${hours.toString().padStart(2,'0')}:${mins.toString().padStart(2,'0')}:${secs.toString().padStart(2,'0')}`;
+        function updateCurrentTime() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            if (timerDisplay) timerDisplay.innerText = `${hours}:${minutes}:${seconds}`;
         }
-
         function updateGreetingAndHealth() {
             const now = new Date();
             const hour = now.getHours();
             let icon, text, isLateNight = false;
-            if (hour >= 23 || hour < 5) { icon = "[深夜]";
-                text = "深夜静心，休息为重，积蓄能量。";
-                isLateNight = true; } else if (hour >= 5 && hour < 6) { icon = "[黎明]";
-                text = "晨光微熹，早起的人儿最耀眼！"; } else if (hour >= 6 && hour < 8) { icon = "[清晨]";
-                text = "一日之计在于晨，大声朗读唤醒大脑！"; } else if (hour >= 8 && hour < 11) { icon = "[上午]";
-                text = "专注力巅峰，攻克理科或背诵重点。"; } else if (hour >= 11 && hour < 13) { icon = "[午间]";
-                text = "午餐营养均衡，小憩15分钟更高效。"; } else if (hour >= 13 && hour < 15) { icon = "[午后]";
-                text = "午后易犯困，起来走动，坚持复习。"; } else if (hour >= 15 && hour < 17) { icon = "[下午]";
-                text = "黄金复习区，冲刺重难点！"; } else if (hour >= 17 && hour < 19) { icon = "[傍晚]";
-                text = "复盘今日收获，放松片刻再出发。"; } else if (hour >= 19 && hour < 21) { icon = "[晚间]";
-                text = "梳理知识框架，效率巅峰时段。"; } else { icon = "[自习]";
-                text = "稳住心态，中考加油！"; }
+            if (hour >= 23 || hour < 5) { icon = "[深夜]"; text = "深夜静心，休息为重，积蓄能量。"; isLateNight = true; }
+            else if (hour >= 5 && hour < 6) { icon = "[黎明]"; text = "晨光微熹，早起的人儿最耀眼！"; }
+            else if (hour >= 6 && hour < 8) { icon = "[清晨]"; text = "一日之计在于晨，大声朗读唤醒大脑！"; }
+            else if (hour >= 8 && hour < 11) { icon = "[上午]"; text = "专注力巅峰，攻克理科或背诵重点。"; }
+            else if (hour >= 11 && hour < 13) { icon = "[午间]"; text = "午餐营养均衡，小憩15分钟更高效。"; }
+            else if (hour >= 13 && hour < 15) { icon = "[午后]"; text = "午后易犯困，起来走动，坚持复习。"; }
+            else if (hour >= 15 && hour < 17) { icon = "[下午]"; text = "黄金复习区，冲刺重难点！"; }
+            else if (hour >= 17 && hour < 19) { icon = "[傍晚]"; text = "复盘今日收获，放松片刻再出发。"; }
+            else if (hour >= 19 && hour < 21) { icon = "[晚间]"; text = "梳理知识框架，效率巅峰时段。"; }
+            else { icon = "[自习]"; text = "稳住心态，中考加油！"; }
             greetingIconSpan.innerText = icon;
             greetingTextSpan.innerText = text;
             if (lateNightAlertDiv) {
-                if (isLateNight) {
-                    lateNightAlertDiv.innerHTML = `[提醒] 已经深夜了，保证睡眠能高效复习呦。`;
-                    lateNightAlertDiv.style.display = "flex";
-                } else lateNightAlertDiv.style.display = "none";
+                if (isLateNight) { lateNightAlertDiv.innerHTML = `[提醒] 已经深夜了，保证睡眠能高效复习呦。`; lateNightAlertDiv.style.display = "flex"; }
+                else lateNightAlertDiv.style.display = "none";
             }
         }
-
         function updateRealtimePeerDisplay() {
             if (inSchoolDisplay) {
                 const realtimeInSchool = getCurrentRealtimeInSchool();
@@ -1356,15 +2125,12 @@
             "心态稳住，你就战胜了一半对手。", "偶尔深呼吸，调整节奏再出发。"
         ];
         let currentSayingIdx = -1;
-
         function randomSaying() {
             let newIdx = Math.floor(Math.random() * sayingsPool.length);
-            while (sayingsPool.length > 1 && newIdx === currentSayingIdx) newIdx = Math.floor(Math.random() * sayingsPool
-                .length);
+            while (sayingsPool.length > 1 && newIdx === currentSayingIdx) newIdx = Math.floor(Math.random() * sayingsPool.length);
             currentSayingIdx = newIdx;
             return sayingsPool[currentSayingIdx];
         }
-
         function refreshSaying() {
             if (sayingElement) {
                 sayingElement.innerText = randomSaying();
@@ -1372,7 +2138,6 @@
                 setTimeout(() => sayingElement.classList.remove('pulse-stat'), 300);
             }
         }
-
         function initTheme() {
             const stored = localStorage.getItem('theme');
             const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
@@ -1386,7 +2151,6 @@
             }
             if (canvasCtx && chartHistoryData.length) drawTrendChart();
         }
-
         function toggleTheme() {
             const body = document.body;
             const btn = document.getElementById('themeToggleBtn');
@@ -1401,7 +2165,6 @@
             }
             if (canvasCtx && chartHistoryData.length) drawTrendChart();
         }
-
         function init() {
             canvasEl = document.getElementById('trendCanvas');
             if (canvasEl) canvasCtx = canvasEl.getContext('2d');
@@ -1415,13 +2178,58 @@
                 updateCountdownUI(getRemainingTime());
                 updateProgressBars();
                 updateLiveClock();
-                updateStudyTimer();
+                updateCurrentTime(); // 更新当前时间
                 updateGreetingAndHealth();
             }, 1000);
             longTermInterval = setInterval(() => { recordLongTermPoint(); }, 5 * 60 * 1000);
             document.getElementById('refreshSayingBtn')?.addEventListener('click', refreshSaying);
             const themeBtn = document.getElementById('themeToggleBtn');
             if (themeBtn) themeBtn.addEventListener('click', toggleTheme);
+            const wallpaperBtn = document.getElementById('wallpaperToggleBtn');
+            if (wallpaperBtn) wallpaperBtn.addEventListener('click', toggleWallpaper);
+            const fullscreenBtn = document.getElementById('fullscreenToggleBtn');
+            if (fullscreenBtn) fullscreenBtn.addEventListener('click', toggleFullscreen);
+
+            // 设置面板事件监听
+            settingsToggleBtn.addEventListener('click', showSettingsPanel);
+            closeSettingsBtn.addEventListener('click', hideSettingsPanel);
+            saveSettingsBtn.addEventListener('click', saveSettings);
+            resetSettingsBtn.addEventListener('click', resetSettings);
+            
+            // 滑块事件监听
+            blurSlider.addEventListener('input', function() {
+                blurValue.textContent = this.value;
+            });
+            
+            saturationSlider.addEventListener('input', function() {
+                saturationValue.textContent = this.value;
+            });
+            
+            brightnessSlider.addEventListener('input', function() {
+                brightnessValue.textContent = this.value;
+            });
+            
+            // 颜色选择事件监听
+            colorOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    colorOptions.forEach(opt => opt.classList.remove('active'));
+                    this.classList.add('active');
+                    updateCSSVariables(); // 点击颜色选项后立即更新主题色
+                });
+            });
+
+            // 初始化壁纸
+            const savedBgUrl = localStorage.getItem('backgroundImageUrl');
+            if (savedBgUrl) {
+                document.documentElement.style.setProperty('--wallpaper-url', `url('${savedBgUrl}')`);
+                document.body.classList.add('has-wallpaper');
+            } else {
+                applyRandomBackgroundImage();
+            }
+
+            // 加载保存的设置
+            loadSettings();
+
             window.addEventListener('resize', () => drawTrendChart());
             refreshSaying();
             initTheme();
@@ -1430,4 +2238,5 @@
         else init();
     </script>
 </body>
+
 </html>
