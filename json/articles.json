@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-05-03T12:55:43.447734",
+  "generated_at": "2026-05-03T13:14:12.162139",
   "total_articles": 11,
-  "total_word_count": 35539,
+  "total_word_count": 35611,
   "articles": [
     {
-      "relative_path": "articles/source/分享/bing壁纸.md",
+      "relative_path": "assets/source/分享/bing壁纸.md",
       "hash": "4c7eaa1ba74852ee56f63bc21b72bfad",
       "last_updated": "2026-05-02",
       "modify_count": 8,
@@ -23,7 +23,7 @@
       "read_time": "17分钟"
     },
     {
-      "relative_path": "articles/source/日记/体育考试记录.md",
+      "relative_path": "assets/source/日记/体育考试记录.md",
       "hash": "86e72b713b4157033b4c48ae9d7c8117",
       "last_updated": "2026-04-27",
       "modify_count": 2,
@@ -42,7 +42,7 @@
       "read_time": "5分钟"
     },
     {
-      "relative_path": "articles/source/网站/README.md",
+      "relative_path": "assets/source/网站/README.md",
       "hash": "19e24a559deb1350942bc1aca99d4273",
       "last_updated": "2026-04-24",
       "modify_count": 6,
@@ -60,7 +60,7 @@
       "read_time": "28分钟"
     },
     {
-      "relative_path": "articles/source/学习/从一株小草开始.md",
+      "relative_path": "assets/source/学习/从一株小草开始.md",
       "hash": "a98f8b6a4b31ccdecebee851e6a3724e",
       "last_updated": "2026-03-18",
       "modify_count": 2,
@@ -78,7 +78,7 @@
       "read_time": "4分钟"
     },
     {
-      "relative_path": "articles/source/日记/就这样走过2025.md",
+      "relative_path": "assets/source/日记/就这样走过2025.md",
       "hash": "32888214dda68d613624dcb72477e822",
       "last_updated": "2026-04-28",
       "modify_count": 2,
@@ -97,7 +97,7 @@
       "read_time": "1分钟"
     },
     {
-      "relative_path": "articles/source/学习/古诗扩写-十五从军征.md",
+      "relative_path": "assets/source/学习/古诗扩写-十五从军征.md",
       "hash": "a858e662de65557c80ab941144b04f22",
       "last_updated": "2026-01-09",
       "modify_count": 1,
@@ -115,7 +115,7 @@
       "read_time": "4分钟"
     },
     {
-      "relative_path": "articles/source/网站/test.md",
+      "relative_path": "assets/source/网站/test.md",
       "hash": "441829383aeec1c2161c53e172cc5a69",
       "last_updated": "2026-04-20",
       "modify_count": 4,
@@ -133,8 +133,8 @@
       "read_time": "8分钟"
     },
     {
-      "relative_path": "articles/source/网站/网站更新日志.md",
-      "hash": "6ffb244eb2c396e3a260918e45c75cb2",
+      "relative_path": "assets/source/网站/网站更新日志.md",
+      "hash": "39d97941ae22d66c497568ee117f1aa8",
       "last_updated": "2026-05-03",
       "modify_count": 96,
       "hidden": false,
@@ -147,11 +147,11 @@
       ],
       "category": "网站",
       "url": "/articles/网站更新日志.html",
-      "word_count": 10705,
+      "word_count": 10777,
       "read_time": "36分钟"
     },
     {
-      "relative_path": "articles/source/学习/雪中的思绪.md",
+      "relative_path": "assets/source/学习/雪中的思绪.md",
       "hash": "99bfa0e369172628a68402d634ace40d",
       "last_updated": "2025-12-14",
       "modify_count": 3,
@@ -170,7 +170,7 @@
       "read_time": "9分钟"
     },
     {
-      "relative_path": "articles/source/学习/马生复宋濂书.md",
+      "relative_path": "assets/source/学习/马生复宋濂书.md",
       "hash": "a4823b75b754121342e0c43827ae1bdc",
       "last_updated": "2025-12-09",
       "modify_count": 3,
@@ -188,7 +188,7 @@
       "read_time": "6分钟"
     },
     {
-      "relative_path": "articles/source/学习/论网络游戏的功与过.md",
+      "relative_path": "assets/source/学习/论网络游戏的功与过.md",
       "hash": "12fbf274b559eaf2f2e3693ee263decd",
       "last_updated": "2025-11-30",
       "modify_count": 2,

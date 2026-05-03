@@ -51,7 +51,7 @@ log_error = logging.error
 
 # ========== 路径配置 ==========
 PROJECT_ROOT = Path(__file__).parent.parent          # 项目根目录
-SOURCE_DIR = PROJECT_ROOT / "articles" / "source"    # 分类源目录（内含子目录）
+SOURCE_DIR = PROJECT_ROOT / "assets" / "source"    # 分类源目录（内含子目录）
 HTML_OUTPUT_DIR = PROJECT_ROOT / "articles"          # HTML输出目录
 JSON_OUTPUT_DIR = PROJECT_ROOT / "json"              # JSON输出目录
 
