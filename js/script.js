@@ -261,11 +261,13 @@ class StatisticsManager {
         const removeOverlay = () => {
             if (!overlay.parentNode) return;
             overlay.classList.remove('active');
-            setTimeout(() => overlay.remove(), 250);
+            document.body.classList.remove('welcome-active');
+            setTimeout(() => overlay.remove(), 350);
         };
 
         overlay.addEventListener('click', removeOverlay);
 
+        document.body.classList.add('welcome-active');
         document.body.appendChild(overlay);
     }
 
@@ -283,7 +285,6 @@ const BACKGROUND_IMAGE_URLS = [
     'https://cn.bing.com/th?id=OHR.MayLaborDayY26_ZH-CN7554485395_UHD.jpg&pid=hp',
     'https://cn.bing.com/th?id=OHR.OloupenaFalls_ZH-CN2980118660_UHD.jpg&pid=hp',
     'https://cn.bing.com/th?id=OHR.LoganCreek_ZH-CN5372283365_UHD.jpg&pid=hp',
-    'https://cn.bing.com/th?id=OHR.PeggysLighthouse_ZH-CN5730463973_UHD.jpg&pid=hp',
     'https://cn.bing.com/th?id=OHR.MendenhallCave_ZH-CN1850649760_UHD.jpg&pid=hp',
     'https://cn.bing.com/th?id=OHR.FanetteIsland_ZH-CN6466809551_UHD.jpg&pid=hp'
 ];
