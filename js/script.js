@@ -288,11 +288,43 @@ const BACKGROUND_IMAGE_URLS = [
     'https://cn.bing.com/th?id=OHR.FanetteIsland_ZH-CN6466809551_UHD.jpg&pid=hp'
 ];
 
-function applyRandomBackgroundImage() {
+let currentBackgroundRequestId = 0;
+function preloadImage(url) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(url);
+        img.onerror = () => reject(new Error(`背景图加载失败：${url}`));
+        img.src = url;
+    });
+}
+
+function applyRandomBackgroundImage({ force = false } = {}) {
     if (!Array.isArray(BACKGROUND_IMAGE_URLS) || BACKGROUND_IMAGE_URLS.length === 0) return;
     const randomIndex = Math.floor(Math.random() * BACKGROUND_IMAGE_URLS.length);
     const imageUrl = BACKGROUND_IMAGE_URLS[randomIndex];
-    document.body.style.backgroundImage = `url('${imageUrl}')`;
+    if (!force && document.body.style.backgroundImage.includes(imageUrl)) return;
+
+    const requestId = ++currentBackgroundRequestId;
+    document.body.classList.add('background-loading');
+
+    const apply = (url) => {
+        if (requestId !== currentBackgroundRequestId) return;
+        document.body.style.backgroundImage = `url('${url}')`;
+        document.body.classList.remove('background-loading');
+    };
+
+    const handleError = (error) => {
+        if (requestId !== currentBackgroundRequestId) return;
+        document.body.classList.remove('background-loading');
+        console.warn('[WARN] 背景图片加载失败:', error);
+    };
+
+    const load = () => preloadImage(imageUrl).then(apply).catch(handleError);
+    if ('requestIdleCallback' in window) {
+        requestIdleCallback(load, { timeout: 1000 });
+    } else {
+        setTimeout(load, 200);
+    }
 }
 
 function updateDynamicGreeting() {
@@ -840,86 +872,6 @@ class SearchController {
 }
 
 class PageManager {
-    static pageConfig = {
-        about: { title: '关于', type: 'normal' },
-        articles: { title: '文章', type: 'list' },
-        contact: { title: '联系', type: 'normal' },
-        works: { title: '作品', type: 'list' }
-    };
-    static async loadPage(page, pushState = true) {
-        perf.start(`加载页面: ${page}`);
-        const cfg = PageManager.pageConfig[page] || { title: "GXY's website", type: 'normal' };
-        try {
-            let content;
-            let title = `${cfg.title} - 高新炀的个人网站`;
-            if (cfg.type === 'list') {
-                const base = await UIRenderer.fetchPageContent(`pages/${page}.html`);
-                const data = await DataManager.fetchData(page);
-                content = UIRenderer.replaceContainerContent(base, `#${page}-list-container`, UIRenderer.generateListHTML(data, page));
-            } else if (page === '404') {
-                content = '<h2>页面未找到</h2><p>抱歉，您访问的页面不存在。</p>';
-                title = '404 - 页面未找到';
-            } else {
-                content = await UIRenderer.fetchPageContent(`pages/${page}.html`);
-            }
-            await PageManager.performDrawAnimation(content, page, title, pushState);
-        } catch (e) {
-            console.error('[ERROR] 页面加载失败:', e);
-            const errorContent = '<h2>加载失败</h2><p>哎呀！加载页面时出了点问题……要不刷新试试？</p>';
-            await PageManager.performDrawAnimation(errorContent, 'error', '加载失败 - GXY\'s website', pushState);
-        } finally {
-            perf.end(`加载页面: ${page}`);
-        }
-    }
-    static async performDrawAnimation(content, page, pageTitle, pushState) {
-        const elements = {
-            navItems: document.querySelectorAll('.nav-item'),
-            content: document.getElementById('mainContent'),
-            pageTransition: document.getElementById('pageTransition'),
-            container: document.querySelector('.container')
-        };
-        if (!elements.container) return;
-        elements.pageTransition.classList.add('active');
-        let paper = document.querySelector('.draw-animation-paper');
-        if (!paper) {
-            paper = document.createElement('div');
-            paper.className = 'draw-animation-paper';
-            document.body.appendChild(paper);
-        }
-        const rect = elements.container.getBoundingClientRect();
-        const cs = window.getComputedStyle(elements.container);
-        const pad = ['Top', 'Right', 'Bottom', 'Left'].map(k => parseFloat(cs[`padding${k}`]));
-        paper.style.cssText = `position: fixed; top: ${rect.top}px; left: ${rect.left}px; width: ${rect.width}px; height: ${rect.height}px; padding: ${pad.join(' ')}; border: var(--border-width) solid var(--border-color); box-shadow: var(--shadow-main), var(--shadow-offset), -var(--shadow-offset); border-radius: var(--border-radius-container); background: white; box-sizing: border-box; z-index: var(--z-index-animation-paper); opacity: 0; transform: translateY(100%) scale(0.95);`;
-        if (document.documentElement.getAttribute('data-theme') === 'dark') paper.style.background = '#222';
-        paper.innerHTML = content;
-        elements.content.classList.add('fade-out-shrink');
-        return new Promise(resolve => {
-            requestAnimationFrame(() => {
-                paper.style.transform = 'translate(0, 0) scale(1)';
-                paper.style.opacity = '1';
-                paper.addEventListener('animationend', function handler() {
-                    elements.content.innerHTML = content;
-                    elements.content.classList.remove('fade-out-shrink');
-                    document.title = pageTitle;
-                    if (pushState) {
-                        const searchParams = new URLSearchParams(window.location.search);
-                        searchParams.delete('q');
-                        searchParams.delete('field');
-                        searchParams.delete('tags');
-                        const queryString = searchParams.toString();
-                        const newUrl = queryString ? `?page=${page}&${queryString}` : `?page=${page}`;
-                        window.history.pushState({ page }, pageTitle, newUrl);
-                    }
-                    elements.navItems.forEach(i => i.classList.toggle('active', i.getAttribute('data-page') === page));
-                    paper.parentNode?.removeChild(paper);
-                    elements.pageTransition.classList.remove('active');
-                    PageManager.initializePageFeatures(page);
-                    this.removeEventListener('animationend', handler);
-                    resolve();
-                }, { once: true });
-            });
-        });
-    }
     static initializePageFeatures(page) {
         if (['works', 'articles'].includes(page)) new SearchController(page);
         if (page === 'index') updateDynamicGreeting();
@@ -1068,9 +1020,8 @@ class NavigationManager {
                 if (isArticleDetailOr404Page()) return;
                 e.preventDefault();
                 e.stopImmediatePropagation();
-                const page = item.dataset.page;
-                if (window.PageManager && typeof PageManager.loadPage === 'function') PageManager.loadPage(page, true);
-                else if (typeof fetchAndReplaceContent === 'function') fetchAndReplaceContent(item.getAttribute('href') || `/${page}.html`, true);
+                const href = item.getAttribute('href');
+                if (typeof fetchAndReplaceContent === 'function') fetchAndReplaceContent(href || `/${item.dataset.page}.html`, true);
             };
             item.addEventListener('click', handler);
             item._navHandler = handler;
@@ -1079,13 +1030,8 @@ class NavigationManager {
     static initPopstate() {
         if (this._popstateInitialized) return;
         this._popstateInitialized = true;
-        window.addEventListener('popstate', e => {
-            const statePage = e.state?.page;
-            const urlParams = new URLSearchParams(window.location.search);
-            const pageFromQuery = urlParams.get('page');
-            const p = statePage || pageFromQuery || getPageNameFromPath(window.location.pathname) || 'index';
-            if (window.PageManager && typeof PageManager.loadPage === 'function') PageManager.loadPage(p, false);
-            else if (typeof fetchAndReplaceContent === 'function') fetchAndReplaceContent(window.location.href, false);
+        window.addEventListener('popstate', () => {
+            if (typeof fetchAndReplaceContent === 'function') fetchAndReplaceContent(window.location.href, false);
         });
     }
     static initThemeToggle() {
@@ -1412,14 +1358,36 @@ function loadImageViewer() {
 
 document.addEventListener('DOMContentLoaded', async () => {
     window.ExternalLinkManager = new ExternalLinkManager();
-    // 加载图片查看器组件（满足主站js引用要求）
-    await loadImageViewer();
-    await StatisticsManager.syncVisitRecord();
     const savedTheme = localStorage.getItem('theme');
     const initialTheme = savedTheme || getTimeBasedTheme();
     document.documentElement.setAttribute('data-theme', initialTheme);
-    await loadNavbar(); await loadFooter(); await updateFooterUpdateTime();
-    setTimeout(() => { try { renderMathAndMermaid(document.body); } catch (e) { console.warn('[WARN] 初始 renderMathAndMermaid 失败', e); } }, 300);
+
+    const navbarPromise = loadNavbar();
+    const footerPromise = loadFooter();
+    await Promise.all([navbarPromise, footerPromise]);
+    updateFooterUpdateTime().catch(() => {});
+
+    const preloadImageViewer = () => {
+        if (typeof window.ImageViewer !== 'undefined') return Promise.resolve();
+        return loadImageViewer().catch(() => {});
+    };
+    if ('requestIdleCallback' in window) {
+        requestIdleCallback(preloadImageViewer, { timeout: 1500 });
+    } else {
+        setTimeout(preloadImageViewer, 1200);
+    }
+
+    if ('requestIdleCallback' in window) {
+        requestIdleCallback(() => {
+            try { renderMathAndMermaid(document.body); } catch (e) { console.warn('[WARN] 初始 renderMathAndMermaid 失败', e); }
+        }, { timeout: 2000 });
+    } else {
+        setTimeout(() => {
+            try { renderMathAndMermaid(document.body); } catch (e) { console.warn('[WARN] 初始 renderMathAndMermaid 失败', e); }
+        }, 500);
+    }
+
+    await StatisticsManager.syncVisitRecord();
     startSiteAgeUpdater();
     applyRandomBackgroundImage();
     const currentPage = window.location.pathname.split('/').pop().replace('.html', '') || 'index';
