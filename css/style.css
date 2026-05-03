@@ -36,7 +36,7 @@
   --font-size-h1: 2.3rem;
   --font-size-h2: 1.85rem;
   --font-size-h3: 1.5rem;
-  
+   
   /* 间距 */
   --spacing-xs: 6px;
   --spacing-sm: 10px;
@@ -1023,7 +1023,7 @@ input:checked + .slider:after {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.65);
+  background: rgba(0, 0, 0, 0);
   backdrop-filter: blur(8px);
   z-index: var(--z-modal-overlay);
   opacity: 0;
@@ -1034,17 +1034,28 @@ input:checked + .slider:after {
   opacity: 1;
 }
 
+body.welcome-active {
+  overflow: hidden;
+}
+
+body.welcome-active > :not(.welcome-overlay) {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  user-select: none;
+  transition: opacity 0.35s ease, visibility 0.35s ease;
+}
+
 .welcome-overlay {
   position: fixed;
   inset: 0;
   display: grid;
   place-items: center;
   padding: 24px;
-  background: rgba(10, 14, 24, 0.52);
   z-index: calc(var(--z-modal-overlay) + 10);
   opacity: 0;
-  transform: scale(1.02);
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  transform: scale(1.04);
+  transition: opacity 0.35s ease, transform 0.35s ease;
   cursor: pointer;
   overflow: hidden;
 }
@@ -1074,7 +1085,6 @@ input:checked + .slider:after {
   text-align: center;
   padding: 48px 36px;
   border-radius: 32px;
-  background: rgba(18, 24, 40, 0.92);
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 32px 120px rgba(0, 0, 0, 0.30);
   backdrop-filter: blur(12px);
@@ -1453,22 +1463,6 @@ input:checked + .slider:after {
 .footer-link:hover {
   color: var(--accent-light);
   text-decoration: underline;
-}
-
-/* B站图标优化 */
-.social-link .bili-icon {
-  display: inline-block;
-  width: 1.2em;
-  height: 1.2em;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='currentColor'%3E%3Cpath d='M4.977 3.561a1.31 1.31 0 111.818-1.884l2.828 2.728c.08.078.149.163.205.254h4.277a1.32 1.32 0 01.205-.254l2.828-2.728a1.31 1.31 0 011.818 1.884L17.82 4.66h.848A5.333 5.333 0 0124 9.992v7.34a5.333 5.333 0 01-5.333 5.334h-13.334A5.333 5.333 0 010 17.333V9.992a5.333 5.333 0 015.333-5.333h.781L4.977 3.56zm.356 3.67a2.667 2.667 0 00-2.666 2.667v7.529a2.667 2.667 0 002.666 2.666h13.334a2.667 2.667 0 002.666-2.666v-7.53a2.667 2.667 0 00-2.666-2.666H5.333zm1.334 5.192a1.333 1.333 0 112.666 0v1.192a1.333 1.333 0 10-2.666 0v-1.192zM16 11.09c-.736 0-1.333.597-1.333 1.333v1.192a1.333 1.333 0 102.666 0v-1.192c0-.736-.597-1.333-1.333-1.333z'/%3E%3C/svg%3E");
-  background-size: contain;
-  background-repeat: no-repeat;
-  filter: brightness(0.45);
-  transition: filter var(--transition-fast);
-}
-
-.social-link:hover .bili-icon {
-  filter: brightness(0.8);
 }
 
 /* 许可证徽章 */
