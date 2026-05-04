@@ -1,0 +1,435 @@
+        .friends-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 28px;
+            margin: 32px 0 20px;
+        }
+
+        .friend-card {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 20px 24px;
+            display: flex;
+            align-items: stretch;
+            gap: 20px;
+            transition: all 0.35s var(--transition-bounce);
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            position: relative;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeInUp 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards;
+        }
+
+        @keyframes fadeInUp {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .friend-card:hover {
+            border-color: var(--card-border-hover);
+            box-shadow: var(--shadow-hover);
+            transform: translateY(-6px);
+            background: var(--surface-color-secondary);
+        }
+
+        .friend-avatar {
+            flex-shrink: 0;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: var(--tag-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid var(--accent-color);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s ease;
+        }
+
+        .friend-card:hover .friend-avatar {
+            transform: scale(1.02);
+        }
+
+        .friend-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .friend-avatar .avatar-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--accent-light), var(--accent-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 600;
+            color: white;
+            text-transform: uppercase;
+        }
+
+        /* 友链信息区域：flex列布局 + 高度自适应，实现右下角网址效果 */
+        .friend-info {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .friend-name {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            margin: 0 0 6px 0;
+            line-height: 1.3;
+            letter-spacing: -0.3px;
+        }
+
+        .friend-card:hover .friend-name {
+            text-decoration: underline;
+            text-underline-offset: 4px;
+        }
+
+        .friend-desc {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--text-secondary);
+            margin: 0 0 6px 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        .friend-url {
+            margin-top: auto;
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            opacity: 0.75;
+            text-align: right;
+            letter-spacing: 0.2px;
+            font-family: var(--font-mono, monospace);
+            transition: opacity 0.2s ease;
+            word-break: break-all;
+            line-height: 1.4;
+        }
+
+        .friend-card:hover .friend-url {
+            opacity: 0.95;
+            color: var(--accent-color);
+        }
+
+        .info-card {
+            background: var(--surface-color-secondary);
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border-color);
+            padding: 28px 32px;
+            margin: 32px 0 28px;
+            transition: all var(--transition-normal);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .info-card:hover {
+            box-shadow: var(--shadow-md);
+            border-color: var(--accent-light);
+        }
+
+        .info-title {
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: var(--accent-color);
+            margin-bottom: 20px;
+            letter-spacing: -0.3px;
+            border-left: 4px solid var(--accent-color);
+            padding-left: 18px;
+        }
+
+        .requirements-section {
+            margin: 8px 0 32px 0;
+        }
+        
+        .section-subtitle {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-color);
+            margin: 0 0 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            letter-spacing: -0.2px;
+        }
+        
+        .section-subtitle::before {
+            content: '';
+            width: 6px;
+            height: 22px;
+            background: var(--accent-color);
+            border-radius: 4px;
+            display: inline-block;
+        }
+        
+        .requirements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 12px;
+        }
+        
+        .requirement-item {
+            background: var(--surface-color);
+            border-radius: var(--radius-lg);
+            padding: 20px 18px;
+            transition: all 0.25s ease;
+            border: 1px solid var(--border-light);
+            position: relative;
+            backdrop-filter: blur(2px);
+        }
+        
+        .requirement-item:hover {
+            transform: translateY(-4px);
+            border-color: var(--accent-light);
+            box-shadow: 0 10px 20px -8px rgba(0, 0, 0, 0.12);
+            background: var(--surface-color);
+        }
+        
+        .requirement-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: -0.2px;
+        }
+        
+        .requirement-title::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            background: var(--accent-color);
+            border-radius: 50%;
+            display: inline-block;
+            opacity: 0.8;
+        }
+        
+        .requirement-desc {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+        
+        .myinfo-section {
+            margin: 32px 0 20px;
+            padding-top: 8px;
+        }
+        
+        .myinfo-header {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-color);
+            margin: 0 0 16px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .myinfo-header::before {
+            content: '';
+            width: 6px;
+            height: 22px;
+            background: var(--accent-color);
+            border-radius: 4px;
+            display: inline-block;
+        }
+        
+        .info-hint {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            background: var(--tag-bg);
+            padding: 8px 14px;
+            border-radius: var(--radius-md);
+            display: inline-block;
+        }
+        
+        .code-block-wrapper {
+            background: var(--code-bg);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--border-light);
+            margin: 20px 0;
+            overflow: hidden;
+            position: relative;
+            transition: all 0.2s;
+        }
+        
+        .code-block-wrapper:hover {
+            border-color: var(--accent-light);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        
+        .code-header {
+            display: flex;
+            justify-content: flex-end;
+            padding: 8px 16px;
+            background: rgba(0, 0, 0, 0.03);
+            border-bottom: 1px solid var(--border-light);
+        }
+        
+        .copy-btn {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-full);
+            padding: 4px 14px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: all var(--transition-fast);
+            font-family: var(--font-family);
+        }
+        
+        .copy-btn:hover {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+            transform: translateY(-1px);
+        }
+        
+        pre {
+            margin: 0;
+            padding: 20px;
+            overflow-x: auto;
+            background: transparent;
+            font-size: 0.85rem;
+        }
+        
+        code {
+            font-family: var(--font-mono);
+            color: var(--accent-color);
+            background: transparent;
+        }
+        
+        .warning-note {
+            margin-top: 28px;
+            padding: 14px 20px;
+            background: rgba(180, 91, 99, 0.08);
+            border-left: 3px solid var(--accent-color);
+            border-radius: var(--radius-md);
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            transition: all 0.2s;
+        }
+        
+        .warning-note:hover {
+            background: rgba(180, 91, 99, 0.12);
+        }
+        
+        .warning-note strong {
+            color: var(--accent-color);
+            font-weight: 600;
+        }
+
+        .contact-note {
+            margin-top: 48px;
+            padding: 20px 0;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .contact-note p {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin: 0;
+        }
+
+        /* 加载与错误状态继承 */
+        .friends-empty, .friends-loading, .friends-error {
+            text-align: center;
+            padding: 60px 20px;
+            background: var(--surface-color-secondary);
+            border-radius: var(--radius-xl);
+            border: 1px dashed var(--border-color);
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--accent-color);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .friends-stats {
+            margin: 20px 0 10px;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            border-bottom: 1px dashed var(--border-color);
+            padding-bottom: 10px;
+            display: inline-block;
+        }
+
+        @media (max-width: 640px) {
+            .friends-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            .friend-card {
+                padding: 16px 20px;
+                gap: 16px;
+            }
+            .friend-avatar {
+                width: 64px;
+                height: 64px;
+            }
+            .info-card {
+                padding: 20px 24px;
+            }
+            .info-title {
+                font-size: 1.4rem;
+            }
+            .requirements-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            .requirement-item {
+                padding: 16px;
+            }
+            .friend-url {
+                font-size: 0.65rem;
+            }
+        }
+
+        [data-theme="dark"] .info-card {
+            background: var(--surface-color-secondary);
+        }
+        [data-theme="dark"] .copy-btn {
+            background: var(--tag-bg);
+            color: var(--text-color);
+        }
+        [data-theme="dark"] .warning-note {
+            background: rgba(224, 184, 184, 0.1);
+        }
+        [data-theme="dark"] .requirement-item {
+            background: var(--surface-color);
+        }
+        [data-theme="dark"] .info-hint {
+            background: var(--tag-bg);
+        }
