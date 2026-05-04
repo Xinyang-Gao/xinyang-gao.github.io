@@ -1,9 +1,9 @@
 {
-  "version": 17,
+  "version": 20,
   "last_updated": "2026-05-04",
-  "last_updated_full": "2026-05-04T16:14:16+08:00",
+  "last_updated_full": "2026-05-04T16:44:47+08:00",
   "total_articles": 11,
-  "total_word_count": 35890,
+  "total_word_count": 36582,
   "total_works": 10,
   "article_tags": [
     "体育",
@@ -18,6 +18,7 @@
     "诗扩写"
   ],
   "article_categories": [
+    "README文档自动构建",
     "分享",
     "学习",
     "日记",

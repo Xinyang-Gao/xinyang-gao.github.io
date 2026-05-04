@@ -465,7 +465,7 @@ def process_markdown_file(md_file_path: Path, old_article: Optional[dict] = None
     }
 
 def process_all_markdown_files() -> List[dict]:
-    """批量处理所有 markdown 文件，使用内存字典减少 IO 次数"""
+    """批量处理所有 markdown 文件，包括分类目录下的文件和根目录的 README.md"""
     # 一次性加载现有索引
     old_articles_list = load_articles()
     articles_dict = {a['relative_path']: a for a in old_articles_list}
@@ -473,31 +473,50 @@ def process_all_markdown_files() -> List[dict]:
     all_md_paths = set()
     new_articles_dict = {}
 
+    # 1. 处理分类目录下的文章
     if not SOURCE_DIR.exists():
         log_error(f"文章源目录不存在: {SOURCE_DIR}")
-        return []
+    else:
+        for category_dir in SOURCE_DIR.iterdir():
+            if not category_dir.is_dir():
+                continue
+            category_name = category_dir.name
+            md_files = list(category_dir.glob('*.md'))
+            if not md_files:
+                log_warning(f"分类 '{category_name}' 目录下没有 .md 文件，跳过")
+                continue
+            log_info(f"处理分类: {category_name} (共 {len(md_files)} 个文件)")
+            for md_file in md_files:
+                rel_path = get_relative_path(md_file)
+                all_md_paths.add(rel_path)
+                old = articles_dict.get(rel_path)
+                try:
+                    article_info = process_markdown_file(md_file, old_article=old, category=category_name)
+                    new_articles_dict[rel_path] = article_info
+                    if article_info.get('hidden'):
+                        log_info(f"文章 '{article_info['title']}' 含有“隐藏”标签，将在索引中标记为 hidden")
+                except Exception as e:
+                    log_error(f"处理失败 {md_file.name}: {e}")
+            print("-" * 40)
 
-    for category_dir in SOURCE_DIR.iterdir():
-        if not category_dir.is_dir():
-            continue
-        category_name = category_dir.name
-        md_files = list(category_dir.glob('*.md'))
-        if not md_files:
-            log_warning(f"分类 '{category_name}' 目录下没有 .md 文件，跳过")
-            continue
-        log_info(f"处理分类: {category_name} (共 {len(md_files)} 个文件)")
-        for md_file in md_files:
-            rel_path = get_relative_path(md_file)
-            all_md_paths.add(rel_path)
-            old = articles_dict.get(rel_path)
-            try:
-                article_info = process_markdown_file(md_file, old_article=old, category=category_name)
-                new_articles_dict[rel_path] = article_info
-                if article_info.get('hidden'):
-                    log_info(f"文章 '{article_info['title']}' 含有“隐藏”标签，将在索引中标记为 hidden")
-            except Exception as e:
-                log_error(f"处理失败 {md_file.name}: {e}")
-        print("-" * 40)
+    # 2. 处理根目录下的 README.md
+    readme_path = PROJECT_ROOT / "README.md"
+    if readme_path.exists() and readme_path.is_file():
+        rel_path = get_relative_path(readme_path)  # 结果为 "README.md"
+        all_md_paths.add(rel_path)
+        old = articles_dict.get(rel_path)
+        try:
+            # README 固定分类为 "项目文档"
+            readme_info = process_markdown_file(readme_path, old_article=old, category="README文档自动构建")
+            # 如果 README 中没有明确标题，设置为 "README"
+            if readme_info['title'] == '未命名文章':
+                readme_info['title'] = 'README'
+            new_articles_dict[rel_path] = readme_info
+            log_info(f"已处理根目录 README.md")
+        except Exception as e:
+            log_error(f"处理 README.md 失败: {e}")
+    else:
+        log_info("根目录下未找到 README.md，跳过")
 
     # 合并：保留仍存在的文章，新生成的文章覆盖旧信息
     final_articles = []
@@ -514,7 +533,7 @@ def process_all_markdown_files() -> List[dict]:
 
 def main():
     print("=" * 60)
-    log_info("文章管理器启动（优化版：批量处理 + YAML frontmatter 支持）")
+    log_info("文章管理器启动（优化版：批量处理 + YAML frontmatter 支持 + README 自动构建）")
     print("=" * 60)
 
     if len(sys.argv) > 1:

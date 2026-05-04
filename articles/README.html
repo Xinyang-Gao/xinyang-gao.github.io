@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="README.md">
-    <meta name="author" content="高新炀">
+    <meta name="description" content="项目介绍">
+    <meta name="author" content="高新炀 ＆ DEEPSEEK-V4">
     <meta name="keywords" content="网站">
     <title>README.md - 高新炀的小站</title>
     <link rel="stylesheet" href="/css/style.css">
@@ -19,7 +19,7 @@
         <div class="article-right-column">
             <div class="article-content-wrapper">
                 <h1 class="article-title" id="articleTitle">README.md</h1>
-                <div class="article-subtitle">README.md</div>
+                <div class="article-subtitle">项目介绍</div>
                 <div class="article-meta" id="articleMeta"><div class="meta-grid">
             <div class="meta-item" data-label="发布日期">
                 <i class="fas fa-calendar-alt"></i>
@@ -27,23 +27,23 @@
             </div>
             <div class="meta-item" data-label="最后更新">
                 <i class="fas fa-edit"></i>
-                <span class="meta-value">2026年04月24日</span>
+                <span class="meta-value">2026年05月04日</span>
             </div>
             <div class="meta-item" data-label="作者">
                 <i class="fas fa-user"></i>
-                <span class="meta-value">高新炀</span>
+                <span class="meta-value">高新炀 ＆ DEEPSEEK-V4</span>
             </div>
             <div class="meta-item" data-label="分类">
                 <i class="fas fa-folder-open"></i>
-                <span class="meta-value">网站</span>
+                <span class="meta-value">README文档自动构建</span>
             </div>
             <div class="meta-item" data-label="字数">
                 <i class="fas fa-file-alt"></i>
-                <span class="meta-value">8392</span>
+                <span class="meta-value">8992</span>
             </div>
             <div class="meta-item" data-label="阅读时间">
                 <i class="fas fa-clock"></i>
-                <span class="meta-value">28分钟</span>
+                <span class="meta-value">30分钟</span>
             </div>
             <div class="meta-item" data-label="访客数">
                 <i class="fas fa-users"></i>
@@ -55,10 +55,13 @@
             </div>
             <div class="meta-item" data-label="修订次数">
                 <i class="fas fa-code-branch"></i>
-                <span class="meta-value">6</span>
+                <span class="meta-value">3</span>
             </div></div></div>
-                <div class="article-body" id="articleBody"><h1 id="个人网站项目-readme">个人网站项目 README</h1>
-<p>本项目是一个功能完整的静态个人网站，融合了博客、作品集、留言板、友链等功能，具有现代化的界面、无刷新页面切换、搜索筛选、暗黑模式、自定义光标等特性。文章通过 Markdown 文件生成，并集成 Twikoo 评论系统和不蒜子统计。</p>
+                <div class="article-body" id="articleBody"><blockquote>
+<p><strong>声明：</strong>本文部分内容为 AIGC 辅助，已人工审阅</p>
+</blockquote>
+<h1 id="个人网站项目-readme">个人网站项目 README</h1>
+<p>本项目是一个功能完整的静态个人网站，融合了博客、作品集、留言板、友链等功能。网站采用<strong>双栏布局</strong>设计（左侧个人信息卡片 + 右侧主内容区），具有现代化的界面、无刷新页面切换、搜索筛选、暗黑模式、自定义光标、全局图片查看器等特性。文章通过 Markdown 文件自动生成 HTML，并集成 Twikoo 评论系统和不蒜子统计。</p>
 <h2 id="目录">目录</h2>
 <ul>
 <li><a href="#项目简介">项目简介</a></li>
@@ -67,71 +70,71 @@
 <li><a href="#文件结构">文件结构</a></li>
 <li><a href="#快速开始">快速开始</a></li>
 <li><a href="#构建与数据更新">构建与数据更新</a></li>
-<li><a href="#配置文件说明">配置文件说明</a></li>
+<li><a href="#配置说明">配置说明</a></li>
 <li><a href="#数据格式">数据格式</a></li>
 <li><a href="#开发与扩展">开发与扩展</a></li>
 <li><a href="#许可证">许可证</a></li>
 </ul>
 <hr />
 <h2 id="项目简介">项目简介</h2>
-<p>这是一个基于 HTML/CSS/JS 构建的静态个人网站，采用<strong>双栏布局</strong>设计（左侧个人信息卡片 + 右侧主内容区），主要包含以下模块：</p>
+<p>这是一个基于 HTML/CSS/JavaScript 构建的静态个人网站，主要包含以下模块：</p>
 <ul>
-<li><strong>首页</strong>：展示统计卡片（文章数、总字数、作品数）、标签云（文章标签/作品标签）、最近更新的文章和作品、动态问候语，以及不蒜子全站统计。</li>
+<li><strong>首页</strong>：展示统计卡片（文章数、总字数、作品数）、标签云（文章标签/作品标签）、最近更新的文章和作品、动态问候语、不蒜子全站统计。</li>
 <li><strong>关于</strong>：个人介绍页。</li>
-<li><strong>文章</strong>：通过 Markdown 生成的博客文章列表，支持标签筛选、搜索、阅读进度条、目录导航和 Twikoo 评论。</li>
-<li><strong>作品</strong>：展示个人项目作品，支持标签筛选、搜索和详情弹窗（点击卡片展示详情）。</li>
-<li><strong>友链</strong>：展示友情链接，支持 JSON 数据驱动、申请要求说明、一键复制站点信息模板，并集成 Twikoo 评论区用于友链申请交流。</li>
+<li><strong>文章</strong>：由 Markdown 生成的博客文章列表，支持标签筛选、搜索、自定义排序（按更新时间/字数/发布日期），文章页面带有目录导航、阅读进度条、代码复制、图片查看器、Twikoo 评论。</li>
+<li><strong>作品</strong>：展示个人项目作品，支持标签筛选、搜索，点击卡片弹出详情弹窗。</li>
+<li><strong>友链</strong>：展示友情链接（数据来源 <code>/json/friends.json</code>），附带申请要求说明、我的信息模板（可一键复制 JSON），下方集成 Twikoo 评论区用于申请交流。</li>
 <li><strong>留言板</strong>：基于 Twikoo 的独立评论系统，访客可留言交流。</li>
-<li><strong>404 页面</strong>：包含返回首页、返回上一页和问题反馈入口。</li>
+<li><strong>404 页面</strong>：包含返回首页、返回上一页、问题反馈（GitHub Issues）和留言板入口。</li>
 </ul>
-<p>网站采用 SPA 风格的页面切换动画（“纸张展开”效果），所有页面内容由 <code>PageManager</code> 动态加载，数据从 JSON 文件中获取，具有良好的扩展性和维护性。</p>
+<p>网站采用 <strong>SPA 风格的无刷新导航</strong>（AJAX 动态加载页面内容），数据从 JSON 文件中读取，所有页面切换带有平滑过渡动画。暗黑模式、搜索条件、主题偏好均持久化到 <code>localStorage</code>。</p>
 <hr />
 <h2 id="功能特性">功能特性</h2>
 <h3 id="前端体验">前端体验</h3>
 <ul>
-<li><strong>无刷新页面切换</strong>：通过 <code>PageManager</code> 实现，带有平滑过渡动画（<code>draw-animation-paper</code>）。</li>
-<li><strong>暗黑模式</strong>：主题切换，跟随系统或用户手动选择，持久化存储到 <code>localStorage</code>，切换时带有淡入淡出过渡效果。</li>
-<li><strong>搜索与标签筛选</strong>：文章和作品页面支持标题、标签、日期等多种搜索方式，并可通过标签按钮筛选，筛选条件自动同步到 URL。</li>
-<li><strong>自定义光标</strong>：非触摸设备上显示独特的钢笔尖光标（<code>custom-cursor</code>），悬停可点击元素时自动吸附并改变样式。</li>
-<li><strong>响应式设计</strong>：适配移动端和桌面端，导航栏在移动端折叠为汉堡菜单，双栏布局在大屏幕下显示为两列，移动端自动折叠为单列。</li>
+<li><strong>无刷新页面切换</strong>：通过 <code>PageManager</code> 与 <code>fetchAndReplaceContent</code> 实现，页面切换带有“纸张展开”过渡动画。</li>
+<li><strong>暗黑模式</strong>：支持跟随系统或手动切换，切换时带有淡入淡出过渡效果，主题偏好永久保存。</li>
+<li><strong>搜索与标签筛选</strong>：文章和作品页面支持标题、标签、日期等搜索方式，并可通过标签按钮快速筛选，筛选条件自动同步到 URL 查询参数。</li>
+<li><strong>自定义光标</strong>：非触摸设备上显示独特的钢笔尖光标（<code>custom-cursor</code>），悬停在可点击元素上时自动吸附并改变样式。</li>
+<li><strong>响应式设计</strong>：适配移动端和桌面端。导航栏在移动端折叠为汉堡菜单，双栏布局在大屏下显示为两列，移动端自动折叠为单列。</li>
 </ul>
 <h3 id="文章阅读增强articlejs">文章阅读增强（<code>article.js</code>）</h3>
 <ul>
-<li><strong>文章目录（TOC）</strong>：自动提取文章中的标题（H1-H4）生成目录，点击可平滑滚动到对应位置，滚动时高亮当前章节。</li>
-<li><strong>阅读进度条</strong>：滚动时显示文章阅读进度（顶部进度条）。</li>
-<li><strong>图片懒加载与预览</strong>：文章内图片采用懒加载，点击任意图片自动打开全局图片查看器（<code>ImageViewer</code>），支持缩放、拖拽、切换图片。</li>
+<li><strong>文章目录（TOC）</strong>：自动提取文章中的标题（H1–H4）生成目录，点击可平滑滚动到对应位置，滚动时高亮当前章节。</li>
+<li><strong>阅读进度条</strong>：页面顶部显示阅读进度条。</li>
+<li><strong>图片懒加载与预览</strong>：文章内图片采用懒加载，点击任意图片自动打开全局图片查看器（<code>ImageViewer</code>），支持缩放、拖拽、旋转、切换图片。</li>
 <li><strong>代码块增强</strong>：代码块自动添加语言标签和复制按钮，支持一键复制代码。</li>
-<li><strong>阅读时间</strong>：根据文章字数自动计算并显示（200~500 字/分钟估算）。</li>
-<li><strong>文章分类与元数据</strong>：支持按分类组织文章，显示作者、字数、阅读时间、最后更新日期、修订次数等。</li>
-<li><strong>Mermaid 与数学公式</strong>：支持 Mermaid 图表和 LaTeX 数学公式（KaTeX/MathJax）。</li>
+<li><strong>阅读时间</strong>：根据文章字数自动计算并显示（按 300 字/分钟估算）。</li>
+<li><strong>元数据显示</strong>：文章页显示作者、字数、阅读时间、发布日期、最后更新日期、修订次数。</li>
+<li><strong>KaTeX / Mermaid 支持</strong>：文章内可嵌入 LaTeX 数学公式和 Mermaid 图表，自动渲染。</li>
 </ul>
-<h3 id="首页增强indexhtml">首页增强（<code>index.html</code>）</h3>
+<h3 id="首页增强">首页增强</h3>
 <ul>
-<li><strong>统计卡片</strong>：展示文章总数、总字数、作品总数，点击卡片可跳转到对应列表页面。</li>
+<li><strong>统计卡片</strong>：展示文章总数、总字数、作品总数，点击卡片可跳转到对应列表页。</li>
 <li><strong>标签云</strong>：分为“文章星系”和“创意工坊”，点击标签可跳转到对应列表并自动筛选。</li>
-<li><strong>最近更新</strong>：分别展示最新的文章和作品（各 5 条），支持点击跳转。</li>
-<li><strong>动态问候语</strong>：根据时间段显示不同的问候语。</li>
+<li><strong>最近更新</strong>：分别展示最新的 5 篇文章和 5 个作品，点击可跳转。</li>
+<li><strong>动态问候语</strong>：根据时间段显示不同的问候语（晨间、午后、深夜等）。</li>
 <li><strong>不蒜子统计</strong>：全站总访问量和总访客数。</li>
 </ul>
 <h3 id="评论与统计">评论与统计</h3>
 <ul>
-<li><strong>评论系统</strong>：集成 Twikoo，支持留言、回复、点赞等（留言板、404 页、文章页底部）。</li>
-<li><strong>访问统计</strong>：集成不蒜子统计，显示全站和单页访问量；同时通过 <code>statistics.json</code> 提供文章/作品的聚合统计（标签云、总字数等）。</li>
+<li><strong>评论系统</strong>：集成 Twikoo，支持留言、回复、点赞、表情。留言板、文章页、友链页、404 页均集成。</li>
+<li><strong>访问统计</strong>：集成不蒜子统计，显示全站和单页访问量；同时通过 <code>/json/statistics.json</code> 提供文章/作品的聚合统计（标签云、总字数等）。</li>
 </ul>
 <h3 id="安全与辅助功能">安全与辅助功能</h3>
 <ul>
-<li><strong>外链跳转确认</strong>：点击外部链接时弹出模态框确认，支持白名单（如 GitHub、Bilibili 等）自动跳转，提升安全性。</li>
-<li><strong>返回顶部按钮</strong>：滚动超过阈值后显示，平滑滚动到顶部。</li>
+<li><strong>外链跳转确认</strong>：点击外部链接时弹出模态框确认，支持白名单域名自动跳转（如 GitHub、Bilibili、Netlify 等），提升安全性。</li>
+<li><strong>返回顶部按钮</strong>：滚动超过 300px 后显示，平滑滚动到顶部。</li>
 <li><strong>网站运行时长</strong>：页脚动态显示网站已运行时间（精确到秒）。</li>
-<li><strong>图片查看器</strong>：全局图片查看器（<code>image-viewer.js</code>），支持缩放、拖拽、键盘操作。</li>
+<li><strong>全局图片查看器</strong>：任何页面点击图片（除标记 <code>.no-image-viewer</code> 外）自动打开查看器，支持缩放、拖拽、键盘操作（方向键切换、<code>+</code>/<code>-</code> 缩放、<code>R</code> 旋转）。</li>
 </ul>
 <h3 id="内容生成与自动化python-脚本">内容生成与自动化（Python 脚本）</h3>
 <ul>
-<li><strong>Markdown 转 HTML</strong>：通过 <code>ArticleManager.py</code> 批量处理，支持 YAML Front Matter 元数据、标题 ID 自动生成、哈希状态追踪。</li>
-<li><strong>作品管理</strong>：通过 <code>WorkManager.py</code> 扫描 <code>works/</code> 目录下的 <code>metadata.json</code> 管理作品信息。</li>
+<li><strong>Markdown 转 HTML</strong>：<code>ArticleManager.py</code> 批量处理 <code>assets/source/</code> 下的 .md 文件，支持 YAML Front Matter 元数据、标题 ID 自动生成、内容哈希与修改次数追踪。</li>
+<li><strong>作品管理</strong>：<code>WorkManager.py</code> 扫描 <code>works/</code> 目录下的 <code>metadata.json</code> 生成作品索引。</li>
 <li><strong>统计聚合</strong>：<code>Statistic.py</code> 从 <code>articles.json</code> 和 <code>works.json</code> 生成 <code>statistics.json</code>。</li>
 <li><strong>RSS Feed 生成</strong>：<code>RssGenerator.py</code> 自动生成 <code>rss.xml</code>，支持文章和作品订阅。</li>
-<li><strong>一键运行</strong>：<code>run.py</code> 按顺序执行上述脚本。</li>
+<li><strong>一键运行</strong>：<code>run.py</code> 按顺序执行上述所有脚本。</li>
 </ul>
 <hr />
 <h2 id="技术栈">技术栈</h2>
@@ -149,11 +152,11 @@
 </tr>
 <tr>
 <td>样式</td>
-<td>自定义 CSS（支持暗黑模式、响应式、双栏布局）</td>
+<td>自定义 CSS（支持暗黑模式、响应式、双栏布局、CSS 变量）</td>
 </tr>
 <tr>
 <td>图标</td>
-<td>Font Awesome 5/6</td>
+<td>Font Awesome 6 (CDN)</td>
 </tr>
 <tr>
 <td>Markdown 转换</td>
@@ -181,7 +184,7 @@
 </tr>
 <tr>
 <td>存储</td>
-<td><code>localStorage</code>（缓存文章/作品数据、主题偏好、友链）</td>
+<td><code>localStorage</code>（缓存文章/作品数据、主题偏好、友链数据）</td>
 </tr>
 <tr>
 <td>构建工具</td>
@@ -192,61 +195,63 @@
 <hr />
 <h2 id="文件结构">文件结构</h2>
 <pre class="codehilite"><code>/
-├── index.html               # 首页（双栏布局 + 统计卡片 + 标签云 + 最近更新）
-├── about.html               # 关于页面
-├── articles.html            # 文章列表页面（双栏布局 + 搜索 + 标签筛选）
-├── works.html               # 作品列表页面（双栏布局 + 搜索 + 标签筛选）
-├── contact.html             # 留言板页面（双栏布局 + Twikoo）
-├── friends.html             # 友链页面（双栏布局 + 友链卡片 + 申请信息 + Twikoo）
-├── 404.html                 # 自定义 404 页面（含反馈评论区）
-├── navbar.html              # 导航栏 HTML 片段
-├── footer.html              # 页脚 HTML 片段（三列玻璃态布局 + 不蒜子 + 站点年龄）
+├── index.html                 # 首页（双栏布局 + 统计卡片 + 标签云 + 最近更新）
+├── about.html                 # 关于页面
+├── articles.html              # 文章列表页面（搜索 + 标签筛选 + 排序）
+├── works.html                 # 作品列表页面（搜索 + 标签筛选）
+├── contact.html               # 留言板页面
+├── friends.html               # 友链页面（卡片式 + 申请说明 + Twikoo）
+├── 404.html                   # 自定义 404 页面
+├── navbar.html                # 导航栏 HTML 片段（灵动岛设计）
+├── footer.html                # 页脚 HTML 片段（三列网格 + 运行时长 + 不蒜子）
+├── rss.xml                    # RSS Feed（自动生成）
 │
 ├── css/
-│   ├── style.css            # 全局样式（含双栏布局、暗黑模式、动画）
-│   ├── article.css          # 文章页面专用样式（目录、代码块、进度条）
-│   └── image-viewer.css     # 图片查看器样式
+│   ├── style.css              # 全局样式（双栏布局、暗黑模式、动画、响应式）
+│   ├── article.css            # 文章页面专用样式（目录、代码块、进度条）
+│   ├── image-viewer.css       # 图片查看器样式
+│   ├── navbar.css             # 导航栏专属样式
+│   └── twikoo.css             # Twikoo 评论框样式覆盖
 │
 ├── js/
-│   ├── script.js            # 主要逻辑（PageManager、SearchController、ExternalLinkManager、GlobalImageManager）
-│   ├── article.js           # 文章页面专用脚本（TOC、进度条、代码块、图片查看器）
-│   ├── image-viewer.js      # 全局图片查看器组件
-│   └── busuanzi.min.js      # 不蒜子统计脚本
+│   ├── script.js              # 核心逻辑（PageManager、SearchController、ExternalLinkManager、GlobalImageManager）
+│   ├── article.js             # 文章页面专用脚本（TOC、进度条、代码块、图片查看器）
+│   ├── image-viewer.js        # 全局图片查看器组件
+│   └── busuanzi.min.js        # 不蒜子统计脚本
 │
-├── articles/                # 生成的 HTML 文章存放目录
-│   ├── 文章名.html
-│   └── ...
+├── articles/                  # 生成的 HTML 文章（由 ArticleManager.py 输出）
+│   ├── xxx.html
+│   └── .hidden/               # 隐藏文章的输出目录（如含有“隐藏”标签）
 │
-├── articles/source/         # 原始 Markdown 文件（按分类子目录组织）
-│   ├── 随笔/
-│   │   └── 文章.md
-│   └── 技术/
-│       └── 另一篇.md
+├── assets/                    # 源文件（Markdown 源文件、图片等）
+│   └── source/                # Markdown 源文件目录（按分类子目录组织）
+│       ├── 随笔/
+│       │   └── 文章.md
+│       └── 技术/
+│           └── 另一篇.md
 │
-├── works/                   # 作品数据源目录
+├── works/                     # 作品数据源目录
 │   └── 作品名/
 │       └── metadata.json
 │
-├── json/                    # 自动生成的 JSON 数据索引
-│   ├── articles.json        # 文章元数据索引
-│   ├── works.json           # 作品元数据索引
-│   ├── statistics.json      # 聚合统计数据
-│   └── friends.json         # 友链数据（需手动维护）
+├── json/                      # 自动生成的 JSON 数据索引
+│   ├── articles.json          # 文章元数据索引
+│   ├── works.json             # 作品元数据索引
+│   ├── statistics.json        # 聚合统计数据（标签、总数等）
+│   └── friends.json           # 友链数据（需手动维护）
 │
-├── python/                  # Python 自动化脚本目录
-│   ├── ArticleManager.py    # Markdown → HTML 转换
-│   ├── WorkManager.py       # 扫描 works/ 生成 works.json
-│   ├── Statistic.py         # 生成 statistics.json
-│   ├── RssGenerator.py      # 生成 RSS Feed
-│   └── run.py               # 一键运行所有脚本
+├── python/                    # Python 自动化脚本目录（实际脚本位于此处）
+│   ├── ArticleManager.py
+│   ├── WorkManager.py
+│   ├── Statistic.py
+│   ├── RssGenerator.py
+│   └── run.py
 │
-├── rss.xml                  # RSS Feed 文件（自动生成）
-├── .nojekyll                # GitHub Pages 忽略 Jekyll 处理
-└── README.md                # 本文件
+└── README.md                  # 项目说明文档
 </code></pre>
 
 <blockquote>
-<p><strong>注意</strong>：Python 脚本放在 <code>python/</code> 目录下，在项目根目录运行时需要调整路径引用。</p>
+<p><strong>注意</strong>：Python 脚本位于 <code>python/</code> 目录下，在项目根目录运行时需要调整路径引用。</p>
 </blockquote>
 <hr />
 <h2 id="快速开始">快速开始</h2>
@@ -258,19 +263,18 @@
 <li>
 <p><strong>安装 Python 依赖</strong>（用于 Markdown 转换）：
    <code>bash
-   pip install markdown</code></p>
+   pip install markdown pyyaml</code></p>
 </li>
 <li>
 <p><strong>生成网站数据</strong>：
    <code>bash
    cd python
    python run.py</code>
-   该脚本会依次执行所有数据生成脚本。</p>
+   该脚本会依次执行 <code>ArticleManager.py</code> → <code>WorkManager.py</code> → <code>Statistic.py</code> → <code>RssGenerator.py</code>。</p>
 </li>
 <li>
-<p><strong>启动本地服务器</strong>：
+<p><strong>启动本地服务器</strong>（在项目根目录）：
    <code>bash
-   # 在项目根目录执行
    python -m http.server 8000</code>
    然后访问 <code>http://localhost:8000</code>。</p>
 </li>
@@ -278,9 +282,9 @@
 <h3 id="部署到生产环境">部署到生产环境</h3>
 <ul>
 <li>将整个项目上传至任意静态网站托管服务（如 GitHub Pages、Netlify、Vercel 等）。</li>
-<li>确保所有文件（包括 <code>pages/</code>、<code>articles/</code>、<code>works/</code>、<code>json/</code>、<code>rss.xml</code> 等）都上传。</li>
+<li>确保所有文件均已上传。</li>
 <li>配置 Twikoo 后端地址（见下方配置说明）。</li>
-<li>更新 <code>script.js</code> 中 <code>startSiteAgeUpdater</code> 函数的网站创建时间 <code>BIRTH_DATE</code>。</li>
+<li>更新 <code>js/script.js</code> 中 <code>startSiteAgeUpdater</code> 函数的网站创建时间（<code>BIRTH_DATE</code>）。</li>
 <li>如需自定义域名，请按托管服务商指引设置。</li>
 </ul>
 <hr />
@@ -290,20 +294,20 @@
 <li>
 <p><strong>添加新文章</strong>：</p>
 <ol>
-<li>在 <code>articles/source/</code> 下选择或创建分类子目录。</li>
-<li>在该目录中创建 <code>.md</code> 文件，文件头部必须包含 YAML 元数据。</li>
-<li>运行 <code>python run.py</code>（或单独执行 <code>ArticleManager.py</code>）。</li>
-<li>生成的 HTML 文件出现在 <code>articles/</code> 目录，同时 JSON 索引和 RSS 自动更新。</li>
+<li>在 <code>assets/source/</code> 下创建或选择分类子目录（如“随笔”、“技术”）。</li>
+<li>在该目录中创建 <code>.md</code> 文件，文件头部必须包含 YAML Front Matter（<code>title</code>、<code>date</code>、<code>tag</code> 等）。</li>
+<li>运行 <code>python python/run.py</code>（或单独执行 <code>ArticleManager.py</code>）。</li>
+<li>生成的 HTML 文件出现在 <code>articles/</code> 目录，同时 <code>articles.json</code> 和 <code>rss.xml</code> 自动更新。</li>
 </ol>
 </li>
 <li>
-<p><strong>修改文章</strong>：直接编辑 <code>.md</code> 文件，重新运行 <code>ArticleManager.py</code> 即可覆盖对应的 HTML。脚本会自动检测内容变化，更新 <code>last_updated</code> 和 <code>modify_count</code>。</p>
+<p><strong>修改文章</strong>：直接编辑 <code>.md</code> 文件，重新运行脚本。脚本会检测内容哈希变化，自动更新 <code>last_updated</code> 和 <code>modify_count</code>。</p>
 </li>
 <li>
 <p><strong>删除文章</strong>：删除 <code>.md</code> 文件后重新运行脚本，<code>articles.json</code> 会自动移除该文章。</p>
 </li>
 <li>
-<p><strong>隐藏文章</strong>：在 front matter 的 <code>tag</code> 字段中加入 <code>隐藏</code> 标签，运行脚本后该文章将不会出现在 <code>articles.json</code> 和 RSS 中（但仍会生成 HTML 文件）。</p>
+<p><strong>隐藏文章</strong>：在 Front Matter 的 <code>tag</code> 字段中加入 <code>隐藏</code> 标签，运行脚本后该文章不会出现在 <code>articles.json</code> 和 RSS 中（但仍会生成 HTML 到 <code>articles/.hidden/</code>）。</p>
 </li>
 </ul>
 <h3 id="作品管理">作品管理</h3>
@@ -312,67 +316,67 @@
 <p><strong>添加新作品</strong>：</p>
 <ol>
 <li>在 <code>works/</code> 下创建新文件夹，文件夹名称即为作品标题。</li>
-<li>在该文件夹中创建 <code>metadata.json</code>。</li>
-<li>运行 <code>python run.py</code>（或单独执行 <code>WorkManager.py</code>）。</li>
+<li>在该文件夹中创建 <code>metadata.json</code>（格式参见下方数据格式）。</li>
+<li>运行 <code>python/WorkManager.py</code> 或 <code>run.py</code>。</li>
 </ol>
 </li>
 <li>
-<p><strong>隐藏作品</strong>：在 <code>metadata.json</code> 的 <code>tag</code> 字段中加入 <code>隐藏</code> 标签，运行脚本后该作品将不会出现在 <code>works.json</code> 和 RSS 中。</p>
+<p><strong>隐藏作品</strong>：在 <code>metadata.json</code> 的 <code>tag</code> 字段中加入 <code>隐藏</code> 标签，运行脚本后该作品不会出现在 <code>works.json</code> 和 RSS 中。</p>
 </li>
 </ul>
 <h3 id="友链管理">友链管理</h3>
 <ul>
-<li><strong>添加友链</strong>：编辑 <code>json/friends.json</code>，格式如下：
-  <code>json
-  [
-    {
-      "name": "站点名称",
-      "link": "https://example.com",
-      "desc": "站点描述",
-      "avatar": "https://example.com/avatar.jpg"
-    }
-  ]</code></li>
+<li>编辑 <code>/json/friends.json</code>，格式为数组，每个元素包含 <code>name</code>、<code>link</code>、<code>desc</code>、<code>avatar</code> 字段。</li>
+<li>友链页面会根据该 JSON 动态生成卡片，并缓存 10 分钟。</li>
 </ul>
 <h3 id="统计与-rss-更新">统计与 RSS 更新</h3>
 <ul>
-<li>运行 <code>Statistic.py</code> 和 <code>RssGenerator.py</code> 即可更新统计文件和 RSS。</li>
+<li>运行 <code>Statistic.py</code> 和 <code>RssGenerator.py</code> 即可更新统计文件和 RSS（<code>run.py</code> 已包含）。</li>
 </ul>
 <hr />
-<h2 id="配置文件说明">配置文件说明</h2>
+<h2 id="配置说明">配置说明</h2>
 <h3 id="1-twikoo-评论系统">1. Twikoo 评论系统</h3>
 <p>需要修改以下文件中的 <code>envId</code> 参数为你的 Twikoo 后端地址：
 - <code>contact.html</code>
 - <code>404.html</code>
 - <code>friends.html</code>
 - <code>article.js</code>（通过 <code>ArticleManager.py</code> 生成的文章 HTML 中的脚本）</p>
-<p>Twikoo 后端可使用 <a href="https://twikoo.js.org/backend.html#netlify-functions">Netlify Functions</a> 或腾讯云云函数部署。</p>
-<h3 id="2-不蒜子统计">2. 不蒜子统计</h3>
-<p>已在 <code>footer.html</code> 和 <code>ArticleManager.py</code> 生成的每篇文章中引入不蒜子脚本，无需额外配置。</p>
-<h3 id="3-网站运行起始时间">3. 网站运行起始时间</h3>
-<p><code>script.js</code> 中的 <code>startSiteAgeUpdater</code> 函数定义了网站创建时间：</p>
+<p>Twikoo 后端可使用 <a href="https://twikoo.js.org/backend.html#netlify-functions">Netlify Functions</a> 或腾讯云云函数部署。示例配置：</p>
+<pre class="codehilite"><code class="language-javascript">twikoo.init({
+  envId: 'https://your-twikoo-endpoint.netlify.app/.netlify/functions/twikoo',
+  el: '#twikoo-comments'
+});
+</code></pre>
+
+<h3 id="2-网站运行起始时间">2. 网站运行起始时间</h3>
+<p><code>js/script.js</code> 中的 <code>startSiteAgeUpdater</code> 函数定义了网站创建时间：</p>
 <pre class="codehilite"><code class="language-javascript">const BIRTH_DATE = new Date('2025-02-22T12:23:53Z');
 </code></pre>
 
 <p>请根据实际创建时间修改该值。</p>
-<h3 id="4-外链跳转白名单">4. 外链跳转白名单</h3>
-<p><code>script.js</code> 的 <code>ExternalLinkManager</code> 类中的 <code>WHITELIST</code> 定义了自动跳转的域名：</p>
+<h3 id="3-外链跳转白名单">3. 外链跳转白名单</h3>
+<p><code>js/script.js</code> 中的 <code>ExternalLinkManager</code> 类的 <code>WHITELIST</code> 定义了自动跳转的域名：</p>
 <pre class="codehilite"><code class="language-javascript">this.WHITELIST = new Set([
   &quot;github.com&quot;, &quot;vercel.com&quot;, &quot;netlify.app&quot;, &quot;bilibili.com&quot;, ...
 ]);
 </code></pre>
 
-<h3 id="5-rss-生成配置">5. RSS 生成配置</h3>
+<h3 id="4-rss-生成配置">4. RSS 生成配置</h3>
 <p>编辑 <code>python/RssGenerator.py</code> 开头的常量：
 - <code>SITE_TITLE</code>：网站标题
-- <code>SITE_LINK</code>：网站根 URL
+- <code>SITE_LINK</code>：网站根 URL（如 <code>https://xinyang-gao.github.io</code>）
 - <code>SITE_DESCRIPTION</code>：站点描述
 - <code>INCLUDE_ARTICLES</code>：是否包含文章（默认 <code>True</code>）
 - <code>INCLUDE_WORKS</code>：是否包含作品（默认 <code>True</code>）</p>
-<h3 id="6-图片查看器">6. 图片查看器</h3>
-<p>全局图片查看器由 <code>GlobalImageManager</code> 自动初始化，点击任意图片（除标记 <code>.no-image-viewer</code> 外）会自动打开查看器，支持：
-- 缩放（滚轮/按钮）
-- 拖拽（仅缩放时）
-- 键盘操作（方向键切换、ESC 关闭、+/- 缩放）</p>
+<h3 id="5-图片查看器">5. 图片查看器</h3>
+<p>全局图片查看器由 <code>GlobalImageManager</code> 自动初始化，点击任意图片（除标记 <code>.no-image-viewer</code> 的图片外）会自动打开查看器，支持：
+- 缩放（滚轮 / 按钮）
+- 拖拽（仅在缩放时）
+- 旋转（每次 90°）
+- 键盘操作：方向键切换、<code>ESC</code> 关闭、<code>+</code>/<code>-</code> 缩放、<code>R</code> 旋转
+- 错误时显示详细图片地址并高亮重载按钮</p>
+<h3 id="6-不蒜子统计">6. 不蒜子统计</h3>
+<p>已在 <code>footer.html</code> 和 <code>ArticleManager.py</code> 生成的每篇文章中引入不蒜子脚本，无需额外配置。统计数据显示在页脚和文章元数据中。</p>
 <hr />
 <h2 id="数据格式">数据格式</h2>
 <h3 id="articlesjson-格式"><code>articles.json</code> 格式</h3>
@@ -382,7 +386,7 @@
   &quot;total_word_count&quot;: 5000,
   &quot;articles&quot;: [
     {
-      &quot;relative_path&quot;: &quot;articles/source/随笔/文章.md&quot;,
+      &quot;relative_path&quot;: &quot;assets/source/随笔/文章.md&quot;,
       &quot;hash&quot;: &quot;md5...&quot;,
       &quot;last_updated&quot;: &quot;2026-04-20&quot;,
       &quot;modify_count&quot;: 3,
@@ -390,10 +394,10 @@
       &quot;title&quot;: &quot;文章标题&quot;,
       &quot;date&quot;: &quot;2026-03-01&quot;,
       &quot;description&quot;: &quot;简介&quot;,
-      &quot;author&quot;: &quot;作者&quot;,
-      &quot;tags&quot;: [&quot;标签1&quot;, &quot;标签2&quot;],
+      &quot;author&quot;: &quot;高新炀&quot;,
+      &quot;tags&quot;: [&quot;随笔&quot;, &quot;生活&quot;],
       &quot;category&quot;: &quot;随笔&quot;,
-      &quot;url&quot;: &quot;/articles/文章.html&quot;,
+      &quot;url&quot;: &quot;/articles/%E6%96%87%E7%AB%A0.html&quot;,
       &quot;word_count&quot;: 1200,
       &quot;read_time&quot;: &quot;3-5分钟&quot;
     }
@@ -408,7 +412,7 @@
       &quot;title&quot;: &quot;作品标题&quot;,
       &quot;date&quot;: &quot;2026-01-01&quot;,
       &quot;description&quot;: &quot;作品描述&quot;,
-      &quot;author&quot;: &quot;作者名&quot;,
+      &quot;author&quot;: &quot;高新炀&quot;,
       &quot;tag&quot;: [&quot;标签1&quot;, &quot;标签2&quot;],
       &quot;link&quot;: &quot;https://example.com&quot;
     }
@@ -423,30 +427,27 @@
   &quot;description&quot;: &quot;详细描述&quot;,
   &quot;author&quot;: &quot;高新炀&quot;,
   &quot;tag&quot;: [&quot;标签1&quot;, &quot;标签2&quot;],
-  &quot;link&quot;: &quot;https://...&quot;
+  &quot;link&quot;: &quot;https://example.com&quot;
 }
 </code></pre>
 
-<h3 id="markdown-文件头部格式yaml-front-matter">Markdown 文件头部格式（YAML Front Matter）</h3>
-<pre class="codehilite"><code class="language-markdown">---
+<h3 id="markdown-文件-front-matteryaml">Markdown 文件 Front Matter（YAML）</h3>
+<pre class="codehilite"><code class="language-yaml">---
 title: 我的第一篇文章
 date: 2026-03-01
 description: 这是一篇示例文章
 author: 高新炀
 tag: [随笔, 生活]
 ---
-
-# 正文标题 {#正文标题}
-
-这里是文章正文...
 </code></pre>
 
 <ul>
-<li><code>tag</code> 字段支持数组格式，若包含 <code>隐藏</code> 标签则不在列表中显示。</li>
+<li><code>tag</code> 字段支持数组，若包含 <code>隐藏</code> 标签则不在索引中显示。</li>
 <li><code>category</code> 字段可选，若不提供则自动使用所在子目录名作为分类。</li>
 </ul>
 <h3 id="statisticsjson-格式"><code>statistics.json</code> 格式</h3>
 <pre class="codehilite"><code class="language-json">{
+  &quot;version&quot;: 520,
   &quot;last_updated&quot;: &quot;2026-04-20&quot;,
   &quot;last_updated_full&quot;: &quot;2026-04-20T15:30:00+08:00&quot;,
   &quot;total_articles&quot;: 12,
@@ -478,33 +479,33 @@ tag: [随笔, 生活]
 </ul>
 <h3 id="添加新页面">添加新页面</h3>
 <ol>
-<li>在 <code>pages/</code> 下创建新的 HTML 片段文件。</li>
-<li>在 <code>script.js</code> 的 <code>PageManager.pageConfig</code> 中添加新页面配置（<code>title</code> 和 <code>type</code>）。</li>
+<li>在根目录创建新的 <code>.html</code> 文件（或 HTML 片段）。</li>
+<li>确保其包含 <code>#navbar-placeholder</code>、<code>#personal-card-container</code>、<code>#footer-placeholder</code> 等占位元素。</li>
 <li>在 <code>navbar.html</code> 中添加导航链接，设置 <code>data-page</code> 属性。</li>
-<li>如果需要动态数据（如列表），在 <code>DataManager.config</code> 中配置对应的数据源。</li>
+<li>如果需要动态数据（如列表），可在 <code>script.js</code> 的 <code>PageManager</code> 中添加对应的初始化函数。</li>
 </ol>
 <h3 id="修改数据缓存策略">修改数据缓存策略</h3>
 <ul>
-<li>在 <code>DataManager.config</code> 中调整 <code>cacheControl</code> 字段。</li>
+<li>在 <code>DataManager.config</code> 中调整 <code>cacheControl</code> 字段或缓存键名。</li>
 <li>缓存过期时间可在 <code>Utils.isDataExpired</code> 中修改 <code>minutes</code> 参数（默认 5 分钟）。</li>
 </ul>
 <h3 id="调试与性能">调试与性能</h3>
 <ul>
-<li>浏览器控制台会输出关键操作耗时（通过 <code>PerformanceMonitor</code> 类）。</li>
-<li>滚动渐入动画使用 <code>IntersectionObserver</code>，阈值设为 <code>0.2</code>。</li>
+<li>浏览器控制台会输出关键操作耗时（通过 <code>PerformanceMonitor</code> 类），耗时超过 100ms 会有提示。</li>
+<li>滚动渐入动画使用 <code>IntersectionObserver</code>，阈值设为 <code>0.2</code>，可调整以改变动画触发时机。</li>
 </ul>
 <h3 id="自定义光标">自定义光标</h3>
 <ul>
-<li><code>CustomCursor</code> 类控制光标外观和吸附行为。如需禁用，可注释 <code>script.js</code> 末尾的初始化代码。</li>
+<li><code>CustomCursor</code> 类控制光标外观和吸附行为。如需禁用，可注释 <code>script.js</code> 末尾的 <code>new CustomCursor()</code> 实例化代码。</li>
 </ul>
 <h3 id="无刷新导航ajax">无刷新导航（AJAX）</h3>
 <ul>
-<li>已通过 <code>enableAjaxNavigation</code> 函数启用，所有内部链接点击后会通过 <code>fetch</code> 加载新页面并替换主内容区域。</li>
-<li>若某个链接不希望使用 AJAX 导航，可添加 <code>data-no-ajax</code> 属性。</li>
+<li>已通过 <code>enableAjaxNavigation</code> 函数启用，所有内部链接点击后会通过 <code>fetch</code> 加载新页面并替换 <code>#mainContent</code> 区域。</li>
+<li>若某个链接不希望使用 AJAX 导航，可添加 <code>data-no-ajax="true"</code> 属性。</li>
 </ul>
 <hr />
 <h2 id="许可证">许可证</h2>
-<p>本项目代码部分基于 MIT 许可证开源。</p>
+<p>本项目代码部分基于 <strong>MIT 许可证</strong> 开源。</p>
 <p>MIT 许可证允许任何人以任何目的使用、复制、修改、合并、出版发行、散布、再授权及销售软件及其副本，但必须包含版权声明和许可声明。</p>
 <p>文章中除特别声明外的文字内容采用 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/">CC BY-NC-ND 4.0</a> 许可协议（署名-非商业性使用-禁止演绎）。</p>
 <hr />
@@ -518,7 +519,7 @@ tag: [随笔, 生活]
     </div>
     <div id="imageModal" class="image-modal"><span class="close">&times;</span><div class="modal-content"><img id="modalImage" src="" alt=""></div><div class="image-info"><span id="imageCaption"></span></div></div>
     <div id="footer-placeholder"></div>
-    <script>window.ARTICLE_HEADINGS = [{"level": 1, "text": "个人网站项目 README", "id": "个人网站项目-readme"}, {"level": 2, "text": "目录", "id": "目录"}, {"level": 2, "text": "项目简介", "id": "项目简介"}, {"level": 2, "text": "功能特性", "id": "功能特性"}, {"level": 3, "text": "前端体验", "id": "前端体验"}, {"level": 3, "text": "文章阅读增强（`article.js`）", "id": "文章阅读增强articlejs"}, {"level": 3, "text": "首页增强（`index.html`）", "id": "首页增强indexhtml"}, {"level": 3, "text": "评论与统计", "id": "评论与统计"}, {"level": 3, "text": "安全与辅助功能", "id": "安全与辅助功能"}, {"level": 3, "text": "内容生成与自动化（Python 脚本）", "id": "内容生成与自动化python-脚本"}, {"level": 2, "text": "技术栈", "id": "技术栈"}, {"level": 2, "text": "文件结构", "id": "文件结构"}, {"level": 2, "text": "快速开始", "id": "快速开始"}, {"level": 3, "text": "本地运行", "id": "本地运行"}, {"level": 3, "text": "部署到生产环境", "id": "部署到生产环境"}, {"level": 2, "text": "构建与数据更新", "id": "构建与数据更新"}, {"level": 3, "text": "文章管理", "id": "文章管理"}, {"level": 3, "text": "作品管理", "id": "作品管理"}, {"level": 3, "text": "友链管理", "id": "友链管理"}, {"level": 3, "text": "统计与 RSS 更新", "id": "统计与-rss-更新"}, {"level": 2, "text": "配置文件说明", "id": "配置文件说明"}, {"level": 3, "text": "1. Twikoo 评论系统", "id": "1-twikoo-评论系统"}, {"level": 3, "text": "2. 不蒜子统计", "id": "2-不蒜子统计"}, {"level": 3, "text": "3. 网站运行起始时间", "id": "3-网站运行起始时间"}, {"level": 3, "text": "4. 外链跳转白名单", "id": "4-外链跳转白名单"}, {"level": 3, "text": "5. RSS 生成配置", "id": "5-rss-生成配置"}, {"level": 3, "text": "6. 图片查看器", "id": "6-图片查看器"}, {"level": 2, "text": "数据格式", "id": "数据格式"}, {"level": 3, "text": "`articles.json` 格式", "id": "articlesjson-格式"}, {"level": 3, "text": "`works.json` 格式", "id": "worksjson-格式"}, {"level": 3, "text": "`metadata.json` 格式（`works/作品名/`）", "id": "metadatajson-格式works作品名"}, {"level": 3, "text": "Markdown 文件头部格式（YAML Front Matter）", "id": "markdown-文件头部格式yaml-front-matter"}, {"level": 1, "text": "正文标题", "id": "正文标题"}, {"level": 3, "text": "`statistics.json` 格式", "id": "statisticsjson-格式"}, {"level": 3, "text": "`friends.json` 格式", "id": "friendsjson-格式"}, {"level": 2, "text": "开发与扩展", "id": "开发与扩展"}, {"level": 3, "text": "修改样式", "id": "修改样式"}, {"level": 3, "text": "添加新页面", "id": "添加新页面"}, {"level": 3, "text": "修改数据缓存策略", "id": "修改数据缓存策略"}, {"level": 3, "text": "调试与性能", "id": "调试与性能"}, {"level": 3, "text": "自定义光标", "id": "自定义光标"}, {"level": 3, "text": "无刷新导航（AJAX）", "id": "无刷新导航ajax"}, {"level": 2, "text": "许可证", "id": "许可证"}];</script>
+    <script>window.ARTICLE_HEADINGS = [{"level": 1, "text": "个人网站项目 README", "id": "个人网站项目-readme"}, {"level": 2, "text": "目录", "id": "目录"}, {"level": 2, "text": "项目简介", "id": "项目简介"}, {"level": 2, "text": "功能特性", "id": "功能特性"}, {"level": 3, "text": "前端体验", "id": "前端体验"}, {"level": 3, "text": "文章阅读增强（`article.js`）", "id": "文章阅读增强articlejs"}, {"level": 3, "text": "首页增强", "id": "首页增强"}, {"level": 3, "text": "评论与统计", "id": "评论与统计"}, {"level": 3, "text": "安全与辅助功能", "id": "安全与辅助功能"}, {"level": 3, "text": "内容生成与自动化（Python 脚本）", "id": "内容生成与自动化python-脚本"}, {"level": 2, "text": "技术栈", "id": "技术栈"}, {"level": 2, "text": "文件结构", "id": "文件结构"}, {"level": 2, "text": "快速开始", "id": "快速开始"}, {"level": 3, "text": "本地运行", "id": "本地运行"}, {"level": 3, "text": "部署到生产环境", "id": "部署到生产环境"}, {"level": 2, "text": "构建与数据更新", "id": "构建与数据更新"}, {"level": 3, "text": "文章管理", "id": "文章管理"}, {"level": 3, "text": "作品管理", "id": "作品管理"}, {"level": 3, "text": "友链管理", "id": "友链管理"}, {"level": 3, "text": "统计与 RSS 更新", "id": "统计与-rss-更新"}, {"level": 2, "text": "配置说明", "id": "配置说明"}, {"level": 3, "text": "1. Twikoo 评论系统", "id": "1-twikoo-评论系统"}, {"level": 3, "text": "2. 网站运行起始时间", "id": "2-网站运行起始时间"}, {"level": 3, "text": "3. 外链跳转白名单", "id": "3-外链跳转白名单"}, {"level": 3, "text": "4. RSS 生成配置", "id": "4-rss-生成配置"}, {"level": 3, "text": "5. 图片查看器", "id": "5-图片查看器"}, {"level": 3, "text": "6. 不蒜子统计", "id": "6-不蒜子统计"}, {"level": 2, "text": "数据格式", "id": "数据格式"}, {"level": 3, "text": "`articles.json` 格式", "id": "articlesjson-格式"}, {"level": 3, "text": "`works.json` 格式", "id": "worksjson-格式"}, {"level": 3, "text": "`metadata.json` 格式（`works/作品名/`）", "id": "metadatajson-格式works作品名"}, {"level": 3, "text": "Markdown 文件 Front Matter（YAML）", "id": "markdown-文件-front-matteryaml"}, {"level": 3, "text": "`statistics.json` 格式", "id": "statisticsjson-格式"}, {"level": 3, "text": "`friends.json` 格式", "id": "friendsjson-格式"}, {"level": 2, "text": "开发与扩展", "id": "开发与扩展"}, {"level": 3, "text": "修改样式", "id": "修改样式"}, {"level": 3, "text": "添加新页面", "id": "添加新页面"}, {"level": 3, "text": "修改数据缓存策略", "id": "修改数据缓存策略"}, {"level": 3, "text": "调试与性能", "id": "调试与性能"}, {"level": 3, "text": "自定义光标", "id": "自定义光标"}, {"level": 3, "text": "无刷新导航（AJAX）", "id": "无刷新导航ajax"}, {"level": 2, "text": "许可证", "id": "许可证"}];</script>
     <script src="/js/busuanzi.min.js" defer></script>
     <script src="/js/script.js"></script>
     <script src="/js/article.js"></script>
