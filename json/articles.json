@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-05-04T15:35:42.750973",
+  "generated_at": "2026-05-04T16:14:14.748882",
   "total_articles": 11,
-  "total_word_count": 35757,
+  "total_word_count": 35890,
   "articles": [
     {
       "relative_path": "assets/source/分享/bing壁纸.md",
@@ -134,9 +134,9 @@
     },
     {
       "relative_path": "assets/source/网站/网站更新日志.md",
-      "hash": "c6d59d612995a4b9231ef9a01f048f0a",
+      "hash": "94ffcff4fc353b1b7e915efdd2ff38dd",
       "last_updated": "2026-05-04",
-      "modify_count": 98,
+      "modify_count": 100,
       "hidden": false,
       "title": "网站更新日志",
       "date": "2025-12-21",
@@ -147,7 +147,7 @@
       ],
       "category": "网站",
       "url": "/articles/网站更新日志.html",
-      "word_count": 10923,
+      "word_count": 11056,
       "read_time": "37分钟"
     },
     {
