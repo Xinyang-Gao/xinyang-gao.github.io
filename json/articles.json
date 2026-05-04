@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-05-04T20:07:10.704896",
+  "generated_at": "2026-05-04T20:29:54.095185",
   "total_articles": 11,
-  "total_word_count": 36947,
+  "total_word_count": 37042,
   "articles": [
     {
       "relative_path": "assets/source/分享/将Bing壁纸变成你网站的背景.md",
@@ -134,9 +134,9 @@
     },
     {
       "relative_path": "assets/source/网站/网站更新日志.md",
-      "hash": "cbf63ec1fb0b997e3655344adc3298c5",
+      "hash": "dd12ce91f7a0f5e76388c97c5c32c8ae",
       "last_updated": "2026-05-04",
-      "modify_count": 105,
+      "modify_count": 107,
       "hidden": false,
       "title": "网站更新日志",
       "date": "2025-12-21",
@@ -147,7 +147,7 @@
       ],
       "category": "网站",
       "url": "/articles/网站更新日志.html",
-      "word_count": 11513,
+      "word_count": 11608,
       "read_time": "39分钟"
     },
     {
