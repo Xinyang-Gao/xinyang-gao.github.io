@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 
 # 脚本列表（按依赖顺序）
-SCRIPTS = ["ArticleManager.py", "WorkManager.py", "Statistic.py", "RssGenerator.py"]
+SCRIPTS = ["ArticleManager.py", "WorkManager.py", "Statistic.py", "RssGenerator.py", "SitemapGenerator.py"]
 
 # ========== 统一日志函数 ==========
 def log_info(msg: str) -> None:

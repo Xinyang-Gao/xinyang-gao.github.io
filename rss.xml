@@ -4,7 +4,7 @@
     <title>高新炀的个人网站</title>
     <link>https://xinyang-gao.github.io</link>
     <description>学生 · 开发者 · 写作者，用代码和文字探索世界</description>
-    <lastBuildDate>Mon, 04 May 2026 18:50:58 GMT</lastBuildDate>
+    <lastBuildDate>Mon, 04 May 2026 19:32:07 GMT</lastBuildDate>
     <language>zh-CN</language>
     <generator>RssGenerator (Python)</generator>
     <atom:link href="https://xinyang-gao.github.io/rss.xml" rel="self" type="application/rss+xml" />
@@ -145,7 +145,7 @@
     </item>
     <item>
       <title>将 Bing 每日壁纸变成你网站的背景</title>
-      <link>https://xinyang-gao.github.io/articles/bing壁纸.html</link>
+      <link>https://xinyang-gao.github.io/articles/将Bing壁纸变成你网站的背景.html</link>
       <description><![CDATA[Bing 壁纸 API 的调用、壁纸存档库以及实现方法]]></description>
       <pubDate>Sat, 02 May 2026 00:00:00 GMT</pubDate>
       <author>高新炀</author>

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Bing 壁纸 API 的调用、壁纸存档库以及实现方法">
+    <meta name="author" content="高新炀">
+    <meta name="keywords" content="分享, 网站">
+    <title>将 Bing 每日壁纸变成你网站的背景 - 高新炀的小站</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/article.css">
+    <link rel="stylesheet" href="/css/twikoo.css">
+</head>
+<body>
+    <div id="navbar-placeholder"></div>
+    <div id="reading-progress" class="reading-progress-bar"><div id="progress-bar" class="progress-bar"></div></div>
+    <div class="article-page-container">
+        <div class="toc-container"><h2 class="toc-title">目录</h2><div id="toc-list-container"></div></div>
+        <div class="article-right-column">
+            <div class="article-content-wrapper">
+                <h1 class="article-title" id="articleTitle">将 Bing 每日壁纸变成你网站的背景</h1>
+                <div class="article-subtitle">Bing 壁纸 API 的调用、壁纸存档库以及实现方法</div>
+                <div class="article-meta" id="articleMeta"><div class="meta-grid">
+            <div class="meta-item" data-label="发布日期">
+                <i class="fas fa-calendar-alt"></i>
+                <span class="meta-value">2026年05月02日</span>
+            </div>
+            <div class="meta-item" data-label="最后更新">
+                <i class="fas fa-edit"></i>
+                <span class="meta-value">2026年05月04日</span>
+            </div>
+            <div class="meta-item" data-label="作者">
+                <i class="fas fa-user"></i>
+                <span class="meta-value">高新炀</span>
+            </div>
+            <div class="meta-item" data-label="分类">
+                <i class="fas fa-folder-open"></i>
+                <span class="meta-value">分享</span>
+            </div>
+            <div class="meta-item" data-label="字数">
+                <i class="fas fa-file-alt"></i>
+                <span class="meta-value">4912</span>
+            </div>
+            <div class="meta-item" data-label="阅读时间">
+                <i class="fas fa-clock"></i>
+                <span class="meta-value">17分钟</span>
+            </div>
+            <div class="meta-item" data-label="访客数">
+                <i class="fas fa-users"></i>
+                <span class="meta-value"><span id="busuanzi_page_uv">加载中...</span></span>
+            </div>
+            <div class="meta-item" data-label="阅读量">
+                <i class="fas fa-eye"></i>
+                <span class="meta-value"><span id="busuanzi_page_pv">加载中...</span></span>
+            </div>
+            <div class="meta-item" data-label="修订次数">
+                <i class="fas fa-code-branch"></i>
+                <span class="meta-value">1</span>
+            </div></div></div>
+                <div class="article-body" id="articleBody"><p>Bing 搜索引擎每天都会更新一张精美的首页背景图片，这些图片来自全球各地的摄影师和艺术家之手，涵盖自然风光、人文建筑、动物趣闻等丰富题材。很多站长都希望将自己网站的背景也换成 Bing 的每日一图——既省去了自己找素材的功夫，又能让网站每天都有新鲜感。这篇文章我会分享如何实现，同时也介绍一些宝藏级的 Bing 壁纸历史归档网站。</p>
+<h2 id="一bing-壁纸-url-参数解析">一、Bing 壁纸 URL 参数解析</h2>
+<p>要接入 Bing 壁纸，先得明白 Bing 官方图片地址的结构。下面是一个 Bing 壁纸请求链接：</p>
+<p><img alt="https://cn.bing.com/th?id=OHR.MayLaborDayY26_ZH-CN7554485395_UHD.jpg&amp;rf=LaDigue_UHD.jpg&amp;pid=hp&amp;w=3840&amp;h=2160&amp;rs=1&amp;c=4" data-src="https://cn.bing.com/th?id=OHR.MayLaborDayY26_ZH-CN7554485395_UHD.jpg&amp;rf=LaDigue_UHD.jpg&amp;pid=hp&amp;w=3840&amp;h=2160&amp;rs=1&amp;c=4" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E" class="lazy-image"  /></p>
+<pre class="codehilite"><code>https://cn.bing.com/th?id=OHR.MayLaborDayY26_ZH-CN7554485395_UHD.jpg&amp;rf=LaDigue_UHD.jpg&amp;pid=hp&amp;w=3840&amp;h=2160&amp;rs=1&amp;c=4
+</code></pre>
+
+<p><strong>th</strong>：即 "thumbnail"（缩略图）的缩写，表示这是一个图片资源请求。</p>
+<p><strong>id</strong>：图片的唯一标识符，整体结构为 <code>OHR.图片名称_区域_随机串_分辨率.jpg</code>，其中 <code>OHR</code> 代表 "One Happy Reminder"，是 Bing 壁纸系列的固定前缀；<code>ZH-CN</code> 表示区域为中国（简体中文）；末尾的 <code>UHD.jpg</code> 表示超高清图片。正是这个 <code>id</code> 参数，配合上 Bing 的不同存储节点，共同构成了Bing图片域名的直链。</p>
+<p><strong>rf</strong>：即 "Referer"（引用来源）的缩写，通常是一个备用文件名，<code>LaDigue_UHD.jpg</code> 就是这张图片在 Bing 服务器上的另一个名称标识。</p>
+<p><strong>pid</strong>：即 "Product ID"（产品标识），表示这次请求的来源场景，<code>hp</code> 代表这是从 Bing 首页（HomePage）发起的。</p>
+<p><strong>w</strong> 和 <strong>h</strong>：分别代表宽度（Width）和高度（Height），单位是像素。这里 <code>w=3840</code>、<code>h=2160</code> 正是 4K 超高清分辨率。</p>
+<p><strong>rs</strong>：即 "Resizing Strategy"（缩放策略），<code>rs=1</code> 表示在调整图片大小时按照一定的优先级进行处理。</p>
+<p><strong>c</strong>：即 "Cropping"（裁剪模式）。<code>c=4</code> 代表 Blind Ratio（盲切），即按图片中心进行比例裁剪；<code>c=7</code> 则代表 Smart Ratio（智能裁剪），Bing 会根据画面中识别到的主体内容进行智能裁剪。如果 Bing 无法确定图片的关注区域，就会回退到 Blind Ratio 模式。</p>
+<p>微软官方也提供了调优指南：如果你只想调整缩略图的大小，建议只保留 <code>id</code> 和 <code>pid</code> 两个参数，然后只添加 <code>w</code> 或 <code>h</code> 其中之一，Bing 会自动保持图片的原始宽高比。</p>
+<h2 id="二bing-历史壁纸网站">二、Bing 历史壁纸网站</h2>
+<p>如果你需要查找过往的 Bing 壁纸，或者希望嵌入特定的壁纸，下面这几个网站比较实用。</p>
+<h3 id="1-bingwdbytecom">1. bing.wdbyte.com</h3>
+<p><a href="https://bing.wdbyte.com">bing.wdbyte.com</a> 是一个保持了极简的 Bing 壁纸归档站。它每天都会同步抓取必应当天的壁纸，界面非常干净，零广告，不收费，最早可以回溯到 2023 年 2 月的历史壁纸。
+ 站点导航清晰，可以按月浏览历史壁纸，也支持不同分辨率的下载，对于想一边欣赏历年壁纸一边从中挑选素材的站长来说非常方便。</p>
+<h3 id="2-bingimgrun">2. bing.img.run</h3>
+<p><a href="https://bing.img.run">bing.img.run</a> 是一个纯手工更新收录的 Bing 壁纸库，不仅收录了 UHD 超高清原图，还有 1920×1080 的高清壁纸、1366×768 的普清壁纸以及 1080×1920 的竖版手机壁纸等多种规格。
+它还提供了<strong>开放的 API 接口</strong>，支持直接以图片链接的形式调用。</p>
+<p><strong>今日壁纸接口</strong>：</p>
+<pre class="codehilite"><code class="language-html">&lt;!-- 4K 超高清原图 --&gt;
+&lt;img src=&quot;https://bing.img.run/uhd.php&quot;&gt;
+
+&lt;!-- 1080P 高清 --&gt;
+&lt;img src=&quot;https://bing.img.run/1920x1080.php&quot;&gt;
+
+&lt;!-- 手机竖版 1080×1920 --&gt;
+&lt;img src=&quot;https://bing.img.run/m.php&quot;&gt;
+</code></pre>
+
+<p><strong>随机历史壁纸接口</strong>（收录范围从 2020 年 9 月至今）：</p>
+<pre class="codehilite"><code class="language-html">&lt;!-- 随机 4K 超高清原图 --&gt;
+&lt;img src=&quot;https://bing.img.run/rand_uhd.php&quot;&gt;
+
+&lt;!-- 随机 1080P 高清 --&gt;
+&lt;img src=&quot;https://bing.img.run/rand.php&quot;&gt;
+</code></pre>
+
+<h3 id="3-更多值得关注的-bing-壁纸资源">3. 更多值得关注的 Bing 壁纸资源</h3>
+<p>如果你想进一步扩展素材库，下面这几个站点也值得去看看：</p>
+<ul>
+<li><strong>wallpaperhub.app</strong>：除了 Bing 每日壁纸外，还收录了大量微软系壁纸，风格多样。</li>
+<li><strong>DailyWallpaperHub</strong>：一个基于 GitHub 免费资源构建的开源项目，自动聚合 Bing 与 Unsplash 的每日精选壁纸，每张图片还会生成约 500 字的 AI 地理文化故事。</li>
+</ul>
+<p>无论是想翻看某年某月某日出现的特定壁纸，还是想获取一个现成的图片链接直接嵌入网站，这些工具都能大大降低访问和获取Bing海量精美壁纸的门槛。</p>
+<h2 id="三将-bing-壁纸集成到你的网站背景">三、将 Bing 壁纸集成到你的网站背景</h2>
+<p>拿到图片 URL 之后，如何让它真正成为网站背景呢？这里有几种方案，按复杂度从低到高排序。</p>
+<h3 id="方案一直接使用第三方-api最简单">方案一：直接使用第三方 API（最简单）</h3>
+<p>如果你追求最简单直接的方案，可以用上面提到的现成 API：</p>
+<pre class="codehilite"><code class="language-css">body {
+    background-image: url('https://bing.img.run/uhd.php');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+}
+</code></pre>
+
+<p>每次用户访问网站时都会加载最新的 Bing 壁纸，无需任何后端代码。</p>
+<h3 id="方案二通过-php-重定向获取官方图片">方案二：通过 PHP 重定向获取官方图片</h3>
+<p>如果你希望直接从 Bing 官方获取，可以使用一段极简的 PHP 代码：</p>
+<pre class="codehilite"><code class="language-php">&lt;?php
+$api_url = 'https://cn.bing.com/HPImageArchive.aspx?format=js&amp;idx=0&amp;n=1';
+$json = file_get_contents($api_url);
+$data = json_decode($json, true);
+$image_url = 'https://cn.bing.com' . $data['images'][0]['url'];
+header(&quot;Location: $image_url&quot;);
+?&gt;
+</code></pre>
+
+<p>将这段代码保存为 <code>bing.php</code>，然后在网站背景中直接引用 <code>/bing.php</code> 即可。</p>
+<h3 id="方案三使用官方-api-获取元数据">方案三：使用官方 API 获取元数据</h3>
+<p>对于有更多定制需求的用户，可以直接调用 Bing 官方的图片归档接口：</p>
+<pre class="codehilite"><code>https://cn.bing.com/HPImageArchive.aspx?format=js&amp;idx=0&amp;n=1&amp;mkt=zh-CN
+</code></pre>
+
+<p>返回的 JSON 数据中包含了壁纸的 URL、版权信息、标题故事等内容：</p>
+<pre class="codehilite"><code class="language-json">{
+  &quot;images&quot;: [
+    {
+      &quot;startdate&quot;: &quot;20260501&quot;,
+      &quot;fullstartdate&quot;: &quot;202605011600&quot;,
+      &quot;enddate&quot;: &quot;20260502&quot;,
+      &quot;url&quot;: &quot;/th?id=OHR.GreenJasper_ZH-CN3030401138_1920x1080.jpg&amp;rf=LaDigue_1920x1080.jpg&amp;pid=hp&quot;,
+      &quot;urlbase&quot;: &quot;/th?id=OHR.GreenJasper_ZH-CN3030401138&quot;,
+      &quot;copyright&quot;: &quot;阿尔伯塔省贾斯珀国家公园中的小型湖泊与湿地，加拿大 (© Don White/Getty Images)&quot;,
+      &quot;copyrightlink&quot;: &quot;https://www.bing.com/search?q=%E9%98%BF%E5%B0%94%E4%BC%AF%E5%A1%94%E7%9C%81%E8%B4%BE%E6%96%AF%E7%8F%80%E5%9B%BD%E5%AE%B6%E5%85%AC%E5%9B%AD&amp;form=hpcapt&amp;mkt=zh-cn&quot;,
+      &quot;title&quot;: &quot;贾斯珀的自然魅力&quot;,
+      &quot;quiz&quot;: &quot;/search?q=Bing+homepage+quiz&amp;filters=WQOskey:%22HPQuiz_20260501_GreenJasper%22&amp;FORM=HPQUIZ&quot;,
+      &quot;wp&quot;: true,
+      &quot;hsh&quot;: &quot;5f4e193dc4f1e0ca4ebb8e153d0f05cf&quot;,
+      &quot;drk&quot;: 1,
+      &quot;top&quot;: 1,
+      &quot;bot&quot;: 1,
+      &quot;hs&quot;: []
+    }
+  ],
+  &quot;tooltips&quot;: {
+    &quot;loading&quot;: &quot;正在加载...&quot;,
+    &quot;previous&quot;: &quot;上一个图像&quot;,
+    &quot;next&quot;: &quot;下一个图像&quot;,
+    &quot;walle&quot;: &quot;此图片不能下载用作壁纸。&quot;,
+    &quot;walls&quot;: &quot;下载今日美图。仅限用作桌面壁纸。&quot;
+  }
+}
+</code></pre>
+
+<p>关键参数说明：
+- <strong><code>idx</code></strong>：图片索引。<code>idx=0</code> 为当天，<code>idx=1</code> 为前一天，以此类推，最多可以追溯到 16 天前的图片。
+- <strong><code>n</code></strong>：返回图片数量，1-8 张。
+- <strong><code>mkt</code></strong>：市场区域，<code>zh-CN</code> 为中国区。</p>
+<p>你可以结合前端 JavaScript 定时请求这个接口，实现背景图片的动态轮换，还可以把壁纸的版权信息展示在页面角落。</p>
+<h3 id="本站的实现方法">本站的实现方法</h3>
+<p>预置多张 Bing 4K 壁纸 URL，每次访问随机选取一张，既保证视觉新鲜感，又避免了第三方 API 的不可控因素。</p>
+<pre class="codehilite"><code class="language-javascript">// 预置的高清 Bing 壁纸列表（均为 4K UHD 直链）
+const BACKGROUND_IMAGE_URLS = [
+    'https://cn.bing.com/th?id=OHR.MayLaborDayY26_ZH-CN7554485395_UHD.jpg&amp;pid=hp',
+    'https://cn.bing.com/th?id=OHR.OloupenaFalls_ZH-CN2980118660_UHD.jpg&amp;pid=hp',
+    'https://cn.bing.com/th?id=OHR.LoganCreek_ZH-CN5372283365_UHD.jpg&amp;pid=hp',
+    'https://cn.bing.com/th?id=OHR.PeggysLighthouse_ZH-CN5730463973_UHD.jpg&amp;pid=hp',
+    'https://cn.bing.com/th?id=OHR.MendenhallCave_ZH-CN1850649760_UHD.jpg&amp;pid=hp',
+    'https://cn.bing.com/th?id=OHR.FanetteIsland_ZH-CN6466809551_UHD.jpg&amp;pid=hp'
+];
+
+function applyRandomBackgroundImage() {
+    const randomIndex = Math.floor(Math.random() * BACKGROUND_IMAGE_URLS.length);
+    const imageUrl = BACKGROUND_IMAGE_URLS[randomIndex];
+    document.body.style.backgroundImage = `url('${imageUrl}')`;
+}
+</code></pre></div>
+                <div class="article-footer-tags"><a class="footer-tag" href="/articles.html?tags=%E5%88%86%E4%BA%AB" style="text-decoration: none; color: inherit; cursor: pointer;" title="查看「分享」相关文章">#分享</a> <a class="footer-tag" href="/articles.html?tags=%E7%BD%91%E7%AB%99" style="text-decoration: none; color: inherit; cursor: pointer;" title="查看「网站」相关文章">#网站</a></div>
+            </div>
+            <div class="comments-card"><div class="comments-container"><h3>评论区</h3><div id="twikoo-comments"></div></div></div>
+        </div>
+    </div>
+    <div id="imageModal" class="image-modal"><span class="close">&times;</span><div class="modal-content"><img id="modalImage" src="" alt=""></div><div class="image-info"><span id="imageCaption"></span></div></div>
+    <div id="footer-placeholder"></div>
+    <script>window.ARTICLE_HEADINGS = [{"level": 2, "text": "一、Bing 壁纸 URL 参数解析", "id": "一bing-壁纸-url-参数解析"}, {"level": 2, "text": "二、Bing 历史壁纸网站", "id": "二bing-历史壁纸网站"}, {"level": 3, "text": "1. bing.wdbyte.com", "id": "1-bingwdbytecom"}, {"level": 3, "text": "2. bing.img.run", "id": "2-bingimgrun"}, {"level": 3, "text": "3. 更多值得关注的 Bing 壁纸资源", "id": "3-更多值得关注的-bing-壁纸资源"}, {"level": 2, "text": "三、将 Bing 壁纸集成到你的网站背景", "id": "三将-bing-壁纸集成到你的网站背景"}, {"level": 3, "text": "方案一：直接使用第三方 API（最简单）", "id": "方案一直接使用第三方-api最简单"}, {"level": 3, "text": "方案二：通过 PHP 重定向获取官方图片", "id": "方案二通过-php-重定向获取官方图片"}, {"level": 3, "text": "方案三：使用官方 API 获取元数据", "id": "方案三使用官方-api-获取元数据"}, {"level": 3, "text": "本站的实现方法", "id": "本站的实现方法"}];</script>
+    <script src="/js/busuanzi.min.js" defer></script>
+    <script src="/js/script.js"></script>
+    <script src="/js/article.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://registry.npmmirror.com/twikoo/1.7.7/files/dist/twikoo.nocss.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof twikoo !== 'undefined') {
+                twikoo.init({ envId: 'https://twikoo-gxy.netlify.app/.netlify/functions/twikoo', el: '#twikoo-comments', path: window.location.pathname, lang: 'zh-CN' });
+            } else { console.warn('Twikoo 加载失败'); }
+        });
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.getElementById('articleBody'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/mermaid@10.4.0/dist/mermaid.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.mermaid) {
+                window.mermaid.initialize({ startOnLoad: false });
+                document.querySelectorAll('.mermaid').forEach(el => {
+                    try { window.mermaid.init(undefined, el); } catch(e) { console.warn(e); }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

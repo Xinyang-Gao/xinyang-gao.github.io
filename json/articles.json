@@ -1,13 +1,13 @@
 {
-  "generated_at": "2026-05-04T18:50:58.142397",
+  "generated_at": "2026-05-04T19:32:05.646017",
   "total_articles": 11,
-  "total_word_count": 36661,
+  "total_word_count": 36743,
   "articles": [
     {
-      "relative_path": "assets/source/分享/bing壁纸.md",
+      "relative_path": "assets/source/分享/将Bing壁纸变成你网站的背景.md",
       "hash": "4c7eaa1ba74852ee56f63bc21b72bfad",
-      "last_updated": "2026-05-02",
-      "modify_count": 8,
+      "last_updated": "2026-05-04",
+      "modify_count": 1,
       "hidden": false,
       "title": "将 Bing 每日壁纸变成你网站的背景",
       "date": "2026-05-02",
@@ -18,7 +18,7 @@
         "网站"
       ],
       "category": "分享",
-      "url": "/articles/bing壁纸.html",
+      "url": "/articles/将Bing壁纸变成你网站的背景.html",
       "word_count": 4912,
       "read_time": "17分钟"
     },
@@ -134,9 +134,9 @@
     },
     {
       "relative_path": "assets/source/网站/网站更新日志.md",
-      "hash": "3f0b425c17b865ad8b9e560d95e8c3c3",
+      "hash": "3968f24ba5676e0a9631f113ab922a70",
       "last_updated": "2026-05-04",
-      "modify_count": 102,
+      "modify_count": 103,
       "hidden": false,
       "title": "网站更新日志",
       "date": "2025-12-21",
@@ -147,7 +147,7 @@
       ],
       "category": "网站",
       "url": "/articles/网站更新日志.html",
-      "word_count": 11227,
+      "word_count": 11309,
       "read_time": "38分钟"
     },
     {
