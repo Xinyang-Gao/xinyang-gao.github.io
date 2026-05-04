@@ -1,3 +1,95 @@
+class StorageController {
+    static STORAGE_ENABLED_KEY = 'storageEnabled';
+    static CONSENT_KEY = 'cookieConsentAccepted';
+    
+    constructor() {
+        this.enabled = this.checkInitialStatus();
+        this.listenForConsent();
+    }
+    
+    checkInitialStatus() {
+        const consentGiven = localStorage.getItem(this.CONSENT_KEY) === 'true';
+        if (!consentGiven) {
+            this.clearAllData();
+            return false;
+        }
+        return true;
+    }
+    
+    listenForConsent() {
+        window.addEventListener('cookieConsentAccepted', () => {
+            this.enableStorage();
+        });
+    }
+    
+    enableStorage() {
+        this.enabled = true;
+        localStorage.setItem(this.STORAGE_ENABLED_KEY, 'true');
+    }
+    
+    disableStorage() {
+        this.enabled = false;
+        localStorage.removeItem(this.STORAGE_ENABLED_KEY);
+        this.clearAllData();
+    }
+    
+    isAllowed() {
+        return this.enabled;
+    }
+    
+    clearAllData() {
+        // 清除所有相关的本地存储数据
+        const keysToRemove = [
+            'worksData',
+            'articlesData',
+            'statisticsVisitRecord',
+            'theme',
+            'site-visit-record',
+            'storageEnabled',
+            'cookieConsentAccepted'
+        ];
+        
+        keysToRemove.forEach(key => {
+            try {
+                localStorage.removeItem(key);
+            } catch (e) {
+                console.warn(`[WARN] 删除存储项 "${key}" 失败:`, e);
+            }
+        });
+    }
+    
+    getItem(key) {
+        if (!this.isAllowed()) return null;
+        try {
+            return localStorage.getItem(key);
+        } catch (e) {
+            console.warn(`[WARN] 读取存储项 "${key}" 失败:`, e);
+            return null;
+        }
+    }
+    
+    setItem(key, value) {
+        if (!this.isAllowed()) return;
+        try {
+            localStorage.setItem(key, value);
+        } catch (e) {
+            console.warn(`[WARN] 设置存储项 "${key}" 失败:`, e);
+        }
+    }
+    
+    removeItem(key) {
+        if (!this.isAllowed()) return;
+        try {
+            localStorage.removeItem(key);
+        } catch (e) {
+            console.warn(`[WARN] 删除存储项 "${key}" 失败:`, e);
+        }
+    }
+}
+
+// 初始化存储控制器
+const storageController = new StorageController();
+
 class PerformanceMonitor {
     constructor() {
         this.timers = new Map();
@@ -117,8 +209,9 @@ class DataManager {
         const label = DataManager.TYPE_LABEL[type];
         perf.start(`获取${label}数据`);
         
-        if (useCache) {
-            const raw = localStorage.getItem(cacheKey);
+        // 检查是否允许使用本地存储
+        if (useCache && storageController.isAllowed()) {
+            const raw = storageController.getItem(cacheKey);
             if (raw && !Utils.isDataExpired(raw)) {
                 try {
                     const parsed = JSON.parse(raw);
@@ -154,7 +247,10 @@ class DataManager {
                 }));
             }
             
-            localStorage.setItem(cacheKey, JSON.stringify({ ...data, _timestamp: Date.now() }));
+            // 仅在允许存储时才保存到本地存储
+            if (storageController.isAllowed()) {
+                storageController.setItem(cacheKey, JSON.stringify({ ...data, _timestamp: Date.now() }));
+            }
             perf.end(`获取${label}数据`);
             return data;
         } catch (e) {
@@ -176,6 +272,11 @@ class StatisticsManager {
             stats = await response.json();
         } catch (error) {
             console.warn('[WARN] 加载 statistics.json 失败:', error);
+            return { forceDarkTheme: false };
+        }
+
+        // 检查是否允许使用本地存储
+        if (!storageController.isAllowed()) {
             return { forceDarkTheme: false };
         }
 
@@ -208,15 +309,23 @@ class StatisticsManager {
     }
 
     static getRecord() {
+        // 如果不允许使用本地存储，返回空对象
+        if (!storageController.isAllowed()) {
+            return {};
+        }
         try {
-            return JSON.parse(localStorage.getItem(this.STORAGE_KEY) || '{}') || {};
+            return JSON.parse(storageController.getItem(this.STORAGE_KEY) || '{}') || {};
         } catch {
             return {};
         }
     }
 
     static saveRecord(record) {
-        localStorage.setItem(this.STORAGE_KEY, JSON.stringify(record));
+        // 如果不允许使用本地存储，直接返回
+        if (!storageController.isAllowed()) {
+            return;
+        }
+        storageController.setItem(this.STORAGE_KEY, JSON.stringify(record));
     }
 
     static formatAwayTime(milliseconds) {
@@ -272,6 +381,10 @@ class StatisticsManager {
     }
 
     static markLeaving() {
+        // 如果不允许使用本地存储，直接返回
+        if (!storageController.isAllowed()) {
+            return;
+        }
         const record = this.getRecord();
         const now = Date.now();
         this.saveRecord({
@@ -458,11 +571,6 @@ static generateListItem(item, type, index) {
             </div>
           </div>
         </div>
-                <div class="inspire-quote">
-                <h4>公告</h4>
-          <p><i class="fas fa-quote-left"></i>目前正在对一部分元素进行重写，可能会有偶然出现一些显示问题</p>
-          <div class="inspire-author">2026年4月19日</div>
-        </div>
         `;
     }
     static async fetchPageContent(url) {
@@ -559,6 +667,8 @@ class SearchController {
         this.debounceTimer = null;
         this.popStateHandler = null;
         this.skipNextPopState = false;
+        // 存储当前页面的数据在内存中
+        this.currentPageData = null;
         this.init();
     }
     
@@ -711,13 +821,27 @@ class SearchController {
         if (!skipUpdateURL) this.updateURL();
     }
     
+    // 从内存中获取数据而不是本地存储
     getCachedData(type) {
-        const raw = localStorage.getItem(`${type}Data`);
-        if (!raw) return null;
-        try {
-            const data = JSON.parse(raw);
-            return Utils.validateData(data, type) ? data : null;
-        } catch { return null; }
+        // 如果有内存中的数据，优先使用
+        if (this.currentPageData) {
+            return this.currentPageData;
+        }
+        // 如果允许使用本地存储，则尝试从本地存储获取
+        if (storageController.isAllowed()) {
+            const raw = storageController.getItem(`${type}Data`);
+            if (!raw) return null;
+            try {
+                const data = JSON.parse(raw);
+                return Utils.validateData(data, type) ? data : null;
+            } catch { return null; }
+        }
+        return null;
+    }
+    
+    // 设置当前页面数据
+    setCurrentPageData(data) {
+        this.currentPageData = data;
     }
     
     getAllTags() {
@@ -1063,18 +1187,25 @@ class NavigationManager {
                 document.body.style.transition = '';
             }, 400);
             root.setAttribute('data-theme', theme);
-            localStorage.setItem('theme', theme);
+            // 仅在允许存储时才保存主题
+            if (storageController.isAllowed()) {
+                storageController.setItem('theme', theme);
+            }
             if (updateCheckbox) checkbox.checked = (theme === 'dark');
             window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme } }));
         };
         const handleChange = (e) => { setTheme(e.target.checked ? 'dark' : 'light', false); };
         checkbox.addEventListener('change', handleChange);
-        const savedTheme = localStorage.getItem('theme');
+        // 仅在允许存储时才读取保存的主题
+        let savedTheme = null;
+        if (storageController.isAllowed()) {
+            savedTheme = storageController.getItem('theme');
+        }
         let initialTheme = savedTheme || getTimeBasedTheme();
         document.documentElement.setAttribute('data-theme', initialTheme);
         checkbox.checked = (initialTheme === 'dark');
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-            if (!localStorage.getItem('theme')) setTheme(getTimeBasedTheme(), true);
+            if (!savedTheme) setTheme(getTimeBasedTheme(), true);
         });
     }
     static initNavigation() {
@@ -1342,8 +1473,42 @@ function enableAjaxNavigation() {
     window.addEventListener('popstate', function (e) { fetchAndReplaceContent(window.location.href, false); });
 }
 
-async function initializeArticlesPage() { try { const data = await DataManager.fetchData('articles'); const html = UIRenderer.generateListHTML(data, 'articles'); const container = document.getElementById('articles-list-container'); if (container) { container.innerHTML = html; new SearchController('articles'); initScrollReveal(); } } catch (e) { console.error('[ERROR] 加载文章数据失败:', e); } }
-async function initializeWorksPage() { try { const data = await DataManager.fetchData('works'); const html = UIRenderer.generateListHTML(data, 'works'); const container = document.getElementById('works-list-container'); if (container) { container.innerHTML = html; new SearchController('works'); initScrollReveal(); } } catch (e) { console.error('[ERROR] 加载作品数据失败:', e); } }
+async function initializeArticlesPage() { 
+    try { 
+        const data = await DataManager.fetchData('articles'); 
+        // 将数据存储在内存中，而不是本地存储
+        if (window.SearchController) {
+            const searchController = new SearchController('articles');
+            searchController.setCurrentPageData(data);
+        }
+        const html = UIRenderer.generateListHTML(data, 'articles'); 
+        const container = document.getElementById('articles-list-container'); 
+        if (container) { 
+            container.innerHTML = html; 
+            initScrollReveal(); 
+        } 
+    } catch (e) { 
+        console.error('[ERROR] 加载文章数据失败:', e); 
+    } 
+}
+async function initializeWorksPage() { 
+    try { 
+        const data = await DataManager.fetchData('works'); 
+        // 将数据存储在内存中，而不是本地存储
+        if (window.SearchController) {
+            const searchController = new SearchController('works');
+            searchController.setCurrentPageData(data);
+        }
+        const html = UIRenderer.generateListHTML(data, 'works'); 
+        const container = document.getElementById('works-list-container'); 
+        if (container) { 
+            container.innerHTML = html; 
+            initScrollReveal(); 
+        } 
+    } catch (e) { 
+        console.error('[ERROR] 加载作品数据失败:', e); 
+    } 
+}
 
 // 动态加载图片查看器组件，确保主站引用
 function loadImageViewer() {
@@ -1359,7 +1524,8 @@ function loadImageViewer() {
 
 document.addEventListener('DOMContentLoaded', async () => {
     window.ExternalLinkManager = new ExternalLinkManager();
-    const savedTheme = localStorage.getItem('theme');
+    
+    const savedTheme = storageController.isAllowed() ? storageController.getItem('theme') : null;
     const initialTheme = savedTheme || getTimeBasedTheme();
     document.documentElement.setAttribute('data-theme', initialTheme);
 
@@ -1368,9 +1534,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     await Promise.all([navbarPromise, footerPromise]);
     updateFooterUpdateTime().catch(() => {});
 
-    const preloadImageViewer = () => {
+    const preloadImageViewer = async () => {
         if (typeof window.ImageViewer !== 'undefined') return Promise.resolve();
-        return loadImageViewer().catch(() => {});
+        try {
+            return await loadImageViewer();
+        } catch { }
     };
     if ('requestIdleCallback' in window) {
         requestIdleCallback(preloadImageViewer, { timeout: 1500 });
@@ -1397,6 +1565,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     else if (currentPage === 'works') initializeWorksPage();
     const personalCardContainer = document.getElementById('personal-card-container'); if (personalCardContainer) personalCardContainer.innerHTML = UIRenderer.generatePersonalCardHTML();
     ScrollManager.initBackToTopButton(); document.body.setAttribute('data-loaded', 'true'); initScrollReveal();
+        // 初始化 Cookie 同意横幅
+    initCookieConsent();
 });
 setTimeout(() => { if (!window.customCursorInstance) window.customCursorInstance = new CustomCursor(); }, 100);
 enableAjaxNavigation();
@@ -1479,3 +1649,163 @@ class GlobalImageManager {
 
 // 初始化全局图片查看器（仅需一次）
 GlobalImageManager.init();
+
+// ==================== Cookie 同意管理器 ====================
+class CookieConsentManager {
+  static STORAGE_KEY = 'cookieConsentAccepted';
+  static BANNER_ID = 'cookie-consent-banner';
+  
+  constructor() {
+    this.banner = null;
+    this.isInitialized = false;
+    this.init();
+  }
+  
+  init() {
+    // 检查是否已同意
+    if (this.hasConsented()) {
+      return;
+    }
+    
+    // 显示横幅
+    this.createBanner();
+    this.attachEvents();
+    
+    // 监听 AJAX 导航，确保在页面切换后横幅仍然可见（如果未同意）
+    window.addEventListener('ajax:navigation', () => {
+      if (!this.hasConsented() && this.banner && !this.banner.classList.contains('show')) {
+        // 延迟一点显示，避免与页面切换动画冲突
+        setTimeout(() => this.showBanner(), 100);
+      }
+    });
+    
+    this.isInitialized = true;
+  }
+  
+  hasConsented() {
+    return localStorage.getItem(this.STORAGE_KEY) === 'true';
+  }
+  
+  setConsented(consented) {
+    if (consented) {
+      // 只有在允许存储时才保存同意状态
+      if (storageController.isAllowed()) {
+        localStorage.setItem(this.STORAGE_KEY, 'true');
+      }
+    } else {
+      // 拒绝时不存储永久状态，仅当前会话隐藏
+      sessionStorage.setItem('cookieBannerDismissed', 'true');
+      // 拒绝时禁用存储并清除所有数据
+      storageController.disableStorage();
+    }
+  }
+  
+  shouldShow() {
+    if (this.hasConsented()) return false;
+    // 检查当前会话是否已被拒绝（仅针对拒绝场景，避免同一会话反复弹窗）
+    if (sessionStorage.getItem('cookieBannerDismissed') === 'true') return false;
+    return true;
+  }
+  
+  createBanner() {
+    // 移除已存在的横幅
+    const existingBanner = document.getElementById(this.BANNER_ID);
+    if (existingBanner) {
+      existingBanner.remove();
+    }
+    
+    this.banner = document.createElement('div');
+    this.banner.id = this.BANNER_ID;
+    this.banner.className = 'cookie-consent-banner';
+    
+    this.banner.innerHTML = `
+      <div class="cookie-consent-banner-container">
+        <div class="cookie-consent-text">
+          <i class="fas fa-cookie-bite"></i>
+          本网站使用 Cookies 来提升您的浏览体验、分析网站流量并提供个性化内容。
+          <a href="/privacy.html" target="_blank" class="cookie-privacy-link">了解更多</a>
+        </div>
+        <div class="cookie-consent-buttons">
+          <button class="cookie-btn cookie-btn-decline" id="cookie-decline-btn">
+            <i class="fas fa-times"></i> 拒绝
+          </button>
+          <button class="cookie-btn cookie-btn-accept" id="cookie-accept-btn">
+            <i class="fas fa-check"></i> 同意
+          </button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(this.banner);
+    
+    // 触发进入动画
+    requestAnimationFrame(() => {
+      this.banner.classList.add('show');
+    });
+  }
+  
+  showBanner() {
+    if (this.banner && !this.banner.classList.contains('show')) {
+      this.banner.classList.add('show');
+    }
+  }
+  
+  hideBanner() {
+    if (this.banner) {
+      this.banner.classList.remove('show');
+      // 动画结束后移除DOM
+      setTimeout(() => {
+        if (this.banner && this.banner.parentNode) {
+          this.banner.remove();
+          this.banner = null;
+        }
+      }, 400);
+    }
+  }
+  
+  attachEvents() {
+    if (!this.banner) return;
+    
+    const acceptBtn = this.banner.querySelector('#cookie-accept-btn');
+    const declineBtn = this.banner.querySelector('#cookie-decline-btn');
+    
+    if (acceptBtn) {
+      acceptBtn.addEventListener('click', () => {
+        this.setConsented(true);
+        storageController.enableStorage();
+        this.hideBanner();
+        
+        // 可选：触发自定义事件，供其他模块监听（如启用分析脚本）
+        window.dispatchEvent(new CustomEvent('cookieConsentAccepted'));
+      });
+    }
+    
+    if (declineBtn) {
+      declineBtn.addEventListener('click', () => {
+        this.setConsented(false);
+        this.hideBanner();
+      });
+    }
+  }
+  
+  // 重置同意状态（用于调试或“退出”功能）
+  resetConsent() {
+    localStorage.removeItem(this.STORAGE_KEY);
+    sessionStorage.removeItem('cookieBannerDismissed');
+    if (!this.banner) {
+      this.createBanner();
+      this.attachEvents();
+    } else {
+      this.showBanner();
+    }
+  }
+}
+
+// 初始化 Cookie 同意管理器
+let cookieConsentManager = null;
+
+function initCookieConsent() {
+  if (!cookieConsentManager) {
+    cookieConsentManager = new CookieConsentManager();
+  }
+}

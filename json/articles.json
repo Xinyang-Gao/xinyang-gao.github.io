@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-05-04T21:20:37.183768",
+  "generated_at": "2026-05-04T22:57:09.128988",
   "total_articles": 11,
-  "total_word_count": 37152,
+  "total_word_count": 37478,
   "articles": [
     {
       "relative_path": "assets/source/分享/将Bing壁纸变成你网站的背景.md",
@@ -134,9 +134,9 @@
     },
     {
       "relative_path": "assets/source/网站/网站更新日志.md",
-      "hash": "f1d26ad009251775957ba6ea4b9c1936",
+      "hash": "326314a7c666544de1b6aa24a5e75d9b",
       "last_updated": "2026-05-04",
-      "modify_count": 109,
+      "modify_count": 110,
       "hidden": false,
       "title": "网站更新日志",
       "date": "2025-12-21",
@@ -147,8 +147,8 @@
       ],
       "category": "网站",
       "url": "/articles/网站更新日志.html",
-      "word_count": 11718,
-      "read_time": "40分钟"
+      "word_count": 12044,
+      "read_time": "41分钟"
     },
     {
       "relative_path": "assets/source/学习/雪中的思绪.md",
