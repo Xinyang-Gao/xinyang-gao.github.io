@@ -1,4 +1,4 @@
-/* article.css (修改后，移除图片查看器样式) */
+/* article.css (移动端适配: 目录浮窗样式) */
 .article-page-container {
   max-width: 1300px;
   margin: 94px auto 40px;
@@ -522,6 +522,17 @@
   font-size: 1.8rem;
   line-height: 1;
 }
+/* 移动端目录浮窗按钮样式 */
+.toc-float-btn {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+.toc-float-btn.active {
+  background: var(--accent-color);
+  transform: scale(1.05);
+  box-shadow: 0 0 12px rgba(165, 88, 96, 0.6);
+}
+/* 移动端目录浮窗样式 */
 @media (max-width: 768px) {
   .article-page-container {
     flex-direction: column;
@@ -529,14 +540,67 @@
     padding: 0 16px;
     gap: 20px;
   }
-  .toc-container,
+  /* 原静态目录隐藏，浮窗模式下浮窗显示 */
+  .toc-container {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 85%;
+    max-width: 320px;
+    max-height: 70vh;
+    background: var(--surface-color-secondary);
+    backdrop-filter: blur(20px);
+    z-index: 1000;
+    border-radius: 24px;
+    box-shadow: 0 20px 35px rgba(0, 0, 0, 0.2), 0 0 0 100vw rgba(0, 0, 0, 0.5);
+    overflow-y: auto;
+    padding: 20px 16px;
+    transition: all 0.2s ease;
+    border: none;
+    display: none; /* 默认隐藏，由JS控制显示 */
+    flex-direction: column;
+  }
+  .toc-container.mobile-float-toc {
+    /* 浮窗模式下额外样式保持 */
+  }
+  .mobile-toc-close {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    background: rgba(0, 0, 0, 0.2);
+    border: none;
+    font-size: 1.2rem;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-color);
+    transition: all 0.2s;
+    z-index: 1001;
+  }
+  .mobile-toc-close:hover {
+    background: rgba(0, 0, 0, 0.4);
+    transform: rotate(90deg);
+  }
+  .toc-title {
+    margin-top: 0;
+    margin-right: 28px;
+    text-align: left;
+    font-size: 1.2rem;
+  }
+  .toc-list li {
+    padding-left: 8px;
+  }
+  .toc-list a {
+    padding: 8px 8px;
+    font-size: 0.9rem;
+  }
   .article-right-column {
     width: 100%;
-  }
-  .toc-container {
-    position: static;
-    max-height: none;
-    margin-bottom: 24px;
   }
   .article-content-wrapper {
     padding: 28px;
@@ -550,8 +614,11 @@
     right: 20px;
   }
   .floating-btn {
-    width: 44px;
-    height: 44px;
+    width: 48px;
+    height: 48px;
+  }
+  body.toc-open {
+    overflow: hidden;
   }
 }
 @media (max-width: 480px) {
@@ -566,6 +633,11 @@
   }
   .comments-card {
     padding: 20px;
+  }
+  .toc-container {
+    width: 90%;
+    max-width: none;
+    max-height: 75vh;
   }
 }
 .article-content-wrapper h1:target,
