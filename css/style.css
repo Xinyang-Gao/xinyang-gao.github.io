@@ -294,11 +294,6 @@
   background: linear-gradient(90deg, var(--accent-color), var(--accent-light));
 }
 
-/* 页脚边界 */
-[data-theme="dark"] .global-footer {
-  border-top-color: var(--border-color);
-}
-
 /* 确保所有卡片列表项边界统一且突出 */
 [data-theme="dark"] .list-item,
 [data-theme="dark"] .profile-card,
@@ -1189,111 +1184,7 @@ body.welcome-active > :not(.welcome-overlay) {
   display: flex;
 }
 
-/* ========== 页脚 - 更清爽 ========== */
-.global-footer {
-  max-width: 1100px;
-  margin: 50px auto 20px;
-  padding: 28px var(--container-padding);
-  border-top: 1px solid var(--border-color);
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  background: var(--bg-color);
-}
 
-.footer-content {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 20px;
-}
-
-.footer-info p {
-  margin: 4px 0;
-}
-
-.footer-last-update {
-  font-size: 0.85rem;
-  opacity: 0.8;
-}
-
-.footer-right {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 12px;
-}
-
-.footer-social {
-  display: flex;
-  gap: 20px;
-}
-
-.social-link {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  color: var(--text-color);
-  font-size: 1.4rem;
-  transition: all var(--transition-fast);
-  border-radius: 50%;
-  background: transparent;
-}
-
-.social-link:hover {
-  color: var(--accent-color);
-  transform: translateY(-4px);
-  background: rgba(180, 91, 99, 0.1);
-}
-
-.footer-link {
-  color: var(--accent-color);
-  transition: color var(--transition-fast);
-}
-
-.footer-link:hover {
-  color: var(--accent-light);
-  text-decoration: underline;
-}
-
-/* 许可证徽章 */
-.license-badges {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 12px;
-}
-
-.license-badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--tag-bg);
-  color: var(--tag-color);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-full);
-  padding: 5px 16px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  transition: all var(--transition-fast);
-}
-
-.license-badge i {
-  color: var(--accent-color);
-}
-
-.license-badge:hover {
-  background: var(--accent-color);
-  color: white;
-  border-color: var(--accent-color);
-  transform: translateY(-2px);
-}
-
-.license-badge:hover i {
-  color: white;
-}
 
 /* ========== 自定义光标 (保留但简化) ========== */
 .custom-cursor {
@@ -1387,19 +1278,6 @@ body.custom-cursor-enabled .list-item {
   
   .list-item-title {
     font-size: 1.3rem;
-  }
-  
-  .footer-content {
-    flex-direction: column;
-    text-align: center;
-  }
-  
-  .footer-right {
-    align-items: center;
-  }
-  
-  .footer-social {
-    justify-content: center;
   }
   
   #search-input {
@@ -2023,10 +1901,6 @@ body.custom-cursor-enabled .list-item {
         transform: translateY(0);
       }
     }
-
-    .global-footer .footer-content {
-  align-items: center;
-}
 
 .icp-info {
   margin: 8px 0 4px 0;

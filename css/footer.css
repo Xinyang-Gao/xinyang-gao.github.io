@@ -1,0 +1,433 @@
+/* ==========================================
+   footer.css - 现代化页脚样式 v3
+   全量重构，保留所有原有功能 & 动态脚本
+   设计语言：毛玻璃质感、灵动岛元素、柔和阴影、响应式
+   与主页/导航栏暗色模式完美融合
+============================================= */
+
+/* ---------- 全局变量继承 ---------- */
+:root {
+  --footer-bg: rgba(250, 248, 245, 0.92);
+  --footer-border-light: rgba(232, 226, 219, 0.65);
+  --footer-glass-blur: blur(16px);
+  --footer-capsule-bg: rgba(240, 235, 229, 0.7);
+  --footer-legal-hover: var(--accent-color);
+}
+
+[data-theme="dark"] {
+  --footer-bg: rgba(18, 18, 26, 0.92);
+  --footer-border-light: rgba(63, 63, 75, 0.8);
+  --footer-capsule-bg: rgba(32, 32, 42, 0.85);
+}
+
+/* 页脚主容器 - 玻璃质感 + 现代边界 */
+.global-footer.glass-footer {
+  max-width: 1280px;
+  margin: 4rem auto 1.5rem auto;
+  border-radius: 2rem 2rem 1.5rem 1.5rem;
+  background: var(--footer-bg);
+  backdrop-filter: var(--footer-glass-blur);
+  -webkit-backdrop-filter: var(--footer-glass-blur);
+  border: 1px solid var(--footer-border-light);
+  transition: all 0.3s var(--transition-bounce);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05), 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+[data-theme="dark"] .global-footer.glass-footer {
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35), 0 1px 0 rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(20px);
+}
+
+.footer-container {
+  padding: 2.2rem 2rem 1.8rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* 三列网格布局 (更现代化间距) */
+.footer-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem 2.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--border-light);
+  margin-bottom: 1.6rem;
+}
+
+/* 各列通用样式 */
+.footer-col {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.footer-col-title {
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+  color: var(--accent-color);
+  position: relative;
+  display: inline-block;
+  margin-bottom: 0.25rem;
+  padding-bottom: 0.4rem;
+}
+
+.footer-col-title::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 32px;
+  height: 2.5px;
+  background: linear-gradient(90deg, var(--accent-color), var(--accent-light));
+  border-radius: 4px;
+  transition: width 0.25s ease-out;
+}
+
+.footer-col:hover .footer-col-title::after {
+  width: 56px;
+}
+
+/* 快速链接列表: 现代微动效 */
+.footer-links {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.footer-links li a {
+  color: var(--text-color);
+  font-size: 0.92rem;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  position: relative;
+}
+
+.footer-links li a::before {
+  content: "→";
+  opacity: 0;
+  transform: translateX(-6px);
+  transition: 0.2s;
+  font-size: 0.75rem;
+  color: var(--accent-color);
+}
+
+.footer-links li a:hover {
+  color: var(--accent-color);
+  transform: translateX(6px);
+}
+
+.footer-links li a:hover::before {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* 社交胶囊网格：玻璃圆角卡片 */
+.social-capsule-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.social-capsule {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  background: var(--footer-capsule-bg);
+  padding: 8px 20px;
+  border-radius: 60px;
+  border: 1px solid var(--border-light);
+  color: var(--text-color);
+  font-size: 0.9rem;
+  transition: all 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.2);
+  width: fit-content;
+  min-width: 150px;
+  backdrop-filter: blur(4px);
+}
+
+.social-capsule i {
+  font-size: 1.2rem;
+  color: var(--accent-color);
+  transition: transform 0.2s, color 0.2s;
+  width: 1.4rem;
+  text-align: center;
+}
+
+.social-capsule:hover {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+  color: white;
+}
+
+.social-capsule:hover i {
+  color: white;
+  transform: scale(1.08);
+}
+
+/* 统计信息芯片（简洁微光风格） */
+.stat-chip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--surface-color);
+  padding: 10px 18px;
+  border-radius: 48px;
+  border: 1px solid var(--border-light);
+  transition: all 0.2s;
+  font-size: 0.9rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+}
+
+.stat-chip i {
+  color: var(--accent-color);
+  width: 28px;
+  font-size: 1rem;
+  text-align: center;
+}
+
+.stat-chip strong {
+  color: var(--accent-color);
+  font-weight: 700;
+  margin: 0 2px;
+}
+
+.stat-chip:hover {
+  background: var(--surface-color-secondary);
+  transform: translateX(4px);
+  border-color: var(--accent-light);
+}
+
+.busuanzi-stats-inline {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 5px 10px;
+  font-size: 0.9rem;
+}
+
+.busuanzi-stats-inline .stat-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.busuanzi-stats-inline .stat-unit {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+.busuanzi-stats-inline .divider {
+  color: var(--border-color);
+  margin: 0 2px;
+}
+
+/* ---------- 底部法律与版权区（全新现代化集群） ---------- */
+.footer-legal-panel {
+  margin-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.copyright-row {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.8rem;
+  font-size: 0.85rem;
+}
+
+.copyright-area {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: baseline;
+  gap: 0.6rem;
+  color: var(--text-secondary);
+  font-weight: 450;
+}
+
+.copyright-area .separator-dot {
+  font-size: 0.7rem;
+  opacity: 0.7;
+}
+
+/* 现代链接集群 (隐私/知识共享/MIT/萌备) */
+.legal-links-cluster {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 0.6rem 1.2rem;
+  row-gap: 0.7rem;
+  padding: 0.6rem 0.4rem;
+  border-top: 1px dashed var(--border-light);
+  border-bottom: 1px dashed var(--border-light);
+  background: rgba(0, 0, 0, 0.02);
+  border-radius: 48px;
+  margin: 0 auto;
+  width: fit-content;
+  max-width: 100%;
+}
+
+[data-theme="dark"] .legal-links-cluster {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.legal-link {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+}
+
+.legal-link i {
+  font-size: 0.75rem;
+  color: var(--accent-color);
+}
+
+.legal-link:hover {
+  color: var(--accent-color);
+  transform: translateY(-1px);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.legal-sep {
+  color: var(--border-color);
+  font-size: 0.7rem;
+  user-select: none;
+}
+
+/* 特殊徽章 (萌备, 异次元) 保留动态效果 */
+.badge-icp i, .travel-link i {
+  transition: transform 0.2s ease;
+}
+
+.legal-link:hover i {
+  transform: scale(1.08);
+}
+
+/* 响应式设计 — 优雅适配移动端 */
+@media (max-width: 900px) {
+  .footer-container {
+    padding: 1.6rem 1.5rem;
+  }
+  .footer-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.8rem;
+  }
+  .social-capsule {
+    min-width: 130px;
+  }
+  .legal-links-cluster {
+    gap: 0.5rem 1rem;
+  }
+}
+
+@media (max-width: 640px) {
+  .footer-container {
+    padding: 1.5rem 1.2rem;
+  }
+  .footer-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    text-align: left;
+  }
+  .social-capsule-grid {
+    align-items: flex-start;
+  }
+  .social-capsule {
+    width: auto;
+  }
+  .copyright-area {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+  }
+  .separator-dot {
+    display: none;
+  }
+  .legal-links-cluster {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    background: transparent;
+    border: none;
+    padding: 0.6rem 0;
+  }
+  .legal-sep {
+    display: none;
+  }
+  .legal-link {
+    font-size: 0.78rem;
+    background: var(--tag-bg);
+    padding: 5px 14px;
+    border-radius: 40px;
+    border: 0.5px solid var(--border-light);
+  }
+  .legal-link:hover {
+    background: var(--accent-color);
+    color: white;
+  }
+  .legal-link:hover i {
+    color: white;
+  }
+  .powered-by {
+    font-size: 0.78rem;
+  }
+}
+
+/* 深色模式微调 */
+[data-theme="dark"] .stat-chip,
+[data-theme="dark"] .social-capsule {
+  background: var(--surface-color);
+  border-color: var(--border-light);
+}
+
+[data-theme="dark"] .stat-chip:hover,
+[data-theme="dark"] .social-capsule:hover {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+}
+
+[data-theme="dark"] .legal-link {
+  color: #bcbfd0;
+}
+
+[data-theme="dark"] .legal-link:hover {
+  color: var(--accent-light);
+}
+
+/* 保持与导航栏统一的光标与动画 */
+.global-footer a {
+  cursor: pointer;
+}
+
+/* 辅助小间距 */
+.stat-chip i.fa-heartbeat {
+  animation: pulseSubtle 1.8s infinite;
+}
+
+@keyframes pulseSubtle {
+  0% { opacity: 0.7; transform: scale(0.98);}
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* 平滑过渡 */
+.global-footer, .stat-chip, .social-capsule, .legal-link {
+  transition: all 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+}

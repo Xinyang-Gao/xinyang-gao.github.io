@@ -1,10 +1,17 @@
 <!DOCTYPE html>
-  <footer class="global-footer modern-footer" data-footer-version="2.0">
+<!-- 
+  现代化页脚 HTML 结构
+  保留原有功能：站点运行时长、数据更新时间、不蒜子统计、动态版权年份
+  新增现代排版：法律信息链接区、许可证集群、毛玻璃效果
+  完全适配浅色/深色主题，响应式移动端优化
+-->
+<footer class="global-footer glass-footer" data-footer-version="3.0">
   <div class="footer-container">
-    <!-- 三列核心区域 -->
+    
+    <!-- 主区域：三列核心内容（探索 + 社交 + 统计） -->
     <div class="footer-grid">
       
-      <!-- 列1：快速链接（探索） -->
+      <!-- 列1: 探索 / 快速链接 -->
       <div class="footer-col links-col">
         <h4 class="footer-col-title">探索</h4>
         <ul class="footer-links">
@@ -17,7 +24,7 @@
         </ul>
       </div>
 
-      <!-- 列2：社交联系（胶囊式增强） -->
+      <!-- 列2: 社交联系（胶囊式增强） -->
       <div class="footer-col social-col">
         <h4 class="footer-col-title">联系</h4>
         <div class="social-capsule-grid">
@@ -39,67 +46,68 @@
         </div>
       </div>
 
-      <!-- 列3：统计与法律信息 -->
+      <!-- 列3: 动态统计与信息芯片（保留所有原有ID与方法） -->
       <div class="footer-col stats-col">
-        <h4 class="footer-col-title">信息</h4>
+        <h4 class="footer-col-title">数据</h4>
         
         <!-- 站点运行时长 -->
         <div class="stat-chip">
           <i class="fas fa-heartbeat"></i>
-          <span>已累计运行<br> <strong id="site-age">加载中...</strong></span>
+          <span>已运行 <strong id="site-age">加载中...</strong></span>
         </div>
         
         <!-- 数据更新时间（动态获取） -->
         <div class="stat-chip">
           <i class="fas fa-sync-alt"></i>
-          <span>数据更新于 <span id="footer-update-date">—</span></span>
+          <span>数据快照 · <span id="footer-update-date">—</span></span>
         </div>
         
-        <!-- 不蒜子计数区块 -->
+        <!-- 不蒜子计数区块（保留原始ID确保统计可用） -->
         <div class="stat-chip busuanzi-chip">
           <i class="fas fa-chart-line"></i>
           <div class="busuanzi-stats-inline">
-            <span class="stat-label">总访问量</span>
+            <span class="stat-label">总访问</span>
             <strong id="busuanzi_value_site_pv">0</strong>
             <span class="stat-unit">次</span>
             <span class="divider">|</span>
-            <span class="stat-label">访客数</span>
+            <span class="stat-label">访客</span>
             <strong id="busuanzi_value_site_uv">0</strong>
             <span class="stat-unit">人</span>
           </div>
         </div>
-        
-        <!-- 许可证双徽章 -->
-        <div class="license-stack">
-          <a href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener noreferrer" class="license-badge-modern">
-            <i class="fas fa-code"></i> MIT License
-          </a>
-          <a href="https://creativecommons.org/licenses/by-nc-nd/4.0/" target="_blank" rel="noopener noreferrer" class="license-badge-modern">
-            <i class="fas fa-pen-fancy"></i> CC BY-NC-ND 4.0
-          </a>
-        </div>
       </div>
     </div>
 
-    <!-- 底部版权 + 萌备 / 异次元之旅（融合原有文化元素） -->
-    <div class="footer-bottom">
-      <div class="copyright-area">
-        <span>© 2025-2026 高新炀</span>
-        <span class="separator-dot">✦</span>
-        <span>All rights reserved</span>
+    <!-- 底部版权区 + 现代法律/许可信息栏（整合隐私政策、许可证、萌备等） -->
+    <div class="footer-legal-panel">
+      <div class="copyright-row">
+        <div class="copyright-area">
+          <span>© 2025-2026 GaoXinYang</span>
+          <span class="separator-dot">•</span>
+          <span>All rights reserved</span>
+        </div>
       </div>
-      <div class="footer-extra-badges">
-        <a href="https://icp.gov.moe/?keyword=20261221" target="_blank" rel="noopener noreferrer" class="extra-badge-modern">
+      
+      <!-- 现代链接集群 (隐私 | 协议 | 许可证) -->
+      <div class="legal-links-cluster">
+        <a href="/privacy.html" class="legal-link" rel="nofollow">隐私政策</a>
+        <span class="legal-sep">/</span>
+        <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="license noopener" class="legal-link">知识共享协议 (CC BY-NC-SA 4.0)</a>
+        <span class="legal-sep">/</span>
+        <a href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener" class="legal-link">MIT 开源许可</a>
+        <span class="legal-sep">/</span>
+        <a href="https://icp.gov.moe/?keyword=20261221" target="_blank" rel="noopener noreferrer" class="legal-link badge-icp">
           <i class="fas fa-paw"></i> 萌ICP备20261221号
         </a>
-        <a href="https://travel.moe/go.html?travel=on" target="_blank" rel="noopener noreferrer" class="extra-badge-modern travel-badge">
+        <span class="legal-sep">/</span>
+        <a href="https://travel.moe/go.html?travel=on" target="_blank" rel="noopener noreferrer" class="legal-link travel-link">
           <i class="fas fa-rocket"></i> 异次元之旅
         </a>
       </div>
     </div>
   </div>
 
-  <!-- 极简脚本：站点年龄计算 + 最后更新时间获取 + 不蒜子刷新（完全自我依赖，不依赖全局未定义函数） -->
+  <!-- 极简脚本：站点年龄计算 + 最后更新时间获取 + 不蒜子刷新（完全保留原有逻辑，功能不变） -->
   <script>
     (function() {
       // ---------- 1. 站点运行时间计算 (起始日期: 2025年3月1日，与网站创立一致) ----------
@@ -131,7 +139,6 @@
         ageSpan.innerText = display;
       }
       
-      // 初始更新 + 每日自动更新一次
       updateSiteAge();
       setInterval(updateSiteAge, 86400000);
       
@@ -162,18 +169,16 @@
       if (copyrightSpan && copyrightSpan.innerText.includes('2025-2026')) {
         const currentYear = new Date().getFullYear();
         if (currentYear > 2026) {
-          copyrightSpan.innerText = `© 2025-${currentYear} 高新炀`;
+          copyrightSpan.innerText = `© 2025-${currentYear} GaoXinYang`;
         }
       }
       
       // ---------- 4. 不蒜子统计 —— 确保页脚pv/uv正常显示 (与全站统一) ----------
       function initBusuanziInFooter() {
-        // 如果已经存在busuanzi对象并可用，调用刷新
         if (typeof busuanzi !== 'undefined' && busuanzi && typeof busuanzi.fetch === 'function') {
           busuanzi.fetch();
           return;
         }
-        // 动态加载不蒜子脚本，避免重复
         if (!document.querySelector('script[src*="busuanzi.min.js"]')) {
           const script = document.createElement('script');
           script.src = '/js/busuanzi.min.js';
@@ -183,7 +188,6 @@
           };
           document.head.appendChild(script);
         } else {
-          // 脚本已存在但未就绪，轮询等待
           let checkTimer = setInterval(function() {
             if (typeof busuanzi !== 'undefined' && busuanzi.fetch) {
               clearInterval(checkTimer);
@@ -203,369 +207,4 @@
   </script>
 </footer>
 
-<style>
-.modern-footer {
-  --footer-bg: var(--surface-color-secondary);
-  --footer-border: var(--border-color);
-  --footer-radius: var(--radius-xl);
-  --capsule-bg: var(--tag-bg);
-  --capsule-hover: var(--accent-color);
-  margin-top: 4rem;
-  background: var(--footer-bg);
-  border-top: 1px solid var(--footer-border);
-  border-radius: var(--footer-radius) var(--footer-radius) 0 0;
-  backdrop-filter: blur(2px);
-  transition: background 0.2s, border-color 0.2s;
-  font-family: var(--font-sans);
-  box-shadow: var(--shadow-md), var(--shadow-offset);
-}
-
-/* 暗色模式下页脚背景微深，更有层次 */
-[data-theme="dark"] .modern-footer {
-  --footer-bg: rgba(24, 24, 31, 0.96);
-  backdrop-filter: blur(3px);
-  border-top-color: rgba(63, 63, 75, 0.9);
-}
-
-.footer-container {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2.2rem 2rem 1.8rem;
-}
-
-/* 三列网格 (使用grid，间距优雅) */
-.footer-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 2rem 2.5rem;
-  border-bottom: 1px solid var(--border-light);
-  padding-bottom: 2rem;
-  margin-bottom: 1.5rem;
-}
-
-/* 各列通用样式 */
-.footer-col {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.footer-col-title {
-  font-family: var(--font-serif);
-  font-size: 1.2rem;
-  font-weight: 600;
-  letter-spacing: -0.2px;
-  margin: 0 0 0.2rem 0;
-  color: var(--accent-color);
-  position: relative;
-  display: inline-block;
-  padding-bottom: 6px;
-}
-.footer-col-title::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 32px;
-  height: 2.5px;
-  background: linear-gradient(90deg, var(--accent-color), var(--accent-light));
-  border-radius: 4px;
-  transition: width 0.25s ease;
-}
-.footer-col:hover .footer-col-title::after {
-  width: 56px;
-}
-
-/* 快速链接列表（干净无冗余） */
-.footer-links {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.7rem;
-}
-.footer-links li a {
-  color: var(--text-color);
-  font-size: 0.92rem;
-  transition: all 0.2s;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  text-decoration: none;
-  position: relative;
-}
-.footer-links li a::before {
-  content: "→";
-  opacity: 0;
-  transform: translateX(-6px);
-  transition: all 0.2s ease;
-  font-size: 0.75rem;
-  color: var(--accent-color);
-}
-.footer-links li a:hover {
-  color: var(--accent-color);
-  transform: translateX(6px);
-}
-.footer-links li a:hover::before {
-  opacity: 1;
-  transform: translateX(0);
-}
-.footer-links li a::after {
-  display: none;
-}
-
-/* 社交胶囊网格（优雅卡片式） */
-.social-capsule-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-.social-capsule {
-  display: inline-flex;
-  align-items: center;
-  gap: 14px;
-  background: var(--capsule-bg);
-  padding: 8px 20px;
-  border-radius: var(--radius-full);
-  border: 1px solid var(--border-light);
-  color: var(--text-color);
-  font-size: 0.9rem;
-  transition: all 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.2);
-  width: fit-content;
-  min-width: 150px;
-  position: relative;
-  overflow: hidden;
-  backdrop-filter: blur(2px);
-}
-.social-capsule i {
-  font-size: 1.25rem;
-  color: var(--accent-color);
-  transition: transform 0.2s, color 0.2s;
-  width: 1.4rem;
-  text-align: center;
-}
-.social-capsule span {
-  transition: color 0.2s;
-}
-.social-capsule:hover {
-  background: var(--capsule-hover);
-  border-color: var(--capsule-hover);
-  transform: translateY(-3px) scale(1.02);
-  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.1);
-  color: white;
-}
-.social-capsule:hover i {
-  color: white;
-  transform: scale(1.1);
-}
-
-/* 统计信息区块（简约卡片芯片） */
-.stat-chip {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: var(--surface-color);
-  padding: 10px 16px;
-  border-radius: 48px;
-  border: 1px solid var(--border-light);
-  transition: all 0.2s;
-  font-size: 0.9rem;
-}
-.stat-chip i {
-  color: var(--accent-color);
-  width: 28px;
-  font-size: 1rem;
-  text-align: center;
-}
-.stat-chip strong {
-  color: var(--accent-color);
-  font-weight: 700;
-  margin: 0 3px;
-}
-.stat-chip:hover {
-  background: var(--surface-color-secondary);
-  transform: translateX(3px);
-  border-color: var(--accent-light);
-}
-.busuanzi-stats-inline {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: 4px 8px;
-  font-size: 0.9rem;
-}
-.busuanzi-stats-inline .stat-label {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-}
-.busuanzi-stats-inline .stat-unit {
-  font-size: 0.8rem;
-  color: var(--text-secondary);
-}
-.busuanzi-stats-inline .divider {
-  color: var(--border-color);
-  margin: 0 2px;
-}
-
-/* 许可证双徽章现代风格 */
-.license-stack {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 6px;
-}
-.license-badge-modern {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--tag-bg);
-  padding: 6px 16px;
-  border-radius: var(--radius-full);
-  font-size: 0.75rem;
-  font-weight: 500;
-  border: 1px solid var(--border-light);
-  transition: all 0.2s;
-  color: var(--text-color);
-}
-.license-badge-modern i {
-  color: var(--accent-color);
-  font-size: 0.85rem;
-}
-.license-badge-modern:hover {
-  background: var(--accent-color);
-  color: white;
-  border-color: var(--accent-color);
-  transform: translateY(-3px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-.license-badge-modern:hover i {
-  color: white;
-}
-
-/* 底部区域: 版权 + 萌备/异次元之旅组合 */
-.footer-bottom {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.8rem;
-  padding-top: 0.4rem;
-}
-.copyright-area {
-  display: flex;
-  align-items: baseline;
-  gap: 12px;
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  flex-wrap: wrap;
-  justify-content: center;
-}
-.separator-dot {
-  font-size: 0.7rem;
-  opacity: 0.65;
-}
-.footer-extra-badges {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 1.2rem;
-}
-.extra-badge-modern {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background: var(--surface-color);
-  padding: 5px 18px;
-  border-radius: 48px;
-  font-size: 0.8rem;
-  font-weight: 500;
-  border: 1px solid var(--border-light);
-  transition: all 0.2s;
-  color: var(--text-color);
-}
-.extra-badge-modern i {
-  color: var(--accent-color);
-  font-size: 0.85rem;
-  transition: transform 0.2s;
-}
-.extra-badge-modern:hover {
-  background: var(--accent-color);
-  border-color: var(--accent-color);
-  color: white;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-.extra-badge-modern:hover i {
-  color: white;
-  transform: scale(1.08);
-}
-
-/* ========== 响应式设计 (与网站整体移动体验一致) ========== */
-@media (max-width: 900px) {
-  .footer-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 2rem 1.8rem;
-  }
-  .social-capsule {
-    min-width: 130px;
-  }
-  .footer-container {
-    padding: 1.8rem 1.5rem;
-  }
-}
-@media (max-width: 640px) {
-  .footer-grid {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-    text-align: left;
-  }
-  .social-capsule-grid {
-    align-items: flex-start;
-  }
-  .social-capsule {
-    width: auto;
-    min-width: 140px;
-  }
-  .footer-col-title::after {
-    width: 28px;
-  }
-  .copyright-area {
-    flex-direction: column;
-    gap: 4px;
-    align-items: center;
-  }
-  .footer-extra-badges {
-    gap: 0.8rem;
-  }
-  .extra-badge-modern {
-    padding: 4px 14px;
-    font-size: 0.75rem;
-  }
-  .travel-mini-note {
-    font-size: 0.65rem;
-  }
-  .footer-container {
-    padding: 1.5rem 1.2rem;
-  }
-}
-
-/* 暗色模式微调（确保边界一致） */
-[data-theme="dark"] .stat-chip,
-[data-theme="dark"] .social-capsule,
-[data-theme="dark"] .license-badge-modern,
-[data-theme="dark"] .extra-badge-modern {
-  background: var(--surface-color);
-  border-color: var(--border-light);
-}
-[data-theme="dark"] .stat-chip:hover,
-[data-theme="dark"] .social-capsule:hover {
-  background: var(--accent-color);
-  border-color: var(--accent-color);
-}
-[data-theme="dark"] .travel-mini-note {
-  background: rgba(78, 168, 255, 0.1);
-}
-[data-theme="dark"] .footer-bottom .copyright-area {
-  color: #b6b9c6;
-}
-</style>
+<link rel="stylesheet" href="/css/footer.css">
