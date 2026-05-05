@@ -38,7 +38,6 @@ class StorageController {
     }
     
     clearAllData() {
-        // 清除所有相关的本地存储数据
         const keysToRemove = [
             'worksData',
             'articlesData',
@@ -87,7 +86,6 @@ class StorageController {
     }
 }
 
-// 初始化存储控制器
 const storageController = new StorageController();
 
 class PerformanceMonitor {
@@ -209,7 +207,6 @@ class DataManager {
         const label = DataManager.TYPE_LABEL[type];
         perf.start(`获取${label}数据`);
         
-        // 检查是否允许使用本地存储
         if (useCache && storageController.isAllowed()) {
             const raw = storageController.getItem(cacheKey);
             if (raw && !Utils.isDataExpired(raw)) {
@@ -235,19 +232,15 @@ class DataManager {
             const data = await res.json();
             if (!Utils.validateData(data, type)) throw new Error('数据格式无效');
             
-            // 确保文章数据包含用于排序的字段
             if (type === 'articles' && data.articles) {
                 data.articles = data.articles.map(article => ({
                     ...article,
-                    // 如果没有 last_updated 字段，则使用 date 字段
                     last_updated: article.last_updated || article.date,
-                    // 确保所有文章都有统一的日期格式
                     date: article.date,
                     updated_date: article.last_updated || article.date
                 }));
             }
             
-            // 仅在允许存储时才保存到本地存储
             if (storageController.isAllowed()) {
                 storageController.setItem(cacheKey, JSON.stringify({ ...data, _timestamp: Date.now() }));
             }
@@ -275,7 +268,6 @@ class StatisticsManager {
             return { forceDarkTheme: false };
         }
 
-        // 检查是否允许使用本地存储
         if (!storageController.isAllowed()) {
             return { forceDarkTheme: false };
         }
@@ -309,7 +301,6 @@ class StatisticsManager {
     }
 
     static getRecord() {
-        // 如果不允许使用本地存储，返回空对象
         if (!storageController.isAllowed()) {
             return {};
         }
@@ -321,7 +312,6 @@ class StatisticsManager {
     }
 
     static saveRecord(record) {
-        // 如果不允许使用本地存储，直接返回
         if (!storageController.isAllowed()) {
             return;
         }
@@ -381,7 +371,6 @@ class StatisticsManager {
     }
 
     static markLeaving() {
-        // 如果不允许使用本地存储，直接返回
         if (!storageController.isAllowed()) {
             return;
         }
@@ -459,53 +448,51 @@ class UIRenderer {
     static escapeHtml(str) {
         return Utils.escapeHtml(str);
     }
-static generateListItem(item, type, index) {
-    const tags = UIRenderer.generateTagsHTML(item);
-    if (type === 'article') {
-        const itemUrl = item.url || '';
-        
-        // 时间信息移到右上角
-        const publishDate = item.date ? `<span class="publish-date">发布于 ${this.escapeHtml(item.date)}</span>` : '';
-        const updateDate = item.last_updated && item.last_updated !== item.date ? 
-            `<span class="update-date">更新: ${this.escapeHtml(item.last_updated)}</span>` : '';
-        const dateInfo = publishDate || updateDate ? 
-            `<div class="article-dates-top-right">${publishDate}${updateDate ? '<br/>' + updateDate : ''}</div>` : '';
+    static generateListItem(item, type, index) {
+        const tags = UIRenderer.generateTagsHTML(item);
+        if (type === 'article') {
+            const itemUrl = item.url || '';
+            const publishDate = item.date ? `<span class="publish-date">发布于 ${this.escapeHtml(item.date)}</span>` : '';
+            const updateDate = item.last_updated && item.last_updated !== item.date ? 
+                `<span class="update-date">更新: ${this.escapeHtml(item.last_updated)}</span>` : '';
+            const dateInfo = publishDate || updateDate ? 
+                `<div class="article-dates-top-right">${publishDate}${updateDate ? '<br/>' + updateDate : ''}</div>` : '';
 
-        return `
-        <div class="list-item" data-url="${this.escapeHtml(itemUrl)}" data-type="article" data-index="${index}">
-            <div class="list-item-header">
-                <h3 class="list-item-title">${this.escapeHtml(item.title)}</h3>
-                ${dateInfo}
-            </div>
-            <div class="article-meta-info">
-                <span class="article-author">${this.escapeHtml(item.author || '未知作者')}</span>
-                ${item.word_count ? `<span class="article-word-count">${item.word_count} 字</span>` : ''}
-                ${item.read_time ? `<span class="article-read-time"><i class="far fa-clock"></i> ${this.escapeHtml(item.read_time)}</span>` : ''}
-            </div>
-            <p class="list-item-description">${this.escapeHtml(item.description || '')}</p>
-            ${tags}
-        </div>`;
-    } else {
-        const workInfo = {
-            title: item.title,
-            description: item.description || '',
-            link: item.link || '',
-            tags: Utils.getTags(item)
-        };
-        const workInfoStr = encodeURIComponent(JSON.stringify(workInfo));
-        return `
-        <div class="list-item" data-work-info="${workInfoStr}" data-type="work" data-index="${index}">
-            <div class="list-item-header">
-                <h3 class="list-item-title">${this.escapeHtml(item.title)}</h3>
-                <div class="list-item-meta">
-                    <span class="list-item-date">${this.escapeHtml(item.date)}</span>
+            return `
+            <div class="list-item" data-url="${this.escapeHtml(itemUrl)}" data-type="article" data-index="${index}">
+                <div class="list-item-header">
+                    <h3 class="list-item-title">${this.escapeHtml(item.title)}</h3>
+                    ${dateInfo}
                 </div>
-            </div>
-            <p class="list-item-description">${this.escapeHtml(item.description || '')}</p>
-            ${tags}
-        </div>`;
+                <div class="article-meta-info">
+                    <span class="article-author">${this.escapeHtml(item.author || '未知作者')}</span>
+                    ${item.word_count ? `<span class="article-word-count">${item.word_count} 字</span>` : ''}
+                    ${item.read_time ? `<span class="article-read-time"><i class="far fa-clock"></i> ${this.escapeHtml(item.read_time)}</span>` : ''}
+                </div>
+                <p class="list-item-description">${this.escapeHtml(item.description || '')}</p>
+                ${tags}
+            </div>`;
+        } else {
+            const workInfo = {
+                title: item.title,
+                description: item.description || '',
+                link: item.link || '',
+                tags: Utils.getTags(item)
+            };
+            const workInfoStr = encodeURIComponent(JSON.stringify(workInfo));
+            return `
+            <div class="list-item" data-work-info="${workInfoStr}" data-type="work" data-index="${index}">
+                <div class="list-item-header">
+                    <h3 class="list-item-title">${this.escapeHtml(item.title)}</h3>
+                    <div class="list-item-meta">
+                        <span class="list-item-date">${this.escapeHtml(item.date)}</span>
+                    </div>
+                </div>
+                <p class="list-item-description">${this.escapeHtml(item.description || '')}</p>
+                ${tags}
+            </div>`;
+        }
     }
-}
 
     static generateListHTML(data, type) {
         perf.start(`生成${DataManager.TYPE_LABEL[type]}HTML`);
@@ -663,11 +650,10 @@ class SearchController {
         this.input = null;
         this.field = null;
         this.selectedTags = [];
-        this.sortOrder = 'updated_desc'; // 默认按更新时间降序
+        this.sortOrder = 'updated_desc';
         this.debounceTimer = null;
         this.popStateHandler = null;
         this.skipNextPopState = false;
-        // 存储当前页面的数据在内存中
         this.currentPageData = null;
         this.init();
     }
@@ -677,7 +663,6 @@ class SearchController {
             this.input = document.getElementById('search-input');
             this.field = document.getElementById('search-field');
             
-            // 添加排序选择器
             this.sortSelect = document.getElementById('sort-order');
             if (this.sortSelect) {
                 this.sortSelect.addEventListener('change', () => {
@@ -707,12 +692,20 @@ class SearchController {
         });
     }
     
+    destroy() {
+        if (this.input && this._inputHandler) this.input.removeEventListener('input', this._inputHandler);
+        if (this.field && this._fieldHandler) this.field.removeEventListener('change', this._fieldHandler);
+        if (this.sortSelect && this._sortHandler) this.sortSelect.removeEventListener('change', this._sortHandler);
+        if (this.popStateHandler) window.removeEventListener('popstate', this.popStateHandler);
+        clearTimeout(this.debounceTimer);
+    }
+    
     restoreFromURL() {
         const params = new URLSearchParams(window.location.search);
         const q = params.get('q') || '';
         const field = params.get('field') || 'all';
         const tagsParam = params.get('tags') || '';
-        const sortOrder = params.get('sort') || 'updated_desc'; // 默认按更新时间降序
+        const sortOrder = params.get('sort') || 'updated_desc';
         
         if (this.input) this.input.value = q;
         if (this.field) this.field.value = field;
@@ -751,66 +744,30 @@ class SearchController {
         }
     }
     
-    // 添加排序函数
     sortByField(items, order) {
         const sortedItems = [...items];
-        
         switch(order) {
             case 'updated_asc':
-                // 按更新时间升序 (last_updated)
-                sortedItems.sort((a, b) => {
-                    const dateA = new Date(a.last_updated);
-                    const dateB = new Date(b.last_updated);
-                    return dateA - dateB;
-                });
+                sortedItems.sort((a, b) => new Date(a.last_updated) - new Date(b.last_updated));
                 break;
-                
             case 'updated_desc':
-                // 按更新时间降序 (last_updated)
-                sortedItems.sort((a, b) => {
-                    const dateA = new Date(a.last_updated);
-                    const dateB = new Date(b.last_updated);
-                    return dateB - dateA;
-                });
+                sortedItems.sort((a, b) => new Date(b.last_updated) - new Date(a.last_updated));
                 break;
-                
             case 'wordcount_asc':
-                // 按字数升序
                 sortedItems.sort((a, b) => (a.word_count || 0) - (b.word_count || 0));
                 break;
-                
             case 'wordcount_desc':
-                // 按字数降序
                 sortedItems.sort((a, b) => (b.word_count || 0) - (a.word_count || 0));
                 break;
-                
             case 'date_asc':
-                // 按发布日期升序
-                sortedItems.sort((a, b) => {
-                    const dateA = new Date(a.date);
-                    const dateB = new Date(b.date);
-                    return dateA - dateB;
-                });
+                sortedItems.sort((a, b) => new Date(a.date) - new Date(b.date));
                 break;
-                
             case 'date_desc':
-                // 按发布日期降序
-                sortedItems.sort((a, b) => {
-                    const dateA = new Date(a.date);
-                    const dateB = new Date(b.date);
-                    return dateB - dateA;
-                });
+                sortedItems.sort((a, b) => new Date(b.date) - new Date(a.date));
                 break;
-                
             default:
-                // 默认按更新时间降序
-                sortedItems.sort((a, b) => {
-                    const dateA = new Date(a.last_updated);
-                    const dateB = new Date(b.last_updated);
-                    return dateB - dateA;
-                });
+                sortedItems.sort((a, b) => new Date(b.last_updated) - new Date(a.last_updated));
         }
-        
         return sortedItems;
     }
     
@@ -821,13 +778,10 @@ class SearchController {
         if (!skipUpdateURL) this.updateURL();
     }
     
-    // 从内存中获取数据而不是本地存储
     getCachedData(type) {
-        // 如果有内存中的数据，优先使用
         if (this.currentPageData) {
             return this.currentPageData;
         }
-        // 如果允许使用本地存储，则尝试从本地存储获取
         if (storageController.isAllowed()) {
             const raw = storageController.getItem(`${type}Data`);
             if (!raw) return null;
@@ -839,7 +793,6 @@ class SearchController {
         return null;
     }
     
-    // 设置当前页面数据
     setCurrentPageData(data) {
         this.currentPageData = data;
     }
@@ -857,17 +810,18 @@ class SearchController {
     }
 
     applyTagsToButtons() {
-    const container = document.getElementById(`${this.page}-tags-filter`);
-    if (!container) return;
-    const buttons = container.querySelectorAll('.tag-button:not(:last-child)');
-    buttons.forEach(btn => {
-        const tag = btn.dataset.tag;
-        if (this.selectedTags.includes(tag)) {
-            btn.classList.add('active');
-        } else {
-            btn.classList.remove('active');
-        }
-    })}
+        const container = document.getElementById(`${this.page}-tags-filter`);
+        if (!container) return;
+        const buttons = container.querySelectorAll('.tag-button:not(:last-child)');
+        buttons.forEach(btn => {
+            const tag = btn.dataset.tag;
+            if (this.selectedTags.includes(tag)) {
+                btn.classList.add('active');
+            } else {
+                btn.classList.remove('active');
+            }
+        });
+    }
     
     updateTagFilters() {
         if (!['works', 'articles'].includes(this.page)) return;
@@ -935,7 +889,6 @@ class SearchController {
         
         let items = type === 'works' ? [...data.works] : [...data.articles];
         
-        // 应用标签筛选
         if (this.selectedTags.length) {
             items = items.filter(item => {
                 const itemTags = Utils.getTags(item);
@@ -943,7 +896,6 @@ class SearchController {
             });
         }
         
-        // 应用搜索查询
         if (query && query.trim() !== '') {
             const ql = query.toLowerCase().trim();
             items = items.filter(item => {
@@ -964,43 +916,28 @@ class SearchController {
             });
         }
         
-        // 应用排序
         items = this.sortByField(items, this.sortOrder);
         
         const html = UIRenderer.generateListHTML({ [type]: items }, type);
         const container = document.getElementById(`${type}-list-container`);
         if (container) {
             container.innerHTML = html;
-            this.setupItemsInteraction();
-            if (typeof initScrollReveal === 'function') initScrollReveal();
+            initScrollReveal();
         }
-    }
-    
-    setupItemsInteraction() {
-        const content = document.getElementById('mainContent') || document.querySelector('main.main-content-area') || document.querySelector('.container') || document.getElementById(`${this.page}-list-container`);
-        if (content) {
-            content.removeEventListener('click', PageManager.handleListItemClick);
-            content.addEventListener('click', PageManager.handleListItemClick);
-            return;
-        }
-        document.removeEventListener('click', PageManager.handleListItemClick);
-        document.addEventListener('click', PageManager.handleListItemClick);
-    }
-    
-    destroy() {
-        if (this.input && this._inputHandler) this.input.removeEventListener('input', this._inputHandler);
-        if (this.field && this._fieldHandler) this.field.removeEventListener('change', this._fieldHandler);
-        if (this.sortSelect) this.sortSelect.removeEventListener('change', this._sortHandler);
-        if (this.popStateHandler) window.removeEventListener('popstate', this.popStateHandler);
-        clearTimeout(this.debounceTimer);
     }
 }
 
 class PageManager {
     static initializePageFeatures(page) {
-        if (['works', 'articles'].includes(page)) new SearchController(page);
+        // 销毁旧的 SearchController 实例（如果存在）
+        if (window._currentSearchController) {
+            window._currentSearchController.destroy();
+            window._currentSearchController = null;
+        }
+        if (['works', 'articles'].includes(page)) {
+            window._currentSearchController = new SearchController(page);
+        }
         if (page === 'index') updateDynamicGreeting();
-        PageManager.setupListItemsInteraction();
         if (typeof initScrollReveal === 'function') initScrollReveal();
         if (typeof renderMathAndMermaid === 'function') {
             try {
@@ -1009,17 +946,9 @@ class PageManager {
             } catch (e) { console.warn('[WARN] renderMathAndMermaid 执行失败', e); }
         }
     }
-    static setupListItemsInteraction() {
-        const content = document.getElementById('mainContent') || document.querySelector('main.main-content-area') || document.querySelector('.container') || document.getElementById('articles-list-container') || document.getElementById('works-list-container');
-        if (content) {
-            content.removeEventListener('click', PageManager.handleListItemClick);
-            content.addEventListener('click', PageManager.handleListItemClick);
-            return;
-        }
-        document.removeEventListener('click', PageManager.handleListItemClick);
-        document.addEventListener('click', PageManager.handleListItemClick);
-    }
+    
     static handleListItemClick(e) {
+        // 避免与图片预览器冲突（图片预览器已处理内部冒泡）
         const item = e.target.closest('.list-item, .recent-item');
         if (!item) return;
         const type = item.dataset.type;
@@ -1037,6 +966,7 @@ class PageManager {
             else console.warn('[WARN] 文章链接无效');
         }
     }
+    
     static showWorkDetails(work) {
         if (this.currentModalClose) this.currentModalClose();
         const overlay = document.createElement('div');
@@ -1187,7 +1117,6 @@ class NavigationManager {
                 document.body.style.transition = '';
             }, 400);
             root.setAttribute('data-theme', theme);
-            // 仅在允许存储时才保存主题
             if (storageController.isAllowed()) {
                 storageController.setItem('theme', theme);
             }
@@ -1196,7 +1125,6 @@ class NavigationManager {
         };
         const handleChange = (e) => { setTheme(e.target.checked ? 'dark' : 'light', false); };
         checkbox.addEventListener('change', handleChange);
-        // 仅在允许存储时才读取保存的主题
         let savedTheme = null;
         if (storageController.isAllowed()) {
             savedTheme = storageController.getItem('theme');
@@ -1422,9 +1350,7 @@ async function fetchAndReplaceContent(url, pushState = true) {
         NavigationManager.initNavigation(); NavigationManager.initMobileMenuToggle(); ScrollManager.initBackToTopButton();
         const personalCardContainer = document.getElementById('personal-card-container'); if (personalCardContainer) personalCardContainer.innerHTML = UIRenderer.generatePersonalCardHTML();
         const pageName = getPageNameFromPath(new URL(url, window.location.href).pathname);
-        if (pageName === 'index') { if (typeof updateDynamicGreeting === 'function') updateDynamicGreeting(); }
-        else if (pageName === 'articles') await initializeArticlesPage();
-        else if (pageName === 'works') await initializeWorksPage();
+        PageManager.initializePageFeatures(pageName);
         const currentPath = window.location.pathname;
         const newPath = new URL(url, window.location.href).pathname;
         if (currentPath !== newPath) {
@@ -1476,17 +1402,13 @@ function enableAjaxNavigation() {
 async function initializeArticlesPage() { 
     try { 
         const data = await DataManager.fetchData('articles'); 
-        // 将数据存储在内存中，而不是本地存储
-        if (window.SearchController) {
-            const searchController = new SearchController('articles');
-            searchController.setCurrentPageData(data);
+        if (window._currentSearchController && window._currentSearchController.page === 'articles') {
+            window._currentSearchController.setCurrentPageData(data);
+            window._currentSearchController.handleSearch(true);
+        } else {
+            PageManager.initializePageFeatures('articles');
+            if (window._currentSearchController) window._currentSearchController.setCurrentPageData(data);
         }
-        const html = UIRenderer.generateListHTML(data, 'articles'); 
-        const container = document.getElementById('articles-list-container'); 
-        if (container) { 
-            container.innerHTML = html; 
-            initScrollReveal(); 
-        } 
     } catch (e) { 
         console.error('[ERROR] 加载文章数据失败:', e); 
     } 
@@ -1494,23 +1416,18 @@ async function initializeArticlesPage() {
 async function initializeWorksPage() { 
     try { 
         const data = await DataManager.fetchData('works'); 
-        // 将数据存储在内存中，而不是本地存储
-        if (window.SearchController) {
-            const searchController = new SearchController('works');
-            searchController.setCurrentPageData(data);
+        if (window._currentSearchController && window._currentSearchController.page === 'works') {
+            window._currentSearchController.setCurrentPageData(data);
+            window._currentSearchController.handleSearch(true);
+        } else {
+            PageManager.initializePageFeatures('works');
+            if (window._currentSearchController) window._currentSearchController.setCurrentPageData(data);
         }
-        const html = UIRenderer.generateListHTML(data, 'works'); 
-        const container = document.getElementById('works-list-container'); 
-        if (container) { 
-            container.innerHTML = html; 
-            initScrollReveal(); 
-        } 
     } catch (e) { 
         console.error('[ERROR] 加载作品数据失败:', e); 
     } 
 }
 
-// 动态加载图片查看器组件，确保主站引用
 function loadImageViewer() {
     if (window.ImageViewer) return Promise.resolve();
     return new Promise((resolve, reject) => {
@@ -1522,8 +1439,228 @@ function loadImageViewer() {
     });
 }
 
+// ==================== 全局图片查看器管理器（修复版：列表内图片不阻止冒泡） ====================
+class GlobalImageManager {
+    static init() {
+        document.addEventListener('click', (e) => {
+            let img = e.target.closest('img');
+            if (!img) return;
+
+            // 跳过标记为忽略的图片
+            if (img.closest('.no-image-viewer') || img.classList.contains('no-image-viewer')) return;
+            if (img.closest('.modern-image-viewer')) return;
+            
+            // 关键修复：如果点击的图片在列表项内部，不启动图片查看器，让事件冒泡到列表项
+            if (img.closest('.list-item, .recent-item')) {
+                // 不阻止冒泡，也不打开查看器，让默认行为（列表项点击）发生
+                return;
+            }
+
+            e.preventDefault();
+            e.stopPropagation();
+
+            if (typeof window.ImageViewer === 'undefined') {
+                console.warn('[ImageViewer] 组件未加载，尝试动态加载...');
+                const script = document.createElement('script');
+                script.src = '/js/image-viewer.js';
+                script.onload = () => this.openViewerForImage(img);
+                document.head.appendChild(script);
+            } else {
+                this.openViewerForImage(img);
+            }
+        });
+    }
+
+    static openViewerForImage(clickedImg) {
+        let container = clickedImg.closest('#mainContent, .article-body, .post-content, .list-item, main, .container, body');
+        if (!container) container = document.body;
+
+        const allImgs = container.querySelectorAll('img:not(.no-image-viewer):not(.viewer-image)');
+        const gallery = [];
+        let currentIndex = 0;
+
+        allImgs.forEach((img, idx) => {
+            let src = img.dataset.src || img.src;
+            if (!src || src.startsWith('data:') && src.length < 100) return;
+            if (img === clickedImg) currentIndex = gallery.length;
+            gallery.push({
+                src: src,
+                alt: img.alt || img.title || ''
+            });
+        });
+
+        if (gallery.length === 0) {
+            console.warn('[ImageViewer] 未找到可展示的图片');
+            return;
+        }
+
+        const needPreload = clickedImg.dataset.src && (!clickedImg.src || clickedImg.src === '');
+        if (needPreload) {
+            const tempImg = new Image();
+            tempImg.onload = () => {
+                clickedImg.src = clickedImg.dataset.src;
+                clickedImg.classList.remove('lazy-loading');
+                clickedImg.classList.add('loaded');
+                delete clickedImg.dataset.src;
+                new window.ImageViewer(gallery, currentIndex);
+            };
+            tempImg.src = clickedImg.dataset.src;
+        } else {
+            new window.ImageViewer(gallery, currentIndex);
+        }
+    }
+}
+
+// ==================== Cookie 同意管理器 ====================
+class CookieConsentManager {
+  static STORAGE_KEY = 'cookieConsentAccepted';
+  static BANNER_ID = 'cookie-consent-banner';
+  
+  constructor() {
+    this.banner = null;
+    this.isInitialized = false;
+    this.init();
+  }
+  
+  init() {
+    if (this.hasConsented()) {
+      return;
+    }
+    
+    this.createBanner();
+    this.attachEvents();
+    
+    window.addEventListener('ajax:navigation', () => {
+      if (!this.hasConsented() && this.banner && !this.banner.classList.contains('show')) {
+        setTimeout(() => this.showBanner(), 100);
+      }
+    });
+    
+    this.isInitialized = true;
+  }
+  
+  hasConsented() {
+    return localStorage.getItem(this.STORAGE_KEY) === 'true';
+  }
+  
+  setConsented(consented) {
+    if (consented) {
+      if (storageController.isAllowed()) {
+        localStorage.setItem(this.STORAGE_KEY, 'true');
+      }
+    } else {
+      sessionStorage.setItem('cookieBannerDismissed', 'true');
+      storageController.disableStorage();
+    }
+  }
+  
+  shouldShow() {
+    if (this.hasConsented()) return false;
+    if (sessionStorage.getItem('cookieBannerDismissed') === 'true') return false;
+    return true;
+  }
+  
+  createBanner() {
+    const existingBanner = document.getElementById(this.BANNER_ID);
+    if (existingBanner) {
+      existingBanner.remove();
+    }
+    
+    this.banner = document.createElement('div');
+    this.banner.id = this.BANNER_ID;
+    this.banner.className = 'cookie-consent-banner';
+    
+    this.banner.innerHTML = `
+      <div class="cookie-consent-banner-container">
+        <div class="cookie-consent-text">
+          <i class="fas fa-cookie-bite"></i>
+          本网站使用 Cookies 来提升您的浏览体验、分析网站流量并提供个性化内容。
+          <a href="/privacy.html" target="_blank" class="cookie-privacy-link">了解更多</a>
+        </div>
+        <div class="cookie-consent-buttons">
+          <button class="cookie-btn cookie-btn-decline" id="cookie-decline-btn">
+            <i class="fas fa-times"></i> 拒绝
+          </button>
+          <button class="cookie-btn cookie-btn-accept" id="cookie-accept-btn">
+            <i class="fas fa-check"></i> 同意
+          </button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(this.banner);
+    
+    requestAnimationFrame(() => {
+      this.banner.classList.add('show');
+    });
+  }
+  
+  showBanner() {
+    if (this.banner && !this.banner.classList.contains('show')) {
+      this.banner.classList.add('show');
+    }
+  }
+  
+  hideBanner() {
+    if (this.banner) {
+      this.banner.classList.remove('show');
+      setTimeout(() => {
+        if (this.banner && this.banner.parentNode) {
+          this.banner.remove();
+          this.banner = null;
+        }
+      }, 400);
+    }
+  }
+  
+  attachEvents() {
+    if (!this.banner) return;
+    
+    const acceptBtn = this.banner.querySelector('#cookie-accept-btn');
+    const declineBtn = this.banner.querySelector('#cookie-decline-btn');
+    
+    if (acceptBtn) {
+      acceptBtn.addEventListener('click', () => {
+        this.setConsented(true);
+        storageController.enableStorage();
+        this.hideBanner();
+        window.dispatchEvent(new CustomEvent('cookieConsentAccepted'));
+      });
+    }
+    
+    if (declineBtn) {
+      declineBtn.addEventListener('click', () => {
+        this.setConsented(false);
+        this.hideBanner();
+      });
+    }
+  }
+  
+  resetConsent() {
+    localStorage.removeItem(this.STORAGE_KEY);
+    sessionStorage.removeItem('cookieBannerDismissed');
+    if (!this.banner) {
+      this.createBanner();
+      this.attachEvents();
+    } else {
+      this.showBanner();
+    }
+  }
+}
+
+let cookieConsentManager = null;
+function initCookieConsent() {
+  if (!cookieConsentManager) {
+    cookieConsentManager = new CookieConsentManager();
+  }
+}
+
+// ==================== DOM 加载完成后的初始化 ====================
 document.addEventListener('DOMContentLoaded', async () => {
     window.ExternalLinkManager = new ExternalLinkManager();
+    
+    // 统一列表项点击委托（只绑定一次）
+    document.addEventListener('click', PageManager.handleListItemClick);
     
     const savedTheme = storageController.isAllowed() ? storageController.getItem('theme') : null;
     const initialTheme = savedTheme || getTimeBasedTheme();
@@ -1565,247 +1702,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     else if (currentPage === 'works') initializeWorksPage();
     const personalCardContainer = document.getElementById('personal-card-container'); if (personalCardContainer) personalCardContainer.innerHTML = UIRenderer.generatePersonalCardHTML();
     ScrollManager.initBackToTopButton(); document.body.setAttribute('data-loaded', 'true'); initScrollReveal();
-        // 初始化 Cookie 同意横幅
     initCookieConsent();
 });
+
 setTimeout(() => { if (!window.customCursorInstance) window.customCursorInstance = new CustomCursor(); }, 100);
 enableAjaxNavigation();
 
-// ==================== 全局图片查看器管理器（自动识别所有图片） ====================
-class GlobalImageManager {
-    static init() {
-        // 使用事件委托，避免重复绑定，且对动态内容自动生效
-        document.addEventListener('click', (e) => {
-            // 获取实际点击的图片元素
-            let img = e.target.closest('img');
-            if (!img) return;
-
-            // 跳过标记为忽略的图片（例如头像、图标等）
-            if (img.closest('.no-image-viewer') || img.classList.contains('no-image-viewer')) return;
-            // 跳过已在查看器内部的图片
-            if (img.closest('.modern-image-viewer')) return;
-
-            // 阻止冒泡和默认行为（防止触发父级链接）
-            e.preventDefault();
-            e.stopPropagation();
-
-            // 确保 ImageViewer 已加载
-            if (typeof window.ImageViewer === 'undefined') {
-                console.warn('[ImageViewer] 组件未加载，尝试动态加载...');
-                const script = document.createElement('script');
-                script.src = '/js/image-viewer.js';
-                script.onload = () => this.openViewerForImage(img);
-                document.head.appendChild(script);
-            } else {
-                this.openViewerForImage(img);
-            }
-        });
-    }
-
-    static openViewerForImage(clickedImg) {
-        // 确定图片所在的“画廊容器”（同一区域的所有图片视为一组）
-        let container = clickedImg.closest('#mainContent, .article-body, .post-content, .list-item, main, .container, body');
-        if (!container) container = document.body;
-
-        // 收集容器内所有有效的图片（包括懒加载图片）
-        const allImgs = container.querySelectorAll('img:not(.no-image-viewer):not(.viewer-image)');
-        const gallery = [];
-        let currentIndex = 0;
-
-        allImgs.forEach((img, idx) => {
-            // 获取真实图片地址（优先 data-src，其次 src，并过滤空值）
-            let src = img.dataset.src || img.src;
-            if (!src || src.startsWith('data:') && src.length < 100) return; // 跳过极小 base64 占位图
-            if (img === clickedImg) currentIndex = gallery.length;
-
-            gallery.push({
-                src: src,
-                alt: img.alt || img.title || ''
-            });
-        });
-
-        if (gallery.length === 0) {
-            console.warn('[ImageViewer] 未找到可展示的图片');
-            return;
-        }
-
-        // 若当前点击的图片是懒加载未加载状态，预先加载它，再打开查看器
-        const needPreload = clickedImg.dataset.src && (!clickedImg.src || clickedImg.src === '');
-        if (needPreload) {
-            const tempImg = new Image();
-            tempImg.onload = () => {
-                clickedImg.src = clickedImg.dataset.src;
-                clickedImg.classList.remove('lazy-loading');
-                clickedImg.classList.add('loaded');
-                delete clickedImg.dataset.src;
-                new window.ImageViewer(gallery, currentIndex);
-            };
-            tempImg.src = clickedImg.dataset.src;
-        } else {
-            new window.ImageViewer(gallery, currentIndex);
-        }
-    }
-}
-
-// 初始化全局图片查看器（仅需一次）
+// 初始化全局图片查看器（修复后）
 GlobalImageManager.init();
-
-// ==================== Cookie 同意管理器 ====================
-class CookieConsentManager {
-  static STORAGE_KEY = 'cookieConsentAccepted';
-  static BANNER_ID = 'cookie-consent-banner';
-  
-  constructor() {
-    this.banner = null;
-    this.isInitialized = false;
-    this.init();
-  }
-  
-  init() {
-    // 检查是否已同意
-    if (this.hasConsented()) {
-      return;
-    }
-    
-    // 显示横幅
-    this.createBanner();
-    this.attachEvents();
-    
-    // 监听 AJAX 导航，确保在页面切换后横幅仍然可见（如果未同意）
-    window.addEventListener('ajax:navigation', () => {
-      if (!this.hasConsented() && this.banner && !this.banner.classList.contains('show')) {
-        // 延迟一点显示，避免与页面切换动画冲突
-        setTimeout(() => this.showBanner(), 100);
-      }
-    });
-    
-    this.isInitialized = true;
-  }
-  
-  hasConsented() {
-    return localStorage.getItem(this.STORAGE_KEY) === 'true';
-  }
-  
-  setConsented(consented) {
-    if (consented) {
-      // 只有在允许存储时才保存同意状态
-      if (storageController.isAllowed()) {
-        localStorage.setItem(this.STORAGE_KEY, 'true');
-      }
-    } else {
-      // 拒绝时不存储永久状态，仅当前会话隐藏
-      sessionStorage.setItem('cookieBannerDismissed', 'true');
-      // 拒绝时禁用存储并清除所有数据
-      storageController.disableStorage();
-    }
-  }
-  
-  shouldShow() {
-    if (this.hasConsented()) return false;
-    // 检查当前会话是否已被拒绝（仅针对拒绝场景，避免同一会话反复弹窗）
-    if (sessionStorage.getItem('cookieBannerDismissed') === 'true') return false;
-    return true;
-  }
-  
-  createBanner() {
-    // 移除已存在的横幅
-    const existingBanner = document.getElementById(this.BANNER_ID);
-    if (existingBanner) {
-      existingBanner.remove();
-    }
-    
-    this.banner = document.createElement('div');
-    this.banner.id = this.BANNER_ID;
-    this.banner.className = 'cookie-consent-banner';
-    
-    this.banner.innerHTML = `
-      <div class="cookie-consent-banner-container">
-        <div class="cookie-consent-text">
-          <i class="fas fa-cookie-bite"></i>
-          本网站使用 Cookies 来提升您的浏览体验、分析网站流量并提供个性化内容。
-          <a href="/privacy.html" target="_blank" class="cookie-privacy-link">了解更多</a>
-        </div>
-        <div class="cookie-consent-buttons">
-          <button class="cookie-btn cookie-btn-decline" id="cookie-decline-btn">
-            <i class="fas fa-times"></i> 拒绝
-          </button>
-          <button class="cookie-btn cookie-btn-accept" id="cookie-accept-btn">
-            <i class="fas fa-check"></i> 同意
-          </button>
-        </div>
-      </div>
-    `;
-    
-    document.body.appendChild(this.banner);
-    
-    // 触发进入动画
-    requestAnimationFrame(() => {
-      this.banner.classList.add('show');
-    });
-  }
-  
-  showBanner() {
-    if (this.banner && !this.banner.classList.contains('show')) {
-      this.banner.classList.add('show');
-    }
-  }
-  
-  hideBanner() {
-    if (this.banner) {
-      this.banner.classList.remove('show');
-      // 动画结束后移除DOM
-      setTimeout(() => {
-        if (this.banner && this.banner.parentNode) {
-          this.banner.remove();
-          this.banner = null;
-        }
-      }, 400);
-    }
-  }
-  
-  attachEvents() {
-    if (!this.banner) return;
-    
-    const acceptBtn = this.banner.querySelector('#cookie-accept-btn');
-    const declineBtn = this.banner.querySelector('#cookie-decline-btn');
-    
-    if (acceptBtn) {
-      acceptBtn.addEventListener('click', () => {
-        this.setConsented(true);
-        storageController.enableStorage();
-        this.hideBanner();
-        
-        // 可选：触发自定义事件，供其他模块监听（如启用分析脚本）
-        window.dispatchEvent(new CustomEvent('cookieConsentAccepted'));
-      });
-    }
-    
-    if (declineBtn) {
-      declineBtn.addEventListener('click', () => {
-        this.setConsented(false);
-        this.hideBanner();
-      });
-    }
-  }
-  
-  // 重置同意状态（用于调试或“退出”功能）
-  resetConsent() {
-    localStorage.removeItem(this.STORAGE_KEY);
-    sessionStorage.removeItem('cookieBannerDismissed');
-    if (!this.banner) {
-      this.createBanner();
-      this.attachEvents();
-    } else {
-      this.showBanner();
-    }
-  }
-}
-
-// 初始化 Cookie 同意管理器
-let cookieConsentManager = null;
-
-function initCookieConsent() {
-  if (!cookieConsentManager) {
-    cookieConsentManager = new CookieConsentManager();
-  }
-}
