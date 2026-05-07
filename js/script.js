@@ -443,33 +443,30 @@ class UIRenderer {
     static generateTagsHTML(item) {
         const tags = Utils.getTags(item);
         if (!tags || !tags.length) return '';
-        return `<div class="tags">${tags.map(t => `<span class="tag">${this.escapeHtml(t)}</span>`).join('')}</div>`;
-    }
-    static escapeHtml(str) {
-        return Utils.escapeHtml(str);
+        return `<div class="tags">${tags.map(t => `<span class="tag">${Utils.escapeHtml(t)}</span>`).join('')}</div>`;
     }
     static generateListItem(item, type, index) {
         const tags = UIRenderer.generateTagsHTML(item);
         if (type === 'article') {
             const itemUrl = item.url || '';
-            const publishDate = item.date ? `<span class="publish-date">发布于 ${this.escapeHtml(item.date)}</span>` : '';
+            const publishDate = item.date ? `<span class="publish-date">发布于 ${Utils.escapeHtml(item.date)}</span>` : '';
             const updateDate = item.last_updated && item.last_updated !== item.date ? 
-                `<span class="update-date">更新: ${this.escapeHtml(item.last_updated)}</span>` : '';
+                `<span class="update-date">更新: ${Utils.escapeHtml(item.last_updated)}</span>` : '';
             const dateInfo = publishDate || updateDate ? 
                 `<div class="article-dates-top-right">${publishDate}${updateDate ? '<br/>' + updateDate : ''}</div>` : '';
 
             return `
-            <div class="list-item" data-url="${this.escapeHtml(itemUrl)}" data-type="article" data-index="${index}">
+            <div class="list-item" data-url="${Utils.escapeHtml(itemUrl)}" data-type="article" data-index="${index}">
                 <div class="list-item-header">
-                    <h3 class="list-item-title">${this.escapeHtml(item.title)}</h3>
+                    <h3 class="list-item-title">${Utils.escapeHtml(item.title)}</h3>
                     ${dateInfo}
                 </div>
                 <div class="article-meta-info">
-                    <span class="article-author">${this.escapeHtml(item.author || '未知作者')}</span>
+                    <span class="article-author">${Utils.escapeHtml(item.author || '未知作者')}</span>
                     ${item.word_count ? `<span class="article-word-count">${item.word_count} 字</span>` : ''}
-                    ${item.read_time ? `<span class="article-read-time"><i class="far fa-clock"></i> ${this.escapeHtml(item.read_time)}</span>` : ''}
+                    ${item.read_time ? `<span class="article-read-time"><i class="far fa-clock"></i> ${Utils.escapeHtml(item.read_time)}</span>` : ''}
                 </div>
-                <p class="list-item-description">${this.escapeHtml(item.description || '')}</p>
+                <p class="list-item-description">${Utils.escapeHtml(item.description || '')}</p>
                 ${tags}
             </div>`;
         } else {
@@ -483,12 +480,12 @@ class UIRenderer {
             return `
             <div class="list-item" data-work-info="${workInfoStr}" data-type="work" data-index="${index}">
                 <div class="list-item-header">
-                    <h3 class="list-item-title">${this.escapeHtml(item.title)}</h3>
+                    <h3 class="list-item-title">${Utils.escapeHtml(item.title)}</h3>
                     <div class="list-item-meta">
-                        <span class="list-item-date">${this.escapeHtml(item.date)}</span>
+                        <span class="list-item-date">${Utils.escapeHtml(item.date)}</span>
                     </div>
                 </div>
-                <p class="list-item-description">${this.escapeHtml(item.description || '')}</p>
+                <p class="list-item-description">${Utils.escapeHtml(item.description || '')}</p>
                 ${tags}
             </div>`;
         }
@@ -975,12 +972,12 @@ class PageManager {
         const envelope = document.createElement('div');
         envelope.className = 'work-details-envelope';
         const tags = work.tags || [];
-        const tagsHtml = tags.length ? `<div class="work-details-tag"><strong>标签:</strong>${tags.map(t => `<span class="tag">${UIRenderer.escapeHtml(t)}</span>`).join('')}</div>` : '';
+        const tagsHtml = tags.length ? `<div class="work-details-tag"><strong>标签:</strong>${tags.map(t => `<span class="tag">${Utils.escapeHtml(t)}</span>`).join('')}</div>` : '';
         envelope.innerHTML = `
             <div class="work-details-close">✕</div>
             <div class="work-details-content">
-                <h2 class="work-details-title">${UIRenderer.escapeHtml(work.title)}</h2>
-                <p class="work-details-description">${UIRenderer.escapeHtml(work.description || '')}</p>
+                <h2 class="work-details-title">${Utils.escapeHtml(work.title)}</h2>
+                <p class="work-details-description">${Utils.escapeHtml(work.description || '')}</p>
                 ${tagsHtml}
                 ${work.link ? `<a href="${work.link}" target="_blank" class="work-details-link">查看</a>` : ''}
             </div>
@@ -1341,31 +1338,174 @@ async function fetchAndReplaceContent(url, pushState = true) {
         if (fetchedMain && currentMain) currentMain.innerHTML = fetchedMain.innerHTML;
         else if (fetchedMain && !currentMain) { const container = document.querySelector('.container') || document.body; container.innerHTML = fetchedMain.innerHTML; }
         document.title = fetchedTitle; if (pushState) try { window.history.pushState({ ajax: true }, fetchedTitle, url); } catch (err) { console.warn('[WARN] pushState 失败:', err); }
-        try { const headStyles = Array.from(doc.querySelectorAll('link[rel="stylesheet"], style')); headStyles.forEach(h => { if (h.tagName.toLowerCase() === 'link') { const href = h.getAttribute('href') || h.href; if (!href) return; if (document.querySelector(`link[href="${href}"]`)) return; const nl = document.createElement('link'); nl.rel = 'stylesheet'; nl.href = href; document.head.appendChild(nl); } else if (h.tagName.toLowerCase() === 'style') { const existing = Array.from(document.head.querySelectorAll('style')).some(s => s.textContent === h.textContent); if (!existing) { const ns = document.createElement('style'); ns.textContent = h.textContent; document.head.appendChild(ns); } } }); } catch (e) { console.warn('[WARN] 注入样式时出错', e); }
-        const bodyScripts = Array.from(doc.body.querySelectorAll('script')); const loadPromises = [];
-        bodyScripts.forEach(s => { try { if (s.src) { if (document.querySelector(`script[src="${s.src}"]`)) return; const newS = document.createElement('script'); if (s.type) newS.type = s.type; newS.src = s.src; newS.async = false; const p = new Promise(resolve => { newS.onload = () => resolve(); newS.onerror = () => { console.warn('[WARN] 脚本加载失败:', s.src); resolve(); }; }); document.body.appendChild(newS); loadPromises.push(p); } else { const inline = document.createElement('script'); if (s.type) inline.type = s.type; inline.textContent = s.textContent; document.body.appendChild(inline); setTimeout(() => inline.parentNode && inline.parentNode.removeChild(inline), 0); } } catch (e) { console.warn('[WARN] 插入脚本时出错', e); } });
-        if (loadPromises.length) try { await Promise.all(loadPromises); } catch (e) { console.warn('[WARN] 等待脚本加载时发生错误', e); }
-        try { if (!document.querySelector('.container')) { const mainEl = document.querySelector('main') || document.getElementById('mainContent'); if (mainEl && !mainEl.closest('.container')) { const wrapper = document.createElement('div'); wrapper.className = 'container'; while (mainEl.firstChild) wrapper.appendChild(mainEl.firstChild); mainEl.appendChild(wrapper); } } } catch (e) { console.warn('[WARN] 修复缺失 .container 时出错', e); }
-        try { const twikooEl = document.querySelector('#twikoo-comments'); if (twikooEl && typeof twikoo !== 'undefined' && twikoo && typeof twikoo.init === 'function' && !twikooEl.getAttribute('data-init')) { twikoo.init({ envId: 'https://twikoo-gxy.netlify.app/.netlify/functions/twikoo', el: '#twikoo-comments', lang: 'zh-CN', enableComment: true }).then(() => { twikooEl.setAttribute('data-init', 'true'); console.log('[INFO] Twikoo 初始化（自动）成功'); }).catch(err => { console.warn('[WARN] Twikoo 自动初始化失败:', err); }); } } catch (e) { console.warn('[WARN] 尝试初始化 Twikoo 时出错', e); }
-        NavigationManager.initNavigation(); NavigationManager.initMobileMenuToggle(); ScrollManager.initBackToTopButton();
-        const personalCardContainer = document.getElementById('personal-card-container'); if (personalCardContainer) personalCardContainer.innerHTML = UIRenderer.generatePersonalCardHTML();
+        
+        // 防止重复加载相同样式
+        try { 
+            const headStyles = Array.from(doc.querySelectorAll('link[rel="stylesheet"], style'));
+            headStyles.forEach(h => {
+                if (h.tagName.toLowerCase() === 'link') {
+                    const href = h.getAttribute('href') || h.href;
+                    if (!href) return;
+                    if (document.querySelector(`link[href="${href}"]`)) return; // 防止重复加载
+                    const nl = document.createElement('link'); 
+                    nl.rel = 'stylesheet'; 
+                    nl.href = href; 
+                    document.head.appendChild(nl); 
+                } else if (h.tagName.toLowerCase() === 'style') {
+                    const existing = Array.from(document.head.querySelectorAll('style')).some(s => s.textContent === h.textContent);
+                    if (!existing) {
+                        const ns = document.createElement('style');
+                        ns.textContent = h.textContent;
+                        document.head.appendChild(ns);
+                    }
+                }
+            });
+        } catch (e) { console.warn('[WARN] 注入样式时出错', e); }
+        
+        // 只处理新脚本，避免重复执行
+        const bodyScripts = Array.from(doc.body.querySelectorAll('script'));
+        const loadPromises = [];
+        
+        // 跟踪已加载的脚本路径，防止重复加载
+        const loadedScriptUrls = new Set();
+        
+        bodyScripts.forEach(s => {
+            try {
+                if (s.src) {
+                    if (loadedScriptUrls.has(s.src)) return; // 防止重复加载
+                    loadedScriptUrls.add(s.src);
+                    
+                    const newS = document.createElement('script');
+                    if (s.type) newS.type = s.type;
+                    newS.src = s.src;
+                    newS.async = false;
+                    const p = new Promise(resolve => {
+                        newS.onload = () => resolve();
+                        newS.onerror = () => {
+                            console.warn('[WARN] 脚本加载失败:', s.src);
+                            resolve();
+                        };
+                    });
+                    document.body.appendChild(newS);
+                    loadPromises.push(p);
+                } else {
+                    // 对于内联脚本，我们不重复执行，因为它们可能包含初始化代码
+                    // 这里我们可以考虑将它们放在一个队列中，只执行一次
+                    const scriptId = `inline-script-${btoa(s.textContent.substring(0, 50)).replace(/[^a-zA-Z0-9]/g, '')}`;
+                    if (!document.getElementById(scriptId)) {
+                        const inline = document.createElement('script');
+                        inline.id = scriptId;
+                        if (s.type) inline.type = s.type;
+                        inline.textContent = s.textContent;
+                        document.body.appendChild(inline);
+                        
+                        // 短暂延迟后移除脚本标签，但仍保留其副作用
+                        setTimeout(() => inline.parentNode && inline.parentNode.removeChild(inline), 0);
+                    }
+                }
+            } catch (e) { console.warn('[WARN] 插入脚本时出错', e); }
+        });
+        
+        if (loadPromises.length) {
+            try { await Promise.all(loadPromises); } catch (e) { console.warn('[WARN] 等待脚本加载时发生错误', e); }
+        }
+        
+        try { 
+            if (!document.querySelector('.container')) {
+                const mainEl = document.querySelector('main') || document.getElementById('mainContent');
+                if (mainEl && !mainEl.closest('.container')) {
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'container';
+                    while (mainEl.firstChild) wrapper.appendChild(mainEl.firstChild);
+                    mainEl.appendChild(wrapper);
+                }
+            }
+        } catch (e) { console.warn('[WARN] 修复缺失 .container 时出错', e); }
+        
+        try { 
+            const twikooEl = document.querySelector('#twikoo-comments');
+            if (twikooEl && typeof twikoo !== 'undefined' && twikoo && typeof twikoo.init === 'function' && !twikooEl.getAttribute('data-init')) {
+                twikoo.init({
+                    envId: 'https://twikoo-gxy.netlify.app/.netlify/functions/twikoo',
+                    el: '#twikoo-comments',
+                    lang: 'zh-CN',
+                    enableComment: true
+                }).then(() => {
+                    twikooEl.setAttribute('data-init', 'true');
+                    console.log('[INFO] Twikoo 初始化（自动）成功');
+                }).catch(err => {
+                    console.warn('[WARN] Twikoo 自动初始化失败:', err);
+                });
+            }
+        } catch (e) { console.warn('[WARN] 尝试初始化 Twikoo 时出错', e); }
+        
+        // 使用事件委托，而不是重新绑定事件
+        NavigationManager.initNavigation();
+        NavigationManager.initMobileMenuToggle();
+        ScrollManager.initBackToTopButton();
+        
+        const personalCardContainer = document.getElementById('personal-card-container');
+        if (personalCardContainer) personalCardContainer.innerHTML = UIRenderer.generatePersonalCardHTML();
+        
         const pageName = getPageNameFromPath(new URL(url, window.location.href).pathname);
         PageManager.initializePageFeatures(pageName);
+        
         const currentPath = window.location.pathname;
         const newPath = new URL(url, window.location.href).pathname;
         if (currentPath !== newPath) {
             applyRandomBackgroundImage();
         }
+        
         window.dispatchEvent(new CustomEvent('ajax:navigation', { detail: { url, page: pageName } }));
         return true;
-    } catch (e) { console.error('[ERROR] 无刷新导航加载失败:', e); return false; }
+    } catch (e) { 
+        console.error('[ERROR] 无刷新导航加载失败:', e); 
+        return false; 
+    }
 }
 
-function formatRelativeTime(isoString) { const target = new Date(isoString); const now = new Date(); const diffMs = now - target; const diffMins = Math.floor(diffMs / (1000 * 60)); const diffHours = Math.floor(diffMs / (1000 * 60 * 60)); const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24)); if (diffMins < 1) return "刚刚"; if (diffMins < 60) return `${diffMins}分钟前`; if (diffHours < 24) return `${diffHours}小时前`; if (diffDays === 1) return "昨天"; if (diffDays === 2) return "前天"; if (diffDays <= 7) return `${diffDays}天前`; return target.toLocaleDateString('zh-CN', { year: 'numeric', month: 'numeric', day: 'numeric' }); }
+function formatRelativeTime(isoString) { 
+    const target = new Date(isoString); 
+    const now = new Date(); 
+    const diffMs = now - target; 
+    const diffMins = Math.floor(diffMs / (1000 * 60)); 
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60)); 
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24)); 
+    if (diffMins < 1) return "刚刚"; 
+    if (diffMins < 60) return `${diffMins}分钟前`; 
+    if (diffHours < 24) return `${diffHours}小时前`; 
+    if (diffDays === 1) return "昨天"; 
+    if (diffDays === 2) return "前天"; 
+    if (diffDays <= 7) return `${diffDays}天前`; 
+    return target.toLocaleDateString('zh-CN', { year: 'numeric', month: 'numeric', day: 'numeric' }); 
+}
 
 async function updateFooterUpdateTime() {
-    const updateSpan = document.getElementById('footer-update-date'); if (!updateSpan) return;
-    try { const response = await fetch('/json/statistics.json'); if (!response.ok) throw new Error('无法获取统计信息'); const stats = await response.json(); let fullTime = stats.last_updated_full; let dateOnly = stats.last_updated; if (fullTime) { const relative = formatRelativeTime(fullTime); updateSpan.textContent = relative; const absDate = new Date(fullTime); const formatted = `${absDate.getFullYear()}年${(absDate.getMonth() + 1).toString().padStart(2, '0')}月${absDate.getDate().toString().padStart(2, '0')}日 ${absDate.getHours().toString().padStart(2, '0')}:${absDate.getMinutes().toString().padStart(2, '0')}:${absDate.getSeconds().toString().padStart(2, '0')}`; updateSpan.setAttribute('title', `最后统计时间：${formatted}`); } else if (dateOnly) { updateSpan.textContent = dateOnly; updateSpan.setAttribute('title', '数据最后更新日期'); } else { updateSpan.textContent = '未知'; } } catch (error) { console.warn('[WARN] 加载统计时间失败:', error); updateSpan.textContent = '获取失败'; updateSpan.setAttribute('title', '无法加载 statistics.json'); }
+    const updateSpan = document.getElementById('footer-update-date'); 
+    if (!updateSpan) return;
+    try { 
+        const response = await fetch('/json/statistics.json'); 
+        if (!response.ok) throw new Error('无法获取统计信息'); 
+        const stats = await response.json(); 
+        let fullTime = stats.last_updated_full; 
+        let dateOnly = stats.last_updated; 
+        if (fullTime) { 
+            const relative = formatRelativeTime(fullTime); 
+            updateSpan.textContent = relative; 
+            const absDate = new Date(fullTime); 
+            const formatted = `${absDate.getFullYear()}年${(absDate.getMonth() + 1).toString().padStart(2, '0')}月${absDate.getDate().toString().padStart(2, '0')}日 ${absDate.getHours().toString().padStart(2, '0')}:${absDate.getMinutes().toString().padStart(2, '0')}:${absDate.getSeconds().toString().padStart(2, '0')}`;
+            updateSpan.setAttribute('title', `最后统计时间：${formatted}`);
+        } else if (dateOnly) { 
+            updateSpan.textContent = dateOnly; 
+            updateSpan.setAttribute('title', '数据最后更新日期'); 
+        } else { 
+            updateSpan.textContent = '未知'; 
+        } 
+    } catch (error) { 
+        console.warn('[WARN] 加载统计时间失败:', error); 
+        updateSpan.textContent = '获取失败'; 
+        updateSpan.setAttribute('title', '无法加载 statistics.json'); 
+    }
 }
 
 function enableAjaxNavigation() {
@@ -1374,6 +1514,7 @@ function enableAjaxNavigation() {
         if (!a) return;
         const href = a.getAttribute('href');
         if (!href) return;
+        
         if (a.target === '_blank' || a.hasAttribute('download')) {
             StatisticsManager.markLeaving();
             return;
@@ -1396,7 +1537,10 @@ function enableAjaxNavigation() {
         if (url === window.location.href) return;
         fetchAndReplaceContent(url, true);
     }, { passive: false });
-    window.addEventListener('popstate', function (e) { fetchAndReplaceContent(window.location.href, false); });
+    
+    window.addEventListener('popstate', function (e) { 
+        fetchAndReplaceContent(window.location.href, false); 
+    });
 }
 
 async function initializeArticlesPage() { 
@@ -1511,6 +1655,43 @@ class GlobalImageManager {
     }
 }
 
+// 图片懒加载管理器
+class LazyImageLoader {
+    static init() {
+        if (!('IntersectionObserver' in window)) {
+            console.warn('[LazyImageLoader] 浏览器不支持 IntersectionObserver，跳过懒加载');
+            return;
+        }
+
+        const imageObserver = new IntersectionObserver((entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const img = entry.target;
+                    const src = img.dataset.src;
+                    
+                    if (src) {
+                        img.src = src;
+                        img.classList.remove('lazy-loading');
+                        img.classList.add('loaded');
+                        delete img.dataset.src;
+                    }
+                    
+                    observer.unobserve(img);
+                }
+            });
+        }, {
+            rootMargin: '50px 0px', // 提前50px开始加载
+            threshold: 0.01
+        });
+
+        // 查找所有带 data-src 属性的图片并开始观察
+        const lazyImages = document.querySelectorAll('img[data-src]');
+        lazyImages.forEach(img => {
+            imageObserver.observe(img);
+        });
+    }
+}
+
 // ==================== Cookie 同意管理器 ====================
 class CookieConsentManager {
   static STORAGE_KEY = 'cookieConsentAccepted';
@@ -1524,6 +1705,8 @@ class CookieConsentManager {
   
   init() {
     if (this.hasConsented()) {
+      // 如果已同意，通知 StorageController 启用存储
+      storageController.enableStorage();
       return;
     }
     
@@ -1548,6 +1731,8 @@ class CookieConsentManager {
       if (storageController.isAllowed()) {
         localStorage.setItem(this.STORAGE_KEY, 'true');
       }
+      // 通知 StorageController 启用存储
+      storageController.enableStorage();
     } else {
       sessionStorage.setItem('cookieBannerDismissed', 'true');
       storageController.disableStorage();
@@ -1622,7 +1807,6 @@ class CookieConsentManager {
     if (acceptBtn) {
       acceptBtn.addEventListener('click', () => {
         this.setConsented(true);
-        storageController.enableStorage();
         this.hideBanner();
         window.dispatchEvent(new CustomEvent('cookieConsentAccepted'));
       });
@@ -1703,6 +1887,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const personalCardContainer = document.getElementById('personal-card-container'); if (personalCardContainer) personalCardContainer.innerHTML = UIRenderer.generatePersonalCardHTML();
     ScrollManager.initBackToTopButton(); document.body.setAttribute('data-loaded', 'true'); initScrollReveal();
     initCookieConsent();
+    
+    // 初始化图片懒加载
+    LazyImageLoader.init();
 });
 
 setTimeout(() => { if (!window.customCursorInstance) window.customCursorInstance = new CustomCursor(); }, 100);
