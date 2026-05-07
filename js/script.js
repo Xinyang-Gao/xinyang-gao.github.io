@@ -3,7 +3,6 @@ const CONFIG = {
   // 存储键
   STORAGE_KEYS: {
     COOKIE_CONSENT: 'cookieConsentAccepted',
-    STORAGE_ENABLED: 'storageEnabled',
     WORKS_DATA: 'worksData',
     ARTICLES_DATA: 'articlesData',
     VISIT_RECORD: 'statisticsVisitRecord',
@@ -159,12 +158,11 @@ class StorageController {
   
   enableStorage() {
     this.enabled = true;
-    localStorage.setItem(CONFIG.STORAGE_KEYS.STORAGE_ENABLED, 'true');
+    // 不再保存STORAGE_ENABLED键，统一依靠COOKIE_CONSENT
   }
   
   disableStorage() {
     this.enabled = false;
-    localStorage.removeItem(CONFIG.STORAGE_KEYS.STORAGE_ENABLED);
     this.clearAllData();
   }
   
@@ -638,7 +636,6 @@ class SearchController {
     this.debounceTimer = null;
     this.popStateHandler = null;
     this.skipNextPopState = false;
-    this.currentPageData = null;
     this.dataManager = new DataManager(); // 添加对 DataManager 的依赖
     this.init();
   }
@@ -763,23 +760,14 @@ class SearchController {
     if (!skipUpdateURL) this.updateURL();
   }
   
-  // 修改：从 DataManager 获取数据，而不是直接从 localStorage
+  // 从 DataManager 获取数据，而不是缓存
   async getCachedData(type) {
-    if (this.currentPageData) {
-      return this.currentPageData;
-    }
     try {
-      const data = await DataManager.fetchData(type, true); // 使用 DataManager 获取缓存数据
-      this.currentPageData = data;
-      return data;
+      return await DataManager.fetchData(type, true); // 使用 DataManager 获取缓存数据
     } catch (error) {
       console.warn(`[WARN] 从 DataManager 获取 ${type} 数据失败:`, error);
       return null;
     }
-  }
-  
-  setCurrentPageData(data) {
-    this.currentPageData = data;
   }
   
   async getAllTags() {
@@ -1518,6 +1506,32 @@ class GlobalImageManager {
   }
 }
 
+// ==================== 导航生命周期管理器 ====================
+class NavigationLifecycleManager {
+  static instances = [];
+  
+  static register(instance) {
+    this.instances.push(instance);
+  }
+  
+  static unregister(instance) {
+    const index = this.instances.indexOf(instance);
+    if (index > -1) {
+      this.instances.splice(index, 1);
+    }
+  }
+  
+  static cleanupBeforeNavigation() {
+    // 销毁所有注册的实例
+    this.instances.forEach(instance => {
+      if (instance && typeof instance.destroy === 'function') {
+        instance.destroy();
+      }
+    });
+    this.instances = [];
+  }
+}
+
 // ==================== 工具函数 ====================
 function isSameOrigin(href) { 
   try { 
@@ -1683,6 +1697,9 @@ async function updateFooterUpdateTime() {
 // ==================== 无刷新导航 ====================
 async function fetchAndReplaceContent(url, pushState = true) {
   try {
+    // 在替换内容前清理所有相关的DOM事件监听器
+    NavigationLifecycleManager.cleanupBeforeNavigation();
+    
     const res = await fetch(url, { credentials: 'same-origin' });
     if (!res.ok) throw new Error(`Fetch失败: ${res.status}`);
     const text = await res.text(); const doc = new DOMParser().parseFromString(text, 'text/html'); const fetchedTitle = doc.querySelector('title') ? doc.querySelector('title').textContent : document.title;
@@ -1855,11 +1872,9 @@ async function initializeArticlesPage() {
   try { 
     const data = await DataManager.fetchData('articles'); 
     if (window._currentSearchController && window._currentSearchController.page === 'articles') {
-      window._currentSearchController.setCurrentPageData(data);
       window._currentSearchController.handleSearch(true);
     } else {
       PageManager.initializePageFeatures('articles');
-      if (window._currentSearchController) window._currentSearchController.setCurrentPageData(data);
     }
   } catch (e) { 
     console.error('[ERROR] 加载文章数据失败:', e); 
@@ -1870,11 +1885,9 @@ async function initializeWorksPage() {
   try { 
     const data = await DataManager.fetchData('works'); 
     if (window._currentSearchController && window._currentSearchController.page === 'works') {
-      window._currentSearchController.setCurrentPageData(data);
       window._currentSearchController.handleSearch(true);
     } else {
       PageManager.initializePageFeatures('works');
-      if (window._currentSearchController) window._currentSearchController.setCurrentPageData(data);
     }
   } catch (e) { 
     console.error('[ERROR] 加载作品数据失败:', e); 
