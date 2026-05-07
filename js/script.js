@@ -222,7 +222,7 @@ class PerformanceMonitor {
   
   start(label) {
     if (this.timers.has(label)) {
-      console.warn(`[WARN] 计时器“${label}”已在运行`);
+      console.warn(`[WARN] 计时器"${label}"已在运行`);
       return;
     }
     this.timers.set(label, performance.now());
@@ -230,7 +230,7 @@ class PerformanceMonitor {
   
   end(label) {
     if (!this.timers.has(label)) {
-      console.warn(`[WARN] 计时器“${label}”不存在`);
+      console.warn(`[WARN] 计时器"${label}"不存在`);
       return;
     }
     const startTime = this.timers.get(label);
@@ -564,29 +564,6 @@ class UIRenderer {
     </div>
     `;
   }
-  
-  static async fetchPageContent(url) {
-    const res = await fetch(url);
-    if (!res.ok) {
-      if (res.status === 404) throw new Error('404');
-      throw new Error(`HTTP错误! 状态码: ${res.status}`);
-    }
-    return res.text();
-  }
-  
-  static replaceContainerContent(base, selector, html) {
-    const doc = new DOMParser().parseFromString(base, 'text/html');
-    const container = doc.querySelector(selector);
-    if (container) {
-      container.innerHTML = html;
-      const fetchedMain = doc.querySelector('#mainContent') || doc.querySelector('main.main-content-area') || doc.querySelector('main') || container;
-      return fetchedMain ? fetchedMain.innerHTML : container.innerHTML;
-    }
-    console.warn(`[WARN] ${selector} 未找到，尝试返回主内容或追加内容`);
-    const fetchedMain = doc.querySelector('#mainContent') || doc.querySelector('main.main-content-area') || doc.querySelector('main');
-    if (fetchedMain) return fetchedMain.innerHTML;
-    return base + html;
-  }
 }
 
 // ==================== 滚动揭示效果 ====================
@@ -662,6 +639,7 @@ class SearchController {
     this.popStateHandler = null;
     this.skipNextPopState = false;
     this.currentPageData = null;
+    this.dataManager = new DataManager(); // 添加对 DataManager 的依赖
     this.init();
   }
   
@@ -785,27 +763,27 @@ class SearchController {
     if (!skipUpdateURL) this.updateURL();
   }
   
-  getCachedData(type) {
+  // 修改：从 DataManager 获取数据，而不是直接从 localStorage
+  async getCachedData(type) {
     if (this.currentPageData) {
       return this.currentPageData;
     }
-    if (storageController.isAllowed()) {
-      const raw = storageController.getItem(`${type}Data`);
-      if (!raw) return null;
-      try {
-        const data = JSON.parse(raw);
-        return Utils.validateData(data, type) ? data : null;
-      } catch { return null; }
+    try {
+      const data = await DataManager.fetchData(type, true); // 使用 DataManager 获取缓存数据
+      this.currentPageData = data;
+      return data;
+    } catch (error) {
+      console.warn(`[WARN] 从 DataManager 获取 ${type} 数据失败:`, error);
+      return null;
     }
-    return null;
   }
   
   setCurrentPageData(data) {
     this.currentPageData = data;
   }
   
-  getAllTags() {
-    const data = this.getCachedData(this.page);
+  async getAllTags() {
+    const data = await this.getCachedData(this.page);
     const tags = new Set();
     if (!data) return tags;
     const items = this.page === 'works' ? data.works : data.articles;
@@ -830,7 +808,7 @@ class SearchController {
     });
   }
   
-  updateTagFilters() {
+  async updateTagFilters() {
     if (!['works', 'articles'].includes(this.page)) return;
     const container = document.getElementById(`${this.page}-tags-filter`);
     if (!container) return;
@@ -841,7 +819,7 @@ class SearchController {
     label.textContent = '按标签筛选:';
     container.appendChild(label);
     
-    const allTags = this.getAllTags();
+    const allTags = await this.getAllTags();
     if (allTags.size === 0) {
       const msg = document.createElement('span');
       msg.textContent = '暂无标签';
@@ -890,8 +868,8 @@ class SearchController {
     this.handleSearch();
   }
   
-  filterContent(type, query, field) {
-    const data = this.getCachedData(type);
+  async filterContent(type, query, field) {
+    const data = await this.getCachedData(type);
     if (!data) return;
     
     let items = type === 'works' ? [...data.works] : [...data.articles];
