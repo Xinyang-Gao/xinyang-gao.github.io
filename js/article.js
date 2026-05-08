@@ -2,15 +2,14 @@
 class ArticlePageManager {
     constructor() {
         this.scrollPositionKey = `scrollPosition_${window.location.pathname}${window.location.search}`;
-        this.scrollTicking = false;
         this.observer = null;
+        this.beforeUnloadHandler = null;
         
         this.galleryImages = [];
         this.currentIndex = 0;
         
         // 移动端目录浮窗相关属性
         this.isMobileMode = false;
-        this.mobileTOCActive = false;
         this.tocFloatBtn = null;
         this.tocCloseBtn = null;
         this.resizeTimer = null;
@@ -31,10 +30,33 @@ class ArticlePageManager {
             this.initCodeBlocks();
             this.setupMobileTOC(); // 初始化移动端目录浮窗功能
         });
-        // 页面关闭前保存滚动位置
-        window.addEventListener('beforeunload', () => {
+    }
+
+    /**
+     * 设置滚动监听，用于保存滚动位置
+     */
+    setupScrollListener() {
+        // 绑定 beforeunload 事件用于保存最终滚动位置
+        this.beforeUnloadHandler = () => {
             sessionStorage.setItem(this.scrollPositionKey, window.scrollY);
-        });
+        };
+        window.addEventListener('beforeunload', this.beforeUnloadHandler);
+    }
+
+    /**
+     * 销毁实例，断开观察器连接并移除事件监听器
+     */
+    destroy() {
+        // 断开 IntersectionObserver
+        if (this.observer) {
+            this.observer.disconnect();
+            this.observer = null;
+        }
+        // 移除 beforeunload 事件监听器
+        if (this.beforeUnloadHandler) {
+            window.removeEventListener('beforeunload', this.beforeUnloadHandler);
+            this.beforeUnloadHandler = null;
+        }
     }
 
     restoreScrollPosition() {
@@ -44,18 +66,6 @@ class ArticlePageManager {
                 window.scrollTo(0, parseInt(savedPosition));
             });
         }
-    }
-
-    setupScrollListener() {
-        window.addEventListener('scroll', () => {
-            if (!this.scrollTicking) {
-                requestAnimationFrame(() => {
-                    sessionStorage.setItem(this.scrollPositionKey, window.scrollY);
-                    this.scrollTicking = false;
-                });
-                this.scrollTicking = true;
-            }
-        }, { passive: true });
     }
 
     generateTOC() {
@@ -119,8 +129,8 @@ class ArticlePageManager {
     initScrollSpy() {
         const options = {
             root: null,
-            rootMargin: '-100px 0px -70% 0px',
-            threshold: [0, 0.1, 0.5, 1]
+            rootMargin: '0px 0px -60% 0px',
+            threshold: [0.1, 0.5]
         };
 
         this.observer = new IntersectionObserver((entries) => {
@@ -239,7 +249,9 @@ class ArticlePageManager {
         tempImage.src = src;
     }
 
-    // 保留以备将来使用，若没有 ImageViewer 则静默忽略
+    /**
+     * 图片查看器方法，备用路径，主流程由 GlobalImageManager 统一处理
+     */
     openImageViewer(index) {
         if (!this.galleryImages.length) return;
         if (typeof window.ImageViewer !== 'undefined') {
@@ -248,9 +260,11 @@ class ArticlePageManager {
                 onClose: () => {}
             });
         } else {
-            // fallback: 在新窗口打开图片
-            const img = this.galleryImages[index];
-            if (img && img.src) window.open(img.src, '_blank');
+            // fallback: 在新窗口打开图片，仅当 galleryImages 存在且非空时
+            if (this.galleryImages.length > 0) {
+                const img = this.galleryImages[index];
+                if (img && img.src) window.open(img.src, '_blank', 'noopener,noreferrer');
+            }
         }
     }
 
@@ -351,17 +365,15 @@ class ArticlePageManager {
                     if (navigator.clipboard && navigator.clipboard.writeText) {
                         await navigator.clipboard.writeText(text);
                     } else {
-                        const ta = document.createElement('textarea');
-                        ta.value = text;
-                        document.body.appendChild(ta);
-                        ta.select();
-                        document.execCommand('copy');
-                        ta.remove();
+                        // 如果 navigator.clipboard 不可用，输出提示信息
+                        console.warn('复制失败：剪贴板API不可用');
+                        return;
                     }
                     const prev = copyBtn.textContent;
                     copyBtn.textContent = '已复制';
                     setTimeout(() => { copyBtn.textContent = prev; }, 1400);
                 } catch (err) {
+                    console.warn(`复制失败：${err.name || err.message}`);
                     copyBtn.textContent = '复制失败';
                     setTimeout(() => { copyBtn.textContent = '复制'; }, 1600);
                 }
@@ -381,6 +393,11 @@ class ArticlePageManager {
                 this.checkMobileMode();
             }, 200);
         });
+    }
+
+    get mobileTOCActive() {
+        const tocContainer = document.querySelector('.toc-container');
+        return tocContainer && tocContainer.style.display !== 'none';
     }
 
     checkMobileMode() {
@@ -431,8 +448,6 @@ class ArticlePageManager {
             this.tocFloatBtn.parentNode.removeChild(this.tocFloatBtn);
             this.tocFloatBtn = null;
         }
-        // 关闭浮窗状态重置
-        this.mobileTOCActive = false;
     }
 
     addMobileTOCButton() {
@@ -480,15 +495,23 @@ class ArticlePageManager {
     }
 
     bindMobileTOCEvents() {
-        // 点击文档其他区域关闭浮窗（可选）
-        document.addEventListener('click', (e) => {
-            if (!this.isMobileMode || !this.mobileTOCActive) return;
+        // 点击文档其他区域关闭浮窗
+        const closeHandler = (e) => {
+            // 不再依赖 mobileTOCActive 标志位，而是实时检查元素状态
             const tocContainer = document.querySelector('.toc-container');
+            if (!tocContainer || tocContainer.style.display === 'none') return;
+            
             const tocBtn = this.tocFloatBtn;
             if (tocContainer && !tocContainer.contains(e.target) && tocBtn && !tocBtn.contains(e.target)) {
-                this.closeMobileTOC();
+                // 排除点击/触摸目标为 .mobile-toc-trigger、.mobile-toc-content 及其子元素的情况
+                if (!e.target.closest('.mobile-toc-trigger') && !e.target.closest('.mobile-toc-content')) {
+                    this.closeMobileTOC();
+                }
             }
-        });
+        };
+        
+        document.addEventListener('click', closeHandler);
+        document.addEventListener('touchstart', closeHandler);
     }
 
     toggleMobileTOC() {
@@ -505,7 +528,7 @@ class ArticlePageManager {
         if (!tocContainer) return;
         
         tocContainer.style.display = 'flex';
-        this.mobileTOCActive = true;
+        // 移动端浮窗激活状态通过元素样式判断，不再依赖标志位
         
         // 打开时更新活动目录项并滚动到可视区域
         this.updateActiveTOCItemForVisible();
@@ -528,7 +551,6 @@ class ArticlePageManager {
         if (tocContainer) {
             tocContainer.style.display = 'none';
         }
-        this.mobileTOCActive = false;
         document.body.style.overflow = '';
         if (this.tocFloatBtn) {
             this.tocFloatBtn.classList.remove('active');

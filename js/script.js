@@ -599,32 +599,6 @@ class ScrollReveal {
   }
 }
 
-// ==================== 数学公式和Mermaid渲染 ====================
-function renderMathAndMermaid(rootElement = document.body) {
-  try {
-    if (typeof renderMathInElement === 'function') {
-      try {
-        renderMathInElement(rootElement, {
-          delimiters: [
-            { left: '$$', right: '$$', display: true },
-            { left: '$', right: '$', display: false }
-          ],
-          throwOnError: false
-        });
-      } catch (e) { console.warn('[WARN] KaTeX 渲染失败', e); }
-    }
-    if (window.mermaid && typeof window.mermaid.init === 'function') {
-      try {
-        window.mermaid.initialize({ startOnLoad: false });
-        const mermaids = (rootElement.querySelectorAll ? rootElement.querySelectorAll('.mermaid') : []);
-        mermaids.forEach(el => {
-          try { window.mermaid.init(undefined, el); } catch (err) { console.warn('[WARN] Mermaid 渲染单个图失败', err); }
-        });
-      } catch (e) { console.warn('[WARN] Mermaid 初始化失败', e); }
-    }
-  } catch (e) { console.warn('[WARN] renderMathAndMermaid 异常', e); }
-}
-
 // ==================== 搜索控制器 ====================
 class SearchController {
   constructor(page) {
