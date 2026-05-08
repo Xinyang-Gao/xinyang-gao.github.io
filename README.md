@@ -396,7 +396,7 @@ tag: [随笔, 生活]
     "name": "站点名称",
     "link": "https://example.com",
     "desc": "站点描述",
-    "avatar": "https://example.com/avatar.jpg"
+    "avatar": "https://example.com/avatar.webp"
   }
 ]
 ```
