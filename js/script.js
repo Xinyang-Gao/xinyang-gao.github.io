@@ -142,7 +142,7 @@ class StorageController {
   }
   
   checkInitialStatus() {
-    const consentGiven = localStorage.getItem(CONFIG.STORAGE_KEYS.COOKIE_CONSENT) === 'true';
+    const consentGiven = this.getItem(CONFIG.STORAGE_KEYS.COOKIE_CONSENT) === 'true';
     if (!consentGiven) {
       this.clearAllData();
       return false;
@@ -154,16 +154,30 @@ class StorageController {
     window.addEventListener('cookieConsentAccepted', () => {
       this.enableStorage();
     });
+    
+    // 监听cookie同意状态变化
+    window.addEventListener('cookieConsentChanged', (event) => {
+      const consent = event.detail.consent;
+      if (consent) {
+        this.enableStorage();
+      } else {
+        this.disableStorage();
+      }
+    });
   }
   
   enableStorage() {
     this.enabled = true;
-    // 不再保存STORAGE_ENABLED键，统一依靠COOKIE_CONSENT
+    // 确保cookie同意状态被保存
+    this.setItem(CONFIG.STORAGE_KEYS.COOKIE_CONSENT, 'true');
+    console.log('[StorageController] 存储功能已启用');
   }
   
   disableStorage() {
     this.enabled = false;
+    // 清除所有数据，包括cookie同意状态
     this.clearAllData();
+    console.log('[StorageController] 存储功能已禁用');
   }
   
   isAllowed() {
@@ -175,7 +189,7 @@ class StorageController {
     
     keysToRemove.forEach(key => {
       try {
-        localStorage.removeItem(key);
+        this.removeItem(key);
       } catch (e) {
         console.warn(`[WARN] 删除存储项 "${key}" 失败:`, e);
       }
@@ -183,7 +197,17 @@ class StorageController {
   }
   
   getItem(key) {
-    if (!this.isAllowed()) return null;
+    if (!this.isAllowed()) {
+      // 特殊处理cookie同意状态，即使存储被禁用也允许读取
+      if (key === CONFIG.STORAGE_KEYS.COOKIE_CONSENT) {
+        try {
+          return localStorage.getItem(key);
+        } catch (e) {
+          return null;
+        }
+      }
+      return null;
+    }
     try {
       return localStorage.getItem(key);
     } catch (e) {
@@ -193,6 +217,17 @@ class StorageController {
   }
   
   setItem(key, value) {
+    // 特殊处理cookie同意状态，始终允许设置
+    if (key === CONFIG.STORAGE_KEYS.COOKIE_CONSENT) {
+      try {
+        localStorage.setItem(key, value);
+        return;
+      } catch (e) {
+        console.warn(`[WARN] 设置cookie同意状态失败:`, e);
+        return;
+      }
+    }
+    
     if (!this.isAllowed()) return;
     try {
       localStorage.setItem(key, value);
@@ -202,6 +237,17 @@ class StorageController {
   }
   
   removeItem(key) {
+    // 特殊处理cookie同意状态，始终允许删除
+    if (key === CONFIG.STORAGE_KEYS.COOKIE_CONSENT) {
+      try {
+        localStorage.removeItem(key);
+        return;
+      } catch (e) {
+        console.warn(`[WARN] 删除cookie同意状态失败:`, e);
+        return;
+      }
+    }
+    
     if (!this.isAllowed()) return;
     try {
       localStorage.removeItem(key);
@@ -1132,103 +1178,333 @@ class CustomCursor {
   }
   
   initDOM() {
-    this.container = document.createElement('div'); this.container.className = 'custom-cursor'; document.body.appendChild(this.container);
-    const svgNS = 'http://www.w3.org/2000/svg'; const svg = document.createElementNS(svgNS, 'svg'); svg.setAttribute('width', '50'); svg.setAttribute('height', '54'); svg.setAttribute('viewBox', '0 0 50 54'); svg.style.width = '50px'; svg.style.height = '54px'; svg.style.display = 'block';
-    this.fillPath = document.createElementNS(svgNS, 'path'); this.fillPath.setAttribute('d', 'M42.6817 41.1495L27.5103 6.79925C26.7269 5.02557 24.2082 5.02558 23.3927 6.79925L7.59814 41.1495C6.75833 42.9759 8.52712 44.8902 10.4125 44.1954L24.3757 39.0496C24.8829 38.8627 25.4385 38.8627 25.9422 39.0496L39.8121 44.1954C41.6849 44.8902 43.4884 42.9759 42.6817 41.1495Z');
-    this.strokePath = document.createElementNS(svgNS, 'path'); this.strokePath.setAttribute('d', 'M43.7146 40.6933L28.5431 6.34306C27.3556 3.65428 23.5772 3.69516 22.3668 6.32755L6.57226 40.6778C5.3134 43.4156 7.97238 46.298 10.803 45.2549L24.7662 40.109C25.0221 40.0147 25.2999 40.0156 25.5494 40.1082L39.4193 45.254C42.2261 46.2953 44.9254 43.4347 43.7146 40.6933Z'); this.strokePath.setAttribute('stroke-width', '2.5'); this.strokePath.setAttribute('fill', 'none');
-    svg.appendChild(this.fillPath); svg.appendChild(this.strokePath); this.container.appendChild(svg); this.svg = svg;
-    this.dot = document.createElement('div'); this.dot.className = 'custom-cursor-dot'; document.body.appendChild(this.dot);
+    this.container = document.createElement('div');
+    this.container.className = 'custom-cursor';
+    document.body.appendChild(this.container);
+    const svgNS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(svgNS, 'svg');
+    svg.setAttribute('width', '50');
+    svg.setAttribute('height', '54');
+    svg.setAttribute('viewBox', '0 0 50 54');
+    svg.style.width = '50px';
+    svg.style.height = '54px';
+    svg.style.display = 'block';
+    this.fillPath = document.createElementNS(svgNS, 'path');
+    this.fillPath.setAttribute('d', 'M42.6817 41.1495L27.5103 6.79925C26.7269 5.02557 24.2082 5.02558 23.3927 6.79925L7.59814 41.1495C6.75833 42.9759 8.52712 44.8902 10.4125 44.1954L24.3757 39.0496C24.8829 38.8627 25.4385 38.8627 25.9422 39.0496L39.8121 44.1954C41.6849 44.8902 43.4884 42.9759 42.6817 41.1495Z');
+    this.strokePath = document.createElementNS(svgNS, 'path');
+    this.strokePath.setAttribute('d', 'M43.7146 40.6933L28.5431 6.34306C27.3556 3.65428 23.5772 3.69516 22.3668 6.32755L6.57226 40.6778C5.3134 43.4156 7.97238 46.298 10.803 45.2549L24.7662 40.109C25.0221 40.0147 25.2999 40.0156 25.5494 40.1082L39.4193 45.254C42.2261 46.2953 44.9254 43.4347 43.7146 40.6933Z');
+    this.strokePath.setAttribute('stroke-width', '2.5');
+    this.strokePath.setAttribute('fill', 'none');
+    svg.appendChild(this.fillPath);
+    svg.appendChild(this.strokePath);
+    this.container.appendChild(svg);
+    this.svg = svg;
+    this.dot = document.createElement('div');
+    this.dot.className = 'custom-cursor-dot';
+    document.body.appendChild(this.dot);
   }
   
   updateColors() {
     const rootStyles = getComputedStyle(document.documentElement);
     const accentColor = rootStyles.getPropertyValue('--accent-color').trim() || '#a55860';
-    this.fillPath.setAttribute('fill', accentColor); this.strokePath.setAttribute('stroke', '#ffffff');
+    this.fillPath.setAttribute('fill', accentColor);
+    this.strokePath.setAttribute('stroke', '#ffffff');
   }
   
   initEvents() {
     window.addEventListener('mousemove', (e) => {
-      if (!this.visible) { this.visible = true; this.container.classList.add('visible'); document.body.classList.add('custom-cursor-enabled'); }
+      if (!this.visible) {
+        this.visible = true;
+        this.container.classList.add('visible');
+        document.body.classList.add('custom-cursor-enabled');
+      }
       const elemUnderCursor = document.elementsFromPoint(e.clientX, e.clientY)[0];
       const isClickable = elemUnderCursor?.matches?.('a, button, .nav-item, .list-item, [role="button"], [data-clickable], .tag-button, .work-details-close, input, textarea, select, [contenteditable="true"]');
-      if (isClickable) { if (!this.snappedMode || this.snappedElement !== elemUnderCursor) this.enterSnappedMode(elemUnderCursor); this.updateDotPosition(e.clientX, e.clientY); }
-      else { if (this.snappedMode) this.exitSnappedMode(); }
+      if (isClickable) {
+        if (!this.snappedMode || this.snappedElement !== elemUnderCursor) this.enterSnappedMode(elemUnderCursor);
+        this.updateDotPosition(e.clientX, e.clientY);
+      } else {
+        if (this.snappedMode) this.exitSnappedMode();
+      }
       const now = performance.now();
-      if (this.lastTimestamp) { const dt = Math.min(50, Math.max(1, now - this.lastTimestamp)); this.velocityX = (e.clientX - this.lastMouseX) / dt; this.velocityY = (e.clientY - this.lastMouseY) / dt; }
-      this.lastMouseX = e.clientX; this.lastMouseY = e.clientY; this.lastTimestamp = now;
-      if (!this.snappedMode) { this.targetX = e.clientX; this.targetY = e.clientY; let speed = Math.hypot(this.velocityX, this.velocityY); if (speed > this.config.minSpeedForRotation) { let angle = Math.atan2(this.velocityY, this.velocityX) * 180 / Math.PI + 90; this.targetRotation = angle; } else this.targetRotation = 0; }
-      else this.targetRotation = -45;
+      if (this.lastTimestamp) {
+        const dt = Math.min(50, Math.max(1, now - this.lastTimestamp));
+        this.velocityX = (e.clientX - this.lastMouseX) / dt;
+        this.velocityY = (e.clientY - this.lastMouseY) / dt;
+      }
+      this.lastMouseX = e.clientX;
+      this.lastMouseY = e.clientY;
+      this.lastTimestamp = now;
+      if (!this.snappedMode) {
+        this.targetX = e.clientX;
+        this.targetY = e.clientY;
+        let speed = Math.hypot(this.velocityX, this.velocityY);
+        if (speed > this.config.minSpeedForRotation) {
+          let angle = Math.atan2(this.velocityY, this.velocityX) * 180 / Math.PI + 90;
+          this.targetRotation = angle;
+        } else this.targetRotation = 0;
+      } else this.targetRotation = -45;
     });
-    window.addEventListener('mouseleave', () => { this.visible = false; this.container.classList.remove('visible'); document.body.classList.remove('custom-cursor-enabled'); if (this.snappedMode) this.exitSnappedMode(); });
-    window.addEventListener('mouseenter', () => { if (this.targetX !== undefined) { this.visible = true; this.container.classList.add('visible'); document.body.classList.add('custom-cursor-enabled'); } });
-    window.addEventListener('scroll', () => { if (this.snappedMode && this.snappedElement) this.updateSnappedTargetPosition(); });
-    window.addEventListener('resize', () => { if (this.snappedMode && this.snappedElement) this.updateSnappedTargetPosition(); });
+    window.addEventListener('mouseleave', () => {
+      this.visible = false;
+      this.container.classList.remove('visible');
+      document.body.classList.remove('custom-cursor-enabled');
+      if (this.snappedMode) this.exitSnappedMode();
+    });
+    window.addEventListener('mouseenter', () => {
+      if (this.targetX !== undefined) {
+        this.visible = true;
+        this.container.classList.add('visible');
+        document.body.classList.add('custom-cursor-enabled');
+      }
+    });
+    window.addEventListener('scroll', () => {
+      if (this.snappedMode && this.snappedElement) this.updateSnappedTargetPosition();
+    });
+    window.addEventListener('resize', () => {
+      if (this.snappedMode && this.snappedElement) this.updateSnappedTargetPosition();
+    });
   }
   
-  enterSnappedMode(element) { if (!element) return; this.snappedMode = true; this.snappedElement = element; this.dot.style.display = 'block'; this.updateSnappedTargetPosition(); this.targetRotation = 45; }
-  exitSnappedMode() { this.snappedMode = false; this.snappedElement = null; this.dot.style.display = 'none'; this.targetRotation = 0; }
-  updateSnappedTargetPosition() { if (!this.snappedElement) return; const rect = this.snappedElement.getBoundingClientRect(); this.targetX = rect.right; this.targetY = rect.bottom; }
-  updateDotPosition(x, y) { if (!this.dot) return; this.dot.style.transform = `translate(${x}px, ${y}px)`; }
+  enterSnappedMode(element) {
+    if (!element) return;
+    this.snappedMode = true;
+    this.snappedElement = element;
+    this.dot.style.display = 'block';
+    this.updateSnappedTargetPosition();
+    this.targetRotation = 45;
+  }
+  
+  exitSnappedMode() {
+    this.snappedMode = false;
+    this.snappedElement = null;
+    this.dot.style.display = 'none';
+    this.targetRotation = 0;
+  }
+  
+  updateSnappedTargetPosition() {
+    if (!this.snappedElement) return;
+    const rect = this.snappedElement.getBoundingClientRect();
+    this.targetX = rect.right;
+    this.targetY = rect.bottom;
+  }
+  
+  updateDotPosition(x, y) {
+    if (!this.dot) return;
+    this.dot.style.transform = `translate(${x}px, ${y}px)`;
+  }
+  
   startAnimation() {
     const animate = () => {
       if (this.snappedMode && this.snappedElement) this.updateSnappedTargetPosition();
-      this.currentX += (this.targetX - this.currentX) * this.config.stiffness; this.currentY += (this.targetY - this.currentY) * this.config.stiffness;
-      const dx = this.targetX - this.currentX; const dy = this.targetY - this.currentY; this.currentX += dx * 0.3; this.currentY += dy * 0.3;
-      let diff = this.targetRotation - this.currentRotation; if (Math.abs(diff) > 180) diff -= Math.sign(diff) * 360; this.currentRotation += diff * this.config.rotationSmoothing;
-      this.svg.style.transform = `translate(-50%, -50%) rotate(${this.currentRotation}deg) scale(${this.fixedScale})`; this.container.style.transform = `translate(${this.currentX}px, ${this.currentY}px)`;
+      this.currentX += (this.targetX - this.currentX) * this.config.stiffness;
+      this.currentY += (this.targetY - this.currentY) * this.config.stiffness;
+      const dx = this.targetX - this.currentX;
+      const dy = this.targetY - this.currentY;
+      this.currentX += dx * 0.3;
+      this.currentY += dy * 0.3;
+      let diff = this.targetRotation - this.currentRotation;
+      if (Math.abs(diff) > 180) diff -= Math.sign(diff) * 360;
+      this.currentRotation += diff * this.config.rotationSmoothing;
+      this.svg.style.transform = `translate(-50%, -50%) rotate(${this.currentRotation}deg) scale(${this.fixedScale})`;
+      this.container.style.transform = `translate(${this.currentX}px, ${this.currentY}px)`;
       this.rafId = requestAnimationFrame(animate);
-    }; this.rafId = requestAnimationFrame(animate);
+    };
+    this.rafId = requestAnimationFrame(animate);
   }
-  destroy() { if (this.rafId) cancelAnimationFrame(this.rafId); this.container?.remove(); this.dot?.remove(); document.body.classList.remove('custom-cursor-enabled'); document.body.style.cursor = ''; }
+  
+  destroy() {
+    if (this.rafId) cancelAnimationFrame(this.rafId);
+    this.container?.remove();
+    this.dot?.remove();
+    document.body.classList.remove('custom-cursor-enabled');
+    document.body.style.cursor = '';
+  }
 }
 
 // ==================== 外链管理器 ====================
 class ExternalLinkManager {
   constructor() {
     this.WHITELIST = CONFIG.EXTERNAL_WHITELIST;
-    this.currentModal = null; this.currentOverlay = null; this.countdownInterval = null; this.remainingSeconds = 3; this.pendingUrl = null; this.isSafe = false; this.redirectTriggered = false;
+    this.currentModal = null;
+    this.currentOverlay = null;
+    this.countdownInterval = null;
+    this.remainingSeconds = 3;
+    this.pendingUrl = null;
+    this.isSafe = false;
+    this.redirectTriggered = false;
     this.internalDomains = CONFIG.INTERNAL_DOMAINS;
     this.init();
   }
   
-  isWhitelistedDomain(hostname) { if (!hostname) return false; const lower = hostname.toLowerCase(); if (this.WHITELIST.has(lower)) return true; for (let domain of this.WHITELIST) if (lower.endsWith('.' + domain)) return true; return false; }
+  isWhitelistedDomain(hostname) {
+    if (!hostname) return false;
+    const lower = hostname.toLowerCase();
+    if (this.WHITELIST.has(lower)) return true;
+    for (let domain of this.WHITELIST) if (lower.endsWith('.' + domain)) return true;
+    return false;
+  }
   
-  isExternalLink(url) { if (!url || url.startsWith('#') || url.startsWith('javascript:')) return false; try { const linkUrl = new URL(url, window.location.href); if (!['http:', 'https:'].includes(linkUrl.protocol)) return false; return !this.internalDomains.includes(linkUrl.hostname); } catch (e) { return false; } }
+  isExternalLink(url) {
+    if (!url || url.startsWith('#') || url.startsWith('javascript:')) return false;
+    try {
+      const linkUrl = new URL(url, window.location.href);
+      if (!['http:', 'https:'].includes(linkUrl.protocol)) return false;
+      return !this.internalDomains.includes(linkUrl.hostname);
+    } catch (e) {
+      return false;
+    }
+  }
   
-  clearTimer() { if (this.countdownInterval) { clearInterval(this.countdownInterval); this.countdownInterval = null; } }
+  clearTimer() {
+    if (this.countdownInterval) {
+      clearInterval(this.countdownInterval);
+      this.countdownInterval = null;
+    }
+  }
   
-  closeModal() { if (!this.currentModal) return; this.clearTimer(); if (this.currentModal.classList.contains('closing')) return; this.currentModal.classList.add('closing'); if (this.currentOverlay) this.currentOverlay.classList.remove('active'); setTimeout(() => { if (this.currentModal) this.currentModal.remove(); if (this.currentOverlay) this.currentOverlay.remove(); this.currentModal = null; this.currentOverlay = null; this.pendingUrl = null; this.redirectTriggered = false; }, 400); }
+  closeModal() {
+    if (!this.currentModal) return;
+    this.clearTimer();
+    if (this.currentModal.classList.contains('closing')) return;
+    this.currentModal.classList.add('closing');
+    if (this.currentOverlay) this.currentOverlay.classList.remove('active');
+    setTimeout(() => {
+      if (this.currentModal) this.currentModal.remove();
+      if (this.currentOverlay) this.currentOverlay.remove();
+      this.currentModal = null;
+      this.currentOverlay = null;
+      this.pendingUrl = null;
+      this.redirectTriggered = false;
+    }, 400);
+  }
   
-  doRedirect() { if (this.redirectTriggered) return; if (!this.pendingUrl) return; this.redirectTriggered = true; this.clearTimer(); window.open(this.pendingUrl, '_blank', 'noopener,noreferrer'); setTimeout(() => this.closeModal(), 300); }
+  doRedirect() {
+    if (this.redirectTriggered) return;
+    if (!this.pendingUrl) return;
+    this.redirectTriggered = true;
+    this.clearTimer();
+    window.open(this.pendingUrl, '_blank', 'noopener,noreferrer');
+    setTimeout(() => this.closeModal(), 300);
+  }
   
-  startCountdown(timerElement) { if (!this.isSafe) return; if (this.redirectTriggered) return; this.clearTimer(); this.remainingSeconds = 3; if (timerElement) timerElement.innerHTML = `信任站点 · ${this.remainingSeconds} 秒后自动跳转`; this.countdownInterval = setInterval(() => { if (this.redirectTriggered || !this.currentModal) { this.clearTimer(); return; } this.remainingSeconds--; if (this.remainingSeconds <= 0) { this.clearTimer(); if (!this.redirectTriggered && timerElement) timerElement.innerHTML = `✓ 正在跳转...`; this.doRedirect(); } else if (!this.redirectTriggered && timerElement) timerElement.innerHTML = `信任站点 · ${this.remainingSeconds} 秒后自动跳转`; }, 1000); }
+  startCountdown(timerElement) {
+    if (!this.isSafe) return;
+    if (this.redirectTriggered) return;
+    this.clearTimer();
+    this.remainingSeconds = 3;
+    if (timerElement) timerElement.innerHTML = `信任站点 · ${this.remainingSeconds} 秒后自动跳转`;
+    this.countdownInterval = setInterval(() => {
+      if (this.redirectTriggered || !this.currentModal) {
+        this.clearTimer();
+        return;
+      }
+      this.remainingSeconds--;
+      if (this.remainingSeconds <= 0) {
+        this.clearTimer();
+        if (!this.redirectTriggered && timerElement) timerElement.innerHTML = `✓ 正在跳转...`;
+        this.doRedirect();
+      } else if (!this.redirectTriggered && timerElement) timerElement.innerHTML = `信任站点 · ${this.remainingSeconds} 秒后自动跳转`;
+    }, 1000);
+  }
   
   showExternalLinkModal(url, targetElement = null) {
     if (this.currentModal) this.closeModal();
-    let hostname = ''; let isValid = false;
-    try { const urlObj = new URL(url); if (urlObj.protocol === 'http:' || urlObj.protocol === 'https:') { isValid = true; hostname = urlObj.hostname; } else { this.showErrorToast('不支持的协议，仅支持 HTTP/HTTPS'); return false; } } catch (err) { this.showErrorToast('链接格式无效'); return false; }
+    let hostname = '';
+    let isValid = false;
+    try {
+      const urlObj = new URL(url);
+      if (urlObj.protocol === 'http:' || urlObj.protocol === 'https:') {
+        isValid = true;
+        hostname = urlObj.hostname;
+      } else {
+        this.showErrorToast('不支持的协议，仅支持 HTTP/HTTPS');
+        return false;
+      }
+    } catch (err) {
+      this.showErrorToast('链接格式无效');
+      return false;
+    }
     if (!isValid) return false;
-    this.isSafe = this.isWhitelistedDomain(hostname); this.pendingUrl = url; this.redirectTriggered = false;
-    const overlay = document.createElement('div'); overlay.className = 'modal-overlay'; document.body.appendChild(overlay);
-    const modal = document.createElement('div'); modal.className = 'external-modal';
-    const safeClass = this.isSafe ? 'safe' : ''; const subText = this.isSafe ? '安全站点' : '您即将访问外部网站'; const messageHtml = this.isSafe ? '安全的网站<br>将自动为您跳转，您也可点击「立即前往」手动跳转。' : '本站不对第三方内容负责'; const btnText = this.isSafe ? '立即前往' : '继续前往'; const btnSafeClass = this.isSafe ? 'safe' : '';
+    this.isSafe = this.isWhitelistedDomain(hostname);
+    this.pendingUrl = url;
+    this.redirectTriggered = false;
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    document.body.appendChild(overlay);
+    const modal = document.createElement('div');
+    modal.className = 'external-modal';
+    const safeClass = this.isSafe ? 'safe' : '';
+    const subText = this.isSafe ? '安全站点' : '您即将访问外部网站';
+    const messageHtml = this.isSafe ? '安全的网站<br>将自动为您跳转，您也可点击「立即前往」手动跳转。' : '本站不对第三方内容负责';
+    const btnText = this.isSafe ? '立即前往' : '继续前往';
+    const btnSafeClass = this.isSafe ? 'safe' : '';
     modal.innerHTML = `<div class="external-modal-close">✕</div><div class="external-modal-content"><div class="external-modal-header"><span class="external-modal-domain ${safeClass}">${Utils.escapeHtml(hostname)}</span></div><div class="external-modal-sub">${subText}</div><div class="external-modal-url">${Utils.escapeHtml(url)}</div><div class="external-modal-message">${messageHtml}</div><div id="external-timer-area" class="external-modal-timer" style="${this.isSafe ? '' : 'display: none;'}"></div><div class="external-modal-buttons"><button class="external-modal-btn" id="external-cancel-btn">取消</button><button class="external-modal-btn external-modal-btn-primary ${btnSafeClass}" id="external-confirm-btn">${btnText}</button></div></div>`;
-    document.body.appendChild(modal); this.currentModal = modal; this.currentOverlay = overlay;
-    const closeBtn = modal.querySelector('.external-modal-close'); const cancelBtn = modal.querySelector('#external-cancel-btn'); const confirmBtn = modal.querySelector('#external-confirm-btn'); const timerArea = modal.querySelector('#external-timer-area');
-    const handleClose = () => this.closeModal(); const handleConfirm = () => { if (this.redirectTriggered) return; this.clearTimer(); this.doRedirect(); };
-    closeBtn.addEventListener('click', handleClose); cancelBtn.addEventListener('click', handleClose); confirmBtn.addEventListener('click', handleConfirm); overlay.addEventListener('click', handleClose);
-    const escHandler = (e) => { if (e.key === 'Escape') { this.closeModal(); document.removeEventListener('keydown', escHandler); } }; document.addEventListener('keydown', escHandler);
-    const originalClose = this.closeModal.bind(this); this.closeModal = () => { document.removeEventListener('keydown', escHandler); originalClose(); this.closeModal = originalClose; };
-    requestAnimationFrame(() => { modal.classList.add('active'); overlay.classList.add('active'); });
+    document.body.appendChild(modal);
+    this.currentModal = modal;
+    this.currentOverlay = overlay;
+    const closeBtn = modal.querySelector('.external-modal-close');
+    const cancelBtn = modal.querySelector('#external-cancel-btn');
+    const confirmBtn = modal.querySelector('#external-confirm-btn');
+    const timerArea = modal.querySelector('#external-timer-area');
+    const handleClose = () => this.closeModal();
+    const handleConfirm = () => {
+      if (this.redirectTriggered) return;
+      this.clearTimer();
+      this.doRedirect();
+    };
+    closeBtn.addEventListener('click', handleClose);
+    cancelBtn.addEventListener('click', handleClose);
+    confirmBtn.addEventListener('click', handleConfirm);
+    overlay.addEventListener('click', handleClose);
+    const escHandler = (e) => {
+      if (e.key === 'Escape') {
+        this.closeModal();
+        document.removeEventListener('keydown', escHandler);
+      }
+    };
+    document.addEventListener('keydown', escHandler);
+    const originalClose = this.closeModal.bind(this);
+    this.closeModal = () => {
+      document.removeEventListener('keydown', escHandler);
+      originalClose();
+      this.closeModal = originalClose;
+    };
+    requestAnimationFrame(() => {
+      modal.classList.add('active');
+      overlay.classList.add('active');
+    });
     if (this.isSafe) this.startCountdown(timerArea);
     return true;
   }
   
-  showErrorToast(message) { const toast = document.createElement('div'); toast.textContent = message; toast.style.cssText = `position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--accent-color); color: white; padding: 10px 20px; border-radius: 40px; font-size: 0.9rem; z-index: 10000; box-shadow: var(--shadow-md); animation: fadeInUp 0.3s ease;`; document.body.appendChild(toast); setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 2500); }
+  showErrorToast(message) {
+    const toast = document.createElement('div');
+    toast.textContent = message;
+    toast.style.cssText = `position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); background: var(--accent-color); color: white; padding: 10px 20px; border-radius: 40px; font-size: 0.9rem; z-index: 10000; box-shadow: var(--shadow-md); animation: fadeInUp 0.3s ease;`;
+    document.body.appendChild(toast);
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      setTimeout(() => toast.remove(), 300);
+    }, 2500);
+  }
   
-  handleLinkClick(e) { let target = e.target.closest('a'); if (!target) return; const href = target.getAttribute('href'); if (!href) return; if (this.isExternalLink(href)) { e.preventDefault(); e.stopPropagation(); this.showExternalLinkModal(href, target); } }
+  handleLinkClick(e) {
+    let target = e.target.closest('a');
+    if (!target) return;
+    const href = target.getAttribute('href');
+    if (!href) return;
+    if (this.isExternalLink(href)) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.showExternalLinkModal(href, target);
+    }
+  }
   
-  init() { document.addEventListener('click', (e) => this.handleLinkClick(e)); console.log('[INFO] 外链跳转确认管理器已启动'); }
+  init() {
+    document.addEventListener('click', (e) => this.handleLinkClick(e));
+    console.log('[INFO] 外链跳转确认管理器已启动');
+  }
 }
 
 // ==================== Cookie 同意管理器 ====================
@@ -1243,17 +1519,27 @@ class CookieConsentManager {
   }
   
   init() {
+    // 检查用户是否已同意Cookie
     if (this.hasConsented()) {
       // 如果已同意，通知 StorageController 启用存储
       storageController.enableStorage();
+      console.log('[CookieConsentManager] 用户已同意，启用存储功能');
       return;
     }
     
+    // 如果用户拒绝了但未明确同意，则显示横幅
+    if (this.hasRejected()) {
+      console.log('[CookieConsentManager] 用户已拒绝Cookie，禁用存储功能');
+      storageController.disableStorage();
+      return;
+    }
+    
+    // 如果既没有同意也没有拒绝，则显示横幅
     this.createBanner();
     this.attachEvents();
     
     window.addEventListener('ajax:navigation', () => {
-      if (!this.hasConsented() && this.banner && !this.banner.classList.contains('show')) {
+      if (!this.hasConsented() && !this.hasRejected() && this.banner && !this.banner.classList.contains('show')) {
         setTimeout(() => this.showBanner(), 100);
       }
     });
@@ -1262,25 +1548,37 @@ class CookieConsentManager {
   }
   
   hasConsented() {
-    return localStorage.getItem(this.STORAGE_KEY) === 'true';
+    const consent = storageController.getItem(this.STORAGE_KEY);
+    return consent === 'true';
+  }
+  
+  hasRejected() {
+    const consent = storageController.getItem(this.STORAGE_KEY);
+    return consent === 'false';
   }
   
   setConsented(consented) {
+    // 始终保存用户的选择
+    storageController.setItem(this.STORAGE_KEY, consented ? 'true' : 'false');
+    
     if (consented) {
-      if (storageController.isAllowed()) {
-        localStorage.setItem(this.STORAGE_KEY, 'true');
-      }
-      // 通知 StorageController 启用存储
+      // 同意：启用存储
       storageController.enableStorage();
+      console.log('[CookieConsentManager] Cookie同意已保存，启用存储');
     } else {
-      sessionStorage.setItem('cookieBannerDismissed', 'true');
+      // 拒绝：禁用存储
       storageController.disableStorage();
+      console.log('[CookieConsentManager] Cookie拒绝已保存，禁用存储');
     }
+    
+    // 触发全局事件通知其他模块
+    window.dispatchEvent(new CustomEvent('cookieConsentChanged', {
+      detail: { consent: consented }
+    }));
   }
   
   shouldShow() {
-    if (this.hasConsented()) return false;
-    if (sessionStorage.getItem('cookieBannerDismissed') === 'true') return false;
+    if (this.hasConsented() || this.hasRejected()) return false;
     return true;
   }
   
@@ -1360,8 +1658,7 @@ class CookieConsentManager {
   }
   
   resetConsent() {
-    localStorage.removeItem(this.STORAGE_KEY);
-    sessionStorage.removeItem('cookieBannerDismissed');
+    storageController.removeItem(this.STORAGE_KEY);
     if (!this.banner) {
       this.createBanner();
       this.attachEvents();
@@ -1601,43 +1898,100 @@ async function loadFooter() {
     const footerHTML = await response.text();
     const placeholder = document.getElementById('footer-placeholder');
     if (placeholder) {
-      const tmp = document.createElement('div'); tmp.innerHTML = footerHTML;
+      const tmp = document.createElement('div');
+      tmp.innerHTML = footerHTML;
       tmp.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
-        const href = link.getAttribute('href'); if (!href) return;
+        const href = link.getAttribute('href');
+        if (!href) return;
         const exists = Array.from(document.querySelectorAll('link[rel="stylesheet"]')).some(l => l.getAttribute('href') === href);
-        if (!exists) { const newLink = document.createElement('link'); newLink.rel = 'stylesheet'; newLink.href = href; document.head.appendChild(newLink); }
+        if (!exists) {
+          const newLink = document.createElement('link');
+          newLink.rel = 'stylesheet';
+          newLink.href = href;
+          document.head.appendChild(newLink);
+        }
       });
       tmp.querySelectorAll('script').forEach(s => s.remove());
       placeholder.innerHTML = tmp.innerHTML;
-      const tmp2 = document.createElement('div'); tmp2.innerHTML = footerHTML; const scripts = Array.from(tmp2.querySelectorAll('script'));
+      const tmp2 = document.createElement('div');
+      tmp2.innerHTML = footerHTML;
+      const scripts = Array.from(tmp2.querySelectorAll('script'));
       if (scripts.length === 0) return;
-      let loadedCount = 0; const tryInvokeRender = () => { if (typeof renderMathAndMermaid === 'function') try { const container = document.getElementById('articleBody') || document.getElementById('mainContent') || document.body; renderMathAndMermaid(container); } catch (e) { console.warn('[WARN] 调用 renderMathAndMermaid 失败', e); } };
+      let loadedCount = 0;
+      const tryInvokeRender = () => {
+        if (typeof renderMathAndMermaid === 'function') try {
+          const container = document.getElementById('articleBody') || document.getElementById('mainContent') || document.body;
+          renderMathAndMermaid(container);
+        } catch (e) { console.warn('[WARN] 调用 renderMathAndMermaid 失败', e); }
+      };
       const loadNextScript = (index) => {
-        if (index >= scripts.length) { tryInvokeRender(); return; }
-        const s = scripts[index]; const src = s.getAttribute('src');
+        if (index >= scripts.length) {
+          tryInvokeRender();
+          return;
+        }
+        const s = scripts[index];
+        const src = s.getAttribute('src');
         if (src) {
-          const newScript = document.createElement('script'); if (s.hasAttribute('type')) newScript.type = s.type; if (s.hasAttribute('async')) newScript.async = true; if (s.hasAttribute('defer')) newScript.defer = true;
-          newScript.src = src; newScript.onload = () => { loadedCount++; loadNextScript(index + 1); }; newScript.onerror = () => { console.warn('[WARN] 脚本加载失败:', src); loadedCount++; loadNextScript(index + 1); };
+          const newScript = document.createElement('script');
+          if (s.hasAttribute('type')) newScript.type = s.type;
+          if (s.hasAttribute('async')) newScript.async = true;
+          if (s.hasAttribute('defer')) newScript.defer = true;
+          newScript.src = src;
+          newScript.onload = () => {
+            loadedCount++;
+            loadNextScript(index + 1);
+          };
+          newScript.onerror = () => {
+            console.warn('[WARN] 脚本加载失败:', src);
+            loadedCount++;
+            loadNextScript(index + 1);
+          };
           document.body.appendChild(newScript);
-        } else { try { const inline = document.createElement('script'); if (s.hasAttribute('type')) inline.type = s.getAttribute('type'); inline.text = s.textContent || s.innerText || ''; document.body.appendChild(inline); } catch (e) { console.warn('[WARN] 执行内联脚本失败', e); } loadNextScript(index + 1); }
-      }; loadNextScript(0);
-    } else { console.warn('[WARN] 页脚占位符未找到'); }
+        } else {
+          try {
+            const inline = document.createElement('script');
+            if (s.hasAttribute('type')) inline.type = s.getAttribute('type');
+            inline.text = s.textContent || s.innerText || '';
+            document.body.appendChild(inline);
+          } catch (e) {
+            console.warn('[WARN] 执行内联脚本失败', e);
+          }
+          loadNextScript(index + 1);
+        }
+      };
+      loadNextScript(0);
+    } else {
+      console.warn('[WARN] 页脚占位符未找到');
+    }
   } catch (error) { console.error('[ERROR] 加载页脚错误:', error); }
 }
 
 let siteAgeInterval = null;
 function startSiteAgeUpdater() {
-  if (siteAgeInterval) { clearInterval(siteAgeInterval); siteAgeInterval = null; }
+  if (siteAgeInterval) {
+    clearInterval(siteAgeInterval);
+    siteAgeInterval = null;
+  }
   const BIRTH_DATE = CONFIG.SITE_BIRTH;
   function updateAge() {
-    const ageSpan = document.getElementById('site-age'); if (!ageSpan) return;
-    const now = Date.now(); const diff = now - BIRTH_DATE.getTime();
-    if (diff < 0) { ageSpan.innerText = '……等等，结果是负数？？！'; return; }
-    const totalSeconds = Math.floor(diff / 1000); const days = Math.floor(totalSeconds / 86400); const hours = Math.floor((totalSeconds % 86400) / 3600); const minutes = Math.floor((totalSeconds % 3600) / 60); const seconds = totalSeconds % 60;
+    const ageSpan = document.getElementById('site-age');
+    if (!ageSpan) return;
+    const now = Date.now();
+    const diff = now - BIRTH_DATE.getTime();
+    if (diff < 0) {
+      ageSpan.innerText = '……等等，结果是负数？？！';
+      return;
+    }
+    const totalSeconds = Math.floor(diff / 1000);
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
     const ageStr = `${days}天${hours.toString().padStart(2, '0')}小时${minutes.toString().padStart(2, '0')}分钟${seconds.toString().padStart(2, '0')}秒`;
     ageSpan.innerText = ageStr;
   }
-  updateAge(); siteAgeInterval = setInterval(updateAge, 1000);
+  updateAge();
+  siteAgeInterval = setInterval(updateAge, 1000);
 }
 
 async function updateFooterUpdateTime() {
@@ -1676,11 +2030,22 @@ async function fetchAndReplaceContent(url, pushState = true) {
     
     const res = await fetch(url, { credentials: 'same-origin' });
     if (!res.ok) throw new Error(`Fetch失败: ${res.status}`);
-    const text = await res.text(); const doc = new DOMParser().parseFromString(text, 'text/html'); const fetchedTitle = doc.querySelector('title') ? doc.querySelector('title').textContent : document.title;
-    const fetchedMain = doc.querySelector('#mainContent') || doc.querySelector('main.main-content-area') || doc.querySelector('main'); const currentMain = document.getElementById('mainContent') || document.querySelector('main.main-content-area');
+    const text = await res.text();
+    const doc = new DOMParser().parseFromString(text, 'text/html');
+    const fetchedTitle = doc.querySelector('title') ? doc.querySelector('title').textContent : document.title;
+    const fetchedMain = doc.querySelector('#mainContent') || doc.querySelector('main.main-content-area') || doc.querySelector('main');
+    const currentMain = document.getElementById('mainContent') || document.querySelector('main.main-content-area');
     if (fetchedMain && currentMain) currentMain.innerHTML = fetchedMain.innerHTML;
-    else if (fetchedMain && !currentMain) { const container = document.querySelector('.container') || document.body; container.innerHTML = fetchedMain.innerHTML; }
-    document.title = fetchedTitle; if (pushState) try { window.history.pushState({ ajax: true }, fetchedTitle, url); } catch (err) { console.warn('[WARN] pushState 失败:', err); }
+    else if (fetchedMain && !currentMain) {
+      const container = document.querySelector('.container') || document.body;
+      container.innerHTML = fetchedMain.innerHTML;
+    }
+    document.title = fetchedTitle;
+    if (pushState) try {
+      window.history.pushState({ ajax: true }, fetchedTitle, url);
+    } catch (err) {
+      console.warn('[WARN] pushState 失败:', err);
+    }
     
     // 防止重复加载相同样式
     try { 
@@ -1689,35 +2054,28 @@ async function fetchAndReplaceContent(url, pushState = true) {
         if (h.tagName.toLowerCase() === 'link') {
           const href = h.getAttribute('href') || h.href;
           if (!href) return;
-          if (document.querySelector(`link[href="${href}"]`)) return; // 防止重复加载
+          // 不再检查是否已存在，让浏览器处理缓存
           const nl = document.createElement('link'); 
           nl.rel = 'stylesheet'; 
           nl.href = href; 
           document.head.appendChild(nl); 
         } else if (h.tagName.toLowerCase() === 'style') {
-          const existing = Array.from(document.head.querySelectorAll('style')).some(s => s.textContent === h.textContent);
-          if (!existing) {
-            const ns = document.createElement('style');
-            ns.textContent = h.textContent;
-            document.head.appendChild(ns);
-          }
+          // 不检查重复，每次都添加
+          const ns = document.createElement('style');
+          ns.textContent = h.textContent;
+          document.head.appendChild(ns);
         }
       });
     } catch (e) { console.warn('[WARN] 注入样式时出错', e); }
     
-    // 只处理新脚本，避免重复执行
+    // 只处理新脚本，不再进行去重检查
     const bodyScripts = Array.from(doc.body.querySelectorAll('script'));
     const loadPromises = [];
-    
-    // 跟踪已加载的脚本路径，防止重复加载
-    const loadedScriptUrls = new Set();
     
     bodyScripts.forEach(s => {
       try {
         if (s.src) {
-          if (loadedScriptUrls.has(s.src)) return; // 防止重复加载
-          loadedScriptUrls.add(s.src);
-          
+          // 直接添加新脚本，允许浏览器缓存
           const newS = document.createElement('script');
           if (s.type) newS.type = s.type;
           newS.src = s.src;
@@ -1732,19 +2090,14 @@ async function fetchAndReplaceContent(url, pushState = true) {
           document.body.appendChild(newS);
           loadPromises.push(p);
         } else {
-          // 对于内联脚本，我们不重复执行，因为它们可能包含初始化代码
-          // 这里我们可以考虑将它们放在一个队列中，只执行一次
-          const scriptId = `inline-script-${btoa(s.textContent.substring(0, 50)).replace(/[^a-zA-Z0-9]/g, '')}`;
-          if (!document.getElementById(scriptId)) {
-            const inline = document.createElement('script');
-            inline.id = scriptId;
-            if (s.type) inline.type = s.type;
-            inline.textContent = s.textContent;
-            document.body.appendChild(inline);
-            
-            // 短暂延迟后移除脚本标签，但仍保留其副作用
-            setTimeout(() => inline.parentNode && inline.parentNode.removeChild(inline), 0);
-          }
+          // 执行所有内联脚本，不再去重
+          const inline = document.createElement('script');
+          if (s.type) inline.type = s.type;
+          inline.textContent = s.textContent;
+          document.body.appendChild(inline);
+          
+          // 短暂延迟后移除脚本标签，但仍保留其副作用
+          setTimeout(() => inline.parentNode && inline.parentNode.removeChild(inline), 0);
         }
       } catch (e) { console.warn('[WARN] 插入脚本时出错', e); }
     });
