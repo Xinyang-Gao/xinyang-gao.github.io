@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="厌倦了被算法推着走？那个像倒置WiFi的橙色小图标——RSS，或许能带你回到一个安静、自主的阅读世界。从偶遇RSS开始，分享了这项“古老技术”如何让你自主订阅、轻松获取更新，并推荐了干净的阅读器推荐。如果你也想摆脱繁杂推荐，像翻书一样掌控自己的信息流，不妨从这里开始。">
+    <meta name="author" content="高新炀">
+    <meta name="keywords" content="分享, 技术">
+    <title>你知道那个像 WiFi 一样的小图标吗？ - 高新炀的小站</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/article.css">
+    <link rel="stylesheet" href="/css/twikoo.css">
+</head>
+<body>
+    <div id="navbar-placeholder"></div>
+    <div id="reading-progress" class="reading-progress-bar"><div id="progress-bar" class="progress-bar"></div></div>
+    <div class="article-page-container">
+        <div class="toc-container"><h2 class="toc-title">目录</h2><div id="toc-list-container"></div></div>
+        <div class="article-right-column">
+            <div class="article-content-wrapper">
+                <h1 class="article-title" id="articleTitle">你知道那个像 WiFi 一样的小图标吗？</h1>
+                <div class="article-subtitle">厌倦了被算法推着走？那个像倒置WiFi的橙色小图标——RSS，或许能带你回到一个安静、自主的阅读世界。从偶遇RSS开始，分享了这项“古老技术”如何让你自主订阅、轻松获取更新，并推荐了干净的阅读器推荐。如果你也想摆脱繁杂推荐，像翻书一样掌控自己的信息流，不妨从这里开始。</div>
+                <div class="article-meta" id="articleMeta"><div class="meta-grid">
+            <div class="meta-item" data-label="发布日期">
+                <i class="fas fa-calendar-alt"></i>
+                <span class="meta-value">2026年05月10日</span>
+            </div>
+            <div class="meta-item" data-label="最后更新">
+                <i class="fas fa-edit"></i>
+                <span class="meta-value">2026年05月10日</span>
+            </div>
+            <div class="meta-item" data-label="作者">
+                <i class="fas fa-user"></i>
+                <span class="meta-value">高新炀</span>
+            </div>
+            <div class="meta-item" data-label="分类">
+                <i class="fas fa-folder-open"></i>
+                <span class="meta-value">分享</span>
+            </div>
+            <div class="meta-item" data-label="字数">
+                <i class="fas fa-file-alt"></i>
+                <span class="meta-value">869</span>
+            </div>
+            <div class="meta-item" data-label="阅读时间">
+                <i class="fas fa-clock"></i>
+                <span class="meta-value">3分钟</span>
+            </div>
+            <div class="meta-item" data-label="访客数">
+                <i class="fas fa-users"></i>
+                <span class="meta-value"><span id="busuanzi_page_uv">加载中...</span></span>
+            </div>
+            <div class="meta-item" data-label="阅读量">
+                <i class="fas fa-eye"></i>
+                <span class="meta-value"><span id="busuanzi_page_pv">加载中...</span></span>
+            </div>
+            <div class="meta-item" data-label="修订次数">
+                <i class="fas fa-code-branch"></i>
+                <span class="meta-value">1</span>
+            </div></div></div>
+                <div class="article-body" id="articleBody"><p>前几天我在一个博客上闲逛，地址栏旁边有个小小的橙色图标，长得像WiFi倒过来了。点了一下，出来一堆 XML 代码。我愣了一下，通过搜索我得知，这是 RSS 呀。</p>
+<p>深入了解后，我对这项技术产生了好感，也惋惜于它在快节奏的互联网中已不被大多数人所知。抽时间写了一个 Python 脚本自动生成网站的 RSS ，也用了一段时间，想要分享一下</p>
+<p>RSS 是什么？就是让你自己决定看什么，不被算法推着走的“小工具”。</p>
+<p>现在视频软件的推荐算法确实能推荐出我们感兴趣的内容，但也很容易被大量繁杂的无意义的推荐内容浪费时间。而 RSS 可以让你自己决定看什么，然后它安静地把更新送到你面前，不吵不闹。</p>
+<p>RSS 最早是 1999 年网景公司捣鼓出来的，中间经历了一段分裂史——两个版本打架，RSS 1.0 和 RSS 2.0，搞得大家都很懵。不过这都不重要啦，重要的是这个技术活到了现在，而且还在用。</p>
+<p>对，RSS 还活着。虽然 Google Reader 在 2013 年关了，很多年轻人压根没听说过它。但这几年，不想被算法裹挟的人越来越多，RSS 又悄悄回来了。</p>
+<p>我给自己的个人网站也写了个RSS。过程不算难，就是生成一个xml文件，里面按格式写上你的文章标题、链接、时间什么的。这样如果有人用RSS阅读器订阅我的网站，每次发新文章他们就能第一时间看到。</p>
+<p>说到阅读器，我最近在用 <a href="https://hyliu.me/fluent-reader/">Fluent Reader</a> 。界面干净，没有广告，可以把自己订阅的源全放进去。它支持本地阅读，速度很快，偶尔看看谁更新了，点一下就能读到原文，不用再一个个网站跑一遍。</p>
+<p>如果你想试试RSS，可以这样做：
+1. 找个阅读器，比如Fluent Reader
+2. 看到感兴趣的网站，找找有没有那个WiFi一样的图标
+3. 复制链接地址，贴进阅读器
+4. 完成，以后那个网站更新你就知道啦</p>
+<p>说实话，RSS不是每个人都需要的。如果你喜欢刷什么看什么，那现在的推荐流挺好。但如果你有点烦那些猜你喜欢的内容，想清静点自己决定看什么，RSS可能很适合你。</p>
+<p>就像偶尔想远离一下热闹的人群，找个安静的角落自己翻翻书那样。</p></div>
+                <div class="article-footer-tags"><a class="footer-tag" href="/articles.html?tags=%E5%88%86%E4%BA%AB" style="text-decoration: none; color: inherit; cursor: pointer;" title="查看「分享」相关文章">#分享</a> <a class="footer-tag" href="/articles.html?tags=%E6%8A%80%E6%9C%AF" style="text-decoration: none; color: inherit; cursor: pointer;" title="查看「技术」相关文章">#技术</a></div>
+            </div>
+            <div class="comments-card"><div class="comments-container"><h3>评论区</h3><div id="twikoo-comments"></div></div></div>
+        </div>
+    </div>
+    <div id="imageModal" class="image-modal"><span class="close">&times;</span><div class="modal-content"><img id="modalImage" src="" alt=""></div><div class="image-info"><span id="imageCaption"></span></div></div>
+    <div id="footer-placeholder"></div>
+    <script>window.ARTICLE_HEADINGS = [];</script>
+    <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>
+    <script src="/js/busuanzi.min.js" defer></script>
+    <script src="/js/main.js" type="module"></script>
+    <script src="/js/article.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://registry.npmmirror.com/twikoo/1.7.9/files/dist/twikoo.nocss.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof twikoo !== 'undefined') {
+                twikoo.init({ envId: 'https://twikoo-gxy.netlify.app/.netlify/functions/twikoo', el: '#twikoo-comments', path: window.location.pathname, lang: 'zh-CN' });
+            } else { console.warn('Twikoo 加载失败'); }
+        });
+    </script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.getElementById('articleBody'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+</body>
+</html>

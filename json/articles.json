@@ -1,13 +1,32 @@
 {
-  "generated_at": "2026-05-10T20:50:41.706711",
-  "total_articles": 11,
-  "total_word_count": 38502,
+  "generated_at": "2026-05-10T21:50:37.938792",
+  "total_articles": 12,
+  "total_word_count": 39371,
   "articles": [
     {
-      "relative_path": "assets/source/分享/将Bing壁纸变成你网站的背景.md",
+      "relative_path": "assets/source/分享/你知道那个像WiFi一样的小图标吗.md",
+      "hash": "1b793420af73adc3f8df6c68fdff3a0d",
+      "last_updated": "2026-05-10",
+      "modify_count": 1,
+      "hidden": false,
+      "title": "你知道那个像 WiFi 一样的小图标吗？",
+      "date": "2026-05-10",
+      "description": "厌倦了被算法推着走？那个像倒置WiFi的橙色小图标——RSS，或许能带你回到一个安静、自主的阅读世界。从偶遇RSS开始，分享了这项“古老技术”如何让你自主订阅、轻松获取更新，并推荐了干净的阅读器推荐。如果你也想摆脱繁杂推荐，像翻书一样掌控自己的信息流，不妨从这里开始。",
+      "author": "高新炀",
+      "tags": [
+        "分享",
+        "技术"
+      ],
+      "category": "分享",
+      "url": "/articles/你知道那个像WiFi一样的小图标吗.html",
+      "word_count": 869,
+      "read_time": "3分钟"
+    },
+    {
+      "relative_path": "assets/source/技术/将Bing壁纸变成你网站的背景.md",
       "hash": "25291affd50aa1c0e394ffa2fe0ec6ad",
       "last_updated": "2026-05-10",
-      "modify_count": 2,
+      "modify_count": 1,
       "hidden": false,
       "title": "将 Bing 每日壁纸变成你网站的背景",
       "date": "2026-05-02",
@@ -17,7 +36,7 @@
         "分享",
         "网站"
       ],
-      "category": "分享",
+      "category": "技术",
       "url": "/articles/将Bing壁纸变成你网站的背景.html",
       "word_count": 4912,
       "read_time": "17分钟"

@@ -4,7 +4,7 @@
     <title>高新炀的个人网站</title>
     <link>https://xinyang-gao.github.io</link>
     <description>学生 · 开发者 · 写作者，用代码和文字探索世界</description>
-    <lastBuildDate>Sun, 10 May 2026 20:54:50 GMT</lastBuildDate>
+    <lastBuildDate>Sun, 10 May 2026 21:50:39 GMT</lastBuildDate>
     <language>zh-CN</language>
     <generator>RssGenerator (Python)</generator>
     <atom:link href="https://xinyang-gao.github.io/rss.xml" rel="self" type="application/rss+xml" />
@@ -82,6 +82,15 @@
       <pubDate>Sun, 12 Apr 2026 00:00:00 GMT</pubDate>
       <author>高新炀 ＆ DEEPSEEK-V4</author>
       <category>网站</category>
+    </item>
+    <item>
+      <title>你知道那个像 WiFi 一样的小图标吗？</title>
+      <link>https://xinyang-gao.github.io/articles/你知道那个像WiFi一样的小图标吗.html</link>
+      <description><![CDATA[厌倦了被算法推着走？那个像倒置WiFi的橙色小图标——RSS，或许能带你回到一个安静、自主的阅读世界。从偶遇RSS开始，分享了这项“古老技术”如何让你自主订阅、轻松获取更新，并推荐了干净的阅读器推荐。如果你也想摆脱繁杂推荐，像翻书一样掌控自己的信息流，不妨从这里开始。]]></description>
+      <pubDate>Sun, 10 May 2026 00:00:00 GMT</pubDate>
+      <author>高新炀</author>
+      <category>分享</category>
+      <category>技术</category>
     </item>
     <item>
       <title>将 Bing 每日壁纸变成你网站的背景</title>

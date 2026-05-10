@@ -1,13 +1,14 @@
 {
-  "version": 54,
+  "version": 55,
   "last_updated": "2026-05-10",
-  "last_updated_full": "2026-05-10T20:50:42+08:00",
-  "total_articles": 11,
-  "total_word_count": 38502,
+  "last_updated_full": "2026-05-10T21:50:38+08:00",
+  "total_articles": 12,
+  "total_word_count": 39371,
   "total_works": 10,
   "article_tags": [
     "体育",
     "分享",
+    "技术",
     "文言文",
     "日记",
     "网站",
@@ -20,6 +21,7 @@
     "README文档自动构建",
     "分享",
     "学习",
+    "技术",
     "日记",
     "网站"
   ],
