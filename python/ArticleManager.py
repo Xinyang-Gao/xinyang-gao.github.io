@@ -339,7 +339,7 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
     <script>window.ARTICLE_HEADINGS = {headings_json};</script>
     <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>
     <script src="/js/busuanzi.min.js" defer></script>
-    <script src="/js/script.js"></script>
+    <script src="/js/main.js" type="module"></script>
     <script src="/js/article.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
     <script src="https://registry.npmmirror.com/twikoo/1.7.9/files/dist/twikoo.nocss.js"></script>
