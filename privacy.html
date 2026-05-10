@@ -3,53 +3,89 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="description" content="高新炀的个人网站 - 隐私政策，说明我们如何收集、使用和保护您的个人信息">
+  <meta name="description" content="高新炀的小站 - 隐私政策。我们承诺保护您的个人信息，保障数据安全与透明度。">
   <title>隐私政策 · 高新炀的小站</title>
   <link rel="stylesheet" href="/css/style.css">
-  <!-- 网站统计：完全匿名，仅用于了解访问趋势 -->
-  <script defer src="https://cloud.umami.is/" data-website-id="c3085953-4d50-4fa3-89f4-58bdc71c403b"></script>
   <style>
-    /* 隐私页面内的小优化：列表更清晰，引用细节 */
-    .privacy-section {
-      margin-bottom: 2.2rem;
+    .privacy-header {
+      margin-bottom: 2rem;
     }
-    .privacy-section h3 {
-      margin-top: 1.2em;
-      margin-bottom: 0.6em;
-      font-size: 1.4rem;
+    .privacy-header h1 {
+      font-size: 2.2rem;
+      margin-bottom: 0.5rem;
     }
-    .privacy-section p, .privacy-section li {
-      color: var(--text-color);
-      line-height: 1.7;
-    }
-    .privacy-note {
-      background: var(--surface-color-secondary);
-      border-left: 4px solid var(--accent-color);
-      padding: 1.2rem 1.5rem;
-      border-radius: var(--radius-md);
-      margin: 1.5rem 0;
-      font-size: 0.95rem;
-    }
-    .privacy-note i {
-      color: var(--accent-color);
-      margin-right: 8px;
-    }
-    .privacy-update {
-      margin-top: 2rem;
-      padding-top: 1rem;
-      border-top: 1px solid var(--border-color);
-      font-size: 0.85rem;
+    .privacy-header .last-updated {
+      font-size: 0.9rem;
       color: var(--text-secondary);
-      text-align: right;
+      border-left: 3px solid var(--accent-color);
+      padding-left: 1rem;
+      margin: 0.75rem 0 1.5rem 0;
     }
-    .external-link-icon {
-      font-size: 0.75rem;
-      margin-left: 4px;
-      opacity: 0.7;
+    .privacy-card {
+      background: var(--surface-color);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem 2rem;
+      margin-bottom: 2rem;
+      border: 1px solid var(--border-light);
+      transition: all 0.2s ease;
+    }
+    .privacy-card h2 {
+      font-size: 1.6rem;
+      margin-top: 0;
+      margin-bottom: 1rem;
+      color: var(--text-color);
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      border-left: 4px solid var(--accent-color);
+      padding-left: 1rem;
+    }
+    .privacy-card h3 {
+      font-size: 1.25rem;
+      margin: 1.2rem 0 0.5rem 0;
+      color: var(--text-color);
+      font-weight: 600;
+    }
+    .privacy-card p, .privacy-card li {
+      line-height: 1.7;
+      color: var(--text-secondary);
+    }
+    .privacy-card strong {
+      color: var(--accent-color);
+    }
+    .badge-notice {
+      background: rgba(165, 88, 96, 0.08);
+      border-left: 3px solid var(--accent-color);
+      padding: 1rem 1.4rem;
+      border-radius: var(--radius-md);
+      margin: 1.2rem 0;
+    }
+    .service-badge {
+      display: inline-block;
+      background: var(--surface-color-secondary);
+      padding: 0.2rem 0.8rem;
+      border-radius: 40px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      margin-right: 0.5rem;
+      margin-bottom: 0.4rem;
+      color: var(--accent-color);
+      border: 1px solid var(--border-light);
+    }
+    .privacy-footer-note {
+      margin-top: 2rem;
+      padding-top: 1.2rem;
+      text-align: center;
+      font-size: 0.85rem;
+      border-top: 1px solid var(--border-color);
+      color: var(--text-secondary);
     }
     @media (max-width: 768px) {
-      .privacy-note {
-        padding: 1rem;
+      .privacy-card {
+        padding: 1.2rem;
+      }
+      .privacy-card h2 {
+        font-size: 1.4rem;
       }
     }
   </style>
@@ -57,7 +93,6 @@
 <body>
   <div id="navbar-placeholder"></div>
 
-  <!-- 双栏布局：左侧个人信息卡片 + 右侧主内容 -->
   <div class="two-column-layout">
     <aside class="sidebar-profile">
       <div id="personal-card-container"></div>
@@ -65,101 +100,113 @@
 
     <main class="main-content-area" id="mainContent" role="main" aria-live="polite">
       <div class="container">
-        <h1>隐私政策</h1>
-        <p style="font-size: 1.05rem; margin-bottom: 1.8rem;">
-          更新日期：<strong>2026年5月4日</strong><br>
-          感谢你访问<span style="color: var(--accent-color);">高新炀的小站</span>。本隐私政策将说明本站如何收集、使用及保护你的信息。
-        </p>
-
-        <div class="privacy-note">
-          <i class="fas fa-shield-alt"></i> <strong>本站不会出售、转让或恶意泄露你的个人信息。</strong>所有数据收集仅用于改善体验、了解访问趋势以及回复你的留言。
+        <div class="privacy-header">
+          <h1>隐私政策</h1>
+          <div class="last-updated">
+            <i class="far fa-calendar-alt"></i> 最后更新：<strong>2026年5月10日</strong>
+          </div>
+          <p style="font-size: 1rem; margin-bottom: 0.5rem;">
+            感谢您访问 <span style="color: var(--accent-color);">高新炀的小站</span>（以下简称「本站」）。
+            本站深知个人信息保护的重要性，本隐私政策旨在向您清晰说明我们如何收集、使用、存储和保护您的信息。
+          </p>
         </div>
 
-        <!-- 1. 信息收集范围 -->
-        <section class="privacy-section">
+        <!-- 核心隐私摘要卡片（透明告知） -->
+        <div class="privacy-card">
+          <h2><i class="fas fa-shield-alt"></i> 核心承诺</h2>
+          <div class="badge-notice">
+            <i class="fas fa-check-circle" style="color: var(--accent-color); margin-right: 8px;"></i>
+            <strong>我们不会出售、交易或非法披露您的个人信息。</strong> 所有数据处理均以提升浏览体验、保障网站安全为目的。
+          </div>
+          <p>本站采取「最小必要」原则收集数据，绝大部分功能即使您拒绝本地存储也依然可正常阅读文章、浏览作品。您对个人数据拥有充分的控制权。</p>
+        </div>
+
+        <div class="privacy-card">
           <h2><i class="fas fa-database"></i> 一、我们收集的信息</h2>
-          <p>在你访问本网站的过程中，可能会产生以下几类信息：</p>
+          <p>根据您与本站的互动方式，可能产生以下几类信息：</p>
+          
+          <h3>自动收集的匿名访问数据</h3>
+          <p>通过集成 <strong class="service-badge">不蒜子 (busuanzi)</strong> 极简统计服务，本站会收集全站的页面浏览量(PV)和独立访客(UV)等聚合数据。这些数据<strong>不包含个人身份标识</strong>（无Cookie、无指纹），仅用于了解内容受欢迎程度及优化方向。</p>
+          
+          <h3>评论互动数据（Twikoo）</h3>
+          <p>当您在文章评论区或<a href="/contact.html">留言板</a>发表内容时，<strong>Twikoo 评论系统</strong>会存储您填写的昵称、邮箱（选填）、网站（选填）以及评论内容。您的IP地址会被记录仅用于反垃圾及安全防护，站长不会公开您的IP。所有评论数据均保存在第三方评论后端（托管于Netlify Functions），您可随时联系站长删除属于您的评论。</p>
+          
+          <h3>本地存储（localStorage）与缓存</h3>
+          <p>在您通过Cookie横幅「<strong>同意</strong>」后，本站会在您的浏览器中存储以下数据：</p>
           <ul>
-            <li><strong>自动收集的访问数据（匿名统计）：</strong> 通过 <strong>不蒜子（busuanzi）</strong> 和 <strong>Umami Analytics (云服务)</strong> 收集匿名的访问量、页面浏览量、访客数量、来源地区、设备类型等聚合数据。这些数据无法识别你的个人身份，仅用于了解网站受欢迎程度及内容优化。</li>
-            <li><strong>评论互动数据：</strong> 当你使用 <strong>Twikoo 评论系统</strong> 发表留言时，会按照系统要求提供昵称、邮箱（可选）、网站（可选）以及评论内容。这些数据将展示在对应评论区，以便站长回复及社区交流。Twikoo 可能会记录你的 IP 地址用于反垃圾，但站长不会主动公开你的 IP。</li>
-            <li><strong>本地存储与浏览器缓存：</strong> 在获得你的同意后（通过 Cookie 同意横幅），本站会将以下信息存储在浏览器的 localStorage 中：
-              <ul>
-                <li>主题偏好（亮色/暗色模式）；</li>
-                <li>文章/作品列表缓存（提升加载速度）；</li>
-                <li>阅读滚动位置、搜索筛选条件、友链缓存等体验优化数据；</li>
-                <li>“欢迎回来”模态框的访问记录、网站版本记录。</li>
-              </ul>
-            </li>
-            <li><strong>必要的会话记录：</strong> 当你使用外链跳转确认、页面导航等交互时，不会主动记录个人敏感信息。</li>
+            <li>主题偏好（亮色/暗色模式）；</li>
+            <li>文章/作品列表数据缓存（减少重复加载，提升速度）；</li>
+            <li>搜索筛选条件、排序方式、滚动位置（例如文章阅读进度）；</li>
+            <li>欢迎弹窗访问记录及网站版本标识；</li>
+            <li>友链数据缓存（仅用于优化展示）。</li>
           </ul>
-          <p><strong>重要说明：</strong> 本站 <strong>从不收集</strong> 你的密码、真实身份证号、银行账户等敏感信息。所有本地存储数据均保留在你的设备中，你可以随时通过浏览器设置清除。</p>
-        </section>
+          <p>您可以通过浏览器开发者工具或「清除网站数据」选项随时删除上述内容，删除后不会影响核心阅读功能。</p>
+          
+          <h3>服务端基础日志（托管平台）</h3>
+          <p>本站属于静态网站，托管于GitHub Pages或相关CDN服务商，服务商可能会记录标准访问日志（如请求时间、状态码、IP地址等），这些日志仅用于诊断安全性和性能分析，我们无法访问识别特定用户的详细日志。</p>
+        </div>
 
-        <!-- 2. Cookie 及本地存储的使用 -->
-        <section class="privacy-section">
-          <h2><i class="fas fa-cookie-bite"></i> 二、Cookie 与本地存储的使用</h2>
-          <p>本站严格遵循 <strong class="accent">“透明且可拒绝”</strong> 的原则。当你首次访问本站时，页面底部会弹出 Cookie 同意横幅：</p>
+        <div class="privacy-card">
+          <h2><i class="fas fa-cookie-bite"></i> 二、Cookie 与本地存储的控制</h2>
+          <p>本站<strong>不主动设置传统跨页面追踪Cookie</strong>，所有持久化数据均使用现代浏览器的 <code>localStorage</code> 实现，且必须经过您的明确同意。页面底部会显示<strong>「Cookie 同意横幅」</strong>：</p>
           <ul>
-            <li><strong>同意：</strong> 表示你允许网站使用 localStorage 存储主题偏好、缓存数据、阅读位置等功能，以换取更流畅的个性化体验。同时，非必要的统计脚本（如 Umami）会正常运行。</li>
-            <li><strong>拒绝：</strong> 本站将禁用几乎所有的本地存储功能（StorageController 进入禁用模式），并且已经存储的相关数据会被清除。你仍然可以正常阅读文章、浏览作品，但无法保存主题/搜索条件等个性化设置，匿名统计依然基于基础访问量计数（不蒜子遵循极简原则）。</li>
+            <li><strong>同意</strong>：启用本地存储功能，保存主题、缓存、搜索记录等个性化设置，同时不蒜子统计正常运行。您将获得更便捷的浏览体验。</li>
+            <li><strong>拒绝</strong>：本站将禁用几乎所有本地存储（StorageController 进入只读/禁用模式），已存储的本地数据会被清除。您依然可以完整阅读文章、浏览作品及使用评论功能，但主题模式、搜索条件等将无法持久保存。</li>
           </ul>
-          <p>注意：“不蒜子”计数仅使用 JavaScript 单次请求，不依赖 Cookie 标识个人；Twikoo 评论系统依赖浏览器本地存储保存用户信息（如昵称、邮箱），但仅在提交评论时激活，并遵循 Twikoo 自身隐私逻辑。你可以在任何时候清除浏览器的 localStorage 和 Cookie 来撤回授权。</p>
-        </section>
+          <p>您可随时通过浏览器清除 <code>localStorage</code> 数据来重置同意状态，横幅将再次出现以让您重新选择。</p>
+        </div>
 
-        <!-- 3. 第三方服务 -->
-        <section class="privacy-section">
-          <h2><i class="fas fa-plug"></i> 三、第三方服务及其隐私说明</h2>
-          <p>本网站集成了以下第三方服务，它们分别遵循各自隐私政策：</p>
+        <div class="privacy-card">
+          <h2><i class="fas fa-plug"></i> 三、我们集成的第三方服务</h2>
+          <p>为了让本站功能更丰富、体验更流畅，我们使用了以下第三方服务，它们遵循各自的隐私政策：</p>
           <ul>
-            <li><strong>不蒜子 (busuanzi.ibruce.info)</strong> —— 极简访客计数器，不设置 Cookie，仅通过向 <code>https://cdn.busuanzi.cc/</code> 发送匿名请求统计 PV/UV。数据仅用于展示全站访问量，无用户画像。</li>
-            <li><strong>Twikoo 评论系统</strong> —— 开源评论后端 (部署于 Netlify Functions)。你提交的昵称、邮箱、网址及评论内容将被存储于 Twikoo 数据库中。站长可管理评论（删除/审核）。Twikoo 不会将数据用于营销。更多信息可参考 <a href="https://twikoo.js.org/faq.html" target="_blank" rel="noopener noreferrer">Twikoo 官方说明 <i class="fas fa-external-link-alt external-link-icon"></i></a>。</li>
-            <li><strong>Umami Analytics</strong> —— 轻量级匿名分析工具，不采集个人身份信息，仅记录页面浏览行为（如访问路径、浏览器版本）。Umami 遵守 GDPR / ePrivacy 规范，数据所有者为网站站长。</li>
-            <li><strong>Font Awesome / 外部字体图标</strong> —— 通过 CDN 加载，可能记录你的 IP 地址用于 CDN 分发，但本网站无法控制此类基础网络日志。</li>
+            <li><strong>不蒜子 (busuanzi.ibruce.info)</strong> —— 仅为匿名访问计数器，不设置Cookie，请求仅包含当前页面URL及基本特性，数据完全聚合，无法追踪个体用户。</li>
+            <li><strong>Twikoo 评论系统</strong> —— 开源评论框架，后端部署于 Netlify Functions。您填写的昵称、邮箱、网址及评论内容将存储于Twikoo数据库。站长可通过后台管理评论（删除、审核）。详细数据存储策略请参阅 <a href="https://twikoo.js.org/faq.html" target="_blank" rel="noopener noreferrer">Twikoo 官方说明 <i class="fas fa-external-link-alt" style="font-size: 0.7rem;"></i></a>。</li>
+            <li><strong>Service Worker 缓存</strong> —— 本站注册 Service Worker 以缓存关键 JSON（文章/作品数据），所有缓存存储于浏览器本地，不涉及用户数据上传。</li>
+            <li><strong>外链跳转确认机制</strong> —— 当您点击外部链接时，本站会弹出模态框提醒您即将离开本站。此过程不记录您的跳转行为，不收集任何数据。</li>
+            <li><strong>Font Awesome / 图标库 CDN</strong> —— 通过公有 CDN 加载字体/图标，CDN 提供商可能记录标准请求日志，但无法控制其内容。</li>
           </ul>
-          <p>此外，文章中的外部链接（例如 GitHub、Bilibili 等）会通过 <strong>外链跳转确认模态框</strong> 提醒你即将离开本站，并展示目标域名。该功能不记录你的跳转行为。</p>
-        </section>
+          <p><strong>注意：</strong> 本站已弃用任何跨站追踪分析工具（如 Google Analytics 等），不参与任何广告联盟。</p>
+        </div>
 
-        <!-- 4. 数据安全与保留 -->
-        <section class="privacy-section">
+        <div class="privacy-card">
           <h2><i class="fas fa-lock"></i> 四、数据安全与保留期限</h2>
           <ul>
-            <li><strong>本地存储数据：</strong> 完全保存在你的浏览器中，你可随时通过开发者工具或浏览器设置手动清除。</li>
-            <li><strong>评论数据：</strong> 除非你主动联系站长请求删除，否则你的评论内容将永久保留在该篇文章下方（便于社区交流）。但你可通过邮箱联系 <code>gao_xinyang@foxmail.com</code> 或通过留言板提出删除申请，站长会在合理时间内处理。</li>
-            <li><strong>统计数据：</strong> 不蒜子和 Umami 的数据聚合周期均为长期保留，但无法追溯到具体个人。</li>
+            <li><strong>本地存储数据</strong>：完全存储于您的设备本地，可随时自行清除，站长无法远程读取。</li>
+            <li><strong>评论数据</strong>：除非你主动要求删除，否则提供的昵称、邮箱和评论内容将永久保存在 Twikoo 数据库中，用于社区交流。若您希望删除已发表的评论，请通过邮箱 <strong>gao_xinyang@foxmail.com</strong> 联系站长并提供相关评论链接与昵称，我们将在7个工作日内处理。</li>
+            <li><strong>不蒜子统计</strong>：聚合统计数据保留时间不定，但无法关联特定个人。</li>
+            <li><strong>安全传输</strong>：本站支持 HTTPS 传输（由托管平台提供），尽力保障通信安全。但由于互联网并非绝对安全，请避免在评论区发送敏感个人信息（如密码、身份证号等）。</li>
           </ul>
-          <p>本站通过 HTTPS 传输数据（若服务器支持），尽可能保障通信安全。但由于互联网并非绝对安全，请谨慎不要提交私密信息到公开评论区。</p>
-        </section>
+        </div>
 
-        <!-- 5. 用户权利 -->
-        <section class="privacy-section">
-          <h2><i class="fas fa-user-check"></i> 五、您的权利</h2>
-          <p>基于数据保护普遍原则，你在使用本网站期间享有以下权利：</p>
+        <div class="privacy-card">
+          <h2><i class="fas fa-user-check"></i> 五、您享有的权利</h2>
+          <p>依据适用的隐私法规，您拥有以下权利：</p>
           <ul>
-            <li><strong>知情权：</strong> 本隐私政策已清晰告知数据处理范围。</li>
-            <li><strong>撤回同意：</strong> 你可以随时通过浏览器清除 <code>localStorage</code> 和 Cookie（尤其是 <code>cookieConsentAccepted</code> 等键值），刷新页面后 Cookie 同意横幅会重新出现，届时可选择拒绝。</li>
-            <li><strong>拒绝跟踪：</strong> 虽然本网站没有植入广告追踪，但你可以在浏览器启用“请勿跟踪”(DNT) 选项，Umami 会尊重该偏好。</li>
-            <li><strong>删除评论：</strong> 若你希望删除自己曾发布的评论，请联系站长并附上评论所在页面及昵称（或邮箱）。</li>
+            <li><strong>知情权</strong>：本隐私政策清晰透明，您可随时查阅。</li>
+            <li><strong>撤回同意</strong>：如需撤回对本地存储的使用同意，请清空您浏览器中针对本站的 <code>localStorage</code> 并刷新页面，Cookie 同意横幅将重新出现，届时选择「拒绝」即可。</li>
+            <li><strong>删除评论</strong>：您有权要求删除自己发布的评论，具体流程见上文联系方式。</li>
+            <li><strong>限制处理</strong>：您可以使用浏览器的「隐私模式」访问本站，此时本地存储默认被隔离。</li>
+            <li><strong>拒绝跟踪</strong>：若您开启浏览器的「请勿跟踪」(DNT) 功能，本站不会额外附加任何跟踪脚本（目前已无行为追踪器）。</li>
           </ul>
-          <div class="privacy-note" style="margin-top: 12px;">
-            <i class="fas fa-envelope-open-text"></i> 如需行使任何权利或有隐私疑虑，欢迎发送邮件至 <strong>gao_xinyang@foxmail.com</strong>。
+          <div class="badge-notice">
+            <i class="fas fa-envelope-open-text"></i> 如欲行使上述权利或对隐私实践有任何疑问，请发送邮件至 <strong>gao_xinyang@foxmail.com</strong>，我们会在合理时间内回复。
           </div>
-        </section>
+        </div>
 
-        <!-- 6. 未成年人保护 -->
-        <section class="privacy-section">
+        <div class="privacy-card">
           <h2><i class="fas fa-child"></i> 六、未成年人保护</h2>
-          <p>本网站内容偏向技术分享、个人随笔及作品展示。若你未满 14 周岁，请在父母或监护人指导下使用评论功能，切勿在评论区透露隐私信息。我们不会刻意收集未成年人信息，一旦发现监护人可联系我删除相关评论。</p>
-        </section>
+          <p>本网站内容以技术分享、学习心得为主。若您未满14周岁，请在父母或监护人指导下使用评论功能，切勿透露个人家庭住址、联系方式等隐私信息。我们不会故意收集未成年人的个人信息，如监护人发现相关评论涉及隐私，可联系站长进行删除。</p>
+        </div>
 
-        <!-- 7. 政策更新 -->
-        <section class="privacy-section">
-          <h2><i class="fas fa-clock"></i> 七、隐私政策的更新</h2>
-          <p>本页面会随网站功能或法律法规的变动进行修订。重大变更（如新增数据收集类型）将通过网站首页公告或 Cookie 横幅提示。修订后的政策自发布之日起生效。建议你定期查阅本页面以确保了解最新内容。</p>
-          <p><strong>2026年5月4日</strong></p>
-        </section>
-
-        <div class="privacy-update">
-          <i class="far fa-comment-dots"></i> 如对于隐私政策有任何反馈，欢迎通过 <a href="/contact.html">留言板</a> 或邮箱与我沟通。
+        <div class="privacy-card">
+          <h2><i class="fas fa-sync-alt"></i> 七、隐私政策的更新</h2>
+          <p>由于网站功能迭代或法律法规变化，本隐私政策可能会进行修订。重大变更（例如增加新的数据收集类型）会通过网站公告、Cookie横幅提示等方式通知您。修订后的政策自发布之日起生效，建议您定期查阅本页面。</p>
+          <p><strong>历史版本：</strong> 2026年5月4日（初版），2026年5月10日（重制定稿）。</p>
+          <div class="privacy-footer-note">
+            <i class="far fa-comment-dots"></i> 如您对于隐私政策有任何反馈或建议，欢迎通过 <a href="/contact.html">留言板</a> 或邮箱沟通。<br>
+            <span style="opacity: 0.6;">© 2026 高新炀的小站 | 恪守透明、安全、最小化的隐私原则</span>
+          </div>
         </div>
       </div>
     </main>
@@ -170,29 +217,7 @@
   <div id="footer-placeholder"></div>
 
   <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>
-  <script src="/js/busuanzi.min.js" defer></script>
+  <script src="/js/busuanzi.min.js" defer></script>=
   <script src="/js/main.js" type="module"></script>
-  <script>
-    // 确保个人卡片在动态加载后刷新（其实 script.js 全权负责，但为了保证双栏内个人卡片正确生成）
-    (function() {
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function() {
-          if (typeof UIRenderer !== 'undefined' && document.getElementById('personal-card-container')) {
-            const personalContainer = document.getElementById('personal-card-container');
-            if (personalContainer && !personalContainer.querySelector('.profile-card')) {
-              personalContainer.innerHTML = UIRenderer.generatePersonalCardHTML();
-            }
-          }
-        });
-      } else {
-        if (typeof UIRenderer !== 'undefined' && document.getElementById('personal-card-container')) {
-          const personalContainer = document.getElementById('personal-card-container');
-          if (personalContainer && !personalContainer.querySelector('.profile-card')) {
-            personalContainer.innerHTML = UIRenderer.generatePersonalCardHTML();
-          }
-        }
-      }
-    })();
-  </script>
 </body>
 </html>
