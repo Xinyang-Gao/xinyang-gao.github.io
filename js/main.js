@@ -3,6 +3,7 @@
 
 import { CONFIG, storageController, perf, CookieConsentManager, Utils } from '/js/core.js';
 import { initUIEffects, refreshScrollReveal, getScrollReveal } from '/js/ui-effects.js';
+import { initNavTitleReplacer, refreshNavTitleReplacer } from '/js/nav-title-replacer.js';
 
 // ==================== 全局变量和工具函数 ====================
 let cookieConsentManager = null;
@@ -149,6 +150,7 @@ async function loadNavbar() {
       bindNavLinks();
       initNavigation();
       initPopstate();
+      initNavTitleReplacer();
     } else console.warn('[WARN] 导航栏占位符未找到');
   } catch (error) { console.error('[ERROR] 加载导航栏出错:', error); }
 }
@@ -520,6 +522,8 @@ async function fetchAndReplaceContent(url, pushState = true) {
     if (window.scrollRevealInstance) {
       window.scrollRevealInstance.refresh();
     }
+
+    refreshNavTitleReplacer();
     
     window.dispatchEvent(new CustomEvent('ajax:navigation', { detail: { url, page: pageName } }));
     return true;

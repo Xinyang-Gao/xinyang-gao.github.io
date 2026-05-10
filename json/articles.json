@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-05-10T15:38:14.395358",
+  "generated_at": "2026-05-10T20:22:40.963995",
   "total_articles": 11,
-  "total_word_count": 39868,
+  "total_word_count": 38502,
   "articles": [
     {
       "relative_path": "assets/source/分享/将Bing壁纸变成你网站的背景.md",
@@ -43,9 +43,9 @@
     },
     {
       "relative_path": "README.md",
-      "hash": "34d6528a0f74d1c02e54c47394d8731f",
-      "last_updated": "2026-05-08",
-      "modify_count": 4,
+      "hash": "f4b3ed86f7a8fb55f92c83b018c60bb5",
+      "last_updated": "2026-05-10",
+      "modify_count": 5,
       "hidden": false,
       "title": "README.md",
       "date": "2026-04-12",
@@ -56,8 +56,8 @@
       ],
       "category": "README文档自动构建",
       "url": "/articles/README.html",
-      "word_count": 8993,
-      "read_time": "30分钟"
+      "word_count": 7562,
+      "read_time": "26分钟"
     },
     {
       "relative_path": "assets/source/学习/从一株小草开始.md",
@@ -134,9 +134,9 @@
     },
     {
       "relative_path": "assets/source/网站/网站更新日志.md",
-      "hash": "77ab415b7352fd3c234779695c8e776d",
+      "hash": "3d62375cc1f34160c598131d5f181a8b",
       "last_updated": "2026-05-10",
-      "modify_count": 125,
+      "modify_count": 126,
       "hidden": false,
       "title": "网站更新日志",
       "date": "2025-12-21",
@@ -147,7 +147,7 @@
       ],
       "category": "网站",
       "url": "/articles/网站更新日志.html",
-      "word_count": 14433,
+      "word_count": 14498,
       "read_time": "49分钟"
     },
     {
