@@ -1,4 +1,4 @@
 User-agent: *
 Disallow: /assets/
 
-Sitemap: https://https://xinyang-gao.github.io/sitemap.xml
+Sitemap: https://xinyang-gao.github.io/sitemap.xml

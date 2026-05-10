@@ -14,7 +14,7 @@ SITE_LINK = "https://xinyang-gao.github.io"
 SITE_DESCRIPTION = "学生 · 开发者 · 写作者，用代码和文字探索世界"
 
 INCLUDE_ARTICLES = True
-INCLUDE_WORKS = True
+INCLUDE_WORKS = False
 
 # ========== 统一日志函数 ==========
 def log_info(msg: str) -> None:
