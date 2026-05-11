@@ -333,4 +333,59 @@ input:checked + .slider:after {
     padding: 10px 16px;
     font-size: 0.9rem;
   }
+}/* ========== 导航标题替换功能 ========== */
+/* 标题占位元素样式 */
+.nav-title-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-color);
+  font-weight: 500;
+  font-size: 1rem;
+  white-space: nowrap;
+  padding: 12px 20px;
+  border-radius: 50px;
+  background: transparent;
+  transition: opacity 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+  opacity: 1;
+}
+
+/* 导航按钮容器样式 */
+.nav-items {
+  transition: opacity 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+  opacity: 1;
+}
+
+/* 隐藏状态（仅透明度变化，保留占位用于宽度计算） */
+.nav-title-placeholder.hide-for-width,
+.nav-items.hide-for-width {
+  opacity: 0;
+  visibility: visible;     /* 保留占位，不触发重排 */
+  pointer-events: none;
+}
+
+/* 完全隐藏（不占位） – 仅在宽度过渡完成后使用 */
+.nav-title-placeholder.hide,
+.nav-items.hide {
+  display: none;
+}
+
+/* 宽度过渡动画类 – 作用于整个导航栏 */
+.navbar.width-transition {
+  transition: width 0.35s cubic-bezier(0.2, 0.9, 0.4, 1.05) !important;
+}
+
+/* 确保 nav 内部布局稳定，防止子元素撑开时出现跳动 */
+.navbar nav {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-width: 0;
+}
+
+/* 两个候选内容区域内联并排（确保宽度测量准确） */
+.navbar .nav-items,
+.navbar .nav-title-placeholder {
+  flex-shrink: 0;
 }

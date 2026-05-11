@@ -1,6 +1,6 @@
 ---
 title: 将 Bing 每日壁纸变成你网站的背景
-description: Bing 壁纸 API 的调用、壁纸存档库以及实现方法
+description: 一篇技术分享文章。详细解析Bing壁纸URL参数含义，推荐多个历史壁纸归档站和免费API，并给出三种集成方案（直接API、PHP重定向、官方元数据接口），最后附上本站随机壁纸的实现代码。
 author: 高新炀
 date: 2026-05-02
 tag: [分享][网站]

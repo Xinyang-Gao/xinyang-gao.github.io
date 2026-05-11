@@ -204,7 +204,7 @@ export class SearchController {
     this.input = null;
     this.field = null;
     this.selectedTags = [];
-    this.sortOrder = 'updated_desc';
+    this.sortOrder = 'date_desc';
     this.debounceTimer = null;
     this.popStateHandler = null;
     this.skipNextPopState = false;
