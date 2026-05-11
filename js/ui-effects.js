@@ -1,7 +1,27 @@
 // ==================== /js/ui-effects.js ====================
-// 自定义光标、外链管理器、滚动揭示效果（使用 requestIdleCallback 延迟初始化）
+// 自定义光标、外链管理器、滚动揭示效果（支持设置页面动态开关）
 
-import { CONFIG, Utils } from '/js/core.js';
+import { CONFIG, Utils, storageController } from '/js/core.js';
+
+// ========== 设置键名（与 settings.js 保持一致） ==========
+const SETTINGS_KEYS = {
+  CURSOR_ENABLED: 'settings_cursor_enabled',
+  LINK_WARNING_ENABLED: 'settings_link_warning_enabled'
+};
+
+// 辅助函数：读取某项功能的启用状态（默认 true）
+function isFeatureEnabled(key, defaultValue = true) {
+  if (storageController && storageController.isAllowed()) {
+    const stored = storageController.getItem(key);
+    if (stored !== null) return stored === 'true';
+  }
+  // 降级读取 localStorage
+  try {
+    const raw = localStorage.getItem(key);
+    if (raw !== null) return raw === 'true';
+  } catch (e) {}
+  return defaultValue;
+}
 
 // ==================== 自定义光标 ====================
 export class CustomCursor {
@@ -11,13 +31,16 @@ export class CustomCursor {
       return;
     }
     this.config = { damping: 0.92, stiffness: 0.18, rotationSmoothing: 0.2, minSpeedForRotation: 0.5, ...options };
-    this.targetX = 0; this.targetY = 0; this.currentX = 0; this.currentY = 0; this.fixedScale = 0.55; this.currentRotation = 0; this.targetRotation = 0;
-    this.lastMouseX = 0; this.lastMouseY = 0; this.lastTimestamp = 0; this.velocityX = 0; this.velocityY = 0;
+    this.targetX = 0; this.targetY = 0; this.currentX = 0; this.currentY = 0; this.fixedScale = 0.55;
+    this.currentRotation = 0; this.targetRotation = 0;
+    this.lastMouseX = 0; this.lastMouseY = 0; this.lastTimestamp = 0;
+    this.velocityX = 0; this.velocityY = 0;
     this.snappedMode = false; this.snappedElement = null;
     this.rafId = null; this.visible = false;
     this.initDOM(); this.initEvents(); this.updateColors(); this.startAnimation();
     window.addEventListener('themeChanged', () => this.updateColors());
-    const observer = new MutationObserver(() => this.updateColors()); observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    const observer = new MutationObserver(() => this.updateColors());
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   }
   
   initDOM() {
@@ -165,7 +188,7 @@ export class CustomCursor {
   }
 }
 
-// ==================== 外链管理器 ====================
+// ==================== 外链管理器（增强可销毁） ====================
 export class ExternalLinkManager {
   constructor() {
     this.WHITELIST = CONFIG.EXTERNAL_WHITELIST;
@@ -177,6 +200,7 @@ export class ExternalLinkManager {
     this.isSafe = false;
     this.redirectTriggered = false;
     this.internalDomains = CONFIG.INTERNAL_DOMAINS;
+    this._boundHandleClick = null;
     this.init();
   }
   
@@ -345,8 +369,19 @@ export class ExternalLinkManager {
   }
   
   init() {
-    document.addEventListener('click', (e) => this.handleLinkClick(e));
+    this._boundHandleClick = this.handleLinkClick.bind(this);
+    document.addEventListener('click', this._boundHandleClick);
     console.log('[INFO] 外链跳转确认管理器已启动');
+  }
+  
+  destroy() {
+    if (this._boundHandleClick) {
+      document.removeEventListener('click', this._boundHandleClick);
+      this._boundHandleClick = null;
+    }
+    if (this.currentModal) this.closeModal();
+    if (this.countdownInterval) clearInterval(this.countdownInterval);
+    this.countdownInterval = null;
   }
 }
 
@@ -392,10 +427,10 @@ export class ScrollReveal {
   }
 }
 
-// 使用 requestIdleCallback 初始化所有 UI 特效
+// ==================== 全局初始化（根据设置开关动态创建） ====================
 let uiEffectsInitialized = false;
-let externalLinkManager = null;
-let customCursor = null;
+let customCursorInstance = null;
+let externalLinkManagerInstance = null;
 let scrollRevealInstance = null;
 
 export function initUIEffects() {
@@ -403,10 +438,26 @@ export function initUIEffects() {
   uiEffectsInitialized = true;
   
   const initFn = () => {
-    externalLinkManager = new ExternalLinkManager();
-    customCursor = new CustomCursor();
-    scrollRevealInstance = new ScrollReveal();
-    window.scrollRevealInstance = scrollRevealInstance;
+    const cursorEnabled = isFeatureEnabled(SETTINGS_KEYS.CURSOR_ENABLED, true);
+    const linkWarningEnabled = isFeatureEnabled(SETTINGS_KEYS.LINK_WARNING_ENABLED, true);
+    
+    if (cursorEnabled && !customCursorInstance) {
+      customCursorInstance = new CustomCursor();
+    } else if (!cursorEnabled && customCursorInstance) {
+      customCursorInstance.destroy();
+      customCursorInstance = null;
+    }
+    
+    if (linkWarningEnabled && !externalLinkManagerInstance) {
+      externalLinkManagerInstance = new ExternalLinkManager();
+    } else if (!linkWarningEnabled && externalLinkManagerInstance) {
+      externalLinkManagerInstance.destroy();
+      externalLinkManagerInstance = null;
+    }
+    
+    if (!scrollRevealInstance) {
+      scrollRevealInstance = new ScrollReveal();
+    }
   };
   
   if ('requestIdleCallback' in window) {
@@ -425,3 +476,6 @@ export function refreshScrollReveal() {
     scrollRevealInstance.refresh();
   }
 }
+
+// 导出实例（供设置页面或调试使用）
+export { customCursorInstance, externalLinkManagerInstance };
