@@ -2272,3 +2272,26 @@
   align-items: center;
   gap: 0.5rem;
 }
+/* 修复 twikoo 输入框在暗色模式下的白色背景问题 */
+[data-theme="dark"] .twikoo .el-input__inner,
+[data-theme="dark"] .twikoo .el-textarea__inner,
+[data-theme="dark"] .twikoo .el-input-group__append,
+[data-theme="dark"] .twikoo .el-input-group__prepend,
+[data-theme="dark"] .twikoo .tk-admin-comment-filter-keyword .el-input__inner {
+  background: var(--surface-color) !important;
+  background-image: none !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-color) !important;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.02) !important;
+}
+
+[data-theme="dark"] .twikoo .el-input__inner:focus,
+[data-theme="dark"] .twikoo .el-textarea__inner:focus {
+  border-color: var(--accent-color) !important;
+  box-shadow: 0 0 0 3px rgba(78, 168, 255, 0.25), inset 0 1px 2px rgba(0, 0, 0, 0.2) !important;
+}
+
+[data-theme="dark"] .twikoo .el-input__inner::placeholder,
+[data-theme="dark"] .twikoo .el-textarea__inner::placeholder {
+  color: var(--text-secondary) !important;
+}
