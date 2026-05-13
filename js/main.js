@@ -2,13 +2,12 @@
 // 主入口文件：加载导航/页脚、应用主题、启动空闲任务，并按需加载模块
 
 import { CONFIG, storageController, perf, CookieConsentManager, Utils } from '/js/core.js';
-import { initUIEffects, refreshScrollReveal, getScrollReveal } from '/js/ui-effects.js';
+import { initUIEffects, refreshScrollReveal, getScrollReveal, ensureScrollReveal } from '/js/ui-effects.js';
 import { initNavTitleReplacer, refreshNavTitleReplacer } from '/js/nav-title-replacer.js';
 
 // ==================== 全局变量和工具函数 ====================
 let cookieConsentManager = null;
 let siteAgeInterval = null;
-let scrollRevealInstance = null;
 
 function getTimeBasedTheme() {
   const hour = new Date().getHours();
@@ -518,9 +517,13 @@ async function fetchAndReplaceContent(url, pushState = true) {
       applyRandomBackgroundImage();
     }
     
-    // 刷新滚动揭示
+    // 刷新滚动揭示（确保新生成的列表项能被观察到）
     if (window.scrollRevealInstance) {
       window.scrollRevealInstance.refresh();
+    } else {
+      // 如果没有实例，则创建
+      ensureScrollReveal();
+      if (window.scrollRevealInstance) window.scrollRevealInstance.refresh();
     }
 
     refreshNavTitleReplacer();
@@ -572,11 +575,17 @@ async function initPageFeatures(pageName) {
       window.greetingInterval = setInterval(updateDynamicGreeting, 60000);
     }
   } else if (pageName === 'articles' || pageName === 'works') {
+    // 确保滚动揭示实例已存在（在列表生成前）
+    ensureScrollReveal();
+    
     // 动态加载搜索渲染模块
     const { initSearchPage } = await import('/js/search-render.js');
     const refreshCallback = () => {
       if (window.scrollRevealInstance) {
         window.scrollRevealInstance.refresh();
+      } else {
+        ensureScrollReveal();
+        if (window.scrollRevealInstance) window.scrollRevealInstance.refresh();
       }
     };
     await initSearchPage(pageName, refreshCallback);
@@ -899,20 +908,23 @@ function registerServiceWorker() {
 
 // ==================== DOMContentLoaded 主入口 ====================
 document.addEventListener('DOMContentLoaded', async () => {
-  // 1. 加载导航栏和页脚
+  // 1. 提前初始化滚动揭示实例（必须在任何列表生成之前）
+  ensureScrollReveal();
+  
+  // 2. 加载导航栏和页脚
   await Promise.all([loadNavbar(), loadFooter()]);
   updateFooterUpdateTime().catch(() => {});
   
-  // 2. 应用主题（已通过 initThemeToggle 在 loadNavbar 中调用）
+  // 3. 应用主题（已通过 initThemeToggle 在 loadNavbar 中调用）
   // 确保主题已应用
   const savedTheme = storageController.isAllowed() ? storageController.getItem(CONFIG.STORAGE_KEYS.THEME) : null;
   const initialTheme = savedTheme || getTimeBasedTheme();
   document.documentElement.setAttribute('data-theme', initialTheme);
   
-  // 3. 启动空闲任务
+  // 4. 启动空闲任务（光标、外链管理器、预加载等）
   if ('requestIdleCallback' in window) {
     requestIdleCallback(() => {
-      // 初始化 UI 特效（自定义光标、外链管理器、滚动揭示）
+      // 初始化 UI 特效（光标、外链管理器，滚动揭示已提前初始化）
       initUIEffects();
       // 预加载 JSON
       preloadCriticalJSON();
@@ -930,31 +942,31 @@ document.addEventListener('DOMContentLoaded', async () => {
     }, 500);
   }
   
-  // 4. 其他初始化（不阻塞）
+  // 5. 其他初始化（不阻塞）
   await StatisticsManager.syncVisitRecord();
   startSiteAgeUpdater();
   applyRandomBackgroundImage();
   initBackToTopButton();
   enableAjaxNavigation();
   
-  // 5. 初始化 Cookie 同意管理器
+  // 6. 初始化 Cookie 同意管理器
   cookieConsentManager = new CookieConsentManager(storageController);
   
-  // 6. 处理个人卡片
+  // 7. 处理个人卡片
   const personalCardContainer = document.getElementById('personal-card-container');
   if (personalCardContainer) {
     const { UIRenderer } = await import('/js/search-render.js');
     personalCardContainer.innerHTML = UIRenderer.generatePersonalCardHTML();
   }
   
-  // 7. 初始化当前页面功能
+  // 8. 初始化当前页面功能（此时滚动揭示实例已存在）
   const currentPage = getPageNameFromPath(window.location.pathname) || 'index';
   await initPageFeatures(currentPage);
   
-  // 8. 全局列表项点击委托
+  // 9. 全局列表项点击委托
   document.addEventListener('click', handleListItemClick);
   
-  // 9. 标记已加载
+  // 10. 标记已加载
   document.body.setAttribute('data-loaded', 'true');
   
   console.log('[Main] 初始化完成');

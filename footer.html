@@ -1,10 +1,9 @@
 <footer class="global-footer glass-footer" data-footer-version="3.0">
   <div class="footer-container">
-    
-    <!-- 主区域：三列核心内容（探索 + 社交 + 统计） -->
+
     <div class="footer-grid">
       
-      <!-- 列1: 探索 / 快速链接 -->
+      <!-- 探索 / 快速链接 -->
       <div class="footer-col links-col">
         <h4 class="footer-col-title">探索</h4>
         <ul class="footer-links">
@@ -18,7 +17,7 @@
         </ul>
       </div>
 
-      <!-- 列2: 社交联系（胶囊式增强） -->
+      <!-- 社交联系 -->
       <div class="footer-col social-col">
         <h4 class="footer-col-title">联系</h4>
         <div class="social-capsule-grid">
@@ -72,7 +71,7 @@
       </div>
     </div>
 
-    <!-- 底部版权区 + 现代法律/许可信息栏（整合隐私政策、许可证、萌备等） -->
+    <!-- 版权 + 现代法律/许可信息 -->
     <div class="footer-legal-panel">
       <div class="copyright-row">
         <div class="copyright-area">
@@ -82,7 +81,7 @@
         </div>
       </div>
       
-      <!-- 现代链接集群 (隐私 | 协议 | 许可证) -->
+      <!-- 隐私 | 协议 | 许可证 -->
       <div class="legal-links-cluster">
         <a href="/privacy.html" class="legal-link" rel="nofollow">隐私政策</a>
         <span class="legal-sep">/</span>
@@ -110,42 +109,9 @@
     </div>
   </div>
 
-  <!-- 极简脚本：站点年龄计算 + 最后更新时间获取 + 不蒜子刷新（完全保留原有逻辑，功能不变） -->
   <script>
     (function() {
-      // ---------- 1. 站点运行时间计算 (起始日期: 2025年3月1日，与网站创立一致) ----------
-      function updateSiteAge() {
-        const ageSpan = document.getElementById('site-age');
-        if (!ageSpan) return;
-        const startDate = new Date(2025, 2, 1); // 2025年3月1日 (月份0-index)
-        const now = new Date();
-        const diffYears = now.getFullYear() - startDate.getFullYear();
-        const diffMonths = now.getMonth() - startDate.getMonth();
-        const diffDays = now.getDate() - startDate.getDate();
-        let totalMonths = diffYears * 12 + diffMonths;
-        if (diffDays < 0) {
-          totalMonths--;
-        }
-        let display = '';
-        if (totalMonths >= 12) {
-          const years = Math.floor(totalMonths / 12);
-          const months = totalMonths % 12;
-          if (months === 0) display = `${years}年`;
-          else display = `${years}年${months}个月`;
-        } else if (totalMonths > 0) {
-          display = `${totalMonths}个月`;
-        } else {
-          // 不满一个月显示天数
-          let dayDiff = Math.floor((now - startDate) / (1000 * 60 * 60 * 24));
-          display = `${dayDiff}天`;
-        }
-        ageSpan.innerText = display;
-      }
-      
-      updateSiteAge();
-      setInterval(updateSiteAge, 86400000);
-      
-      // ---------- 2. 获取数据最后更新时间 (从 /json/statistics.json 读取) ----------
+      // 获取数据最后更新时间 (从 /json/statistics.json 读取)
       function fetchLastUpdatedTime() {
         const updateSpan = document.getElementById('footer-update-date');
         if (!updateSpan) return;
@@ -166,46 +132,6 @@
           });
       }
       fetchLastUpdatedTime();
-      
-      // ---------- 3. 版权年份动态更新 (自动扩展至当前年份) ----------
-      const copyrightSpan = document.querySelector('.copyright-area span:first-child');
-      if (copyrightSpan && copyrightSpan.innerText.includes('2025-2026')) {
-        const currentYear = new Date().getFullYear();
-        if (currentYear > 2026) {
-          copyrightSpan.innerText = `© 2025-${currentYear} GaoXinYang`;
-        }
-      }
-      
-      // ---------- 4. 不蒜子统计 —— 确保页脚pv/uv正常显示 (与全站统一) ----------
-      function initBusuanziInFooter() {
-        if (typeof busuanzi !== 'undefined' && busuanzi && typeof busuanzi.fetch === 'function') {
-          busuanzi.fetch();
-          return;
-        }
-        if (!document.querySelector('script[src*="busuanzi.min.js"]')) {
-          const script = document.createElement('script');
-          script.src = '/js/busuanzi.min.js';
-          script.defer = true;
-          script.onload = function() {
-            if (typeof busuanzi !== 'undefined' && busuanzi.fetch) busuanzi.fetch();
-          };
-          document.head.appendChild(script);
-        } else {
-          let checkTimer = setInterval(function() {
-            if (typeof busuanzi !== 'undefined' && busuanzi.fetch) {
-              clearInterval(checkTimer);
-              busuanzi.fetch();
-            }
-          }, 120);
-          setTimeout(() => clearInterval(checkTimer), 4000);
-        }
-      }
-      
-      if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initBusuanziInFooter);
-      } else {
-        initBusuanziInFooter();
-      }
     })();
   </script>
 </footer>

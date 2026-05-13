@@ -427,15 +427,54 @@ export class ScrollReveal {
   }
 }
 
-// ==================== 全局初始化（根据设置开关动态创建） ====================
+// ==================== 全局滚动揭示单例管理 ====================
+let globalScrollRevealInstance = null;
+
+/**
+ * 确保滚动揭示实例已创建并挂载到 window
+ * 必须在任何动态内容生成之前调用
+ */
+export function ensureScrollReveal() {
+  if (!globalScrollRevealInstance) {
+    globalScrollRevealInstance = new ScrollReveal();
+  }
+  // 挂载到全局 window 对象，供其他模块使用
+  window.scrollRevealInstance = globalScrollRevealInstance;
+  return globalScrollRevealInstance;
+}
+
+/**
+ * 刷新滚动揭示（供外部调用）
+ */
+export function refreshScrollReveal() {
+  if (globalScrollRevealInstance) {
+    globalScrollRevealInstance.refresh();
+  } else if (window.scrollRevealInstance) {
+    window.scrollRevealInstance.refresh();
+  } else {
+    // 如果还没有实例，则创建
+    ensureScrollReveal();
+  }
+}
+
+/**
+ * 获取滚动揭示实例
+ */
+export function getScrollReveal() {
+  return globalScrollRevealInstance || window.scrollRevealInstance;
+}
+
+// ==================== 光标和外链管理器（按需初始化） ====================
 let uiEffectsInitialized = false;
 let customCursorInstance = null;
 let externalLinkManagerInstance = null;
-let scrollRevealInstance = null;
 
 export function initUIEffects() {
   if (uiEffectsInitialized) return;
   uiEffectsInitialized = true;
+  
+  // 确保滚动揭示已初始化（但此函数可能在空闲任务中调用，此时可能已经通过 ensureScrollReveal 提前初始化了）
+  ensureScrollReveal();
   
   const initFn = () => {
     const cursorEnabled = isFeatureEnabled(SETTINGS_KEYS.CURSOR_ENABLED, true);
@@ -454,26 +493,12 @@ export function initUIEffects() {
       externalLinkManagerInstance.destroy();
       externalLinkManagerInstance = null;
     }
-    
-    if (!scrollRevealInstance) {
-      scrollRevealInstance = new ScrollReveal();
-    }
   };
   
   if ('requestIdleCallback' in window) {
     requestIdleCallback(initFn, { timeout: 3000 });
   } else {
     setTimeout(initFn, 500);
-  }
-}
-
-export function getScrollReveal() {
-  return scrollRevealInstance;
-}
-
-export function refreshScrollReveal() {
-  if (scrollRevealInstance) {
-    scrollRevealInstance.refresh();
   }
 }
 
