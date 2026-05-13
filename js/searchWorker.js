@@ -92,7 +92,7 @@ function sortByField(items, order) {
       sortedItems.sort((a, b) => new Date(b.date) - new Date(a.date));
       break;
     default:
-      sortedItems.sort((a, b) => new Date(b.last_updated || b.date) - new Date(a.last_updated || a.date));
+      sortedItems.sort((a, b) => new Date(b.date) - new Date(a.date));
   }
   return sortedItems;
 }
