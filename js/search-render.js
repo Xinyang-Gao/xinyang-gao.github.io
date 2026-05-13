@@ -268,7 +268,7 @@ export class SearchController {
     const q = params.get('q') || '';
     const field = params.get('field') || 'all';
     const tagsParam = params.get('tags') || '';
-    const sortOrder = params.get('sort') || 'updated_desc';
+    const sortOrder = params.get('sort') || 'date_desc';
     
     if (this.input) this.input.value = q;
     if (this.field) this.field.value = field;
@@ -285,7 +285,7 @@ export class SearchController {
     const params = new URLSearchParams(window.location.search);
     const q = this.input ? this.input.value.trim() : '';
     const field = this.field ? this.field.value : 'all';
-    const sort = this.sortSelect ? this.sortSelect.value : 'updated_desc';
+    const sort = this.sortSelect ? this.sortSelect.value : 'date_desc';
     
     if (q) params.set('q', q);
     else params.delete('q');
@@ -293,7 +293,7 @@ export class SearchController {
     if (field && field !== 'all') params.set('field', field);
     else params.delete('field');
     
-    if (sort && sort !== 'updated_desc') params.set('sort', sort);
+    if (sort && sort !== 'date_desc') params.set('sort', sort);
     else params.delete('sort');
     
     if (this.selectedTags.length) params.set('tags', this.selectedTags.join(','));
