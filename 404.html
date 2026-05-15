@@ -2,190 +2,172 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>404 · 页面未找到 - 高新炀的小站</title>
-  <meta name="description" content="404错误页面 - 您访问的页面不存在。您可以返回首页、返回上一页或通过留言板反馈问题。">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="404个性化错误页面 - 根据访问链接提供定制化提示和智能建议，帮助您快速找到想要的内容。">
+  <title>404 · 高新炀的小站</title>
   <link rel="stylesheet" href="/css/style.css">
   <style>
-    .error-wrapper {
-      max-width: 900px;
-      margin: calc(var(--nav-height) + 40px) auto 60px auto;
-      padding: 0 20px;
-    }
-
-    .error-card {
-      background: var(--surface-color);
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius-xl);
-      box-shadow: var(--shadow-md), var(--shadow-offset);
-      padding: 56px 48px;
+    .error-content {
       text-align: center;
-      transition: background-color var(--transition-normal), 
-                  border-color var(--transition-normal),
-                  box-shadow var(--transition-normal);
+      max-width: 720px;
+      margin: 0 auto;
     }
-
-    .error-icon {
-      font-size: 4.8rem;
+    .error-icon-large {
+      font-size: 5rem;
       color: var(--accent-color);
       margin-bottom: 1rem;
-      opacity: 0.7;
+      opacity: 0.75;
       display: inline-block;
+      animation: subtleFloat 3s ease-in-out infinite;
     }
-
-    .error-card h1 {
-      font-size: 6rem;
-      margin: 0.2em 0 0.1em;
+    @keyframes subtleFloat {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-8px); }
+      100% { transform: translateY(0px); }
+    }
+    .error-status {
+      font-size: 7rem;
       font-weight: 800;
-      letter-spacing: -0.02em;
-      color: var(--accent-color);
-      line-height: 1.1;
+      line-height: 1;
+      margin: 0.2em 0;
+      background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-light) 100%);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      letter-spacing: -0.03em;
     }
-
-    .error-card h2 {
+    .error-headline {
       font-size: 1.9rem;
-      font-weight: 550;
-      margin: 0.25em 0 0.5em;
+      font-weight: 600;
+      margin: 0.2em 0 0.5em;
       border-bottom: none;
-      padding-bottom: 0;
       color: var(--text-color);
-      letter-spacing: -0.3px;
     }
-
-    .error-desc {
-      font-size: 1.1rem;
-      margin: 1.6em 0 1.2em;
-      color: var(--text-secondary);
-      max-width: 480px;
-      margin-left: auto;
-      margin-right: auto;
+    .error-message-box {
+      background: var(--surface-color-secondary);
+      border-left: 5px solid var(--accent-color);
+      padding: 20px 24px;
+      margin: 32px 0 24px;
+      border-radius: var(--radius-lg);
+      text-align: left;
+      box-shadow: var(--shadow-sm);
+      transition: all var(--transition-normal);
+    }
+    .error-message-box p {
+      margin: 0 0 12px 0;
+      font-size: 1rem;
       line-height: 1.6;
     }
-
-    .error-desc i {
-      color: var(--accent-color);
-      margin-right: 6px;
+    .error-path-badge {
+      font-family: var(--font-mono);
+      background: var(--code-bg);
+      padding: 8px 16px;
+      border-radius: var(--radius-full);
+      display: inline-block;
+      font-size: 0.85rem;
+      word-break: break-all;
+      border: 1px solid var(--border-color);
+      margin: 8px 0 4px;
     }
-
-    .error-buttons {
+    .suggestion-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 24px;
+      margin-bottom: 16px;
+    }
+    .suggestion-link {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      padding: 6px 18px;
+      border-radius: var(--radius-full);
+      font-size: 0.85rem;
+      color: var(--accent-color);
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    .suggestion-link:hover {
+      background: var(--accent-color);
+      color: white;
+      border-color: var(--accent-color);
+      transform: translateY(-2px);
+    }
+    .quick-search {
+      margin-top: 32px;
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .quick-search-input {
+      flex: 1;
+      min-width: 200px;
+      padding: 12px 20px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-full);
+      background: var(--surface-color);
+      color: var(--text-color);
+      font-family: var(--font-family);
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+    .quick-search-input:focus {
+      border-color: var(--accent-color);
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(180, 91, 99, 0.2);
+    }
+    .error-buttons-group {
       display: flex;
       gap: 18px;
       justify-content: center;
-      margin-top: 36px;
+      margin-top: 28px;
       flex-wrap: wrap;
     }
-
-    .error-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      background: var(--accent-color);
-      color: white;
-      padding: 12px 28px;
-      border-radius: var(--radius-full);
-      font-weight: 550;
-      font-size: 0.98rem;
-      text-decoration: none;
-      transition: all var(--transition-fast) var(--transition-bounce);
-      border: none;
-      cursor: pointer;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    }
-
-    .error-btn i {
-      font-size: 1rem;
-      transition: transform 0.15s ease;
-    }
-
-    .error-btn:hover {
-      background: var(--accent-light);
-      transform: translateY(-3px);
-      box-shadow: var(--shadow-md);
-    }
-
-    .error-btn:hover i {
-      transform: translateX(-3px);
-    }
-
-    .error-btn.outline {
-      background: transparent;
-      color: var(--accent-color);
-      border: 1px solid var(--accent-color);
-      box-shadow: none;
-    }
-
-    .error-btn.outline:hover {
-      background: var(--accent-color);
-      color: white;
-      transform: translateY(-3px);
-    }
-
-    .error-btn.outline:hover i {
-      transform: translateX(-3px);
-      color: white;
-    }
-
-    /* 响应式优化 */
-    @media (max-width: 768px) {
-      .error-card {
-        padding: 40px 28px;
-      }
-      .error-card h1 {
-        font-size: 4.5rem;
-      }
-      .error-card h2 {
-        font-size: 1.5rem;
-      }
-      .error-wrapper {
-        margin: calc(var(--nav-height-mobile) + 30px) auto 50px auto;
-      }
-      .error-buttons {
-        gap: 14px;
-      }
-      .error-btn {
-        padding: 10px 22px;
-        font-size: 0.9rem;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .error-card {
-        padding: 32px 20px;
-      }
-      .error-card h1 {
-        font-size: 3.6rem;
-      }
-      .error-btn {
-        padding: 9px 18px;
-      }
-    }
-
-    .error-card, .error-btn {
-      background: var(--surface-color);
-      background-color: var(--surface-color);
+    @media (max-width: 640px) {
+      .error-status { font-size: 5rem; }
+      .error-headline { font-size: 1.5rem; }
+      .error-icon-large { font-size: 3.8rem; }
+      .error-message-box { padding: 16px 20px; }
     }
   </style>
 </head>
 <body>
   <div id="navbar-placeholder"></div>
 
-  <div class="error-wrapper">
-    <div class="error-card">
-      <div class="error-icon">
-        <i class="fas fa-compass"></i>
+  <div class="container" style="text-align: center;">
+    <div class="error-content">
+      <div class="error-icon-large">
+        <i class="fas fa-map-signs"></i>
       </div>
-      <h1>404</h1>
-      <h2>页面未找到</h2>
-      <div class="error-desc"> 呀，你访问的页面可能已经被移走了，或者是网址输入有误？</div>
-      <div class="error-buttons">
-        <button class="error-btn outline" id="goBackBtn">
+      <div class="error-status">404</div>
+      <h1 class="error-headline">嗯……这里好像到什么也没有</h1>
+      
+      <!-- 动态错误信息容器：优先显示自定义JSON消息，其次智能分析 -->
+      <div id="dynamicErrorBox" class="error-message-box">
+        <p><i class="fas fa-globe" style="margin-right: 8px; color: var(--accent-color);"></i> <strong>访问路径：</strong></p>
+        <div id="errorPathDisplay" class="error-path-badge">—</div>
+        <div id="personalizedMessage"><i class="fas fa-spinner fa-pulse"></i> 正在分析...</div>
+        <div id="smartSuggestions" class="suggestion-links"></div>
+      </div>
+      
+      <div class="quick-search">
+        <input type="text" id="quickSearchInput" class="quick-search-input" placeholder="站内搜索文章、作品..." aria-label="站内搜索">
+        <button id="quickSearchBtn" class="button button-primary" style="padding: 10px 24px;">搜索</button>
+      </div>
+      
+      <div class="error-buttons-group">
+        <button id="goBackBtn" class="button button-secondary">
           <i class="fas fa-arrow-left"></i> 返回上一页
         </button>
-        <a href="https://github.com/Xinyang-Gao/xinyang-gao.github.io/issues/new" target="_blank" rel="noopener noreferrer" class="error-btn outline">
+        <a href="https://github.com/Xinyang-Gao/xinyang-gao.github.io/issues/new" target="_blank" rel="noopener noreferrer" class="button button-secondary">
           <i class="fas fa-bug"></i> 反馈问题
         </a>
-        <a href="/contact.html" class="error-btn outline">
+        <a href="/contact.html" class="button button-secondary">
           <i class="fas fa-comment"></i> 留言板
+        </a>
+        <a href="/" class="button button-primary">
+          <i class="fas fa-home"></i> 返回首页
         </a>
       </div>
     </div>
@@ -201,34 +183,215 @@
 
   <script>
     (function() {
-      // 主题同步
-      const savedTheme = localStorage.getItem('theme');
-      const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      if (savedTheme) {
-        document.documentElement.setAttribute('data-theme', savedTheme);
-      } else if (systemPrefersDark) {
-        document.documentElement.setAttribute('data-theme', 'dark');
-      } else {
-        if(!document.documentElement.getAttribute('data-theme')) {
-          document.documentElement.setAttribute('data-theme', 'light');
-        }
+      // ======================= 自定义错误消息映射表 (JSON格式) =======================
+      const CUSTOM_ERROR_MESSAGES = {
+        "/404.html": "你应该是故意的，对吧？",
+        "/love": "嗯~ 你为什么会想输入这个呢？",
+        "/wxy": "这是什么的缩写呢……（这个页面在未来也许会放点什么~）"
+      };
+      
+      // 高级正则映射（可选，用于批量匹配，比如所有 /old/ 路径）
+      const REGEX_ERROR_RULES = [
+        { pattern: /^\/assets\/(.+)/, message: "这里不可以访问哟~" },
+        { pattern: /^\/test\/(.+)/, message: "这是一个临时测试页面，目前不可用。感谢您的关注～" }
+      ];
+      
+      // ----- 辅助函数：安全HTML转义
+      function escapeHtml(str) {
+        if (!str) return '';
+        return String(str).replace(/[&<>]/g, function(m) {
+          if (m === '&') return '&amp;';
+          if (m === '<') return '&lt;';
+          if (m === '>') return '&gt;';
+          return m;
+        }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+          return c;
+        });
       }
-
-      // 加载导航栏 + 页脚
-      async function loadNavbarAndFooter() {
-        if (typeof loadNavbar === 'function') {
-          try {
-            await loadNavbar();
-          } catch(e) { console.warn('loadNavbar 执行失败', e); }
-        }
-        if (typeof loadFooter === 'function') {
-          try {
-            await loadFooter();
-          } catch(e) { console.warn('loadFooter 执行失败', e); }
+      
+      // ----- 获取当前路径（解码后的完整pathname）
+      function getDecodedPath() {
+        let rawPath = window.location.pathname;
+        try {
+          return decodeURIComponent(rawPath);
+        } catch(e) {
+          return rawPath;
         }
       }
       
-      // 返回顶部逻辑
+      // ----- 核心：根据路径获取自定义消息（优先精确匹配，再正则匹配）
+      function getCustomMessageByPath(path) {
+        // 1. 精确匹配
+        if (CUSTOM_ERROR_MESSAGES.hasOwnProperty(path)) {
+          return { found: true, message: CUSTOM_ERROR_MESSAGES[path], type: 'exact' };
+        }
+        // 2. 正则匹配
+        for (let rule of REGEX_ERROR_RULES) {
+          if (rule.pattern.test(path)) {
+            return { found: true, message: rule.message, type: 'regex', rule: rule };
+          }
+        }
+        return { found: false };
+      }
+      
+      // ----- 根据网址生成个性化消息与智能建议（融合自定义映射 + 动态分析）
+      function analyzePathAndGenerateMessage() {
+        const decodedPath = getDecodedPath();
+        // 展示访问路径
+        const pathDisplay = document.getElementById('errorPathDisplay');
+        if (pathDisplay) {
+          pathDisplay.textContent = decodedPath || '/';
+        }
+        
+        let mainMessage = '';
+        let suggestions = [];
+        let useCustom = false;
+        
+        // 优先检查自定义消息映射
+        const customResult = getCustomMessageByPath(decodedPath);
+        if (customResult.found) {
+          useCustom = true;
+          mainMessage = customResult.message;
+          // 自定义消息时，建议仍提供通用导航帮助（保留人性化跳转）
+          suggestions.push({ text: '返回首页', url: '/', icon: 'fa-house' });
+          suggestions.push({ text: '浏览全部文章', url: '/articles.html', icon: 'fa-book-open' });
+          suggestions.push({ text: '创意作品集', url: '/works.html', icon: 'fa-cube' });
+          suggestions.push({ text: '反馈失效链接', url: 'https://github.com/Xinyang-Gao/xinyang-gao.github.io/issues/new', icon: 'fa-github' });
+        } else {
+          // ========= 原有智能分析逻辑（未匹配自定义时使用） =========
+          const articlePatterns = [/\/article\//i, /\/articles\//i, /\/post\//i, /\/p\//i, /\/blog\//i];
+          const workPatterns = [/\/work\//i, /\/works\//i, /\/project\//i, /\/portfolio\//i];
+          const tagPatterns = [/\/tag\//i, /\/tags\//i, /\/topic\//i];
+          const aboutPatterns = [/\/about/i, /\/contact/i, /\/me/i];
+          
+          let pathParts = decodedPath.split('/').filter(p => p.length > 0);
+          let lastSegment = pathParts.length > 0 ? pathParts[pathParts.length-1] : '';
+          if (lastSegment.endsWith('.html')) lastSegment = lastSegment.slice(0, -5);
+          if (lastSegment.endsWith('.htm')) lastSegment = lastSegment.slice(0, -4);
+          
+          let isArticleMatch = articlePatterns.some(pattern => pattern.test(decodedPath));
+          let isWorkMatch = workPatterns.some(pattern => pattern.test(decodedPath));
+          let isTagMatch = tagPatterns.some(pattern => pattern.test(decodedPath));
+          let isAboutMatch = aboutPatterns.some(pattern => pattern.test(decodedPath));
+          let probableSlug = lastSegment && lastSegment.length > 0 && lastSegment.length < 100 ? lastSegment : null;
+          
+          if (isArticleMatch) {
+            mainMessage = `这篇文章似乎暂时离开了书架。可能已被作者移至存档区、链接失效，或者还在草稿箱中酝酿。不过别灰心，站内还有很多值得阅读的篇章。`;
+            suggestions.push({ text: '浏览全部文章', url: '/articles.html', icon: 'fa-book-open' });
+            suggestions.push({ text: '热门标签导航', url: '/articles.html?tags=', icon: 'fa-tags' });
+            if (probableSlug) {
+              suggestions.push({ text: `搜索 「${escapeHtml(probableSlug.substring(0, 28))}」 相关文章`, url: `/articles.html?search=${encodeURIComponent(probableSlug)}`, icon: 'fa-search' });
+            }
+          } 
+          else if (isWorkMatch) {
+            mainMessage = `你寻找的作品项目也许正在迭代升级，或者它换了新的展示位置。不妨前往「创意工坊」探索更多有趣的代码与设计作品。`;
+            suggestions.push({ text: '进入作品集', url: '/works.html', icon: 'fa-cube' });
+            suggestions.push({ text: '创意实验室', url: '/works.html?tags=实验', icon: 'fa-flask' });
+            if (probableSlug) {
+              suggestions.push({ text: `站内检索作品 「${escapeHtml(probableSlug)}」`, url: `/works.html?search=${encodeURIComponent(probableSlug)}`, icon: 'fa-magnifying-glass' });
+            }
+          }
+          else if (isTagMatch) {
+            let tagName = pathParts[pathParts.length-1] || '';
+            mainMessage = `标签「${escapeHtml(tagName)}」可能尚未收录，或者还没有任何内容被打上这个标签。你可以浏览所有标签，或从首页热门标签开始。`;
+            suggestions.push({ text: '全部文章标签云', url: '/articles.html', icon: 'fa-tag' });
+            suggestions.push({ text: '创意工坊标签', url: '/works.html', icon: 'fa-palette' });
+            if (tagName) {
+              suggestions.push({ text: `在文章中查找标签「${escapeHtml(tagName)}」`, url: `/articles.html?tags=${encodeURIComponent(tagName)}`, icon: 'fa-file-alt' });
+            }
+          }
+          else if (isAboutMatch) {
+            mainMessage = `关于页面或者联系方式可能还没完全开放，但我一直都在。你可以通过留言板给我发消息，或者从首页了解我。`;
+            suggestions.push({ text: '留言板', url: '/contact.html', icon: 'fa-comment-dots' });
+            suggestions.push({ text: '返回首页', url: '/', icon: 'fa-house' });
+          }
+          else {
+            if (decodedPath.endsWith('.html') || decodedPath.includes('.')) {
+              mainMessage = `这个页面地址可能已经更新或归档。你访问的链接也许来自旧版本的站点地图。可以尝试站内搜索或前往最近更新的内容。`;
+            } else {
+              mainMessage = `宇宙在膨胀，页面在漂流。你访问的链接暂时没有对应的内容，但这里的星光依旧灿烂。或许你感兴趣的内容就在不远处。`;
+            }
+            suggestions.push({ text: '最新文章', url: '/#blogHome', icon: 'fa-newspaper' });
+            suggestions.push({ text: '作品精选', url: '/works.html', icon: 'fa-rocket' });
+            if (probableSlug && probableSlug.length > 1) {
+              suggestions.push({ text: `全站搜索 “${escapeHtml(probableSlug)}”`, url: `/articles.html?search=${encodeURIComponent(probableSlug)}`, icon: 'fa-search' });
+            } else {
+              suggestions.push({ text: '热门标签', url: '/articles.html', icon: 'fa-fire' });
+            }
+          }
+          
+          // 确保至少有两个建议
+          if (suggestions.length < 2) {
+            suggestions.push({ text: '反馈缺失页面', url: 'https://github.com/Xinyang-Gao/xinyang-gao.github.io/issues/new', icon: 'fa-github' });
+          }
+        }
+        
+        // 渲染主消息
+        const msgContainer = document.getElementById('personalizedMessage');
+        if (msgContainer) {
+          let iconHtml = useCustom ? '<i class="fas fa-star" style="margin-right: 8px; color: var(--accent-color);"></i>' : '<i class="fas fa-info-circle" style="margin-right: 8px; color: var(--accent-color);"></i>';
+          msgContainer.innerHTML = `${iconHtml} ${escapeHtml(mainMessage)}`;
+        }
+        
+        // 渲染建议链接
+        const suggestionContainer = document.getElementById('smartSuggestions');
+        if (suggestionContainer) {
+          if (suggestions.length) {
+            suggestionContainer.innerHTML = suggestions.map(sugg => {
+              let iconHtml = sugg.icon ? `<i class="fas ${sugg.icon}" style="margin-right: 5px;"></i>` : '';
+              let targetAttr = (sugg.url.startsWith('http') || sugg.url.startsWith('https')) ? 'target="_blank" rel="noopener noreferrer"' : '';
+              return `<a href="${escapeHtml(sugg.url)}" class="suggestion-link" ${targetAttr}>${iconHtml} ${escapeHtml(sugg.text)}</a>`;
+            }).join('');
+          } else {
+            suggestionContainer.innerHTML = '<span style="font-size:0.85rem;">✨ 试试返回首页浏览最新内容</span>';
+          }
+        }
+      }
+      
+      // ----- 快速站内搜索（跳转至文章页带搜索参数）
+      function initQuickSearch() {
+        const searchInput = document.getElementById('quickSearchInput');
+        const searchBtn = document.getElementById('quickSearchBtn');
+        if (!searchInput || !searchBtn) return;
+        const performSearch = () => {
+          let query = searchInput.value.trim();
+          if (query === '') {
+            window.location.href = '/articles.html';
+            return;
+          }
+          window.location.href = `/articles.html?search=${encodeURIComponent(query)}`;
+        };
+        searchBtn.addEventListener('click', performSearch);
+        searchInput.addEventListener('keypress', (e) => {
+          if (e.key === 'Enter') performSearch();
+        });
+      }
+      
+      // ----- 返回上一页逻辑（优雅降级）
+      function initGoBack() {
+        const backBtn = document.getElementById('goBackBtn');
+        if (!backBtn) return;
+        backBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          if (window.history.length > 1) {
+            window.history.back();
+          } else {
+            window.location.href = '/';
+          }
+        });
+      }
+      
+      // ----- 加载导航栏与页脚（与全局main.js配合）
+      async function loadNavbarAndFooter() {
+        if (typeof loadNavbar === 'function') {
+          try { await loadNavbar(); } catch(e) { console.warn('loadNavbar 异常', e); }
+        }
+        if (typeof loadFooter === 'function') {
+          try { await loadFooter(); } catch(e) { console.warn('loadFooter 异常', e); }
+        }
+      }
+      
+      // 返回顶部按钮
       function setupBackToTop() {
         const backBtn = document.getElementById('backToTopBtn');
         if (!backBtn) return;
@@ -245,23 +408,19 @@
         });
         toggleBackBtn();
       }
-
-      // 返回上一页 若无法后退则跳转首页
-      function initGoBack() {
-        const backBtn = document.getElementById('goBackBtn');
-        if (!backBtn) return;
-        backBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          if (window.history.length > 1) {
-            window.history.back();
-          } else {
-            const fallbackUrl = '/index.html';
-            window.location.href = fallbackUrl;
-          }
-        });
+      
+      // 页面过渡动画淡化
+      function handleTransitionOut() {
+        const transitionDiv = document.getElementById('pageTransition');
+        if (transitionDiv) {
+          setTimeout(() => {
+            transitionDiv.style.opacity = '0';
+          }, 200);
+        }
+        document.body.setAttribute('data-loaded', 'true');
       }
-
-      // 监听主题变更
+      
+      // 监听主题跨页面变更
       window.addEventListener('storage', (e) => {
         if (e.key === 'theme' && e.newValue) {
           document.documentElement.setAttribute('data-theme', e.newValue);
@@ -269,23 +428,35 @@
           if (checkbox) checkbox.checked = (e.newValue === 'dark');
         }
       });
-
-      // 页面加载完全后执行
-      document.addEventListener('DOMContentLoaded', async () => {
+      
+      // 确保主题同步
+      function syncTheme() {
+        const saved = localStorage.getItem('theme');
+        if (saved) {
+          document.documentElement.setAttribute('data-theme', saved);
+        } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        } else {
+          document.documentElement.setAttribute('data-theme', 'light');
+        }
+      }
+      
+      // 主初始化
+      async function init404Page() {
+        syncTheme();
         await loadNavbarAndFooter();
         setupBackToTop();
         initGoBack();
-        
-        const pageTransitionDiv = document.getElementById('pageTransition');
-        if (pageTransitionDiv) {
-          setTimeout(() => {
-            pageTransitionDiv.style.opacity = '0';
-          }, 200);
-        }
-        
-        // 告知 body 已加载
-        document.body.setAttribute('data-loaded', 'true');
-      });
+        initQuickSearch();
+        analyzePathAndGenerateMessage();   // 根据网址与自定义映射输出差异化消息
+        handleTransitionOut();
+      }
+      
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init404Page);
+      } else {
+        init404Page();
+      }
     })();
   </script>
 </body>
