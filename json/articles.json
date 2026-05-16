@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-05-16T14:27:29.243961",
+  "generated_at": "2026-05-16T17:13:53.552993",
   "total_articles": 12,
-  "total_word_count": 39907,
+  "total_word_count": 39952,
   "articles": [
     {
       "relative_path": "assets/source/分享/你知道那个像WiFi一样的小图标吗.md",
@@ -153,9 +153,9 @@
     },
     {
       "relative_path": "assets/source/网站/网站更新日志.md",
-      "hash": "f916b49db09ca2e1addca5a5ceccc422",
+      "hash": "ec9ceaa0e86eba4919fe5ea78d5e073f",
       "last_updated": "2026-05-16",
-      "modify_count": 134,
+      "modify_count": 135,
       "hidden": false,
       "title": "网站更新日志",
       "date": "2025-12-21",
@@ -166,8 +166,8 @@
       ],
       "category": "网站",
       "url": "/articles/网站更新日志.html",
-      "word_count": 14971,
-      "read_time": "50分钟"
+      "word_count": 15016,
+      "read_time": "51分钟"
     },
     {
       "relative_path": "assets/source/日记/雪中的思绪.md",
