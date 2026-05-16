@@ -32,7 +32,16 @@ from datetime import datetime
 from pathlib import Path
 from urllib.parse import quote
 
-# ---------------------------- 配置项（可按需修改） ----------------------------
+def log_info(msg: str) -> None:
+    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] [INFO] {msg}")
+
+def log_warning(msg: str) -> None:
+    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] [WARNING] {msg}")
+
+def log_error(msg: str) -> None:
+    print(f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] [ERROR] {msg}")
+
+# ---------------------------- 配置项 ----------------------------
 # 网站根地址（末尾不要加斜杠）
 BASE_URL = "https://xinyang-gao.github.io"
 
@@ -116,7 +125,7 @@ def generate_sitemap(base_url=BASE_URL, output_path=OUTPUT_SITEMAP):
             with open(ARTICLES_JSON, 'r', encoding='utf-8') as f:
                 articles_data = json.load(f)
         except Exception as e:
-            print(f"警告：无法读取 {ARTICLES_JSON}，跳过文章处理。错误: {e}")
+            log_error(f"无法读取 {ARTICLES_JSON}，跳过文章处理。错误: {e}")
     
     articles = articles_data.get("articles", [])
     added_urls = set()   # 用于去重
@@ -149,7 +158,7 @@ def generate_sitemap(base_url=BASE_URL, output_path=OUTPUT_SITEMAP):
         ET.SubElement(url_elem, "changefreq").text = ARTICLE_CHANGEFREQ
         ET.SubElement(url_elem, "priority").text = ARTICLE_PRIORITY
     
-    print(f"已添加 {len(articles) - len([a for a in articles if a.get('hidden')])} 篇文章")
+    log_info(f"已添加 {len(articles) - len([a for a in articles if a.get('hidden')])} 篇文章")
     
     # 2. 扫描根目录下的 HTML 文件（不包含 articles 等子目录）
     root_html_files = []
@@ -166,7 +175,7 @@ def generate_sitemap(base_url=BASE_URL, output_path=OUTPUT_SITEMAP):
     if rss_file.exists():
         root_html_files.append(rss_file)   # 虽非 HTML，但可纳入 sitemap
     
-    print(f"扫描到 {len(root_html_files)} 个根目录页面/RSS 文件")
+    log_info(f"扫描到 {len(root_html_files)} 个根目录页面/RSS 文件")
     
     for file_path in root_html_files:
         # 构建相对路径（相对于项目根目录）
@@ -208,10 +217,10 @@ def generate_sitemap(base_url=BASE_URL, output_path=OUTPUT_SITEMAP):
     try:
         with open(output_path, 'w', encoding='utf-8') as f:
             f.write(xml_str)
-        print(f"✅ 站点地图已生成：{output_path.absolute()}")
-        print(f"   包含 {len(added_urls)} 个 URL")
+        log_info(f"站点地图已生成：{output_path.absolute()}")
+        log_info(f"包含 {len(added_urls)} 个 URL")
     except Exception as e:
-        print(f"❌ 写入站点地图失败：{e}")
+        log_error(f"写入站点地图失败：{e}")
         return False
     
     return True
