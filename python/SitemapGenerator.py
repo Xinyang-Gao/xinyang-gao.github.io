@@ -67,6 +67,7 @@ DEFAULT_PAGE_CONFIG = {
     "/index.html": {"changefreq": "weekly", "priority": "1.0"},
     "/about.html": {"changefreq": "weekly", "priority": "0.8"},
     "/articles.html": {"changefreq": "daily", "priority": "0.9"},
+    "/archive.html": {"changefreq": "weekly", "priority": "0.8"},
     "/works.html": {"changefreq": "weekly", "priority": "0.8"},
     "/friends.html": {"changefreq": "weekly", "priority": "0.7"},
     "/contact.html": {"changefreq": "weekly", "priority": "0.7"},

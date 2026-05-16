@@ -401,6 +401,18 @@ export async function initPageFeatures(pageName) {
       }
     };
     await initSearchPage(pageName, refreshCallback);
+  } else if (pageName === 'archive') {
+    ensureScrollReveal();
+    const { initArchivePage } = await import('/js/archive.js');
+    const refreshCallback = () => {
+      if (window.scrollRevealInstance) {
+        window.scrollRevealInstance.refresh();
+      } else {
+        ensureScrollReveal();
+        if (window.scrollRevealInstance) window.scrollRevealInstance.refresh();
+      }
+    };
+    await initArchivePage(refreshCallback);
   }
 
   if (typeof renderMathAndMermaid === 'function') {
