@@ -53,12 +53,27 @@ function buildTimelineHTML(items, selectedYear) {
         const url = item.url || item.link || '#';
         const typeBadge = item.__archiveType === 'work' ? '<span class="timeline-item-badge">作品</span>' : '';
 
+        // 如果是作品，渲染为可触发作品详情弹窗的元素（与作品列表一致）
+        let titleHtml;
+        if (item.__archiveType === 'work') {
+          const workInfo = {
+            title: item.title || '',
+            description: item.description || '',
+            tags: item.tag || item.tags || [],
+            link: item.link || item.url || ''
+          };
+          const workInfoAttr = Utils.escapeHtml(encodeURIComponent(JSON.stringify(workInfo)));
+          titleHtml = `<a href="javascript:void(0)" class="timeline-item-title list-item" data-type="work" data-work-info="${workInfoAttr}">${title}</a>`;
+        } else {
+          titleHtml = `<a href="${Utils.escapeHtml(url)}" class="timeline-item-title">${title}</a>`;
+        }
+
         return `
           <article class="timeline-item" data-date="${Utils.escapeHtml(dateLabel)}">
             <div class="timeline-item-marker"></div>
             <div class="timeline-item-content">
               <div class="timeline-item-header">
-                <a href="${Utils.escapeHtml(url)}" class="timeline-item-title">${title}</a>
+                ${titleHtml}
                 ${typeBadge}
                 <span class="timeline-item-date">${Utils.escapeHtml(dateLabel)}</span>
               </div>
