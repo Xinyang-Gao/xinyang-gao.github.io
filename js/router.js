@@ -482,6 +482,27 @@ export async function fetchAndReplaceContent(url, pushState = true) {
     }
 
     refreshNavTitleReplacer();
+    // 自动滚动处理：如果目标页面没有保存的滚动位置或锚点，则回到顶部
+    try {
+      const targetUrl = new URL(url, window.location.href);
+      const scrollKey = `scrollPosition_${targetUrl.pathname}${targetUrl.search}`;
+      const hasSaved = !!sessionStorage.getItem(scrollKey);
+      if (!hasSaved) {
+        if (targetUrl.hash) {
+          const targetId = targetUrl.hash.slice(1);
+          const el = document.getElementById(targetId);
+          if (el) {
+            setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 0);
+          } else {
+            setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0);
+          }
+        } else {
+          setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0);
+        }
+      }
+    } catch (e) {
+      console.warn('[WARN] 自动滚动处理失败', e);
+    }
     window.dispatchEvent(new CustomEvent('ajax:navigation', { detail: { url, page: pageName } }));
     return true;
   } catch (e) {
