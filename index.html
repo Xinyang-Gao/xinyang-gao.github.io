@@ -146,119 +146,6 @@
   letter-spacing: 0.5px;
 }
 
-/* 最近更新区域 */
-.recent-section {
-  margin: 48px 0 20px;
-}
-
-.recent-section h2 {
-  font-size: 1.8rem;
-  margin-bottom: 24px;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  border-bottom: 2px solid var(--accent-color);
-  padding-bottom: 6px;
-}
-
-.recent-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 28px;
-}
-
-.recent-posts,
-.recent-works {
-  background: var(--surface-color-secondary);
-  border-radius: var(--radius-lg);
-  padding: 20px 20px 24px;
-  border: 1px solid var(--border-light);
-  transition: all var(--transition-normal);
-}
-
-.recent-posts h3,
-.recent-works h3 {
-  margin-top: 0;
-  margin-bottom: 20px;
-  font-size: 1.3rem;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: var(--accent-color);
-}
-
-.recent-item {
-  background: var(--surface-color);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: 16px 18px;
-  margin-bottom: 16px;
-  cursor: pointer;
-  transition: all var(--transition-fast);
-  box-shadow: var(--shadow-sm);
-}
-
-.recent-item:last-child {
-  margin-bottom: 0;
-}
-
-.recent-item:hover {
-  transform: translateX(4px) translateY(-2px);
-  border-color: var(--accent-color);
-  box-shadow: var(--shadow-md);
-  background: var(--surface-color);
-}
-
-.recent-title {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  flex-wrap: wrap;
-  gap: 10px;
-  font-weight: 600;
-  font-size: 1rem;
-  margin-bottom: 8px;
-}
-
-.recent-title span i {
-  margin-right: 6px;
-  color: var(--accent-color);
-}
-
-.recent-badge {
-  font-size: var(--font-size-xs);
-  background: var(--tag-bg);
-  padding: 2px 8px;
-  border-radius: var(--radius-full);
-  color: var(--text-secondary);
-  font-weight: normal;
-}
-
-.recent-meta {
-  font-size: var(--font-size-small);
-  color: var(--text-secondary);
-  line-height: 1.5;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 6px;
-}
-
-.recent-meta i {
-  color: var(--accent-color);
-  font-size: 0.8rem;
-}
-
-.recent-empty {
-  color: var(--text-secondary);
-  text-align: center;
-  padding: 24px 12px;
-  font-size: 0.9rem;
-  background: var(--surface-color);
-  border-radius: var(--radius-md);
-  border: 1px dashed var(--border-color);
-}
-
 /* 最后更新徽章 */
 .last-update-badge {
   text-align: center;
@@ -320,10 +207,6 @@
     flex-direction: column;
     gap: 24px;
   }
-  .recent-grid {
-    grid-template-columns: 1fr;
-    gap: 24px;
-  }
   .busuanzi-stats {
     gap: 20px;
     flex-direction: column;
@@ -350,12 +233,6 @@
   .tags-section {
     padding: 16px;
   }
-  .recent-item {
-    padding: 12px;
-  }
-  .recent-title {
-    font-size: 0.95rem;
-  }
   .inspire-quote {
     padding: 16px 20px;
   }
@@ -367,22 +244,10 @@
 /* 暗色模式下的额外优化（确保所有新组件都正确适配） */
 [data-theme="dark"] .stat-card,
 [data-theme="dark"] .tags-section,
-[data-theme="dark"] .recent-posts,
-[data-theme="dark"] .recent-works,
 [data-theme="dark"] .inspire-quote,
 [data-theme="dark"] .busuanzi-stats {
   background: var(--surface-color);
   border-color: var(--border-color);
-}
-
-[data-theme="dark"] .recent-item {
-  background: var(--surface-color-secondary);
-  border-color: var(--border-light);
-}
-
-[data-theme="dark"] .recent-item:hover {
-  background: var(--surface-color);
-  border-color: var(--accent-color);
 }
 
 [data-theme="dark"] .hero-signature {
@@ -451,25 +316,7 @@
             </div>
           </div>
         </div>
-
-        <!-- 最近更新区域 (文章&作品) -->
-        <div class="recent-section">
-          <h2><i class="fas fa-history"></i> 最近更新</h2>
-          <div class="recent-grid">
-            <div class="recent-posts">
-              <h3><i class="fas fa-pen-fancy"></i> 文章 </h3>
-              <div id="recentArticlesList">
-                <div class="recent-empty"><i class="fas fa-hourglass-half"></i> 正在拾取星光...</div>
-              </div>
-            </div>
-            <div class="recent-works">
-              <h3><i class="fas fa-laptop-code"></i>作品</h3>
-              <div id="recentWorksList">
-                <div class="recent-empty"><i class="fas fa-microchip"></i> 正在编译创意...</div>
-              </div>
-            </div>
-          </div>
-        </div>
+        
         <div class="last-update-badge" id="statsUpdateBadge"></div>
         
         <!-- 不蒜子统计模块 (全站访问量/访客数) -->
@@ -521,6 +368,9 @@
             const totalArticles = stat.total_articles ?? 0;
             const totalWords = stat.total_word_count ?? 0;
             const totalWorks = stat.total_works ?? 0;
+            const totalArticleCategories = stat.total_article_categories ?? 0;
+            const totalArticleTags = stat.total_article_tags ?? 0;
+            const totalWorkTags = stat.total_work_tags ?? 0;
             const lastUpdated = stat.last_updated || '未知';
             
             const statsContainer = document.getElementById('statsContainer');
@@ -529,6 +379,9 @@
                 <div class="stat-card" data-stat-type="articles"><div class="stat-icon"><i class="fas fa-newspaper"></i></div><div class="stat-number">${totalArticles}</div><div class="stat-label">文章总数</div></div>
                 <div class="stat-card"><div class="stat-icon"><i class="fas fa-chart-line"></i></div><div class="stat-number">${totalWords.toLocaleString()}</div><div class="stat-label">总字数</div></div>
                 <div class="stat-card" data-stat-type="works"><div class="stat-icon"><i class="fas fa-rocket"></i></div><div class="stat-number">${totalWorks}</div><div class="stat-label">作品数量</div></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-bookmark"></i></div><div class="stat-number">${totalArticleCategories}</div><div class="stat-label">文章分类</div></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-tags"></i></div><div class="stat-number">${totalArticleTags}</div><div class="stat-label">文章标签</div></div>
+                <div class="stat-card"><div class="stat-icon"><i class="fas fa-layer-group"></i></div><div class="stat-number">${totalWorkTags}</div><div class="stat-label">作品标签</div></div>
               `;
             }
             // 处理标签云
@@ -563,124 +416,6 @@
             }
           });
       }
-
-      // 加载最新文章和作品
-      function loadRecentContent() {
-        const fetchArticles = fetch('/json/articles.json').then(res => res.ok ? res.json() : Promise.reject('articles.json不可用'));
-        const fetchWorks = fetch('/json/works.json').then(res => res.ok ? res.json() : Promise.reject('works.json不可用'));
-        
-        Promise.allSettled([fetchArticles, fetchWorks]).then(results => {
-          let articlesData = results[0].status === 'fulfilled' ? results[0].value : null;
-          let worksData = results[1].status === 'fulfilled' ? results[1].value : null;
-          
-          let articles = [];
-          let works = [];
-          if (articlesData && articlesData.articles) {
-            articles = articlesData.articles;
-          }
-          if (worksData && worksData.works) {
-            works = worksData.works;
-          }
-          
-          const sortByDate = (a,b) => new Date(b.date) - new Date(a.date);
-          articles.sort(sortByDate);
-          works.sort(sortByDate);
-          const latestArticles = articles.slice(0, 5);
-          const latestWorks = works.slice(0, 5);
-          
-          renderRecentList('recentArticlesList', latestArticles, 'article');
-          renderRecentList('recentWorksList', latestWorks, 'work');
-        }).catch(err => {
-          console.error('最近内容加载失败:', err);
-          const artContainer = document.getElementById('recentArticlesList');
-          if (artContainer) artContainer.innerHTML = '<div class="recent-empty"><i class="fas fa-sad-tear"></i> 内容加载失败，刷新试试</div>';
-          const workContainer = document.getElementById('recentWorksList');
-          if (workContainer) workContainer.innerHTML = '<div class="recent-empty"><i class="fas fa-tools"></i> 暂时无法获取作品</div>';
-        });
-      }
-      
-      function renderRecentList(containerId, items, type) {
-        const container = document.getElementById(containerId);
-        if (!container) return;
-        if (!items || items.length === 0) {
-          container.innerHTML = '<div class="recent-empty"><i class="far fa-star"></i> 暂无新动态，敬请期待～</div>';
-          return;
-        }
-        const html = items.map(item => {
-          const title = escapeHtml(item.title || '未命名');
-          const date = item.date ? escapeHtml(item.date) : '';
-          let desc = item.description ? escapeHtml(item.description.substring(0, 85)) : '';
-          if (desc.length >= 85) desc += '…';
-          
-          if (type === 'article') {
-            const articleUrl = item.url || '';
-            return `
-              <div class="recent-item" data-type="article" data-url="${escapeHtml(articleUrl)}">
-                <div class="recent-title">
-                  <span><i class="far fa-file-alt" style="margin-right: 8px; color: var(--accent-color);"></i>${title}</span>
-                  ${date ? `<span class="recent-badge">${date}</span>` : ''}
-                </div>
-                ${desc ? `<div class="recent-meta"><i class="fas fa-feather"></i> ${desc}</div>` : ''}
-              </div>
-            `;
-          } else {
-            const workInfo = {
-              title: item.title,
-              description: item.description || '',
-              link: item.link || '',
-              tags: item.tags || item.tag || []
-            };
-            const workInfoStr = encodeURIComponent(JSON.stringify(workInfo));
-            return `
-              <div class="recent-item" data-type="work" data-work-info="${workInfoStr}">
-                <div class="recent-title">
-                  <span><i class="fas fa-cube" style="margin-right: 8px; color: var(--accent-color);"></i>${title}</span>
-                  ${date ? `<span class="recent-badge">${date}</span>` : ''}
-                </div>
-                ${desc ? `<div class="recent-meta"><i class="fas fa-code-branch"></i> ${desc}</div>` : ''}
-              </div>
-            `;
-          }
-        }).join('');
-        container.innerHTML = html;
-        attachRecentEvents(container);
-      }
-      
-      function attachRecentEvents(container) {
-        const items = container.querySelectorAll('.recent-item');
-        items.forEach(el => {
-          el.removeEventListener('click', recentClickHandler);
-          el.addEventListener('click', recentClickHandler);
-        });
-      }
-      
-      function recentClickHandler(e) {
-        const target = e.currentTarget;
-        const type = target.dataset.type;
-        if (type === 'article') {
-          const url = target.dataset.url;
-          if (url && url.trim()) {
-            window.open(url, '_blank');
-          } else {
-            console.warn('文章链接无效');
-          }
-        } else if (type === 'work') {
-          const workInfoRaw = target.dataset.workInfo;
-          if (workInfoRaw) {
-            try {
-              const workInfo = JSON.parse(decodeURIComponent(workInfoRaw));
-              if (typeof PageManager !== 'undefined' && PageManager.showWorkDetails) {
-                PageManager.showWorkDetails(workInfo);
-              } else {
-                alert(`${workInfo.title}\n${workInfo.description || '暂无描述'}`);
-                if (workInfo.link) window.open(workInfo.link, '_blank');
-              }
-            } catch(e) {
-              console.error('作品详情解析失败');
-            }
-          }
-        }
-      }
       
       // 全局事件委托（统计卡片跳转 + 标签跳转）
       function bindGlobalNavigateEvents() {
@@ -714,7 +449,6 @@
       
       function initHome() {
         loadStatisticsAndTags();
-        loadRecentContent();
         bindGlobalNavigateEvents();
       }
       
@@ -725,11 +459,6 @@
       }
       
       window.addEventListener('load', function() {
-        const containers = ['recentArticlesList', 'recentWorksList'];
-        containers.forEach(id => {
-          const cont = document.getElementById(id);
-          if (cont && cont.querySelectorAll('.recent-item').length) attachRecentEvents(cont);
-        });
         // 确保不蒜子脚本加载后显示
         if (typeof busuanzi !== 'undefined') busuanzi.fetch();
       });

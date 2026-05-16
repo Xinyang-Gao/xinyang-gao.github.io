@@ -86,6 +86,14 @@ def main():
     # 作品标签
     work_tags = unique_sorted([tag for work in works for tag in work.get('tag', []) if isinstance(work.get('tag'), list)])
 
+    # 作者与更新天数
+    article_authors = unique_sorted([art['author'] for art in articles if art.get('author')])
+    work_authors = unique_sorted([work['author'] for work in works if work.get('author')])
+    unique_authors = unique_sorted(article_authors + work_authors)
+    update_days = unique_sorted(all_dates)
+
+    average_article_word_count = int(total_word_count / total_articles) if total_articles else 0
+
     output_path = JSON_DIR / 'statistics.json'
     existing_statistics = load_json(output_path)
     version = 1
@@ -98,7 +106,13 @@ def main():
         "last_updated_full": now_precise,
         "total_articles": total_articles,
         "total_word_count": total_word_count,
+        "average_article_word_count": average_article_word_count,
         "total_works": total_works,
+        "total_article_categories": len(article_categories),
+        "total_article_tags": len(article_tags),
+        "total_work_tags": len(work_tags),
+        "total_authors": len(unique_authors),
+        "total_update_days": len(update_days),
         "article_tags": article_tags,
         "article_categories": article_categories,
         "work_tags": work_tags
