@@ -174,7 +174,6 @@ export function bindNavLinks() {
   navItems.forEach(item => {
     if (item._navHandler) item.removeEventListener('click', item._navHandler);
     const handler = (e) => {
-      if (isArticleDetailOr404Page()) return;
       e.preventDefault();
       e.stopImmediatePropagation();
       const href = item.getAttribute('href');
@@ -227,11 +226,64 @@ export async function fetchAndReplaceContent(url, pushState = true) {
     const doc = new DOMParser().parseFromString(text, 'text/html');
     const fetchedTitle = doc.querySelector('title') ? doc.querySelector('title').textContent : document.title;
     const fetchedMain = doc.querySelector('#mainContent') || doc.querySelector('main.main-content-area') || doc.querySelector('main');
-    const currentMain = document.getElementById('mainContent') || document.querySelector('main.main-content-area');
-    if (fetchedMain && currentMain) currentMain.innerHTML = fetchedMain.innerHTML;
-    else if (fetchedMain && !currentMain) {
+    let currentMain = document.getElementById('mainContent') || document.querySelector('main.main-content-area');
+    // 优先处理两栏布局：如果远端页面包含 .two-column-layout，则用远端的整个节点替换当前页面的对应节点
+    try {
+      const fetchedTwoCol = doc.querySelector('.two-column-layout');
+      if (fetchedTwoCol) {
+        const existingTwoCol = document.querySelector('.two-column-layout');
+        const newTwoCol = fetchedTwoCol.cloneNode(true);
+        try {
+          // 如果当前页面已有个人信息卡片，优先将其 HTML 注入到新节点中，避免在替换时出现空白闪烁
+          const existingPersonal = document.getElementById('personal-card-container');
+          if (existingPersonal) {
+            const newPersonal = newTwoCol.querySelector('#personal-card-container');
+            if (newPersonal) {
+              newPersonal.innerHTML = existingPersonal.innerHTML;
+            }
+          }
+        } catch (e) {
+          console.warn('[WARN] 复制个人信息卡片到新两栏节点时出错', e);
+        }
+
+        if (existingTwoCol) {
+          existingTwoCol.replaceWith(newTwoCol);
+        } else {
+          const container = document.querySelector('.container') || document.body;
+          container.insertAdjacentElement('afterbegin', newTwoCol);
+        }
+        // 更新 currentMain 指向新插入/替换后的主要内容区域，以便后续逻辑使用正确节点
+        currentMain = document.getElementById('mainContent') || document.querySelector('main.main-content-area') || document.querySelector('.two-column-layout');
+      }
+    } catch (err) {
+      console.warn('[WARN] 处理两栏布局替换时出错', err);
+    }
+
+    if (fetchedMain && currentMain) {
+      currentMain.innerHTML = fetchedMain.innerHTML;
+    } else if (fetchedMain && !currentMain) {
       const container = document.querySelector('.container') || document.body;
       container.innerHTML = fetchedMain.innerHTML;
+    } else {
+      // 处理文章详情页（site 的文章页面通常没有 <main>，而是使用 .article-page-container / #articleBody）
+      const fetchedArticle = doc.querySelector('.article-page-container') || doc.getElementById('articleBody') || doc.querySelector('.article-content-wrapper') || doc.querySelector('.article-page');
+      if (fetchedArticle) {
+        const replaceTarget = document.querySelector('.two-column-layout') || document.querySelector('.article-page-container') || document.getElementById('mainContent') || document.querySelector('main') || document.body;
+        try {
+          if (replaceTarget) {
+            // 若当前页为两栏布局（如首页），用文章容器替换右侧内容区域或整个两栏节点
+            if (replaceTarget.classList && replaceTarget.classList.contains('two-column-layout')) {
+              // 将两栏布局整体替换为文章页的容器结构
+              replaceTarget.innerHTML = fetchedArticle.outerHTML;
+            } else {
+              // 否则尝试替换 target 的内容为文章容器的 HTML
+              replaceTarget.innerHTML = fetchedArticle.outerHTML || fetchedArticle.innerHTML;
+            }
+          }
+        } catch (err) {
+          console.warn('[WARN] 替换文章容器时出错', err);
+        }
+      }
     }
     document.title = fetchedTitle;
     if (pushState) {
@@ -336,17 +388,84 @@ export async function fetchAndReplaceContent(url, pushState = true) {
       console.warn('[WARN] 尝试初始化 Twikoo 时出错', e);
     }
 
+    // 确保导航、侧边个人卡、页脚占位元素存在并在需要时加载它们
+    try {
+      const ensurePlaceholders = () => {
+        if (!document.getElementById('navbar-placeholder')) {
+          const el = document.createElement('div');
+          el.id = 'navbar-placeholder';
+          document.body.insertBefore(el, document.body.firstChild);
+        }
+        if (!document.getElementById('footer-placeholder')) {
+          const el = document.createElement('div');
+          el.id = 'footer-placeholder';
+          document.body.appendChild(el);
+        }
+        if (!document.getElementById('personal-card-container')) {
+          const aside = document.querySelector('.sidebar-profile') || document.querySelector('aside');
+          if (aside) {
+            const el = document.createElement('div');
+            el.id = 'personal-card-container';
+            aside.insertBefore(el, aside.firstChild);
+          }
+        }
+      };
+
+      ensurePlaceholders();
+
+      // 如果目标页面中包含导航/页脚预填内容，则用远端文档的内容替换；否则调用加载函数确保内容存在
+      const fetchedNavbar = doc.getElementById('navbar-placeholder');
+      const currentNavbar = document.getElementById('navbar-placeholder');
+      if (fetchedNavbar && fetchedNavbar.innerHTML && currentNavbar) {
+        currentNavbar.innerHTML = fetchedNavbar.innerHTML;
+        try {
+          bindNavLinks();
+          initMobileMenuToggle();
+          initNavTitleReplacer();
+        } catch (e) {
+          console.warn('[WARN] 初始化导航交互时出错', e);
+        }
+      } else if (currentNavbar && currentNavbar.innerHTML && currentNavbar.innerHTML.trim()) {
+        // 已存在导航内容，跳过重复加载
+      } else {
+        await loadNavbar();
+      }
+
+      const fetchedFooter = doc.getElementById('footer-placeholder');
+      const currentFooter = document.getElementById('footer-placeholder');
+      if (fetchedFooter && fetchedFooter.innerHTML && currentFooter) {
+        currentFooter.innerHTML = fetchedFooter.innerHTML;
+      } else {
+        await loadFooter();
+      }
+
+      // 个人信息卡片将在下方统一渲染（避免重复渲染）
+    } catch (e) {
+      console.warn('[WARN] 处理全局占位元素时出错', e);
+    }
+
     initNavigation();
     initMobileMenuToggle();
     initBackToTopButton();
 
-    const personalCardContainer = document.getElementById('personal-card-container');
-    if (personalCardContainer) {
-      const { UIRenderer } = await import('/js/search-render.js');
-      personalCardContainer.innerHTML = UIRenderer.generatePersonalCardHTML();
-    }
-
     const pageName = getPageNameFromPath(new URL(url, window.location.href).pathname);
+
+    // 在根目录的 HTML 文件（包括 /、/index.html、以及 /xxx.html），但排除 /404.html，渲染个人信息卡片
+    try {
+      const personalCardContainer = document.getElementById('personal-card-container');
+      const targetPath = new URL(url, window.location.href).pathname;
+      const isRootHtml = targetPath === '/' || targetPath === '/index.html' || (/^\/[^\/]+\.html$/.test(targetPath) && targetPath !== '/404.html');
+      if (personalCardContainer) {
+        if (isRootHtml) {
+          const { UIRenderer } = await import('/js/search-render.js');
+          personalCardContainer.innerHTML = UIRenderer.generatePersonalCardHTML();
+        } else {
+          personalCardContainer.innerHTML = '';
+        }
+      }
+    } catch (e) {
+      console.warn('[WARN] 渲染个人信息卡片时出错', e);
+    }
     await initPageFeatures(pageName);
 
     const currentPath = window.location.pathname;
@@ -378,7 +497,6 @@ export function enableAjaxNavigation() {
     const href = a.getAttribute('href');
     if (!href) return;
     if (a.target === '_blank' || a.hasAttribute('download')) return;
-    if (isArticleDetailOr404Page()) return;
     if (href.startsWith('#')) return;
     if (a.hasAttribute('data-no-ajax')) return;
     if (!isSameOrigin(href)) return;

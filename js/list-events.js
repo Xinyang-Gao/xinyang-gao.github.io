@@ -65,7 +65,17 @@ export function handleListItemClick(e) {
     }
   } else if (type === 'article') {
     const itemUrl = item.dataset.url;
-    if (itemUrl) window.open(itemUrl, '_blank');
-    else console.warn('[WARN] 文章链接无效');
+    if (itemUrl) {
+      try {
+        const full = new URL(itemUrl, window.location.href).href;
+        if (typeof window.fetchAndReplaceContent === 'function' && full.indexOf(window.location.origin) === 0) {
+          window.fetchAndReplaceContent(full, true);
+        } else {
+          window.open(full, '_blank');
+        }
+      } catch (e) {
+        window.open(itemUrl, '_blank');
+      }
+    } else console.warn('[WARN] 文章链接无效');
   }
 }

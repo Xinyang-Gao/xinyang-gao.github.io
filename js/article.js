@@ -18,7 +18,7 @@ class ArticlePageManager {
     }
 
     init() {
-        document.addEventListener('DOMContentLoaded', () => {
+        const runInit = () => {
             this.restoreScrollPosition();
             this.setupScrollListener();
             this.generateTOC();
@@ -29,7 +29,13 @@ class ArticlePageManager {
             this.addImageAltCaptions();
             this.initCodeBlocks();
             this.setupMobileTOC(); // 初始化移动端目录浮窗功能
-        });
+        };
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', runInit);
+        } else {
+            // 如果脚本在 DOMContentLoaded 之后被动态注入，立即初始化
+            setTimeout(runInit, 0);
+        }
     }
 
     /**
@@ -588,4 +594,7 @@ class ArticlePageManager {
 }
 
 // 启动管理器
-new ArticlePageManager();
+if (window._ArticlePageManagerInstance && typeof window._ArticlePageManagerInstance.destroy === 'function') {
+    try { window._ArticlePageManagerInstance.destroy(); } catch(e) { /* ignore */ }
+}
+window._ArticlePageManagerInstance = new ArticlePageManager();

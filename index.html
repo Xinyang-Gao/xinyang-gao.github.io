@@ -417,21 +417,34 @@
           });
       }
       
-      // 全局事件委托（统计卡片跳转 + 标签跳转）
+      // 全局事件委托（统计卡片跳转 + 标签跳转），优先使用无刷新导航
       function bindGlobalNavigateEvents() {
+        const navigateTo = (href) => {
+          try {
+            const full = new URL(href, window.location.href).href;
+            if (typeof window.fetchAndReplaceContent === 'function') {
+              window.fetchAndReplaceContent(full, true);
+            } else {
+              window.location.href = full;
+            }
+          } catch (e) {
+            window.location.href = href;
+          }
+        };
+
         document.addEventListener('click', function(e) {
           const statCard = e.target.closest('.stat-card[data-stat-type]');
           if (statCard) {
             e.preventDefault();
             const type = statCard.getAttribute('data-stat-type');
             if (type === 'articles') {
-              window.location.href = '/articles.html';
+              navigateTo('/articles.html');
             } else if (type === 'works') {
-              window.location.href = '/works.html';
+              navigateTo('/works.html');
             }
             return;
           }
-          
+
           const tagEl = e.target.closest('.tags-list .tag');
           if (tagEl) {
             const tagText = tagEl.innerText.trim();
@@ -439,9 +452,9 @@
             const isArticleZone = tagEl.closest('#articleTagsList') !== null;
             const isWorkZone = tagEl.closest('#workTagsList') !== null;
             if (isArticleZone) {
-              window.location.href = `/articles.html?tags=${encodeURIComponent(tagText)}`;
+              navigateTo(`/articles.html?tags=${encodeURIComponent(tagText)}`);
             } else if (isWorkZone) {
-              window.location.href = `/works.html?tags=${encodeURIComponent(tagText)}`;
+              navigateTo(`/works.html?tags=${encodeURIComponent(tagText)}`);
             }
           }
         });

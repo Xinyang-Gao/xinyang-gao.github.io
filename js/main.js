@@ -45,13 +45,25 @@ async function bootstrap() {
 
   cookieConsentManager = new CookieConsentManager(storageController);
 
-  const personalCardContainer = document.getElementById('personal-card-container');
-  if (personalCardContainer) {
-    const { UIRenderer } = await import('/js/search-render.js');
-    personalCardContainer.innerHTML = UIRenderer.generatePersonalCardHTML();
+  const currentPage = getPageNameFromPath(window.location.pathname) || 'index';
+
+  // 在根目录的 HTML 文件（包括 /、/index.html、以及 /xxx.html），但排除 /404.html，渲染个人信息卡片
+  try {
+    const personalCardContainer = document.getElementById('personal-card-container');
+    const targetPath = window.location.pathname;
+    const isRootHtml = targetPath === '/' || targetPath === '/index.html' || (/^\/[^\/]+\.html$/.test(targetPath) && targetPath !== '/404.html');
+    if (personalCardContainer) {
+      if (isRootHtml) {
+        const { UIRenderer } = await import('/js/search-render.js');
+        personalCardContainer.innerHTML = UIRenderer.generatePersonalCardHTML();
+      } else {
+        personalCardContainer.innerHTML = '';
+      }
+    }
+  } catch (e) {
+    console.warn('[WARN] 渲染个人信息卡片时出错', e);
   }
 
-  const currentPage = getPageNameFromPath(window.location.pathname) || 'index';
   await initPageFeatures(currentPage);
 
   document.addEventListener('click', handleListItemClick);
