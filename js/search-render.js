@@ -175,7 +175,7 @@ export class UIRenderer {
           <a href="mailto:gao_xinyang@foxmail.com" class="social-icon-link" aria-label="邮箱">  
             <i class="fas fa-envelope"></i>
           </a>
-          <a href="https://wpa.qq.com/msgrd?v=3&uin=2489083744&site=qq&menu=yes" target="_blank" class="social-icon-link" aria-label="QQ" rel="noopener noreferrer">
+          <a href="https://user.qzone.qq.com/2489083744/" target="_blank" class="social-icon-link" aria-label="QQ" rel="noopener noreferrer">
             <i class="fab fa-qq"></i>
           </a>
           <a href="/rss.xml" target="_blank" class="social-icon-link" aria-label="RSS" rel="noopener noreferrer">
