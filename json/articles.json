@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-05-16T17:13:53.552993",
+  "generated_at": "2026-05-16T18:43:02.489305",
   "total_articles": 12,
-  "total_word_count": 39952,
+  "total_word_count": 40073,
   "articles": [
     {
       "relative_path": "assets/source/分享/你知道那个像WiFi一样的小图标吗.md",
@@ -153,9 +153,9 @@
     },
     {
       "relative_path": "assets/source/网站/网站更新日志.md",
-      "hash": "ec9ceaa0e86eba4919fe5ea78d5e073f",
+      "hash": "6d7d44c01eba71300ff145d2e6a8d220",
       "last_updated": "2026-05-16",
-      "modify_count": 135,
+      "modify_count": 136,
       "hidden": false,
       "title": "网站更新日志",
       "date": "2025-12-21",
@@ -166,7 +166,7 @@
       ],
       "category": "网站",
       "url": "/articles/网站更新日志.html",
-      "word_count": 15016,
+      "word_count": 15137,
       "read_time": "51分钟"
     },
     {
