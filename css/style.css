@@ -769,6 +769,19 @@ pre {
   flex-wrap: wrap;
 }
 
+.timeline-item-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 10px;
+  min-height: 24px;
+  border-radius: 999px;
+  background: var(--accent-color);
+  color: #fff;
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
 .timeline-item-title {
   font-size: 1.08rem;
   color: var(--accent-color);

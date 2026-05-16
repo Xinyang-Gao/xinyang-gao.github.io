@@ -11,48 +11,47 @@ function formatMonthLabel(monthIndex) {
   return `${monthIndex.toString().padStart(2, '0')} 月`;
 }
 
-function buildTimelineHTML(articles, selectedYear) {
-  if (!articles.length) {
-    return '<div class="archive-empty">暂无可显示的文章。</div>';
+function buildTimelineHTML(items, selectedYear) {
+  if (!items.length) {
+    return '<div class="archive-empty">暂无可显示的内容。</div>';
   }
 
   const grouped = new Map();
-  const yearSet = new Set();
 
-  articles.forEach(article => {
-    const date = parseArticleDate(article);
+  items.forEach(item => {
+    const date = parseArticleDate(item);
     if (!date) return;
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
-    yearSet.add(year);
     if (selectedYear !== 'all' && String(year) !== selectedYear) return;
 
     if (!grouped.has(year)) grouped.set(year, new Map());
     const yearGroups = grouped.get(year);
     if (!yearGroups.has(month)) yearGroups.set(month, []);
-    yearGroups.get(month).push(article);
+    yearGroups.get(month).push(item);
   });
 
   if (selectedYear !== 'all' && (!grouped.size || !grouped.get(Number(selectedYear)))) {
-    return '<div class="archive-empty">当前年份没有文章。可调整筛选条件查看全部内容。</div>';
+    return '<div class="archive-empty">当前年份没有文章或作品。可调整筛选条件查看全部内容。</div>';
   }
 
   const sortedYears = Array.from(grouped.keys()).sort((a, b) => b - a);
   const htmlSegments = sortedYears.map(year => {
     const months = Array.from(grouped.get(year).keys()).sort((a, b) => b - a);
     const monthHtml = months.map(month => {
-      const monthArticles = grouped.get(year).get(month).sort((a, b) => {
+      const monthItems = grouped.get(year).get(month).sort((a, b) => {
         const da = parseArticleDate(a)?.getTime() || 0;
         const db = parseArticleDate(b)?.getTime() || 0;
         return db - da;
       });
-      const itemsHtml = monthArticles.map(article => {
-        const date = parseArticleDate(article);
+      const itemsHtml = monthItems.map(item => {
+        const date = parseArticleDate(item);
         const dateLabel = date ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}` : '未知日期';
-        const tagsHtml = UIRenderer.generateTagsHTML(article);
-        const description = Utils.escapeHtml(article.description || '暂无描述');
-        const title = Utils.escapeHtml(article.title || '未命名文章');
-        const url = article.url || '#';
+        const tagsHtml = UIRenderer.generateTagsHTML(item);
+        const description = Utils.escapeHtml(item.description || '暂无描述');
+        const title = Utils.escapeHtml(item.title || '未命名内容');
+        const url = item.url || item.link || '#';
+        const typeBadge = item.__archiveType === 'work' ? '<span class="timeline-item-badge">作品</span>' : '';
 
         return `
           <article class="timeline-item" data-date="${Utils.escapeHtml(dateLabel)}">
@@ -60,6 +59,7 @@ function buildTimelineHTML(articles, selectedYear) {
             <div class="timeline-item-content">
               <div class="timeline-item-header">
                 <a href="${Utils.escapeHtml(url)}" class="timeline-item-title">${title}</a>
+                ${typeBadge}
                 <span class="timeline-item-date">${Utils.escapeHtml(dateLabel)}</span>
               </div>
               <p class="timeline-item-description">${description}</p>
@@ -85,10 +85,10 @@ function buildTimelineHTML(articles, selectedYear) {
   return `<div class="timeline">${htmlSegments.join('')}</div>`;
 }
 
-function getAvailableYears(articles) {
+function getAvailableYears(items) {
   const years = new Set();
-  articles.forEach(article => {
-    const date = parseArticleDate(article);
+  items.forEach(item => {
+    const date = parseArticleDate(item);
     if (date) years.add(date.getFullYear());
   });
   return Array.from(years).sort((a, b) => b - a);
@@ -113,15 +113,31 @@ export async function initArchivePage(scrollRevealRefreshCallback) {
   summary.textContent = '';
 
   try {
-    const data = await DataManager.fetchData('articles', true);
-    const articles = (data.articles || []).filter(item => !item.hidden);
-    const totalCount = articles.length;
-    summary.textContent = `当前显示 ${totalCount} 篇文章`; 
+    const [articlesResult, worksResult] = await Promise.allSettled([
+      DataManager.fetchData('articles', true),
+      DataManager.fetchData('works', true)
+    ]);
 
-    renderYearFilter(articles);
+    if (articlesResult.status === 'rejected' && worksResult.status === 'rejected') {
+      throw new Error('文章和作品数据均加载失败');
+    }
+
+    const articles = articlesResult.status === 'fulfilled' ? (articlesResult.value.articles || []).filter(item => !item.hidden) : [];
+    const works = worksResult.status === 'fulfilled' ? (worksResult.value.works || []) : [];
+
+    const archiveItems = [
+      ...articles.map(item => ({ ...item, __archiveType: 'article', url: item.url || item.link || '#' })),
+      ...works.map(item => ({ ...item, __archiveType: 'work', url: item.link || item.url || '#' }))
+    ];
+
+    const totalArticles = articles.length;
+    const totalWorks = works.length;
+    summary.textContent = `当前显示 ${totalArticles} 篇文章，${totalWorks} 个作品`;
+
+    renderYearFilter(archiveItems);
     const renderArchive = () => {
       const selectedYear = yearFilter.value || 'all';
-      container.innerHTML = buildTimelineHTML(articles, selectedYear);
+      container.innerHTML = buildTimelineHTML(archiveItems, selectedYear);
       if (scrollRevealRefreshCallback) scrollRevealRefreshCallback();
     };
 

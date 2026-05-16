@@ -45,7 +45,6 @@ class NavTitleReplacer {
     this.handlers.ajaxComplete = () => this.reload();
     window.addEventListener('resize', this.handlers.resize);
     window.addEventListener('ajax:navigation', this.handlers.ajaxComplete);
-    window.addEventListener('popstate', this.handlers.ajaxComplete);
     
     // 监听导航栏大小变化（如窗口缩放导致按钮组宽度变化）
     if (window.ResizeObserver) {
@@ -285,7 +284,6 @@ class NavTitleReplacer {
     if (this.handlers.resize) window.removeEventListener('resize', this.handlers.resize);
     if (this.handlers.ajaxComplete) {
       window.removeEventListener('ajax:navigation', this.handlers.ajaxComplete);
-      window.removeEventListener('popstate', this.handlers.ajaxComplete);
     }
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();

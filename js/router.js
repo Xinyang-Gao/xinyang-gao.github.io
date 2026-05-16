@@ -244,13 +244,20 @@ export async function fetchAndReplaceContent(url, pushState = true) {
         if (h.tagName.toLowerCase() === 'link') {
           const href = h.getAttribute('href') || h.href;
           if (!href) return;
+          const exists = Array.from(document.querySelectorAll('link[rel="stylesheet"]')).some(l => l.getAttribute('href') === href);
+          if (exists) return;
           const nl = document.createElement('link');
           nl.rel = 'stylesheet';
           nl.href = href;
           document.head.appendChild(nl);
         } else if (h.tagName.toLowerCase() === 'style') {
+          // 比较样式文本避免重复注入（简单检测）
+          const text = (h.textContent || '').trim();
+          if (!text) return;
+          const already = Array.from(document.querySelectorAll('style')).some(s => (s.textContent || '').trim() === text);
+          if (already) return;
           const ns = document.createElement('style');
-          ns.textContent = h.textContent;
+          ns.textContent = text;
           document.head.appendChild(ns);
         }
       });
@@ -263,14 +270,19 @@ export async function fetchAndReplaceContent(url, pushState = true) {
     bodyScripts.forEach(s => {
       try {
         if (s.src) {
+          const src = s.getAttribute('src') || s.src;
+          if (!src) return;
+          // 若页面已存在相同 src 的 script，则跳过重复插入
+          const existsScript = document.querySelector(`script[src="${src}"]`);
+          if (existsScript) return;
           const newS = document.createElement('script');
           if (s.type) newS.type = s.type;
-          newS.src = s.src;
+          newS.src = src;
           newS.async = false;
           const p = new Promise(resolve => {
             newS.onload = () => resolve();
             newS.onerror = () => {
-              console.warn('[WARN] 脚本加载失败:', s.src);
+              console.warn('[WARN] 脚本加载失败:', src);
               resolve();
             };
           });
@@ -377,10 +389,6 @@ export function enableAjaxNavigation() {
     if (url === window.location.href) return;
     fetchAndReplaceContent(url, true);
   }, { passive: false });
-
-  window.addEventListener('popstate', function () {
-    fetchAndReplaceContent(window.location.href, false);
-  });
 }
 
 export async function initPageFeatures(pageName) {
