@@ -47,18 +47,46 @@ export function applyRandomBackgroundImage({ force = false } = {}) {
   const randomIndex = Math.floor(Math.random() * BACKGROUND_IMAGES.length);
   const imageUrl = BACKGROUND_IMAGES[randomIndex];
   if (!force && document.body.style.backgroundImage.includes(imageUrl)) return;
-
-  const apply = (url) => {
-    document.body.style.backgroundImage = `url('${url}')`;
-    document.body.classList.remove('background-loading');
+  const createOverlay = (url) => {
+    let overlay = document.getElementById('bg-image-overlay');
+    if (overlay) {
+      overlay.style.backgroundImage = `url('${url}')`;
+      return overlay;
+    }
+    overlay = document.createElement('div');
+    overlay.id = 'bg-image-overlay';
+    overlay.style.backgroundImage = `url('${url}')`;
+    document.body.appendChild(overlay);
+    return overlay;
   };
+
   const handleError = (error) => {
     document.body.classList.remove('background-loading');
     console.warn('[WARN] 背景图片加载失败:', error);
   };
+
   const load = () => {
     const img = new Image();
-    img.onload = () => apply(imageUrl);
+    img.onload = () => {
+      try {
+        const overlay = createOverlay(imageUrl);
+        // 触发过渡：先插入（初始为模糊且透明），强制回流后添加 active
+        void overlay.offsetWidth;
+        overlay.classList.add('active');
+        // 在过渡结束后将图片设为 body 背景并清理 overlay（3s + 小缓冲）
+        setTimeout(() => {
+          try {
+            document.body.style.backgroundImage = `url('${imageUrl}')`;
+            if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
+          } catch (e) {
+            console.warn('[WARN] 将背景应用到 body 时出错', e);
+          }
+          document.body.classList.remove('background-loading');
+        }, 3300);
+      } catch (e) {
+        handleError(e);
+      }
+    };
     img.onerror = () => handleError(new Error(`背景图加载失败：${imageUrl}`));
     img.src = imageUrl;
   };

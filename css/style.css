@@ -140,11 +140,17 @@
 
 /* ========== 暗色模式核心：卡片边界突出 + 视觉层次优化 ========== */
 [data-theme="dark"] .list-item {
-  background: var(--surface-color);
-  border: 1px solid var(--border-color);
-  /* 增加一个细微的内发光边界（纯色）提升轮廓感 */
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.03), var(--shadow-sm);
-  transition: all 0.35s var(--transition-bounce);
+  /* 暗色模式下的玻璃卡片：使用极低不透明度的浅色叠加以保持层次感 */
+  background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+  background-color: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.04);
+  border-radius: var(--radius-lg);
+  backdrop-filter: blur(10px) saturate(1.05);
+  -webkit-backdrop-filter: blur(10px) saturate(1.05);
+  /* 细微的内发光 + 阴影以保持暗色视觉层次 */
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.02), var(--shadow-sm);
+  transition: transform 0.35s var(--transition-bounce), box-shadow 0.35s var(--transition-bounce), border-color 0.35s var(--transition-bounce);
+  overflow: hidden;
 }
 
 /* 卡片之间的间隙区域显示背景色，强化独立感 */
@@ -154,9 +160,13 @@
 
 [data-theme="dark"] .list-item:hover {
   border-color: var(--card-border-hover);
-  box-shadow: var(--shadow-hover), 0 0 0 1px rgba(var(--accent-rgb), 0.2);
+  box-shadow: var(--shadow-hover), 0 0 0 1px rgba(var(--accent-rgb), 0.18);
   transform: translateY(-6px);
-  background: var(--surface-color-secondary);
+  background: linear-gradient(180deg, rgba(255,255,255,0.025), rgba(255,255,255,0.015));
+}
+
+[data-theme="dark"] .list-item:hover::after {
+  transform: skewX(-20deg) translateX(220%);
 }
 
 /* 文章列表卡片同样处理 */
@@ -376,7 +386,7 @@ body::before {
   content: '';
   position: fixed;
   inset: 0;
-  z-index: -1;
+  z-index: -2;
   background-color: inherit;
   background-image: inherit;
   background-size: inherit;
@@ -386,6 +396,46 @@ body::before {
   filter: var(--background-overlay-filter);
   transform: scale(1.04);
   pointer-events: none;
+}
+
+/* 页面内容替换过渡：先淡出再淡入（总耗时约 1s，出场 0.5s，入场 0.5s） */
+.page-transition {
+  transition-property: opacity, transform;
+  transition-timing-function: ease;
+}
+.page-transition.is-exiting {
+  opacity: 0;
+  transform: translateY(8px);
+  transition-duration: 0.5s;
+}
+.page-transition.is-entering {
+  opacity: 0;
+  transform: translateY(-8px);
+  transition-duration: 0s;
+}
+.page-transition.is-entering.is-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition-duration: 0.5s;
+}
+
+/* 背景图片过渡：加载后由模糊到清晰，持续 3s；在显示前显示主题色 */
+#bg-image-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  filter: blur(20px) var(--background-overlay-filter);
+  opacity: 0;
+  transition: opacity 0.6s ease, filter 3s ease;
+}
+#bg-image-overlay.active {
+  opacity: 1;
+  filter: blur(0) var(--background-overlay-filter);
 }
 
 /* 可访问性：键盘聚焦环（比默认更明显） */
@@ -583,24 +633,53 @@ pre {
   width: 100%;
 }
 
+/* 液态玻璃卡片 */
 .list-item {
-  background: var(--surface-color);
-  border: 1px solid var(--border-color);
+  background: linear-gradient(180deg, rgba(255,255,255,0.65), rgba(255,255,255,0.45));
+  background-color: rgba(255,255,255,0.45);
+  border: 1px solid rgba(255,255,255,0.35);
   border-radius: var(--radius-lg);
   padding: 28px;
   cursor: pointer;
-  transition: all 0.35s var(--transition-bounce);
-  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-normal), box-shadow var(--transition-normal), border-color var(--transition-normal), background var(--transition-normal);
+  box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255,255,255,0.35);
   display: flex;
   flex-direction: column;
   height: 100%;
   position: relative;
+  backdrop-filter: blur(10px) saturate(1.08);
+  -webkit-backdrop-filter: blur(10px) saturate(1.08);
+  overflow: hidden;
   /* 滚动渐入动画相关样式 */
   opacity: 0;
   transform: translateY(25px);
   transition: opacity 0.5s var(--transition-bounce), transform 0.5s var(--transition-bounce), border-color 0.35s var(--transition-bounce), box-shadow 0.35s var(--transition-bounce), background 0.35s var(--transition-bounce);
   /* 动画性能优化 */
   will-change: transform, opacity;
+}
+
+.list-item::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0));
+  mix-blend-mode: overlay;
+}
+
+.list-item::after {
+  /* 光泽高光，鼠标悬停时滑动 */
+  content: '';
+  position: absolute;
+  left: -50%;
+  top: 0;
+  width: 40%;
+  height: 100%;
+  transform: skewX(-20deg) translateX(-100%);
+  background: linear-gradient(90deg, rgba(255,255,255,0.14), rgba(255,255,255,0));
+  transition: transform 0.9s var(--transition-bounce);
+  pointer-events: none;
 }
 
 /* 卡片进入视口后显示 */
@@ -616,9 +695,13 @@ pre {
 
 .list-item:hover {
   border-color: var(--card-border-hover);
-  box-shadow: var(--shadow-hover);
+  box-shadow: var(--shadow-hover), 0 6px 12px rgba(0,0,0,0.06);
   transform: translateY(-6px);
-  background: var(--surface-color-secondary);
+  background: linear-gradient(180deg, rgba(255,255,255,0.72), rgba(255,255,255,0.5));
+}
+
+.list-item:hover::after {
+  transform: skewX(-20deg) translateX(220%);
 }
 
 .list-item-header {
