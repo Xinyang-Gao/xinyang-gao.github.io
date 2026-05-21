@@ -35,7 +35,11 @@ export const CONFIG = {
     'https://cn.bing.com/th?id=OHR.OloupenaFalls_ZH-CN2980118660_UHD.jpg&pid=hp',
     'https://cn.bing.com/th?id=OHR.LoganCreek_ZH-CN5372283365_UHD.jpg&pid=hp',
     'https://cn.bing.com/th?id=OHR.MendenhallCave_ZH-CN1850649760_UHD.jpg&pid=hp',
-    'https://cn.bing.com/th?id=OHR.FanetteIsland_ZH-CN6466809551_UHD.jpg&pid=hp'
+    'https://cn.bing.com/th?id=OHR.FanetteIsland_ZH-CN6466809551_UHD.jpg&pid=hp',
+    'https://cn.bing.com/th?id=OHR.WaitangiFjordlandNP_ZH-CN9436140228_UHD.jpg&pid=hp&w=1920',
+    'https://cn.bing.com/th?id=OHR.SichuanTea_ZH-CN6703437873_UHD.jpg&pid=hp&w=1920',
+    'https://cn.bing.com/th?id=OHR.EuropeFromISS_ZH-CN0722816540_UHD.jpg&pid=hp&w=1920',
+    'https://cn.bing.com/th?id=OHR.SplugenPass_ZH-CN8347591461_UHD.jpg&pid=hp&w=1920'
   ],
   
   SITE_BIRTH: new Date('2025-02-22T12:23:53Z')
@@ -55,7 +59,7 @@ export class Utils {
     if (h < 14) return '中午好，记得补充能量~';
     if (h < 18) return '午后时光，适合创造';
     if (h < 21) return '傍晚好，享受此刻宁静';
-    return '星河在上，愿你今夜好梦';
+    return '夜深人静，愿你今夜好梦';
   }
   
   static isDataExpired(raw, minutes = 5) {
