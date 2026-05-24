@@ -1,8 +1,26 @@
 {
-  "generated_at": "2026-05-17T20:36:39.808495",
-  "total_articles": 12,
-  "total_word_count": 40518,
+  "generated_at": "2026-05-24T22:33:27.297456",
+  "total_articles": 13,
+  "total_word_count": 41188,
   "articles": [
+    {
+      "relative_path": "assets/source/学习/我看到了你的眼睛.md",
+      "hash": "9d0b88952285ead20ca2c9431e3c6d5e",
+      "last_updated": "2026-05-24",
+      "modify_count": 1,
+      "hidden": false,
+      "title": "我看到了你的眼睛",
+      "date": "2026-05-24",
+      "description": "一个关于成长、自我和解与不灭希望的故事。",
+      "author": "高新炀",
+      "tags": [
+        "记叙文"
+      ],
+      "category": "学习",
+      "url": "/articles/我看到了你的眼睛.html",
+      "word_count": 670,
+      "read_time": "3分钟"
+    },
     {
       "relative_path": "assets/source/分享/你知道那个像WiFi一样的小图标吗.md",
       "hash": "1b793420af73adc3f8df6c68fdff3a0d",

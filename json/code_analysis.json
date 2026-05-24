@@ -1,0 +1,108 @@
+{
+  "generated_at": "2026-05-22T00:00:16.133650",
+  "root_dir": "c:\\Users\\Administrator\\Desktop\\编程\\xinyang-gao.github.io\\xinyang-gao.github.io",
+  "total_files": 110,
+  "total_size_bytes": 1356894,
+  "total_lines": 29418,
+  "non_empty_lines": 26646,
+  "by_extension": [
+    {
+      "extension": ".html",
+      "count": 31,
+      "total_size_bytes": 312380,
+      "total_lines": 6079,
+      "non_empty_lines": 5786
+    },
+    {
+      "extension": ".js",
+      "count": 23,
+      "total_size_bytes": 288933,
+      "total_lines": 6957,
+      "non_empty_lines": 6204
+    },
+    {
+      "extension": ".json",
+      "count": 15,
+      "total_size_bytes": 25812,
+      "total_lines": 848,
+      "non_empty_lines": 848
+    },
+    {
+      "extension": ".md",
+      "count": 12,
+      "total_size_bytes": 96314,
+      "total_lines": 2138,
+      "non_empty_lines": 1684
+    },
+    {
+      "extension": ".css",
+      "count": 12,
+      "total_size_bytes": 246025,
+      "total_lines": 10302,
+      "non_empty_lines": 9329
+    },
+    {
+      "extension": ".py",
+      "count": 7,
+      "total_size_bytes": 73197,
+      "total_lines": 1918,
+      "non_empty_lines": 1640
+    },
+    {
+      "extension": ".xml",
+      "count": 3,
+      "total_size_bytes": 10321,
+      "total_lines": 119,
+      "non_empty_lines": 119
+    },
+    {
+      "extension": ".ico",
+      "count": 1,
+      "total_size_bytes": 205086,
+      "total_lines": 348,
+      "non_empty_lines": 346
+    },
+    {
+      "extension": "no_extension",
+      "count": 1,
+      "total_size_bytes": 1092,
+      "total_lines": 21,
+      "non_empty_lines": 17
+    },
+    {
+      "extension": ".txt",
+      "count": 1,
+      "total_size_bytes": 87,
+      "total_lines": 4,
+      "non_empty_lines": 3
+    },
+    {
+      "extension": ".webp",
+      "count": 1,
+      "total_size_bytes": 10514,
+      "total_lines": 74,
+      "non_empty_lines": 73
+    },
+    {
+      "extension": ".yml",
+      "count": 1,
+      "total_size_bytes": 1350,
+      "total_lines": 47,
+      "non_empty_lines": 41
+    },
+    {
+      "extension": ".svg",
+      "count": 1,
+      "total_size_bytes": 7880,
+      "total_lines": 1,
+      "non_empty_lines": 1
+    },
+    {
+      "extension": ".sb3",
+      "count": 1,
+      "total_size_bytes": 77903,
+      "total_lines": 562,
+      "non_empty_lines": 555
+    }
+  ]
+}

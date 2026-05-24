@@ -1,10 +1,10 @@
 {
-  "version": 78,
-  "last_updated": "2026-05-17",
-  "last_updated_full": "2026-05-17T20:36:41+08:00",
-  "total_articles": 12,
-  "total_word_count": 40518,
-  "average_article_word_count": 3376,
+  "version": 80,
+  "last_updated": "2026-05-24",
+  "last_updated_full": "2026-05-24T22:33:27+08:00",
+  "total_articles": 13,
+  "total_word_count": 41188,
+  "average_article_word_count": 3168,
   "total_works": 10,
   "total_article_categories": 6,
   "total_article_tags": 10,
@@ -12,6 +12,112 @@
   "total_authors": 3,
   "total_update_days": 22,
   "article_tags": [
+    {
+      "name": "网站",
+      "count": 4
+    },
+    {
+      "name": "日记",
+      "count": 3
+    },
+    {
+      "name": "记叙文",
+      "count": 3
+    },
+    {
+      "name": "分享",
+      "count": 2
+    },
+    {
+      "name": "体育",
+      "count": 1
+    },
+    {
+      "name": "技术",
+      "count": 1
+    },
+    {
+      "name": "文言文",
+      "count": 1
+    },
+    {
+      "name": "议论文",
+      "count": 1
+    },
+    {
+      "name": "诗",
+      "count": 1
+    },
+    {
+      "name": "诗扩写",
+      "count": 1
+    }
+  ],
+  "article_categories": [
+    {
+      "name": "学习",
+      "count": 5
+    },
+    {
+      "name": "日记",
+      "count": 3
+    },
+    {
+      "name": "网站",
+      "count": 2
+    },
+    {
+      "name": "README文档自动构建",
+      "count": 1
+    },
+    {
+      "name": "分享",
+      "count": 1
+    },
+    {
+      "name": "技术",
+      "count": 1
+    }
+  ],
+  "work_tags": [
+    {
+      "name": "学习",
+      "count": 9
+    },
+    {
+      "name": "HTML",
+      "count": 5
+    },
+    {
+      "name": "PPT",
+      "count": 4
+    },
+    {
+      "name": "地理",
+      "count": 4
+    },
+    {
+      "name": "数学",
+      "count": 2
+    },
+    {
+      "name": "语文",
+      "count": 2
+    },
+    {
+      "name": "Scratch",
+      "count": 1
+    },
+    {
+      "name": "寒假作业",
+      "count": 1
+    },
+    {
+      "name": "编程",
+      "count": 1
+    }
+  ],
+  "article_tags_list": [
     "体育",
     "分享",
     "技术",
@@ -23,7 +129,7 @@
     "诗",
     "诗扩写"
   ],
-  "article_categories": [
+  "article_categories_list": [
     "README文档自动构建",
     "分享",
     "学习",
@@ -31,7 +137,7 @@
     "日记",
     "网站"
   ],
-  "work_tags": [
+  "work_tags_list": [
     "HTML",
     "PPT",
     "Scratch",

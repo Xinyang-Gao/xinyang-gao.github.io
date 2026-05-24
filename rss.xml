@@ -4,7 +4,7 @@
     <title>高新炀的个人网站</title>
     <link>https://xinyang-gao.github.io</link>
     <description>学生 · 开发者 · 写作者，用代码和文字探索世界</description>
-    <lastBuildDate>Sun, 17 May 2026 20:36:43 GMT</lastBuildDate>
+    <lastBuildDate>Sun, 24 May 2026 22:33:27 GMT</lastBuildDate>
     <language>zh-CN</language>
     <generator>RssGenerator (Python)</generator>
     <atom:link href="https://xinyang-gao.github.io/rss.xml" rel="self" type="application/rss+xml" />
@@ -49,6 +49,14 @@
       <author>高新炀</author>
       <category>日记</category>
       <category>体育</category>
+    </item>
+    <item>
+      <title>我看到了你的眼睛</title>
+      <link>https://xinyang-gao.github.io/articles/我看到了你的眼睛.html</link>
+      <description><![CDATA[一个关于成长、自我和解与不灭希望的故事。]]></description>
+      <pubDate>Sun, 24 May 2026 00:00:00 GMT</pubDate>
+      <author>高新炀</author>
+      <category>记叙文</category>
     </item>
     <item>
       <title>markdown 渲染测试</title>
