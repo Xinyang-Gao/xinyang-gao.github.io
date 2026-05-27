@@ -139,6 +139,16 @@ export class Utils {
     if (diffDays <= 7) return `${diffDays}天前`; 
     return target.toLocaleDateString('zh-CN', { year: 'numeric', month: 'numeric', day: 'numeric' }); 
   }
+
+  static parseArticleDate(item) {
+    const value = item.date || item.last_updated || item.updated_date;
+    const date = value ? new Date(value) : null;
+    return Number.isNaN(date?.getTime()) ? null : date;
+  }
+  
+  static formatMonthLabel(monthIndex) {
+    return `${monthIndex.toString().padStart(2, '0')} 月`;
+  }
 }
 
 // ==================== 存储控制器 ====================

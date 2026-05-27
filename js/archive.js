@@ -3,16 +3,6 @@ import { DataManager, UIRenderer } from '/js/search-render.js';
 import { Utils } from '/js/core.js';
 import { PageManager } from '/js/page-manager.js';
 
-function parseArticleDate(item) {
-  const value = item.date || item.last_updated || item.updated_date;
-  const date = value ? new Date(value) : null;
-  return Number.isNaN(date?.getTime()) ? null : date;
-}
-
-function formatMonthLabel(monthIndex) {
-  return `${monthIndex.toString().padStart(2, '0')} 月`;
-}
-
 function buildTimelineHTML(items, selectedYear) {
   if (!items.length) {
     return '<div class="archive-empty">暂无可显示的内容。</div>';
@@ -21,7 +11,7 @@ function buildTimelineHTML(items, selectedYear) {
   const grouped = new Map();
 
   items.forEach(item => {
-    const date = parseArticleDate(item);
+    const date = Utils.parseArticleDate(item);
     if (!date) return;
     const year = date.getFullYear();
     const month = date.getMonth() + 1;
@@ -42,12 +32,12 @@ function buildTimelineHTML(items, selectedYear) {
     const months = Array.from(grouped.get(year).keys()).sort((a, b) => b - a);
     const monthHtml = months.map(month => {
       const monthItems = grouped.get(year).get(month).sort((a, b) => {
-        const da = parseArticleDate(a)?.getTime() || 0;
-        const db = parseArticleDate(b)?.getTime() || 0;
+        const da = Utils.parseArticleDate(a)?.getTime() || 0;
+        const db = Utils.parseArticleDate(b)?.getTime() || 0;
         return db - da;
       });
       const itemsHtml = monthItems.map(item => {
-        const date = parseArticleDate(item);
+        const date = Utils.parseArticleDate(item);
         const dateLabel = date ? `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}` : '未知日期';
         const tagsHtml = UIRenderer.generateTagsHTML(item);
         const description = Utils.escapeHtml(item.description || '暂无描述');
@@ -86,7 +76,7 @@ function buildTimelineHTML(items, selectedYear) {
 
       return `
         <section class="timeline-month">
-          <h4>${formatMonthLabel(month)}</h4>
+          <h4>${Utils.formatMonthLabel(month)}</h4>
           <div class="timeline-month-list">${itemsHtml}</div>
         </section>`;
     }).join('');
@@ -104,7 +94,7 @@ function buildTimelineHTML(items, selectedYear) {
 function getAvailableYears(items) {
   const years = new Set();
   items.forEach(item => {
-    const date = parseArticleDate(item);
+    const date = Utils.parseArticleDate(item);
     if (date) years.add(date.getFullYear());
   });
   return Array.from(years).sort((a, b) => b - a);
