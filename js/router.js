@@ -6,6 +6,30 @@ import { getPageNameFromPath, isArticleDetailOr404Page, isSameOrigin, updateDyna
 import { ensureScrollReveal, refreshScrollReveal } from '/js/ui-effects.js';
 import { initNavTitleReplacer, refreshNavTitleReplacer } from '/js/nav-title-replacer.js';
 import { initThemeToggle } from '/js/theme.js';
+import { PageManager } from '/js/page-manager.js';
+import { initArticlePage } from '/js/article.js';
+import { initArchivePage } from '/js/archive.js';
+import { initHomePage } from '/js/home-manager.js';
+
+// 全局当前页面管理器
+let currentPageManager = null;
+
+async function destroyCurrentPageManager() {
+  if (currentPageManager && typeof currentPageManager.destroy === 'function') {
+    try {
+      await currentPageManager.destroy();
+    } catch (e) {
+      console.warn('[Router] 销毁页面管理器时出错:', e);
+    }
+  }
+  currentPageManager = null;
+  window.__currentPageManager = null;
+}
+
+function setCurrentPageManager(manager) {
+  currentPageManager = manager;
+  window.__currentPageManager = manager;
+}
 
 export async function loadNavbar() {
   try {
@@ -216,80 +240,69 @@ export function initBackToTopButton() {
 
 export async function fetchAndReplaceContent(url, pushState = true) {
   try {
-    if (window._currentSearchController) {
-      window._currentSearchController.destroy();
-      window._currentSearchController = null;
-    }
+    // 1. 销毁当前页面管理器，清理所有资源
+    await destroyCurrentPageManager();
+
+    // 2. 获取新页面内容
     const res = await fetch(url, { credentials: 'same-origin' });
     if (!res.ok) throw new Error(`Fetch失败: ${res.status}`);
     const text = await res.text();
     const doc = new DOMParser().parseFromString(text, 'text/html');
+
+    // 3. 提取标题和主要内容
     const fetchedTitle = doc.querySelector('title') ? doc.querySelector('title').textContent : document.title;
     const fetchedMain = doc.querySelector('#mainContent') || doc.querySelector('main.main-content-area') || doc.querySelector('main');
     let currentMain = document.getElementById('mainContent') || document.querySelector('main.main-content-area');
-    // 优先处理两栏布局：如果远端页面包含 .two-column-layout，则用远端的整个节点替换当前页面的对应节点
+
+    // 4. 处理两栏布局替换（保持个人信息卡片）
     try {
       const fetchedTwoCol = doc.querySelector('.two-column-layout');
       if (fetchedTwoCol) {
         const existingTwoCol = document.querySelector('.two-column-layout');
         const newTwoCol = fetchedTwoCol.cloneNode(true);
-        try {
-          // 如果当前页面已有个人信息卡片，优先将其 HTML 注入到新节点中，避免在替换时出现空白闪烁
-          const existingPersonal = document.getElementById('personal-card-container');
-          if (existingPersonal) {
-            const newPersonal = newTwoCol.querySelector('#personal-card-container');
-            if (newPersonal) {
-              newPersonal.innerHTML = existingPersonal.innerHTML;
-            }
-          }
-        } catch (e) {
-          console.warn('[WARN] 复制个人信息卡片到新两栏节点时出错', e);
+        const existingPersonal = document.getElementById('personal-card-container');
+        if (existingPersonal) {
+          const newPersonal = newTwoCol.querySelector('#personal-card-container');
+          if (newPersonal) newPersonal.innerHTML = existingPersonal.innerHTML;
         }
-
         if (existingTwoCol) {
           existingTwoCol.replaceWith(newTwoCol);
         } else {
           const container = document.querySelector('.container') || document.body;
           container.insertAdjacentElement('afterbegin', newTwoCol);
         }
-        // 更新 currentMain 指向新插入/替换后的主要内容区域，以便后续逻辑使用正确节点
         currentMain = document.getElementById('mainContent') || document.querySelector('main.main-content-area') || document.querySelector('.two-column-layout');
       }
-    } catch (err) {
-      console.warn('[WARN] 处理两栏布局替换时出错', err);
-    }
+    } catch (err) { console.warn('[WARN] 处理两栏布局替换时出错', err); }
 
+    // 5. 替换主要内容
     if (fetchedMain && currentMain) {
       currentMain.innerHTML = fetchedMain.innerHTML;
     } else if (fetchedMain && !currentMain) {
       const container = document.querySelector('.container') || document.body;
       container.innerHTML = fetchedMain.innerHTML;
     } else {
-      // 处理文章详情页（site 的文章页面通常没有 <main>，而是使用 .article-page-container / #articleBody）
-      const fetchedArticle = doc.querySelector('.article-page-container') || doc.getElementById('articleBody') || doc.querySelector('.article-content-wrapper') || doc.querySelector('.article-page');
+      // 处理文章详情页等无 <main> 的情况
+      const fetchedArticle = doc.querySelector('.article-page-container') || doc.getElementById('articleBody') || doc.querySelector('.article-content-wrapper');
       if (fetchedArticle) {
         const replaceTarget = document.querySelector('.two-column-layout') || document.querySelector('.article-page-container') || document.getElementById('mainContent') || document.querySelector('main') || document.body;
-        try {
-          if (replaceTarget) {
-            // 若当前页为两栏布局（如首页），用文章容器替换右侧内容区域或整个两栏节点
-            if (replaceTarget.classList && replaceTarget.classList.contains('two-column-layout')) {
-              // 将两栏布局整体替换为文章页的容器结构
-              replaceTarget.innerHTML = fetchedArticle.outerHTML;
-            } else {
-              // 否则尝试替换 target 的内容为文章容器的 HTML
-              replaceTarget.innerHTML = fetchedArticle.outerHTML || fetchedArticle.innerHTML;
-            }
+        if (replaceTarget) {
+          if (replaceTarget.classList && replaceTarget.classList.contains('two-column-layout')) {
+            replaceTarget.innerHTML = fetchedArticle.outerHTML;
+          } else {
+            replaceTarget.innerHTML = fetchedArticle.outerHTML || fetchedArticle.innerHTML;
           }
-        } catch (err) {
-          console.warn('[WARN] 替换文章容器时出错', err);
         }
       }
     }
+
+    // 6. 更新页面标题
     document.title = fetchedTitle;
     if (pushState) {
       try { window.history.pushState({ ajax: true }, fetchedTitle, url); } catch (err) { console.warn('[WARN] pushState 失败:', err); }
     }
 
+    // 7. 注入新页面的样式（避免重复）
     try {
       const headStyles = Array.from(doc.querySelectorAll('link[rel="stylesheet"], style'));
       headStyles.forEach(h => {
@@ -303,7 +316,6 @@ export async function fetchAndReplaceContent(url, pushState = true) {
           nl.href = href;
           document.head.appendChild(nl);
         } else if (h.tagName.toLowerCase() === 'style') {
-          // 比较样式文本避免重复注入（简单检测）
           const text = (h.textContent || '').trim();
           if (!text) return;
           const already = Array.from(document.querySelectorAll('style')).some(s => (s.textContent || '').trim() === text);
@@ -313,10 +325,9 @@ export async function fetchAndReplaceContent(url, pushState = true) {
           document.head.appendChild(ns);
         }
       });
-    } catch (e) {
-      console.warn('[WARN] 注入样式时出错', e);
-    }
+    } catch (e) { console.warn('[WARN] 注入样式时出错', e); }
 
+    // 8. 执行新页面中的脚本（按顺序加载）
     const bodyScripts = Array.from(doc.body.querySelectorAll('script'));
     const loadPromises = [];
     bodyScripts.forEach(s => {
@@ -324,7 +335,6 @@ export async function fetchAndReplaceContent(url, pushState = true) {
         if (s.src) {
           const src = s.getAttribute('src') || s.src;
           if (!src) return;
-          // 若页面已存在相同 src 的 script，则跳过重复插入
           const existsScript = document.querySelector(`script[src="${src}"]`);
           if (existsScript) return;
           const newS = document.createElement('script');
@@ -333,10 +343,7 @@ export async function fetchAndReplaceContent(url, pushState = true) {
           newS.async = false;
           const p = new Promise(resolve => {
             newS.onload = () => resolve();
-            newS.onerror = () => {
-              console.warn('[WARN] 脚本加载失败:', src);
-              resolve();
-            };
+            newS.onerror = () => { console.warn('[WARN] 脚本加载失败:', src); resolve(); };
           });
           document.body.appendChild(newS);
           loadPromises.push(p);
@@ -347,14 +354,13 @@ export async function fetchAndReplaceContent(url, pushState = true) {
           document.body.appendChild(inline);
           setTimeout(() => inline.parentNode && inline.parentNode.removeChild(inline), 0);
         }
-      } catch (e) {
-        console.warn('[WARN] 插入脚本时出错', e);
-      }
+      } catch (e) { console.warn('[WARN] 插入脚本时出错', e); }
     });
     if (loadPromises.length) {
       try { await Promise.all(loadPromises); } catch (e) { console.warn('[WARN] 等待脚本加载时发生错误', e); }
     }
 
+    // 9. 确保全局容器存在（.container 等）
     try {
       if (!document.querySelector('.container')) {
         const mainEl = document.querySelector('main') || document.getElementById('mainContent');
@@ -365,10 +371,9 @@ export async function fetchAndReplaceContent(url, pushState = true) {
           mainEl.appendChild(wrapper);
         }
       }
-    } catch (e) {
-      console.warn('[WARN] 修复缺失 .container 时出错', e);
-    }
+    } catch (e) { console.warn('[WARN] 修复缺失 .container 时出错', e); }
 
+    // 10. 尝试自动初始化 Twikoo
     try {
       const twikooEl = document.querySelector('#twikoo-comments');
       if (twikooEl && typeof twikoo !== 'undefined' && twikoo && typeof twikoo.init === 'function' && !twikooEl.getAttribute('data-init')) {
@@ -377,18 +382,12 @@ export async function fetchAndReplaceContent(url, pushState = true) {
           el: '#twikoo-comments',
           lang: 'zh-CN',
           enableComment: true
-        }).then(() => {
-          twikooEl.setAttribute('data-init', 'true');
-          console.log('[INFO] Twikoo 初始化（自动）成功');
-        }).catch(err => {
-          console.warn('[WARN] Twikoo 自动初始化失败:', err);
-        });
+        }).then(() => { twikooEl.setAttribute('data-init', 'true'); })
+          .catch(err => console.warn('[WARN] Twikoo 自动初始化失败:', err));
       }
-    } catch (e) {
-      console.warn('[WARN] 尝试初始化 Twikoo 时出错', e);
-    }
+    } catch (e) { console.warn('[WARN] 尝试初始化 Twikoo 时出错', e); }
 
-    // 确保导航、侧边个人卡、页脚占位元素存在并在需要时加载它们
+    // 11. 确保导航栏、页脚、个人卡片等占位符存在
     try {
       const ensurePlaceholders = () => {
         if (!document.getElementById('navbar-placeholder')) {
@@ -410,10 +409,8 @@ export async function fetchAndReplaceContent(url, pushState = true) {
           }
         }
       };
-
       ensurePlaceholders();
 
-      // 如果目标页面中包含导航/页脚预填内容，则用远端文档的内容替换；否则调用加载函数确保内容存在
       const fetchedNavbar = doc.getElementById('navbar-placeholder');
       const currentNavbar = document.getElementById('navbar-placeholder');
       if (fetchedNavbar && fetchedNavbar.innerHTML && currentNavbar) {
@@ -422,12 +419,8 @@ export async function fetchAndReplaceContent(url, pushState = true) {
           bindNavLinks();
           initMobileMenuToggle();
           initNavTitleReplacer();
-        } catch (e) {
-          console.warn('[WARN] 初始化导航交互时出错', e);
-        }
-      } else if (currentNavbar && currentNavbar.innerHTML && currentNavbar.innerHTML.trim()) {
-        // 已存在导航内容，跳过重复加载
-      } else {
+        } catch (e) { console.warn('[WARN] 初始化导航交互时出错', e); }
+      } else if (!currentNavbar || !currentNavbar.innerHTML.trim()) {
         await loadNavbar();
       }
 
@@ -438,19 +431,14 @@ export async function fetchAndReplaceContent(url, pushState = true) {
       } else {
         await loadFooter();
       }
+    } catch (e) { console.warn('[WARN] 处理全局占位元素时出错', e); }
 
-      // 个人信息卡片将在下方统一渲染（避免重复渲染）
-    } catch (e) {
-      console.warn('[WARN] 处理全局占位元素时出错', e);
-    }
-
+    // 12. 重新初始化导航激活状态、移动端菜单、返回顶部等
     initNavigation();
     initMobileMenuToggle();
     initBackToTopButton();
 
-    const pageName = getPageNameFromPath(new URL(url, window.location.href).pathname);
-
-    // 在根目录的 HTML 文件（包括 /、/index.html、以及 /xxx.html），但排除 /404.html，渲染个人信息卡片
+    // 13. 渲染个人信息卡片（仅在根级 HTML 页面）
     try {
       const personalCardContainer = document.getElementById('personal-card-container');
       const targetPath = new URL(url, window.location.href).pathname;
@@ -463,26 +451,29 @@ export async function fetchAndReplaceContent(url, pushState = true) {
           personalCardContainer.innerHTML = '';
         }
       }
-    } catch (e) {
-      console.warn('[WARN] 渲染个人信息卡片时出错', e);
-    }
-    await initPageFeatures(pageName);
+    } catch (e) { console.warn('[WARN] 渲染个人信息卡片时出错', e); }
 
-    const currentPath = window.location.pathname;
-    const newPath = new URL(url, window.location.href).pathname;
-    if (currentPath !== newPath) {
-      applyRandomBackgroundImage();
+    // 14. 初始化新页面的管理器（根据页面类型）
+    const pageName = getPageNameFromPath(new URL(url, window.location.href).pathname);
+    let finalPageName = pageName;
+    if (doc.querySelector('.article-page-container') || doc.getElementById('articleBody')) {
+      finalPageName = 'article-detail';
+    }
+    const manager = await initPageFeatures(finalPageName);
+    if (manager) {
+      setCurrentPageManager(manager);
     }
 
+    // 15. 刷新滚动揭示效果
     if (window.scrollRevealInstance) {
       window.scrollRevealInstance.refresh();
     } else {
       ensureScrollReveal();
       if (window.scrollRevealInstance) window.scrollRevealInstance.refresh();
     }
-
     refreshNavTitleReplacer();
-    // 自动滚动处理：如果目标页面没有保存的滚动位置或锚点，则回到顶部
+
+    // 16. 滚动处理（锚点或顶部）
     try {
       const targetUrl = new URL(url, window.location.href);
       const scrollKey = `scrollPosition_${targetUrl.pathname}${targetUrl.search}`;
@@ -500,11 +491,12 @@ export async function fetchAndReplaceContent(url, pushState = true) {
           setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0);
         }
       }
-    } catch (e) {
-      console.warn('[WARN] 自动滚动处理失败', e);
-    }
-    window.dispatchEvent(new CustomEvent('ajax:navigation', { detail: { url, page: pageName } }));
+    } catch (e) { console.warn('[WARN] 自动滚动处理失败', e); }
+
+    // 17. 触发导航完成事件
+    window.dispatchEvent(new CustomEvent('ajax:navigation', { detail: { url, page: finalPageName } }));
     return true;
+
   } catch (e) {
     console.error('[ERROR] 无刷新导航加载失败:', e);
     return false;
@@ -531,26 +523,22 @@ export function enableAjaxNavigation() {
 }
 
 export async function initPageFeatures(pageName) {
+  let manager = null;
+
   if (pageName === 'index') {
-    updateDynamicGreeting();
-    if (!window.greetingInterval) {
-      window.greetingInterval = setInterval(updateDynamicGreeting, 60000);
-    }
+    manager = initHomePage();
   } else if (pageName === 'articles' || pageName === 'works') {
-    ensureScrollReveal();
+    const refreshCallback = () => {
+      if (window.scrollRevealInstance) {
+        window.scrollRevealInstance.refresh();
+      } else {
+        ensureScrollReveal();
+        if (window.scrollRevealInstance) window.scrollRevealInstance.refresh();
+      }
+    };
     const { initSearchPage } = await import('/js/search-render.js');
-    const refreshCallback = () => {
-      if (window.scrollRevealInstance) {
-        window.scrollRevealInstance.refresh();
-      } else {
-        ensureScrollReveal();
-        if (window.scrollRevealInstance) window.scrollRevealInstance.refresh();
-      }
-    };
-    await initSearchPage(pageName, refreshCallback);
+    manager = await initSearchPage(pageName, refreshCallback);
   } else if (pageName === 'archive') {
-    ensureScrollReveal();
-    const { initArchivePage } = await import('/js/archive.js');
     const refreshCallback = () => {
       if (window.scrollRevealInstance) {
         window.scrollRevealInstance.refresh();
@@ -559,15 +547,23 @@ export async function initPageFeatures(pageName) {
         if (window.scrollRevealInstance) window.scrollRevealInstance.refresh();
       }
     };
-    await initArchivePage(refreshCallback);
+    const { initArchivePage } = await import('/js/archive.js');
+    manager = await initArchivePage(refreshCallback);
+  } else if (pageName === 'article-detail') {
+    // 文章详情页需要检测当前路径是否为文章页面
+    if (document.querySelector('.article-page-container') || document.getElementById('articleBody')) {
+      const { initArticlePage } = await import('/js/article.js');
+      manager = initArticlePage();
+    }
   }
 
-  if (typeof renderMathAndMermaid === 'function') {
-    try {
-      const container = document.getElementById('mainContent') || document.querySelector('main') || document.body;
-      renderMathAndMermaid(container);
-    } catch (e) {
-      console.warn('[WARN] renderMathAndMermaid 执行失败', e);
-    }
+  // 其他页面（about, contact, friends, settings, privacy 等）可能没有特殊管理器，返回 null
+
+  if (manager && typeof manager.init === 'function' && !manager._initialized) {
+    // 避免重复初始化
+    await manager.init();
+    manager._initialized = true;
   }
+
+  return manager;
 }

@@ -462,16 +462,11 @@ export class SearchController {
 
 // 页面初始化函数
 export async function initSearchPage(page, scrollRevealRefreshCallback) {
-  // 销毁旧的 SearchController 实例
   if (window._currentSearchController) {
     window._currentSearchController.destroy();
     window._currentSearchController = null;
   }
-  
-  // 预加载数据
   await DataManager.fetchData(page, true);
-  
-  // 创建新的 SearchController
   window._currentSearchController = new SearchController(page, scrollRevealRefreshCallback);
   return window._currentSearchController;
 }

@@ -1,5 +1,7 @@
+// archive.js
 import { DataManager, UIRenderer } from '/js/search-render.js';
 import { Utils } from '/js/core.js';
+import { PageManager } from '/js/page-manager.js';
 
 function parseArticleDate(item) {
   const value = item.date || item.last_updated || item.updated_date;
@@ -53,7 +55,6 @@ function buildTimelineHTML(items, selectedYear) {
         const url = item.url || item.link || '#';
         const typeBadge = item.__archiveType === 'work' ? '<span class="timeline-item-badge">作品</span>' : '';
 
-        // 如果是作品，渲染为可触发作品详情弹窗的元素（与作品列表一致）
         let titleHtml;
         if (item.__archiveType === 'work') {
           const workInfo = {
@@ -116,55 +117,101 @@ function renderYearFilter(articles) {
   yearFilter.innerHTML = '<option value="all">全部年份</option>' + years.map(year => `<option value="${year}">${year}</option>`).join('');
 }
 
-export async function initArchivePage(scrollRevealRefreshCallback) {
-  const container = document.getElementById('archive-container');
-  const summary = document.getElementById('archive-summary');
-  const yearFilter = document.getElementById('archive-year-filter');
-  const resetButton = document.getElementById('archive-reset');
-
-  if (!container || !summary || !yearFilter || !resetButton) return;
-
-  container.innerHTML = '<div class="loading-text">正在加载归档...</div>';
-  summary.textContent = '';
-
-  try {
-    const [articlesResult, worksResult] = await Promise.allSettled([
-      DataManager.fetchData('articles', true),
-      DataManager.fetchData('works', true)
-    ]);
-
-    if (articlesResult.status === 'rejected' && worksResult.status === 'rejected') {
-      throw new Error('文章和作品数据均加载失败');
+// ==================== 归档页面管理器类 ====================
+export class ArchiveManager extends PageManager {
+    constructor() {
+        super();
+        this.container = null;
+        this.summary = null;
+        this.yearFilter = null;
+        this.resetButton = null;
+        this.archiveItems = [];
+        this.changeHandler = null;
+        this.resetHandler = null;
+        this.refreshCallback = null;
     }
 
-    const articles = articlesResult.status === 'fulfilled' ? (articlesResult.value.articles || []).filter(item => !item.hidden) : [];
-    const works = worksResult.status === 'fulfilled' ? (worksResult.value.works || []) : [];
+    async init() {
+        this.container = document.getElementById('archive-container');
+        this.summary = document.getElementById('archive-summary');
+        this.yearFilter = document.getElementById('archive-year-filter');
+        this.resetButton = document.getElementById('archive-reset');
 
-    const archiveItems = [
-      ...articles.map(item => ({ ...item, __archiveType: 'article', url: item.url || item.link || '#' })),
-      ...works.map(item => ({ ...item, __archiveType: 'work', url: item.link || item.url || '#' }))
-    ];
+        if (!this.container || !this.summary || !this.yearFilter || !this.resetButton) return;
 
-    const totalArticles = articles.length;
-    const totalWorks = works.length;
-    summary.textContent = `当前显示 ${totalArticles} 篇文章，${totalWorks} 个作品`;
+        this.container.innerHTML = '<div class="loading-text">正在加载归档...</div>';
+        this.summary.textContent = '';
 
-    renderYearFilter(archiveItems);
-    const renderArchive = () => {
-      const selectedYear = yearFilter.value || 'all';
-      container.innerHTML = buildTimelineHTML(archiveItems, selectedYear);
-      if (scrollRevealRefreshCallback) scrollRevealRefreshCallback();
-    };
+        try {
+            const [articlesResult, worksResult] = await Promise.allSettled([
+                DataManager.fetchData('articles', true),
+                DataManager.fetchData('works', true)
+            ]);
 
-    yearFilter.addEventListener('change', renderArchive);
-    resetButton.addEventListener('click', () => {
-      yearFilter.value = 'all';
-      renderArchive();
-    });
+            if (articlesResult.status === 'rejected' && worksResult.status === 'rejected') {
+                throw new Error('文章和作品数据均加载失败');
+            }
 
-    renderArchive();
-  } catch (error) {
-    container.innerHTML = `<div class="archive-error">加载归档失败，请稍后重试。</div>`;
-    console.error('[Archive] 初始化归档页面失败:', error);
-  }
+            const articles = articlesResult.status === 'fulfilled' ? (articlesResult.value.articles || []).filter(item => !item.hidden) : [];
+            const works = worksResult.status === 'fulfilled' ? (worksResult.value.works || []) : [];
+
+            this.archiveItems = [
+                ...articles.map(item => ({ ...item, __archiveType: 'article', url: item.url || item.link || '#' })),
+                ...works.map(item => ({ ...item, __archiveType: 'work', url: item.link || item.url || '#' }))
+            ];
+
+            const totalArticles = articles.length;
+            const totalWorks = works.length;
+            this.summary.textContent = `当前显示 ${totalArticles} 篇文章，${totalWorks} 个作品`;
+
+            renderYearFilter(this.archiveItems);
+            
+            this.changeHandler = () => this.renderArchive();
+            this.resetHandler = () => {
+                if (this.yearFilter) this.yearFilter.value = 'all';
+                this.renderArchive();
+            };
+            
+            this.yearFilter.addEventListener('change', this.changeHandler);
+            this.resetButton.addEventListener('click', this.resetHandler);
+            
+            this.renderArchive();
+        } catch (error) {
+            this.container.innerHTML = `<div class="archive-error">加载归档失败，请稍后重试。</div>`;
+            console.error('[Archive] 初始化归档页面失败:', error);
+        }
+    }
+
+    renderArchive() {
+        if (!this.container) return;
+        const selectedYear = this.yearFilter ? (this.yearFilter.value || 'all') : 'all';
+        this.container.innerHTML = buildTimelineHTML(this.archiveItems, selectedYear);
+        if (this.refreshCallback) this.refreshCallback();
+        else if (window.refreshScrollReveal) window.refreshScrollReveal();
+    }
+
+    destroy() {
+        if (this.yearFilter && this.changeHandler) {
+            this.yearFilter.removeEventListener('change', this.changeHandler);
+        }
+        if (this.resetButton && this.resetHandler) {
+            this.resetButton.removeEventListener('click', this.resetHandler);
+        }
+        this.container = null;
+        this.summary = null;
+        this.yearFilter = null;
+        this.resetButton = null;
+        this.archiveItems = [];
+        this.changeHandler = null;
+        this.resetHandler = null;
+        this.refreshCallback = null;
+    }
+}
+
+// ==================== 导出的初始化函数（供 router 调用）====================
+export async function initArchivePage(scrollRevealRefreshCallback) {
+    const manager = new ArchiveManager();
+    manager.refreshCallback = scrollRevealRefreshCallback;
+    await manager.init();
+    return manager;
 }
