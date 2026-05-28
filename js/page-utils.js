@@ -44,59 +44,47 @@ export function updateDynamicGreeting() {
 export function applyRandomBackgroundImage({ force = false } = {}) {
   const { BACKGROUND_IMAGES } = CONFIG;
   if (!Array.isArray(BACKGROUND_IMAGES) || BACKGROUND_IMAGES.length === 0) return;
+
   const randomIndex = Math.floor(Math.random() * BACKGROUND_IMAGES.length);
   const imageUrl = BACKGROUND_IMAGES[randomIndex];
-  if (!force && document.body.style.backgroundImage.includes(imageUrl)) return;
-  const createOverlay = (url) => {
-    let overlay = document.getElementById('bg-image-overlay');
-    if (overlay) {
-      overlay.style.backgroundImage = `url('${url}')`;
-      return overlay;
-    }
+
+  // 获取或创建永久背景遮罩层
+  let overlay = document.getElementById('bg-image-overlay');
+  if (!overlay) {
     overlay = document.createElement('div');
     overlay.id = 'bg-image-overlay';
-    overlay.style.backgroundImage = `url('${url}')`;
     document.body.appendChild(overlay);
-    return overlay;
-  };
+  }
 
-  const handleError = (error) => {
+  // 避免重复动画
+  if (!force && overlay.style.backgroundImage === `url("${imageUrl}")` && overlay.classList.contains('active')) {
+    return;
+  }
+
+  // 移除 active 类，重置动画状态
+  overlay.classList.remove('active');
+  // 强制重绘，确保重置生效
+  void overlay.offsetWidth;
+
+  // 更新
+  overlay.style.backgroundImage = `url('${imageUrl}')`;
+
+  // 预加载图片，确保动画开始时图片已经可用
+  const img = new Image();
+  img.onload = () => {
+    // 图片加载完成后再添加 active 类，触发从模糊到清晰的过渡
+    overlay.classList.add('active');
     document.body.classList.remove('background-loading');
+  };
+  img.onerror = (error) => {
     console.warn('[WARN] 背景图片加载失败:', error);
+    // 即使加载失败，也尝试显示（可能显示破损图标），或者保持纯色背景
+    overlay.classList.add('active');
+    document.body.classList.remove('background-loading');
   };
-
-  const load = () => {
-    const img = new Image();
-    img.onload = () => {
-      try {
-        const overlay = createOverlay(imageUrl);
-        // 触发过渡：先插入（初始为模糊且透明），强制回流后添加 active
-        void overlay.offsetWidth;
-        overlay.classList.add('active');
-        // 在过渡结束后将图片设为 body 背景并清理 overlay（3s + 小缓冲）
-        setTimeout(() => {
-          try {
-            document.body.style.backgroundImage = `url('${imageUrl}')`;
-            if (overlay && overlay.parentNode) overlay.parentNode.removeChild(overlay);
-          } catch (e) {
-            console.warn('[WARN] 将背景应用到 body 时出错', e);
-          }
-          document.body.classList.remove('background-loading');
-        }, 3300);
-      } catch (e) {
-        handleError(e);
-      }
-    };
-    img.onerror = () => handleError(new Error(`背景图加载失败：${imageUrl}`));
-    img.src = imageUrl;
-  };
+  img.src = imageUrl;
 
   document.body.classList.add('background-loading');
-  if ('requestIdleCallback' in window) {
-    requestIdleCallback(load, { timeout: 1000 });
-  } else {
-    setTimeout(load, 200);
-  }
 }
 
 export function startSiteAgeUpdater(SITE_BIRTH) {
