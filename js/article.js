@@ -40,7 +40,7 @@ export class ArticlePageManager extends PageManager {
             sessionStorage.setItem(this.scrollPositionKey, window.scrollY);
         };
         window.addEventListener('beforeunload', this.beforeUnloadHandler);
-        
+
         this.scrollListener = () => {
             sessionStorage.setItem(this.scrollPositionKey, window.scrollY);
         };
@@ -60,13 +60,28 @@ export class ArticlePageManager extends PageManager {
         const container = document.getElementById('toc-list-container');
         if (!container) return;
         const headings = window.ARTICLE_HEADINGS || [];
+        const tocContainer = document.querySelector('.toc-container');
+        const pageContainer = document.querySelector('.article-page-container');
+        if (!pageContainer) return;
+
         if (headings.length === 0) {
-            container.innerHTML = '<p class="no-toc">暂无目录</p>';
+            // 无目录：添加 no-toc 类，隐藏目录容器，清空列表容器
+            pageContainer.classList.add('no-toc');
+            if (tocContainer) tocContainer.style.display = 'none';
+            container.innerHTML = '';
+            // 移动端刷新目录按钮（隐藏）
+            if (this.isMobileMode) this.refreshMobileTOCButton();
             return;
         }
+
+        // 有目录：移除 no-toc 类，确保目录容器可见
+        pageContainer.classList.remove('no-toc');
+        if (tocContainer) tocContainer.style.display = '';
         const tocHTML = this.buildTOCHTML(headings);
         container.innerHTML = tocHTML;
         this.bindTOCEvents(container);
+        // 移动端刷新目录按钮（显示）
+        if (this.isMobileMode) this.refreshMobileTOCButton();
     }
 
     buildTOCHTML(headings) {
@@ -177,7 +192,7 @@ export class ArticlePageManager extends PageManager {
             return;
         }
         const toAbs = (url) => {
-            try { return new URL(url, window.location.href).href; } catch(e) { return url; }
+            try { return new URL(url, window.location.href).href; } catch (e) { return url; }
         };
         if (toAbs(img.src) === toAbs(src) && img.classList.contains('loaded')) {
             if (onLoadCallback) onLoadCallback();
@@ -343,7 +358,7 @@ export class ArticlePageManager extends PageManager {
         if (!tocContainer) return;
         tocContainer.classList.add('mobile-float-toc');
         tocContainer.style.display = 'none';
-        this.addMobileTOCButton();
+        this.refreshMobileTOCButton();
         this.addCloseButtonToTOC();
         this.bindMobileTOCEvents();
         this.refreshMobileTOCContent();
@@ -363,6 +378,25 @@ export class ArticlePageManager extends PageManager {
         if (this.tocFloatBtn && this.tocFloatBtn.parentNode) {
             this.tocFloatBtn.parentNode.removeChild(this.tocFloatBtn);
             this.tocFloatBtn = null;
+        }
+    }
+
+    refreshMobileTOCButton() {
+        if (!this.isMobileMode) return;
+        const headings = window.ARTICLE_HEADINGS || [];
+        const hasTOC = headings.length > 0;
+
+        if (!hasTOC) {
+            // 无目录：移除移动端目录按钮（如果存在）
+            if (this.tocFloatBtn && this.tocFloatBtn.parentNode) {
+                this.tocFloatBtn.remove();
+                this.tocFloatBtn = null;
+            }
+        } else {
+            // 有目录：确保按钮存在
+            if (!this.tocFloatBtn) {
+                this.addMobileTOCButton();
+            }
         }
     }
 
