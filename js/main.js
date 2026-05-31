@@ -6,7 +6,7 @@ import { initUIEffects, refreshScrollReveal, ensureScrollReveal } from '/js/ui-e
 import { getTimeBasedTheme, getPageNameFromPath, applyRandomBackgroundImage, startSiteAgeUpdater, updateFooterUpdateTime } from '/js/page-utils.js';
 import { loadNavbar, loadFooter, initBackToTopButton, enableAjaxNavigation, initPageFeatures, fetchAndReplaceContent } from '/js/router.js';
 import { LazyImageLoader, GlobalImageManager } from '/js/image-manager.js';
-import { StatisticsManager, preloadCriticalJSON, registerServiceWorker } from '/js/site-state.js';
+import { StatisticsManager, preloadCriticalJSON, registerServiceWorker, initFooterStats } from '/js/site-state.js';
 import { handleListItemClick } from '/js/list-events.js';
 
 let cookieConsentManager = null;
@@ -70,6 +70,8 @@ async function bootstrap() {
   document.body.setAttribute('data-loaded', 'true');
 
   console.log('[Main] 初始化完成');
+
+  initFooterStats();
 }
 
 document.addEventListener('DOMContentLoaded', bootstrap);

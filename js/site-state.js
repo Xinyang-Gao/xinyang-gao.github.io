@@ -1,5 +1,6 @@
 // ==================== /js/site-state.js ====================
 // 统计管理与服务工作线程注册
+// 增强：页脚动态统计填充（文章数、字数、版本、代码规模等）
 
 import { CONFIG, storageController, Utils } from '/js/core.js';
 
@@ -129,4 +130,90 @@ export function registerServiceWorker() {
       });
     });
   }
+}
+
+/**
+ * 页脚统计信息填充（文章数、总字数、作品数、分类数、版本号、快照时间、代码规模）
+ * 建议在页面加载及无刷新导航后调用
+ */
+export async function initFooterStats() {
+  // 获取需要填充的DOM元素
+  const elements = {
+    articles: document.getElementById('footerTotalArticles'),
+    words: document.getElementById('footerTotalWords'),
+    works: document.getElementById('footerTotalWorks'),
+    categories: document.getElementById('footerTotalCategories'),
+    version: document.getElementById('footerVersionNumber'),
+    snapshot: document.getElementById('footerSnapshotDate'),
+    files: document.getElementById('footerTotalFiles'),
+    lines: document.getElementById('footerTotalLines')
+  };
+
+  // 如果关键元素不存在，说明当前页脚未使用该网格，直接返回
+  if (!elements.articles && !elements.version) return;
+
+  try {
+    // 1. 获取 statistics.json
+    const statsRes = await fetch(`${CONFIG.API.STATISTICS}?t=${Date.now()}`, { cache: 'no-store' });
+    if (statsRes.ok) {
+      const stats = await statsRes.json();
+      if (elements.articles) elements.articles.innerText = stats.total_articles ?? '—';
+      if (elements.words) {
+        const words = stats.total_word_count ?? 0;
+        elements.words.innerText = typeof words === 'number' ? words.toLocaleString() : words;
+      }
+      if (elements.works) elements.works.innerText = stats.total_works ?? '—';
+      if (elements.categories) elements.categories.innerText = stats.total_article_categories ?? '—';
+      if (elements.version) {
+        const version = stats.version ? `v${stats.version}` : '—';
+        elements.version.innerText = version;
+      }
+      if (elements.snapshot) {
+        const lastUpdated = stats.last_updated || stats.last_updated_full?.split('T')[0] || '未知';
+        elements.snapshot.innerText = `最后更新 · ${lastUpdated}`;
+      }
+    } else {
+      throw new Error('statistics.json 加载失败');
+    }
+  } catch (err) {
+    console.warn('[FooterStats] 加载统计信息失败:', err);
+    // 降级显示
+    if (elements.articles) elements.articles.innerText = '?';
+    if (elements.words) elements.words.innerText = '?';
+    if (elements.works) elements.works.innerText = '?';
+    if (elements.categories) elements.categories.innerText = '?';
+    if (elements.version) elements.version.innerText = '?';
+    if (elements.snapshot) elements.snapshot.innerText = '快照加载失败';
+  }
+
+  // 2. 获取 code_analysis.json （文件数、代码行数）
+  try {
+    const codeRes = await fetch('/json/code_analysis.json', { cache: 'no-store' });
+    if (codeRes.ok) {
+      const codeStats = await codeRes.json();
+      if (elements.files) {
+        const totalFiles = codeStats.total_files ?? '—';
+        elements.files.innerText = typeof totalFiles === 'number' ? totalFiles.toLocaleString() : totalFiles;
+      }
+      if (elements.lines) {
+        // 优先展示非空行数，其次总行数
+        const totalLines = codeStats.non_empty_lines ?? codeStats.total_lines ?? '—';
+        elements.lines.innerText = typeof totalLines === 'number' ? totalLines.toLocaleString() : totalLines;
+      }
+    } else {
+      throw new Error('code_analysis.json 加载失败');
+    }
+  } catch (err) {
+    console.warn('[FooterStats] 加载代码分析数据失败:', err);
+    if (elements.files) elements.files.innerText = '?';
+    if (elements.lines) elements.lines.innerText = '?';
+  }
+}
+
+// 自动监听无刷新导航，重新填充页脚统计（如果页脚在导航后重新渲染）
+if (typeof window !== 'undefined') {
+  window.addEventListener('ajax:navigation', () => {
+    // 延迟一小段时间确保新页脚DOM已插入
+    setTimeout(() => initFooterStats(), 100);
+  });
 }

@@ -1,59 +1,66 @@
 {
-  "generated_at": "2026-05-22T00:00:16.133650",
+  "generated_at": "2026-05-31T17:24:36.104888",
   "root_dir": "c:\\Users\\Administrator\\Desktop\\编程\\xinyang-gao.github.io\\xinyang-gao.github.io",
-  "total_files": 110,
-  "total_size_bytes": 1356894,
-  "total_lines": 29418,
-  "non_empty_lines": 26646,
+  "total_files": 117,
+  "total_size_bytes": 1377869,
+  "total_lines": 29191,
+  "non_empty_lines": 26367,
   "by_extension": [
     {
       "extension": ".html",
-      "count": 31,
-      "total_size_bytes": 312380,
-      "total_lines": 6079,
-      "non_empty_lines": 5786
+      "count": 32,
+      "total_size_bytes": 313365,
+      "total_lines": 5592,
+      "non_empty_lines": 5298
     },
     {
       "extension": ".js",
-      "count": 23,
-      "total_size_bytes": 288933,
-      "total_lines": 6957,
-      "non_empty_lines": 6204
+      "count": 25,
+      "total_size_bytes": 297781,
+      "total_lines": 7109,
+      "non_empty_lines": 6347
     },
     {
       "extension": ".json",
-      "count": 15,
-      "total_size_bytes": 25812,
-      "total_lines": 848,
-      "non_empty_lines": 848
+      "count": 16,
+      "total_size_bytes": 28864,
+      "total_lines": 974,
+      "non_empty_lines": 974
     },
     {
       "extension": ".md",
-      "count": 12,
-      "total_size_bytes": 96314,
-      "total_lines": 2138,
-      "non_empty_lines": 1684
+      "count": 14,
+      "total_size_bytes": 102947,
+      "total_lines": 2055,
+      "non_empty_lines": 1565
     },
     {
       "extension": ".css",
       "count": 12,
-      "total_size_bytes": 246025,
-      "total_lines": 10302,
-      "non_empty_lines": 9329
+      "total_size_bytes": 246865,
+      "total_lines": 10357,
+      "non_empty_lines": 9378
     },
     {
       "extension": ".py",
       "count": 7,
-      "total_size_bytes": 73197,
+      "total_size_bytes": 73217,
       "total_lines": 1918,
       "non_empty_lines": 1640
     },
     {
       "extension": ".xml",
       "count": 3,
-      "total_size_bytes": 10321,
-      "total_lines": 119,
-      "non_empty_lines": 119
+      "total_size_bytes": 10891,
+      "total_lines": 127,
+      "non_empty_lines": 127
+    },
+    {
+      "extension": "no_extension",
+      "count": 2,
+      "total_size_bytes": 1119,
+      "total_lines": 23,
+      "non_empty_lines": 19
     },
     {
       "extension": ".ico",
@@ -61,13 +68,6 @@
       "total_size_bytes": 205086,
       "total_lines": 348,
       "non_empty_lines": 346
-    },
-    {
-      "extension": "no_extension",
-      "count": 1,
-      "total_size_bytes": 1092,
-      "total_lines": 21,
-      "non_empty_lines": 17
     },
     {
       "extension": ".txt",

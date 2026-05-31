@@ -42,7 +42,7 @@ export class HomePageManager extends PageManager {
                 this.updateTagsList(stat.work_tags || [], '#workTagsList');
 
                 const badge = document.getElementById('statsUpdateBadge');
-                if (badge) badge.innerHTML = `<i class="far fa-clock"></i> 数据快照 · ${stat.last_updated || '未知'}`;
+                if (badge) badge.innerHTML = `<i class="far fa-clock"></i> 最后更新 · ${stat.last_updated || '未知'}`;
             })
             .catch(() => {
                 statsContainer.innerHTML = `<div class="stat-card" style="grid-column:1/-1;text-align:center;"><i class="fas fa-cloud-moon"></i> 统计信息正在星海漂流，稍后再来看看吧~</div>`;

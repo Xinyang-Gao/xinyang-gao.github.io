@@ -257,10 +257,7 @@ export class SearchController {
     if (this.sortSelect && this._sortHandler) this.sortSelect.removeEventListener('change', this._sortHandler);
     if (this.popStateHandler) window.removeEventListener('popstate', this.popStateHandler);
     clearTimeout(this.debounceTimer);
-    // 清理待处理的请求
-    this.pendingRequests.forEach((_, id) => {
-      // Worker 请求无法取消，但可以忽略结果
-    });
+    this.pendingRequests.forEach((_, id) => {});
   }
   
   restoreFromURL() {
@@ -318,29 +315,25 @@ export class SearchController {
     }
   }
   
-  async getAllTags() {
+  // 新方法：计算每个标签及其出现次数（基于全量数据）
+  async getTagsWithCount() {
     const data = await this.getCachedData(this.page);
-    if (!data) return new Set();
+    if (!data) return [];
     const items = this.page === 'works' ? data.works : data.articles;
+    const tagCountMap = new Map();
     
-    return new Promise((resolve) => {
-      const requestId = ++this.requestIdCounter;
-      const worker = getSearchWorker();
-      
-      const handler = (e) => {
-        if (e.data.type === 'extractTagsResult' && e.data.requestId === requestId) {
-          worker.removeEventListener('message', handler);
-          resolve(new Set(e.data.data));
-        }
-      };
-      worker.addEventListener('message', handler);
-      
-      worker.postMessage({
-        type: 'extractTags',
-        data: { items },
-        options: { requestId }
+    items.forEach(item => {
+      const tags = Utils.getTags(item);
+      tags.forEach(tag => {
+        tagCountMap.set(tag, (tagCountMap.get(tag) || 0) + 1);
       });
     });
+    
+    // 转换为数组并按标签名排序
+    const tagsWithCount = Array.from(tagCountMap.entries())
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => a.name.localeCompare(b.name, 'zh'));
+    return tagsWithCount;
   }
   
   applyTagsToButtons() {
@@ -368,8 +361,8 @@ export class SearchController {
     label.textContent = '按标签筛选:';
     container.appendChild(label);
     
-    const allTagsSet = await this.getAllTags();
-    if (allTagsSet.size === 0) {
+    const tagsWithCount = await this.getTagsWithCount();
+    if (tagsWithCount.length === 0) {
       const msg = document.createElement('span');
       msg.textContent = '暂无标签';
       msg.style.color = '#888';
@@ -377,14 +370,13 @@ export class SearchController {
       return;
     }
     
-    const sortedTags = Array.from(allTagsSet).sort();
-    sortedTags.forEach(tag => {
+    tagsWithCount.forEach(({ name, count }) => {
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'tag-button';
-      btn.textContent = tag;
-      btn.dataset.tag = tag;
-      btn.addEventListener('click', () => this.toggleTag(tag, btn));
+      btn.textContent = `${name} (${count})`;   // 显示标签名 + 数量
+      btn.dataset.tag = name;
+      btn.addEventListener('click', () => this.toggleTag(name, btn));
       container.appendChild(btn);
     });
     
