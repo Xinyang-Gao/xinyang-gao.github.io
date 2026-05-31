@@ -555,7 +555,10 @@ export async function initPageFeatures(pageName) {
       const { initArticlePage } = await import('/js/article.js');
       manager = initArticlePage();
     }
-  }
+} else if (pageName === 'stats') {
+    const { initStatsPage } = await import('/js/stats-init.js');
+    manager = await initStatsPage();
+}
 
   // 其他页面（about, contact, friends, settings, privacy 等）可能没有特殊管理器，返回 null
 

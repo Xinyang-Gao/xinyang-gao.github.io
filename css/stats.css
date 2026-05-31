@@ -1,0 +1,276 @@
+/* ========== /css/stats.css ========== */
+/* 统计页面专用样式，兼容明暗主题 */
+
+.stats-main-area {
+    max-width: 1400px;
+    margin: calc(var(--nav-height) + 30px) auto 60px;
+    padding: 0 24px;
+}
+
+.stats-container {
+    background: transparent;
+    box-shadow: none;
+    padding: 0;
+    animation: fadeIn 0.4s ease;
+}
+
+.stats-hero {
+    text-align: center;
+    margin-bottom: 2.5rem;
+}
+
+.stats-eyebrow {
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--accent-color);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+}
+
+.stats-hero h1 {
+    font-size: 2.6rem;
+    margin: 0.2rem 0 0.5rem;
+    background: linear-gradient(135deg, var(--accent-color), var(--accent-light));
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+}
+
+.stats-subhead {
+    color: var(--text-secondary);
+    font-size: 1rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* 指标卡片网格 */
+.stats-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.2rem;
+    margin-bottom: 2.4rem;
+}
+
+.stat-card-item {
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    padding: 1.2rem 0.8rem;
+    text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: var(--shadow-sm);
+    backdrop-filter: blur(2px);
+}
+
+.stat-card-item:hover {
+    transform: translateY(-4px);
+    border-color: var(--accent-light);
+    box-shadow: var(--shadow-md);
+}
+
+.stat-card-icon {
+    font-size: 2rem;
+    color: var(--accent-color);
+    margin-bottom: 0.6rem;
+}
+
+.stat-card-number {
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1.2;
+    color: var(--accent-color);
+    font-family: var(--font-mono);
+}
+
+.stat-card-label {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    letter-spacing: 0.3px;
+    margin-top: 0.3rem;
+}
+
+.stat-card-sub {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    opacity: 0.75;
+}
+
+/* 图表网格 2列布局 */
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.8rem;
+    margin-bottom: 2.5rem;
+}
+
+.chart-card {
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    padding: 1.2rem 1rem 1rem 1rem;
+    transition: all 0.2s;
+    box-shadow: var(--shadow-sm);
+    backdrop-filter: blur(2px);
+}
+
+.chart-card:hover {
+    border-color: var(--accent-light);
+    box-shadow: var(--shadow-md);
+}
+
+.chart-header {
+    display: flex;
+    align-items: baseline;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+    border-left: 3px solid var(--accent-color);
+    padding-left: 0.8rem;
+}
+
+.chart-header i {
+    color: var(--accent-color);
+    font-size: 1.2rem;
+}
+
+.chart-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-color);
+}
+
+.chart-subtitle {
+    font-size: 0.7rem;
+    color: var(--text-secondary);
+    margin-left: auto;
+}
+
+.chart-container {
+    position: relative;
+    width: 100%;
+    min-height: 260px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+canvas {
+    max-height: 260px;
+    width: 100%;
+}
+
+/* 洞见卡片 */
+.insight-card .insight-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem 1rem;
+    padding: 0.8rem 0.2rem;
+}
+
+.insight-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    border-bottom: 1px dashed var(--border-color);
+    padding-bottom: 0.4rem;
+}
+
+.insight-label {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.insight-item strong {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--accent-color);
+    font-family: monospace;
+}
+
+/* 底部附加面板 */
+.bottom-stats-panel {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.2rem;
+    margin-top: 1rem;
+    padding: 0.8rem 1rem;
+    background: var(--surface-color-secondary);
+    border-radius: 60px;
+    border: 1px solid var(--border-light);
+}
+
+.info-pill {
+    background: var(--surface-color);
+    padding: 0.4rem 1.2rem;
+    border-radius: 40px;
+    font-size: 0.85rem;
+    color: var(--text-color);
+    box-shadow: var(--shadow-sm);
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.info-pill i {
+    color: var(--accent-color);
+}
+
+/* 骨架 / 加载状态 */
+.stat-card-skeleton {
+    background: var(--surface-color);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+/* 响应式 */
+@media (max-width: 880px) {
+    .charts-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    .stats-cards-grid {
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    }
+    .stats-hero h1 {
+        font-size: 2rem;
+    }
+}
+
+@media (max-width: 560px) {
+    .stats-main-area {
+        padding: 0 16px;
+    }
+    .bottom-stats-panel {
+        flex-direction: column;
+        align-items: center;
+        border-radius: 28px;
+    }
+    .insight-card .insight-content {
+        grid-template-columns: 1fr;
+    }
+}
+/* ========== 全屏统计页面增强样式 (与上述 style 标签互补, 也可独立) ========== */
+/* 确保卡片内部canvas响应式 */
+.chart-container canvas {
+    max-height: 260px;
+    width: 100%;
+}
+.extra-card .ranking-list li span:first-child {
+    white-space: normal;
+    word-break: break-word;
+}
+[data-theme="dark"] .extra-card {
+    background: var(--surface-color);
+    border-color: var(--border-color);
+}
+.stats-hero h1 {
+    background: linear-gradient(135deg, var(--accent-color), var(--accent-light));
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+}

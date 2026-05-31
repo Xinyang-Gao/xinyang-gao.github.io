@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="description" content="网站全域统计仪表板，包括文章趋势、作品分析、代码资产、深度洞察">
+    <title>网站统计</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/stats.css">
+    <style>
+        .stats-main-area {
+            max-width: 100% !important;
+            margin: var(--nav-height) 0 0 0 !important;
+            padding: 0 !important;
+            width: 100%;
+        }
+        .stats-container {
+            max-width: 100% !important;
+            padding: 0 20px;
+            margin: 0 auto;
+            background: transparent;
+            box-shadow: none;
+        }
+        @media (min-width: 1600px) {
+            .stats-container {
+                padding: 0 40px;
+            }
+        }
+        .stats-cards-grid {
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.8rem;
+        }
+        .stat-card-item {
+            padding: 1.8rem 0.8rem;
+        }
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 2rem;
+        }
+        .extra-stats-row {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 1.8rem;
+            margin: 2rem 0;
+        }
+        .extra-card {
+            flex: 1;
+            min-width: 280px;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-xl);
+            padding: 1.4rem 1.6rem;
+            transition: all 0.2s;
+            box-shadow: var(--shadow-sm);
+        }
+        .extra-card:hover {
+            border-color: var(--accent-light);
+            transform: translateY(-3px);
+        }
+        .extra-card h4 {
+            margin: 0 0 0.75rem 0;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--accent-color);
+            border-left: 3px solid var(--accent-color);
+            padding-left: 12px;
+        }
+        .ranking-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        .ranking-list li {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px dashed var(--border-light);
+            padding: 0.6rem 0;
+            font-size: 0.95rem;
+        }
+        .badge-stat {
+            background: var(--tag-bg);
+            padding: 0.2rem 0.6rem;
+            border-radius: 40px;
+            font-size: 0.75rem;
+        }
+        .insight-highlight {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            line-height: 1;
+        }
+        hr {
+            margin: 0.5rem 0;
+        }
+        @media (max-width: 860px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            .extra-stats-row {
+                flex-direction: column;
+            }
+            .stats-container {
+                padding: 0 16px;
+            }
+        }
+        .stats-hero {
+            text-align: center;
+            margin: 2rem 0 2.5rem 0;
+        }
+        .stats-hero h1 {
+            font-size: 3rem;
+        }
+    </style>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+</head>
+<body>
+    <div id="navbar-placeholder"></div>
+
+    <main class="main-content-area stats-main-area" id="mainContent" role="main">
+        <div class="container stats-container">
+            <div class="stats-hero">
+                <h1>网站统计</h1>
+                <p class="stats-subhead">可视化视图</p>
+            </div>
+
+            <div class="stats-cards-grid" id="statsCardsGrid">
+                <div class="stat-card-skeleton"><i class="fas fa-spinner fa-pulse"></i> 加载统计中...</div>
+            </div>
+
+            <!-- 额外详细数据行1: 文章字数榜单 & 作品年份分布 & 站点运行时间 -->
+            <div class="extra-stats-row">
+                <div class="extra-card" id="topWordsCard">
+                    <h4><i class="fas fa-chart-simple"></i> 最长文章 TOP5</h4>
+                    <div class="ranking-list" id="longestArticlesList">加载中...</div>
+                </div>
+                <div class="extra-card" id="worksYearCard">
+                    <h4><i class="fas fa-calendar-week"></i> 作品年份分布</h4>
+                    <div style="height: 200px;" id="worksYearChartContainer">
+                        <canvas id="worksYearChart" style="max-width:100%; height:auto;"></canvas>
+                    </div>
+                </div>
+                <div class="extra-card" id="uptimeCard">
+                    <h4><i class="fas fa-clock"></i> 站点运行时间</h4>
+                    <div style="text-align: center;">
+                        <div class="insight-highlight" id="siteUptimeDisplay">加载中...</div>
+                        <div class="badge-stat">自 2025年02月22日 起</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 主图表网格 (包含原有的6图 + 新增代码行数占比) -->
+            <div class="charts-grid">
+                <div class="chart-card">
+                    <div class="chart-header"><i class="fas fa-chart-line"></i> <h3>文章发布趋势</h3><span class="chart-subtitle">月度波动</span></div>
+                    <div class="chart-container"><canvas id="trendChart" width="500" height="280"></canvas></div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header"><i class="fas fa-layer-group"></i> <h3>文章分类构成</h3><span class="chart-subtitle">数量占比</span></div>
+                    <div class="chart-container"><canvas id="categoryChart" width="500" height="280"></canvas></div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header"><i class="fas fa-tags"></i> <h3>热门文章标签</h3><span class="chart-subtitle">出现次数 TOP10</span></div>
+                    <div class="chart-container"><canvas id="articleTagsChart" width="500" height="280"></canvas></div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header"><i class="fas fa-cubes"></i> <h3>创意工坊标签</h3><span class="chart-subtitle">作品标签云集</span></div>
+                    <div class="chart-container"><canvas id="workTagsChart" width="500" height="280"></canvas></div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header"><i class="fas fa-code"></i> <h3>源代码资产构成</h3><span class="chart-subtitle">文件数分布</span></div>
+                    <div class="chart-container"><canvas id="codeExtensionChart" width="500" height="280"></canvas></div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header"><i class="fas fa-chart-bar"></i> <h3>文章字数分布</h3><span class="chart-subtitle">区间密度</span></div>
+                    <div class="chart-container"><canvas id="wordHistogramChart" width="500" height="280"></canvas></div>
+                </div>
+                <div class="chart-card">
+                    <div class="chart-header"><i class="fas fa-code-branch"></i> <h3>代码行数占比</h3><span class="chart-subtitle">按文件类型 (非空行)</span></div>
+                    <div class="chart-container"><canvas id="codeLineChart" width="500" height="280"></canvas></div>
+                </div>
+            </div>
+
+            <!-- 更多详细数据: 代码规模深度 + 创作活跃度 + 版本信息 -->
+            <div class="extra-stats-row">
+                <div class="extra-card">
+                    <h4><i class="fas fa-file-code"></i> 代码规模深度</h4>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        <div><span class="badge-stat">总文件</span> <strong id="codeTotalFiles">—</strong> 个 &nbsp;|&nbsp; <span class="badge-stat">非空行</span> <strong id="codeNonEmptyLines">—</strong></div>
+                        <div><span class="badge-stat">总大小</span> <strong id="codeTotalSize">—</strong> KB &nbsp;|&nbsp; <span class="badge-stat">最多扩展名</span> <strong id="codeTopExt">—</strong></div>
+                        <hr>
+                        <div style="font-size:0.85rem;">每个扩展名平均行数排行:</div>
+                        <div id="extAvgLinesList" style="font-size:0.75rem; margin-top: 4px;"></div>
+                    </div>
+                </div>
+                <div class="extra-card">
+                    <h4><i class="fas fa-user-pen"></i> 创作活跃度</h4>
+                    <div style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: space-between;">
+                        <div><span class="badge-stat">文章作者</span><br><strong id="authorCount">—</strong></div>
+                        <div><span class="badge-stat">最近更新月份</span><br><strong id="lastActiveMonth">—</strong></div>
+                        <div><span class="badge-stat">总更新天数</span><br><strong id="totalUpdateDays">—</strong></div>
+                    </div>
+                    <div style="margin-top: 12px;">
+                        <div class="badge-stat">最活跃月份 · 文章数</div>
+                        <strong id="peakMonthLabel">—</strong>
+                    </div>
+                </div>
+                <div class="extra-card">
+                    <h4><i class="fas fa-info-circle"></i> 数据版本快照</h4>
+                    <div><span class="badge-stat">站点版本</span> <strong id="versionNumber">—</strong> <span id="statsUpdatedDate" style="font-size:0.7rem;"></span></div>
+                    <div><span class="badge-stat">数据快照</span> <span id="snapshotTime">—</span></div>
+                    <div style="margin-top: 10px;"><i class="fas fa-database"></i> 统计基于 <strong id="totalArticlesStat">—</strong> 篇文章 · <strong id="totalWorksStat">—</strong> 个作品</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <button id="backToTopBtn" class="back-to-top-btn" title="返回顶部">↑</button>
+    <div id="pageTransition" class="page-transition"></div>
+
+    <!-- 引入通用脚本（导航栏、主题、页脚等）与统计专用脚本 -->
+    <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>
+    <script src="/js/busuanzi.min.js" defer></script>
+    <script src="/js/main.js" type="module"></script>
+    <script type="module" src="/js/stats-manager.js"></script>
+</body>
+</html>
