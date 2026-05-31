@@ -7,6 +7,46 @@
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/friends.css">
     <link rel="stylesheet" href="/css/twikoo.css">
+    <style>
+        /* 头像加载优化样式 */
+        .avatar-wrapper {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .avatar-placeholder {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: white;
+            background: var(--accent-color);
+        }
+        
+        .avatar-img {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        
+        /* 兼容旧版样式 */
+        .friend-avatar {
+            width: 60px;
+            height: 60px;
+            flex-shrink: 0;
+        }
+    </style>
 </head>
 <body>
 
@@ -23,24 +63,40 @@
                 <p style="margin-bottom: 8px;">「 志合者，不以山海为远 」欢迎互访交流</p>
 
                 <div id="friends-stats-area" class="friends-stats">共 2 位小伙伴 · 点击卡片访问友站</div><div class="friends-grid" id="friends-list-container-inner">
-      <a href="https://blog.tianhw.top" class="friend-card" target="_blank" rel="noopener noreferrer">
-        <div class="friend-avatar"><img src="https://image.tianhw.top/avatar.webp" alt="THW’s Blog的头像" loading="lazy" onerror="this.onerror=null; this.parentElement.innerHTML = '<div class='avatar-placeholder' style='background: var(--accent-color);'>T</div>';"></div>
-        <div class="friend-info">
-          <h3 class="friend-name">THW’s Blog</h3>
-          <p class="friend-desc">前途似海，来日方长</p>
-          <div class="friend-url">blog.tianhw.top</div>
-        </div>
-      </a>
-    
-      <a href="https://llds.cloud" class="friend-card" target="_blank" rel="noopener noreferrer">
-        <div class="friend-avatar"><img src="https://llds.cloud/lsang.png" alt="LsAng的头像" loading="lazy" onerror="this.onerror=null; this.parentElement.innerHTML = '<div class='avatar-placeholder' style='background: var(--accent-color);'>L</div>';"></div>
-        <div class="friend-info">
-          <h3 class="friend-name">LsAng</h3>
-          <p class="friend-desc">学习、探索中</p>
-          <div class="friend-url">llds.cloud</div>
-        </div>
-      </a>
-    </div>
+                    <a href="https://blog.tianhw.top" class="friend-card" target="_blank" rel="noopener noreferrer">
+                        <div class="friend-avatar">
+                    <div class="avatar-wrapper">
+                        <div class="avatar-placeholder" style="background: var(--accent-color);">T</div>
+                        <img class="avatar-img" src="https://image.tianhw.top/avatar.webp" alt="THW’s Blog的头像" 
+                             loading="lazy" 
+                             onload="this.style.opacity='1'; this.previousElementSibling.style.display='none';"
+                             onerror="this.style.display='none'; this.previousElementSibling.style.display='flex';">
+                    </div>
+                    </div>
+                        <div class="friend-info">
+                            <h3 class="friend-name">THW’s Blog</h3>
+                            <p class="friend-desc">前途似海，来日方长</p>
+                            <div class="friend-url">blog.tianhw.top</div>
+                        </div>
+                    </a>
+                
+                    <a href="https://llds.cloud" class="friend-card" target="_blank" rel="noopener noreferrer">
+                        <div class="friend-avatar">
+                    <div class="avatar-wrapper">
+                        <div class="avatar-placeholder" style="background: var(--accent-color);">L</div>
+                        <img class="avatar-img" src="https://llds.cloud/lsang.png" alt="LsAng的头像" 
+                             loading="lazy" 
+                             onload="this.style.opacity='1'; this.previousElementSibling.style.display='none';"
+                             onerror="this.style.display='none'; this.previousElementSibling.style.display='flex';">
+                    </div>
+                    </div>
+                        <div class="friend-info">
+                            <h3 class="friend-name">LsAng</h3>
+                            <p class="friend-desc">学习、探索中</p>
+                            <div class="friend-url">llds.cloud</div>
+                        </div>
+                    </a>
+                </div>
 
                 <div class="info-card">
                     <div class="info-title">友情提示</div>
@@ -78,7 +134,7 @@
     "name": "高新炀的小站",
     "link": "https://xinyang-gao.github.io",
     "desc": "一个装着些稀奇古怪东西的个人小站，欢迎来逛逛~",
-    "avatar": "https://xinyang-gao.github.io/assets/avatar.webp"
+    "avatar": "https://xinyang-gao.github.io/avatar.webp"
 }</code></pre>
                         </div>
                     </div>

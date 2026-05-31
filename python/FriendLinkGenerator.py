@@ -47,6 +47,7 @@ def get_avatar_initial(name: str) -> str:
     if not name:
         return "?"
     first_char = name.strip()[0].upper()
+    # 如果是中文，直接返回，否则返回大写字母
     return first_char
 
 def get_display_url(link: str) -> str:
@@ -66,7 +67,7 @@ def get_display_url(link: str) -> str:
         cleaned = raw.replace("https://", "").replace("http://", "").replace("www.", "").split("/")[0]
         return cleaned or ""
 
-# ========== 生成友链卡片 HTML（修复转义）==========
+# ========== 生成友链卡片 HTML（头像加载失败/缓慢显示占位）==========
 def render_friends_cards(friends_list: list) -> str:
     if not friends_list:
         return '<div class="friends-empty"><p>暂无友链数据，期待新的朋友～</p><p style="font-size:0.85rem; margin-top:12px;">您可以成为第一个友链！</p></div>'
@@ -84,28 +85,40 @@ def render_friends_cards(friends_list: list) -> str:
         link = escape(friend.get("link", "#"))
         desc = escape(friend.get("desc", "暂无简介"))
         avatar_url = friend.get("avatar", "")
-        has_avatar = avatar_url and (avatar_url.startswith("http") or avatar_url.startswith("/"))
         initial = get_avatar_initial(name)
-
+        
+        # 检查是否有有效的头像URL
+        has_avatar = avatar_url and (avatar_url.startswith("http") or avatar_url.startswith("/"))
+        
         if has_avatar:
-            # 修复 onerror 中的引号：使用双引号包裹整个 onerror 属性值，内部字符串用单引号
-            avatar_content = f'''<img src="{escape(avatar_url)}" alt="{name}的头像" loading="lazy" onerror="this.onerror=null; this.parentElement.innerHTML = '<div class=\'avatar-placeholder\' style=\'background: var(--accent-color);\'>{initial}</div>';">'''
+            # 使用 avatar-wrapper 包裹占位符和图片
+            # 图片加载成功后隐藏占位符，加载失败则隐藏图片显示占位符
+            avatar_html = f'''
+                    <div class="avatar-wrapper">
+                        <div class="avatar-placeholder" style="background: var(--accent-color);">{initial}</div>
+                        <img class="avatar-img" src="{escape(avatar_url)}" alt="{name}的头像" 
+                             loading="lazy" 
+                             onload="this.style.opacity='1'; this.previousElementSibling.style.display='none';"
+                             onerror="this.style.display='none'; this.previousElementSibling.style.display='flex';">
+                    </div>
+                    '''
         else:
-            avatar_content = f'<div class="avatar-placeholder">{initial}</div>'
+            # 没有头像URL，只显示占位符
+            avatar_html = f'<div class="avatar-wrapper"><div class="avatar-placeholder" style="background: var(--accent-color);">{initial}</div></div>'
 
         display_url = get_display_url(friend.get("link", ""))
         url_section = f'<div class="friend-url">{escape(display_url)}</div>' if display_url else ""
 
         cards_html += f'''
-      <a href="{link}" class="friend-card" target="_blank" rel="noopener noreferrer">
-        <div class="friend-avatar">{avatar_content}</div>
-        <div class="friend-info">
-          <h3 class="friend-name">{name}</h3>
-          <p class="friend-desc">{desc}</p>
-          {url_section}
-        </div>
-      </a>
-    '''
+                    <a href="{link}" class="friend-card" target="_blank" rel="noopener noreferrer">
+                        <div class="friend-avatar">{avatar_html}</div>
+                        <div class="friend-info">
+                            <h3 class="friend-name">{name}</h3>
+                            <p class="friend-desc">{desc}</p>
+                            {url_section}
+                        </div>
+                    </a>
+                '''
     cards_html += '</div>'
     return stats_html + cards_html
 
@@ -120,6 +133,46 @@ def generate_html(cards_html: str) -> str:
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/friends.css">
     <link rel="stylesheet" href="/css/twikoo.css">
+    <style>
+        /* 头像加载优化样式 */
+        .avatar-wrapper {{
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }}
+        
+        .avatar-placeholder {{
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: white;
+            background: var(--accent-color);
+        }}
+        
+        .avatar-img {{
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }}
+        
+        /* 兼容旧版样式 */
+        .friend-avatar {{
+            width: 60px;
+            height: 60px;
+            flex-shrink: 0;
+        }}
+    </style>
 </head>
 <body>
 
@@ -173,7 +226,7 @@ def generate_html(cards_html: str) -> str:
     "name": "高新炀的小站",
     "link": "https://xinyang-gao.github.io",
     "desc": "一个装着些稀奇古怪东西的个人小站，欢迎来逛逛~",
-    "avatar": "https://xinyang-gao.github.io/assets/avatar.webp"
+    "avatar": "https://xinyang-gao.github.io/avatar.webp"
 }}</code></pre>
                         </div>
                     </div>
@@ -211,7 +264,7 @@ def generate_html(cards_html: str) -> str:
 # ========== 主函数 ==========
 def main():
     print("=" * 60)
-    log_info("友链页面生成器启动")
+    log_info("友链页面生成器启动（服务端渲染卡片，头像加载优化）")
     print("=" * 60)
 
     friends = load_friends_data()
@@ -227,7 +280,7 @@ def main():
         log_error(f"写入 HTML 失败: {e}")
         sys.exit(1)
 
-    log_info("友链页面生成器完成")
+    log_info("友链页面生成器完成（头像已优化：网络缓慢/加载失败时显示占位符）")
 
 if __name__ == "__main__":
     main()
