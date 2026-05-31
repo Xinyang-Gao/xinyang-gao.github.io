@@ -27,7 +27,7 @@
             </div>
             <div class="meta-item" data-label="最后更新">
                 <i class="fas fa-edit"></i>
-                <span class="meta-value">2026年05月30日</span>
+                <span class="meta-value">2026年05月31日</span>
             </div>
             <div class="meta-item" data-label="作者">
                 <i class="fas fa-user"></i>
@@ -39,11 +39,11 @@
             </div>
             <div class="meta-item" data-label="字数">
                 <i class="fas fa-file-alt"></i>
-                <span class="meta-value">16127</span>
+                <span class="meta-value">17578</span>
             </div>
             <div class="meta-item" data-label="阅读时间">
                 <i class="fas fa-clock"></i>
-                <span class="meta-value">54分钟</span>
+                <span class="meta-value">59分钟</span>
             </div>
             <div class="meta-item" data-label="访客数">
                 <i class="fas fa-users"></i>
@@ -55,240 +55,147 @@
             </div>
             <div class="meta-item" data-label="修订次数">
                 <i class="fas fa-code-branch"></i>
-                <span class="meta-value">153</span>
+                <span class="meta-value">155</span>
             </div></div></div>
-                <div class="article-body" id="articleBody"><h2 id="v788-2026年5月30日">V7.8.8 (2026年5月30日)</h2>
+                <div class="article-body" id="articleBody"><h2 id="v789-2026-05-31">V7.8.9 (2026-05-31)</h2>
 <ul>
-<li><strong>chore</strong><ul>
-<li>更新 twikoo 版本 （1.7.9 -&gt; 1.7.11）</li>
+<li><strong>revert</strong>: 回滚 V7.8.7 的更改</li>
+<li><strong>docs</strong>: 规范更新日志格式</li>
 </ul>
-</li>
-</ul>
-<h2 id="v787-2026年5月28日">V7.8.7 (2026年5月28日)</h2>
+<h2 id="v788-2026-05-30">V7.8.8 (2026-05-30)</h2>
 <ul>
-<li><strong>feat</strong><ul>
-<li>非移动端文章查看页若无目录则不显示目录栏</li>
+<li><strong>chore</strong>: 更新 twikoo 版本（1.7.9 -&gt; 1.7.11）</li>
 </ul>
-</li>
-</ul>
-<h2 id="v786-2026年5月28日">V7.8.6 (2026年5月28日)</h2>
+<h2 id="v787-2026-05-28-在-v789-回滚"><del>V7.8.7 (2026-05-28)</del> [在 V7.8.9 回滚]</h2>
 <ul>
-<li><strong>fix</strong><ul>
-<li>使背景图片的过渡效果保持连贯</li>
+<li><strong>feat</strong>: 文章查看页若无目录则不显示目录栏或目录按钮</li>
 </ul>
-</li>
-</ul>
-<h2 id="v785-2026年5月27日">V7.8.5 (2026年5月27日)</h2>
+<h2 id="v786-2026-05-28">V7.8.6 (2026-05-28)</h2>
 <ul>
-<li><strong>refactor</strong><ul>
-<li>模块化 <code>friends.js</code></li>
+<li><strong>fix</strong>: 使背景图片的过渡效果保持连贯</li>
 </ul>
-</li>
-<li><strong>perf</strong><ul>
-<li>统一工具函数，消除代码重复</li>
-</ul>
-</li>
-</ul>
-<h2 id="v784-2026年5月27日">V7.8.4 (2026年5月27日)</h2>
+<h2 id="v785-2026-05-27">V7.8.5 (2026-05-27)</h2>
 <ul>
-<li><strong>feat</strong><ul>
-<li>实现页面生命周期管理与资源销毁<ul>
-<li>为每个页面类型（文章、作品、归档、首页等）定义统一的页面管理器接口，包含 <code>init()</code> 和 <code>destroy()</code> 方法  </li>
-<li>在 <code>fetchAndReplaceContent</code> 切换页面时，调用当前页面管理器的 <code>destroy()</code> 方法，清理定时器、事件监听、IntersectionObserver 等  </li>
-<li>将 <code>ArticlePageManager</code>、<code>SearchController</code> 等实例挂载到 <code>window.__currentPageManager</code> 并统一管理  </li>
+<li><strong>refactor</strong>: 模块化 <code>friends.js</code></li>
+<li><strong>perf</strong>: 统一工具函数，消除代码重复</li>
+</ul>
+<h2 id="v784-2026-05-27">V7.8.4 (2026-05-27)</h2>
+<ul>
+<li><strong>feat</strong>: 实现页面生命周期管理与资源销毁<ul>
+<li>为每个页面类型（文章、作品、归档、首页等）定义统一的页面管理器接口，包含 <code>init()</code> 和 <code>destroy()</code> 方法</li>
+<li>在 <code>fetchAndReplaceContent</code> 切换页面时，调用当前页面管理器的 <code>destroy()</code> 方法，清理定时器、事件监听、IntersectionObserver 等</li>
+<li>将 <code>ArticlePageManager</code>、<code>SearchController</code> 等实例挂载到 <code>window.__currentPageManager</code> 并统一管理</li>
 <li>避免页面切换后残留事件和内存泄漏</li>
 </ul>
 </li>
+<li><strong>fix</strong>: 从文章查看页切换到其他页面时，文章查看页不会被销毁</li>
 </ul>
-</li>
-<li><strong>fix</strong><ul>
-<li>从文章查看页切换到其他页面时，文章查看页不会被销毁</li>
-</ul>
-</li>
-</ul>
-<h2 id="v783-2026年5月17日">V7.8.3 (2026年5月17日)</h2>
+<h2 id="v783-2026-05-17">V7.8.3 (2026-05-17)</h2>
 <ul>
-<li><strong>feat</strong><ul>
-<li>添加背景显示动画</li>
-<li>其他样式优化</li>
+<li><strong>feat</strong>: 添加背景显示动画</li>
+<li><strong>style</strong>: 其他样式优化</li>
 </ul>
-</li>
-</ul>
-<h2 id="v782-2026年5月17日">V7.8.2 (2026年5月17日)</h2>
+<h2 id="v782-2026-05-17">V7.8.2 (2026-05-17)</h2>
 <ul>
-<li><strong>fix</strong><ul>
-<li>无刷新导航后，页面若无特殊记录则自动返回顶部</li>
+<li><strong>fix</strong>: 无刷新导航后，页面若无特殊记录则自动返回顶部</li>
 </ul>
-</li>
-</ul>
-<h2 id="v781-2026年5月17日">V7.8.1 (2026年5月17日)</h2>
+<h2 id="v781-2026-05-17">V7.8.1 (2026-05-17)</h2>
 <ul>
-<li><strong>fix</strong><ul>
-<li>修复在 归档页 跳转作品使用无刷新导航的 BUG</li>
+<li><strong>fix</strong>: 修复在归档页跳转作品使用无刷新导航的 BUG</li>
 </ul>
-</li>
-</ul>
-<h2 id="v780-2026年5月17日">V7.8.0 (2026年5月17日)</h2>
+<h2 id="v780-2026-05-17">V7.8.0 (2026-05-17)</h2>
 <ul>
-<li><strong>feat</strong><ul>
-<li>支持切换 查看文章页 时的无刷新导航</li>
-<li>将大部分跳转改为无刷新导航</li>
+<li><strong>feat</strong>: 支持切换查看文章页时的无刷新导航</li>
+<li><strong>feat</strong>: 将大部分跳转改为无刷新导航</li>
 </ul>
-</li>
-</ul>
-<h2 id="v772-2026年5月16日">V7.7.2 (2026年5月16日)</h2>
+<h2 id="v772-2026-05-16">V7.7.2 (2026-05-16)</h2>
 <ul>
-<li><strong>style</strong><ul>
-<li>统一作品代码缩进</li>
+<li><strong>style</strong>: 统一作品代码缩进</li>
 </ul>
-</li>
-</ul>
-<h2 id="v771-2026年5月16日">V7.7.1 (2026年5月16日)</h2>
+<h2 id="v771-2026-05-16">V7.7.1 (2026-05-16)</h2>
 <ul>
-<li><strong>perf</strong><ul>
-<li>优化无刷新导航性能</li>
+<li><strong>perf</strong>: 优化无刷新导航性能</li>
 </ul>
-</li>
-</ul>
-<h2 id="v770-2026年5月16日">V7.7.0 (2026年5月16日)</h2>
+<h2 id="v770-2026-05-16">V7.7.0 (2026-05-16)</h2>
 <ul>
-<li><strong>feat</strong><ul>
-<li>新增 归档 页面</li>
+<li><strong>feat</strong>: 新增归档页面</li>
 </ul>
-</li>
-</ul>
-<h2 id="v7610-2026年5月16日">V7.6.10 (2026年5月16日)</h2>
+<h2 id="v7610-2026-05-16">V7.6.10 (2026-05-16)</h2>
 <ul>
-<li><strong>feat</strong><ul>
-<li><code>index.html</code><ul>
-<li>首页统计卡片区域新增展示：<ul>
+<li><strong>feat</strong>: <code>index.html</code> 首页统计卡片区域新增展示：<ul>
 <li>文章分类数</li>
 <li>文章标签数</li>
 <li>作品标签数</li>
 </ul>
 </li>
-<li>删除 <code>最近更新</code> 板块，因为功能重复</li>
+<li><strong>feat</strong>: 删除“最近更新”板块，因为功能重复</li>
 </ul>
-</li>
-</ul>
-</li>
-</ul>
-<h2 id="v769-2026年5月16日">V7.6.9 (2026年5月16日)</h2>
+<h2 id="v769-2026-05-16">V7.6.9 (2026-05-16)</h2>
 <ul>
-<li><strong>perf</strong><ul>
-<li>分离 <code>friends.html</code> 中的 JS 代码</li>
+<li><strong>perf</strong>: 分离 <code>friends.html</code> 中的 JS 代码</li>
 </ul>
-</li>
-</ul>
-<h2 id="v768-2026年5月16日">V7.6.8 (2026年5月16日)</h2>
+<h2 id="v768-2026-05-16">V7.6.8 (2026-05-16)</h2>
 <ul>
-<li><strong>chore</strong><ul>
-<li>维护作品<ul>
-<li>对一些作品进行修改以同步近来的网站代码</li>
+<li><strong>chore</strong>: 维护作品——对一些作品进行修改以同步近来的网站代码</li>
 </ul>
-</li>
-</ul>
-</li>
-</ul>
-<h2 id="v767-2026年5月16日">V7.6.7 (2026年5月16日)</h2>
+<h2 id="v767-2026-05-16">V7.6.7 (2026-05-16)</h2>
 <ul>
-<li><strong>feat</strong><ul>
-<li>优化 Python 构建脚本<ul>
+<li><strong>feat</strong>: 优化 Python 构建脚本<ul>
 <li>给 <code>Run.py</code> 新增 GUI</li>
 <li>统一 <code>SitemapGenerator.py</code> 的输出</li>
 </ul>
 </li>
 </ul>
-</li>
-</ul>
-<h2 id="v766-2026年5月16日">V7.6.6 (2026年5月16日)</h2>
+<h2 id="v766-2026-05-16">V7.6.6 (2026-05-16)</h2>
 <ul>
-<li><strong>perf</strong><ul>
-<li>进一步模块化 JS</li>
+<li><strong>perf</strong>: 进一步模块化 JS</li>
 </ul>
-</li>
-</ul>
-<h2 id="v765-2026年5月15日">V7.6.5 (2026年5月15日)</h2>
+<h2 id="v765-2026-05-15">V7.6.5 (2026-05-15)</h2>
 <ul>
-<li><strong>perf</strong><ul>
-<li>优化导航栏显示<ul>
-<li>宽度不再动态变化</li>
+<li><strong>perf</strong>: 优化导航栏显示——宽度不再动态变化</li>
 </ul>
-</li>
-</ul>
-</li>
-</ul>
-<h2 id="v764-2026年5月15日">V7.6.4 (2026年5月15日)</h2>
+<h2 id="v764-2026-05-15">V7.6.4 (2026-05-15)</h2>
 <ul>
-<li><strong>refactor</strong><ul>
-<li>重构 <code>404.html</code></li>
+<li><strong>refactor</strong>: 重构 <code>404.html</code></li>
 </ul>
-</li>
-</ul>
-<h2 id="v763-2026年5月13日">V7.6.3 (2026年5月13日)</h2>
+<h2 id="v763-2026-05-13">V7.6.3 (2026-05-13)</h2>
 <ul>
-<li><strong>chore</strong><ul>
-<li>改文章列表的 按更新时间降序 为 按发布时间降序</li>
+<li><strong>chore</strong>: 改文章列表的按更新时间降序为按发布时间降序</li>
 </ul>
-</li>
-</ul>
-<h2 id="v762-2026年5月13日">V7.6.2 (2026年5月13日)</h2>
+<h2 id="v762-2026-05-13">V7.6.2 (2026-05-13)</h2>
 <ul>
-<li><strong>perf</strong><ul>
-<li>删除页脚冗余 js 代码</li>
+<li><strong>perf</strong>: 删除页脚冗余 js 代码</li>
+<li><strong>fix</strong>: 修复列表项可以点击但不显示的问题</li>
 </ul>
-</li>
-<li><strong>fix</strong><ul>
-<li>修复列表项可以点击但不显示的问题</li>
-</ul>
-</li>
-</ul>
-<h2 id="v761-2026年5月12日">V7.6.1 (2026年5月12日)</h2>
+<h2 id="v761-2026-05-12">V7.6.1 (2026-05-12)</h2>
 <ul>
-<li><strong>fix</strong><ul>
-<li>修复 Twikoo 输入框暗色主题显示异常的问题</li>
+<li><strong>fix</strong>: 修复 Twikoo 输入框暗色主题显示异常的问题</li>
 </ul>
-</li>
-</ul>
-<h2 id="v760-2026年5月11日">V7.6.0 (2026年5月11日)</h2>
+<h2 id="v760-2026-05-11">V7.6.0 (2026-05-11)</h2>
 <ul>
-<li><strong>feat</strong><ul>
-<li>新增<a href="https://xinyang-gao.github.io/settings.html">网站设置页面</a><ul>
+<li><strong>feat</strong>: 新增<a href="https://xinyang-gao.github.io/settings.html">网站设置页面</a><ul>
 <li>自定义鼠标设置</li>
 <li>外链弹窗设置</li>
 <li>清除 cookie</li>
 </ul>
 </li>
+<li><strong>fix</strong>: 修复页脚无法正确获取不蒜子数据的 BUG</li>
+<li><strong>fix</strong>: 对页脚进行一点小修改</li>
 </ul>
-</li>
-<li><strong>fix</strong><ul>
-<li>修复页脚无法正确获取 不蒜子 数据的 BUG</li>
-<li>对页脚进行一点小修改</li>
-</ul>
-</li>
-</ul>
-<h2 id="v750-2026年5月10日">V7.5.0 (2026年5月10日)</h2>
+<h2 id="v750-2026-05-10">V7.5.0 (2026-05-10)</h2>
 <ul>
-<li><strong>feat</strong><ul>
-<li>在页面没有选中导航栏时显示页面标题</li>
+<li><strong>feat</strong>: 在页面没有选中导航栏时显示页面标题</li>
 </ul>
-</li>
-</ul>
-<h2 id="v741-2026年5月10日">V7.4.1 (2026年5月10日)</h2>
+<h2 id="v741-2026-05-10">V7.4.1 (2026-05-10)</h2>
 <ul>
-<li><strong>chore</strong><ul>
-<li>不再在 RSS 中包含作品数据</li>
+<li><strong>chore</strong>: 不再在 RSS 中包含作品数据</li>
+<li><strong>fix</strong>: 修复 <code>robots.txt</code> 中的错误</li>
 </ul>
-</li>
-<li><strong>fix</strong><ul>
-<li>修复 <code>robots.txt</code> 中的错误</li>
-</ul>
-</li>
-</ul>
-<h1 id="v740-2026年5月10日">V7.4.0 (2026年5月10日)</h1>
+<h2 id="v740-2026-05-10">V7.4.0 (2026-05-10)</h2>
 <ul>
-<li><strong>refactor</strong><ul>
-<li>拆分 <code>script.js</code> ，方便管理并优化加载速度<ul>
+<li>
+<p><strong>refactor</strong>: 拆分 <code>script.js</code>，方便管理并优化加载速度</p>
+<ul>
 <li>Core同步加载：core.js 包含基础工具和存储控制，通过 type="module" 同步导入。</li>
 <li>按需加载：search-render.js 仅在进入文章/作品页面时通过 import() 动态加载。</li>
 <li>空闲时初始化：ui-effects.js 使用 requestIdleCallback 延迟初始化自定义光标、外链管理等非关键特效。</li>
@@ -296,62 +203,47 @@
 <li>精简DOMContentLoaded：仅执行加载导航/页脚、应用主题、启动空闲任务；页面内容初始化通过 initPageFeatures 按需处理。</li>
 <li>Service Worker预加载：sw.js 预缓存 works.json、articles.json 等关键JSON。</li>
 </ul>
-</li>
-</ul>
-</li>
-</ul>
-<pre class="codehilite"><code class="language-文件结构">/js/
+<p>文件结构：
+<code>/js/
 ├── core.js           # 核心模块：CONFIG, Utils, StorageController, CookieConsentManager, PerformanceMonitor
 ├── searchWorker.js   # Web Worker：数据过滤、排序、标签提取
 ├── search-render.js  # 按需加载模块：DataManager, UIRenderer, SearchController
 ├── ui-effects.js     # UI特效模块：CustomCursor, ExternalLinkManager, ScrollReveal
 ├── main.js           # 主入口：导航/页脚加载、主题应用、空闲任务调度、页面初始化
-├── sw.js             # Service Worker：预加载关键JSON
-</code></pre>
-
-<h2 id="v7311-2026年5月8日">V7.3.11 (2026年5月8日)</h2>
-<ul>
-<li>更新 Twikoo 版本 (1.7.7 -&gt; 1.7.9)</li>
-</ul>
-<h2 id="v7310-2026年5月8日">V7.3.10 (2026年5月8日)</h2>
-<ul>
-<li><strong>优化</strong><ul>
-<li>修复未同意 cookie 时点击同意无法保存已同意状态的 BUG</li>
-<li>优化了 <code>script.js</code> 中的一些代码</li>
-</ul>
+├── sw.js             # Service Worker：预加载关键JSON</code></p>
 </li>
 </ul>
-<h2 id="v739-2026年5月8日">V7.3.9 (2026年5月8日)</h2>
+<h2 id="v7311-2026-05-08">V7.3.11 (2026-05-08)</h2>
 <ul>
-<li><strong>优化</strong><ul>
-<li>将 <code>avatar.jpg</code> 转换为 <code>avatar.webp</code> 格式，压缩近一半体积</li>
+<li><strong>chore</strong>: 更新 Twikoo 版本（1.7.7 -&gt; 1.7.9）</li>
 </ul>
-</li>
-</ul>
-<h2 id="v738-2026年5月8日">V7.3.8 (2026年5月8日)</h2>
+<h2 id="v7310-2026-05-08">V7.3.10 (2026-05-08)</h2>
 <ul>
-<li><strong>优化</strong><ul>
-<li>将 CSS font-awesome 依赖改为使用 javascript Font Awesome Kit</li>
-<li>删除 <code>article.js</code> 中对 Mermaid 支持的代码遗留</li>
+<li><strong>fix</strong>: 修复未同意 cookie 时点击同意无法保存已同意状态的 BUG</li>
+<li><strong>refactor</strong>: 优化了 <code>script.js</code> 中的一些代码</li>
 </ul>
-</li>
-</ul>
-<h2 id="v737-2026年5月8日">V7.3.7 (2026年5月8日)</h2>
+<h2 id="v739-2026-05-08">V7.3.9 (2026-05-08)</h2>
 <ul>
-<li><strong>优化</strong> (<code>script.js</code>)<ul>
-<li>删除数学公式和 Mermaid 渲染逻辑，无用</li>
+<li><strong>chore</strong>: 将 <code>avatar.jpg</code> 转换为 <code>avatar.webp</code> 格式，压缩近一半体积</li>
 </ul>
-</li>
-<li><strong>优化</strong> (<code>article.js</code>)<ul>
+<h2 id="v738-2026-05-08">V7.3.8 (2026-05-08)</h2>
+<ul>
+<li><strong>chore</strong>: 将 CSS font-awesome 依赖改为使用 javascript Font Awesome Kit</li>
+<li><strong>chore</strong>: 删除 <code>article.js</code> 中对 Mermaid 支持的代码遗留</li>
+</ul>
+<h2 id="v737-2026-05-08">V7.3.7 (2026-05-08)</h2>
+<ul>
+<li><strong>perf</strong> (<code>script.js</code>): 删除数学公式和 Mermaid 渲染逻辑，无用</li>
+<li><strong>perf</strong> (<code>article.js</code>):<ul>
 <li>滚动位置保存逻辑重构，优化性能</li>
 <li>移动端支持点击空白处关闭目录</li>
 <li>其他小修改</li>
 </ul>
 </li>
 </ul>
-<h2 id="v736-2026年5月8日">V7.3.6 (2026年5月8日)</h2>
+<h2 id="v736-2026-05-08">V7.3.6 (2026-05-08)</h2>
 <ul>
-<li><strong>优化</strong> (<code>script.js</code>)<ul>
+<li><strong>perf</strong> (<code>script.js</code>):<ul>
 <li>新增 <code>NavigationLifecycleManager</code> 类来管理所有与DOM相关的实例</li>
 <li>在导航前清理所有相关事件监听器，防止内存泄漏</li>
 <li>删除了 STORAGE_ENABLED 键，统一依靠 COOKIE_CONSENT 进行存储控制</li>
@@ -360,17 +252,17 @@
 </ul>
 </li>
 </ul>
-<h2 id="v735-2026年5月7日">V7.3.5 (2026年5月7日)</h2>
+<h2 id="v735-2026-05-07">V7.3.5 (2026-05-07)</h2>
 <ul>
-<li><strong>优化</strong> (<code>script.js</code>)<ul>
-<li>删除实际未被主流程使用的 <code>fetchPageContent</code> 和 <code>replaceContainerContent</code> （尝试加载远程页面、SPA 模式代码遗留）</li>
+<li><strong>perf</strong> (<code>script.js</code>):<ul>
+<li>删除实际未被主流程使用的 <code>fetchPageContent</code> 和 <code>replaceContainerContent</code>（尝试加载远程页面、SPA 模式代码遗留）</li>
 <li>修复 <code>getCachedData</code> 直接从 <code>localStorage</code> 读取，没有统一通过 <code>DataManager</code> 的 BUG</li>
 </ul>
 </li>
 </ul>
-<h2 id="v734-2026年5月7日">V7.3.4 (2026年5月7日)</h2>
+<h2 id="v734-2026-05-07">V7.3.4 (2026-05-07)</h2>
 <ul>
-<li><strong>优化</strong> (<code>script.js</code>)<ul>
+<li><strong>perf</strong> (<code>script.js</code>):<ul>
 <li>统一事件委托：对于动态内容的点击（列表项、导航链接）全部采用 document 委托，减少重复绑定</li>
 <li>优化脚本执行：将第三方库（KaTeX、Mermaid、Twikoo）预加载，不在 AJAX 切换时重复初始化</li>
 <li>移除冗余全局函数：将 <code>updateDynamicGreeting</code> 等函数保持为全局可用，但组织得更清晰</li>
@@ -381,42 +273,32 @@
 </ul>
 </li>
 </ul>
-<h2 id="v733-2026年5月7日">V7.3.3 (2026年5月7日)</h2>
+<h2 id="v733-2026-05-07">V7.3.3 (2026-05-07)</h2>
 <ul>
-<li><strong>优化</strong> (<code>script.js</code>)<ul>
+<li><strong>perf</strong> (<code>script.js</code>):<ul>
 <li>解决重复绑定事件的问题：在 <code>fetchAndReplaceContent</code> 函数中，添加了防重复加载机制，通过检查脚本 URL 来避免重复加载相同的脚本。</li>
 <li>解决竞态条件问题：在 <code>CookieConsentManager</code> 中，当用户同意 Cookie 时，明确调用 <code>storageController.enableStorage()</code> 来启用存储，确保两个组件之间的状态一致。</li>
-<li>修复重复定义的函数：移除了 <code>UIRenderer</code> 中的 <code>escapeHtml</code> 方法，统一使用 <code>Utils.escapeHtml</code> 。</li>
+<li>修复重复定义的函数：移除了 <code>UIRenderer</code> 中的 <code>escapeHtml</code> 方法，统一使用 <code>Utils.escapeHtml</code>。</li>
 <li>添加图片懒加载功能：新增了 <code>LazyImageLoader</code> 类，使用 <code>IntersectionObserver</code> 实现图片懒加载，提高页面性能。</li>
 </ul>
 </li>
 </ul>
-<h2 id="v732-2026年5月7日">V7.3.2 (2026年5月7日)</h2>
+<h2 id="v732-2026-05-07">V7.3.2 (2026-05-07)</h2>
 <ul>
-<li><strong>新增</strong><ul>
-<li>增加 <code>robots.txt</code></li>
+<li><strong>feat</strong>: 增加 <code>robots.txt</code></li>
 </ul>
-</li>
-</ul>
-<h3 id="v7311-2026年5月6日">V7.3.1.1 (2026年5月6日)</h3>
+<h3 id="v7311-2026-05-06">V7.3.1.1 (2026-05-06)</h3>
 <ul>
-<li><strong>修改</strong><ul>
-<li>修改 <code>favicon.ico</code> ，并修复其格式</li>
+<li><strong>chore</strong>: 修改 <code>favicon.ico</code>，并修复其格式</li>
 </ul>
-</li>
-</ul>
-<h2 id="v731-2026年5月5日">V7.3.1 (2026年5月5日)</h2>
+<h2 id="v731-2026-05-05">V7.3.1 (2026-05-05)</h2>
 <ul>
-<li><strong>修改</strong><ul>
-<li>暂时移除 umami 相关逻辑</li>
-<li>修复一些问题并优化 <code>script.js</code> 代码</li>
+<li><strong>chore</strong>: 暂时移除 umami 相关逻辑</li>
+<li><strong>fix</strong>: 修复一些问题并优化 <code>script.js</code> 代码</li>
 </ul>
-</li>
-</ul>
-<h2 id="v730-2026年5月4日">V7.3.0 (2026年5月4日)</h2>
+<h2 id="v730-2026-05-04">V7.3.0 (2026-05-04)</h2>
 <ul>
-<li><strong>新增</strong><ul>
-<li>Cookies<ul>
+<li><strong>feat</strong>: Cookies 支持<ul>
 <li>新增 StorageController 在最顶部，立即初始化并控制所有本地存储</li>
 <li>所有 localStorage / sessionStorage 读写前均调用 StorageController.isAllowed()</li>
 <li>拒绝 Cookies 时调用 StorageController.clearAllData() 清除已有数据，并禁用后续存储</li>
@@ -425,223 +307,141 @@
 <li>当用户未同意 Cookies 时，浏览器不会留下任何主题、版本、访问时间等记录</li>
 </ul>
 </li>
-<li>隐私政策<ul>
-<li><a href="/privacy.html">查看详情</a></li>
+<li><strong>feat</strong>: 隐私政策 <a href="/privacy.html">查看详情</a></li>
 </ul>
-</li>
-</ul>
-</li>
-</ul>
-<h2 id="v723-2026年5月4日">V7.2.3 (2026年5月4日)</h2>
+<h2 id="v723-2026-05-04">V7.2.3 (2026-05-04)</h2>
 <ul>
-<li><strong>优化</strong><ul>
-<li>将移动端的文章查看器改为可打开的弹窗目录</li>
+<li><strong>perf</strong>: 将移动端的文章查看器改为可打开的弹窗目录</li>
 </ul>
-</li>
-</ul>
-<h2 id="v722-2026年5月4日">V7.2.2 (2026年5月4日)</h2>
+<h2 id="v722-2026-05-04">V7.2.2 (2026-05-04)</h2>
 <ul>
-<li><strong>优化</strong><ul>
-<li>从 <code>friends.html</code> 中分离页脚样式到 <code>friends.css</code></li>
+<li><strong>perf</strong>: 从 <code>friends.html</code> 中分离页脚样式到 <code>friends.css</code></li>
 </ul>
-</li>
-</ul>
-<h3 id="v7213-2026年5月4日">V7.2.1.3 (2026年5月4日)</h3>
+<h3 id="v7213-2026-05-04">V7.2.1.3 (2026-05-04)</h3>
 <ul>
-<li>回退对 <code>.nojekyll</code> 的添加</li>
+<li><strong>revert</strong>: 回退对 <code>.nojekyll</code> 的添加</li>
 </ul>
-<h3 id="v7212-2026年5月4日">V7.2.1.2 (2026年5月4日)</h3>
+<h3 id="v7212-2026-05-04">V7.2.1.2 (2026-05-04)</h3>
 <ul>
-<li>简化 <code>jekyll-gh-pages.yml</code> 工作流</li>
+<li><strong>ci</strong>: 简化 <code>jekyll-gh-pages.yml</code> 工作流</li>
 </ul>
-<h3 id="v7211-2026年5月4日">V7.2.1.1 (2026年5月4日)</h3>
+<h3 id="v7211-2026-05-04">V7.2.1.1 (2026-05-04)</h3>
 <ul>
-<li>回退对 <code>/.github/workflows/jekyll-gh-pages.yml</code> 的删除</li>
+<li><strong>revert</strong>: 回退对 <code>/.github/workflows/jekyll-gh-pages.yml</code> 的删除</li>
 </ul>
-<h2 id="v721-2026年5月4日">V7.2.1 (2026年5月4日)</h2>
+<h2 id="v721-2026-05-04">V7.2.1 (2026-05-04)</h2>
 <ul>
-<li><strong>优化</strong><ul>
-<li>删除历史遗留<del>屎山</del>文件<ul>
+<li><strong>perf</strong>: 删除历史遗留文件<ul>
 <li><code>/_config.yml</code></li>
 <li><code>/.github/workflows/jekyll-gh-pages.yml</code></li>
 </ul>
 </li>
+<li><strong>feat</strong>: 添加 <code>.nojekyll</code> 文件以阻止 Markdown 文件被构建</li>
 </ul>
-</li>
-<li><strong>新增</strong><ul>
-<li>添加 <code>.nojekyll</code> 文件以阻止 Markdown 文件被构建</li>
-</ul>
-</li>
-</ul>
-<h2 id="v720-2026年5月4日">V7.2.0 (2026年5月4日)</h2>
+<h2 id="v720-2026-05-04">V7.2.0 (2026-05-04)</h2>
 <ul>
-<li><strong>新增</strong><ul>
-<li>新增 <code>SitemapGenerator.py</code> 用于生成 <a href="/sitemap.xml"><code>sitemap.xml</code></a></li>
+<li><strong>feat</strong>: 新增 <code>SitemapGenerator.py</code> 用于生成 <a href="/sitemap.xml"><code>sitemap.xml</code></a></li>
 </ul>
-</li>
-</ul>
-<h2 id="v717-2026年5月4日">V7.1.7 (2026年5月4日)</h2>
+<h2 id="v717-2026-05-04">V7.1.7 (2026-05-04)</h2>
 <ul>
-<li><strong>优化</strong><ul>
-<li>从 <code>style.css</code> 和 <code>footer.html</code> 中分离页脚样式到 <code>footer.css</code></li>
-<li>优化 页脚样式</li>
+<li><strong>perf</strong>: 从 <code>style.css</code> 和 <code>footer.html</code> 中分离页脚样式到 <code>footer.css</code></li>
+<li><strong>style</strong>: 优化页脚样式</li>
 </ul>
-</li>
-</ul>
-<h2 id="v716-2026年5月4日">V7.1.6 (2026年5月4日)</h2>
+<h2 id="v716-2026-05-04">V7.1.6 (2026-05-04)</h2>
 <ul>
-<li><strong>修改</strong><ul>
-<li>将 <code>README.md</code> 从 <code>/assets/source/网站/</code> 移至根目录 <code>/</code><ul>
-<li><code>ArticleManager.py</code> 会自动构建</li>
+<li><strong>chore</strong>: 将 <code>README.md</code> 从 <code>/assets/source/网站/</code> 移至根目录 <code>/</code>（<code>ArticleManager.py</code> 会自动构建）</li>
 </ul>
-</li>
-</ul>
-</li>
-</ul>
-<h2 id="v715-2026年5月4日">V7.1.5 (2026年5月4日)</h2>
+<h2 id="v715-2026-05-04">V7.1.5 (2026-05-04)</h2>
 <ul>
-<li><strong>修改</strong><ul>
-<li>修改导航栏样式（灵动岛风格）
-<img alt="导航栏新样式" data-src="https://s41.ax1x.com/2026/05/04/peHAYHe.jpg" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E" class="lazy-image"  />
-<img alt="导航栏旧样式" data-src="https://s41.ax1x.com/2026/05/04/peHANAH.jpg" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E" class="lazy-image"  /></li>
-</ul>
+<li>
+<p><strong>style</strong>: 修改导航栏样式（灵动岛风格）</p>
+<p><img alt="导航栏新样式" data-src="https://s41.ax1x.com/2026/05/04/peHAYHe.jpg" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E" class="lazy-image"  />
+<img alt="导航栏旧样式" data-src="https://s41.ax1x.com/2026/05/04/peHANAH.jpg" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E" class="lazy-image"  /></p>
 </li>
 </ul>
-<h2 id="v714-2026年5月4日">V7.1.4 (2026年5月4日)</h2>
+<h2 id="v714-2026-05-04">V7.1.4 (2026-05-04)</h2>
 <ul>
-<li><strong>优化</strong><ul>
-<li>删除 <code>style.css</code> 中对 twikoo 样式的定义，因为已经在 <code>twikoo.css</code> 中定义</li>
-<li>从 <code>style.css</code> 中分离导航栏样式到 <code>navbar.css</code></li>
+<li><strong>perf</strong>: 删除 <code>style.css</code> 中对 twikoo 样式的定义，因为已经在 <code>twikoo.css</code> 中定义</li>
+<li><strong>perf</strong>: 从 <code>style.css</code> 中分离导航栏样式到 <code>navbar.css</code></li>
 </ul>
-</li>
-</ul>
-<h2 id="v713-2026年5月3日">V7.1.3 (2026年5月3日)</h2>
+<h2 id="v713-2026-05-03">V7.1.3 (2026-05-03)</h2>
 <ul>
-<li><strong>优化</strong><ul>
-<li>优化 <code>欢迎回来</code> 页面的样式</li>
+<li><strong>style</strong>: 优化“欢迎回来”页面的样式</li>
 </ul>
-</li>
-</ul>
-<h2 id="v712-2026年5月3日">V7.1.2 (2026年5月3日)</h2>
+<h2 id="v712-2026-05-03">V7.1.2 (2026-05-03)</h2>
 <ul>
-<li><strong>修改</strong><ul>
-<li>将文章源文件从 <code>/articles/source/</code> 移动到 <code>/assets/source/</code></li>
+<li><strong>chore</strong>: 将文章源文件从 <code>/articles/source/</code> 移动到 <code>/assets/source/</code></li>
 </ul>
-</li>
-</ul>
-<h2 id="v711-2026年5月3日">V7.1.1 (2026年5月3日)</h2>
+<h2 id="v711-2026-05-03">V7.1.1 (2026-05-03)</h2>
 <ul>
-<li><strong>优化</strong><ul>
-<li>删除了 <code>script.js</code> 中遗留的 SPA 切换动画逻辑：<ul>
+<li><strong>perf</strong>: 删除了 <code>script.js</code> 中遗留的 SPA 切换动画逻辑：<ul>
 <li>移除了 <code>PageManager.loadPage</code></li>
 <li>移除了 <code>PageManager.performDrawAnimation</code></li>
 <li>删除了相关的 pageConfig / SPA 页面切换动画代码</li>
 </ul>
 </li>
 </ul>
-</li>
-</ul>
-<h2 id="v710-2026年5月2日">V7.1.0 (2026年5月2日)</h2>
+<h2 id="v710-2026-05-02">V7.1.0 (2026-05-02)</h2>
 <ul>
-<li><strong>新增</strong><ul>
-<li>新增自动主题选择 <code>getTimeBasedTheme()</code><ul>
+<li><strong>feat</strong>: 新增自动主题选择 <code>getTimeBasedTheme()</code><ul>
 <li>6:00–18:00 设为 light；其它时间设为 dark</li>
 <li>主题初始化优先使用用户保存的 <code>localStorage.theme</code>，否则自动按当前时间选择主题</li>
 </ul>
 </li>
+<li><strong>fix</strong>: 不再因 <code>statistics.json</code> 缺少 <code>version</code> 字段而强制设置暗黑主题</li>
 </ul>
-</li>
-<li><strong>修改</strong><ul>
-<li>不再因 <code>statistics.json</code> 缺少 <code>version</code> 字段而强制设置暗黑主题</li>
-</ul>
-</li>
-</ul>
-<h1 id="v700-2026年5月2日">V7.0.0 (2026年5月2日)</h1>
+<h2 id="v700-2026-05-02">V7.0.0 (2026-05-02)</h2>
 <ul>
-<li><strong>重大修改</strong><ul>
-<li>重构主页样式</li>
-<li>重构页脚样式</li>
-</ul>
-</li>
-<li><strong>新增</strong><ul>
-<li>添加网站背景，来源 <code>Bing</code></li>
-<li>新增 <code>欢迎回来</code> 覆盖层（默认超过 5 分钟就显示）</li>
-<li>在 <code>statistics.json</code> 中新增 <code>version</code> 字段<ul>
+<li><strong>refactor</strong>: 重构主页样式</li>
+<li><strong>refactor</strong>: 重构页脚样式</li>
+<li><strong>feat</strong>: 添加网站背景，来源 Bing</li>
+<li><strong>feat</strong>: 新增“欢迎回来”覆盖层（默认超过 5 分钟就显示）</li>
+<li><strong>feat</strong>: 在 <code>statistics.json</code> 中新增 <code>version</code> 字段<ul>
 <li>若缺少 version 字段则强制设置暗黑主题</li>
 </ul>
 </li>
-<li>其他样式小修改</li>
-<li>一些文本修改</li>
+<li><strong>style</strong>: 其他样式小修改</li>
+<li><strong>docs</strong>: 一些文本修改</li>
 </ul>
-</li>
-</ul>
-<h2 id="v682-2026年4月26日">V6.8.2 (2026年4月26日)</h2>
+<h2 id="v682-2026-04-26">V6.8.2 (2026-04-26)</h2>
 <ul>
-<li><strong>修复</strong><ul>
-<li>修复 <code>applyTagsToButtons</code> 方法缺失导致的一些列问题</li>
+<li><strong>fix</strong>: 修复 <code>applyTagsToButtons</code> 方法缺失导致的一系列问题</li>
 </ul>
-</li>
-</ul>
-<h2 id="v681-2026年4月25日">V6.8.1 (2026年4月25日)</h2>
+<h2 id="v681-2026-04-25">V6.8.1 (2026-04-25)</h2>
 <ul>
-<li><strong>优化</strong><ul>
-<li>优化了图片查看器的样式</li>
+<li><strong>perf</strong>: 优化了图片查看器的样式</li>
+<li><strong>feat</strong>: 给图片查看器新增加了旋转、重置按钮</li>
+<li><strong>fix</strong>: 修复了图片查看器重新加载按钮未生效的问题</li>
+<li><strong>feat</strong>: 增加了图片无法加载提示</li>
 </ul>
-</li>
-<li><strong>新增</strong><ul>
-<li>给图片查看器新增加了旋转、重置按钮</li>
-<li>修复了图片查看器重新加载按钮未生效的问题</li>
-<li>增加了图片无法加载提示</li>
-</ul>
-</li>
-</ul>
-<h2 id="v680-2026年4月25日">V6.8.0 (2026年4月25日)</h2>
+<h2 id="v680-2026-04-25">V6.8.0 (2026-04-25)</h2>
 <ul>
-<li><strong>新增</strong><ul>
-<li>在文章列表页新增排序方式，默认为按更新时间降序</li>
-<li>在文章列表页列表项中显示发布时间和更新时间</li>
-<li>其他小修改</li>
+<li><strong>feat</strong>: 在文章列表页新增排序方式，默认为按更新时间降序</li>
+<li><strong>feat</strong>: 在文章列表页列表项中显示发布时间和更新时间</li>
+<li><strong>style</strong>: 其他小修改</li>
 </ul>
-</li>
-</ul>
-<h2 id="v671-2026年4月25日">V6.7.1 (2026年4月25日)</h2>
+<h2 id="v671-2026-04-25">V6.7.1 (2026-04-25)</h2>
 <ul>
-<li><strong>优化</strong><ul>
-<li>修复友链页面评论区不显示的问题</li>
-<li>更新并统一使用的<a href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">图标库</a></li>
+<li><strong>perf</strong>: 修复友链页面评论区不显示的问题</li>
+<li><strong>chore</strong>: 更新并统一使用的<a href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">图标库</a></li>
 </ul>
-</li>
-</ul>
-<h2 id="v670-2026年4月25日">V6.7.0 (2026年4月25日)</h2>
+<h2 id="v670-2026-04-25">V6.7.0 (2026-04-25)</h2>
 <ul>
-<li><strong>优化</strong><ul>
-<li>重写评论区样式</li>
-<li>删除冗余代码</li>
+<li><strong>perf</strong>: 重写评论区样式</li>
+<li><strong>perf</strong>: 删除冗余代码</li>
 </ul>
-</li>
-</ul>
-<h3 id="v6601-2026年4月24日">V6.6.0.1 (2026年4月24日)</h3>
+<h3 id="v6601-2026-04-24">V6.6.0.1 (2026-04-24)</h3>
 <ul>
-<li><strong>修改</strong><ul>
-<li>更新 <code>README.md</code></li>
+<li><strong>docs</strong>: 更新 <code>README.md</code></li>
 </ul>
-</li>
-</ul>
-<h2 id="v660-2026年4月24日">V6.6.0 (2026年4月24日)</h2>
+<h2 id="v660-2026-04-24">V6.6.0 (2026-04-24)</h2>
 <ul>
-<li><strong>新增</strong><ul>
-<li>为文章查看器添加显示上传日期（原本的日期条目）、修改日期、修改次数</li>
+<li><strong>feat</strong>: 为文章查看器添加显示上传日期（原本的日期条目）、修改日期、修改次数</li>
+<li><strong>chore</strong>: 将 <code>avatar.jpg</code> 移动至 <code>/assets/</code> 文件夹下</li>
 </ul>
-</li>
-<li><strong>修改</strong><ul>
-<li>将 <code>avatar.jpg</code> 移动至 <code>/assets/</code> 文件夹下</li>
-</ul>
-</li>
-</ul>
-<h2 id="v650-2026年4月24日">V6.5.0 (2026年4月24日)</h2>
+<h2 id="v650-2026-04-24">V6.5.0 (2026-04-24)</h2>
 <ul>
-<li><strong>重大修改</strong><ul>
-<li>将 python 脚本移动至 <code>/python/</code> 文件夹下，移动文件如下：<ul>
+<li><strong>refactor</strong>: 将 python 脚本移动至 <code>/python/</code> 文件夹下，移动文件如下：<ul>
 <li><code>ArticleManager.py</code></li>
 <li><code>WorkManager.py</code></li>
 <li><code>Statistic.py</code></li>
@@ -649,282 +449,173 @@
 <li><code>run.py</code></li>
 </ul>
 </li>
-<li>将 json 文件移动至 <code>/json/</code> 文件夹下，移动文件如下：<ul>
+<li><strong>refactor</strong>: 将 json 文件移动至 <code>/json/</code> 文件夹下，移动文件如下：<ul>
 <li><code>articles.json</code></li>
 <li><code>works.json</code></li>
 <li><code>friends.json</code></li>
 <li><code>statistics.json</code></li>
 </ul>
 </li>
-<li>修改一些代码中的路径</li>
+<li><strong>perf</strong>: 修改一些代码中的路径</li>
+<li><strong>perf</strong>: 优化 python 脚本的代码，统一格式和输出</li>
+<li><strong>perf</strong>: 优化文章查看页 HTML 页面的结构，删除冗余代码</li>
 </ul>
-</li>
-<li><strong>优化</strong><ul>
-<li>优化 python 脚本的代码，统一格式和输出</li>
-<li>优化文章查看页 HTML 页面的结构，删除冗余代码</li>
-</ul>
-</li>
-</ul>
-<h2 id="v642-2026年4月23日">V6.4.2 (2026年4月23日)</h2>
+<h2 id="v642-2026-04-23">V6.4.2 (2026-04-23)</h2>
 <ul>
-<li><strong>优化</strong><ul>
-<li>优化 <code>网站更新日志.md</code> 的格式</li>
+<li><strong>style</strong>: 优化“网站更新日志.md”的格式</li>
 </ul>
-</li>
-</ul>
-<h2 id="v641-2026年4月23日">V6.4.1 (2026年4月23日)</h2>
+<h2 id="v641-2026-04-23">V6.4.1 (2026-04-23)</h2>
 <ul>
-<li><strong>优化</strong><ul>
-<li>优化页脚样式</li>
+<li><strong>style</strong>: 优化页脚样式</li>
 </ul>
-</li>
-</ul>
-<h2 id="v640-2026年4月23日">V6.4.0 (2026年4月23日)</h2>
+<h2 id="v640-2026-04-23">V6.4.0 (2026-04-23)</h2>
 <ul>
-<li><strong>重大修改</strong><ul>
-<li>将 js 代码移动至 <code>/js/</code> 文件夹，移动文件如下：<ul>
+<li><strong>refactor</strong>: 将 js 代码移动至 <code>/js/</code> 文件夹，移动文件如下：<ul>
 <li><code>script.js</code></li>
 <li><code>article.js</code></li>
 <li><code>busuanzi.min.js</code></li>
 <li><code>image-viewer.js</code> (新增)</li>
 </ul>
 </li>
-<li>将 css 样式移动至 <code>/css/</code> 文件夹，移动文件如下：<ul>
+<li><strong>refactor</strong>: 将 css 样式移动至 <code>/css/</code> 文件夹，移动文件如下：<ul>
 <li><code>style.css</code></li>
 <li><code>article.css</code></li>
 <li><code>image-viewer.css</code> (新增)</li>
 </ul>
 </li>
-<li>分离文章查看页的图片查看器，现在可以全站调用</li>
+<li><strong>feat</strong>: 分离文章查看页的图片查看器，现在可以全站调用</li>
+<li><strong>perf</strong>: 在 <code>404.html</code> 页面的代码引用改为使用绝对路径</li>
 </ul>
-</li>
-<li><strong>优化</strong><ul>
-<li>在 <code>404.html</code> 页面的代码引用改为使用绝对路径</li>
-</ul>
-</li>
-</ul>
-<h2 id="v637-2026年4月18日">V6.3.7 (2026年4月18日)</h2>
+<h2 id="v637-2026-04-18">V6.3.7 (2026-04-18)</h2>
 <ul>
-<li><strong>新增</strong><ul>
-<li>增加 <a href="https://icp.gov.moe/?keyword=20261221">萌备</a></li>
-<li>其他小修改</li>
+<li><strong>feat</strong>: 增加 <a href="https://icp.gov.moe/?keyword=20261221">萌备</a></li>
+<li><strong>style</strong>: 其他小修改</li>
+<li><strong>perf</strong>: 优化暗色模式下的卡片边缘对比度</li>
 </ul>
-</li>
-<li><strong>优化</strong><ul>
-<li>优化暗色模式下的卡片边缘对比度</li>
-</ul>
-</li>
-</ul>
-<h2 id="v636-2026年4月16日">V6.3.6 (2026年4月16日)</h2>
+<h2 id="v636-2026-04-16">V6.3.6 (2026-04-16)</h2>
 <ul>
-<li><strong>优化</strong><ul>
-<li>在友链卡片右下角添加网址显示</li>
-<li>修改了友链页面的一些文本</li>
-<li>其他小修改</li>
+<li><strong>perf</strong>: 在友链卡片右下角添加网址显示</li>
+<li><strong>docs</strong>: 修改了友链页面的一些文本</li>
+<li><strong>style</strong>: 其他小修改</li>
 </ul>
-</li>
-</ul>
-<h2 id="v635-2026年4月13日">V6.3.5 (2026年4月13日)</h2>
+<h2 id="v635-2026-04-13">V6.3.5 (2026-04-13)</h2>
 <ul>
-<li><strong>优化</strong><ul>
-<li>网站页脚最后更新时间自动获取构建时间并由 js 动态加载，不在手动修改</li>
-<li>修复 V6.3.4 更新导致的无刷新导航加载失败问题</li>
-<li>优化个人信息页面 tag 排版</li>
+<li><strong>perf</strong>: 网站页脚最后更新时间自动获取构建时间并由 js 动态加载，不再手动修改</li>
+<li><strong>fix</strong>: 修复 V6.3.4 更新导致的无刷新导航加载失败问题</li>
+<li><strong>style</strong>: 优化个人信息页面 tag 排版</li>
+<li><strong>docs</strong>: 修改了一些文本</li>
 </ul>
-</li>
-<li><strong>修改</strong><ul>
-<li>修改了一些文本</li>
-</ul>
-</li>
-</ul>
-<h2 id="v634-2026年4月13日">V6.3.4 (2026年4月13日)</h2>
+<h2 id="v634-2026-04-13">V6.3.4 (2026-04-13)</h2>
 <ul>
-<li><strong>优化</strong><ul>
-<li>修复移动端页面汉堡菜单点击无效的问题</li>
-<li>调整移动端布局：内容卡片在前，个人信息卡片在后</li>
+<li><strong>perf</strong>: 修复移动端页面汉堡菜单点击无效的问题</li>
+<li><strong>style</strong>: 调整移动端布局：内容卡片在前，个人信息卡片在后</li>
 </ul>
-</li>
-</ul>
-<h2 id="v633-2026年4月12日">V6.3.3 (2026年4月12日)</h2>
+<h2 id="v633-2026-04-12">V6.3.3 (2026-04-12)</h2>
 <ul>
-<li><strong>新增</strong><ul>
-<li>文章查看器支持更多 markdown 语法<ul>
-<li><a href="/articles/test.html#5-代码块">优化代码块显示</a><ul>
-<li>新增复制按钮</li>
-</ul>
-</li>
+<li><strong>feat</strong>: 文章查看器支持更多 markdown 语法<ul>
+<li><a href="/articles/test.html#5-代码块">优化代码块显示</a>——新增复制按钮</li>
 <li><a href="/articles/test.html#14-数学公式">添加数学公式支持</a></li>
 <li><a href="/articles/test.html#15-图表与流程图">添加流程图支持</a></li>
 <li>优化脚注样式</li>
 </ul>
 </li>
+<li><strong>chore</strong>: 更新 Twikoo 评论系统版本：1.7.4 -&gt; 1.7.7</li>
 </ul>
-</li>
-<li><strong>优化</strong><ul>
-<li>更新 Twikoo 评论系统版本：<code>1.7.4</code> -&gt; <code>1.7.7</code></li>
-</ul>
-</li>
-</ul>
-<h2 id="v632-2026年4月12日">V6.3.2 (2026年4月12日)</h2>
+<h2 id="v632-2026-04-12">V6.3.2 (2026-04-12)</h2>
 <ul>
-<li><strong>优化</strong><ul>
-<li>文章查看页或 404 页禁止无刷新导航，以修复相关问题</li>
+<li><strong>perf</strong>: 文章查看页或 404 页禁止无刷新导航，以修复相关问题</li>
 </ul>
-</li>
-</ul>
-<h2 id="v631-2026年4月12日">V6.3.1 (2026年4月12日)</h2>
+<h2 id="v631-2026-04-12">V6.3.1 (2026-04-12)</h2>
 <ul>
-<li><strong>修改</strong><ul>
-<li>删除 <code>404.html</code> 的评论区<ul>
-<li>因为在出现 404 错误时，网址不会改变，导致评论区被划分到很多不同页面，页面之间评论不互通，导致评论区失去作用</li>
+<li><strong>chore</strong>: 删除 <code>404.html</code> 的评论区（因为出现 404 错误时网址不会改变，导致评论区被划分到很多不同页面，页面之间评论不互通，失去作用）</li>
+<li><strong>style</strong>: 同步主站样式到 <code>404.html</code>，并优化 <code>404.html</code> 页面布局</li>
+<li><strong>perf</strong>: 删除 <code>404.html</code> 冗余代码</li>
 </ul>
-</li>
-</ul>
-</li>
-<li><strong>优化</strong><ul>
-<li>同步主站样式到 <code>404.html</code> ，并优化 <code>404.html</code> 页面布局</li>
-<li>删除 <code>404.html</code> 冗余代码</li>
-</ul>
-</li>
-</ul>
-<h2 id="v630-2026年4月11日">V6.3.0 (2026年4月11日)</h2>
+<h2 id="v630-2026-04-11">V6.3.0 (2026-04-11)</h2>
 <ul>
-<li><strong>重大修改</strong><ul>
-<li>为网站实现 AJAX</li>
+<li><strong>feat</strong>: 为网站实现 AJAX</li>
 </ul>
-</li>
-</ul>
-<h2 id="v621-2026年4月11日">V6.2.1 (2026年4月11日)</h2>
+<h2 id="v621-2026-04-11">V6.2.1 (2026-04-11)</h2>
 <ul>
-<li><strong>新增</strong><ul>
-<li>更新个人信息卡片显示页面</li>
+<li><strong>feat</strong>: 更新个人信息卡片显示页面</li>
 </ul>
-</li>
-</ul>
-<h2 id="v620-2026年4月11日">V6.2.0 (2026年4月11日)</h2>
+<h2 id="v620-2026-04-11">V6.2.0 (2026-04-11)</h2>
 <ul>
-<li><strong>新增</strong><ul>
-<li>新增 <code>rss.xml</code><ul>
-<li>由 <code>RssGenerator.py</code> 自动生成</li>
+<li><strong>feat</strong>: 新增 <code>rss.xml</code>（由 <code>RssGenerator.py</code> 自动生成）</li>
+<li><strong>feat</strong>: 在首页新增个人信息栏</li>
 </ul>
-</li>
-<li>在首页新增 个人信息 栏</li>
-</ul>
-</li>
-</ul>
-<h2 id="v611-2026年4月11日">V6.1.1 (2026年4月11日)</h2>
+<h2 id="v611-2026-04-11">V6.1.1 (2026-04-11)</h2>
 <ul>
-<li><strong>优化</strong><ul>
-<li>将 <code>隐藏</code> 标签的文章和作品的剔除逻辑从前端移至后端</li>
+<li><strong>perf</strong>: 将“隐藏”标签的文章和作品的剔除逻辑从前端移至后端</li>
 </ul>
-</li>
-</ul>
-<h2 id="v610-2026年4月6日">V6.1.0 (2026年4月6日)</h2>
+<h2 id="v610-2026-04-06">V6.1.0 (2026-04-06)</h2>
 <ul>
-<li><strong>新增</strong><ul>
-<li>新增友链页面</li>
+<li><strong>feat</strong>: 新增友链页面</li>
 </ul>
-</li>
-</ul>
-<h2 id="v604-2026年4月6日">V6.0.4 (2026年4月6日)</h2>
+<h2 id="v604-2026-04-06">V6.0.4 (2026-04-06)</h2>
 <ul>
-<li><strong>优化</strong><ul>
-<li>优化外链跳转（由单独打开一个页面转为打开一个弹窗）<ul>
-<li>删除 <code>link.html</code> </li>
+<li><strong>perf</strong>: 优化外链跳转（由单独打开一个页面转为打开一个弹窗）<ul>
+<li>删除 <code>link.html</code></li>
 <li>将代码实现移动至 <code>script.js</code></li>
 </ul>
 </li>
-<li>优化文章查看页图片查看器</li>
+<li><strong>perf</strong>: 优化文章查看页图片查看器</li>
 </ul>
-</li>
-</ul>
-<h2 id="v603-2026年4月6日">V6.0.3 (2026年4月6日)</h2>
+<h2 id="v603-2026-04-06">V6.0.3 (2026-04-06)</h2>
 <ul>
-<li><strong>优化</strong><ul>
-<li>优化文章查看页的图片懒加载</li>
+<li><strong>perf</strong>: 优化文章查看页的图片懒加载</li>
 </ul>
-</li>
-</ul>
-<h2 id="v602-2026年4月6日">V6.0.2 (2026年4月6日)</h2>
+<h2 id="v602-2026-04-06">V6.0.2 (2026-04-06)</h2>
 <ul>
-<li><strong>新增</strong><ul>
-<li>文章列表和作品列表页支持通过 url 参数搜索</li>
-<li>点击 <code>主页</code> 的相应元素会跳转至相应页面<ul>
+<li><strong>feat</strong>: 文章列表和作品列表页支持通过 url 参数搜索</li>
+<li><strong>feat</strong>: 点击主页的相应元素会跳转至相应页面<ul>
 <li>文章总数 → 文章列表页面</li>
 <li>作品总数 → 作品列表页面</li>
 <li>文章和作品的 tag 标签 → 相应页面的对应搜索</li>
 </ul>
 </li>
+<li><strong>perf</strong>: 可以点击文章查看页 tag 标签来直接搜索同标签文章</li>
 </ul>
-</li>
-<li><strong>优化</strong><ul>
-<li>可以点击文章查看页 tag 标签来直接搜索同标签文章</li>
-</ul>
-</li>
-</ul>
-<h2 id="v601-2026年4月6日">V6.0.1 (2026年4月6日)</h2>
+<h2 id="v601-2026-04-06">V6.0.1 (2026-04-06)</h2>
 <ul>
-<li><strong>修改</strong><ul>
-<li>更换  <a href="https://twikoo.js.org/">Twikoo</a> 评论的 CDN </li>
+<li><strong>chore</strong>: 更换 <a href="https://twikoo.js.org/">Twikoo</a> 评论的 CDN</li>
 </ul>
-</li>
-</ul>
-<h1 id="v600-2026年4月4日-6日">V6.0.0 (2026年4月4日-6日)</h1>
-<h3 id="v600-dev6-2026年4月6日">V6.0.0-dev6 (2026年4月6日)</h3>
+<h2 id="v600-2026-04-04-2026-04-06">V6.0.0 (2026-04-04 ~ 2026-04-06)</h2>
+<h3 id="v600-dev6-2026-04-06">V6.0.0-dev6 (2026-04-06)</h3>
 <ul>
-<li><strong>修改</strong><ul>
-<li>重写主页样式<ul>
-<li>详见本节末</li>
+<li><strong>style</strong>: 重写主页样式（详见本节末）</li>
 </ul>
-</li>
-</ul>
-</li>
-</ul>
-<h3 id="v600-dev5-2026年4月6日">V6.0.0-dev5 (2026年4月6日)</h3>
+<h3 id="v600-dev5-2026-04-06">V6.0.0-dev5 (2026-04-06)</h3>
 <ul>
-<li><strong>优化</strong><ul>
-<li>回退 V6.0.0-dev4 更改</li>
-<li>优化 <code>style.css</code> （主站样式）<ul>
-<li>添加元素显示动画（部分内容只有滑动到视窗时才显示）</li>
-</ul>
-</li>
-<li>优化 <code>article.css</code><ul>
+<li><strong>revert</strong>: 回退 V6.0.0-dev4 更改</li>
+<li><strong>perf</strong>: 优化 <code>style.css</code>（主站样式）——添加元素显示动画（部分内容只有滑动到视窗时才显示）</li>
+<li><strong>perf</strong>: 优化 <code>article.css</code><ul>
 <li>同步前四个开发版的主站样式到文章查看页</li>
 <li>添加显示动画</li>
 <li>删除冗余样式定义</li>
 <li>其他小改动</li>
 </ul>
 </li>
-<li>优化文章查看器中的图片查看器
-    - 支持同一篇文章内的图片前后查看
-    - 支持放大、缩小、重新加载图片功能
-    - 在图片下方添加图片介绍小字</li>
-<li>内置 <code>busuanzi.min.js</code> （不再从 DNS 中下载）</li>
+<li><strong>perf</strong>: 优化文章查看器中的图片查看器<ul>
+<li>支持同一篇文章内的图片前后查看</li>
+<li>支持放大、缩小、重新加载图片功能</li>
+<li>在图片下方添加图片介绍小字</li>
 </ul>
 </li>
+<li><strong>chore</strong>: 内置 <code>busuanzi.min.js</code>（不再从 DNS 中下载）</li>
 </ul>
-<h3 id="v600-dev4-2026年4月5日">V6.0.0-dev4 (2026年4月5日)</h3>
+<h3 id="v600-dev4-2026-04-05">V6.0.0-dev4 (2026-04-05)</h3>
 <ul>
-<li><strong>优化</strong><ul>
-<li>基本重写 <code>script.js</code> ，更现代化的代码结构</li>
+<li><strong>refactor</strong>: 基本重写 <code>script.js</code>，更现代化的代码结构</li>
 </ul>
-</li>
-</ul>
-<h3 id="v600-dev3-2024年4月5日">V6.0.0-dev3 (2024年4月5日)</h3>
+<h3 id="v600-dev3-2024-04-05">V6.0.0-dev3 (2024-04-05)</h3>
 <ul>
-<li><strong>优化</strong><ul>
-<li>优化网站样式，详情见本节末<ul>
-<li>基本重写 <code>style.css</code></li>
-<li>修复文章列表和作品列表的暗黑模式显示异常问题</li>
+<li><strong>style</strong>: 优化网站样式，基本重写 <code>style.css</code></li>
+<li><strong>fix</strong>: 修复文章列表和作品列表的暗黑模式显示异常问题</li>
 </ul>
-</li>
-</ul>
-</li>
-</ul>
-<h3 id="v600-dev2-2024年4月5日">V6.0.0-dev2 (2024年4月5日)</h3>
+<h3 id="v600-dev2-2024-04-05">V6.0.0-dev2 (2024-04-05)</h3>
 <ul>
-<li><strong>新增</strong><ul>
-<li>新增 <code>Statistic.py</code> 来统计网站信息<ul>
+<li><strong>feat</strong>: 新增 <code>Statistic.py</code> 来统计网站信息<ul>
 <li>生成 <code>statistics.json</code> 记录：<ul>
 <li>最后更新日期</li>
 <li>文章总数</li>
@@ -939,279 +630,164 @@
 </ul>
 </li>
 </ul>
-</li>
-</ul>
-<h3 id="v600-dev1-2024年4月4日">V6.0.0-dev1 (2024年4月4日)</h3>
+<h3 id="v600-dev1-2024-04-04">V6.0.0-dev1 (2024-04-04)</h3>
 <ul>
-<li><strong>优化</strong><ul>
-<li>导航栏的按钮现在居中显示</li>
-<li>更改了文章文件存储<ul>
+<li><strong>perf</strong>: 导航栏的按钮现在居中显示</li>
+<li><strong>refactor</strong>: 更改文章文件存储<ul>
 <li>由原来的 <code>./articles/articles/xxx.md</code> 改为 <code>./articles/source/分类/xxx.md</code></li>
-<li>在 <code>articles.json</code> 中添加 <code>category</code>(分类) 项<ul>
-<li>分类会显示在文章元数据区</li>
+<li>在 <code>articles.json</code> 中添加 <code>category</code>（分类）项，分类会显示在文章元数据区</li>
 </ul>
 </li>
-</ul>
-</li>
-<li>更改了作品文件存储<ul>
-<li>由原来的 <code>./works/作品.html</code> 改为 <code>./works/作品/index.html</code> (HTML类文件改动示例)</li>
+<li><strong>refactor</strong>: 更改作品文件存储<ul>
+<li>由原来的 <code>./works/作品.html</code> 改为 <code>./works/作品/index.html</code>（HTML类文件改动示例）</li>
 <li>在 <code>./works/作品/</code> 下添加 <code>metadata.json</code> 来存储作品元数据</li>
 </ul>
 </li>
-<li>将 <code>markdown2html.py</code> 重命名为 <code>ArticleManager.py</code></li>
-<li>新增 <code>WorkManager.py</code> 用于将 <code>./works/作品/</code> 下的 <code>metadata.json</code> 汇总生成 <code>works.json</code> 到根目录</li>
-<li>新增 <code>run.py</code> 用于启动 <code>ArticleManager.py</code> 和 <code>WorkManager.py</code></li>
+<li><strong>refactor</strong>: 将 <code>markdown2html.py</code> 重命名为 <code>ArticleManager.py</code></li>
+<li><strong>feat</strong>: 新增 <code>WorkManager.py</code> 用于将 <code>./works/作品/</code> 下的 <code>metadata.json</code> 汇总生成 <code>works.json</code> 到根目录</li>
+<li><strong>feat</strong>: 新增 <code>run.py</code> 用于启动 <code>ArticleManager.py</code> 和 <code>WorkManager.py</code></li>
 </ul>
-</li>
-</ul>
-<h3 id="样式变更">样式变更</h3>
+<h4 id="样式变更">样式变更</h4>
 <p><img alt="首页新样式" data-src="https://s41.ax1x.com/2026/04/06/peNUN60.png" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E" class="lazy-image"  />
 <img alt="首页旧样式" data-src="https://s41.ax1x.com/2026/04/06/peNUtlq.png" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E" class="lazy-image"  /></p>
-<h2 id="v534-2026年4月4日">V5.3.4 (2026年4月4日)</h2>
+<h2 id="v534-2026-04-04">V5.3.4 (2026-04-04)</h2>
 <ul>
-<li><strong>优化</strong><ul>
-<li>优化代码结构和性能<ul>
+<li><strong>perf</strong>: 优化代码结构和性能<ul>
 <li>优化 <code>script.js</code> <code>article.js</code> 代码结构</li>
 <li>优化 <code>style.css</code> <code>article.css</code> 样式</li>
 </ul>
 </li>
+<li><strong>style</strong>: 页面宽度从 850px 改为 1100px</li>
+<li><strong>style</strong>: 文章查看页宽度从 1200px 改为 1300px</li>
 </ul>
-</li>
-<li><strong>修改</strong><ul>
-<li>页面宽度从 <code>850px</code> 改为 <code>1100px</code></li>
-<li>文章查看页宽度从 <code>1200px</code> 改为 <code>1300px</code></li>
-</ul>
-</li>
-</ul>
-<h2 id="v533-2026年4月4日">V5.3.3 (2026年4月4日)</h2>
+<h2 id="v533-2026-04-04">V5.3.3 (2026-04-04)</h2>
 <ul>
-<li><strong>新增</strong><ul>
-<li>在网站页脚新增 <a href="https://opensource.org/licenses/MIT">MIT License</a> 和 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0">CC BY-NC-ND 4.0</a> 声明</li>
-</ul>
-</li>
-<li><strong>优化</strong><ul>
-<li>优化网站文章列表布局<ul>
+<li><strong>feat</strong>: 在网站页脚新增 <a href="https://opensource.org/licenses/MIT">MIT License</a> 和 <a href="https://creativecommons.org/licenses/by-nc-nd/4.0">CC BY-NC-ND 4.0</a> 声明</li>
+<li><strong>perf</strong>: 优化网站文章列表布局<ul>
 <li>添加阅读时间显示</li>
-<li>将 <code>作者</code> <code>字数</code> <code>阅读时间</code> 移动到标题下方</li>
+<li>将“作者”“字数”“阅读时间”移动到标题下方</li>
 </ul>
 </li>
-<li>修复自 V5.0.0（2026年3月28日） 的修改导致的对 markdown 格式无序、有序列表的 2空格 缩进无法解析的问题</li>
+<li><strong>fix</strong>: 修复自 V5.0.0（2026-03-28）的修改导致的对 markdown 格式无序、有序列表的 2空格 缩进无法解析的问题</li>
 </ul>
-</li>
-</ul>
-<h2 id="v532-2026年4月3日">V5.3.2 (2026年4月3日)</h2>
+<h2 id="v532-2026-04-03">V5.3.2 (2026-04-03)</h2>
 <ul>
-<li><strong>优化</strong><ul>
-<li>优化网站文章查看页的布局<ul>
-<li>添加阅读时间显示<ul>
-<li>阅读时间将由 <code>markdown2html.py</code> 计算并写入 <code>articles.json</code></li>
-</ul>
-</li>
-<li>用图标代替元数据各项解释<ul>
-<li>现在鼠标移动到上方会显示描述</li>
-</ul>
-</li>
+<li><strong>perf</strong>: 优化网站文章查看页的布局<ul>
+<li>添加阅读时间显示（阅读时间将由 <code>markdown2html.py</code> 计算并写入 <code>articles.json</code>）</li>
+<li>用图标代替元数据各项解释（鼠标移动到上方会显示描述）</li>
 <li>将文章的 tag 标签从元数据中移动到文章末尾并显示为 <code>#xxx</code></li>
 <li>分离内容区和评论区的卡片</li>
 </ul>
 </li>
 </ul>
-</li>
-</ul>
-<h2 id="v531-2026年4月2日">V5.3.1 (2026年4月2日)</h2>
+<h2 id="v531-2026-04-02">V5.3.1 (2026-04-02)</h2>
 <ul>
-<li><strong>优化</strong><ul>
-<li>优化 <code>style.css</code> 合并样式</li>
-<li>优化 <code>article.css</code> 合并样式</li>
+<li><strong>style</strong>: 优化 <code>style.css</code> 合并样式</li>
+<li><strong>style</strong>: 优化 <code>article.css</code> 合并样式</li>
+<li><strong>style</strong>: 其他小修改</li>
 </ul>
-</li>
-<li><strong>修改</strong><ul>
-<li>其他小修改</li>
-</ul>
-</li>
-</ul>
-<h2 id="v530-2026年4月1日">V5.3.0 (2026年4月1日)</h2>
+<h2 id="v530-2026-04-01">V5.3.0 (2026-04-01)</h2>
 <ul>
-<li><strong>新增</strong><ul>
-<li>新增文章字数统计功能<ul>
-<li>由 <code>markdown2html.py</code> 生成</li>
-</ul>
-</li>
-<li>文章查看页新增字数统计</li>
-<li>文章列表新增作者和字数统计</li>
-</ul>
-</li>
-<li><strong>修改</strong><ul>
-<li>优化 <code>articles.json</code><ul>
+<li><strong>feat</strong>: 新增文章字数统计功能（由 <code>markdown2html.py</code> 生成）</li>
+<li><strong>feat</strong>: 文章查看页新增字数统计</li>
+<li><strong>feat</strong>: 文章列表新增作者和字数统计</li>
+<li><strong>refactor</strong>: 优化 <code>articles.json</code><ul>
 <li>新增 <code>word_count</code> 和 <code>total_word_count</code> 项</li>
-<li>删除 <code>id</code> 项<ul>
-<li>文章列表项现在通过 data-url 属性存储跳转链接，不再依赖 id 字段</li>
+<li>删除 <code>id</code> 项（文章列表项现在通过 data-url 属性存储跳转链接，不再依赖 id 字段）</li>
 </ul>
 </li>
+<li><strong>perf</strong>: 删除一些冗余代码</li>
 </ul>
-</li>
-</ul>
-</li>
-<li><strong>优化</strong><ul>
-<li>删除一些冗余代码</li>
-</ul>
-</li>
-</ul>
-<h2 id="v520-2026年3月31日">V5.2.0 (2026年3月31日)</h2>
+<h2 id="v520-2026-03-31">V5.2.0 (2026-03-31)</h2>
 <ul>
-<li><strong>新增</strong><ul>
-<li>增加外链提示功能（ <code>link.html</code> ）</li>
-</ul>
-</li>
-<li><strong>优化</strong><ul>
-<li>优化（作品列表详情）弹窗视觉效果<ul>
+<li><strong>feat</strong>: 增加外链提示功能（<code>link.html</code>）</li>
+<li><strong>perf</strong>: 优化作品列表详情弹窗视觉效果<ul>
 <li>添加背景模糊和变暗效果</li>
 <li>按下非弹窗部分和 <code>Esc</code> 键可以退出弹窗</li>
 </ul>
 </li>
 </ul>
-</li>
-</ul>
-<h2 id="v512-2026年3月30日">V5.1.2 (2026年3月30日)</h2>
+<h2 id="v512-2026-03-30">V5.1.2 (2026-03-30)</h2>
 <ul>
-<li><strong>修改</strong><ul>
-<li>删除文章查看页无意义的标题强调<ul>
-<li>从 <code>==={title}===</code> 改为 <code>{title}</code></li>
+<li><strong>style</strong>: 删除文章查看页无意义的标题强调（从 <code>==={title}===</code> 改为 <code>{title}</code>）</li>
 </ul>
-</li>
-</ul>
-</li>
-</ul>
-<h2 id="v511-2026年3月29日">V5.1.1 (2026年3月29日)</h2>
+<h2 id="v511-2026-03-29">V5.1.1 (2026-03-29)</h2>
 <ul>
-<li><strong>新增</strong><ul>
-<li>在页脚新增网站存活时间</li>
+<li><strong>feat</strong>: 在页脚新增网站存活时间</li>
+<li><strong>docs</strong>: 修改“关于”页面的文本</li>
 </ul>
-</li>
-<li><strong>修改</strong><ul>
-<li>修改 <code>关于</code> 页面的文本 </li>
-</ul>
-</li>
-</ul>
-<h2 id="v510-2026年3月29日">V5.1.0 (2026年3月29日)</h2>
+<h2 id="v510-2026-03-29">V5.1.0 (2026-03-29)</h2>
 <ul>
-<li><strong>新增</strong><ul>
-<li>添加 <a href="https://www.busuanzi.cc/">不蒜子</a> 访问量统计系统</li>
-<li>在 <code>404.html</code> 添加评论区</li>
-</ul>
-</li>
-<li><strong>修改</strong><ul>
-<li>将 <code>markdown2html.py</code> 从 <code>/articles</code> 目录移动至 <code>/</code> 目录</li>
-</ul>
-</li>
-<li><strong>优化</strong><ul>
-<li>优化 markdown 文章的元数据 <ul>
+<li><strong>feat</strong>: 添加<a href="https://www.busuanzi.cc/">不蒜子</a>访问量统计系统</li>
+<li><strong>feat</strong>: 在 <code>404.html</code> 添加评论区</li>
+<li><strong>chore</strong>: 将 <code>markdown2html.py</code> 从 <code>/articles</code> 目录移动至 <code>/</code> 目录</li>
+<li><strong>perf</strong>: 优化 markdown 文章的元数据<ul>
 <li>增加 <code>description</code> 和 <code>author</code></li>
 <li>将 <code>tag</code> 改为 <code>tags</code></li>
 <li>优化生成的 HTML 文章的元数据模块显示</li>
 </ul>
 </li>
-<li>现在 <code>articles.json</code> 由 <code>markdown2html.py</code> 自动生成</li>
+<li><strong>perf</strong>: 现在 <code>articles.json</code> 由 <code>markdown2html.py</code> 自动生成</li>
 </ul>
-</li>
-</ul>
-<h2 id="v5012-2026年3月29日">V5.0.1(.2) (2026年3月29日)</h2>
+<h2 id="v501-2026-03-29">V5.0.1 (2026-03-29)</h2>
 <ul>
-<li><strong>新增</strong><ul>
-<li>添加自定义网站滚动条</li>
-<li>添加自定义光标</li>
+<li><strong>feat</strong>: 添加自定义网站滚动条</li>
+<li><strong>feat</strong>: 添加自定义光标</li>
+<li><strong>chore</strong>: 将“联系”改为“留言板”（因为原本的练习内容已经在新的页脚中包含）</li>
+<li><strong>perf</strong>: 优化明暗模式切换按钮</li>
+<li><strong>fix</strong>: 修复首页“查看更新日志”链接跳转错误的问题</li>
+<li><strong>perf</strong>: 优化页脚显示——将联系方式以图表形式展示在页脚中</li>
 </ul>
-</li>
-<li><strong>修改</strong><ul>
-<li>将 <code>联系</code> 改为 <code>留言板</code> （因为原本的练习内容已经在新的页脚中包含）</li>
-</ul>
-</li>
-<li><strong>优化</strong><ul>
-<li>优化明暗模式切换按钮</li>
-<li>修复首页 <code>查看更新日志</code> 链接跳转错误的问题</li>
-<li>优化页脚显示<ul>
-<li>将 <code>联系</code> 的联系方式以图表形式展示在页脚中 </li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<h1 id="v500-2026年3月28日">V5.0.0 (2026年3月28日)</h1>
+<h2 id="v500-2026-03-28">V5.0.0 (2026-03-28)</h2>
 <ul>
-<li><strong>重大修改＆新增</strong><ul>
-<li>添加 <a href="https://twikoo.js.org/">Twikoo</a> 评论系统</li>
-<li>优化网站样式（详见本节末）</li>
-</ul>
-</li>
-<li><strong>修改</strong><ul>
-<li>更改文章查看页显示逻辑<ul>
-<li>由原本的 <code>/articles/?article=${encodeURIComponent(article.title)}</code> 获取参数调用 markdown 文件改为由 <code>markdown2html.py</code> 预生成 HTML 文件（同时，文章列表的跳转改为<code>/articles/{encodeURIComponent(article.title)}.html</code>）</li>
+<li><strong>feat</strong>: 添加 <a href="https://twikoo.js.org/">Twikoo</a> 评论系统</li>
+<li><strong>style</strong>: 优化网站样式（详见本节末）</li>
+<li><strong>refactor</strong>: 更改文章查看页显示逻辑<ul>
+<li>由原本的 <code>/articles/?article=${encodeURIComponent(article.title)}</code> 获取参数调用 markdown 文件改为由 <code>markdown2html.py</code> 预生成 HTML 文件（同时，文章列表的跳转改为 <code>/articles/{encodeURIComponent(article.title)}.html</code>）</li>
 <li>将 markdown 中的元数据标识从 <code>+++</code> 改为 <code>---</code></li>
 </ul>
 </li>
+<li><strong>feat</strong>: 在文章查看页增加了图片查看器</li>
+<li><strong>feat</strong>: 新增文章查看页浏览记录功能，退出重进后仍能回到阅读位置</li>
+<li><strong>feat</strong>: 在文章查看页增加了阅读进度条</li>
+<li><strong>perf</strong>: 删除文章查看页的冗余代码</li>
+<li><strong>perf</strong>: 在文章查看页显示的图片不会再超出内容框架范围</li>
+<li><strong>perf</strong>: 在文章查看页实现了图片懒加载（未滚动到图片位置则不加载）</li>
+<li><strong>fix</strong>: 修复文章查看页暗黑模式适配不全的 BUG</li>
+<li><strong>fix</strong>: 修复文章查看页导航栏显示在“首页”的 BUG</li>
 </ul>
-</li>
-<li><strong>新增</strong><ul>
-<li>在文章查看页增加了图片查看器</li>
-<li>新增了文章查看页浏览记录功能，退出重进后仍能回到阅读位置</li>
-<li>在文章查看页增加了阅读进度条</li>
-</ul>
-</li>
-<li><strong>优化</strong><ul>
-<li>删除文章查看页的冗余代码</li>
-<li>在文章查看页显示的图片不会再超出内容框架范围</li>
-<li>在文章查看页实现了图片懒加载（未滚动到图片位置则不加载）</li>
-<li>修复文章查看页暗黑模式适配不全的 BUG</li>
-<li>修复文章查看页导航栏显示在 <code>首页</code> 的 BUG
-<img alt="旧样式" data-src="https://s41.ax1x.com/2026/03/28/pe1QOXV.png" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E" class="lazy-image"  />
-<img alt="新样式" data-src="https://s41.ax1x.com/2026/03/28/pe1QokQ.png" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E" class="lazy-image"  /></li>
-</ul>
-</li>
-</ul>
-<h2 id="v420-2026年03月17日-27日">V4.2.0 (2026年03月17日-27日)</h2>
+<p><img alt="旧样式" data-src="https://s41.ax1x.com/2026/03/28/pe1QOXV.png" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E" class="lazy-image"  />
+<img alt="新样式" data-src="https://s41.ax1x.com/2026/03/28/pe1QokQ.png" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E" class="lazy-image"  /></p>
+<h2 id="v420-2026-03-17-2026-03-27">V4.2.0 (2026-03-17 ~ 2026-03-27)</h2>
 <ul>
-<li><strong>新增</strong><ul>
-<li>增加了暗黑模式</li>
-<li>增加了一篇文章</li>
-<li>增加了一个作品
-<strong>已知问题：1.文章查看页未适配*
-</strong>2.在切换页面时会闪烁*</li>
-</ul>
+<li><strong>feat</strong>: 增加了暗黑模式</li>
+<li><strong>feat</strong>: 增加了一篇文章</li>
+<li><strong>feat</strong>: 增加了一个作品</li>
+<li><strong>已知问题</strong>:<ol>
+<li>文章查看页未适配</li>
+<li>在切换页面时会闪烁</li>
+</ol>
 </li>
 </ul>
-<h2 id="v410-2026年03月15日">V4.1.0 (2026年03月15日)</h2>
+<h2 id="v410-2026-03-15">V4.1.0 (2026-03-15)</h2>
 <ul>
-<li><strong>修改</strong><ul>
-<li>支持在文章查看页显示导航栏</li>
-<li>其他小修改</li>
-</ul>
-</li>
-<li><strong>优化</strong><ul>
-<li>动画优化<ul>
+<li><strong>perf</strong>: 支持在文章查看页显示导航栏</li>
+<li><strong>style</strong>: 其他小修改</li>
+<li><strong>perf</strong>: 动画优化<ul>
 <li>优化列表项显示动画：每个列表项从下方渐显滑入</li>
 <li>优化作品详情弹窗动画</li>
 <li>优化文章查看页动画</li>
 </ul>
 </li>
-<li>代码优化<ul>
-<li>删除多余的 <code>style.css</code> 代码</li>
+<li><strong>perf</strong>: 代码优化——删除多余的 <code>style.css</code> 代码</li>
 </ul>
-</li>
-</ul>
-</li>
-</ul>
-<h1 id="v400-2026年03月14日">V4.0.0 (2026年03月14日)</h1>
+<h2 id="v400-2026-03-14">V4.0.0 (2026-03-14)</h2>
 <ul>
-<li><strong>重大修改</strong><ul>
-<li>为了进行 SEO 优化，重构了网站模式：从 SPA 转为 MAP<ul>
-<li>分离导航栏<ul>
-<li>导航栏代码移动至 <code>navbar.html</code></li>
-<li>修改导航链接（从查询参数形式给位直接的 HTML 文件链接）</li>
-</ul>
-</li>
+<li><strong>refactor</strong>: 为了进行 SEO 优化，重构了网站模式：从 SPA 转为 MAP<ul>
+<li>分离导航栏（导航栏代码移动至 <code>navbar.html</code>，修改导航链接从查询参数形式为直接的 HTML 文件链接）</li>
 <li>移动 <code>pages</code> 文件夹中的文件到根目录，并为每个文件创建了完整的 HTML 结构</li>
-<li>相应的，更新了 <code>script.js</code> 以适应多页面模式<ul>
-<li>移除了页面动态加载逻辑（ <code>PageManager.loadPage</code> ）</li>
+<li>更新 <code>script.js</code> 以适应多页面模式：<ul>
+<li>移除了页面动态加载逻辑（<code>PageManager.loadPage</code>）</li>
 <li>添加了页面特定的初始化函数</li>
 <li>根据当前页面路径初始化相应的功能（问候语、文章列表、作品列表等）</li>
 <li>简化了导航管理，保留了移动菜单和返回顶部功能</li>
@@ -1219,99 +795,44 @@
 </li>
 </ul>
 </li>
+<li><strong>style</strong>: 其他小修改</li>
+<li><strong>注</strong>: 由于模式更换，被迫将原动画改为信纸淡入淡出（没想到怎么在多页面模式下实现原来的动画效果）</li>
 </ul>
-</li>
-<li><strong>修改</strong><ul>
-<li>其他小修改</li>
-</ul>
-</li>
-</ul>
-<p>*<em>由于模式更换，被迫将原动画改为信纸淡入淡出（没想到怎么在多页面模式下实现原来的动画效果）</em></p>
-<h2 id="v340-2026年03月08日">V3.4.0 (2026年03月08日)</h2>
+<h2 id="v340-2026-03-08">V3.4.0 (2026-03-08)</h2>
 <ul>
-<li><strong>修改</strong><ul>
-<li>修改了“关于”页面文本（~终于不是占位文本啦~）</li>
-<li>其他小修改</li>
+<li><strong>docs</strong>: 修改了“关于”页面文本（终于不是占位文本啦）</li>
+<li><strong>style</strong>: 其他小修改</li>
+<li><strong>refactor</strong>: 重构 <code>script.js</code>，优化命名与逻辑</li>
 </ul>
-</li>
-<li><strong>优化</strong><ul>
-<li>重构 <code>script.js</code> <ul>
-<li>优化命名与逻辑</li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-<h2 id="v332-2026年02月05日">V3.3.2 (2026年02月05日)</h2>
+<h2 id="v332-2026-02-05">V3.3.2 (2026-02-05)</h2>
 <ul>
-<li><strong>新增</strong><ul>
-<li>增加了一个作品</li>
+<li><strong>feat</strong>: 增加了一个作品</li>
+<li><strong>docs</strong>: 修改了“首页”（跟随时间动态调整）和“关于”页面文本</li>
+<li><strong>style</strong>: 其他小修改</li>
 </ul>
-</li>
-<li><strong>修改</strong><ul>
-<li>修改了“首页”（跟随时间动态调整）和“关于”页面文本</li>
-<li>其他小修改</li>
-</ul>
-</li>
-</ul>
-<h3 id="v3311-2026年01月06日">V3.3.1.1 (2026年01月06日)</h3>
+<h3 id="v3311-2026-01-06">V3.3.1.1 (2026-01-06)</h3>
 <ul>
-<li><strong>修改</strong><ul>
-<li>更新 <code>LICENSE</code> 文件</li>
+<li><strong>chore</strong>: 更新 <code>LICENSE</code> 文件</li>
 </ul>
-</li>
-</ul>
-<h2 id="v331-2025年12月28日">V3.3.1 (2025年12月28日 )</h2>
+<h2 id="v331-2025-12-28">V3.3.1 (2025-12-28)</h2>
 <ul>
-<li><strong>新增</strong><ul>
-<li>隐藏带有 <code>隐藏</code> 标签的文章与作品</li>
+<li><strong>feat</strong>: 隐藏带有“隐藏”标签的文章与作品</li>
+<li><strong>perf</strong>: 修复作品列表页在滚动后打开详情页会出现的显示问题</li>
+<li><strong>style</strong>: 文章查看页目录中的不同级别标题具有更明显的视觉差异</li>
+<li><strong>refactor</strong>: 优化 <code>script.js</code> 结构<ul>
+<li>性能优化：为 <code>SearchManager</code> 中搜索输入添加了防抖功能；使用 DOMParser 替代 innerHTML 直接操作；优化了事件监听器的管理</li>
+<li>代码优化：合并 <code>fetchWorksData</code> 和 <code>fetchArticlesData</code> 为通用 <code>fetchData</code> 函数；合并列表生成函数，减少重复代码；使用 <code>.list-item</code> 替代原来的 <code>.work-item</code> 和 <code>.article-item</code>；使用统一的 <code>.list-item-header</code>、<code>.list-item-title</code>、<code>.list-item-meta</code>、<code>.list-item-description</code> 类；使用 <code>.tag</code> 类替代原来的 <code>.work-tag</code>、<code>.article-tag</code>、<code>.tech-tag</code>；将 <code>handleWorkItemClick</code> 和 <code>handleArticleItemClick</code> 合并为 <code>handleListItemClick</code>；移除 <code>setupWorkItemsInteraction</code> 和 <code>setupArticleItemsInteraction</code>，使用统一的 <code>setupListItemsInteraction</code>；重构 <code>SearchManager</code>；统一了命名规范并拆分了长函数</li>
 </ul>
 </li>
-<li><strong>优化</strong><ul>
-<li>修复作品列表页在滚动后打开详情页会出现的显示问题</li>
-<li>文章查看页目录中的不同级别标题具有更明显的视觉差异</li>
-<li>优化 <code>script.js</code> 结构<ul>
-<li>优化性能<ul>
-<li>为 <code>SearchManager</code> 中搜索输入添加了防抖功能</li>
-<li>使用DOMParser替代innerHTML直接操作</li>
-<li>优化了事件监听器的管理</li>
+<li><strong>refactor</strong>: 优化 <code>style.css</code> 结构——合并 <code>.work-item</code> 和 <code>.article-item</code> 为 <code>.list-item</code></li>
+<li><strong>docs</strong>: 修改了一些文本</li>
 </ul>
-</li>
-<li>优化代码<ul>
-<li>合并了 <code>fetchWorksData</code> 和 <code>fetchArticlesData</code> 为通用 <code>fetchData</code> 函数</li>
-<li>合并了列表生成函数，减少重复代码</li>
-<li>使用 <code>.list-item</code> 替代原来的 <code>.work-item</code> 和 <code>.article-item</code></li>
-<li>使用统一的 <code>.list-item-header</code>, <code>.list-item-title</code>, <code>.list-item-meta</code>, <code>.list-item-description</code> 类</li>
-<li>使用 <code>.tag</code> 类替代原来的 <code>.work-tag</code>, <code>.article-tag</code>, <code>.tech-tag</code></li>
-<li>将原来的 <code>handleWorkItemClick</code> 和 <code>handleArticleItemClick</code> 合并为 <code>handleListItemClick</code></li>
-<li>移除了原来的 <code>setupWorkItemsInteraction</code> 和 <code>setupArticleItemsInteraction</code>，使用统一的 <code>setupListItemsInteraction</code></li>
-<li>重构了 <code>SearchManager</code></li>
-<li>统一了命名规范并拆分了长函数</li>
-</ul>
-</li>
-<li>优化 <code>style.css</code> 结构<ul>
-<li>合并 <code>.work-item</code> 和 <code>.article-item</code> 为 <code>.list-item</code></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
-<li><strong>修改</strong><ul>
-<li>修改了一些文本</li>
-</ul>
-</li>
-</ul>
-<h2 id="v330-2025年12月27日">V3.3.0 (2025年12月27日)</h2>
+<h2 id="v330-2025-12-27">V3.3.0 (2025-12-27)</h2>
 <ul>
-<li><strong>新增</strong><ul>
-<li><strong>文章和作品列表页可以选择标签搜索了（相应地，移除了搜索中的<code>标签</code>搜索功能）</strong></li>
-<li>文章查看页面菜单标题现在追踪正文</li>
-</ul>
-</li>
-<li><strong>优化</strong><ul>
-<li><strong>移动端菜单点击后自动关闭</strong></li>
-<li>优化 <code>script.js</code> 结构<ul>
+<li><strong>feat</strong>: 文章和作品列表页可以选择标签搜索了（相应地，移除了搜索中的“标签”搜索功能）</li>
+<li><strong>feat</strong>: 文章查看页面菜单标题现在追踪正文</li>
+<li><strong>perf</strong>: 移动端菜单点击后自动关闭</li>
+<li><strong>refactor</strong>: 优化 <code>script.js</code> 结构<ul>
 <li>优化动画使其更加流畅、自然</li>
 <li>减少不必要的 DOM 操作和重绘</li>
 <li>优化代码结构和可维护性</li>
@@ -1319,263 +840,172 @@
 <li>添加更详细的错误日志</li>
 </ul>
 </li>
-<li>优化 <code>style.css</code> 结构</li>
+<li><strong>refactor</strong>: 优化 <code>style.css</code> 结构</li>
+<li><strong>docs</strong>: 修改了一些文本</li>
 </ul>
-</li>
-<li><strong>修改</strong><ul>
-<li>修改了一些文本</li>
-</ul>
-</li>
-</ul>
-<h2 id="v321-2025年12月25日">V3.2.1 (2025年12月25日)</h2>
+<h2 id="v321-2025-12-25">V3.2.1 (2025-12-25)</h2>
 <ul>
-<li><strong>优化</strong><ul>
-<li>修复文章页面无法获取到元数据的问题
-  <em>2025年12月25日注：不管是什么文件， Github page 的 Jekyll 都会识别并删除以 <code>---</code> 为标识符的文件的元数据，于是我把 <code>---</code> 都改为 <code>+++</code> 终于解决了这个问题</em></li>
-<li>更改作品 <code>统计计算器</code> 为网站新样式，同时大幅精简代码</li>
-<li>优化 <code>style.css</code> 结构</li>
+<li><strong>perf</strong>: 修复文章页面无法获取到元数据的问题（GitHub Page 的 Jekyll 会识别并删除以 <code>---</code> 为标识符的文件的元数据，于是将 <code>---</code> 都改为 <code>+++</code> 解决了这个问题）</li>
+<li><strong>perf</strong>: 更改作品“统计计算器”为网站新样式，同时大幅精简代码</li>
+<li><strong>refactor</strong>: 优化 <code>style.css</code> 结构</li>
 </ul>
-</li>
-</ul>
-<h2 id="v320-2025年12月23日">V3.2.0 (2025年12月23日)</h2>
+<h2 id="v320-2025-12-23">V3.2.0 (2025-12-23)</h2>
 <ul>
-<li><strong>新增</strong><ul>
-<li><strong>文章和作品页搜索功能</strong><ul>
-<li>支持搜索<code>标题</code>、<code>描述</code>、<code>标签</code>、<code>日期</code>和<code>所有</code></li>
+<li><strong>feat</strong>: 文章和作品页搜索功能，支持搜索“标题”“描述”“标签”“日期”和“所有”</li>
+<li><strong>perf</strong>: 优化文件结构</li>
+<li><strong>docs</strong>: 修改了一些文本</li>
+<li><strong>refactor</strong>: 修改了 <code>script.js</code> 中的一些函数</li>
+<li><strong>chore</strong>: 移除 <code>works.json</code> 中的 <code>image</code></li>
+<li><strong>chore</strong>: 将一些路径改为绝对路径</li>
 </ul>
-</li>
-</ul>
-</li>
-<li><strong>优化</strong><ul>
-<li>优化文件结构</li>
-</ul>
-</li>
-<li><strong>修改</strong><ul>
-<li>修改了一些文本</li>
-<li>修改了 <code>script.js</code> 中的一些函数</li>
-<li>移除 <code>works.json</code> 中的 <code>image</code></li>
-<li>将一些路径改为绝对路径</li>
-</ul>
-</li>
-</ul>
-<h2 id="v311-2025年12月21日">V3.1.1 (2025年12月21日)</h2>
-<p><strong>生日大更新!（下半部分）</strong></p>
+<h2 id="v311-2025-12-21">V3.1.1 (2025-12-21)</h2>
+<p><strong>生日大更新！（下半部分）</strong>
+- <strong>feat</strong>: 文章查看页面（目录 + 内容）
+- <strong>feat</strong>: 新增文章：<code>test</code>（测试用）、<code>计划实现的网站功能</code>、<code>网站更新日志</code>和一篇作文<code>雪中的思绪</code>
+- <strong>perf</strong>: 优化导航栏样式
+- <strong>refactor</strong>: 清理和优化代码结构（主要是 <code>script.js</code>）
+  - 将函数定义移出 <code>DOMContentLoaded</code> 回调
+  - 提取 <code>generateTagsHTML</code> 函数
+  - 增强了对网络请求、数据解析和 DOM 操作的错误处理
+  - 增加了对 <code>localStorage</code> 数据和 DOM 元素存在的检查
+  - 添加了一些注释
+- <strong>fix</strong>: 修复 404 页面的“返回首页”按钮指向的不是根目录的 <code>index.html</code> 的问题
+- <strong>fix</strong>: 修复网站图标不显示的问题
+- <strong>feat</strong>: 首页新增“查看网站更新日志”链接
+- <strong>style</strong>: 修改了一些样式
+- <strong>docs</strong>: 修改了一些文本</p>
+<h2 id="v310-2025-12-20">V3.1.0 (2025-12-20)</h2>
+<p><strong>生日大更新！（上半部分）</strong>
+- <strong>feat</strong>: 新增页面切换动画
+- <strong>perf</strong>: 优化网站文件结构，更方便维护
+- <strong>perf</strong>: 优化作品详情查看页样式和动画
+- <strong>refactor</strong>: 优化 <code>works.json</code> 结构（合并了一些条目）
+- <strong>perf</strong>: 清理上个样式残留的自定义光标和视差背景相关代码
+- <strong>perf</strong>: 清理多余无用文件
+- <strong>style</strong>: 同步 <code>404.html</code> 页面的样式到新样式并修改了一些文本
+- <strong>style</strong>: 作品页从卡片流样式修改为列表样式</p>
+<h2 id="v300-2025-12-19">V3.0.0 (2025-12-19)</h2>
 <ul>
-<li><strong>新增</strong><ul>
-<li>文章查看页面（目录 + 内容）</li>
-<li>新增文章：<code>test</code>（测试用）<code>计划实现的网站功能</code>、<code>网站更新日志</code>和一篇作文<code>雪中的思绪</code></li>
-</ul>
-</li>
-<li><strong>优化</strong><ul>
-<li>优化导航栏样式</li>
-<li>清理和优化代码结构（主要是 <code>script.js</code> ）<ul>
-<li>将函数定义移出 <code>DOMContentLoaded</code> 回调</li>
-<li>提取 <code>generateTagsHTML</code> 函数</li>
-<li>增强了对网络请求、数据解析和 DOM 操作的错误处理</li>
-<li>增加了对 <code>localStorage</code> 数据和 DOM 元素存在的检查</li>
-<li>添加了一些注释</li>
-</ul>
-</li>
-<li>修复 404 页面的<code>返回首页</code>按钮指向的不是根目录的 <code>index.html</code> 的问题</li>
-<li>修复网站图标不显示的问题</li>
-<li>首页新增了<code>查看网站更新日志</code>链接</li>
-</ul>
-</li>
-<li><strong>修改</strong><ul>
-<li>修改了一些样式</li>
-<li>修改了一些文本</li>
-</ul>
-</li>
-</ul>
-<h2 id="v310-2025年12月20日">V3.1.0 (2025年12月20日)</h2>
-<p><strong>生日大更新!（上半部分）</strong></p>
-<ul>
-<li><strong>新增</strong><ul>
-<li>新增页面切换动画</li>
-</ul>
-</li>
-<li><strong>优化</strong><ul>
-<li>优化网站文件结构，更方便维护</li>
-<li>优化作品详情查看页样式和动画</li>
-<li>优化 <code>works.json</code> 结构（合并了一些条目）</li>
-<li>清理上个样式残留的自定义光标和视差背景相关代码</li>
-<li>清理多余无用文件</li>
-</ul>
-</li>
-<li><strong>修改</strong><ul>
-<li>同步 <code>404.html</code> 页面的样式到新样式并修改了一些文本</li>
-<li>作品页从卡片流样式修改为列表样式</li>
-</ul>
-</li>
-</ul>
-<h1 id="v300-2025年12月19日">V3.0.0 (2025年12月19日)</h1>
-<ul>
-<li><strong>重大修改</strong><ul>
-<li>重构样式，从科技风改信“封”</li>
-</ul>
-</li>
-<li><strong>修改</strong><ul>
-<li>修改了一些文本</li>
-</ul>
-</li>
+<li><strong>refactor</strong>: 重构样式，从科技风改信“封”</li>
+<li><strong>docs</strong>: 修改了一些文本</li>
 </ul>
 <details>
 <summary>古早的更新日志</summary>
 
 # 古早的更新 {#古早的更新}
-> 下面的更新日志已经不具有参考价值，仅记录 ~~虽然记录的也不全~~
-
+> 下面的更新日志已经不具有参考价值，仅记录（虽然记录得也不全）
 > 在这之前的可以分为两个版本 V1.0 和 V2.0
 > 其中 V1.0 就是复制了一个制作好的简易博客主题
-> V2.0 舍弃了 V1.0 的项目，全部重做，风格是科技风，不过 2.0 版本时网站并不完善，更新日志也没有留下太多 (其中有一部分是查看 Git 历史记录撰写的) 
+> V2.0 舍弃了 V1.0 的项目，全部重做，风格是科技风，不过 2.0 版本时网站并不完善，更新日志也没有留下太多（其中有一部分是查看 Git 历史记录撰写的）
 
-## 2025年12月6日 {#2025年12月6日}
-- **优化**
-  - 优化网站性能
-- **修改**
-  - 优化样式
+## 2025-12-06 {#2025-12-06}
+- **perf**: 优化网站性能
+- **style**: 优化样式
 
-## 2025年12月3日 {#2025年12月3日}
-- **优化**
-  - 分离导航栏代码
-- **修改**
-  - 一些小修改
+## 2025-12-03 {#2025-12-03}
+- **perf**: 分离导航栏代码
+- **style**: 一些小修改
 
-## 2025年12月2日 {#2025年12月2日}
-- **优化**
-  - 优化导航栏样式
-- **修改**
-  - 一些小修改
+## 2025-12-02 {#2025-12-02}
+- **perf**: 优化导航栏样式
+- **style**: 一些小修改
 
-## 2025年11月30日 {#2025年11月30日}
-- **优化**
-  - 优化网站性能
+## 2025-11-30 {#2025-11-30}
+- **perf**: 优化网站性能
 
-## 2025年11月23日 {#2025年11月23日}
-- **新增**
-  - 新增了一个作品：`车轮模拟.html`
+## 2025-11-23 {#2025-11-23}
+- **feat**: 新增了一个作品：`车轮模拟.html`
 
-## 2025年10月22日 {#2025年10月22日}
-- **优化**
-  - 优化作品`朗诵1.html`(和`朗诵2.html`)中的图片，以及修复其中的一些链接跳转问题
+## 2025-10-22 {#2025-10-22}
+- **perf**: 优化作品 `朗诵1.html`（和 `朗诵2.html`）中的图片，以及修复其中的一些链接跳转问题
 
-## 2025年10月22日 {#2025年10月22日-1}
-- **新增**
-  - 新增了一个（也可以说是两个）作品：`朗诵1.html`(和`朗诵2.html`)
+## 2025-10-22 {#2025-10-22-1}
+- **feat**: 新增了一个（也可以说是两个）作品：`朗诵1.html`（和 `朗诵2.html`）
 
-## 2025年9月8日 {#2025年9月8日}
-- **新增**
-  - 404页面（`404.html`）
-  - 新增触屏支持（在初始页面可以通过屏幕上滑进入，以前只能使用鼠标滚轮）
+## 2025-09-08 {#2025-09-08}
+- **feat**: 404页面（`404.html`）
+- **feat**: 新增触屏支持（在初始页面可以通过屏幕上滑进入，以前只能使用鼠标滚轮）
 
-## 2025年9月7日 {#2025年9月7日}
-- **重大修改**
-  - 大量文件代码重构和移动
-- **优化**
-  - 分离和部分优化了作品`统计计算器.html`的 js 和 css 代码
-  - 缩短切换页面的间隙时间
-  - 优化作品页面卡片流布局
+## 2025-09-07 {#2025-09-07}
+- **refactor**: 大量文件代码重构和移动
+- **perf**: 分离和部分优化了作品 `统计计算器.html` 的 js 和 css 代码
+- **perf**: 缩短切换页面的间隙时间
+- **perf**: 优化作品页面卡片流布局
 
-## 2025年5月30日 {#2025年5月30日}
-- **新增**
-  - 新增了一个作品：`统计计算器.html`
+## 2025-05-30 {#2025-05-30}
+- **feat**: 新增了一个作品：`统计计算器.html`
 
-## 2025年5月24日 {#2025年5月24日}
-- **新增**
-  - 在`file.json`中新增了一项内容`gaoyaqing的画.jpg`
+## 2025-05-24 {#2025-05-24}
+- **feat**: 在 `file.json` 中新增了一项内容 `gaoyaqing的画.jpg`
 
-## 2025年5月16日 {#2025年5月16日}
-- **优化**
-  - 更新页脚文件`footer.html`
+## 2025-05-16 {#2025-05-16}
+- **perf**: 更新页脚文件 `footer.html`
 
-## 2025年5月2日 {#2025年5月2日}
-- **优化**
-  - 代码和样式优化
+## 2025-05-02 {#2025-05-02}
+- **perf**: 代码和样式优化
 
-## 2025年5月1日 {#2025年5月1日}
-- **新增**
-  - 新增了一个文章：`dilimoxieppt`
-  - 增加文件系统
-  - 添加文章阅读器
-  - 增加了一个自定义 markdown 语法：`<file src="文件链接" title="文件标题" type="文件类型" url="跳转链接">`
-- **优化**
-  - 代码和样式优化
-  - 更新`404.html`
-  - 将导航栏页脚移动至通用脚本
+## 2025-05-01 {#2025-05-01}
+- **feat**: 新增了一个文章：`dilimoxieppt`
+- **feat**: 增加文件系统
+- **feat**: 添加文章阅读器
+- **feat**: 增加了一个自定义 markdown 语法：`<file src="文件链接" title="文件标题" type="文件类型" url="跳转链接">`
+- **perf**: 代码和样式优化
+- **perf**: 更新 `404.html`
+- **perf**: 将导航栏页脚移动至通用脚本
 
-## 2025年4月30日 {#2025年4月30日}
-- **新增**
-  - 新增了文章页面
-- **优化**
-  - 分离 HTML、CSS、JS 文件并优化代码
-  - 优化文件结构
+## 2025-04-30 {#2025-04-30}
+- **feat**: 新增文章页面
+- **perf**: 分离 HTML、CSS、JS 文件并优化代码
+- **perf**: 优化文件结构
 
-## 2025年4月29日 {#2025年4月29日}
-- **新增**
-  - 新增网站图标
-    *2025年12月21日注：时间上从加入起图标就一直不显示，今天才修复……*
-- **优化**
-  - 一些样式优化
+## 2025-04-29 {#2025-04-29}
+- **feat**: 新增网站图标（注：时间上从加入起图标就一直不显示，2025-12-21 才修复）
+- **style**: 一些样式优化
 
-## 2025年4月27日 {#2025年4月27日}
-- **新增**
-  - 新增网站图配置文件：`ekyll-gh-pages.yml``jekyll-docker.yml`
-- **优化**
-  - 合并两个 html 文件:`content.html`和`index.html`
+## 2025-04-27 {#2025-04-27}
+- **feat**: 新增网站配置文件：`jekyll-gh-pages.yml`、`jekyll-docker.yml`
+- **perf**: 合并两个 html 文件：`content.html` 和 `index.html`
 
-## 2025年4月26日 {#2025年4月26日}
-- **重大修改**
-  - 大量文件代码重构和移动
-- **优化**
-  - 优化页面布局
+## 2025-04-26 {#2025-04-26}
+- **refactor**: 大量文件代码重构和移动
+- **perf**: 优化页面布局
 
-## 2025年3月14日 {#2025年3月14日}
-- **优化**
-  - 优化 markdown 查看器
-  - 修复一些链接指向问题
+## 2025-03-14 {#2025-03-14}
+- **perf**: 优化 markdown 查看器
+- **fix**: 修复一些链接指向问题
 
-## 2025年3月13日 {#2025年3月13日}
-- **优化**
-  - 优化代码
+## 2025-03-13 {#2025-03-13}
+- **perf**: 优化代码
 
-## 2025年3月12日 {#2025年3月12日}
-- **优化**
-  - 优化代码
+## 2025-03-12 {#2025-03-12}
+- **perf**: 优化代码
 
-## 2025年3月11日 {#2025年3月11日}
-- **优化**
-  - 修复跨域问题
-    *2025年12月21日注：实际上当时根本没修复*
+## 2025-03-11 {#2025-03-11}
+- **perf**: 修复跨域问题（注：实际上当时根本没修复）
 
-## 2025年3月3日 {#2025年3月3日}
-- **优化**
-  - 在新窗口打开文章
-  - 优化代码
+## 2025-03-03 {#2025-03-03}
+- **perf**: 在新窗口打开文章
+- **perf**: 优化代码
 
-## 2025年3月2日 {#2025年3月2日}
-- **新增**
-  - 新增日夜模式切换
-  - 新增 `404.html`
-- **优化**
-  - 优化代码
+## 2025-03-02 {#2025-03-02}
+- **feat**: 新增日夜模式切换
+- **feat**: 新增 `404.html`
+- **perf**: 优化代码
 
-## 2025年3月1日 {#2025年3月1日}
-- **优化**
-  - 优化代码
+## 2025-03-01 {#2025-03-01}
+- **perf**: 优化代码
 
-## 2025年2月28日 {#2025年2月28日}
-- **优化**
-  - 优化代码
+## 2025-02-28 {#2025-02-28}
+- **perf**: 优化代码
 
-## 2025年2月23日 {#2025年2月23日}
-- **优化**
-  - 优化一些文本
-  - 优化代码
+## 2025-02-23 {#2025-02-23}
+- **docs**: 优化一些文本
+- **perf**: 优化代码
 
-## 2025年2月22日 {#2025年2月22日}
+## 2025-02-22 {#2025-02-22}
 - **初始版本**
   - 新增 `index.html`
-  - 新增 `LICENSE` (MIT License)
+  - 新增 `LICENSE`（MIT License）
 </details></div>
                 <div class="article-footer-tags"><a class="footer-tag" href="/articles.html?tags=%E7%BD%91%E7%AB%99" style="text-decoration: none; color: inherit; cursor: pointer;" title="查看「网站」相关文章">#网站</a></div>
             </div>
@@ -1584,7 +1014,7 @@
     </div>
     <div id="imageModal" class="image-modal"><span class="close">&times;</span><div class="modal-content"><img id="modalImage" src="" alt=""></div><div class="image-info"><span id="imageCaption"></span></div></div>
     <div id="footer-placeholder"></div>
-    <script>window.ARTICLE_HEADINGS = [{"level": 2, "text": "V7.8.8 (2026年5月30日)", "id": "v788-2026年5月30日"}, {"level": 2, "text": "V7.8.7 (2026年5月28日)", "id": "v787-2026年5月28日"}, {"level": 2, "text": "V7.8.6 (2026年5月28日)", "id": "v786-2026年5月28日"}, {"level": 2, "text": "V7.8.5 (2026年5月27日)", "id": "v785-2026年5月27日"}, {"level": 2, "text": "V7.8.4 (2026年5月27日)", "id": "v784-2026年5月27日"}, {"level": 2, "text": "V7.8.3 (2026年5月17日)", "id": "v783-2026年5月17日"}, {"level": 2, "text": "V7.8.2 (2026年5月17日)", "id": "v782-2026年5月17日"}, {"level": 2, "text": "V7.8.1 (2026年5月17日)", "id": "v781-2026年5月17日"}, {"level": 2, "text": "V7.8.0 (2026年5月17日)", "id": "v780-2026年5月17日"}, {"level": 2, "text": "V7.7.2 (2026年5月16日)", "id": "v772-2026年5月16日"}, {"level": 2, "text": "V7.7.1 (2026年5月16日)", "id": "v771-2026年5月16日"}, {"level": 2, "text": "V7.7.0 (2026年5月16日)", "id": "v770-2026年5月16日"}, {"level": 2, "text": "V7.6.10 (2026年5月16日)", "id": "v7610-2026年5月16日"}, {"level": 2, "text": "V7.6.9 (2026年5月16日)", "id": "v769-2026年5月16日"}, {"level": 2, "text": "V7.6.8 (2026年5月16日)", "id": "v768-2026年5月16日"}, {"level": 2, "text": "V7.6.7 (2026年5月16日)", "id": "v767-2026年5月16日"}, {"level": 2, "text": "V7.6.6 (2026年5月16日)", "id": "v766-2026年5月16日"}, {"level": 2, "text": "V7.6.5 (2026年5月15日)", "id": "v765-2026年5月15日"}, {"level": 2, "text": "V7.6.4 (2026年5月15日)", "id": "v764-2026年5月15日"}, {"level": 2, "text": "V7.6.3 (2026年5月13日)", "id": "v763-2026年5月13日"}, {"level": 2, "text": "V7.6.2 (2026年5月13日)", "id": "v762-2026年5月13日"}, {"level": 2, "text": "V7.6.1 (2026年5月12日)", "id": "v761-2026年5月12日"}, {"level": 2, "text": "V7.6.0 (2026年5月11日)", "id": "v760-2026年5月11日"}, {"level": 2, "text": "V7.5.0 (2026年5月10日)", "id": "v750-2026年5月10日"}, {"level": 2, "text": "V7.4.1 (2026年5月10日)", "id": "v741-2026年5月10日"}, {"level": 1, "text": "V7.4.0 (2026年5月10日)", "id": "v740-2026年5月10日"}, {"level": 2, "text": "V7.3.11 (2026年5月8日)", "id": "v7311-2026年5月8日"}, {"level": 2, "text": "V7.3.10 (2026年5月8日)", "id": "v7310-2026年5月8日"}, {"level": 2, "text": "V7.3.9 (2026年5月8日)", "id": "v739-2026年5月8日"}, {"level": 2, "text": "V7.3.8 (2026年5月8日)", "id": "v738-2026年5月8日"}, {"level": 2, "text": "V7.3.7 (2026年5月8日)", "id": "v737-2026年5月8日"}, {"level": 2, "text": "V7.3.6 (2026年5月8日)", "id": "v736-2026年5月8日"}, {"level": 2, "text": "V7.3.5 (2026年5月7日)", "id": "v735-2026年5月7日"}, {"level": 2, "text": "V7.3.4 (2026年5月7日)", "id": "v734-2026年5月7日"}, {"level": 2, "text": "V7.3.3 (2026年5月7日)", "id": "v733-2026年5月7日"}, {"level": 2, "text": "V7.3.2 (2026年5月7日)", "id": "v732-2026年5月7日"}, {"level": 3, "text": "V7.3.1.1 (2026年5月6日)", "id": "v7311-2026年5月6日"}, {"level": 2, "text": "V7.3.1 (2026年5月5日)", "id": "v731-2026年5月5日"}, {"level": 2, "text": "V7.3.0 (2026年5月4日)", "id": "v730-2026年5月4日"}, {"level": 2, "text": "V7.2.3 (2026年5月4日)", "id": "v723-2026年5月4日"}, {"level": 2, "text": "V7.2.2 (2026年5月4日)", "id": "v722-2026年5月4日"}, {"level": 3, "text": "V7.2.1.3 (2026年5月4日)", "id": "v7213-2026年5月4日"}, {"level": 3, "text": "V7.2.1.2 (2026年5月4日)", "id": "v7212-2026年5月4日"}, {"level": 3, "text": "V7.2.1.1 (2026年5月4日)", "id": "v7211-2026年5月4日"}, {"level": 2, "text": "V7.2.1 (2026年5月4日)", "id": "v721-2026年5月4日"}, {"level": 2, "text": "V7.2.0 (2026年5月4日)", "id": "v720-2026年5月4日"}, {"level": 2, "text": "V7.1.7 (2026年5月4日)", "id": "v717-2026年5月4日"}, {"level": 2, "text": "V7.1.6 (2026年5月4日)", "id": "v716-2026年5月4日"}, {"level": 2, "text": "V7.1.5 (2026年5月4日)", "id": "v715-2026年5月4日"}, {"level": 2, "text": "V7.1.4 (2026年5月4日)", "id": "v714-2026年5月4日"}, {"level": 2, "text": "V7.1.3 (2026年5月3日)", "id": "v713-2026年5月3日"}, {"level": 2, "text": "V7.1.2 (2026年5月3日)", "id": "v712-2026年5月3日"}, {"level": 2, "text": "V7.1.1 (2026年5月3日)", "id": "v711-2026年5月3日"}, {"level": 2, "text": "V7.1.0 (2026年5月2日)", "id": "v710-2026年5月2日"}, {"level": 1, "text": "V7.0.0 (2026年5月2日)", "id": "v700-2026年5月2日"}, {"level": 2, "text": "V6.8.2 (2026年4月26日)", "id": "v682-2026年4月26日"}, {"level": 2, "text": "V6.8.1 (2026年4月25日)", "id": "v681-2026年4月25日"}, {"level": 2, "text": "V6.8.0 (2026年4月25日)", "id": "v680-2026年4月25日"}, {"level": 2, "text": "V6.7.1 (2026年4月25日)", "id": "v671-2026年4月25日"}, {"level": 2, "text": "V6.7.0 (2026年4月25日)", "id": "v670-2026年4月25日"}, {"level": 3, "text": "V6.6.0.1 (2026年4月24日)", "id": "v6601-2026年4月24日"}, {"level": 2, "text": "V6.6.0 (2026年4月24日)", "id": "v660-2026年4月24日"}, {"level": 2, "text": "V6.5.0 (2026年4月24日)", "id": "v650-2026年4月24日"}, {"level": 2, "text": "V6.4.2 (2026年4月23日)", "id": "v642-2026年4月23日"}, {"level": 2, "text": "V6.4.1 (2026年4月23日)", "id": "v641-2026年4月23日"}, {"level": 2, "text": "V6.4.0 (2026年4月23日)", "id": "v640-2026年4月23日"}, {"level": 2, "text": "V6.3.7 (2026年4月18日)", "id": "v637-2026年4月18日"}, {"level": 2, "text": "V6.3.6 (2026年4月16日)", "id": "v636-2026年4月16日"}, {"level": 2, "text": "V6.3.5 (2026年4月13日)", "id": "v635-2026年4月13日"}, {"level": 2, "text": "V6.3.4 (2026年4月13日)", "id": "v634-2026年4月13日"}, {"level": 2, "text": "V6.3.3 (2026年4月12日)", "id": "v633-2026年4月12日"}, {"level": 2, "text": "V6.3.2 (2026年4月12日)", "id": "v632-2026年4月12日"}, {"level": 2, "text": "V6.3.1 (2026年4月12日)", "id": "v631-2026年4月12日"}, {"level": 2, "text": "V6.3.0 (2026年4月11日)", "id": "v630-2026年4月11日"}, {"level": 2, "text": "V6.2.1 (2026年4月11日)", "id": "v621-2026年4月11日"}, {"level": 2, "text": "V6.2.0 (2026年4月11日)", "id": "v620-2026年4月11日"}, {"level": 2, "text": "V6.1.1 (2026年4月11日)", "id": "v611-2026年4月11日"}, {"level": 2, "text": "V6.1.0 (2026年4月6日)", "id": "v610-2026年4月6日"}, {"level": 2, "text": "V6.0.4 (2026年4月6日)", "id": "v604-2026年4月6日"}, {"level": 2, "text": "V6.0.3 (2026年4月6日)", "id": "v603-2026年4月6日"}, {"level": 2, "text": "V6.0.2 (2026年4月6日)", "id": "v602-2026年4月6日"}, {"level": 2, "text": "V6.0.1 (2026年4月6日)", "id": "v601-2026年4月6日"}, {"level": 1, "text": "V6.0.0 (2026年4月4日-6日)", "id": "v600-2026年4月4日-6日"}, {"level": 3, "text": "V6.0.0-dev6 (2026年4月6日)", "id": "v600-dev6-2026年4月6日"}, {"level": 3, "text": "V6.0.0-dev5 (2026年4月6日)", "id": "v600-dev5-2026年4月6日"}, {"level": 3, "text": "V6.0.0-dev4 (2026年4月5日)", "id": "v600-dev4-2026年4月5日"}, {"level": 3, "text": "V6.0.0-dev3 (2024年4月5日)", "id": "v600-dev3-2024年4月5日"}, {"level": 3, "text": "V6.0.0-dev2 (2024年4月5日)", "id": "v600-dev2-2024年4月5日"}, {"level": 3, "text": "V6.0.0-dev1 (2024年4月4日)", "id": "v600-dev1-2024年4月4日"}, {"level": 3, "text": "样式变更", "id": "样式变更"}, {"level": 2, "text": "V5.3.4 (2026年4月4日)", "id": "v534-2026年4月4日"}, {"level": 2, "text": "V5.3.3 (2026年4月4日)", "id": "v533-2026年4月4日"}, {"level": 2, "text": "V5.3.2 (2026年4月3日)", "id": "v532-2026年4月3日"}, {"level": 2, "text": "V5.3.1 (2026年4月2日)", "id": "v531-2026年4月2日"}, {"level": 2, "text": "V5.3.0 (2026年4月1日)", "id": "v530-2026年4月1日"}, {"level": 2, "text": "V5.2.0 (2026年3月31日)", "id": "v520-2026年3月31日"}, {"level": 2, "text": "V5.1.2 (2026年3月30日)", "id": "v512-2026年3月30日"}, {"level": 2, "text": "V5.1.1 (2026年3月29日)", "id": "v511-2026年3月29日"}, {"level": 2, "text": "V5.1.0 (2026年3月29日)", "id": "v510-2026年3月29日"}, {"level": 2, "text": "V5.0.1(.2) (2026年3月29日)", "id": "v5012-2026年3月29日"}, {"level": 1, "text": "V5.0.0 (2026年3月28日)", "id": "v500-2026年3月28日"}, {"level": 2, "text": "V4.2.0 (2026年03月17日-27日)", "id": "v420-2026年03月17日-27日"}, {"level": 2, "text": "V4.1.0 (2026年03月15日)", "id": "v410-2026年03月15日"}, {"level": 1, "text": "V4.0.0 (2026年03月14日)", "id": "v400-2026年03月14日"}, {"level": 2, "text": "V3.4.0 (2026年03月08日)", "id": "v340-2026年03月08日"}, {"level": 2, "text": "V3.3.2 (2026年02月05日)", "id": "v332-2026年02月05日"}, {"level": 3, "text": "V3.3.1.1 (2026年01月06日)", "id": "v3311-2026年01月06日"}, {"level": 2, "text": "V3.3.1 (2025年12月28日 )", "id": "v331-2025年12月28日"}, {"level": 2, "text": "V3.3.0 (2025年12月27日)", "id": "v330-2025年12月27日"}, {"level": 2, "text": "V3.2.1 (2025年12月25日)", "id": "v321-2025年12月25日"}, {"level": 2, "text": "V3.2.0 (2025年12月23日)", "id": "v320-2025年12月23日"}, {"level": 2, "text": "V3.1.1 (2025年12月21日)", "id": "v311-2025年12月21日"}, {"level": 2, "text": "V3.1.0 (2025年12月20日)", "id": "v310-2025年12月20日"}, {"level": 1, "text": "V3.0.0 (2025年12月19日)", "id": "v300-2025年12月19日"}, {"level": 1, "text": "古早的更新", "id": "古早的更新"}, {"level": 2, "text": "2025年12月6日", "id": "2025年12月6日"}, {"level": 2, "text": "2025年12月3日", "id": "2025年12月3日"}, {"level": 2, "text": "2025年12月2日", "id": "2025年12月2日"}, {"level": 2, "text": "2025年11月30日", "id": "2025年11月30日"}, {"level": 2, "text": "2025年11月23日", "id": "2025年11月23日"}, {"level": 2, "text": "2025年10月22日", "id": "2025年10月22日"}, {"level": 2, "text": "2025年10月22日", "id": "2025年10月22日-1"}, {"level": 2, "text": "2025年9月8日", "id": "2025年9月8日"}, {"level": 2, "text": "2025年9月7日", "id": "2025年9月7日"}, {"level": 2, "text": "2025年5月30日", "id": "2025年5月30日"}, {"level": 2, "text": "2025年5月24日", "id": "2025年5月24日"}, {"level": 2, "text": "2025年5月16日", "id": "2025年5月16日"}, {"level": 2, "text": "2025年5月2日", "id": "2025年5月2日"}, {"level": 2, "text": "2025年5月1日", "id": "2025年5月1日"}, {"level": 2, "text": "2025年4月30日", "id": "2025年4月30日"}, {"level": 2, "text": "2025年4月29日", "id": "2025年4月29日"}, {"level": 2, "text": "2025年4月27日", "id": "2025年4月27日"}, {"level": 2, "text": "2025年4月26日", "id": "2025年4月26日"}, {"level": 2, "text": "2025年3月14日", "id": "2025年3月14日"}, {"level": 2, "text": "2025年3月13日", "id": "2025年3月13日"}, {"level": 2, "text": "2025年3月12日", "id": "2025年3月12日"}, {"level": 2, "text": "2025年3月11日", "id": "2025年3月11日"}, {"level": 2, "text": "2025年3月3日", "id": "2025年3月3日"}, {"level": 2, "text": "2025年3月2日", "id": "2025年3月2日"}, {"level": 2, "text": "2025年3月1日", "id": "2025年3月1日"}, {"level": 2, "text": "2025年2月28日", "id": "2025年2月28日"}, {"level": 2, "text": "2025年2月23日", "id": "2025年2月23日"}, {"level": 2, "text": "2025年2月22日", "id": "2025年2月22日"}];</script>
+    <script>window.ARTICLE_HEADINGS = [{"level": 2, "text": "V7.8.9 (2026-05-31)", "id": "v789-2026-05-31"}, {"level": 2, "text": "V7.8.8 (2026-05-30)", "id": "v788-2026-05-30"}, {"level": 2, "text": "~~V7.8.7 (2026-05-28)~~ [在 V7.8.9 回滚]", "id": "v787-2026-05-28-在-v789-回滚"}, {"level": 2, "text": "V7.8.6 (2026-05-28)", "id": "v786-2026-05-28"}, {"level": 2, "text": "V7.8.5 (2026-05-27)", "id": "v785-2026-05-27"}, {"level": 2, "text": "V7.8.4 (2026-05-27)", "id": "v784-2026-05-27"}, {"level": 2, "text": "V7.8.3 (2026-05-17)", "id": "v783-2026-05-17"}, {"level": 2, "text": "V7.8.2 (2026-05-17)", "id": "v782-2026-05-17"}, {"level": 2, "text": "V7.8.1 (2026-05-17)", "id": "v781-2026-05-17"}, {"level": 2, "text": "V7.8.0 (2026-05-17)", "id": "v780-2026-05-17"}, {"level": 2, "text": "V7.7.2 (2026-05-16)", "id": "v772-2026-05-16"}, {"level": 2, "text": "V7.7.1 (2026-05-16)", "id": "v771-2026-05-16"}, {"level": 2, "text": "V7.7.0 (2026-05-16)", "id": "v770-2026-05-16"}, {"level": 2, "text": "V7.6.10 (2026-05-16)", "id": "v7610-2026-05-16"}, {"level": 2, "text": "V7.6.9 (2026-05-16)", "id": "v769-2026-05-16"}, {"level": 2, "text": "V7.6.8 (2026-05-16)", "id": "v768-2026-05-16"}, {"level": 2, "text": "V7.6.7 (2026-05-16)", "id": "v767-2026-05-16"}, {"level": 2, "text": "V7.6.6 (2026-05-16)", "id": "v766-2026-05-16"}, {"level": 2, "text": "V7.6.5 (2026-05-15)", "id": "v765-2026-05-15"}, {"level": 2, "text": "V7.6.4 (2026-05-15)", "id": "v764-2026-05-15"}, {"level": 2, "text": "V7.6.3 (2026-05-13)", "id": "v763-2026-05-13"}, {"level": 2, "text": "V7.6.2 (2026-05-13)", "id": "v762-2026-05-13"}, {"level": 2, "text": "V7.6.1 (2026-05-12)", "id": "v761-2026-05-12"}, {"level": 2, "text": "V7.6.0 (2026-05-11)", "id": "v760-2026-05-11"}, {"level": 2, "text": "V7.5.0 (2026-05-10)", "id": "v750-2026-05-10"}, {"level": 2, "text": "V7.4.1 (2026-05-10)", "id": "v741-2026-05-10"}, {"level": 2, "text": "V7.4.0 (2026-05-10)", "id": "v740-2026-05-10"}, {"level": 2, "text": "V7.3.11 (2026-05-08)", "id": "v7311-2026-05-08"}, {"level": 2, "text": "V7.3.10 (2026-05-08)", "id": "v7310-2026-05-08"}, {"level": 2, "text": "V7.3.9 (2026-05-08)", "id": "v739-2026-05-08"}, {"level": 2, "text": "V7.3.8 (2026-05-08)", "id": "v738-2026-05-08"}, {"level": 2, "text": "V7.3.7 (2026-05-08)", "id": "v737-2026-05-08"}, {"level": 2, "text": "V7.3.6 (2026-05-08)", "id": "v736-2026-05-08"}, {"level": 2, "text": "V7.3.5 (2026-05-07)", "id": "v735-2026-05-07"}, {"level": 2, "text": "V7.3.4 (2026-05-07)", "id": "v734-2026-05-07"}, {"level": 2, "text": "V7.3.3 (2026-05-07)", "id": "v733-2026-05-07"}, {"level": 2, "text": "V7.3.2 (2026-05-07)", "id": "v732-2026-05-07"}, {"level": 3, "text": "V7.3.1.1 (2026-05-06)", "id": "v7311-2026-05-06"}, {"level": 2, "text": "V7.3.1 (2026-05-05)", "id": "v731-2026-05-05"}, {"level": 2, "text": "V7.3.0 (2026-05-04)", "id": "v730-2026-05-04"}, {"level": 2, "text": "V7.2.3 (2026-05-04)", "id": "v723-2026-05-04"}, {"level": 2, "text": "V7.2.2 (2026-05-04)", "id": "v722-2026-05-04"}, {"level": 3, "text": "V7.2.1.3 (2026-05-04)", "id": "v7213-2026-05-04"}, {"level": 3, "text": "V7.2.1.2 (2026-05-04)", "id": "v7212-2026-05-04"}, {"level": 3, "text": "V7.2.1.1 (2026-05-04)", "id": "v7211-2026-05-04"}, {"level": 2, "text": "V7.2.1 (2026-05-04)", "id": "v721-2026-05-04"}, {"level": 2, "text": "V7.2.0 (2026-05-04)", "id": "v720-2026-05-04"}, {"level": 2, "text": "V7.1.7 (2026-05-04)", "id": "v717-2026-05-04"}, {"level": 2, "text": "V7.1.6 (2026-05-04)", "id": "v716-2026-05-04"}, {"level": 2, "text": "V7.1.5 (2026-05-04)", "id": "v715-2026-05-04"}, {"level": 2, "text": "V7.1.4 (2026-05-04)", "id": "v714-2026-05-04"}, {"level": 2, "text": "V7.1.3 (2026-05-03)", "id": "v713-2026-05-03"}, {"level": 2, "text": "V7.1.2 (2026-05-03)", "id": "v712-2026-05-03"}, {"level": 2, "text": "V7.1.1 (2026-05-03)", "id": "v711-2026-05-03"}, {"level": 2, "text": "V7.1.0 (2026-05-02)", "id": "v710-2026-05-02"}, {"level": 2, "text": "V7.0.0 (2026-05-02)", "id": "v700-2026-05-02"}, {"level": 2, "text": "V6.8.2 (2026-04-26)", "id": "v682-2026-04-26"}, {"level": 2, "text": "V6.8.1 (2026-04-25)", "id": "v681-2026-04-25"}, {"level": 2, "text": "V6.8.0 (2026-04-25)", "id": "v680-2026-04-25"}, {"level": 2, "text": "V6.7.1 (2026-04-25)", "id": "v671-2026-04-25"}, {"level": 2, "text": "V6.7.0 (2026-04-25)", "id": "v670-2026-04-25"}, {"level": 3, "text": "V6.6.0.1 (2026-04-24)", "id": "v6601-2026-04-24"}, {"level": 2, "text": "V6.6.0 (2026-04-24)", "id": "v660-2026-04-24"}, {"level": 2, "text": "V6.5.0 (2026-04-24)", "id": "v650-2026-04-24"}, {"level": 2, "text": "V6.4.2 (2026-04-23)", "id": "v642-2026-04-23"}, {"level": 2, "text": "V6.4.1 (2026-04-23)", "id": "v641-2026-04-23"}, {"level": 2, "text": "V6.4.0 (2026-04-23)", "id": "v640-2026-04-23"}, {"level": 2, "text": "V6.3.7 (2026-04-18)", "id": "v637-2026-04-18"}, {"level": 2, "text": "V6.3.6 (2026-04-16)", "id": "v636-2026-04-16"}, {"level": 2, "text": "V6.3.5 (2026-04-13)", "id": "v635-2026-04-13"}, {"level": 2, "text": "V6.3.4 (2026-04-13)", "id": "v634-2026-04-13"}, {"level": 2, "text": "V6.3.3 (2026-04-12)", "id": "v633-2026-04-12"}, {"level": 2, "text": "V6.3.2 (2026-04-12)", "id": "v632-2026-04-12"}, {"level": 2, "text": "V6.3.1 (2026-04-12)", "id": "v631-2026-04-12"}, {"level": 2, "text": "V6.3.0 (2026-04-11)", "id": "v630-2026-04-11"}, {"level": 2, "text": "V6.2.1 (2026-04-11)", "id": "v621-2026-04-11"}, {"level": 2, "text": "V6.2.0 (2026-04-11)", "id": "v620-2026-04-11"}, {"level": 2, "text": "V6.1.1 (2026-04-11)", "id": "v611-2026-04-11"}, {"level": 2, "text": "V6.1.0 (2026-04-06)", "id": "v610-2026-04-06"}, {"level": 2, "text": "V6.0.4 (2026-04-06)", "id": "v604-2026-04-06"}, {"level": 2, "text": "V6.0.3 (2026-04-06)", "id": "v603-2026-04-06"}, {"level": 2, "text": "V6.0.2 (2026-04-06)", "id": "v602-2026-04-06"}, {"level": 2, "text": "V6.0.1 (2026-04-06)", "id": "v601-2026-04-06"}, {"level": 2, "text": "V6.0.0 (2026-04-04 ~ 2026-04-06)", "id": "v600-2026-04-04-2026-04-06"}, {"level": 3, "text": "V6.0.0-dev6 (2026-04-06)", "id": "v600-dev6-2026-04-06"}, {"level": 3, "text": "V6.0.0-dev5 (2026-04-06)", "id": "v600-dev5-2026-04-06"}, {"level": 3, "text": "V6.0.0-dev4 (2026-04-05)", "id": "v600-dev4-2026-04-05"}, {"level": 3, "text": "V6.0.0-dev3 (2024-04-05)", "id": "v600-dev3-2024-04-05"}, {"level": 3, "text": "V6.0.0-dev2 (2024-04-05)", "id": "v600-dev2-2024-04-05"}, {"level": 3, "text": "V6.0.0-dev1 (2024-04-04)", "id": "v600-dev1-2024-04-04"}, {"level": 4, "text": "样式变更", "id": "样式变更"}, {"level": 2, "text": "V5.3.4 (2026-04-04)", "id": "v534-2026-04-04"}, {"level": 2, "text": "V5.3.3 (2026-04-04)", "id": "v533-2026-04-04"}, {"level": 2, "text": "V5.3.2 (2026-04-03)", "id": "v532-2026-04-03"}, {"level": 2, "text": "V5.3.1 (2026-04-02)", "id": "v531-2026-04-02"}, {"level": 2, "text": "V5.3.0 (2026-04-01)", "id": "v530-2026-04-01"}, {"level": 2, "text": "V5.2.0 (2026-03-31)", "id": "v520-2026-03-31"}, {"level": 2, "text": "V5.1.2 (2026-03-30)", "id": "v512-2026-03-30"}, {"level": 2, "text": "V5.1.1 (2026-03-29)", "id": "v511-2026-03-29"}, {"level": 2, "text": "V5.1.0 (2026-03-29)", "id": "v510-2026-03-29"}, {"level": 2, "text": "V5.0.1 (2026-03-29)", "id": "v501-2026-03-29"}, {"level": 2, "text": "V5.0.0 (2026-03-28)", "id": "v500-2026-03-28"}, {"level": 2, "text": "V4.2.0 (2026-03-17 ~ 2026-03-27)", "id": "v420-2026-03-17-2026-03-27"}, {"level": 2, "text": "V4.1.0 (2026-03-15)", "id": "v410-2026-03-15"}, {"level": 2, "text": "V4.0.0 (2026-03-14)", "id": "v400-2026-03-14"}, {"level": 2, "text": "V3.4.0 (2026-03-08)", "id": "v340-2026-03-08"}, {"level": 2, "text": "V3.3.2 (2026-02-05)", "id": "v332-2026-02-05"}, {"level": 3, "text": "V3.3.1.1 (2026-01-06)", "id": "v3311-2026-01-06"}, {"level": 2, "text": "V3.3.1 (2025-12-28)", "id": "v331-2025-12-28"}, {"level": 2, "text": "V3.3.0 (2025-12-27)", "id": "v330-2025-12-27"}, {"level": 2, "text": "V3.2.1 (2025-12-25)", "id": "v321-2025-12-25"}, {"level": 2, "text": "V3.2.0 (2025-12-23)", "id": "v320-2025-12-23"}, {"level": 2, "text": "V3.1.1 (2025-12-21)", "id": "v311-2025-12-21"}, {"level": 2, "text": "V3.1.0 (2025-12-20)", "id": "v310-2025-12-20"}, {"level": 2, "text": "V3.0.0 (2025-12-19)", "id": "v300-2025-12-19"}, {"level": 1, "text": "古早的更新", "id": "古早的更新"}, {"level": 2, "text": "2025-12-06", "id": "2025-12-06"}, {"level": 2, "text": "2025-12-03", "id": "2025-12-03"}, {"level": 2, "text": "2025-12-02", "id": "2025-12-02"}, {"level": 2, "text": "2025-11-30", "id": "2025-11-30"}, {"level": 2, "text": "2025-11-23", "id": "2025-11-23"}, {"level": 2, "text": "2025-10-22", "id": "2025-10-22"}, {"level": 2, "text": "2025-10-22", "id": "2025-10-22-1"}, {"level": 2, "text": "2025-09-08", "id": "2025-09-08"}, {"level": 2, "text": "2025-09-07", "id": "2025-09-07"}, {"level": 2, "text": "2025-05-30", "id": "2025-05-30"}, {"level": 2, "text": "2025-05-24", "id": "2025-05-24"}, {"level": 2, "text": "2025-05-16", "id": "2025-05-16"}, {"level": 2, "text": "2025-05-02", "id": "2025-05-02"}, {"level": 2, "text": "2025-05-01", "id": "2025-05-01"}, {"level": 2, "text": "2025-04-30", "id": "2025-04-30"}, {"level": 2, "text": "2025-04-29", "id": "2025-04-29"}, {"level": 2, "text": "2025-04-27", "id": "2025-04-27"}, {"level": 2, "text": "2025-04-26", "id": "2025-04-26"}, {"level": 2, "text": "2025-03-14", "id": "2025-03-14"}, {"level": 2, "text": "2025-03-13", "id": "2025-03-13"}, {"level": 2, "text": "2025-03-12", "id": "2025-03-12"}, {"level": 2, "text": "2025-03-11", "id": "2025-03-11"}, {"level": 2, "text": "2025-03-03", "id": "2025-03-03"}, {"level": 2, "text": "2025-03-02", "id": "2025-03-02"}, {"level": 2, "text": "2025-03-01", "id": "2025-03-01"}, {"level": 2, "text": "2025-02-28", "id": "2025-02-28"}, {"level": 2, "text": "2025-02-23", "id": "2025-02-23"}, {"level": 2, "text": "2025-02-22", "id": "2025-02-22"}];</script>
     <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>
     <script src="/js/busuanzi.min.js" defer></script>
     <script src="/js/main.js" type="module"></script>

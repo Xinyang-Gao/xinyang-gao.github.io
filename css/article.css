@@ -724,16 +724,3 @@
 .footnote a[href^="#fnref"], .footnotes a[href^="#fnref"] {
   text-decoration: none;
 }
-
-/* 无目录时，内容栏占满整个容器宽度 */
-.article-page-container.no-toc .article-right-column {
-    width: 100% !important;
-}
-
-/* 桌面端确保 flex 布局下右侧内容栏自适应 */
-@media (min-width: 769px) {
-    .article-page-container.no-toc .article-right-column {
-        width: 100%;
-        flex: 1;
-    }
-}
