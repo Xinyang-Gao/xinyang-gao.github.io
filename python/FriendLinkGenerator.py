@@ -133,46 +133,6 @@ def generate_html(cards_html: str) -> str:
     <link rel="stylesheet" href="/css/style.css">
     <link rel="stylesheet" href="/css/friends.css">
     <link rel="stylesheet" href="/css/twikoo.css">
-    <style>
-        /* 头像加载优化样式 */
-        .avatar-wrapper {{
-            position: relative;
-            width: 100%;
-            height: 100%;
-        }}
-        
-        .avatar-placeholder {{
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-            font-weight: bold;
-            color: white;
-            background: var(--accent-color);
-        }}
-        
-        .avatar-img {{
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border-radius: 50%;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }}
-        
-        /* 兼容旧版样式 */
-        .friend-avatar {{
-            width: 60px;
-            height: 60px;
-            flex-shrink: 0;
-        }}
-    </style>
 </head>
 <body>
 
@@ -226,7 +186,7 @@ def generate_html(cards_html: str) -> str:
     "name": "高新炀的小站",
     "link": "https://xinyang-gao.github.io",
     "desc": "一个装着些稀奇古怪东西的个人小站，欢迎来逛逛~",
-    "avatar": "https://xinyang-gao.github.io/avatar.webp"
+    "avatar": "https://xinyang-gao.github.io/assets/avatar.webp"
 }}</code></pre>
                         </div>
                     </div>
@@ -264,7 +224,7 @@ def generate_html(cards_html: str) -> str:
 # ========== 主函数 ==========
 def main():
     print("=" * 60)
-    log_info("友链页面生成器启动（服务端渲染卡片，头像加载优化）")
+    log_info("友链页面生成器启动")
     print("=" * 60)
 
     friends = load_friends_data()
@@ -280,7 +240,7 @@ def main():
         log_error(f"写入 HTML 失败: {e}")
         sys.exit(1)
 
-    log_info("友链页面生成器完成（头像已优化：网络缓慢/加载失败时显示占位符）")
+    log_info("友链页面生成器完成")
 
 if __name__ == "__main__":
     main()
