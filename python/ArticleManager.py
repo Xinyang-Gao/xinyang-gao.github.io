@@ -75,6 +75,11 @@ def extract_metadata(content: str) -> tuple[Dict[str, str], str]:
                 yaml_data = yaml.safe_load(meta_text)
                 if isinstance(yaml_data, dict):
                     metadata = yaml_data
+                    # 修复：将 datetime.date/datetime 对象转为字符串
+                    if 'date' in metadata:
+                        date_val = metadata['date']
+                        if hasattr(date_val, 'isoformat'):
+                            metadata['date'] = date_val.isoformat()
                     if 'tag' in metadata:
                         tags = metadata['tag']
                         if isinstance(tags, str):
@@ -85,7 +90,7 @@ def extract_metadata(content: str) -> tuple[Dict[str, str], str]:
             except yaml.YAMLError:
                 pass
 
-        # 降级解析
+        # 降级解析（保持不变）
         for line in meta_text.split('\n'):
             line = line.strip()
             if not line or ':' not in line:
