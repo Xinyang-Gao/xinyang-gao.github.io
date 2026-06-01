@@ -15,7 +15,7 @@ except ImportError:
     GUI_AVAILABLE = False
 
 # 脚本列表（按依赖顺序）
-SCRIPTS = ["ArticleManager.py", "WorkManager.py", "Statistic.py", "RssGenerator.py", "SitemapGenerator.py","FriendLinkGenerator.py", "CodeAnalyzer.py"]
+SCRIPTS = ["ArticleManager.py", "WorkManager.py", "Statistic.py", "RssGenerator.py", "SitemapGenerator.py","FriendLinkGenerator.py", "StaticListGenerator.py", "CodeAnalyzer.py"]
 
 # ========== 统一路径常量 ==========
 PROJECT_ROOT = Path(__file__).parent.parent
