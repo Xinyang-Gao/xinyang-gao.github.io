@@ -15,7 +15,6 @@ function isFeatureEnabled(key, defaultValue = true) {
     const stored = storageController.getItem(key);
     if (stored !== null) return stored === 'true';
   }
-  // 降级读取 localStorage
   try {
     const raw = localStorage.getItem(key);
     if (raw !== null) return raw === 'true';
@@ -23,7 +22,7 @@ function isFeatureEnabled(key, defaultValue = true) {
   return defaultValue;
 }
 
-// ==================== 自定义光标 ====================
+// ==================== 自定义光标（动态透明度 + 旋转平滑衰减 + 空闲回正） ====================
 export class CustomCursor {
   constructor(options = {}) {
     if (window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window) {
@@ -37,6 +36,16 @@ export class CustomCursor {
     this.velocityX = 0; this.velocityY = 0;
     this.snappedMode = false; this.snappedElement = null;
     this.rafId = null; this.visible = false;
+
+    // 动态填充透明度相关
+    this.speedThreshold = 0.5;        // 速度阈值（像素/毫秒），大于此值显示实心
+    this.currentFillOpacity = 1;
+    this.targetFillOpacity = 1;
+
+    // 空闲回正相关
+    this.lastMoveTime = performance.now();   // 最后一次鼠标移动时间（毫秒）
+    this.idleResetDelay = 3000;              // 空闲重置延迟（毫秒）
+
     this.initDOM(); this.initEvents(); this.updateColors(); this.startAnimation();
     window.addEventListener('themeChanged', () => this.updateColors());
     const observer = new MutationObserver(() => this.updateColors());
@@ -57,6 +66,7 @@ export class CustomCursor {
     svg.style.display = 'block';
     this.fillPath = document.createElementNS(svgNS, 'path');
     this.fillPath.setAttribute('d', 'M42.6817 41.1495L27.5103 6.79925C26.7269 5.02557 24.2082 5.02558 23.3927 6.79925L7.59814 41.1495C6.75833 42.9759 8.52712 44.8902 10.4125 44.1954L24.3757 39.0496C24.8829 38.8627 25.4385 38.8627 25.9422 39.0496L39.8121 44.1954C41.6849 44.8902 43.4884 42.9759 42.6817 41.1495Z');
+    this.fillPath.setAttribute('fill-opacity', '1');
     this.strokePath = document.createElementNS(svgNS, 'path');
     this.strokePath.setAttribute('d', 'M43.7146 40.6933L28.5431 6.34306C27.3556 3.65428 23.5772 3.69516 22.3668 6.32755L6.57226 40.6778C5.3134 43.4156 7.97238 46.298 10.803 45.2549L24.7662 40.109C25.0221 40.0147 25.2999 40.0156 25.5494 40.1082L39.4193 45.254C42.2261 46.2953 44.9254 43.4347 43.7146 40.6933Z');
     this.strokePath.setAttribute('stroke-width', '2.5');
@@ -84,14 +94,28 @@ export class CustomCursor {
         this.container.classList.add('visible');
         document.body.classList.add('custom-cursor-enabled');
       }
+      // 更新最后移动时间（用于空闲检测）
+      this.lastMoveTime = performance.now();
+
+      // 可点击元素的选择器（扩展：主题切换、统计卡片、标签等）
+      const clickableSelector = `
+        a, button, .nav-item, .list-item, [role="button"], [data-clickable],
+        .tag-button, .work-details-close, input, textarea, select, [contenteditable="true"],
+        .theme-switch, .stat-card, .tag, .stat-card[data-stat-type], #theme-toggle-checkbox
+      `;
       const elemUnderCursor = document.elementsFromPoint(e.clientX, e.clientY)[0];
-      const isClickable = elemUnderCursor?.matches?.('a, button, .nav-item, .list-item, [role="button"], [data-clickable], .tag-button, .work-details-close, input, textarea, select, [contenteditable="true"]');
+      const clickableTarget = elemUnderCursor?.closest(clickableSelector);
+      const isClickable = !!clickableTarget;
+
       if (isClickable) {
-        if (!this.snappedMode || this.snappedElement !== elemUnderCursor) this.enterSnappedMode(elemUnderCursor);
+        if (!this.snappedMode || this.snappedElement !== clickableTarget) {
+          this.enterSnappedMode(clickableTarget);
+        }
         this.updateDotPosition(e.clientX, e.clientY);
       } else {
         if (this.snappedMode) this.exitSnappedMode();
       }
+
       const now = performance.now();
       if (this.lastTimestamp) {
         const dt = Math.min(50, Math.max(1, now - this.lastTimestamp));
@@ -101,6 +125,7 @@ export class CustomCursor {
       this.lastMouseX = e.clientX;
       this.lastMouseY = e.clientY;
       this.lastTimestamp = now;
+
       if (!this.snappedMode) {
         this.targetX = e.clientX;
         this.targetY = e.clientY;
@@ -108,15 +133,20 @@ export class CustomCursor {
         if (speed > this.config.minSpeedForRotation) {
           let angle = Math.atan2(this.velocityY, this.velocityX) * 180 / Math.PI + 90;
           this.targetRotation = angle;
-        } else this.targetRotation = 0;
-      } else this.targetRotation = -45;
+        }
+        // 注意：不再立即将 targetRotation 置零，动画循环中会处理衰减和空闲回正
+      } else {
+        this.targetRotation = -45;
+      }
     });
+
     window.addEventListener('mouseleave', () => {
       this.visible = false;
       this.container.classList.remove('visible');
       document.body.classList.remove('custom-cursor-enabled');
       if (this.snappedMode) this.exitSnappedMode();
     });
+
     window.addEventListener('mouseenter', () => {
       if (this.targetX !== undefined) {
         this.visible = true;
@@ -124,9 +154,11 @@ export class CustomCursor {
         document.body.classList.add('custom-cursor-enabled');
       }
     });
+
     window.addEventListener('scroll', () => {
       if (this.snappedMode && this.snappedElement) this.updateSnappedTargetPosition();
     });
+
     window.addEventListener('resize', () => {
       if (this.snappedMode && this.snappedElement) this.updateSnappedTargetPosition();
     });
@@ -169,9 +201,40 @@ export class CustomCursor {
       const dy = this.targetY - this.currentY;
       this.currentX += dx * 0.3;
       this.currentY += dy * 0.3;
+      
+      // 旋转角度逻辑（非吸附模式）
+      if (!this.snappedMode) {
+        const now = performance.now();
+        const idleMs = now - (this.lastMoveTime || now);
+        const speed = Math.hypot(this.velocityX, this.velocityY);
+        
+        if (speed > this.config.minSpeedForRotation) {
+          // 正在移动：目标角度由速度方向决定（已在 mousemove 中设置）
+          // 更新最后移动时间（再次确保）
+          this.lastMoveTime = now;
+        } else if (idleMs >= this.idleResetDelay) {
+          // 鼠标静止超过空闲阈值，强制目标角度归零
+          this.targetRotation = 0;
+        } else {
+          // 移动停止但未超时：缓慢衰减（平滑过渡）
+          this.targetRotation *= 0.96;
+          if (Math.abs(this.targetRotation) < 0.1) this.targetRotation = 0;
+        }
+      } else {
+        this.targetRotation = -45;
+      }
+      
+      // 计算最短路径旋转差值
       let diff = this.targetRotation - this.currentRotation;
       if (Math.abs(diff) > 180) diff -= Math.sign(diff) * 360;
       this.currentRotation += diff * this.config.rotationSmoothing;
+
+      // 动态填充透明度：快速移动时实心，慢速时透明（仅轮廓）
+      const speed = Math.hypot(this.velocityX, this.velocityY);
+      this.targetFillOpacity = speed > this.speedThreshold ? 1 : 0;
+      this.currentFillOpacity += (this.targetFillOpacity - this.currentFillOpacity) * 0.25;
+      this.fillPath.setAttribute('fill-opacity', this.currentFillOpacity);
+
       this.svg.style.transform = `translate(-50%, -50%) rotate(${this.currentRotation}deg) scale(${this.fixedScale})`;
       this.container.style.transform = `translate(${this.currentX}px, ${this.currentY}px)`;
       this.rafId = requestAnimationFrame(animate);
@@ -430,36 +493,24 @@ export class ScrollReveal {
 // ==================== 全局滚动揭示单例管理 ====================
 let globalScrollRevealInstance = null;
 
-/**
- * 确保滚动揭示实例已创建并挂载到 window
- * 必须在任何动态内容生成之前调用
- */
 export function ensureScrollReveal() {
   if (!globalScrollRevealInstance) {
     globalScrollRevealInstance = new ScrollReveal();
   }
-  // 挂载到全局 window 对象，供其他模块使用
   window.scrollRevealInstance = globalScrollRevealInstance;
   return globalScrollRevealInstance;
 }
 
-/**
- * 刷新滚动揭示（供外部调用）
- */
 export function refreshScrollReveal() {
   if (globalScrollRevealInstance) {
     globalScrollRevealInstance.refresh();
   } else if (window.scrollRevealInstance) {
     window.scrollRevealInstance.refresh();
   } else {
-    // 如果还没有实例，则创建
     ensureScrollReveal();
   }
 }
 
-/**
- * 获取滚动揭示实例
- */
 export function getScrollReveal() {
   return globalScrollRevealInstance || window.scrollRevealInstance;
 }
@@ -473,7 +524,6 @@ export function initUIEffects() {
   if (uiEffectsInitialized) return;
   uiEffectsInitialized = true;
   
-  // 确保滚动揭示已初始化（但此函数可能在空闲任务中调用，此时可能已经通过 ensureScrollReveal 提前初始化了）
   ensureScrollReveal();
   
   const initFn = () => {
@@ -502,5 +552,4 @@ export function initUIEffects() {
   }
 }
 
-// 导出实例（供设置页面或调试使用）
 export { customCursorInstance, externalLinkManagerInstance };
