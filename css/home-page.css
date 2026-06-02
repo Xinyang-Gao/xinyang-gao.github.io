@@ -264,3 +264,42 @@
     background: var(--accent-color);
     color: #14141a;
 }
+
+/* 首页快捷导航模块 - 低调融合 */
+.quick-site-nav {
+  margin: 32px 0 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-light);
+}
+
+.quick-nav-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px 24px;
+}
+
+.quick-nav-links a {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  padding: 4px 2px;
+  transition: color var(--transition-fast);
+  text-decoration: none;
+}
+
+.quick-nav-links a:hover {
+  color: var(--accent-color);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+/* 移动端触摸区域适当增大 */
+@media (max-width: 768px) {
+  .quick-nav-links {
+    gap: 12px 18px;
+  }
+  .quick-nav-links a {
+    padding: 8px 4px;
+    font-size: 0.9rem;
+  }
+}
