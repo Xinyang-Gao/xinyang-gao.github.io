@@ -18,7 +18,7 @@ function isFeatureEnabled(key, defaultValue = true) {
   try {
     const raw = localStorage.getItem(key);
     if (raw !== null) return raw === 'true';
-  } catch (e) {}
+  } catch (e) { }
   return defaultValue;
 }
 
@@ -29,29 +29,53 @@ export class CustomCursor {
       console.log('[INFO] 触摸设备，跳过自定义光标');
       return;
     }
-    this.config = { damping: 0.92, stiffness: 0.18, rotationSmoothing: 0.2, minSpeedForRotation: 0.5, ...options };
-    this.targetX = 0; this.targetY = 0; this.currentX = 0; this.currentY = 0; this.fixedScale = 0.55;
+    this.config = {
+      damping: 0.92,
+      stiffness: 0.18,
+      rotationSmoothing: 0.2,
+      minSpeedForRotation: 0.5,
+      idleDecayFactor: 0.98,        // 空闲时旋转衰减系数（平滑归零）
+      angleFilter: 0.2,             // 原始角度低通滤波系数
+      clickScale: 0.8,              // 点击时缩放倍数
+      idleResetDelay: 100,         // 空闲延迟（毫秒）后开始归位
+      ...options
+    };
+    this.targetX = 0; this.targetY = 0; this.currentX = 0; this.currentY = 0;
+    this.fixedScale = 0.55;
     this.currentRotation = 0; this.targetRotation = 0;
     this.lastMouseX = 0; this.lastMouseY = 0; this.lastTimestamp = 0;
     this.velocityX = 0; this.velocityY = 0;
     this.snappedMode = false; this.snappedElement = null;
     this.rafId = null; this.visible = false;
 
-    // 动态填充透明度相关
-    this.speedThreshold = 0.5;        // 速度阈值（像素/毫秒），大于此值显示实心
+    // 动态填充透明度
+    this.speedThreshold = 0.5;
     this.currentFillOpacity = 1;
     this.targetFillOpacity = 1;
 
-    // 空闲回正相关
-    this.lastMoveTime = performance.now();   // 最后一次鼠标移动时间（毫秒）
-    this.idleResetDelay = 3000;              // 空闲重置延迟（毫秒）
+    // 空闲复位相关
+    this.lastMoveTime = performance.now();
 
-    this.initDOM(); this.initEvents(); this.updateColors(); this.startAnimation();
+    // 角度滤波
+    this.filteredAngle = 0;
+
+    // 点击动效相关
+    this.clickScaleMultiplier = 1;      // 当前缩放系数
+    this.clickTargetMultiplier = 1;     // 目标缩放系数
+    this.clickFillMultiplier = 1;       // 当前填充系数
+    this.clickFillTarget = 1;
+
+    this.initDOM();
+    this.initEvents();
+    this.updateColors();
+    this.startAnimation();
+    this._hideNativeCursor();   // 隐藏原生鼠标
+
     window.addEventListener('themeChanged', () => this.updateColors());
     const observer = new MutationObserver(() => this.updateColors());
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
   }
-  
+
   initDOM() {
     this.container = document.createElement('div');
     this.container.className = 'custom-cursor';
@@ -79,14 +103,14 @@ export class CustomCursor {
     this.dot.className = 'custom-cursor-dot';
     document.body.appendChild(this.dot);
   }
-  
+
   updateColors() {
     const rootStyles = getComputedStyle(document.documentElement);
     const accentColor = rootStyles.getPropertyValue('--accent-color').trim() || '#a55860';
     this.fillPath.setAttribute('fill', accentColor);
     this.strokePath.setAttribute('stroke', '#ffffff');
   }
-  
+
   initEvents() {
     window.addEventListener('mousemove', (e) => {
       if (!this.visible) {
@@ -94,10 +118,8 @@ export class CustomCursor {
         this.container.classList.add('visible');
         document.body.classList.add('custom-cursor-enabled');
       }
-      // 更新最后移动时间（用于空闲检测）
       this.lastMoveTime = performance.now();
 
-      // 可点击元素的选择器（扩展：主题切换、统计卡片、标签等）
       const clickableSelector = `
         a, button, .nav-item, .list-item, [role="button"], [data-clickable],
         .tag-button, .work-details-close, input, textarea, select, [contenteditable="true"],
@@ -131,10 +153,12 @@ export class CustomCursor {
         this.targetY = e.clientY;
         let speed = Math.hypot(this.velocityX, this.velocityY);
         if (speed > this.config.minSpeedForRotation) {
-          let angle = Math.atan2(this.velocityY, this.velocityX) * 180 / Math.PI + 90;
-          this.targetRotation = angle;
+          let rawAngle = Math.atan2(this.velocityY, this.velocityX) * 180 / Math.PI + 90;
+          let angleDiff = rawAngle - this.filteredAngle;
+          if (Math.abs(angleDiff) > 180) angleDiff -= Math.sign(angleDiff) * 360;
+          this.filteredAngle += angleDiff * this.config.angleFilter;
+          this.targetRotation = this.filteredAngle;
         }
-        // 注意：不再立即将 targetRotation 置零，动画循环中会处理衰减和空闲回正
       } else {
         this.targetRotation = -45;
       }
@@ -158,12 +182,26 @@ export class CustomCursor {
     window.addEventListener('scroll', () => {
       if (this.snappedMode && this.snappedElement) this.updateSnappedTargetPosition();
     });
-
     window.addEventListener('resize', () => {
       if (this.snappedMode && this.snappedElement) this.updateSnappedTargetPosition();
     });
+
+    // 点击动效
+    const onMouseDown = (e) => {
+      if (e.button !== 0) return;
+      this.clickTargetMultiplier = this.config.clickScale;
+      this.clickFillTarget = 1;
+    };
+    const onMouseUp = (e) => {
+      if (e.button !== 0) return;
+      this.clickTargetMultiplier = 1;
+      this.clickFillTarget = 1;
+    };
+    window.addEventListener('mousedown', onMouseDown);
+    window.addEventListener('mouseup', onMouseUp);
+    this._clickHandlers = { onMouseDown, onMouseUp };
   }
-  
+
   enterSnappedMode(element) {
     if (!element) return;
     this.snappedMode = true;
@@ -172,27 +210,30 @@ export class CustomCursor {
     this.updateSnappedTargetPosition();
     this.targetRotation = 45;
   }
-  
+
   exitSnappedMode() {
     this.snappedMode = false;
     this.snappedElement = null;
     this.dot.style.display = 'none';
     this.targetRotation = 0;
   }
-  
+
   updateSnappedTargetPosition() {
     if (!this.snappedElement) return;
     const rect = this.snappedElement.getBoundingClientRect();
     this.targetX = rect.right;
     this.targetY = rect.bottom;
   }
-  
+
   updateDotPosition(x, y) {
     if (!this.dot) return;
     this.dot.style.transform = `translate(${x}px, ${y}px)`;
   }
-  
+
   startAnimation() {
+    let lastIdleCheck = performance.now();
+    let isIdle = false;
+
     const animate = () => {
       if (this.snappedMode && this.snappedElement) this.updateSnappedTargetPosition();
       this.currentX += (this.targetX - this.currentX) * this.config.stiffness;
@@ -201,53 +242,85 @@ export class CustomCursor {
       const dy = this.targetY - this.currentY;
       this.currentX += dx * 0.3;
       this.currentY += dy * 0.3;
-      
-      // 旋转角度逻辑（非吸附模式）
+
+      // 空闲归位逻辑（改进版）
       if (!this.snappedMode) {
         const now = performance.now();
-        const idleMs = now - (this.lastMoveTime || now);
         const speed = Math.hypot(this.velocityX, this.velocityY);
-        
+
         if (speed > this.config.minSpeedForRotation) {
-          // 正在移动：目标角度由速度方向决定（已在 mousemove 中设置）
-          // 更新最后移动时间（再次确保）
+          // 正在移动：更新最后一次移动时间，重置空闲标志，不衰减角度
           this.lastMoveTime = now;
-        } else if (idleMs >= this.idleResetDelay) {
-          // 鼠标静止超过空闲阈值，强制目标角度归零
-          this.targetRotation = 0;
+          isIdle = false;
         } else {
-          // 移动停止但未超时：缓慢衰减（平滑过渡）
-          this.targetRotation *= 0.96;
-          if (Math.abs(this.targetRotation) < 0.1) this.targetRotation = 0;
+          // 鼠标静止或速度极低
+          const idleDuration = now - this.lastMoveTime;
+          if (idleDuration >= this.config.idleResetDelay) {
+            // 空闲超过 3 秒：开始衰减至 0
+            if (!isIdle) {
+              isIdle = true;
+            }
+            this.targetRotation *= this.config.idleDecayFactor;
+            if (Math.abs(this.targetRotation) < 0.5) this.targetRotation = 0;
+          } else {
+            // 静止但未达到空闲延迟：保持当前目标角度（不变）
+            // 注意：此处不能乘以 0.96，否则会立即衰减
+            // 无需操作 targetRotation，维持原样
+            isIdle = false;
+          }
         }
       } else {
         this.targetRotation = -45;
       }
-      
-      // 计算最短路径旋转差值
+
       let diff = this.targetRotation - this.currentRotation;
       if (Math.abs(diff) > 180) diff -= Math.sign(diff) * 360;
       this.currentRotation += diff * this.config.rotationSmoothing;
 
-      // 动态填充透明度：快速移动时实心，慢速时透明（仅轮廓）
+      // 动态填充透明度（速度感）
       const speed = Math.hypot(this.velocityX, this.velocityY);
       this.targetFillOpacity = speed > this.speedThreshold ? 1 : 0;
       this.currentFillOpacity += (this.targetFillOpacity - this.currentFillOpacity) * 0.25;
-      this.fillPath.setAttribute('fill-opacity', this.currentFillOpacity);
 
-      this.svg.style.transform = `translate(-50%, -50%) rotate(${this.currentRotation}deg) scale(${this.fixedScale})`;
+      // 点击动效插值
+      this.clickScaleMultiplier += (this.clickTargetMultiplier - this.clickScaleMultiplier) * 0.3;
+      this.clickFillMultiplier += (this.clickFillTarget - this.clickFillMultiplier) * 0.3;
+      const finalScale = this.fixedScale * this.clickScaleMultiplier;
+      let finalFillOpacity = this.currentFillOpacity * this.clickFillMultiplier;
+      if (finalFillOpacity > 1) finalFillOpacity = 1;
+      this.fillPath.setAttribute('fill-opacity', finalFillOpacity);
+
+      this.svg.style.transform = `translate(-50%, -50%) rotate(${this.currentRotation}deg) scale(${finalScale})`;
       this.container.style.transform = `translate(${this.currentX}px, ${this.currentY}px)`;
       this.rafId = requestAnimationFrame(animate);
     };
     this.rafId = requestAnimationFrame(animate);
   }
-  
+
+  _hideNativeCursor() {
+    if (!document.getElementById('custom-cursor-style')) {
+      const style = document.createElement('style');
+      style.id = 'custom-cursor-style';
+      style.textContent = `body.custom-cursor-enabled, body.custom-cursor-enabled * { cursor: none !important; }`;
+      document.head.appendChild(style);
+    }
+  }
+
+  _restoreNativeCursor() {
+    const styleEl = document.getElementById('custom-cursor-style');
+    if (styleEl) styleEl.remove();
+  }
+
   destroy() {
     if (this.rafId) cancelAnimationFrame(this.rafId);
+    if (this._clickHandlers) {
+      window.removeEventListener('mousedown', this._clickHandlers.onMouseDown);
+      window.removeEventListener('mouseup', this._clickHandlers.onMouseUp);
+    }
     this.container?.remove();
     this.dot?.remove();
     document.body.classList.remove('custom-cursor-enabled');
-    document.body.style.cursor = '';
+    this._restoreNativeCursor();
   }
 }
 
@@ -266,7 +339,7 @@ export class ExternalLinkManager {
     this._boundHandleClick = null;
     this.init();
   }
-  
+
   isWhitelistedDomain(hostname) {
     if (!hostname) return false;
     const lower = hostname.toLowerCase();
@@ -274,7 +347,7 @@ export class ExternalLinkManager {
     for (let domain of this.WHITELIST) if (lower.endsWith('.' + domain)) return true;
     return false;
   }
-  
+
   isExternalLink(url) {
     if (!url || url.startsWith('#') || url.startsWith('javascript:')) return false;
     try {
@@ -285,14 +358,14 @@ export class ExternalLinkManager {
       return false;
     }
   }
-  
+
   clearTimer() {
     if (this.countdownInterval) {
       clearInterval(this.countdownInterval);
       this.countdownInterval = null;
     }
   }
-  
+
   closeModal() {
     if (!this.currentModal) return;
     this.clearTimer();
@@ -308,7 +381,7 @@ export class ExternalLinkManager {
       this.redirectTriggered = false;
     }, 400);
   }
-  
+
   doRedirect() {
     if (this.redirectTriggered) return;
     if (!this.pendingUrl) return;
@@ -317,7 +390,7 @@ export class ExternalLinkManager {
     window.open(this.pendingUrl, '_blank', 'noopener,noreferrer');
     setTimeout(() => this.closeModal(), 300);
   }
-  
+
   startCountdown(timerElement) {
     if (!this.isSafe) return;
     if (this.redirectTriggered) return;
@@ -337,7 +410,7 @@ export class ExternalLinkManager {
       } else if (!this.redirectTriggered && timerElement) timerElement.innerHTML = `信任站点 · ${this.remainingSeconds} 秒后自动跳转`;
     }, 1000);
   }
-  
+
   showExternalLinkModal(url, targetElement = null) {
     if (this.currentModal) this.closeModal();
     let hostname = '';
@@ -407,7 +480,7 @@ export class ExternalLinkManager {
     if (this.isSafe) this.startCountdown(timerArea);
     return true;
   }
-  
+
   showErrorToast(message) {
     const toast = document.createElement('div');
     toast.textContent = message;
@@ -418,7 +491,7 @@ export class ExternalLinkManager {
       setTimeout(() => toast.remove(), 300);
     }, 2500);
   }
-  
+
   handleLinkClick(e) {
     let target = e.target.closest('a');
     if (!target) return;
@@ -430,13 +503,13 @@ export class ExternalLinkManager {
       this.showExternalLinkModal(href, target);
     }
   }
-  
+
   init() {
     this._boundHandleClick = this.handleLinkClick.bind(this);
     document.addEventListener('click', this._boundHandleClick);
     console.log('[INFO] 外链跳转确认管理器已启动');
   }
-  
+
   destroy() {
     if (this._boundHandleClick) {
       document.removeEventListener('click', this._boundHandleClick);
@@ -454,7 +527,7 @@ export class ScrollReveal {
     this.observer = null;
     this.initObserver();
   }
-  
+
   initObserver() {
     if (this.observer) this.observer.disconnect();
     this.observer = new IntersectionObserver(
@@ -470,18 +543,18 @@ export class ScrollReveal {
     );
     this.observeItems();
   }
-  
+
   observeItems() {
     const items = document.querySelectorAll('.list-item');
     items.forEach(item => {
       if (!item.classList.contains('revealed')) this.observer.observe(item);
     });
   }
-  
+
   refresh() {
     this.initObserver();
   }
-  
+
   destroy() {
     if (this.observer) {
       this.observer.disconnect();
@@ -523,20 +596,18 @@ let externalLinkManagerInstance = null;
 export function initUIEffects() {
   if (uiEffectsInitialized) return;
   uiEffectsInitialized = true;
-  
-  ensureScrollReveal();
-  
+
   const initFn = () => {
     const cursorEnabled = isFeatureEnabled(SETTINGS_KEYS.CURSOR_ENABLED, true);
     const linkWarningEnabled = isFeatureEnabled(SETTINGS_KEYS.LINK_WARNING_ENABLED, true);
-    
+
     if (cursorEnabled && !customCursorInstance) {
       customCursorInstance = new CustomCursor();
     } else if (!cursorEnabled && customCursorInstance) {
       customCursorInstance.destroy();
       customCursorInstance = null;
     }
-    
+
     if (linkWarningEnabled && !externalLinkManagerInstance) {
       externalLinkManagerInstance = new ExternalLinkManager();
     } else if (!linkWarningEnabled && externalLinkManagerInstance) {
@@ -544,7 +615,7 @@ export function initUIEffects() {
       externalLinkManagerInstance = null;
     }
   };
-  
+
   if ('requestIdleCallback' in window) {
     requestIdleCallback(initFn, { timeout: 3000 });
   } else {
