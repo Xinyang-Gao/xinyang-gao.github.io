@@ -11,25 +11,25 @@ export const CONFIG = {
     VISIT_RECORD: 'statisticsVisitRecord',
     THEME: 'theme'
   },
-  
+
   API: {
     WORKS: '/json/works.json',
     ARTICLES: '/json/articles.json',
     STATISTICS: '/json/statistics.json'
   },
-  
+
   EXTERNAL_WHITELIST: new Set([
-    "github.com", "vercel.com", "netlify.app", "wikipedia.org", 
-    "bilibili.com", "bing.com", "baidu.com", "zhihu.com", 
-    "csdn.net", "cloud.tencent.com", "aliyun.com", 
+    "github.com", "vercel.com", "netlify.app", "wikipedia.org",
+    "bilibili.com", "bing.com", "baidu.com", "zhihu.com",
+    "csdn.net", "cloud.tencent.com", "aliyun.com",
     "gaoxinyang.lanzouq.com", "icp.gov.moe"
   ]),
-  
+
   INTERNAL_DOMAINS: [
-    window.location.hostname, 'localhost', '127.0.0.1', 
+    window.location.hostname, 'localhost', '127.0.0.1',
     'xinyang-gao.github.io', 'www.xinyang-gao.github.io'
   ],
-  
+
   BACKGROUND_IMAGES: [
     'https://cn.bing.com/th?id=OHR.MayLaborDayY26_ZH-CN7554485395_UHD.jpg&pid=hp',
     'https://cn.bing.com/th?id=OHR.OloupenaFalls_ZH-CN2980118660_UHD.jpg&pid=hp',
@@ -41,7 +41,7 @@ export const CONFIG = {
     'https://cn.bing.com/th?id=OHR.EuropeFromISS_ZH-CN0722816540_UHD.jpg&pid=hp&w=1920',
     'https://cn.bing.com/th?id=OHR.SplugenPass_ZH-CN8347591461_UHD.jpg&pid=hp&w=1920'
   ],
-  
+
   SITE_BIRTH: new Date('2025-02-22T12:23:53Z')
 };
 
@@ -50,7 +50,7 @@ export class Utils {
   static getUrlParam(name) {
     return new URLSearchParams(window.location.search).get(name);
   }
-  
+
   static getGreetingMessage() {
     const h = new Date().getHours();
     if (h < 5) return '深夜灵感迸发，也要记得休息～';
@@ -61,7 +61,7 @@ export class Utils {
     if (h < 21) return '傍晚好，享受此刻宁静';
     return '夜深人静，愿你今夜好梦';
   }
-  
+
   static isDataExpired(raw, minutes = 5) {
     if (!raw) return true;
     try {
@@ -72,7 +72,7 @@ export class Utils {
       return true;
     }
   }
-  
+
   static validateData(data, type) {
     if (!data) return false;
     if (type === 'works') {
@@ -82,13 +82,13 @@ export class Utils {
     }
     return false;
   }
-  
+
   static getTags(item) {
     if (item.tags && Array.isArray(item.tags)) return item.tags;
     if (item.tag && Array.isArray(item.tag)) return item.tag;
     return [];
   }
-  
+
   static escapeHtml(str) {
     if (!str) return '';
     return String(str).replace(/[&<>]/g, function (m) {
@@ -98,7 +98,7 @@ export class Utils {
       return m;
     });
   }
-  
+
   static debounce(func, wait) {
     let timeout;
     return function executedFunction(...args) {
@@ -110,7 +110,7 @@ export class Utils {
       timeout = setTimeout(later, wait);
     };
   }
-  
+
   static throttle(func, limit) {
     let inThrottle;
     return function () {
@@ -123,31 +123,40 @@ export class Utils {
       }
     };
   }
-  
-  static formatRelativeTime(isoString) { 
-    const target = new Date(isoString); 
-    const now = new Date(); 
-    const diffMs = now - target; 
-    const diffMins = Math.floor(diffMs / (1000 * 60)); 
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60)); 
-    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24)); 
-    if (diffMins < 1) return "刚刚"; 
-    if (diffMins < 60) return `${diffMins}分钟前`; 
-    if (diffHours < 24) return `${diffHours}小时前`; 
-    if (diffDays === 1) return "昨天"; 
-    if (diffDays === 2) return "前天"; 
-    if (diffDays <= 7) return `${diffDays}天前`; 
-    return target.toLocaleDateString('zh-CN', { year: 'numeric', month: 'numeric', day: 'numeric' }); 
+
+  static formatRelativeTime(isoString) {
+    const target = new Date(isoString);
+    const now = new Date();
+    const diffMs = now - target;
+    const diffMins = Math.floor(diffMs / (1000 * 60));
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+    if (diffMins < 1) return "刚刚";
+    if (diffMins < 60) return `${diffMins}分钟前`;
+    if (diffHours < 24) return `${diffHours}小时前`;
+    if (diffDays === 1) return "昨天";
+    if (diffDays === 2) return "前天";
+    if (diffDays <= 7) return `${diffDays}天前`;
+    return target.toLocaleDateString('zh-CN', { year: 'numeric', month: 'numeric', day: 'numeric' });
   }
 
   static parseArticleDate(item) {
     const value = item.date || item.last_updated || item.updated_date;
-    const date = value ? new Date(value) : null;
-    return Number.isNaN(date?.getTime()) ? null : date;
+    if (!value) return null;
+    const chineseMatch = String(value).match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
+    if (chineseMatch) {
+      const year = parseInt(chineseMatch[1], 10);
+      const month = parseInt(chineseMatch[2], 10) - 1;
+      const day = parseInt(chineseMatch[3], 10);
+      const date = new Date(year, month, day);
+      if (!isNaN(date.getTime())) return date;
+    }
+    const date = new Date(value);
+    return isNaN(date.getTime()) ? null : date;
   }
-  
+
   static formatMonthLabel(monthIndex) {
-    return `${monthIndex.toString().padStart(2, '0')} 月`;
+    return `${monthIndex}月`;
   }
 }
 
@@ -157,7 +166,7 @@ export class StorageController {
     this.enabled = this.checkInitialStatus();
     this.listenForConsent();
   }
-  
+
   checkInitialStatus() {
     const consentGiven = this.getItem(CONFIG.STORAGE_KEYS.COOKIE_CONSENT) === 'true';
     if (!consentGiven) {
@@ -166,12 +175,12 @@ export class StorageController {
     }
     return true;
   }
-  
+
   listenForConsent() {
     window.addEventListener('cookieConsentAccepted', () => {
       this.enableStorage();
     });
-    
+
     window.addEventListener('cookieConsentChanged', (event) => {
       const consent = event.detail.consent;
       if (consent) {
@@ -181,26 +190,26 @@ export class StorageController {
       }
     });
   }
-  
+
   enableStorage() {
     this.enabled = true;
     this.setItem(CONFIG.STORAGE_KEYS.COOKIE_CONSENT, 'true');
     console.log('[StorageController] 存储功能已启用');
   }
-  
+
   disableStorage() {
     this.enabled = false;
     this.clearAllData();
     console.log('[StorageController] 存储功能已禁用');
   }
-  
+
   isAllowed() {
     return this.enabled;
   }
-  
+
   clearAllData() {
     const keysToRemove = Object.values(CONFIG.STORAGE_KEYS);
-    
+
     keysToRemove.forEach(key => {
       try {
         this.removeItem(key);
@@ -209,7 +218,7 @@ export class StorageController {
       }
     });
   }
-  
+
   getItem(key) {
     if (!this.isAllowed()) {
       if (key === CONFIG.STORAGE_KEYS.COOKIE_CONSENT) {
@@ -228,7 +237,7 @@ export class StorageController {
       return null;
     }
   }
-  
+
   setItem(key, value) {
     if (key === CONFIG.STORAGE_KEYS.COOKIE_CONSENT) {
       try {
@@ -239,7 +248,7 @@ export class StorageController {
         return;
       }
     }
-    
+
     if (!this.isAllowed()) return;
     try {
       localStorage.setItem(key, value);
@@ -247,7 +256,7 @@ export class StorageController {
       console.warn(`[WARN] 设置存储项 "${key}" 失败:`, e);
     }
   }
-  
+
   removeItem(key) {
     if (key === CONFIG.STORAGE_KEYS.COOKIE_CONSENT) {
       try {
@@ -258,7 +267,7 @@ export class StorageController {
         return;
       }
     }
-    
+
     if (!this.isAllowed()) return;
     try {
       localStorage.removeItem(key);
@@ -272,52 +281,52 @@ export class StorageController {
 export class CookieConsentManager {
   static STORAGE_KEY = CONFIG.STORAGE_KEYS.COOKIE_CONSENT;
   static BANNER_ID = 'cookie-consent-banner';
-  
+
   constructor(storageController) {
     this.storageController = storageController;
     this.banner = null;
     this.isInitialized = false;
     this.init();
   }
-  
+
   init() {
     if (this.hasConsented()) {
       this.storageController.enableStorage();
       console.log('[CookieConsentManager] 用户已同意，启用存储功能');
       return;
     }
-    
+
     if (this.hasRejected()) {
       console.log('[CookieConsentManager] 用户已拒绝Cookie，禁用存储功能');
       this.storageController.disableStorage();
       return;
     }
-    
+
     this.createBanner();
     this.attachEvents();
-    
+
     window.addEventListener('ajax:navigation', () => {
       if (!this.hasConsented() && !this.hasRejected() && this.banner && !this.banner.classList.contains('show')) {
         setTimeout(() => this.showBanner(), 100);
       }
     });
-    
+
     this.isInitialized = true;
   }
-  
+
   hasConsented() {
     const consent = this.storageController.getItem(CookieConsentManager.STORAGE_KEY);
     return consent === 'true';
   }
-  
+
   hasRejected() {
     const consent = this.storageController.getItem(CookieConsentManager.STORAGE_KEY);
     return consent === 'false';
   }
-  
+
   setConsented(consented) {
     this.storageController.setItem(CookieConsentManager.STORAGE_KEY, consented ? 'true' : 'false');
-    
+
     if (consented) {
       this.storageController.enableStorage();
       console.log('[CookieConsentManager] Cookie同意已保存，启用存储');
@@ -325,27 +334,27 @@ export class CookieConsentManager {
       this.storageController.disableStorage();
       console.log('[CookieConsentManager] Cookie拒绝已保存，禁用存储');
     }
-    
+
     window.dispatchEvent(new CustomEvent('cookieConsentChanged', {
       detail: { consent: consented }
     }));
   }
-  
+
   shouldShow() {
     if (this.hasConsented() || this.hasRejected()) return false;
     return true;
   }
-  
+
   createBanner() {
     const existingBanner = document.getElementById(CookieConsentManager.BANNER_ID);
     if (existingBanner) {
       existingBanner.remove();
     }
-    
+
     this.banner = document.createElement('div');
     this.banner.id = CookieConsentManager.BANNER_ID;
     this.banner.className = 'cookie-consent-banner';
-    
+
     this.banner.innerHTML = `
       <div class="cookie-consent-banner-container">
         <div class="cookie-consent-text">
@@ -363,20 +372,20 @@ export class CookieConsentManager {
         </div>
       </div>
     `;
-    
+
     document.body.appendChild(this.banner);
-    
+
     requestAnimationFrame(() => {
       this.banner.classList.add('show');
     });
   }
-  
+
   showBanner() {
     if (this.banner && !this.banner.classList.contains('show')) {
       this.banner.classList.add('show');
     }
   }
-  
+
   hideBanner() {
     if (this.banner) {
       this.banner.classList.remove('show');
@@ -388,13 +397,13 @@ export class CookieConsentManager {
       }, 400);
     }
   }
-  
+
   attachEvents() {
     if (!this.banner) return;
-    
+
     const acceptBtn = this.banner.querySelector('#cookie-accept-btn');
     const declineBtn = this.banner.querySelector('#cookie-decline-btn');
-    
+
     if (acceptBtn) {
       acceptBtn.addEventListener('click', () => {
         this.setConsented(true);
@@ -402,7 +411,7 @@ export class CookieConsentManager {
         window.dispatchEvent(new CustomEvent('cookieConsentAccepted'));
       });
     }
-    
+
     if (declineBtn) {
       declineBtn.addEventListener('click', () => {
         this.setConsented(false);
@@ -410,7 +419,7 @@ export class CookieConsentManager {
       });
     }
   }
-  
+
   resetConsent() {
     this.storageController.removeItem(CookieConsentManager.STORAGE_KEY);
     if (!this.banner) {
@@ -431,7 +440,7 @@ export class PerformanceMonitor {
     this.timers = new Map();
     this.metrics = [];
   }
-  
+
   start(label) {
     if (this.timers.has(label)) {
       console.warn(`[WARN] 计时器"${label}"已在运行`);
@@ -439,7 +448,7 @@ export class PerformanceMonitor {
     }
     this.timers.set(label, performance.now());
   }
-  
+
   end(label) {
     if (!this.timers.has(label)) {
       console.warn(`[WARN] 计时器"${label}"不存在`);
@@ -454,11 +463,11 @@ export class PerformanceMonitor {
     this.timers.delete(label);
     return duration;
   }
-  
+
   getMetrics() {
     return this.metrics.slice(-50);
   }
-  
+
   clearMetrics() {
     this.metrics = [];
   }

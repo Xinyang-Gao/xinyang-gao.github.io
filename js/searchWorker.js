@@ -1,6 +1,27 @@
 // ==================== /js/searchWorker.js ====================
 // Web Worker: 负责数据的过滤、排序和标签提取
 
+// 添加日期解析函数（支持中文格式）
+function parseDateString(dateStr) {
+  if (!dateStr) return null;
+  
+  // 中文格式：2026年05月24日
+  const chineseMatch = String(dateStr).match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
+  if (chineseMatch) {
+    const year = parseInt(chineseMatch[1], 10);
+    const month = parseInt(chineseMatch[2], 10) - 1;
+    const day = parseInt(chineseMatch[3], 10);
+    const date = new Date(year, month, day);
+    if (!isNaN(date.getTime())) {
+      return date.getTime();
+    }
+  }
+  
+  // 标准格式
+  const date = new Date(dateStr);
+  return isNaN(date.getTime()) ? null : date.getTime();
+}
+
 self.addEventListener('message', async (e) => {
   const { type, data, options } = e.data;
   
@@ -37,7 +58,7 @@ self.addEventListener('message', async (e) => {
       });
     }
     
-    // 排序
+    // 排序 - 使用增强的日期解析
     result = sortByField(result, sortOrder);
     
     self.postMessage({
@@ -74,10 +95,18 @@ function sortByField(items, order) {
   const sortedItems = [...items];
   switch(order) {
     case 'updated_asc':
-      sortedItems.sort((a, b) => new Date(a.last_updated || a.date) - new Date(b.last_updated || b.date));
+      sortedItems.sort((a, b) => {
+        const timeA = parseDateString(a.last_updated || a.date) || 0;
+        const timeB = parseDateString(b.last_updated || b.date) || 0;
+        return timeA - timeB;
+      });
       break;
     case 'updated_desc':
-      sortedItems.sort((a, b) => new Date(b.last_updated || b.date) - new Date(a.last_updated || a.date));
+      sortedItems.sort((a, b) => {
+        const timeA = parseDateString(a.last_updated || a.date) || 0;
+        const timeB = parseDateString(b.last_updated || b.date) || 0;
+        return timeB - timeA;
+      });
       break;
     case 'wordcount_asc':
       sortedItems.sort((a, b) => (a.word_count || 0) - (b.word_count || 0));
@@ -86,13 +115,20 @@ function sortByField(items, order) {
       sortedItems.sort((a, b) => (b.word_count || 0) - (a.word_count || 0));
       break;
     case 'date_asc':
-      sortedItems.sort((a, b) => new Date(a.date) - new Date(b.date));
+      sortedItems.sort((a, b) => {
+        const timeA = parseDateString(a.date) || 0;
+        const timeB = parseDateString(b.date) || 0;
+        return timeA - timeB;
+      });
       break;
     case 'date_desc':
-      sortedItems.sort((a, b) => new Date(b.date) - new Date(a.date));
-      break;
     default:
-      sortedItems.sort((a, b) => new Date(b.date) - new Date(a.date));
+      sortedItems.sort((a, b) => {
+        const timeA = parseDateString(a.date) || 0;
+        const timeB = parseDateString(b.date) || 0;
+        return timeB - timeA;
+      });
+      break;
   }
   return sortedItems;
 }
