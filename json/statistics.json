@@ -1,16 +1,16 @@
 {
-  "version": 105,
+  "version": 106,
   "last_updated": "2026年05月24",
-  "last_updated_full": "2026-06-03T23:25:17.450885",
+  "last_updated_full": "2026-06-03T23:42:51.618134",
   "total_articles": 13,
   "total_word_count": 44676,
   "average_article_word_count": 3436,
-  "total_works": 10,
+  "total_works": 11,
   "total_article_categories": 6,
   "total_article_tags": 10,
-  "total_work_tags": 9,
+  "total_work_tags": 10,
   "total_authors": 3,
-  "total_update_days": 23,
+  "total_update_days": 24,
   "article_tags": [
     {
       "name": "网站",
@@ -86,7 +86,7 @@
     },
     {
       "name": "HTML",
-      "count": 5
+      "count": 6
     },
     {
       "name": "PPT",
@@ -103,6 +103,10 @@
     {
       "name": "语文",
       "count": 2
+    },
+    {
+      "name": "PCL2",
+      "count": 1
     },
     {
       "name": "Scratch",
@@ -139,6 +143,7 @@
   ],
   "work_tags_list": [
     "HTML",
+    "PCL2",
     "PPT",
     "Scratch",
     "地理",
