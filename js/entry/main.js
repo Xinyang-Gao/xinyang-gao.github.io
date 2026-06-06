@@ -1,13 +1,13 @@
-// ==================== /js/main.js ====================
+// ==================== /js/entry/main.js ====================
 // 主入口：加载导航/页脚、应用主题、启动空闲任务，并按需加载模块
 
-import { CONFIG, storageController, CookieConsentManager } from '/js/core.js';
-import { initUIEffects, refreshScrollReveal, ensureScrollReveal } from '/js/ui-effects.js';
-import { getTimeBasedTheme, getPageNameFromPath, applyRandomBackgroundImage, startSiteAgeUpdater, updateFooterUpdateTime } from '/js/page-utils.js';
-import { loadNavbar, loadFooter, initBackToTopButton, enableAjaxNavigation, initPageFeatures, fetchAndReplaceContent } from '/js/router.js';
-import { LazyImageLoader, GlobalImageManager } from '/js/image-manager.js';
-import { StatisticsManager, preloadCriticalJSON, registerServiceWorker, initFooterStats } from '/js/site-state.js';
-import { handleListItemClick } from '/js/list-events.js';
+import { CONFIG, storageController, CookieConsentManager } from '/js/core/core.js';
+import { initUIEffects, refreshScrollReveal, ensureScrollReveal } from '/js/ui/ui-effects.js';
+import { getTimeBasedTheme, getPageNameFromPath, applyRandomBackgroundImage, startSiteAgeUpdater, updateFooterUpdateTime } from '/js/core/page-utils.js';
+import { loadNavbar, loadFooter, initBackToTopButton, enableAjaxNavigation, initPageFeatures, fetchAndReplaceContent } from '/js/router/router.js';
+import { LazyImageLoader, GlobalImageManager } from '/js/ui/image-manager.js';
+import { StatisticsManager, preloadCriticalJSON, registerServiceWorker, initFooterStats } from '/js/data/site-state.js';
+import { handleListItemClick } from '/js/ui/list-events.js';
 
 let cookieConsentManager = null;
 
@@ -54,7 +54,7 @@ async function bootstrap() {
     const isRootHtml = targetPath === '/' || targetPath === '/index.html' || (/^\/[^\/]+\.html$/.test(targetPath) && targetPath !== '/404.html');
     if (personalCardContainer) {
       if (isRootHtml) {
-        const { UIRenderer } = await import('/js/search-render.js');
+        const { UIRenderer } = await import('/js/pages/search-render.js');
         personalCardContainer.innerHTML = UIRenderer.generatePersonalCardHTML();
       } else {
         personalCardContainer.innerHTML = '';

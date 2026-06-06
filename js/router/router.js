@@ -1,15 +1,12 @@
-// ==================== /js/router.js ====================
+// ==================== /js/router/router.js ====================
 // 导航加载、无刷新页面替换、分页功能初始化
 
-import { Utils } from '/js/core.js';
-import { getPageNameFromPath, isArticleDetailOr404Page, isSameOrigin, updateDynamicGreeting, applyRandomBackgroundImage } from '/js/page-utils.js';
-import { ensureScrollReveal, refreshScrollReveal } from '/js/ui-effects.js';
-import { initNavTitleReplacer, refreshNavTitleReplacer } from '/js/nav-title-replacer.js';
-import { initThemeToggle } from '/js/theme.js';
-import { PageManager } from '/js/page-manager.js';
-import { initArticlePage } from '/js/article.js';
-import { initArchivePage } from '/js/archive.js';
-import { initHomePage } from '/js/home-manager.js';
+import { Utils } from '/js/core/core.js';
+import { getPageNameFromPath, isSameOrigin} from '/js/core/page-utils.js';
+import { ensureScrollReveal} from '/js/ui/ui-effects.js';
+import { initNavTitleReplacer, refreshNavTitleReplacer} from '/js/router/nav-title-replacer.js';
+import { initThemeToggle } from '/js/ui/theme.js';
+import { initHomePage } from '/js/pages/home-manager.js';
 
 // 全局当前页面管理器
 let currentPageManager = null;
@@ -445,7 +442,7 @@ export async function fetchAndReplaceContent(url, pushState = true) {
       const isRootHtml = targetPath === '/' || targetPath === '/index.html' || (/^\/[^\/]+\.html$/.test(targetPath) && targetPath !== '/404.html');
       if (personalCardContainer) {
         if (isRootHtml) {
-          const { UIRenderer } = await import('/js/search-render.js');
+          const { UIRenderer } = await import('/js/pages/search-render.js');
           personalCardContainer.innerHTML = UIRenderer.generatePersonalCardHTML();
         } else {
           personalCardContainer.innerHTML = '';
@@ -536,7 +533,7 @@ export async function initPageFeatures(pageName) {
         if (window.scrollRevealInstance) window.scrollRevealInstance.refresh();
       }
     };
-    const { initSearchPage } = await import('/js/search-render.js');
+    const { initSearchPage } = await import('/js/pages/search-render.js');
     manager = await initSearchPage(pageName, refreshCallback);
   } else if (pageName === 'archive') {
     const refreshCallback = () => {
@@ -547,16 +544,16 @@ export async function initPageFeatures(pageName) {
         if (window.scrollRevealInstance) window.scrollRevealInstance.refresh();
       }
     };
-    const { initArchivePage } = await import('/js/archive.js');
+    const { initArchivePage } = await import('/js/pages/archive.js');
     manager = await initArchivePage(refreshCallback);
   } else if (pageName === 'article-detail') {
     // 文章详情页需要检测当前路径是否为文章页面
     if (document.querySelector('.article-page-container') || document.getElementById('articleBody')) {
-      const { initArticlePage } = await import('/js/article.js');
+      const { initArticlePage } = await import('/js/pages/article.js');
       manager = initArticlePage();
     }
 } else if (pageName === 'stats') {
-    const { initStatsPage } = await import('/js/stats-init.js');
+    const { initStatsPage } = await import('/js/pages/stats-init.js');
     manager = await initStatsPage();
 }
 

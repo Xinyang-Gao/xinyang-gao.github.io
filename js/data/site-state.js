@@ -2,7 +2,7 @@
 // 统计管理与服务工作线程注册
 // 增强：页脚动态统计填充（文章数、字数、版本、代码规模等）
 
-import { CONFIG, storageController, Utils } from '/js/core.js';
+import { CONFIG, storageController, Utils } from '/js/core/core.js';
 
 export class StatisticsManager {
   static async syncVisitRecord() {

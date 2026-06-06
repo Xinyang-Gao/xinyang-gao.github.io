@@ -1,6 +1,6 @@
-// ==================== /js/stats-init.js ====================
+// ==================== /js/pages/stats-init.js ====================
 // 统计页面入口，配合 router 与无刷新导航
-import { StatsManager } from '/js/stats-manager.js';
+import { StatsManager } from '/js/pages/stats-manager.js';
 
 let currentStatsManager = null;
 

@@ -1,7 +1,7 @@
-// ==================== /js/list-events.js ====================
+// ==================== /js/ui/list-events.js ====================
 // 列表项点击事件与作品详情弹窗
 
-import { Utils } from '/js/core.js';
+import { Utils } from '/js/core/core.js';
 
 export function showWorkDetails(work) {
   if (window.currentModalClose) window.currentModalClose();

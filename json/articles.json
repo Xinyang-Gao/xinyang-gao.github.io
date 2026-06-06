@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-06-03T23:42:51.172114",
+  "generated_at": "2026-06-06T17:30:45.229211",
   "total_articles": 13,
-  "total_word_count": 44676,
+  "total_word_count": 45264,
   "articles": [
     {
       "relative_path": "assets/source/作文/我看到了你的眼睛.md",
@@ -171,9 +171,9 @@
     },
     {
       "relative_path": "assets/source/网站/网站更新日志.md",
-      "hash": "99ae17cd27d140432f09ec42ee897305",
-      "last_updated": "2026-06-03",
-      "modify_count": 167,
+      "hash": "c29cbfa8e26757ee8f85038ddc57556a",
+      "last_updated": "2026-06-06",
+      "modify_count": 168,
       "hidden": false,
       "title": "网站更新日志",
       "date": "2025年12月21日",
@@ -184,8 +184,8 @@
       ],
       "category": "网站",
       "url": "/articles/网站更新日志.html",
-      "word_count": 19070,
-      "read_time": "64分钟"
+      "word_count": 19658,
+      "read_time": "66分钟"
     },
     {
       "relative_path": "assets/source/日记/雪中的思绪.md",

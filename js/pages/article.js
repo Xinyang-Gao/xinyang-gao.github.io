@@ -1,5 +1,5 @@
-// article.js
-import { PageManager } from '/js/page-manager.js';
+// ==================== /js/pages/article.js ====================
+import { PageManager } from '/js/core/page-manager.js';
 
 export class ArticlePageManager extends PageManager {
     constructor() {

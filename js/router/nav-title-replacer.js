@@ -6,7 +6,7 @@
  * – 标题过长时自动滚动显示（跑马灯效果）
  * – 桌面端专用（宽 > 768px），移动端自动禁用
  */
-import { Utils } from '/js/core.js';
+import { Utils } from '/js/core/core.js';
 
 class NavTitleReplacer {
   constructor() {

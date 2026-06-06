@@ -115,8 +115,8 @@ def generate_articles_page(articles: list) -> str:
 <div id="footer-placeholder"></div>
 <script>window.__STATIC_ARTICLES_DATA = {articles_json_str};</script>
 <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>
-<script src="/js/busuanzi.min.js" defer></script>
-<script src="/js/main.js" type="module"></script>
+<script src="/js/vendor/busuanzi.min.js" defer></script>
+<script src="/js/entry/main.js" type="module"></script>
 </body></html>'''
 
 # -------------------- 作品列表 --------------------
@@ -182,8 +182,8 @@ def generate_works_page(works: list) -> str:
 <div id="footer-placeholder"></div>
 <script>window.__STATIC_WORKS_DATA = {works_json_str};</script>
 <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>
-<script src="/js/busuanzi.min.js" defer></script>
-<script src="/js/main.js" type="module"></script>
+<script src="/js/vendor/busuanzi.min.js" defer></script>
+<script src="/js/entry/main.js" type="module"></script>
 </body></html>'''
 
 # -------------------- 主函数 --------------------

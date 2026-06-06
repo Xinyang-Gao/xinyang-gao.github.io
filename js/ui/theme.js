@@ -1,8 +1,8 @@
-// ==================== /js/theme.js ====================
+// ==================== /js/ui/theme.js ====================
 // 主题切换模块：初始化主题开关并应用用户偏好
 
-import { CONFIG, storageController } from '/js/core.js';
-import { getTimeBasedTheme } from '/js/page-utils.js';
+import { CONFIG, storageController } from '/js/core/core.js';
+import { getTimeBasedTheme } from '/js/core/page-utils.js';
 
 export function initThemeToggle() {
   const checkbox = document.getElementById('theme-toggle-checkbox');

@@ -1,5 +1,5 @@
-// /js/home-manager.js
-import { PageManager } from '/js/page-manager.js';
+// /js/pages/home-manager.js
+import { PageManager } from '/js/core/page-manager.js';
 
 export class HomePageManager extends PageManager {
     constructor() {

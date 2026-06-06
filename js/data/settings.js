@@ -1,7 +1,7 @@
 // /js/settings.js
 // 设置页面专用模块：读取/保存配置、控制UI开关、删除cookies等
 
-import { CONFIG, storageController, CookieConsentManager } from '/js/core.js';
+import { CONFIG, storageController, CookieConsentManager } from '/js/core/core.js';
 
 // 设置项键名
 const SETTINGS_KEYS = {

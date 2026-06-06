@@ -1,4 +1,4 @@
-// ==================== /js/page-manager.js ====================
+// ==================== /js/core/page-manager.js ====================
 // 页面管理器基类/接口定义，所有页面管理器都应实现 init 和 destroy 方法
 
 export class PageManager {

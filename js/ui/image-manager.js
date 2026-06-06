@@ -1,4 +1,4 @@
-// ==================== /js/image-manager.js ====================
+// ==================== /js/ui/image-manager.js ====================
 // 图片延迟加载与全局图片查看器管理
 
 export class LazyImageLoader {

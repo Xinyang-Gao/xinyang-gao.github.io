@@ -1,7 +1,7 @@
-// ==================== /js/search-render.js ====================
+// ==================== /js/pages/search-render.js ====================
 // 文章/作品页面的数据管理、UI渲染和搜索控制（按需加载）
 
-import { CONFIG, Utils, storageController, perf } from '/js/core.js';
+import { CONFIG, Utils, storageController, perf } from '/js/core/core.js';
 
 // 导入 Worker（使用内联方式或单独文件）
 let searchWorker = null;

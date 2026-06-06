@@ -1,6 +1,6 @@
-// ==================== /js/stats-manager.js ====================
+// ==================== /js/pages/stats-manager.js ====================
 // 全域统计管理器 — 优化版：移除友链、新增运行时间秒级更新、新增代码行数占比图表
-import { CONFIG } from '/js/core.js';
+import { CONFIG } from '/js/core/core.js';
 
 class FullStatsManager {
     constructor() {
