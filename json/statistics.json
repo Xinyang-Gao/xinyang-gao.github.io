@@ -1,20 +1,24 @@
 {
-  "version": 109,
-  "last_updated": "2026年05月24",
-  "last_updated_full": "2026-06-06T18:42:01.771506",
-  "total_articles": 13,
-  "total_word_count": 45376,
-  "average_article_word_count": 3490,
+  "version": 111,
+  "last_updated": "2026年06月06",
+  "last_updated_full": "2026-06-06T19:29:02.544077",
+  "total_articles": 14,
+  "total_word_count": 50141,
+  "average_article_word_count": 3581,
   "total_works": 11,
   "total_article_categories": 6,
   "total_article_tags": 10,
   "total_work_tags": 10,
   "total_authors": 3,
-  "total_update_days": 24,
+  "total_update_days": 25,
   "article_tags": [
     {
       "name": "网站",
       "count": 4
+    },
+    {
+      "name": "分享",
+      "count": 3
     },
     {
       "name": "日记",
@@ -25,15 +29,11 @@
       "count": 3
     },
     {
-      "name": "分享",
+      "name": "技术",
       "count": 2
     },
     {
       "name": "体育",
-      "count": 1
-    },
-    {
-      "name": "技术",
       "count": 1
     },
     {
@@ -63,15 +63,15 @@
       "count": 3
     },
     {
+      "name": "分享",
+      "count": 2
+    },
+    {
       "name": "网站",
       "count": 2
     },
     {
       "name": "README文档自动构建",
-      "count": 1
-    },
-    {
-      "name": "分享",
       "count": 1
     },
     {

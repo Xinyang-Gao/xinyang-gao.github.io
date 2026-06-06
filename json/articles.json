@@ -1,8 +1,27 @@
 {
-  "generated_at": "2026-06-06T18:42:01.198474",
-  "total_articles": 13,
-  "total_word_count": 45376,
+  "generated_at": "2026-06-06T19:29:01.556642",
+  "total_articles": 14,
+  "total_word_count": 50141,
   "articles": [
+    {
+      "relative_path": "assets/source/分享/为网站嵌入一个优雅的音乐播放器.md",
+      "hash": "d522fc3aa0e3a35d07985a2c6c37556c",
+      "last_updated": "2026-06-06",
+      "modify_count": 1,
+      "hidden": false,
+      "title": "为网站嵌入一个优雅的音乐播放器",
+      "date": "2026年06月06日",
+      "description": "一篇关于如何将开源项目 NeteaseMiniPlayer 集成到个人网站，并适配主题、实现无刷新导航与背景融合的技术分享。",
+      "author": "高新炀",
+      "tags": [
+        "分享",
+        "技术"
+      ],
+      "category": "分享",
+      "url": "/articles/为网站嵌入一个优雅的音乐播放器.html",
+      "word_count": 4765,
+      "read_time": "16分钟"
+    },
     {
       "relative_path": "assets/source/作文/我看到了你的眼睛.md",
       "hash": "9d0b88952285ead20ca2c9431e3c6d5e",
