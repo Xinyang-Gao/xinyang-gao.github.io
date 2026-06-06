@@ -2,6 +2,6 @@
       "description": "一个基于 Web 的图形化编辑器，用于可视化设计 Plain Craft Launcher (PCL) 的主页界面。支持拖拽组件、实时预览、XAML 导入/导出、本地文件同步及自动备份",
       "author": "高新炀",
       "date": "2025-10-30",
-      "tag": ["HTML","PCL2"],
+      "tag": ["HTML","PCL2","Minecraft"],
       "link": "https://github.com/Xinyang-Gao/PCL2-Custom-Homepage-Creator"
     } 

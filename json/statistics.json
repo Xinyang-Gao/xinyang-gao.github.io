@@ -1,14 +1,14 @@
 {
-  "version": 111,
+  "version": 114,
   "last_updated": "2026年06月06",
-  "last_updated_full": "2026-06-06T19:29:02.544077",
+  "last_updated_full": "2026-06-06T19:36:18.454285",
   "total_articles": 14,
   "total_word_count": 50141,
   "average_article_word_count": 3581,
-  "total_works": 11,
+  "total_works": 12,
   "total_article_categories": 6,
   "total_article_tags": 10,
-  "total_work_tags": 10,
+  "total_work_tags": 12,
   "total_authors": 3,
   "total_update_days": 25,
   "article_tags": [
@@ -105,7 +105,19 @@
       "count": 2
     },
     {
+      "name": "Desmos",
+      "count": 1
+    },
+    {
+      "name": "Minecraft",
+      "count": 1
+    },
+    {
       "name": "PCL2",
+      "count": 1
+    },
+    {
+      "name": "Python",
       "count": 1
     },
     {
@@ -114,10 +126,6 @@
     },
     {
       "name": "寒假作业",
-      "count": 1
-    },
-    {
-      "name": "编程",
       "count": 1
     }
   ],
@@ -142,15 +150,17 @@
     "网站"
   ],
   "work_tags_list": [
+    "Desmos",
     "HTML",
+    "Minecraft",
     "PCL2",
     "PPT",
+    "Python",
     "Scratch",
     "地理",
     "学习",
     "寒假作业",
     "数学",
-    "编程",
     "语文"
   ]
 }

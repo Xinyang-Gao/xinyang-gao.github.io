@@ -1,6 +1,17 @@
 {
   "works": [
     {
+      "title": "SVG2Desmos",
+      "description": "一个 Python 工具，将 SVG 路径转换为数学表达式（参数方程），支持分段精确表达式和傅里叶级数拟合",
+      "author": "高新炀",
+      "date": "2026-06-06",
+      "tag": [
+        "Python",
+        "Desmos"
+      ],
+      "link": "https://github.com/Xinyang-Gao/SVG2Desmos"
+    },
+    {
       "title": "中考倒计时",
       "description": "中考倒计时",
       "author": "高新炀",
@@ -54,7 +65,8 @@
       "date": "2025-10-30",
       "tag": [
         "HTML",
-        "PCL2"
+        "PCL2",
+        "Minecraft"
       ],
       "link": "https://github.com/Xinyang-Gao/PCL2-Custom-Homepage-Creator"
     },
@@ -77,7 +89,6 @@
       "date": "2025-05-30",
       "tag": [
         "HTML",
-        "编程",
         "数学"
       ],
       "link": "./works/统计计算器/"
