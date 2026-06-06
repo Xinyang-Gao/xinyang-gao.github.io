@@ -41,7 +41,7 @@ export class GlobalImageManager {
       e.stopPropagation();
       if (typeof window.ImageViewer === 'undefined') {
         const script = document.createElement('script');
-        script.src = '/js/image-viewer.js';
+        script.src = '/js/ui/image-viewer.js';
         script.onload = () => this.openViewerForImage(img);
         document.head.appendChild(script);
       } else {

@@ -8,6 +8,7 @@ import { loadNavbar, loadFooter, initBackToTopButton, enableAjaxNavigation, init
 import { LazyImageLoader, GlobalImageManager } from '/js/ui/image-manager.js';
 import { StatisticsManager, preloadCriticalJSON, registerServiceWorker, initFooterStats } from '/js/data/site-state.js';
 import { handleListItemClick } from '/js/ui/list-events.js';
+import '/js/vendor/global-music-player.js';
 
 let cookieConsentManager = null;
 
