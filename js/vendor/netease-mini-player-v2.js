@@ -189,7 +189,7 @@ class NeteaseMiniPlayer {
     createPlayerHTML() {
         this.element.innerHTML = `
             <div class="player-main">
-                <div class="album-cover-container">
+                <div class="album-cover-container no-image-viewer" >
                     <img class="album-cover" src="" alt="专辑封面">
                     <div class="vinyl-overlay">
                         <div class="vinyl-center"></div>

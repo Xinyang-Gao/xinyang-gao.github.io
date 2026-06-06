@@ -16,7 +16,7 @@ async function bootstrap() {
   ensureScrollReveal();
 
   await Promise.all([loadNavbar(), loadFooter()]);
-  updateFooterUpdateTime().catch(() => {});
+  updateFooterUpdateTime().catch(() => { });
 
   const savedTheme = storageController.isAllowed() ? storageController.getItem(CONFIG.STORAGE_KEYS.THEME) : null;
   const initialTheme = savedTheme || getTimeBasedTheme();
@@ -46,7 +46,12 @@ async function bootstrap() {
 
   cookieConsentManager = new CookieConsentManager(storageController);
 
-  const currentPage = getPageNameFromPath(window.location.pathname) || 'index';
+  let currentPage = getPageNameFromPath(window.location.pathname) || 'index';
+
+  // 检测文章详情页（直接访问时）
+  if (document.querySelector('.article-page-container') || document.getElementById('articleBody')) {
+    currentPage = 'article-detail';
+  }
 
   // 在根目录的 HTML 文件（包括 /、/index.html、以及 /xxx.html），但排除 /404.html，渲染个人信息卡片
   try {
