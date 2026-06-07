@@ -1,49 +1,345 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>关于 - 高新炀的小站</title>
+  <title>关于 · 高新炀的小站</title>
   <link rel="stylesheet" href="/css/style.css">
+  <style>
+    /* ========== 施工中专属神秘特效 ========== */
+    .construction-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 1.2rem 0.5rem 2rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    @keyframes eeriePulse {
+      0% {
+        transform: scale(1);
+        opacity: 0.9;
+        text-shadow: 0 0 0px rgba(180, 91, 99, 0.4);
+      }
+
+      50% {
+        transform: scale(1.08);
+        opacity: 1;
+        text-shadow: 0 0 18px rgba(180, 91, 99, 0.7);
+        filter: drop-shadow(0 0 12px rgba(180, 91, 99, 0.8));
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 0.9;
+        text-shadow: 0 0 0px rgba(180, 91, 99, 0.4);
+      }
+    }
+
+    @keyframes subtleShake {
+
+      0%,
+      100% {
+        transform: rotate(0deg);
+      }
+
+      25% {
+        transform: rotate(2deg);
+      }
+
+      75% {
+        transform: rotate(-2deg);
+      }
+    }
+
+    .construction-title {
+      font-size: 2.8rem;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      background: linear-gradient(125deg, var(--accent-color), var(--accent-light));
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      margin: 0.25rem 0 0.5rem;
+      text-transform: uppercase;
+      animation: glowPulse 2.2s infinite alternate;
+    }
+
+    @keyframes glowPulse {
+      0% {
+        text-shadow: 0 0 0px rgba(180, 91, 99, 0.2);
+        opacity: 0.95;
+      }
+
+      100% {
+        text-shadow: 0 0 8px rgba(180, 91, 99, 0.6);
+        opacity: 1;
+      }
+    }
+
+    .construction-sub {
+      font-size: 1.05rem;
+      color: var(--text-secondary);
+      border-bottom: 1px dashed var(--border-color);
+      display: inline-block;
+      padding-bottom: 8px;
+      margin-bottom: 1.6rem;
+      letter-spacing: 0.5px;
+    }
+
+    @keyframes scanningBeam {
+      0% {
+        background-position: 100% 0;
+      }
+
+      100% {
+        background-position: -100% 0;
+      }
+    }
+
+    .deadline-wrapper {
+      background: var(--surface-color-secondary);
+      border-radius: var(--radius-xl);
+      padding: 0.9rem 1.8rem;
+      margin: 1.5rem auto 1rem;
+      display: inline-flex;
+      flex-wrap: wrap;
+      align-items: baseline;
+      justify-content: center;
+      gap: 0.6rem 1.4rem;
+      border: 1px solid var(--border-light);
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(4px);
+    }
+
+    .deadline-label {
+      font-weight: 500;
+      color: var(--text-secondary);
+      letter-spacing: 2px;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+    }
+
+    .deadline-date {
+      font-size: 1.3rem;
+      font-weight: 700;
+      background: linear-gradient(145deg, var(--accent-color), var(--accent-light));
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      font-family: var(--font-mono);
+    }
+
+    .countdown-box {
+      background: var(--tag-bg);
+      padding: 0.3rem 1rem;
+      border-radius: 60px;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--accent-color);
+      font-family: var(--font-mono);
+      border: 1px solid var(--border-color);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    #daysLeft {
+      font-size: 1.25rem;
+      font-weight: 800;
+      margin-right: 4px;
+      color: var(--accent-light);
+      transition: all 0.2s;
+    }
+
+    .mystery-note {
+      margin-top: 2rem;
+      font-size: 0.88rem;
+      color: var(--text-secondary);
+      background: rgba(0, 0, 0, 0.1);
+      padding: 0.6rem 1.2rem;
+      border-radius: 120px;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      backdrop-filter: blur(2px);
+      animation: fadeFloat 3s infinite alternate;
+    }
+
+    @keyframes fadeFloat {
+      0% {
+        opacity: 0.7;
+        transform: translateY(2px);
+      }
+
+      100% {
+        opacity: 1;
+        transform: translateY(-3px);
+      }
+    }
+
+    /* 神秘几何装饰 简约又神秘 */
+    .construction-container::before {
+      content: "⌛";
+      position: absolute;
+      font-size: 140px;
+      bottom: -30px;
+      right: -20px;
+      opacity: 0.03;
+      font-family: monospace;
+      pointer-events: none;
+      rotate: -15deg;
+      z-index: 0;
+    }
+
+    .construction-container::after {
+      content: "⚙️";
+      position: absolute;
+      font-size: 100px;
+      top: -20px;
+      left: -30px;
+      opacity: 0.04;
+      pointer-events: none;
+      animation: spinSlow 20s infinite linear;
+      z-index: 0;
+    }
+
+    @keyframes spinSlow {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    /* 简单扫描线效果 (增加神秘氛围) */
+    .scan-line {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to bottom,
+          transparent 0%,
+          rgba(180, 91, 99, 0.02) 50%,
+          transparent 100%);
+      pointer-events: none;
+      z-index: 2;
+      animation: scanVertical 6s infinite linear;
+    }
+
+    @keyframes scanVertical {
+      0% {
+        transform: translateY(-100%);
+      }
+
+      100% {
+        transform: translateY(200%);
+      }
+    }
+
+    /* 右侧容器保留优雅卡片风格，加入额外边框光晕 */
+    .main-content-area .container {
+      position: relative;
+      overflow: hidden;
+      transition: box-shadow 0.3s;
+    }
+
+    .main-content-area .container:hover {
+      box-shadow: var(--shadow-lg), var(--shadow-offset), 0 0 0 1px rgba(180, 91, 99, 0.2);
+    }
+
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+      .construction-title {
+        font-size: 2rem;
+      }
+
+      .warning-icon {
+        font-size: 3.8rem;
+      }
+
+      .deadline-date {
+        font-size: 1rem;
+      }
+    }
+  </style>
 </head>
+
 <body>
   <div id="navbar-placeholder"></div>
 
-  <!-- 双栏布局 -->
   <div class="two-column-layout">
-    <!-- 左侧：个人信息栏 -->
     <aside class="sidebar-profile">
       <div id="personal-card-container"></div>
     </aside>
-
-    <!-- 右侧主内容区 -->
     <main class="main-content-area">
-      <div class="container">
-      <h2>关于我</h2>
+      <div class="container" style="position: relative; overflow: hidden;">
+        <div class="scan-line"></div>
+        <div class="construction-container">
+          <h1 class="construction-title">正在施工中</h1>
 
-<blockquote>这个页面还在努力扩充中…<br>几天后再来看看吧~</blockquote>
+          <p style="max-width: 500px; margin: 0 auto; color: var(--text-secondary);">
+            这片领地正在经历神秘蜕变<br>
+            全新的关于页面即将重现
+          </p>
 
-<p>你好呀！我是高新炀，一名即将毕业的初三学生。</p>
+          <div class="deadline-wrapper">
+            <span class="deadline-label"><i class="far fa-calendar-alt"></i> 预计</span>
+            <span class="deadline-date">2026 · 07 · 01</span>
+            <div class="countdown-box">
+              <i class="fas fa-hourglass-half"></i>
+              <span id="daysLeft">--</span> <span style="font-weight: normal;">天后完成重构</span>
+            </div>
+          </div>
 
-<p>这里有我写的文章（随笔、技术博客之类的）、写的作品（有些也许有点小 BUG ）、做的 PPT，还有一些我平时瞎画的画（还没想好怎么在网站上设计呢，<del>等我码完代码就上传</del>）。</p>
+          <div class="mystery-note">
+            <i class="fas fa-eye"></i> 目前结界加固中 · 敬请期待
+            <i class="fas fa-infinity"></i>
+          </div>
 
-<p>我喜欢也主要玩 Minecraft，生电玩家（之后我计划单独弄一个子页面来放 Minecraft 专题内容）</p>
-
-<p>我还有一些其他爱好，比如画画，溜冰呀</p>
-
-<p>很高兴认识你，随便逛逛吧！</p>
-
-<p>更新于2026年05月17日02时10分</p>
+          <div style="margin-top: 24px; font-size: 0.75rem; color: var(--text-secondary); opacity: 0.6;">
+            <i class="fas fa-cog fa-spin"></i> 深处传来代码的低语...
+          </div>
+        </div>
       </div>
     </main>
   </div>
 
   <button id="backToTopBtn" class="back-to-top-btn" title="返回顶部">↑</button>
   <div id="pageTransition" class="page-transition"></div>
-
   <div id="footer-placeholder"></div>
+
   <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>
   <script src="/js/vendor/busuanzi.min.js" defer></script>
   <script src="/js/entry/main.js" type="module"></script>
+
+  <script>
+    (function () {
+      // 目标日期：2026年7月1日 (UTC+8 本地日期计算)
+      const targetDate = new Date(2026, 6, 1); // 月份从0开始，6表示7月
+      targetDate.setHours(0, 0, 0, 0);
+
+      function updateCountdown() {
+        const now = new Date();
+        now.setHours(0, 0, 0, 0);
+        const diffTime = targetDate - now;
+        let daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        const daysSpan = document.getElementById('daysLeft');
+        if (daysSpan) {
+          daysSpan.innerText = daysRemaining;
+        }
+      }
+
+      updateCountdown();
+      // 每分钟更新一次
+      setInterval(updateCountdown, 60000);
+    })();
+  </script>
 </body>
+
 </html>

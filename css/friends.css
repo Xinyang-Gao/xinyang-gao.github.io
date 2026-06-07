@@ -1,3 +1,13 @@
+
+.friends-stats {
+    margin: 20px 0 10px;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    border-bottom: 1px dashed var(--border-color);
+    padding-bottom: 10px;
+    display: inline-block;
+}
+
 .friends-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
@@ -6,15 +16,21 @@
 }
 
 .friend-card {
-    background: var(--surface-color);
-    border: 1px solid var(--border-color);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0.45));
+    background-color: rgba(255, 255, 255, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.35);
     border-radius: var(--radius-lg);
     padding: 20px 24px;
     display: flex;
     align-items: stretch;
     gap: 20px;
-    transition: all 0.35s var(--transition-bounce);
-    box-shadow: var(--shadow-sm);
+    transition: transform 0.35s var(--transition-bounce),
+        box-shadow 0.35s var(--transition-bounce),
+        border-color 0.35s var(--transition-bounce),
+        background 0.35s var(--transition-bounce);
+    box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(10px) saturate(1.08);
+    -webkit-backdrop-filter: blur(10px) saturate(1.08);
     cursor: pointer;
     text-decoration: none;
     color: inherit;
@@ -22,21 +38,79 @@
     overflow: hidden;
     opacity: 0;
     transform: translateY(20px);
-    animation: fadeInUp 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards;
+    animation: friendFadeInUp 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards;
 }
 
-@keyframes fadeInUp {
+/* 卡片逐个渐入延迟 */
+.friend-card:nth-child(1) {
+    animation-delay: 0.05s;
+}
+
+.friend-card:nth-child(2) {
+    animation-delay: 0.1s;
+}
+
+.friend-card:nth-child(3) {
+    animation-delay: 0.15s;
+}
+
+.friend-card:nth-child(4) {
+    animation-delay: 0.2s;
+}
+
+.friend-card:nth-child(5) {
+    animation-delay: 0.25s;
+}
+
+.friend-card:nth-child(6) {
+    animation-delay: 0.3s;
+}
+
+@keyframes friendFadeInUp {
     to {
         opacity: 1;
         transform: translateY(0);
     }
 }
 
+/* 卡内光泽滑动效果 (继承自 .list-item) */
+.friend-card::after {
+    content: '';
+    position: absolute;
+    left: -50%;
+    top: 0;
+    width: 40%;
+    height: 100%;
+    transform: skewX(-20deg) translateX(-100%);
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0));
+    transition: transform 0.9s var(--transition-bounce);
+    pointer-events: none;
+}
+
+.friend-card:hover::after {
+    transform: skewX(-20deg) translateX(220%);
+}
+
 .friend-card:hover {
     border-color: var(--card-border-hover);
-    box-shadow: var(--shadow-hover);
+    box-shadow: var(--shadow-hover), 0 6px 12px rgba(0, 0, 0, 0.06);
     transform: translateY(-6px);
-    background: var(--surface-color-secondary);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.5));
+}
+
+/* 暗色模式下的卡片自适应 */
+[data-theme="dark"] .friend-card {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.02));
+    background-color: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.04);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.02), var(--shadow-sm);
+    backdrop-filter: blur(10px) saturate(1.05);
+}
+
+[data-theme="dark"] .friend-card:hover {
+    border-color: var(--card-border-hover);
+    box-shadow: var(--shadow-hover), 0 0 0 1px rgba(var(--accent-rgb), 0.18);
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0.015));
 }
 
 .friend-avatar {
@@ -58,27 +132,37 @@
     transform: scale(1.02);
 }
 
-.friend-avatar img {
+.avatar-wrapper {
+    position: relative;
     width: 100%;
     height: 100%;
-    object-fit: cover;
-    display: block;
 }
 
-.friend-avatar .avatar-placeholder {
+.avatar-placeholder {
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, var(--accent-light), var(--accent-color));
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2rem;
-    font-weight: 600;
+    font-size: 1.8rem;
+    font-weight: bold;
     color: white;
-    text-transform: uppercase;
+    background: var(--accent-color);
 }
 
-/* 友链信息区域：flex列布局 + 高度自适应，实现右下角网址效果 */
+.avatar-img {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
 .friend-info {
     flex: 1;
     min-width: 0;
@@ -94,6 +178,7 @@
     margin: 0 0 6px 0;
     line-height: 1.3;
     letter-spacing: -0.3px;
+    transition: text-decoration 0.2s;
 }
 
 .friend-card:hover .friend-name {
@@ -120,7 +205,7 @@
     text-align: right;
     letter-spacing: 0.2px;
     font-family: var(--font-mono, monospace);
-    transition: opacity 0.2s ease;
+    transition: opacity 0.2s ease, color 0.2s;
     word-break: break-all;
     line-height: 1.4;
 }
@@ -155,6 +240,7 @@
     padding-left: 18px;
 }
 
+/* 申请要求区域 */
 .requirements-section {
     margin: 8px 0 32px 0;
 }
@@ -192,7 +278,6 @@
     padding: 20px 18px;
     transition: all 0.25s ease;
     border: 1px solid var(--border-light);
-    position: relative;
     backdrop-filter: blur(2px);
 }
 
@@ -231,6 +316,7 @@
     margin: 0;
 }
 
+/* 我的信息区域 */
 .myinfo-section {
     margin: 32px 0 20px;
     padding-top: 8px;
@@ -265,6 +351,7 @@
     display: inline-block;
 }
 
+/* 代码块与复制按钮 */
 .code-block-wrapper {
     background: var(--code-bg);
     border-radius: var(--radius-md);
@@ -322,6 +409,7 @@ code {
     background: transparent;
 }
 
+/* 警告提示 */
 .warning-note {
     margin-top: 28px;
     padding: 14px 20px;
@@ -342,6 +430,7 @@ code {
     font-weight: 600;
 }
 
+/* 致谢区域 */
 .contact-note {
     margin-top: 48px;
     padding: 20px 0;
@@ -355,7 +444,14 @@ code {
     margin: 0;
 }
 
-/* 加载与错误状态继承 */
+.contact-note a {
+    color: var(--accent-color);
+}
+
+.contact-note a:hover {
+    text-decoration: underline;
+}
+
 .friends-empty,
 .friends-loading,
 .friends-error {
@@ -384,16 +480,7 @@ code {
     }
 }
 
-.friends-stats {
-    margin: 20px 0 10px;
-    font-size: 0.9rem;
-    color: var(--text-secondary);
-    border-bottom: 1px dashed var(--border-color);
-    padding-bottom: 10px;
-    display: inline-block;
-}
-
-@media (max-width: 640px) {
+@media (max-width: 768px) {
     .friends-grid {
         grid-template-columns: 1fr;
         gap: 20px;
@@ -431,55 +518,39 @@ code {
     }
 }
 
-[data-theme="dark"] .info-card {
-    background: var(--surface-color-secondary);
+@media (max-width: 480px) {
+    .friend-card {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .friend-avatar {
+        margin-bottom: 8px;
+    }
+
+    .friend-info {
+        align-items: center;
+    }
+
+    .friend-url {
+        text-align: center;
+        margin-top: 8px;
+    }
+
+    .friend-desc {
+        text-align: center;
+    }
 }
 
-[data-theme="dark"] .copy-btn {
-    background: var(--tag-bg);
-    color: var(--text-color);
+.text-center {
+    text-align: center;
 }
 
-[data-theme="dark"] .warning-note {
-    background: rgba(224, 184, 184, 0.1);
+.mt-0 {
+    margin-top: 0;
 }
 
-[data-theme="dark"] .requirement-item {
-    background: var(--surface-color);
-}
-
-[data-theme="dark"] .info-hint {
-    background: var(--tag-bg);
-}
-
-.avatar-wrapper {
-    position: relative;
-    width: 100%;
-    height: 100%;
-}
-
-.avatar-placeholder {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.8rem;
-    font-weight: bold;
-    color: white;
-    background: var(--accent-color);
-    /* fallback */
-}
-
-.avatar-img {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 50%;
-    opacity: 0;
-    transition: opacity 0.2s ease;
+.mb-0 {
+    margin-bottom: 0;
 }
