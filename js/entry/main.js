@@ -9,6 +9,7 @@ import { LazyImageLoader, GlobalImageManager } from '/js/ui/image-manager.js';
 import { StatisticsManager, preloadCriticalJSON, registerServiceWorker, initFooterStats } from '/js/data/site-state.js';
 import { handleListItemClick } from '/js/ui/list-events.js';
 import '/js/vendor/global-music-player.js';
+import { initClarityOnConsent, updateClarityPage } from '/js/core/clarity.js';
 
 let cookieConsentManager = null;
 
@@ -76,7 +77,12 @@ async function bootstrap() {
   document.body.setAttribute('data-loaded', 'true');
 
   console.log('[Main] 初始化完成');
+  initClarityOnConsent();
 
+  // 监听无刷新导航，更新 Clarity 页面记录
+  window.addEventListener('ajax:navigation', () => {
+    updateClarityPage();
+  });
   initFooterStats();
 }
 
