@@ -1,4 +1,4 @@
-// ==================== /js/standalong/friends.js ====================
+// /js/standalong/friends.js
 // 仅负责：Twikoo 评论初始化、复制 JSON、等待导航栏加载
 // 友链卡片已由服务端直接渲染在 HTML 中，不再动态请求数据
 

@@ -1,4 +1,4 @@
-// image-viewer.js
+// /js/ui/image-viewer.js
 class ImageViewer {
   constructor(images, startIndex = 0, options = {}) {
     this.galleryImages = images;

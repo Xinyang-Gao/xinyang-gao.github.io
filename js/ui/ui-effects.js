@@ -1,4 +1,4 @@
-// ==================== /js/ui/ui-effects.js ====================
+// /js/ui/ui-effects.js
 // 自定义光标、外链管理器、滚动揭示效果（支持设置页面动态开关）
 
 import { CONFIG, Utils, storageController } from '/js/core/core.js';

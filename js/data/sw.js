@@ -1,4 +1,4 @@
-// ==================== /sw.js ====================
+// /js/data/sw.js 
 // Service Worker: 缓存关键 JSON 文件，提升加载速度
 
 const CACHE_NAME = 'site-cache-v1';

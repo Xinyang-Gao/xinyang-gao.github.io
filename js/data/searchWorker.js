@@ -1,4 +1,4 @@
-// ==================== /js/searchWorker.js ====================
+// /js/data/searchWorker.js
 // Web Worker: 负责数据的过滤、排序和标签提取
 
 // 添加日期解析函数（支持中文格式）

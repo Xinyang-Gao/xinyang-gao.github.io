@@ -1,4 +1,4 @@
-// ==================== /js/core/page-utils.js ====================
+// /js/core/page-utils.js
 // 常用页面工具函数，供多个模块共享
 
 import { CONFIG, Utils } from '/js/core/core.js';

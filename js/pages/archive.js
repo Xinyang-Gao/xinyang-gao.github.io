@@ -1,4 +1,4 @@
-// ==================== /js/pages/archive.js ====================
+// /js/pages/archive.js
 import { DataManager, UIRenderer } from '/js/pages/search-render.js';
 import { Utils } from '/js/core/core.js';
 import { PageManager } from '/js/core/page-manager.js';

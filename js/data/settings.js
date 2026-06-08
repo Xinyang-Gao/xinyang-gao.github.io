@@ -1,4 +1,4 @@
-// /js/settings.js
+// /js/data/settings.js
 // 设置页面专用模块：读取/保存配置、控制UI开关、删除cookies等
 
 import { CONFIG, storageController, CookieConsentManager } from '/js/core/core.js';

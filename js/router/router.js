@@ -1,4 +1,4 @@
-// ==================== /js/router/router.js ====================
+// /js/router/router.js
 // 导航加载、无刷新页面替换、分页功能初始化
 
 import { Utils } from '/js/core/core.js';

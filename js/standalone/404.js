@@ -1,3 +1,5 @@
+// /js/standalone/404.js
+
 (function () {
     // ======================= 自定义错误消息映射表 (JSON格式) =======================
     const CUSTOM_ERROR_MESSAGES = {

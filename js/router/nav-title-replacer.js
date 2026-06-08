@@ -1,3 +1,5 @@
+// /js/router/nav-titlr-replacer.js
+
 /**
  * 导航标题替换功能 – 重构版
  * – 未匹配导航项时，导航区显示页面标题

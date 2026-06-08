@@ -1,4 +1,4 @@
-// ==================== /js/entry/main.js ====================
+// /js/entry/main.js
 // 主入口：加载导航/页脚、应用主题、启动空闲任务，并按需加载模块
 
 import { CONFIG, storageController, CookieConsentManager } from '/js/core/core.js';

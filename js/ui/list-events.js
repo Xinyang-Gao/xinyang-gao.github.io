@@ -1,4 +1,4 @@
-// ==================== /js/ui/list-events.js ====================
+// /js/ui/list-events.js
 // 列表项点击事件与作品详情弹窗
 
 import { Utils } from '/js/core/core.js';

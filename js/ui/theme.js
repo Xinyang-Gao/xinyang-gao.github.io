@@ -1,4 +1,4 @@
-// ==================== /js/ui/theme.js ====================
+// /js/ui/theme.js
 // 主题切换模块：初始化主题开关并应用用户偏好
 
 import { CONFIG, storageController } from '/js/core/core.js';
