@@ -158,7 +158,6 @@ def generate_html(cards_html: str) -> str:
     <script src="https://registry.npmmirror.com/twikoo/1.7.11/files/dist/twikoo.nocss.js"></script>
     <script src="/js/entry/main.js" type="module"></script>
     <script src="/js/vendor/busuanzi.min.js"></script>
-    <script src="/js/friends.js" type="module"></script>
 </body>
 </html>'''
 
