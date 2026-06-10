@@ -2,10 +2,9 @@
 // 导航加载、无刷新页面替换、分页功能初始化
 
 import { Utils } from '/js/core/core.js';
-import { getPageNameFromPath, isSameOrigin} from '/js/core/page-utils.js';
-import { ensureScrollReveal} from '/js/ui/ui-effects.js';
-import { initNavTitleReplacer, refreshNavTitleReplacer} from '/js/router/nav-title-replacer.js';
-import { initThemeToggle } from '/js/ui/theme.js';
+import { getPageNameFromPath, isSameOrigin } from '/js/core/page-utils.js';
+import { ensureScrollReveal } from '/js/ui/ui-effects.js';
+import { initNavbar, refreshNavbarTitle } from '/js/ui/navbar-manager.js';
 import { initHomePage } from '/js/pages/home-manager.js';
 
 // 全局当前页面管理器
@@ -29,25 +28,12 @@ function setCurrentPageManager(manager) {
 }
 
 export async function loadNavbar() {
-  try {
-    const response = await fetch('/navbar.html');
-    if (!response.ok) throw new Error('加载导航栏失败');
-    const navbarHTML = await response.text();
-    const placeholder = document.getElementById('navbar-placeholder');
-    if (!placeholder) {
-      console.warn('[WARN] 导航栏占位符未找到');
-      return;
-    }
-    placeholder.innerHTML = navbarHTML;
-    initThemeToggle();
-    initMobileMenuToggle();
-    bindNavLinks();
-    initNavigation();
-    initPopstate();
-    initNavTitleReplacer();
-  } catch (error) {
-    console.error('[ERROR] 加载导航栏出错:', error);
-  }
+  await initNavbar();
+}
+
+// 暴露刷新标题的方法供页面切换后调用
+export function refreshNavbarAfterNavigation() {
+  refreshNavbarTitle();
 }
 
 export async function loadFooter() {
@@ -299,6 +285,9 @@ export async function fetchAndReplaceContent(url, pushState = true) {
       try { window.history.pushState({ ajax: true }, fetchedTitle, url); } catch (err) { console.warn('[WARN] pushState 失败:', err); }
     }
 
+    // 刷新导航栏标题（如果标题替换模式启用）
+    refreshNavbarAfterNavigation();   // 或 refreshNavbarTitle()
+
     // 7. 注入新页面的样式（避免重复）
     try {
       const headStyles = Array.from(doc.querySelectorAll('link[rel="stylesheet"], style'));
@@ -415,7 +404,6 @@ export async function fetchAndReplaceContent(url, pushState = true) {
         try {
           bindNavLinks();
           initMobileMenuToggle();
-          initNavTitleReplacer();
         } catch (e) { console.warn('[WARN] 初始化导航交互时出错', e); }
       } else if (!currentNavbar || !currentNavbar.innerHTML.trim()) {
         await loadNavbar();
@@ -468,7 +456,7 @@ export async function fetchAndReplaceContent(url, pushState = true) {
       ensureScrollReveal();
       if (window.scrollRevealInstance) window.scrollRevealInstance.refresh();
     }
-    refreshNavTitleReplacer();
+    refreshNavbarTitle();
 
     // 16. 滚动处理（锚点或顶部）
     try {
@@ -552,10 +540,10 @@ export async function initPageFeatures(pageName) {
       const { initArticlePage } = await import('/js/pages/article.js');
       manager = initArticlePage();
     }
-} else if (pageName === 'stats') {
+  } else if (pageName === 'stats') {
     const { initStatsPage } = await import('/js/pages/stats-init.js');
     manager = await initStatsPage();
-}
+  }
 
   // 其他页面（about, contact, friends, settings, privacy 等）可能没有特殊管理器，返回 null
 
