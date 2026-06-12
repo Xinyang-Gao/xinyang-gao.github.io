@@ -1,5 +1,5 @@
 // /js/router/router.js
-// 导航加载、无刷新页面替换、分页功能初始化
+// 导航加载、无刷新页面替换、分页功能初始化（优化版：脚本执行器防重复、支持卸载）
 
 import { Utils } from '/js/core/core.js';
 import { getPageNameFromPath, isSameOrigin } from '/js/core/page-utils.js';
@@ -10,6 +10,82 @@ import { initHomePage } from '/js/pages/home-manager.js';
 // 全局当前页面管理器
 let currentPageManager = null;
 
+// 记录已动态加载过的样式表
+const loadedStyles = new Set();
+
+// ==================== 脚本执行器（防重复 + 支持卸载） ====================
+class ScriptExecutor {
+  static #loadedScripts = new Set();   // 已加载的外部脚本 URL
+
+  /**
+   * 执行脚本列表（串行）
+   * @param {HTMLScriptElement[]} scripts - 待执行的脚本元素数组
+   * @param {HTMLElement} container - 插入脚本的容器，默认为 document.body
+   * @returns {Promise<void>}
+   */
+  static async execute(scripts, container = document.body) {
+    for (const s of scripts) {
+      if (s.src) {
+        const src = s.getAttribute('src') || s.src;
+        if (!src) continue;
+
+        // 去重：已加载过的脚本不再重复加载
+        if (this.#loadedScripts.has(src)) {
+          console.log(`[ScriptExecutor] 跳过已加载脚本: ${src}`);
+          continue;
+        }
+
+        // 检查 DOM 中是否已存在相同 src 的脚本
+        const existing = document.querySelector(`script[src="${src}"]`);
+        if (existing) {
+          this.#loadedScripts.add(src);
+          continue;
+        }
+
+        await this.#loadExternalScript(src, s.type, container);
+        this.#loadedScripts.add(src);
+      } else {
+        // 内联脚本：执行后立即从 DOM 移除，避免污染
+        this.#runInlineScript(s, container);
+      }
+    }
+  }
+
+  static #loadExternalScript(src, type, container) {
+    return new Promise((resolve, reject) => {
+      const script = document.createElement('script');
+      if (type) script.type = type;
+      script.src = src;
+      script.async = false; // 保证顺序
+      script.onload = () => resolve();
+      script.onerror = () => {
+        console.warn(`[ScriptExecutor] 脚本加载失败: ${src}`);
+        resolve(); // 失败不阻塞后续
+      };
+      container.appendChild(script);
+    });
+  }
+
+  static #runInlineScript(script, container) {
+    try {
+      const inline = document.createElement('script');
+      if (script.type) inline.type = script.type;
+      inline.textContent = script.textContent;
+      container.appendChild(inline);
+      // 内联脚本执行后立即移除，避免重复累积
+      setTimeout(() => inline.remove(), 0);
+    } catch (e) {
+      console.warn('[ScriptExecutor] 执行内联脚本失败', e);
+    }
+  }
+
+  /** 重置已加载脚本记录（用于测试或强制重新加载） */
+  static reset() {
+    this.#loadedScripts.clear();
+  }
+}
+
+// ==================== 原有辅助函数（保持兼容） ====================
 async function destroyCurrentPageManager() {
   if (currentPageManager && typeof currentPageManager.destroy === 'function') {
     try {
@@ -51,12 +127,15 @@ export async function loadFooter() {
     tmp.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
       const href = link.getAttribute('href');
       if (!href) return;
-      const exists = Array.from(document.querySelectorAll('link[rel="stylesheet"]')).some(l => l.getAttribute('href') === href);
-      if (!exists) {
-        const newLink = document.createElement('link');
-        newLink.rel = 'stylesheet';
-        newLink.href = href;
-        document.head.appendChild(newLink);
+      if (!loadedStyles.has(href)) {
+        const exists = Array.from(document.querySelectorAll('link[rel="stylesheet"]')).some(l => l.getAttribute('href') === href);
+        if (!exists) {
+          const newLink = document.createElement('link');
+          newLink.rel = 'stylesheet';
+          newLink.href = href;
+          document.head.appendChild(newLink);
+          loadedStyles.add(href);
+        }
       }
     });
 
@@ -87,12 +166,19 @@ export async function loadFooter() {
       const s = scripts[index];
       const src = s.getAttribute('src');
       if (src) {
+        if (loadedScripts.has(src)) {
+          loadNextScript(index + 1);
+          return;
+        }
         const newScript = document.createElement('script');
         if (s.hasAttribute('type')) newScript.type = s.type;
         if (s.hasAttribute('async')) newScript.async = true;
         if (s.hasAttribute('defer')) newScript.defer = true;
         newScript.src = src;
-        newScript.onload = () => loadNextScript(index + 1);
+        newScript.onload = () => {
+          loadedScripts.add(src);
+          loadNextScript(index + 1);
+        };
         newScript.onerror = () => {
           console.warn('[WARN] 脚本加载失败:', src);
           loadNextScript(index + 1);
@@ -220,37 +306,26 @@ export function initBackToTopButton() {
   btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 }
 
-/**
- * 从获取的 HTML 字符串中提取页面各部分内容
- */
+// ==================== 页面内容提取与替换（保持不变） ====================
 function extractPageContent(htmlText, baseUrl) {
   const doc = new DOMParser().parseFromString(htmlText, 'text/html');
   const title = doc.querySelector('title') ? doc.querySelector('title').textContent : document.title;
   const mainElement = doc.querySelector('#mainContent') || doc.querySelector('main.main-content-area') || doc.querySelector('main');
   const mainHtml = mainElement ? mainElement.outerHTML : '';
 
-  // 提取样式
   const styles = Array.from(doc.querySelectorAll('link[rel="stylesheet"], style'));
-  // 提取脚本
   const scripts = Array.from(doc.body.querySelectorAll('script'));
-  // 提取导航栏和页脚占位符内容
   const navbarHtml = doc.getElementById('navbar-placeholder')?.innerHTML || '';
   const footerHtml = doc.getElementById('footer-placeholder')?.innerHTML || '';
-  // 判断是否为文章详情页
   const isArticlePage = !!(doc.querySelector('.article-page-container') || doc.getElementById('articleBody'));
-  // 提取两栏布局（如果有）
   const twoColumnLayout = doc.querySelector('.two-column-layout');
 
   return { title, mainHtml, styles, scripts, navbarHtml, footerHtml, isArticlePage, twoColumnLayout, doc };
 }
 
-/**
- * 更新 DOM 中的主要内容区域，并处理两栏布局特殊逻辑
- */
 function replaceMainContent(mainHtml, twoColumnLayout, currentUrl) {
   let currentMain = document.getElementById('mainContent') || document.querySelector('main.main-content-area');
 
-  // 处理两栏布局替换（保持个人信息卡片）
   if (twoColumnLayout) {
     const existingTwoCol = document.querySelector('.two-column-layout');
     const newTwoCol = twoColumnLayout.cloneNode(true);
@@ -274,7 +349,6 @@ function replaceMainContent(mainHtml, twoColumnLayout, currentUrl) {
     const container = document.querySelector('.container') || document.body;
     container.innerHTML = mainHtml;
   } else {
-    // 处理文章详情页等无 <main> 的情况
     const articleContainer = document.querySelector('.two-column-layout') || document.querySelector('.article-page-container') || document.getElementById('mainContent') || document.querySelector('main') || document.body;
     if (articleContainer) {
       articleContainer.innerHTML = mainHtml;
@@ -282,75 +356,37 @@ function replaceMainContent(mainHtml, twoColumnLayout, currentUrl) {
   }
 }
 
-/**
- * 注入新页面的样式（避免重复）
- */
 function injectStyles(styles) {
   styles.forEach(h => {
     if (h.tagName.toLowerCase() === 'link') {
       const href = h.getAttribute('href') || h.href;
       if (!href) return;
+      if (loadedStyles.has(href)) return;
       const exists = Array.from(document.querySelectorAll('link[rel="stylesheet"]')).some(l => l.getAttribute('href') === href);
-      if (exists) return;
+      if (exists) {
+        loadedStyles.add(href);
+        return;
+      }
       const nl = document.createElement('link');
       nl.rel = 'stylesheet';
       nl.href = href;
       document.head.appendChild(nl);
+      loadedStyles.add(href);
     } else if (h.tagName.toLowerCase() === 'style') {
       const text = (h.textContent || '').trim();
       if (!text) return;
-      const already = Array.from(document.querySelectorAll('style')).some(s => (s.textContent || '').trim() === text);
-      if (already) return;
+      const hash = text.length > 200 ? text.substring(0, 200) : text;
+      const styleId = `injected-style-${hash.replace(/[^a-zA-Z0-9]/g, '')}`;
+      if (document.getElementById(styleId)) return;
       const ns = document.createElement('style');
+      ns.id = styleId;
       ns.textContent = text;
       document.head.appendChild(ns);
     }
   });
 }
 
-/**
- * 按顺序执行脚本（串行加载，确保依赖顺序）
- */
-async function executeScripts(scripts) {
-  const loadPromises = [];
-  for (const s of scripts) {
-    try {
-      if (s.src) {
-        const src = s.getAttribute('src') || s.src;
-        if (!src) continue;
-        const existsScript = document.querySelector(`script[src="${src}"]`);
-        if (existsScript) continue;
-        const newS = document.createElement('script');
-        if (s.type) newS.type = s.type;
-        newS.src = src;
-        newS.async = false;
-        const p = new Promise((resolve) => {
-          newS.onload = () => resolve();
-          newS.onerror = () => { console.warn('[WARN] 脚本加载失败:', src); resolve(); };
-        });
-        document.body.appendChild(newS);
-        loadPromises.push(p);
-      } else {
-        const inline = document.createElement('script');
-        if (s.type) inline.type = s.type;
-        inline.textContent = s.textContent;
-        document.body.appendChild(inline);
-        setTimeout(() => inline.parentNode?.removeChild(inline), 0);
-      }
-    } catch (e) {
-      console.warn('[WARN] 插入脚本时出错', e);
-    }
-  }
-  if (loadPromises.length) {
-    await Promise.all(loadPromises);
-  }
-}
-
-/**
- * 确保页面必要的全局容器存在（.container、占位符等）
- */
 function ensureGlobalElements() {
-  // 确保 .container 存在
   if (!document.querySelector('.container')) {
     const mainEl = document.querySelector('main') || document.getElementById('mainContent');
     if (mainEl && !mainEl.closest('.container')) {
@@ -360,7 +396,6 @@ function ensureGlobalElements() {
       mainEl.appendChild(wrapper);
     }
   }
-  // 确保占位符存在
   if (!document.getElementById('navbar-placeholder')) {
     const el = document.createElement('div');
     el.id = 'navbar-placeholder';
@@ -381,9 +416,6 @@ function ensureGlobalElements() {
   }
 }
 
-/**
- * 尝试初始化 Twikoo 评论（如果存在且未初始化）
- */
 function tryInitTwikoo() {
   try {
     const twikooEl = document.querySelector('#twikoo-comments');
@@ -393,44 +425,36 @@ function tryInitTwikoo() {
         el: '#twikoo-comments',
         lang: 'zh-CN',
         enableComment: true
-      }).then(() => { twikooEl.setAttribute('data-init', 'true'); })
-        .catch(err => console.warn('[WARN] Twikoo 自动初始化失败:', err));
+      }).then(() => {
+        twikooEl.setAttribute('data-init', 'true');
+        console.log('[Twikoo] 评论组件初始化成功');
+      }).catch(err => console.warn('[WARN] Twikoo 自动初始化失败:', err));
     }
   } catch (e) {
     console.warn('[WARN] 尝试初始化 Twikoo 时出错', e);
   }
 }
 
-/**
- * 重新初始化导航栏、页脚、移动菜单等全局组件
- */
 async function reinitializeGlobalComponents(navbarHtml, footerHtml) {
-  // ==================== 导航栏处理 ====================
   const navbarPlaceholder = document.getElementById('navbar-placeholder');
   const currentNavbar = navbarPlaceholder?.querySelector('.navbar');
 
-  // 如果新页面提供了导航栏 HTML 且当前占位符存在，直接替换并重新绑定
   if (navbarHtml && navbarPlaceholder) {
-    // 避免重复替换相同内容（可选优化）
     const newNavbarDiv = document.createElement('div');
     newNavbarDiv.innerHTML = navbarHtml;
     const newNavbar = newNavbarDiv.querySelector('.navbar');
     if (newNavbar && (!currentNavbar || currentNavbar.outerHTML !== newNavbar.outerHTML)) {
       navbarPlaceholder.innerHTML = navbarHtml;
-      // 重新绑定导航栏交互（移动菜单、导航链接、主题切换等）
       if (typeof bindNavLinks === 'function') bindNavLinks();
       if (typeof initMobileMenuToggle === 'function') initMobileMenuToggle();
-      if (typeof initThemeToggle === 'function') initThemeToggle(); // 确保主题切换正常
+      if (typeof initThemeToggle === 'function') initThemeToggle();
       console.log('[Router] 导航栏已更新（来自新页面）');
     }
-  }
-  // 如果新页面没有提供导航栏 HTML，但当前导航栏为空或无效，则回退加载默认导航栏
-  else if ((!currentNavbar || !navbarPlaceholder?.innerHTML.trim()) && typeof loadNavbar === 'function') {
+  } else if ((!currentNavbar || !navbarPlaceholder?.innerHTML.trim()) && typeof loadNavbar === 'function') {
     await loadNavbar();
     console.log('[Router] 导航栏已加载（默认回退）');
   }
 
-  // ==================== 页脚处理 ====================
   const footerPlaceholder = document.getElementById('footer-placeholder');
   const currentFooter = footerPlaceholder?.querySelector('.footer');
 
@@ -442,29 +466,17 @@ async function reinitializeGlobalComponents(navbarHtml, footerHtml) {
       footerPlaceholder.innerHTML = footerHtml;
       console.log('[Router] 页脚已更新（来自新页面）');
     }
-  }
-  else if ((!currentFooter || !footerPlaceholder?.innerHTML.trim()) && typeof loadFooter === 'function') {
+  } else if ((!currentFooter || !footerPlaceholder?.innerHTML.trim()) && typeof loadFooter === 'function') {
     await loadFooter();
     console.log('[Router] 页脚已加载（默认回退）');
   }
 
-  // ==================== 全局导航状态刷新 ====================
-  // 更新当前激活的导航项样式（基于当前页面路径）
   if (typeof initNavigation === 'function') initNavigation();
-
-  // 确保移动端菜单交互可用（即使未重新加载导航栏，也要重新绑定，因为 DOM 可能被替换）
   if (typeof initMobileMenuToggle === 'function') initMobileMenuToggle();
-
-  // 确保回到顶部按钮存在且可用（可能已被新页面替换掉）
   if (typeof initBackToTopButton === 'function') initBackToTopButton();
-
-  // 重新绑定主题切换（如果导航栏中的主题开关被重新创建）
   if (typeof initThemeToggle === 'function') initThemeToggle();
 }
 
-/**
- * 渲染个人信息卡片（仅在根级 HTML 页面）
- */
 async function renderPersonalCardIfNeeded(url) {
   try {
     const personalCardContainer = document.getElementById('personal-card-container');
@@ -483,9 +495,6 @@ async function renderPersonalCardIfNeeded(url) {
   }
 }
 
-/**
- * 根据页面类型初始化对应的页面管理器
- */
 async function initPageManagerByPageName(pageName, isArticlePage, url) {
   let manager = null;
   if (pageName === 'index') {
@@ -513,7 +522,6 @@ async function initPageManagerByPageName(pageName, isArticlePage, url) {
     const { initArchivePage } = await import('/js/pages/archive.js');
     manager = await initArchivePage(refreshCallback);
   } else if (pageName === 'article-detail' || isArticlePage) {
-    // 文章详情页需要检测当前路径是否为文章页面
     if (document.querySelector('.article-page-container') || document.getElementById('articleBody')) {
       const { initArticlePage } = await import('/js/pages/article.js');
       manager = initArticlePage();
@@ -525,13 +533,9 @@ async function initPageManagerByPageName(pageName, isArticlePage, url) {
     const { initFriendsPage } = await import('/js/pages/friends-manager.js');
     manager = await initFriendsPage();
   }
-  // 其他页面（about, contact, settings, privacy 等）没有特殊管理器，返回 null
   return manager;
 }
 
-/**
- * 处理页面滚动（恢复保存位置或跳转锚点）
- */
 function handlePageScroll(url) {
   try {
     const targetUrl = new URL(url, window.location.href);
@@ -555,9 +559,6 @@ function handlePageScroll(url) {
   }
 }
 
-/**
- * 刷新滚动揭示效果
- */
 function refreshScrollRevealEffect() {
   if (window.scrollRevealInstance) {
     window.scrollRevealInstance.refresh();
@@ -567,65 +568,44 @@ function refreshScrollRevealEffect() {
   }
 }
 
-// ==================== 主函数：无刷新导航 ====================
+// ==================== 主函数：无刷新导航（使用优化后的脚本执行器） ====================
 export async function fetchAndReplaceContent(url, pushState = true) {
   try {
-    // 1. 销毁当前页面管理器
     await destroyCurrentPageManager();
 
-    // 2. 获取新页面内容
     const res = await fetch(url, { credentials: 'same-origin' });
     if (!res.ok) throw new Error(`Fetch失败: ${res.status}`);
     const text = await res.text();
 
-    // 3. 提取页面各部分内容
-    const { title, mainHtml, styles, scripts, navbarHtml, footerHtml, isArticlePage, twoColumnLayout, doc } = extractPageContent(text, url);
+    const { title, mainHtml, styles, scripts, navbarHtml, footerHtml, isArticlePage, twoColumnLayout } = extractPageContent(text, url);
 
-    // 4. 更新 DOM 主要内容
     replaceMainContent(mainHtml, twoColumnLayout, url);
 
-    // 5. 更新页面标题和 pushState
     document.title = title;
     if (pushState) {
       try { window.history.pushState({ ajax: true }, title, url); } catch (err) { console.warn('[WARN] pushState 失败:', err); }
     }
 
-    // 6. 刷新导航栏标题（如果标题替换模式启用）
     refreshNavbarAfterNavigation();
 
-    // 7. 注入新样式
     injectStyles(styles);
 
-    // 8. 执行脚本（串行）
-    await executeScripts(scripts);
+    // ★ 使用优化后的脚本执行器（防重复 + 卸载支持）
+    await ScriptExecutor.execute(scripts, document.body);
 
-    // 9. 确保全局容器存在
     ensureGlobalElements();
-
-    // 10. 尝试初始化 Twikoo
     tryInitTwikoo();
-
-    // 11. 重新初始化全局组件（导航栏、页脚等）
     await reinitializeGlobalComponents(navbarHtml, footerHtml);
-
-    // 12. 渲染个人信息卡片
     await renderPersonalCardIfNeeded(url);
 
-    // 13. 初始化新页面的管理器
     const pageName = getPageNameFromPath(new URL(url, window.location.href).pathname);
     const finalPageName = isArticlePage ? 'article-detail' : pageName;
     const manager = await initPageManagerByPageName(finalPageName, isArticlePage, url);
-    if (manager) {
-      setCurrentPageManager(manager);
-    }
+    if (manager) setCurrentPageManager(manager);
 
-    // 14. 刷新滚动揭示效果
     refreshScrollRevealEffect();
-
-    // 15. 处理页面滚动（锚点或顶部）
     handlePageScroll(url);
 
-    // 16. 触发导航完成事件
     window.dispatchEvent(new CustomEvent('ajax:navigation', { detail: { url, page: finalPageName } }));
     return true;
   } catch (e) {
@@ -661,3 +641,5 @@ export async function initPageFeatures(pageName) {
   }
   return manager;
 }
+
+import { initThemeToggle } from '/js/ui/theme.js';

@@ -1,5 +1,5 @@
 // /js/ui/ui-effects.js
-// 自定义光标、外链管理器、滚动揭示效果（支持设置页面动态开关）
+// 自定义光标、外链管理器、滚动揭示效果（支持设置动态开关，滚动揭示复用 observer）
 
 import { CONFIG, Utils, storageController } from '/js/core/core.js';
 
@@ -9,7 +9,6 @@ const SETTINGS_KEYS = {
   LINK_WARNING_ENABLED: 'settings_link_warning_enabled'
 };
 
-// 辅助函数：读取某项功能的启用状态（默认 true）
 function isFeatureEnabled(key, defaultValue = true) {
   if (storageController && storageController.isAllowed()) {
     const stored = storageController.getItem(key);
@@ -22,7 +21,7 @@ function isFeatureEnabled(key, defaultValue = true) {
   return defaultValue;
 }
 
-// ==================== 自定义光标（动态透明度 + 旋转平滑衰减 + 空闲回正） ====================
+// ==================== 自定义光标（保持不变，略作格式统一） ====================
 export class CustomCursor {
   constructor(options = {}) {
     if (window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window) {
@@ -34,10 +33,10 @@ export class CustomCursor {
       stiffness: 0.18,
       rotationSmoothing: 0.2,
       minSpeedForRotation: 0.5,
-      idleDecayFactor: 0.98,        // 空闲时旋转衰减系数（平滑归零）
-      angleFilter: 0.2,             // 原始角度低通滤波系数
-      clickScale: 0.8,              // 点击时缩放倍数
-      idleResetDelay: 100,         // 空闲延迟（毫秒）后开始归位
+      idleDecayFactor: 0.98,
+      angleFilter: 0.2,
+      clickScale: 0.8,
+      idleResetDelay: 100,
       ...options
     };
     this.targetX = 0; this.targetY = 0; this.currentX = 0; this.currentY = 0;
@@ -47,29 +46,21 @@ export class CustomCursor {
     this.velocityX = 0; this.velocityY = 0;
     this.snappedMode = false; this.snappedElement = null;
     this.rafId = null; this.visible = false;
-
-    // 动态填充透明度
     this.speedThreshold = 0.5;
     this.currentFillOpacity = 1;
     this.targetFillOpacity = 1;
-
-    // 空闲复位相关
     this.lastMoveTime = performance.now();
-
-    // 角度滤波
     this.filteredAngle = 0;
-
-    // 点击动效相关
-    this.clickScaleMultiplier = 1;      // 当前缩放系数
-    this.clickTargetMultiplier = 1;     // 目标缩放系数
-    this.clickFillMultiplier = 1;       // 当前填充系数
+    this.clickScaleMultiplier = 1;
+    this.clickTargetMultiplier = 1;
+    this.clickFillMultiplier = 1;
     this.clickFillTarget = 1;
 
     this.initDOM();
     this.initEvents();
     this.updateColors();
     this.startAnimation();
-    this._hideNativeCursor();   // 隐藏原生鼠标
+    this._hideNativeCursor();
 
     window.addEventListener('themeChanged', () => this.updateColors());
     const observer = new MutationObserver(() => this.updateColors());
@@ -186,7 +177,6 @@ export class CustomCursor {
       if (this.snappedMode && this.snappedElement) this.updateSnappedTargetPosition();
     });
 
-    // 点击动效
     const onMouseDown = (e) => {
       if (e.button !== 0) return;
       this.clickTargetMultiplier = this.config.clickScale;
@@ -243,29 +233,19 @@ export class CustomCursor {
       this.currentX += dx * 0.3;
       this.currentY += dy * 0.3;
 
-      // 空闲归位逻辑（改进版）
       if (!this.snappedMode) {
         const now = performance.now();
         const speed = Math.hypot(this.velocityX, this.velocityY);
-
         if (speed > this.config.minSpeedForRotation) {
-          // 正在移动：更新最后一次移动时间，重置空闲标志，不衰减角度
           this.lastMoveTime = now;
           isIdle = false;
         } else {
-          // 鼠标静止或速度极低
           const idleDuration = now - this.lastMoveTime;
           if (idleDuration >= this.config.idleResetDelay) {
-            // 空闲超过 3 秒：开始衰减至 0
-            if (!isIdle) {
-              isIdle = true;
-            }
+            if (!isIdle) isIdle = true;
             this.targetRotation *= this.config.idleDecayFactor;
             if (Math.abs(this.targetRotation) < 0.5) this.targetRotation = 0;
           } else {
-            // 静止但未达到空闲延迟：保持当前目标角度（不变）
-            // 注意：此处不能乘以 0.96，否则会立即衰减
-            // 无需操作 targetRotation，维持原样
             isIdle = false;
           }
         }
@@ -277,12 +257,10 @@ export class CustomCursor {
       if (Math.abs(diff) > 180) diff -= Math.sign(diff) * 360;
       this.currentRotation += diff * this.config.rotationSmoothing;
 
-      // 动态填充透明度（速度感）
       const speed = Math.hypot(this.velocityX, this.velocityY);
       this.targetFillOpacity = speed > this.speedThreshold ? 1 : 0;
       this.currentFillOpacity += (this.targetFillOpacity - this.currentFillOpacity) * 0.25;
 
-      // 点击动效插值
       this.clickScaleMultiplier += (this.clickTargetMultiplier - this.clickScaleMultiplier) * 0.3;
       this.clickFillMultiplier += (this.clickFillTarget - this.clickFillMultiplier) * 0.3;
       const finalScale = this.fixedScale * this.clickScaleMultiplier;
@@ -324,7 +302,7 @@ export class CustomCursor {
   }
 }
 
-// ==================== 外链管理器（增强可销毁） ====================
+// ==================== 外链管理器（保持不变） ====================
 export class ExternalLinkManager {
   constructor() {
     this.WHITELIST = CONFIG.EXTERNAL_WHITELIST;
@@ -521,44 +499,55 @@ export class ExternalLinkManager {
   }
 }
 
-// ==================== 滚动揭示效果 ====================
+// ==================== 滚动揭示效果（优化版：复用 observer） ====================
 export class ScrollReveal {
-  constructor() {
-    this.observer = null;
-    this.initObserver();
+  #observer = null;
+  #targetSelector = '.list-item';   // 可配置
+
+  constructor(selector = '.list-item') {
+    this.#targetSelector = selector;
+    this.#initObserver();
+    this.observe();
   }
 
-  initObserver() {
-    if (this.observer) this.observer.disconnect();
-    this.observer = new IntersectionObserver(
+  #initObserver() {
+    if (this.#observer) this.#observer.disconnect();
+    this.#observer = new IntersectionObserver(
       (entries) => {
         entries.forEach(entry => {
           if (entry.isIntersecting) {
             entry.target.classList.add('revealed');
-            this.observer.unobserve(entry.target);
+            this.#observer.unobserve(entry.target);
           }
         });
       },
       { threshold: 0.2, rootMargin: '0px 0px -20px 0px' }
     );
-    this.observeItems();
   }
 
-  observeItems() {
-    const items = document.querySelectorAll('.list-item');
-    items.forEach(item => {
-      if (!item.classList.contains('revealed')) this.observer.observe(item);
+  /** 观察所有未 reveal 的目标元素 */
+  observe(targets = document.querySelectorAll(this.#targetSelector)) {
+    if (!this.#observer) return;
+    targets.forEach(el => {
+      if (!el.classList.contains('revealed')) {
+        this.#observer.observe(el);
+      }
     });
   }
 
+  /** 刷新：重新观察当前文档中所有未 reveal 的元素（不重建 observer） */
   refresh() {
-    this.initObserver();
+    const hidden = document.querySelectorAll(`${this.#targetSelector}:not(.revealed)`);
+    if (hidden.length) {
+      hidden.forEach(el => this.#observer.observe(el));
+    }
   }
 
+  /** 完全销毁 observer */
   destroy() {
-    if (this.observer) {
-      this.observer.disconnect();
-      this.observer = null;
+    if (this.#observer) {
+      this.#observer.disconnect();
+      this.#observer = null;
     }
   }
 }

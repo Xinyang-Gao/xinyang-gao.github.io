@@ -6,6 +6,7 @@ export class FriendsPageManager extends PageManager {
     super();
     this.twikooInitialized = false;
     this.copyBtnHandler = null;
+    this.twikooContainer = null;
   }
 
   async init() {
@@ -37,8 +38,12 @@ export class FriendsPageManager extends PageManager {
   initTwikooComments() {
     const container = document.getElementById('twikoo-comments');
     if (!container || this.twikooInitialized) return;
+    // 避免重复初始化：检查容器是否已有初始化标记
     if (container.getAttribute('data-init') === 'true') return;
+    
+    this.twikooContainer = container;
     container.setAttribute('data-init', 'true');
+    
     twikoo.init({
       envId: 'https://twikoo-gxy.netlify.app/.netlify/functions/twikoo',
       el: '#twikoo-comments',
@@ -49,6 +54,8 @@ export class FriendsPageManager extends PageManager {
       this.twikooInitialized = true;
     }).catch(err => {
       console.error('Twikoo 初始化失败:', err);
+      // 初始化失败时移除标记，允许下次重试
+      container.removeAttribute('data-init');
     });
   }
 
@@ -86,13 +93,26 @@ export class FriendsPageManager extends PageManager {
     this.copyBtnHandler = handler;
   }
 
+  /**
+   * 销毁友链页面管理器
+   * 清理 Twikoo 实例：移除容器内容并清除初始化标记，避免下次进入时重复初始化冲突
+   */
   destroy() {
+    // 清理复制按钮事件
     if (this.copyBtnHandler) {
       const copyBtn = document.getElementById('copyJsonBtn');
       if (copyBtn) copyBtn.removeEventListener('click', this.copyBtnHandler);
       this.copyBtnHandler = null;
     }
+    
+    if (this.twikooContainer) {
+      this.twikooContainer.innerHTML = '';
+      this.twikooContainer.removeAttribute('data-init');
+      this.twikooContainer = null;
+    }
+    
     this.twikooInitialized = false;
+    console.log('[FriendsPageManager] 友链页面管理器已销毁');
   }
 }
 
