@@ -120,6 +120,11 @@ export function preloadCriticalJSON() {
 }
 
 export function registerServiceWorker() {
+  const isDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  if (isDev) {
+    console.log('[SW] 开发环境，跳过 Service Worker 注册');
+    return;
+  }
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('/js/sw.js').then(registration => {
