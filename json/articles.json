@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-06-10T22:51:32.549462",
+  "generated_at": "2026-06-12T18:59:56.984586",
   "total_articles": 14,
-  "total_word_count": 50883,
+  "total_word_count": 51188,
   "articles": [
     {
       "relative_path": "assets/source/分享/为网站嵌入一个优雅的音乐播放器.md",
@@ -190,9 +190,9 @@
     },
     {
       "relative_path": "assets/source/网站/网站更新日志.md",
-      "hash": "bf749a822e81c345041b5fb477980516",
-      "last_updated": "2026-06-10",
-      "modify_count": 174,
+      "hash": "a3c6fd5fcc3a2064f4d38769cb6f824e",
+      "last_updated": "2026-06-12",
+      "modify_count": 175,
       "hidden": false,
       "title": "网站更新日志",
       "date": "2025年12月21日",
@@ -203,8 +203,8 @@
       ],
       "category": "网站",
       "url": "/articles/网站更新日志.html",
-      "word_count": 20512,
-      "read_time": "69分钟"
+      "word_count": 20817,
+      "read_time": "70分钟"
     },
     {
       "relative_path": "assets/source/日记/雪中的思绪.md",

@@ -1,52 +1,52 @@
 {
-  "generated_at": "2026-06-10T22:51:36.938558",
+  "generated_at": "2026-06-12T19:00:00.283602",
   "root_dir": "c:\\Users\\Administrator\\Desktop\\编程\\xinyang-gao.github.io\\xinyang-gao.github.io",
-  "total_files": 135,
-  "total_size_bytes": 1657639,
-  "total_lines": 35534,
-  "non_empty_lines": 31816,
+  "total_files": 140,
+  "total_size_bytes": 1742377,
+  "total_lines": 37779,
+  "non_empty_lines": 33851,
   "by_extension": [
     {
       "extension": ".html",
-      "count": 33,
-      "total_size_bytes": 374965,
-      "total_lines": 5986,
-      "non_empty_lines": 5668
+      "count": 34,
+      "total_size_bytes": 377891,
+      "total_lines": 6041,
+      "non_empty_lines": 5720
     },
     {
       "extension": ".js",
-      "count": 31,
-      "total_size_bytes": 418160,
-      "total_lines": 9654,
-      "non_empty_lines": 8734
+      "count": 32,
+      "total_size_bytes": 477626,
+      "total_lines": 11235,
+      "non_empty_lines": 10219
     },
     {
       "extension": ".json",
-      "count": 18,
-      "total_size_bytes": 31794,
-      "total_lines": 1049,
-      "non_empty_lines": 1049
+      "count": 19,
+      "total_size_bytes": 32195,
+      "total_lines": 1067,
+      "non_empty_lines": 1067
     },
     {
       "extension": ".css",
-      "count": 17,
-      "total_size_bytes": 298234,
-      "total_lines": 13042,
-      "non_empty_lines": 11410
+      "count": 18,
+      "total_size_bytes": 306701,
+      "total_lines": 13442,
+      "non_empty_lines": 11758
     },
     {
       "extension": ".md",
-      "count": 15,
-      "total_size_bytes": 118257,
-      "total_lines": 2368,
-      "non_empty_lines": 1798
+      "count": 16,
+      "total_size_bytes": 131749,
+      "total_lines": 2559,
+      "non_empty_lines": 1930
     },
     {
       "extension": ".py",
       "count": 10,
-      "total_size_bytes": 91352,
-      "total_lines": 2224,
-      "non_empty_lines": 1970
+      "total_size_bytes": 91294,
+      "total_lines": 2223,
+      "non_empty_lines": 1969
     },
     {
       "extension": ".xml",
@@ -58,9 +58,9 @@
     {
       "extension": "no_extension",
       "count": 2,
-      "total_size_bytes": 1140,
-      "total_lines": 24,
-      "non_empty_lines": 20
+      "total_size_bytes": 1184,
+      "total_lines": 25,
+      "non_empty_lines": 21
     },
     {
       "extension": ".ico",

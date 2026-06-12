@@ -1,0 +1,400 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    font-family: 'Inter', 'Noto Serif SC', system-ui, -apple-system, 'Segoe UI', serif;
+    background: radial-gradient(circle at 20% 30%, rgba(245, 240, 235, 0.9), rgba(225, 220, 210, 0.95));
+    background-blend-mode: overlay;
+    backdrop-filter: blur(0px);
+}
+
+/* 液态玻璃全局氛围 */
+.glass-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -2;
+    background:
+        linear-gradient(125deg, #f7f3ee 0%, #eae3da 100%);
+}
+
+/* 动态颗粒感 + 柔光 */
+.glass-bg::before {
+    content: "";
+    position: absolute;
+    width: 200%;
+    height: 200%;
+    top: -50%;
+    left: -50%;
+    background: radial-gradient(circle at 40% 60%, rgba(255, 245, 235, 0.4) 0%, rgba(210, 195, 180, 0.1) 80%);
+    animation: slowDrift 32s infinite alternate ease-in-out;
+    pointer-events: none;
+}
+
+@keyframes slowDrift {
+    0% {
+        transform: translate(0, 0) rotate(0deg);
+        opacity: 0.5;
+    }
+
+    100% {
+        transform: translate(3%, 2%) rotate(2deg);
+        opacity: 0.9;
+    }
+}
+
+/* 主布局：左侧导航 + 右侧全屏内容区 */
+.app {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    position: relative;
+    backdrop-filter: blur(2px);
+}
+
+/* 左侧简约线条导航栏 (液态玻璃效果) */
+.nav-sidebar {
+    width: 280px;
+    background: rgba(245, 240, 235, 0.35);
+    backdrop-filter: blur(16px);
+    border-right: 1px solid rgba(255, 255, 245, 0.6);
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.02);
+    display: flex;
+    flex-direction: column;
+    padding: 2rem 0 2rem 0;
+    z-index: 10;
+    transition: all 0.2s ease;
+    overflow-y: auto;
+    scrollbar-width: thin;
+}
+
+.nav-header {
+    padding: 0 1.5rem 1.8rem 1.8rem;
+    border-bottom: 1px solid rgba(100, 70, 50, 0.15);
+    margin-bottom: 1.2rem;
+}
+
+.nav-header h2 {
+    font-weight: 500;
+    font-size: 1.7rem;
+    letter-spacing: 2px;
+    color: #3a2c28;
+    font-family: 'Noto Serif SC', serif;
+    background: linear-gradient(135deg, #5e4b3c, #2f241f);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+}
+
+.nav-header p {
+    font-size: 0.75rem;
+    color: #6b5a4e;
+    margin-top: 8px;
+    font-weight: 300;
+    letter-spacing: 1px;
+}
+
+/* 简约线条风格列表 */
+.nav-list {
+    list-style: none;
+    flex: 1;
+    padding: 0 1rem 1rem 0.5rem;
+}
+
+.nav-item {
+    margin: 0.4rem 0;
+    position: relative;
+}
+
+.nav-btn {
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    padding: 0.7rem 1.2rem 0.7rem 2rem;
+    font-size: 1rem;
+    font-weight: 450;
+    font-family: 'Inter', sans-serif;
+    color: #2c241f;
+    cursor: pointer;
+    border-radius: 40px 12px 12px 40px;
+    transition: all 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    position: relative;
+    letter-spacing: 0.3px;
+    backdrop-filter: blur(4px);
+}
+
+.nav-btn span {
+    display: inline-block;
+    transition: transform 0.2s;
+}
+
+.nav-btn:hover {
+    background: rgba(230, 215, 195, 0.5);
+    transform: translateX(5px);
+    color: #1f1612;
+    font-weight: 500;
+}
+
+.nav-btn.active {
+    background: rgba(245, 235, 220, 0.7);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 240, 0.8);
+    font-weight: 600;
+    border-left: 3px solid #c07a5b;
+    color: #4e2e21;
+}
+
+.nav-btn.active span {
+    transform: translateX(3px);
+}
+
+/* 线条细节：简约下划线点缀 */
+.nav-item:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 20px;
+    width: calc(100% - 40px);
+    height: 0.5px;
+    background: rgba(100, 70, 50, 0.1);
+}
+
+/* 右侧主内容区：全屏显示诗词/hero */
+.main-content {
+    flex: 1;
+    position: relative;
+    overflow-y: auto;
+    scroll-behavior: smooth;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+    background: radial-gradient(ellipse at 70% 30%, rgba(250, 245, 240, 0.2), transparent);
+}
+
+/* 液态玻璃卡片容器 */
+.poem-card {
+    max-width: 880px;
+    width: 100%;
+    margin: 2rem auto;
+    background: rgba(255, 248, 240, 0.55);
+    backdrop-filter: blur(18px);
+    border-radius: 56px;
+    box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.15), 0 1px 2px rgba(255, 255, 235, 0.6) inset, 0 -1px 1px rgba(0, 0, 0, 0.02) inset;
+    border: 1px solid rgba(255, 250, 240, 0.7);
+    transition: all 0.3s ease;
+    animation: fadeSlideUp 0.45s ease-out;
+}
+
+@keyframes fadeSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.card-inner {
+    padding: 2.5rem 2.8rem;
+}
+
+/* 排版精致 */
+.poem-title {
+    font-size: 2.2rem;
+    font-weight: 600;
+    font-family: 'Noto Serif SC', serif;
+    color: #4b2e22;
+    letter-spacing: 2px;
+    border-left: 4px solid #d9996c;
+    padding-left: 1.2rem;
+    margin-bottom: 0.5rem;
+}
+
+.poem-sub {
+    font-size: 0.9rem;
+    color: #8b6f5c;
+    margin-top: 6px;
+    margin-bottom: 1.8rem;
+    font-weight: 400;
+    display: flex;
+    gap: 12px;
+    align-items: baseline;
+    flex-wrap: wrap;
+    border-bottom: 1px dashed rgba(120, 80, 55, 0.2);
+    padding-bottom: 0.8rem;
+}
+
+.teacher-tag {
+    background: rgba(210, 170, 130, 0.2);
+    border-radius: 40px;
+    padding: 0.2rem 0.9rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #946b4e;
+}
+
+.poem-body {
+    font-family: 'Noto Serif SC', serif;
+    font-size: 1.18rem;
+    line-height: 1.85;
+    color: #2c241f;
+    white-space: pre-line;
+    word-break: break-word;
+    margin: 1.5rem 0 1.2rem 0;
+    font-weight: 450;
+}
+
+.poem-body p {
+    margin-bottom: 0.6rem;
+}
+
+.stanza {
+    margin-bottom: 1rem;
+}
+
+.annotation {
+    margin-top: 1.8rem;
+    padding-top: 1rem;
+    font-size: 0.8rem;
+    color: #aa8870;
+    border-top: 1px solid rgba(150, 110, 80, 0.2);
+    font-style: normal;
+    letter-spacing: 0.3px;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.annotation i {
+    font-style: normal;
+    background: rgba(0, 0, 0, 0.03);
+    padding: 0.15rem 0.4rem;
+    border-radius: 20px;
+}
+
+.hero-quote {
+    text-align: center;
+}
+
+.hero-quote h1 {
+    font-size: 3.2rem;
+    font-weight: 500;
+    font-family: 'Noto Serif SC', serif;
+    background: linear-gradient(125deg, #583c2c, #927256);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    margin-bottom: 1rem;
+}
+
+.hero-quote .hero-sub {
+    font-size: 1.2rem;
+    color: #5f4233;
+    margin: 1rem 0;
+}
+
+.hero-quote p {
+    font-size: 1rem;
+    max-width: 550px;
+    margin: 0.6rem auto;
+    color: #7e5f4b;
+}
+
+.hero-sign {
+    margin-top: 2rem;
+    font-style: italic;
+    font-size: 0.9rem;
+    color: #b48a6b;
+}
+
+/* 响应式 */
+@media (max-width: 780px) {
+    .nav-sidebar {
+        width: 220px;
+    }
+
+    .card-inner {
+        padding: 1.5rem;
+    }
+
+    .poem-title {
+        font-size: 1.6rem;
+    }
+
+    .poem-body {
+        font-size: 1rem;
+    }
+
+    .hero-quote h1 {
+        font-size: 2.4rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .nav-sidebar {
+        width: 100px;
+        padding: 1rem 0;
+    }
+
+    .nav-header h2 {
+        font-size: 1rem;
+        writing-mode: vertical-rl;
+        text-orientation: mixed;
+        margin: 0 auto;
+    }
+
+    .nav-header p {
+        display: none;
+    }
+
+    .nav-btn {
+        padding: 0.5rem 0.3rem;
+        text-align: center;
+        font-size: 0.75rem;
+        border-radius: 20px;
+    }
+
+    .nav-btn span {
+        display: block;
+        word-break: keep-all;
+    }
+
+    .poem-title {
+        font-size: 1.4rem;
+    }
+
+    .main-content {
+        padding: 1rem;
+    }
+}
+
+/* 滚动条美观 */
+.main-content::-webkit-scrollbar {
+    width: 5px;
+}
+
+.main-content::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+}
+
+.main-content::-webkit-scrollbar-thumb {
+    background: rgba(150, 110, 80, 0.4);
+    border-radius: 8px;
+}
+
+.nav-sidebar::-webkit-scrollbar {
+    width: 3px;
+}

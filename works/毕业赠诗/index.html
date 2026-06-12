@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>师恩长卷 | 毕业赠诗集</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600&family=Noto+Serif+SC:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+<div class="glass-bg"></div>
+<div class="app">
+    <!-- 左侧线条导航栏 -->
+    <aside class="nav-sidebar">
+        <div class="nav-header">
+            <h2>师恩·长卷</h2>
+            <p>毕业赠诗 · 敬呈诸师</p>
+        </div>
+        <ul class="nav-list" id="navList">
+            <!-- 动态js生成导航 -->
+        </ul>
+        <div style="padding: 1rem 1.5rem 0.8rem; font-size: 0.7rem; color: #9e836e; text-align: center; border-top: 0.5px solid rgba(100,70,50,0.1); margin-top: 0.5rem;">
+            初三学子 · 敬呈
+        </div>
+    </aside>
+
+    <!-- 右侧全屏展示区 -->
+    <main class="main-content" id="mainContent">
+        <!-- 动态渲染诗歌或hero -->
+        <div class="poem-card" id="dynamicCard">
+            <!-- 内容由js填充 -->
+        </div>
+    </main>
+</div>
+
+<script src="./script.js"></script>
+</body>
+</html>
