@@ -41,7 +41,7 @@ export function updateDynamicGreeting() {
   greetingEl.style.fontWeight = 'bold';
 }
 
-export function applyRandomBackgroundImage({ force = false } = {}) {
+export function applyRandomBackgroundImage({ force = false, immediateColor = true } = {}) {
   const { BACKGROUND_IMAGES } = CONFIG;
   if (!Array.isArray(BACKGROUND_IMAGES) || BACKGROUND_IMAGES.length === 0) return;
 
@@ -56,29 +56,34 @@ export function applyRandomBackgroundImage({ force = false } = {}) {
     document.body.appendChild(overlay);
   }
 
+  // 立即设置纯色背景（避免白屏）
+  if (immediateColor) {
+    const computedTheme = document.documentElement.getAttribute('data-theme') || 'light';
+    const fallbackColor = computedTheme === 'dark' ? '#0a0c10' : '#f5f0eb';
+    overlay.style.backgroundColor = fallbackColor;
+  }
+
   // 避免重复动画
   if (!force && overlay.style.backgroundImage === `url("${imageUrl}")` && overlay.classList.contains('active')) {
     return;
   }
 
-  // 移除 active 类，重置动画状态
   overlay.classList.remove('active');
-  // 强制重绘，确保重置生效
-  void overlay.offsetWidth;
+  void overlay.offsetWidth; // 强制重绘
 
-  // 更新
-  overlay.style.backgroundImage = `url('${imageUrl}')`;
-
-  // 预加载图片，确保动画开始时图片已经可用
+  // 预加载图片，加载完成后再应用背景图并开始过渡
   const img = new Image();
   img.onload = () => {
-    // 图片加载完成后再添加 active 类，触发从模糊到清晰的过渡
+    overlay.style.backgroundImage = `url('${imageUrl}')`;
     overlay.classList.add('active');
     document.body.classList.remove('background-loading');
+    // 可选：移除纯色背景，让背景图完全覆盖（或保留作为fallback）
+    setTimeout(() => {
+      overlay.style.backgroundColor = 'transparent';
+    }, 300);
   };
   img.onerror = (error) => {
     console.warn('[WARN] 背景图片加载失败:', error);
-    // 即使加载失败，也尝试显示（可能显示破损图标），或者保持纯色背景
     overlay.classList.add('active');
     document.body.classList.remove('background-loading');
   };

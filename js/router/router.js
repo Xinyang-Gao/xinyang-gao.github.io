@@ -405,28 +405,61 @@ function tryInitTwikoo() {
  * 重新初始化导航栏、页脚、移动菜单等全局组件
  */
 async function reinitializeGlobalComponents(navbarHtml, footerHtml) {
-  // 导航栏
-  const currentNavbar = document.getElementById('navbar-placeholder');
-  if (navbarHtml && currentNavbar) {
-    currentNavbar.innerHTML = navbarHtml;
-    try {
-      bindNavLinks();
-      initMobileMenuToggle();
-    } catch (e) { console.warn('[WARN] 初始化导航交互时出错', e); }
-  } else if (!currentNavbar || !currentNavbar.innerHTML.trim()) {
+  // ==================== 导航栏处理 ====================
+  const navbarPlaceholder = document.getElementById('navbar-placeholder');
+  const currentNavbar = navbarPlaceholder?.querySelector('.navbar');
+
+  // 如果新页面提供了导航栏 HTML 且当前占位符存在，直接替换并重新绑定
+  if (navbarHtml && navbarPlaceholder) {
+    // 避免重复替换相同内容（可选优化）
+    const newNavbarDiv = document.createElement('div');
+    newNavbarDiv.innerHTML = navbarHtml;
+    const newNavbar = newNavbarDiv.querySelector('.navbar');
+    if (newNavbar && (!currentNavbar || currentNavbar.outerHTML !== newNavbar.outerHTML)) {
+      navbarPlaceholder.innerHTML = navbarHtml;
+      // 重新绑定导航栏交互（移动菜单、导航链接、主题切换等）
+      if (typeof bindNavLinks === 'function') bindNavLinks();
+      if (typeof initMobileMenuToggle === 'function') initMobileMenuToggle();
+      if (typeof initThemeToggle === 'function') initThemeToggle(); // 确保主题切换正常
+      console.log('[Router] 导航栏已更新（来自新页面）');
+    }
+  }
+  // 如果新页面没有提供导航栏 HTML，但当前导航栏为空或无效，则回退加载默认导航栏
+  else if ((!currentNavbar || !navbarPlaceholder?.innerHTML.trim()) && typeof loadNavbar === 'function') {
     await loadNavbar();
+    console.log('[Router] 导航栏已加载（默认回退）');
   }
-  // 页脚
-  const currentFooter = document.getElementById('footer-placeholder');
-  if (footerHtml && currentFooter) {
-    currentFooter.innerHTML = footerHtml;
-  } else {
+
+  // ==================== 页脚处理 ====================
+  const footerPlaceholder = document.getElementById('footer-placeholder');
+  const currentFooter = footerPlaceholder?.querySelector('.footer');
+
+  if (footerHtml && footerPlaceholder) {
+    const newFooterDiv = document.createElement('div');
+    newFooterDiv.innerHTML = footerHtml;
+    const newFooter = newFooterDiv.querySelector('.footer');
+    if (newFooter && (!currentFooter || currentFooter.outerHTML !== newFooter.outerHTML)) {
+      footerPlaceholder.innerHTML = footerHtml;
+      console.log('[Router] 页脚已更新（来自新页面）');
+    }
+  }
+  else if ((!currentFooter || !footerPlaceholder?.innerHTML.trim()) && typeof loadFooter === 'function') {
     await loadFooter();
+    console.log('[Router] 页脚已加载（默认回退）');
   }
-  // 重新激活导航状态和移动菜单
-  initNavigation();
-  initMobileMenuToggle();
-  initBackToTopButton();
+
+  // ==================== 全局导航状态刷新 ====================
+  // 更新当前激活的导航项样式（基于当前页面路径）
+  if (typeof initNavigation === 'function') initNavigation();
+
+  // 确保移动端菜单交互可用（即使未重新加载导航栏，也要重新绑定，因为 DOM 可能被替换）
+  if (typeof initMobileMenuToggle === 'function') initMobileMenuToggle();
+
+  // 确保回到顶部按钮存在且可用（可能已被新页面替换掉）
+  if (typeof initBackToTopButton === 'function') initBackToTopButton();
+
+  // 重新绑定主题切换（如果导航栏中的主题开关被重新创建）
+  if (typeof initThemeToggle === 'function') initThemeToggle();
 }
 
 /**

@@ -1,5 +1,4 @@
-// /js/entry/main.js
-// 主入口：加载导航/页脚、应用主题、启动空闲任务，并按需加载模块
+// /js/entry/main.js (关键修改部分)
 
 import { CONFIG, storageController, CookieConsentManager } from '/js/core/core.js';
 import { initUIEffects, refreshScrollReveal, ensureScrollReveal } from '/js/ui/ui-effects.js';
@@ -16,19 +15,54 @@ let cookieConsentManager = null;
 async function bootstrap() {
   ensureScrollReveal();
 
-  await Promise.all([loadNavbar(), loadFooter()]);
-  updateFooterUpdateTime().catch(() => { });
-
+  // 1. 立即应用主题（无等待）
   const savedTheme = storageController.isAllowed() ? storageController.getItem(CONFIG.STORAGE_KEYS.THEME) : null;
   const initialTheme = savedTheme || getTimeBasedTheme();
   document.documentElement.setAttribute('data-theme', initialTheme);
 
+  // 2. 立即设置背景纯色（避免白屏）
+  // 该函数会立刻在 body 上添加一个带有背景色的覆盖层（图片加载前纯色）
+  applyRandomBackgroundImage({ force: true, immediateColor: true });
+
+  // 3. 渲染个人卡片（不依赖导航栏）
+  try {
+    const personalCardContainer = document.getElementById('personal-card-container');
+    const targetPath = window.location.pathname;
+    const isRootHtml = targetPath === '/' || targetPath === '/index.html' || (/^\/[^\/]+\.html$/.test(targetPath) && targetPath !== '/404.html');
+    if (personalCardContainer && isRootHtml) {
+      const { UIRenderer } = await import('/js/pages/search-render.js');
+      personalCardContainer.innerHTML = UIRenderer.generatePersonalCardHTML();
+    }
+  } catch (e) { console.warn('[Main] 渲染个人信息卡片时出错', e); }
+
+  // 4. 后台加载导航栏和页脚（不阻塞首屏）
+  // 同时启动站点年龄计时器
+  Promise.all([loadNavbar(), loadFooter()]).catch(console.warn);
+  startSiteAgeUpdater(CONFIG.SITE_BIRTH);
+
+  // 5. 启用全局交互（立即启用，不依赖导航栏完成）
+  initBackToTopButton();
+  enableAjaxNavigation();
+  document.addEventListener('click', handleListItemClick);
+
+  // 6. 初始化当前页面功能（异步，但不会阻塞用户点击链接等）
+  let currentPage = getPageNameFromPath(window.location.pathname) || 'index';
+  if (document.querySelector('.article-page-container') || document.getElementById('articleBody')) {
+    currentPage = 'article-detail';
+  }
+  // 不等待管理器初始化完成，让用户先看到内容
+  initPageFeatures(currentPage).catch(console.warn);
+
+  // 7. 空闲时执行次要任务
   if ('requestIdleCallback' in window) {
     requestIdleCallback(() => {
       initUIEffects();
       preloadCriticalJSON();
       LazyImageLoader.init();
       GlobalImageManager.init();
+      StatisticsManager.syncVisitRecord().catch(console.warn);
+      updateFooterUpdateTime().catch(console.warn);
+      initFooterStats().catch(console.warn);
     }, { timeout: 3000 });
   } else {
     setTimeout(() => {
@@ -36,58 +70,23 @@ async function bootstrap() {
       preloadCriticalJSON();
       LazyImageLoader.init();
       GlobalImageManager.init();
+      StatisticsManager.syncVisitRecord().catch(console.warn);
+      updateFooterUpdateTime().catch(console.warn);
+      initFooterStats().catch(console.warn);
     }, 500);
   }
 
-  await StatisticsManager.syncVisitRecord();
-  startSiteAgeUpdater(CONFIG.SITE_BIRTH);
-  applyRandomBackgroundImage();
-  initBackToTopButton();
-  enableAjaxNavigation();
-
   cookieConsentManager = new CookieConsentManager(storageController);
-
-  let currentPage = getPageNameFromPath(window.location.pathname) || 'index';
-
-  // 检测文章详情页（直接访问时）
-  if (document.querySelector('.article-page-container') || document.getElementById('articleBody')) {
-    currentPage = 'article-detail';
-  }
-
-  // 在根目录的 HTML 文件（包括 /、/index.html、以及 /xxx.html），但排除 /404.html，渲染个人信息卡片
-  try {
-    const personalCardContainer = document.getElementById('personal-card-container');
-    const targetPath = window.location.pathname;
-    const isRootHtml = targetPath === '/' || targetPath === '/index.html' || (/^\/[^\/]+\.html$/.test(targetPath) && targetPath !== '/404.html');
-    if (personalCardContainer) {
-      if (isRootHtml) {
-        const { UIRenderer } = await import('/js/pages/search-render.js');
-        personalCardContainer.innerHTML = UIRenderer.generatePersonalCardHTML();
-      } else {
-        personalCardContainer.innerHTML = '';
-      }
-    }
-  } catch (e) {
-    console.warn('[WARN] 渲染个人信息卡片时出错', e);
-  }
-
-  await initPageFeatures(currentPage);
-
-  document.addEventListener('click', handleListItemClick);
-  document.body.setAttribute('data-loaded', 'true');
-
-  console.log('[Main] 初始化完成');
   initClarityOnConsent();
+  window.addEventListener('ajax:navigation', () => updateClarityPage());
 
-  // 监听无刷新导航，更新 Clarity 页面记录
-  window.addEventListener('ajax:navigation', () => {
-    updateClarityPage();
-  });
-  initFooterStats();
+  document.body.setAttribute('data-loaded', 'true');
+  console.log('[Main] 初始化完成（快速模式）');
 }
 
 document.addEventListener('DOMContentLoaded', bootstrap);
 registerServiceWorker();
 
+// 暴露全局函数供部分页面调用
 window.fetchAndReplaceContent = fetchAndReplaceContent;
 window.refreshScrollReveal = refreshScrollReveal;
