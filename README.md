@@ -8,7 +8,7 @@ tag: [网站]
 
 # 个人网站项目 README
 
-这是一个功能完整的静态个人网站，兼具博客、作品集、留言板、友链等功能。网站采用**双栏布局**（左侧个人信息卡片 + 右侧主内容区），拥有现代化的界面、无刷新页面切换、搜索筛选、暗黑模式、自定义光标、全局图片查看器等特性。文章由 Markdown 文件自动生成 HTML，并集成 Twikoo 评论系统和不蒜子统计。
+这是一个功能完整的静态个人网站，兼具博客、作品集、留言板、友链、统计看板、站点设置等功能。网站采用**双栏布局**（左侧个人信息卡片 + 右侧主内容区），拥有现代化的界面、无刷新页面切换、暗黑模式、自定义光标、全局图片查看器、音乐播放器、歌词同步等特性。文章由 Markdown 文件自动生成 HTML，并集成 Twikoo 评论系统和不蒜子统计。
 
 [在网站上查看此文章](https://xinyang-gao.github.io/articles/README.html)
 
@@ -29,15 +29,15 @@ tag: [网站]
 ## 功能概览
 
 ### 前端交互
-- **无刷新页面切换**：通过 AJAX 动态加载页面内容，伴随“纸张展开”过渡动画。
+- **无刷新页面切换**：通过 AJAX 动态加载页面内容
 - **暗黑模式**：支持跟随系统或手动切换，切换时带有淡入淡出效果，主题偏好持久化存储。
 - **搜索与标签筛选**：文章和作品页面支持按标题、标签、日期搜索，可通过标签按钮快速筛选，筛选条件自动同步到 URL。
 - **自定义光标**：非触摸设备上显示独特的钢笔尖光标，悬停在可点击元素上时自动吸附并变换样式。
 - **响应式设计**：完美适配移动端和桌面端。导航栏在移动端折叠为汉堡菜单，双栏布局在窄屏下自动转为单列。
 
 ### 文章阅读增强
-- **目录导航**：自动提取文章标题生成目录，支持点击跳转和滚动高亮。
-- **阅读进度条**：页面顶部显示阅读进度。
+- **目录导航**：自动提取文章标题生成目录（支持 Atx 和 Setext 样式），支持点击跳转和滚动高亮。
+- **阅读进度条**：页面顶部及侧边栏目录中均显示阅读进度百分比。
 - **图片预览**：文章图片懒加载，点击任意图片打开全局图片查看器，支持缩放、拖拽、旋转、前后切换。
 - **代码块增强**：代码块自动添加语言标签和复制按钮，支持一键复制。
 - **阅读时间估算**：根据文章字数自动计算阅读时间。
@@ -45,28 +45,55 @@ tag: [网站]
 - **公式与图表**：支持 KaTeX 数学公式和 Mermaid 图表渲染。
 
 ### 首页增强
-- **统计卡片**：展示文章总数、总字数、作品总数，点击卡片可跳转。
+- **统计卡片**：展示文章总数、总字数、作品总数、分类数、标签数等，点击卡片可跳转至对应列表页。
 - **标签云**：分“文章星系”和“创意工坊”两个区域，点击标签可跳转并自动筛选。
 - **最近更新**：分别展示最新 5 篇文章和 5 个作品。
 - **动态问候语**：根据时段显示不同的欢迎语。
 - **全站统计**：展示不蒜子的访问量和访客数。
 
+### 归档页面
+- 按年份和月份分组展示所有文章和作品，支持年份筛选，支持时间线样式。
+- 作品卡片支持弹窗查看详情（不跳转）。
+
+### 统计仪表板
+- 展示全域统计信息：文章/作品总量、总字数、代码规模、最活跃月份、最长文章 TOP5、作品年份分布等。
+- 集成 Chart.js 生成多种图表：文章发布趋势、分类占比、标签热度、代码资产构成、代码行数占比等。
+- 实时显示站点运行时长（秒级更新）。
+
+### 站点设置页面
+- 允许用户开关自定义光标、外链拦截弹窗。
+- 提供“清除 Service Worker 缓存”和“删除所有 Cookies/存储数据”按钮，支持重置隐私同意状态。
+
+### 404 自定义页面
+- 智能分析缺失路径类型（文章、作品、标签、关于等），给出个性化提示和相关建议链接。
+- 支持快速站内搜索和返回上一页。
+
 ### 评论与统计
 - **评论系统**：集成 Twikoo，支持留言、回复、表情。
 - **访问统计**：不蒜子统计全站及单页访问量；`/json/statistics.json` 提供文章/作品聚合数据。
+- **代码分析**：自动统计项目代码行数、文件数、扩展名分布，并展示在统计页面和页脚。
 
 ### 安全与辅助
 - **外链确认**：点击外部链接时弹出模态框确认，白名单域名自动跳转，增强安全性。
 - **返回顶部按钮**：滚动后显示，平滑返回顶部。
 - **网站运行时长**：页脚动态显示网站已运行时间（精确到秒）。
 - **Cookie 同意横幅**：提供明确的 Cookie 使用说明和同意/拒绝选项，符合隐私规范。
+- **Service Worker**：提供离线缓存与 stale-while-revalidate 策略，加速重复访问。
+
+### 全局音乐播放器
+- 嵌入网易云音乐迷你播放器（NeteaseMiniPlayer v2），支持歌单播放、歌词显示、拖拽定位、暗黑主题跟随。
+- 支持短代码自动转换：在任意 HTML 或 Markdown 内容中使用 `{nmpv2:playlist=123456, position=bottom-right}` 即可插入播放器。
 
 ### 内容自动生成 (Python)
 - **Markdown → HTML**：`ArticleManager.py` 批量处理 `assets/source/` 下的 `.md` 文件，支持 YAML front matter、内容哈希与修改次数追踪。
 - **作品管理**：`WorkManager.py` 扫描 `works/` 目录生成作品索引。
-- **统计聚合**：`Statistic.py` 生成 `statistics.json`。
-- **RSS 订阅**：`RssGenerator.py` 自动生成 `rss.xml`。
-- **一键构建**：`run.py` 按顺序执行所有脚本。
+- **统计聚合**：`Statistic.py` 生成 `statistics.json`，包含文章/作品统计、标签/分类聚合。
+- **RSS 订阅**：`RssGenerator.py` 自动生成 `rss.xml`，支持配置包含文章或作品。
+- **站点地图**：`SitemapGenerator.py` 生成 `sitemap.xml`，包含所有公开文章和主要页面。
+- **友链页面**：`FriendLinkGenerator.py` 读取 `json/friends.json` 生成 `friends.html`。
+- **静态列表页**：`StaticListGenerator.py` 生成 `articles.html` 和 `works.html`（内嵌数据，提升首屏性能）。
+- **代码分析**：`CodeAnalyzer.py` 扫描项目文件，生成 `code_analysis.json`。
+- **一键构建**：`run.py` 提供命令行和图形界面（Tkinter）两种模式，支持按顺序执行所有脚本，可为每个脚本传递自定义参数。
 
 ---
 
@@ -81,9 +108,11 @@ tag: [网站]
 | 语法高亮 | `codehilite`（Markdown 扩展） |
 | 评论系统 | [Twikoo](https://twikoo.js.org/) |
 | 统计系统 | [不蒜子](https://busuanzi.ibruce.info/) |
+| 图表库 | Chart.js 4.4 |
 | 数学公式 | KaTeX (`auto-render`) |
-| 图表 | Mermaid |
-| 存储 | `localStorage`（缓存数据、主题偏好） |
+| 图表 | Mermaid (可选) |
+| 音乐播放器 | NeteaseMiniPlayer v2（二次开发） |
+| 存储 | `localStorage` + `CacheStorage` (SW) |
 | 构建工具 | Python 脚本 (`run.py`) |
 
 ---
@@ -94,45 +123,78 @@ tag: [网站]
 /
 ├── index.html                 # 首页（统计卡片、标签云、最近更新）
 ├── about.html                 # 关于页面
-├── articles.html              # 文章列表（搜索、筛选、排序）
-├── works.html                 # 作品列表（搜索、筛选）
-├── contact.html               # 留言板
-├── friends.html               # 友链页面（卡片、申请说明、Twikoo）
+├── articles.html              # 文章列表（由 StaticListGenerator 生成，内嵌数据）
+├── works.html                 # 作品列表（由 StaticListGenerator 生成）
+├── archive.html               # 归档页面（时间线）
+├── stats.html                 # 统计仪表板
+├── settings.html              # 站点设置页面
+├── contact.html               # 留言板（Twikoo）
+├── friends.html               # 友链页面（由 FriendLinkGenerator 生成）
 ├── 404.html                   # 自定义 404 页面
-├── navbar.html                # 导航栏 HTML 片段
-├── footer.html                # 页脚 HTML 片段（三列网格、运行时长、不蒜子）
+├── navbar.html                # 导航栏 HTML 片段（动态加载）
+├── footer.html                # 页脚 HTML 片段（动态加载）
 ├── rss.xml                    # RSS Feed（自动生成）
+├── sitemap.xml                # 站点地图（自动生成）
 │
 ├── css/
-│   ├── style.css              # 全局样式（双栏布局、暗黑模式、动画、响应式）
+│   ├── style.css              # 全局样式（双栏、暗黑、动画、响应式）
 │   ├── article.css            # 文章专用样式（目录、代码块、进度条）
-│   ├── image-viewer.css       # 图片查看器样式
+│   ├── stats.css              # 统计页面额外样式
 │   ├── navbar.css             # 导航栏样式
 │   ├── footer.css             # 页脚样式
 │   ├── friends.css            # 友链页面样式
-│   └── twikoo.css             # Twikoo 评论框样式覆盖
+│   ├── image-viewer.css       # 图片查看器样式
+│   ├── twikoo.css             # Twikoo 评论框样式覆盖
+│   └── netease-mini-player-v2.css  # 音乐播放器样式
 │
 ├── js/
-│   ├── core.js                # 配置常量、工具类、存储控制器、Cookie 管理器
-│   ├── ui-effects.js          # 自定义光标、外链管理器、滚动揭示
-│   ├── search-render.js       # 数据管理、UI 渲染器、搜索控制器
-│   ├── main.js                # 主入口：加载导航/页脚，初始化各页面功能
-│   ├── article.js             # 文章详情页脚本（目录、进度条、代码块、懒加载）
-│   ├── image-viewer.js        # 全局图片查看器组件
-│   ├── searchWorker.js        # Web Worker（过滤、排序、标签提取）
-│   ├── sw.js                  # Service Worker（缓存关键 JSON）
-│   └── busuanzi.min.js        # 不蒜子统计
+│   ├── entry/
+│   │   └── main.js            # 主入口：加载导航/页脚，初始化各页面功能
+│   ├── core/
+│   │   ├── core.js            # 配置常量、工具类、存储控制器、Cookie管理器
+│   │   ├── page-manager.js    # 页面管理器基类
+│   │   ├── page-utils.js      # 页面常用工具函数
+│   │   └── clarity.js         # Microsoft Clarity 分析集成（可选）
+│   ├── router/
+│   │   └── router.js          # 无刷新路由器、页面管理器调度、导航栏/页脚加载
+│   ├── ui/
+│   │   ├── ui-effects.js      # 自定义光标、外链管理器、滚动揭示效果
+│   │   ├── image-manager.js   # 全局图片懒加载与查看器触发
+│   │   ├── image-viewer.js    # 全局图片查看器组件（缩放、拖拽、旋转）
+│   │   ├── list-events.js     # 列表项点击事件（文章跳转、作品弹窗）
+│   │   ├── navbar-manager.js  # 导航栏完全 JS 驱动（含标题替换）
+│   │   ├── theme.js           # 主题切换模块
+│   │   └── personal-card.js   # 个人信息卡片渲染
+│   ├── pages/
+│   │   ├── search-render.js   # 文章/作品列表的数据管理、UI渲染、搜索控制器（Web Worker）
+│   │   ├── article.js         # 文章详情页脚本（目录、进度条、代码块、懒加载）
+│   │   ├── archive.js         # 归档页面初始化与管理
+│   │   ├── stats-manager.js   # 统计仪表板：数据加载、图表渲染、秒级运行时间
+│   │   ├── friends-manager.js # 友链页面管理器（Twikoo 初始化、JSON 复制）
+│   │   ├── home-manager.js    # 首页管理器（统计卡片、标签云、导航事件）
+│   │   └── stats-init.js      # 统计页面入口（配合 router）
+│   ├── data/
+│   │   ├── searchWorker.js    # Web Worker（过滤、排序、标签提取）
+│   │   ├── settings.js        # 设置页面逻辑（开关、清除缓存）
+│   │   ├── site-state.js      # 统计记录管理、Service Worker 注册、欢迎弹窗
+│   │   └── sw.js              # Service Worker（缓存关键 JSON，stale-while-revalidate）
+│   ├── vendor/
+│   │   ├── busuanzi.min.js    # 不蒜子统计脚本
+│   │   ├── global-music-player.js  # 全局音乐播放器加载器
+│   │   └── netease-mini-player-v2.js  # 网易云音乐迷你播放器核心
+│   └── standalone/
+│       └── 404.js             # 404 页面独立脚本（智能路径分析）
 │
 ├── articles/                  # 生成的 HTML 文章（由 ArticleManager.py 输出）
-│   ├── xxx.html
-│   └── .hidden/               # 隐藏文章的输出目录（如含有“隐藏”标签）
+│   ├── *.html
+│   └── .hidden/               # 隐藏文章的输出目录
 │
-├── assets/                    # 源文件（Markdown 源文件、图片等）
-│   └── source/                # Markdown 源文件目录（按分类子目录组织）
-│       ├── 随笔/
-│       │   └── 文章.md
-│       └── 技术/
-│           └── 另一篇.md
+├── assets/                    # 静态资源
+│   ├── source/                # Markdown 源文件目录（按分类子目录组织）
+│   │   ├── 随笔/
+│   │   ├── 技术/
+│   │   └── ...
+│   └── avatar.webp            # 头像
 │
 ├── works/                     # 作品数据源目录
 │   └── 作品名/
@@ -142,14 +204,22 @@ tag: [网站]
 │   ├── articles.json
 │   ├── works.json
 │   ├── statistics.json
+│   ├── code_analysis.json
 │   └── friends.json           # 友链数据（需手动维护）
 │
 ├── python/                    # Python 自动化脚本
+│   ├── common.py              # 公共函数（日志、路径、日期、JSON读写）
 │   ├── ArticleManager.py
 │   ├── WorkManager.py
 │   ├── Statistic.py
 │   ├── RssGenerator.py
-│   └── run.py
+│   ├── SitemapGenerator.py
+│   ├── FriendLinkGenerator.py
+│   ├── StaticListGenerator.py
+│   ├── CodeAnalyzer.py
+│   ├── run.py                 # 一键构建（支持 CLI 和 GUI）
+│   ├── run_config.json        # 可选，自定义脚本顺序及参数
+│   └── rss_config.json        # RSS 生成器的配置文件
 │
 └── README.md
 ```
@@ -160,11 +230,11 @@ tag: [网站]
 
 ### 本地运行
 
-1. **克隆仓库到本地**。
+1. **克隆仓库**到本地。
 
-2. **安装 Python 依赖**（用于 Markdown 转换）：
+2. **安装 Python 依赖**：
    ```bash
-   pip install markdown pyyaml
+   pip install markdown pyyaml python-dateutil
    ```
 
 3. **生成网站数据**：
@@ -172,7 +242,10 @@ tag: [网站]
    cd python
    python run.py
    ```
-   该脚本会依次执行文章管理、作品管理、统计生成、RSS 生成。
+   默认会顺序执行所有脚本。若需要仅执行部分脚本，可使用 `--scripts` 参数：
+   ```bash
+   python run.py --scripts ArticleManager.py WorkManager.py
+   ```
 
 4. **启动本地服务器**（项目根目录）：
    ```bash
@@ -183,7 +256,7 @@ tag: [网站]
 ### 部署到生产环境
 
 - 将整个项目上传至静态网站托管服务（如 GitHub Pages、Netlify、Vercel 等）。
-- 确保所有文件均已上传。
+- 确保所有文件均已上传（特别是 `articles/`、`json/`、`css/`、`js/` 等）。
 - 配置 Twikoo 后端地址（见[配置说明](#配置说明)）。
 - 更新 `js/core.js` 中网站创建时间 `SITE_BIRTH`（如果需要精确运行时长）。
 - 如需自定义域名，请按托管服务指引设置。
@@ -218,13 +291,21 @@ tag: [网站]
 ### 友链管理
 
 - 手动编辑 `json/friends.json`，每个条目包含 `name`、`link`、`desc`、`avatar`。
-- 友链页面动态读取该 JSON，并缓存 10 分钟。
+- 运行 `FriendLinkGenerator.py` 或 `run.py` 重新生成 `friends.html`。
 
 ### 统计与 RSS
 
 - `Statistic.py` 聚合文章和作品数据生成 `statistics.json`。
-- `RssGenerator.py` 生成 `rss.xml`。
-- `run.py` 包含上述所有步骤，推荐使用一键构建。
+- `RssGenerator.py` 读取 `rss_config.json` 生成 `rss.xml`，可配置包含文章或作品、最大条目数等。
+- `CodeAnalyzer.py` 扫描项目根目录（排除 `.git`、`node_modules` 等）生成 `code_analysis.json`。
+- `SitemapGenerator.py` 生成 `sitemap.xml`，自动包含所有文章和主要页面。
+- `StaticListGenerator.py` 生成内嵌数据的 `articles.html` 和 `works.html`，大幅提升首屏加载速度。
+
+### 一键构建
+
+推荐使用 `run.py`：
+- **命令行模式**：`python run.py --nogui`，可指定脚本列表和参数。
+- **图形界面模式**：直接双击 `run.py`（需要 Tkinter），支持勾选脚本、实时查看日志、停止任务等。
 
 ---
 
@@ -236,7 +317,7 @@ tag: [网站]
 - `contact.html`
 - `friends.html`
 - `404.html`
-- `js/article.js`（通过 `ArticleManager.py` 生成的文章页面也会包含该配置）
+- `js/pages/article.js`（通过 ArticleManager.py 生成的文章页面也会包含该配置）
 
 示例：
 ```javascript
@@ -248,38 +329,61 @@ twikoo.init({
 
 ### 2. 网站运行起始时间
 
-在 `js/core.js` 中修改 `SITE_BIRTH` 常量：
+在 `js/core/core.js` 中修改 `SITE_BIRTH` 常量：
 ```javascript
 SITE_BIRTH: new Date('2025-02-22T12:23:53Z')
 ```
-页脚将根据该时间显示网站运行时长。
+页脚和统计页面将根据该时间显示网站运行时长。
 
 ### 3. 外链跳转白名单
 
-在 `js/core.js` 的 `EXTERNAL_WHITELIST` 中添加受信任的域名：
+在 `js/core/core.js` 的 `EXTERNAL_WHITELIST` 中添加受信任的域名：
 ```javascript
 EXTERNAL_WHITELIST: new Set([
   "github.com", "bilibili.com", ...
 ])
 ```
-白名单域名将自动跳转，非白名单域名会弹出确认框。
 
 ### 4. RSS 生成配置
 
-编辑 `python/RssGenerator.py` 开头的常量：
-- `SITE_TITLE`：网站标题
-- `SITE_LINK`：网站根地址（如 `https://xinyang-gao.github.io`）
-- `SITE_DESCRIPTION`：站点描述
-- `INCLUDE_ARTICLES`：是否包含文章（默认 `True`）
-- `INCLUDE_WORKS`：是否包含作品（默认 `False`）
+编辑 `python/rss_config.json`（如果不存在则使用默认值）：
+```json
+{
+  "site": {
+    "title": "高新炀的个人网站",
+    "link": "https://xinyang-gao.github.io",
+    "description": "学生 · 开发者 · 写作者，用代码和文字探索世界"
+  },
+  "include": {
+    "articles": true,
+    "works": false
+  },
+  "filters": {
+    "skip_hidden": true,
+    "max_items": 20
+  }
+}
+```
 
 ### 5. 背景图片
 
-在 `js/core.js` 的 `BACKGROUND_IMAGES` 数组中替换或添加背景图片 URL，首页和欢迎弹窗会随机选用。
+在 `js/core/core.js` 的 `BACKGROUND_IMAGES` 数组中替换或添加背景图片 URL，首页和欢迎弹窗会随机选用。
 
 ### 6. Cookie 同意横幅
 
-`js/core.js` 中的 `CookieConsentManager` 负责管理 Cookie 同意状态。用户的选择存储在 `localStorage` 中，完全遵循隐私政策。
+`js/core/core.js` 中的 `CookieConsentManager` 负责管理 Cookie 同意状态。用户的选择存储在 `localStorage` 中，完全遵循隐私政策。
+
+### 7. 音乐播放器
+
+播放器由 `js/vendor/global-music-player.js` 动态加载 CSS 和 JS，默认歌单 ID `18022003523`，位置为 `bottom-left`。如需修改，可直接编辑该文件中的 `PLAYER_CONFIG`。  
+此外，支持通过短代码在任意内容中插入播放器：
+```
+{nmpv2:playlist=123456, position=bottom-right, lyric=true, minimized=false}
+```
+或单曲：
+```
+{nmpv2:123456, theme=dark}
+```
 
 ---
 
@@ -349,9 +453,9 @@ EXTERNAL_WHITELIST: new Set([
   "total_articles": 12,
   "total_word_count": 18000,
   "total_works": 5,
-  "article_tags": ["随笔", "技术", "生活"],
-  "article_categories": ["随笔", "技术"],
-  "work_tags": ["游戏", "工具"]
+  "article_tags": [{"name": "随笔", "count": 5}, ...],
+  "article_categories": [{"name": "随笔", "count": 5}],
+  "work_tags": [{"name": "游戏", "count": 2}]
 }
 ```
 
@@ -392,19 +496,24 @@ category: 随笔
 1. 在根目录创建新的 `.html` 文件。
 2. 确保包含 `#navbar-placeholder`、`#personal-card-container`、`#footer-placeholder` 等占位元素。
 3. 在 `navbar.html` 中添加导航链接，设置 `data-page` 属性。
-4. 若需要动态数据，可在 `js/search-render.js` 或 `js/main.js` 中添加对应的初始化逻辑。
+4. 若需要动态数据，可在 `js/pages/` 下新建页面管理器（继承 `PageManager`），并在 `js/router/router.js` 的 `initPageManagerByPageName` 中注册。
+5. 若页面为静态列表（如归档、统计），可直接在 `router.js` 中导入对应的初始化函数。
 
 ### 调整缓存策略
-- 在 `js/search-render.js` 的 `DataManager.config` 中修改 `cacheControl`。
-- 缓存过期时间可通过 `Utils.isDataExpired` 的 `minutes` 参数调整（默认 5 分钟）。
+- 在 `js/pages/search-render.js` 的 `DataManager.config` 中修改 `cacheControl`。
+- 缓存过期时间可通过 `js/core/core.js` 中 `Utils.isDataExpired` 的 `minutes` 参数调整（默认 5 分钟）。
 
 ### 性能调试
 - 浏览器控制台会输出关键操作耗时（`PerformanceMonitor` 类），耗时超过 100ms 会有提示。
-- 滚动渐入动画使用 `IntersectionObserver`，阈值可在 `js/ui-effects.js` 中调整。
+- 滚动渐入动画使用 `IntersectionObserver`，阈值可在 `js/ui/ui-effects.js` 中调整。
 
 ### 无刷新导航
-- 已在 `js/main.js` 的 `enableAjaxNavigation` 中启用，所有内部链接点击后会通过 `fetch` 加载新页面并替换主内容区域。
+- 已在 `js/entry/main.js` 的 `enableAjaxNavigation` 中启用，所有内部链接点击后会通过 `fetch` 加载新页面并替换主内容区域。
 - 若需禁用某个链接的 AJAX 导航，可添加 `data-no-ajax="true"` 属性。
+
+### Service Worker
+- 开发环境下自动绕过 SW，生产环境自动注册。缓存策略为 stale-while-revalidate 针对 JSON，cache-first 针对静态资源。
+- 如需强制更新缓存，可在设置页面点击“清除 Service Worker 缓存”按钮。
 
 ---
 

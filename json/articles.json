@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-06-13T18:13:40.796112",
+  "generated_at": "2026-06-13T18:30:30.276283",
   "total_articles": 14,
-  "total_word_count": 52656,
+  "total_word_count": 56009,
   "articles": [
     {
       "relative_path": "assets/source/分享/为网站嵌入一个优雅的音乐播放器.md",
@@ -99,9 +99,9 @@
     },
     {
       "relative_path": "README.md",
-      "hash": "35d6c90d8ce7a79af96255a6993add5b",
-      "last_updated": "2026-05-11",
-      "modify_count": 6,
+      "hash": "7e89926752d0e28e0896cff440275a53",
+      "last_updated": "2026-06-13",
+      "modify_count": 7,
       "hidden": false,
       "title": "README.md",
       "date": "2026年04月12日",
@@ -112,8 +112,8 @@
       ],
       "category": "README文档自动构建",
       "url": "/articles/README.html",
-      "word_count": 7625,
-      "read_time": "26分钟"
+      "word_count": 10978,
+      "read_time": "37分钟"
     },
     {
       "relative_path": "assets/source/作文/从一株小草开始.md",
