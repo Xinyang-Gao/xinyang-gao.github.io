@@ -13,15 +13,20 @@
 </head>
 <body>
     <div id="navbar-placeholder"></div>
-    <div id="reading-progress" class="reading-progress-bar"><div id="progress-bar" class="progress-bar"></div></div>
 
-    <main class="article-grid">
-        <!-- 左侧主内容区 -->
-        <article class="article-main">
-            <div class="article-card">
-                <h1 class="article-title">README.md</h1>
-                <p class="article-subtitle">项目介绍</p>
-                
+    <!-- 所有动态内容放在 router-view 内 -->
+    <div id="router-view">
+        <div id="reading-progress" class="reading-progress-bar">
+            <div id="progress-bar" class="progress-bar"></div>
+        </div>
+
+        <main class="article-grid">
+            <!-- 左侧主内容区 -->
+            <article class="article-main">
+                <div class="article-card">
+                    <h1 class="article-title">README.md</h1>
+                    <p class="article-subtitle">项目介绍</p>
+                    
     <div class="article-meta-line">
         <span class="meta-item"><i class="fas fa-calendar-alt"></i> 2026年04月12日</span>
         <span class="meta-item"><i class="fas fa-user"></i> 高新炀 ＆ DEEPSEEK-V4</span>
@@ -31,7 +36,7 @@
     </div>
     <div class="article-meta-line article-meta-updated"><span class="meta-item"><i class="fas fa-edit"></i> 更新于 2026年05月11日</span></div>
 
-                <div class="article-body" id="articleBody"><h1 id="个人网站项目-readme">个人网站项目 README</h1>
+                    <div class="article-body" id="articleBody"><h1 id="个人网站项目-readme">个人网站项目 README</h1>
 <p>这是一个功能完整的静态个人网站，兼具博客、作品集、留言板、友链等功能。网站采用<strong>双栏布局</strong>（左侧个人信息卡片 + 右侧主内容区），拥有现代化的界面、无刷新页面切换、搜索筛选、暗黑模式、自定义光标、全局图片查看器等特性。文章由 Markdown 文件自动生成 HTML，并集成 Twikoo 评论系统和不蒜子统计。</p>
 <p><a href="https://xinyang-gao.github.io/articles/README.html">在网站上查看此文章</a></p>
 <h2 id="目录">目录</h2>
@@ -469,47 +474,53 @@ category: 随笔
 <strong>联系方式</strong>：<a href="mailto:gao_xinyang@foxmail.com">邮件</a> | <a href="https://github.com/Xinyang-Gao">GitHub</a></p>
 <p>如有任何问题，欢迎通过网站留言板或邮箱联系。</p></div>
 
-                <div class="article-tags"><a class="tag" href="/articles.html?tags=%E7%BD%91%E7%AB%99">#网站</a></div>
-            </div>
-
-            <!-- 评论区 -->
-            <div class="comments-card">
-                <h3>💬 评论</h3>
-                <div id="twikoo-comments"></div>
-            </div>
-        </article>
-
-        <!-- 右侧边栏（目录 + 信息卡片） -->
-        <aside class="article-sidebar">
-            <div class="sidebar-card toc-card">
-                <div class="toc-header">
-                    <i class="fas fa-list-ul"></i>
-                    <span>目录</span>
+                    <div class="article-tags"><a class="tag" href="/articles.html?tags=%E7%BD%91%E7%AB%99">#网站</a></div>
                 </div>
-                <nav class="toc-nav" id="toc-list-container"></nav>
-            </div>
 
-            <div class="sidebar-card info-card">
-                <div class="info-item">
-                    <i class="fas fa-chart-line"></i>
-                    <div>
-                        <span class="info-label">阅读量</span>
-                        <span class="info-value" id="busuanzi_page_pv">加载中...</span>
+                <!-- 评论区 -->
+                <div class="comments-card">
+                    <h3>💬 评论</h3>
+                    <div id="twikoo-comments"></div>
+                </div>
+            </article>
+
+            <!-- 右侧边栏（目录 + 信息卡片） -->
+            <aside class="article-sidebar">
+                <div class="sidebar-card toc-card">
+                    <div class="toc-header">
+                        <i class="fas fa-list-ul"></i>
+                        <span>目录</span>
                     </div>
+                    <nav class="toc-nav" id="toc-list-container"></nav>
                 </div>
-                <div class="info-item">
-                    <i class="fas fa-users"></i>
-                    <div>
-                        <span class="info-label">访客数</span>
-                        <span class="info-value" id="busuanzi_page_uv">加载中...</span>
-                    </div>
-                </div>
-                <div class="info-item"><i class="fas fa-code-branch"></i><div><span class="info-label">修订次数</span><span class="info-value">6</span></div></div>
-            </div>
-        </aside>
-    </main>
 
-    <div id="imageModal" class="image-modal"><span class="close">&times;</span><img id="modalImage" src="" alt=""></div>
+                <div class="sidebar-card info-card">
+                    <div class="info-item">
+                        <i class="fas fa-chart-line"></i>
+                        <div>
+                            <span class="info-label">阅读量</span>
+                            <span class="info-value" id="busuanzi_page_pv">加载中...</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-users"></i>
+                        <div>
+                            <span class="info-label">访客数</span>
+                            <span class="info-value" id="busuanzi_page_uv">加载中...</span>
+                        </div>
+                    </div>
+                    <div class="info-item"><i class="fas fa-code-branch"></i><div><span class="info-label">修订次数</span><span class="info-value">6</span></div></div>
+                </div>
+            </aside>
+        </main>
+
+        <!-- 图片模态框（文章页特有） -->
+        <div id="imageModal" class="image-modal">
+            <span class="close">&times;</span>
+            <img id="modalImage" src="" alt="">
+        </div>
+    </div>
+
     <div id="footer-placeholder"></div>
 
     <script>window.ARTICLE_HEADINGS = [{"level": 1, "text": "个人网站项目 README", "id": "个人网站项目-readme"}, {"level": 2, "text": "目录", "id": "目录"}, {"level": 2, "text": "功能概览", "id": "功能概览"}, {"level": 3, "text": "前端交互", "id": "前端交互"}, {"level": 3, "text": "文章阅读增强", "id": "文章阅读增强"}, {"level": 3, "text": "首页增强", "id": "首页增强"}, {"level": 3, "text": "评论与统计", "id": "评论与统计"}, {"level": 3, "text": "安全与辅助", "id": "安全与辅助"}, {"level": 3, "text": "内容自动生成 (Python)", "id": "内容自动生成-python"}, {"level": 2, "text": "技术栈", "id": "技术栈"}, {"level": 2, "text": "项目结构", "id": "项目结构"}, {"level": 2, "text": "快速开始", "id": "快速开始"}, {"level": 3, "text": "本地运行", "id": "本地运行"}, {"level": 3, "text": "部署到生产环境", "id": "部署到生产环境"}, {"level": 2, "text": "构建与数据更新", "id": "构建与数据更新"}, {"level": 3, "text": "文章管理", "id": "文章管理"}, {"level": 3, "text": "作品管理", "id": "作品管理"}, {"level": 3, "text": "友链管理", "id": "友链管理"}, {"level": 3, "text": "统计与 RSS", "id": "统计与-rss"}, {"level": 2, "text": "配置说明", "id": "配置说明"}, {"level": 3, "text": "1. Twikoo 评论系统", "id": "1-twikoo-评论系统"}, {"level": 3, "text": "2. 网站运行起始时间", "id": "2-网站运行起始时间"}, {"level": 3, "text": "3. 外链跳转白名单", "id": "3-外链跳转白名单"}, {"level": 3, "text": "4. RSS 生成配置", "id": "4-rss-生成配置"}, {"level": 3, "text": "5. 背景图片", "id": "5-背景图片"}, {"level": 3, "text": "6. Cookie 同意横幅", "id": "6-cookie-同意横幅"}, {"level": 2, "text": "数据格式", "id": "数据格式"}, {"level": 3, "text": "`articles.json`", "id": "articlesjson"}, {"level": 3, "text": "`works.json`", "id": "worksjson"}, {"level": 3, "text": "`metadata.json`（`works/作品名/` 内）", "id": "metadatajsonworks作品名-内"}, {"level": 3, "text": "`statistics.json`", "id": "statisticsjson"}, {"level": 3, "text": "`friends.json`", "id": "friendsjson"}, {"level": 3, "text": "Markdown Front Matter (YAML)", "id": "markdown-front-matter-yaml"}, {"level": 2, "text": "```yaml", "id": "yaml"}, {"level": 2, "text": "category: 随笔", "id": "category-随笔"}, {"level": 2, "text": "开发与扩展", "id": "开发与扩展"}, {"level": 3, "text": "修改样式", "id": "修改样式"}, {"level": 3, "text": "添加新页面", "id": "添加新页面"}, {"level": 3, "text": "调整缓存策略", "id": "调整缓存策略"}, {"level": 3, "text": "性能调试", "id": "性能调试"}, {"level": 3, "text": "无刷新导航", "id": "无刷新导航"}, {"level": 2, "text": "许可证", "id": "许可证"}];</script>
@@ -519,13 +530,6 @@ category: 随笔
     <script src="/js/pages/article.js" type="module"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
     <script src="https://registry.npmmirror.com/twikoo/1.7.11/files/dist/twikoo.nocss.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            if (typeof twikoo !== 'undefined') {
-                twikoo.init({ envId: 'https://twikoo-gxy.netlify.app/.netlify/functions/twikoo', el: '#twikoo-comments', path: window.location.pathname, lang: 'zh-CN' });
-            }
-        });
-    </script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.getElementById('articleBody'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
 </body>

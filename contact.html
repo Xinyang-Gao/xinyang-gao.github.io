@@ -10,23 +10,20 @@
 <body>
   <div id="navbar-placeholder"></div>
 
-  <!-- 双栏布局 -->
-  <div class="two-column-layout">
-    <!-- 左侧：个人信息栏 -->
-    <aside class="sidebar-profile">
-      <div id="personal-card-container"></div>
-    </aside>
+  <div id="router-view">
+    <div class="two-column-layout">
+      <aside class="sidebar-profile">
+        <div id="personal-card-container"></div>
+      </aside>
 
-    <!-- 右侧主内容区 -->
-    <main class="main-content-area">
-      <div class="container">
-        <h2>留言板</h2>
-        <p>欢迎留下你的想法、建议或者随便说点什么~</p>
-        
-        <!-- 留言板容器 -->
-        <div id="twikoo-comments"></div>
-      </div>
-    </main>
+      <main class="main-content-area">
+        <div class="container">
+          <h2>留言板</h2>
+          <p>欢迎留下你的想法、建议或者随便说点什么~</p>
+          <div id="twikoo-comments"></div>
+        </div>
+      </main>
+    </div>
   </div>
 
   <button id="backToTopBtn" class="back-to-top-btn" title="返回顶部">↑</button>
@@ -39,25 +36,19 @@
   <script src="/js/entry/main.js" type="module"></script>
   
   <script>
-    // 初始化 Twikoo 留言板
     document.addEventListener('DOMContentLoaded', function() {
-      // 等待导航栏加载完成后初始化（可选，确保 DOM 就绪）
       setTimeout(function() {
         if (typeof twikoo === 'undefined') {
           console.error('Twikoo 加载失败');
           return;
         }
-        
         twikoo.init({
           envId: 'https://twikoo-gxy.netlify.app/.netlify/functions/twikoo',
           el: '#twikoo-comments',
           lang: 'zh-CN',
           enableComment: true,
-        }).then(() => {
-          console.log('Twikoo 留言板初始化成功');
-        }).catch(err => {
-          console.error('Twikoo 初始化失败:', err);
-        });
+        }).then(() => console.log('Twikoo 留言板初始化成功'))
+          .catch(err => console.error('Twikoo 初始化失败:', err));
       }, 100);
     });
   </script>

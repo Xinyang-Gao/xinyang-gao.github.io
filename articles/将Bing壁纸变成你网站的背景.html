@@ -13,15 +13,20 @@
 </head>
 <body>
     <div id="navbar-placeholder"></div>
-    <div id="reading-progress" class="reading-progress-bar"><div id="progress-bar" class="progress-bar"></div></div>
 
-    <main class="article-grid">
-        <!-- 左侧主内容区 -->
-        <article class="article-main">
-            <div class="article-card">
-                <h1 class="article-title">将 Bing 每日壁纸变成你网站的背景</h1>
-                <p class="article-subtitle">一篇技术分享文章。详细解析Bing壁纸URL参数含义，推荐多个历史壁纸归档站和免费API，并给出三种集成方案（直接API、PHP重定向、官方元数据接口），最后附上本站随机壁纸的实现代码。</p>
-                
+    <!-- 所有动态内容放在 router-view 内 -->
+    <div id="router-view">
+        <div id="reading-progress" class="reading-progress-bar">
+            <div id="progress-bar" class="progress-bar"></div>
+        </div>
+
+        <main class="article-grid">
+            <!-- 左侧主内容区 -->
+            <article class="article-main">
+                <div class="article-card">
+                    <h1 class="article-title">将 Bing 每日壁纸变成你网站的背景</h1>
+                    <p class="article-subtitle">一篇技术分享文章。详细解析Bing壁纸URL参数含义，推荐多个历史壁纸归档站和免费API，并给出三种集成方案（直接API、PHP重定向、官方元数据接口），最后附上本站随机壁纸的实现代码。</p>
+                    
     <div class="article-meta-line">
         <span class="meta-item"><i class="fas fa-calendar-alt"></i> 2026年05月02日</span>
         <span class="meta-item"><i class="fas fa-user"></i> 高新炀</span>
@@ -31,7 +36,7 @@
     </div>
     <div class="article-meta-line article-meta-updated"><span class="meta-item"><i class="fas fa-edit"></i> 更新于 2026年05月10日</span></div>
 
-                <div class="article-body" id="articleBody"><p>Bing 搜索引擎每天都会更新一张精美的首页背景图片，这些图片来自全球各地的摄影师和艺术家之手，涵盖自然风光、人文建筑、动物趣闻等丰富题材。很多站长都希望将自己网站的背景也换成 Bing 的每日一图——既省去了自己找素材的功夫，又能让网站每天都有新鲜感。这篇文章我会分享如何实现，同时也介绍一些宝藏级的 Bing 壁纸历史归档网站。</p>
+                    <div class="article-body" id="articleBody"><p>Bing 搜索引擎每天都会更新一张精美的首页背景图片，这些图片来自全球各地的摄影师和艺术家之手，涵盖自然风光、人文建筑、动物趣闻等丰富题材。很多站长都希望将自己网站的背景也换成 Bing 的每日一图——既省去了自己找素材的功夫，又能让网站每天都有新鲜感。这篇文章我会分享如何实现，同时也介绍一些宝藏级的 Bing 壁纸历史归档网站。</p>
 <h2 id="一bing-壁纸-url-参数解析">一、Bing 壁纸 URL 参数解析</h2>
 <p>要接入 Bing 壁纸，先得明白 Bing 官方图片地址的结构。下面是一个 Bing 壁纸请求链接：</p>
 <p><img alt="https://cn.bing.com/th?id=OHR.MayLaborDayY26_ZH-CN7554485395_UHD.jpg&amp;rf=LaDigue_UHD.jpg&amp;pid=hp&amp;w=3840&amp;h=2160&amp;rs=1&amp;c=4" data-src="https://cn.bing.com/th?id=OHR.MayLaborDayY26_ZH-CN7554485395_UHD.jpg&amp;rf=LaDigue_UHD.jpg&amp;pid=hp&amp;w=3840&amp;h=2160&amp;rs=1&amp;c=4" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E" class="lazy-image"  /></p>
@@ -165,47 +170,53 @@ function applyRandomBackgroundImage() {
 }
 </code></pre></div>
 
-                <div class="article-tags"><a class="tag" href="/articles.html?tags=%E5%88%86%E4%BA%AB">#分享</a> <a class="tag" href="/articles.html?tags=%E7%BD%91%E7%AB%99">#网站</a></div>
-            </div>
-
-            <!-- 评论区 -->
-            <div class="comments-card">
-                <h3>💬 评论</h3>
-                <div id="twikoo-comments"></div>
-            </div>
-        </article>
-
-        <!-- 右侧边栏（目录 + 信息卡片） -->
-        <aside class="article-sidebar">
-            <div class="sidebar-card toc-card">
-                <div class="toc-header">
-                    <i class="fas fa-list-ul"></i>
-                    <span>目录</span>
+                    <div class="article-tags"><a class="tag" href="/articles.html?tags=%E5%88%86%E4%BA%AB">#分享</a> <a class="tag" href="/articles.html?tags=%E7%BD%91%E7%AB%99">#网站</a></div>
                 </div>
-                <nav class="toc-nav" id="toc-list-container"></nav>
-            </div>
 
-            <div class="sidebar-card info-card">
-                <div class="info-item">
-                    <i class="fas fa-chart-line"></i>
-                    <div>
-                        <span class="info-label">阅读量</span>
-                        <span class="info-value" id="busuanzi_page_pv">加载中...</span>
+                <!-- 评论区 -->
+                <div class="comments-card">
+                    <h3>💬 评论</h3>
+                    <div id="twikoo-comments"></div>
+                </div>
+            </article>
+
+            <!-- 右侧边栏（目录 + 信息卡片） -->
+            <aside class="article-sidebar">
+                <div class="sidebar-card toc-card">
+                    <div class="toc-header">
+                        <i class="fas fa-list-ul"></i>
+                        <span>目录</span>
                     </div>
+                    <nav class="toc-nav" id="toc-list-container"></nav>
                 </div>
-                <div class="info-item">
-                    <i class="fas fa-users"></i>
-                    <div>
-                        <span class="info-label">访客数</span>
-                        <span class="info-value" id="busuanzi_page_uv">加载中...</span>
-                    </div>
-                </div>
-                <div class="info-item"><i class="fas fa-code-branch"></i><div><span class="info-label">修订次数</span><span class="info-value">1</span></div></div>
-            </div>
-        </aside>
-    </main>
 
-    <div id="imageModal" class="image-modal"><span class="close">&times;</span><img id="modalImage" src="" alt=""></div>
+                <div class="sidebar-card info-card">
+                    <div class="info-item">
+                        <i class="fas fa-chart-line"></i>
+                        <div>
+                            <span class="info-label">阅读量</span>
+                            <span class="info-value" id="busuanzi_page_pv">加载中...</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-users"></i>
+                        <div>
+                            <span class="info-label">访客数</span>
+                            <span class="info-value" id="busuanzi_page_uv">加载中...</span>
+                        </div>
+                    </div>
+                    <div class="info-item"><i class="fas fa-code-branch"></i><div><span class="info-label">修订次数</span><span class="info-value">1</span></div></div>
+                </div>
+            </aside>
+        </main>
+
+        <!-- 图片模态框（文章页特有） -->
+        <div id="imageModal" class="image-modal">
+            <span class="close">&times;</span>
+            <img id="modalImage" src="" alt="">
+        </div>
+    </div>
+
     <div id="footer-placeholder"></div>
 
     <script>window.ARTICLE_HEADINGS = [{"level": 2, "text": "一、Bing 壁纸 URL 参数解析", "id": "一bing-壁纸-url-参数解析"}, {"level": 2, "text": "二、Bing 历史壁纸网站", "id": "二bing-历史壁纸网站"}, {"level": 3, "text": "1. bing.wdbyte.com", "id": "1-bingwdbytecom"}, {"level": 3, "text": "2. bing.img.run", "id": "2-bingimgrun"}, {"level": 3, "text": "3. 更多值得关注的 Bing 壁纸资源", "id": "3-更多值得关注的-bing-壁纸资源"}, {"level": 2, "text": "三、将 Bing 壁纸集成到你的网站背景", "id": "三将-bing-壁纸集成到你的网站背景"}, {"level": 3, "text": "方案一：直接使用第三方 API（最简单）", "id": "方案一直接使用第三方-api最简单"}, {"level": 3, "text": "方案二：通过 PHP 重定向获取官方图片", "id": "方案二通过-php-重定向获取官方图片"}, {"level": 3, "text": "方案三：使用官方 API 获取元数据", "id": "方案三使用官方-api-获取元数据"}, {"level": 3, "text": "本站的实现方法", "id": "本站的实现方法"}];</script>
@@ -215,13 +226,6 @@ function applyRandomBackgroundImage() {
     <script src="/js/pages/article.js" type="module"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
     <script src="https://registry.npmmirror.com/twikoo/1.7.11/files/dist/twikoo.nocss.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            if (typeof twikoo !== 'undefined') {
-                twikoo.init({ envId: 'https://twikoo-gxy.netlify.app/.netlify/functions/twikoo', el: '#twikoo-comments', path: window.location.pathname, lang: 'zh-CN' });
-            }
-        });
-    </script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.getElementById('articleBody'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
 </body>

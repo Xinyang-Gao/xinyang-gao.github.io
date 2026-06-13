@@ -103,15 +103,23 @@ def generate_articles_page(articles: list) -> str:
 <link rel="stylesheet" href="/css/style.css"><link rel="stylesheet" href="/css/friends.css"><link rel="stylesheet" href="/css/twikoo.css"></head>
 <body>
 <div id="navbar-placeholder"></div>
-<div class="two-column-layout"><aside class="sidebar-profile"><div id="personal-card-container"></div></aside>
-<main class="main-content-area"><div class="container"><h2>文章</h2><p>这里有一些随便写的作文、技术博客……</p>
-<div id="search-container"><input type="text" id="search-input" placeholder="搜索文章..."><select id="search-field"><option value="all">全部</option><option value="title">标题</option><option value="tag">标签</option><option value="date">日期</option></select></div>
-{tags_filter}
-<div class="sort-controls"><label for="sort-order">排序方式：</label><select id="sort-order"><option value="updated_asc">按更新时间升序</option><option value="updated_desc" selected>按更新时间降序</option><option value="wordcount_asc">按字数升序</option><option value="wordcount_desc">按字数降序</option><option value="date_asc">按发布日期升序</option><option value="date_desc">按发布日期降序</option></select></div>
-<div id="articles-list-container">{articles_html}</div>
-</div></main></div>
-<button id="backToTopBtn" class="back-to-top-btn" title="返回顶部">↑</button>
-<div id="pageTransition" class="page-transition"></div>
+<div id="router-view">
+    <div class="two-column-layout">
+        <aside class="sidebar-profile">
+            <div id="personal-card-container"></div>
+        </aside>
+        <main class="main-content-area">
+            <div class="container">
+                <h2>文章</h2>
+                <p>这里有一些随便写的作文、技术博客……</p>
+                <div id="search-container"><input type="text" id="search-input" placeholder="搜索文章..."><select id="search-field"><option value="all">全部</option><option value="title">标题</option><option value="tag">标签</option><option value="date">日期</option></select></div>
+                {tags_filter}
+                <div class="sort-controls"><label for="sort-order">排序方式：</label><select id="sort-order"><option value="updated_asc">按更新时间升序</option><option value="updated_desc" selected>按更新时间降序</option><option value="wordcount_asc">按字数升序</option><option value="wordcount_desc">按字数降序</option><option value="date_asc">按发布日期升序</option><option value="date_desc">按发布日期降序</option></select></div>
+                <div id="articles-list-container">{articles_html}</div>
+            </div>
+        </main>
+    </div>
+</div>
 <div id="footer-placeholder"></div>
 <script>window.__STATIC_ARTICLES_DATA = {articles_json_str};</script>
 <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>
@@ -170,15 +178,23 @@ def generate_works_page(works: list) -> str:
 <link rel="stylesheet" href="/css/style.css"><link rel="stylesheet" href="/css/friends.css"><link rel="stylesheet" href="/css/twikoo.css"></head>
 <body>
 <div id="navbar-placeholder"></div>
-<div class="two-column-layout"><aside class="sidebar-profile"><div id="personal-card-container"></div></aside>
-<main class="main-content-area"><div class="container"><h2>作品</h2><p>这里有一些我做的东西（可能有些稀奇古怪的小玩意？）</p>
-<div id="search-container"><input type="text" id="search-input" placeholder="搜索作品..."><select id="search-field"><option value="all">全部</option><option value="title">标题</option><option value="tag">标签</option><option value="date">日期</option></select></div>
-{tags_filter}
-<div class="sort-controls"><label for="sort-order">排序方式：</label><select id="sort-order"><option value="updated_asc">按更新时间升序</option><option value="updated_desc" selected>按更新时间降序</option><option value="wordcount_asc">按字数升序</option><option value="wordcount_desc">按字数降序</option><option value="date_asc">按发布日期升序</option><option value="date_desc">按发布日期降序</option></select></div>
-<div id="works-list-container">{works_html}</div>
-</div></main></div>
-<button id="backToTopBtn" class="back-to-top-btn" title="返回顶部">↑</button>
-<div id="pageTransition" class="page-transition"></div>
+<div id="router-view">
+    <div class="two-column-layout">
+        <aside class="sidebar-profile">
+            <div id="personal-card-container"></div>
+        </aside>
+        <main class="main-content-area">
+            <div class="container">
+                <h2>作品</h2>
+                <p>这里有一些我做的东西（可能有些稀奇古怪的小玩意？）</p>
+                <div id="search-container"><input type="text" id="search-input" placeholder="搜索作品..."><select id="search-field"><option value="all">全部</option><option value="title">标题</option><option value="tag">标签</option><option value="date">日期</option></select></div>
+                {tags_filter}
+                <div class="sort-controls"><label for="sort-order">排序方式：</label><select id="sort-order"><option value="updated_asc">按更新时间升序</option><option value="updated_desc" selected>按更新时间降序</option><option value="wordcount_asc">按字数升序</option><option value="wordcount_desc">按字数降序</option><option value="date_asc">按发布日期升序</option><option value="date_desc">按发布日期降序</option></select></div>
+                <div id="works-list-container">{works_html}</div>
+            </div>
+        </main>
+    </div>
+</div>
 <div id="footer-placeholder"></div>
 <script>window.__STATIC_WORKS_DATA = {works_json_str};</script>
 <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>

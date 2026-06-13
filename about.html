@@ -25,14 +25,12 @@
         opacity: 0.9;
         text-shadow: 0 0 0px rgba(180, 91, 99, 0.4);
       }
-
       50% {
         transform: scale(1.08);
         opacity: 1;
         text-shadow: 0 0 18px rgba(180, 91, 99, 0.7);
         filter: drop-shadow(0 0 12px rgba(180, 91, 99, 0.8));
       }
-
       100% {
         transform: scale(1);
         opacity: 0.9;
@@ -41,19 +39,9 @@
     }
 
     @keyframes subtleShake {
-
-      0%,
-      100% {
-        transform: rotate(0deg);
-      }
-
-      25% {
-        transform: rotate(2deg);
-      }
-
-      75% {
-        transform: rotate(-2deg);
-      }
+      0%, 100% { transform: rotate(0deg); }
+      25% { transform: rotate(2deg); }
+      75% { transform: rotate(-2deg); }
     }
 
     .construction-title {
@@ -70,15 +58,8 @@
     }
 
     @keyframes glowPulse {
-      0% {
-        text-shadow: 0 0 0px rgba(180, 91, 99, 0.2);
-        opacity: 0.95;
-      }
-
-      100% {
-        text-shadow: 0 0 8px rgba(180, 91, 99, 0.6);
-        opacity: 1;
-      }
+      0% { text-shadow: 0 0 0px rgba(180, 91, 99, 0.2); opacity: 0.95; }
+      100% { text-shadow: 0 0 8px rgba(180, 91, 99, 0.6); opacity: 1; }
     }
 
     .construction-sub {
@@ -92,13 +73,8 @@
     }
 
     @keyframes scanningBeam {
-      0% {
-        background-position: 100% 0;
-      }
-
-      100% {
-        background-position: -100% 0;
-      }
+      0% { background-position: 100% 0; }
+      100% { background-position: -100% 0; }
     }
 
     .deadline-wrapper {
@@ -169,18 +145,10 @@
     }
 
     @keyframes fadeFloat {
-      0% {
-        opacity: 0.7;
-        transform: translateY(2px);
-      }
-
-      100% {
-        opacity: 1;
-        transform: translateY(-3px);
-      }
+      0% { opacity: 0.7; transform: translateY(2px); }
+      100% { opacity: 1; transform: translateY(-3px); }
     }
 
-    /* 神秘几何装饰 简约又神秘 */
     .construction-container::before {
       content: "⌛";
       position: absolute;
@@ -207,42 +175,27 @@
     }
 
     @keyframes spinSlow {
-      from {
-        transform: rotate(0deg);
-      }
-
-      to {
-        transform: rotate(360deg);
-      }
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
     }
 
-    /* 简单扫描线效果 (增加神秘氛围) */
     .scan-line {
       position: absolute;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: linear-gradient(to bottom,
-          transparent 0%,
-          rgba(180, 91, 99, 0.02) 50%,
-          transparent 100%);
+      background: linear-gradient(to bottom, transparent 0%, rgba(180, 91, 99, 0.02) 50%, transparent 100%);
       pointer-events: none;
       z-index: 2;
       animation: scanVertical 6s infinite linear;
     }
 
     @keyframes scanVertical {
-      0% {
-        transform: translateY(-100%);
-      }
-
-      100% {
-        transform: translateY(200%);
-      }
+      0% { transform: translateY(-100%); }
+      100% { transform: translateY(200%); }
     }
 
-    /* 右侧容器保留优雅卡片风格，加入额外边框光晕 */
     .main-content-area .container {
       position: relative;
       overflow: hidden;
@@ -253,19 +206,10 @@
       box-shadow: var(--shadow-lg), var(--shadow-offset), 0 0 0 1px rgba(180, 91, 99, 0.2);
     }
 
-    /* 响应式调整 */
     @media (max-width: 768px) {
-      .construction-title {
-        font-size: 2rem;
-      }
-
-      .warning-icon {
-        font-size: 3.8rem;
-      }
-
-      .deadline-date {
-        font-size: 1rem;
-      }
+      .construction-title { font-size: 2rem; }
+      .warning-icon { font-size: 3.8rem; }
+      .deadline-date { font-size: 1rem; }
     }
   </style>
 </head>
@@ -273,41 +217,39 @@
 <body>
   <div id="navbar-placeholder"></div>
 
-  <div class="two-column-layout">
-    <aside class="sidebar-profile">
-      <div id="personal-card-container"></div>
-    </aside>
-    <main class="main-content-area">
-      <div class="container" style="position: relative; overflow: hidden;">
-        <div class="scan-line"></div>
-        <div class="construction-container">
-          <h1 class="construction-title">正在施工中</h1>
-
-          <p style="max-width: 500px; margin: 0 auto; color: var(--text-secondary);">
-            这片领地正在经历神秘蜕变<br>
-            全新的关于页面即将重现
-          </p>
-
-          <div class="deadline-wrapper">
-            <span class="deadline-label"><i class="far fa-calendar-alt"></i> 预计</span>
-            <span class="deadline-date">2026 · 07 · 01</span>
-            <div class="countdown-box">
-              <i class="fas fa-hourglass-half"></i>
-              <span id="daysLeft">--</span> <span style="font-weight: normal;">天后完成重构</span>
+  <div id="router-view">
+    <div class="two-column-layout">
+      <aside class="sidebar-profile">
+        <div id="personal-card-container"></div>
+      </aside>
+      <main class="main-content-area">
+        <div class="container" style="position: relative; overflow: hidden;">
+          <div class="scan-line"></div>
+          <div class="construction-container">
+            <h1 class="construction-title">正在施工中</h1>
+            <p style="max-width: 500px; margin: 0 auto; color: var(--text-secondary);">
+              这片领地正在经历神秘蜕变<br>
+              全新的关于页面即将重现
+            </p>
+            <div class="deadline-wrapper">
+              <span class="deadline-label"><i class="far fa-calendar-alt"></i> 预计</span>
+              <span class="deadline-date">2026 · 07 · 01</span>
+              <div class="countdown-box">
+                <i class="fas fa-hourglass-half"></i>
+                <span id="daysLeft">--</span> <span style="font-weight: normal;">天后完成重构</span>
+              </div>
+            </div>
+            <div class="mystery-note">
+              <i class="fas fa-eye"></i> 目前结界加固中 · 敬请期待
+              <i class="fas fa-infinity"></i>
+            </div>
+            <div style="margin-top: 24px; font-size: 0.75rem; color: var(--text-secondary); opacity: 0.6;">
+              <i class="fas fa-cog fa-spin"></i> 深处传来代码的低语...
             </div>
           </div>
-
-          <div class="mystery-note">
-            <i class="fas fa-eye"></i> 目前结界加固中 · 敬请期待
-            <i class="fas fa-infinity"></i>
-          </div>
-
-          <div style="margin-top: 24px; font-size: 0.75rem; color: var(--text-secondary); opacity: 0.6;">
-            <i class="fas fa-cog fa-spin"></i> 深处传来代码的低语...
-          </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </div>
   </div>
 
   <button id="backToTopBtn" class="back-to-top-btn" title="返回顶部">↑</button>
@@ -320,23 +262,17 @@
 
   <script>
     (function () {
-      // 目标日期：2026年7月1日 (UTC+8 本地日期计算)
-      const targetDate = new Date(2026, 6, 1); // 月份从0开始，6表示7月
+      const targetDate = new Date(2026, 6, 1);
       targetDate.setHours(0, 0, 0, 0);
-
       function updateCountdown() {
         const now = new Date();
         now.setHours(0, 0, 0, 0);
         const diffTime = targetDate - now;
         let daysRemaining = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
         const daysSpan = document.getElementById('daysLeft');
-        if (daysSpan) {
-          daysSpan.innerText = daysRemaining;
-        }
+        if (daysSpan) daysSpan.innerText = daysRemaining;
       }
-
       updateCountdown();
-      // 每分钟更新一次
       setInterval(updateCountdown, 60000);
     })();
   </script>

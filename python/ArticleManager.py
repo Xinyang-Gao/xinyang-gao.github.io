@@ -263,59 +263,70 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
 </head>
 <body>
     <div id="navbar-placeholder"></div>
-    <div id="reading-progress" class="reading-progress-bar"><div id="progress-bar" class="progress-bar"></div></div>
 
-    <main class="article-grid">
-        <!-- 左侧主内容区 -->
-        <article class="article-main">
-            <div class="article-card">
-                <h1 class="article-title">{title}</h1>
-                {f'<p class="article-subtitle">{description}</p>' if description else ''}
-                {meta_html}
+    <!-- 所有动态内容放在 router-view 内 -->
+    <div id="router-view">
+        <div id="reading-progress" class="reading-progress-bar">
+            <div id="progress-bar" class="progress-bar"></div>
+        </div>
 
-                <div class="article-body" id="articleBody">{content_html}</div>
+        <main class="article-grid">
+            <!-- 左侧主内容区 -->
+            <article class="article-main">
+                <div class="article-card">
+                    <h1 class="article-title">{title}</h1>
+                    {f'<p class="article-subtitle">{description}</p>' if description else ''}
+                    {meta_html}
 
-                {footer_tags_html}
-            </div>
+                    <div class="article-body" id="articleBody">{content_html}</div>
 
-            <!-- 评论区 -->
-            <div class="comments-card">
-                <h3>💬 评论</h3>
-                <div id="twikoo-comments"></div>
-            </div>
-        </article>
-
-        <!-- 右侧边栏（目录 + 信息卡片） -->
-        <aside class="article-sidebar">
-            <div class="sidebar-card toc-card">
-                <div class="toc-header">
-                    <i class="fas fa-list-ul"></i>
-                    <span>目录</span>
+                    {footer_tags_html}
                 </div>
-                <nav class="toc-nav" id="toc-list-container"></nav>
-            </div>
 
-            <div class="sidebar-card info-card">
-                <div class="info-item">
-                    <i class="fas fa-chart-line"></i>
-                    <div>
-                        <span class="info-label">阅读量</span>
-                        <span class="info-value" id="busuanzi_page_pv">加载中...</span>
+                <!-- 评论区 -->
+                <div class="comments-card">
+                    <h3>💬 评论</h3>
+                    <div id="twikoo-comments"></div>
+                </div>
+            </article>
+
+            <!-- 右侧边栏（目录 + 信息卡片） -->
+            <aside class="article-sidebar">
+                <div class="sidebar-card toc-card">
+                    <div class="toc-header">
+                        <i class="fas fa-list-ul"></i>
+                        <span>目录</span>
                     </div>
+                    <nav class="toc-nav" id="toc-list-container"></nav>
                 </div>
-                <div class="info-item">
-                    <i class="fas fa-users"></i>
-                    <div>
-                        <span class="info-label">访客数</span>
-                        <span class="info-value" id="busuanzi_page_uv">加载中...</span>
-                    </div>
-                </div>
-                {f'<div class="info-item"><i class="fas fa-code-branch"></i><div><span class="info-label">修订次数</span><span class="info-value">{modify_count}</span></div></div>' if modify_count is not None else ''}
-            </div>
-        </aside>
-    </main>
 
-    <div id="imageModal" class="image-modal"><span class="close">&times;</span><img id="modalImage" src="" alt=""></div>
+                <div class="sidebar-card info-card">
+                    <div class="info-item">
+                        <i class="fas fa-chart-line"></i>
+                        <div>
+                            <span class="info-label">阅读量</span>
+                            <span class="info-value" id="busuanzi_page_pv">加载中...</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-users"></i>
+                        <div>
+                            <span class="info-label">访客数</span>
+                            <span class="info-value" id="busuanzi_page_uv">加载中...</span>
+                        </div>
+                    </div>
+                    {f'<div class="info-item"><i class="fas fa-code-branch"></i><div><span class="info-label">修订次数</span><span class="info-value">{modify_count}</span></div></div>' if modify_count is not None else ''}
+                </div>
+            </aside>
+        </main>
+
+        <!-- 图片模态框（文章页特有） -->
+        <div id="imageModal" class="image-modal">
+            <span class="close">&times;</span>
+            <img id="modalImage" src="" alt="">
+        </div>
+    </div>
+
     <div id="footer-placeholder"></div>
 
     <script>window.ARTICLE_HEADINGS = {headings_json};</script>
@@ -325,13 +336,6 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
     <script src="/js/pages/article.js" type="module"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
     <script src="https://registry.npmmirror.com/twikoo/1.7.11/files/dist/twikoo.nocss.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {{
-            if (typeof twikoo !== 'undefined') {{
-                twikoo.init({{ envId: 'https://twikoo-gxy.netlify.app/.netlify/functions/twikoo', el: '#twikoo-comments', path: window.location.pathname, lang: 'zh-CN' }});
-            }}
-        }});
-    </script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.getElementById('articleBody'), {{delimiters: [{{left: '$$', right: '$$', display: true}}, {{left: '$', right: '$', display: false}}]}});"></script>
 </body>

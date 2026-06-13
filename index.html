@@ -13,95 +13,94 @@
 <body>
   <div id="navbar-placeholder"></div>
 
-  <div class="two-column-layout">
-    <aside class="sidebar-profile">
-      <div id="personal-card-container"></div>
-    </aside>
+  <div id="router-view">
+    <div class="two-column-layout">
+      <aside class="sidebar-profile">
+        <div id="personal-card-container"></div>
+      </aside>
 
-    <!-- 右侧主内容区 -->
-    <main class="main-content-area" id="mainContent" role="main" aria-live="polite">
-      <div class="container">
-        <div class="hero landing-hero">
-          <div class="eyebrow">WELCOME</div>
-          <h1>GaoXinYang's Website</h1>
-          <p class="hero-copy">谢谢你在茫茫互联网世界中找到我</p>
-          <div class="hero-actions">
-            <a href="#blogHome" class="button button-primary">进入首页</a>
-            <a href="/about.html" class="button button-secondary">了解我</a>
+      <main class="main-content-area" role="main" aria-live="polite">
+        <div class="container">
+          <div class="hero landing-hero">
+            <div class="eyebrow">WELCOME</div>
+            <h1>GaoXinYang's Website</h1>
+            <p class="hero-copy">谢谢你在茫茫互联网世界中找到我</p>
+            <div class="hero-actions">
+              <a href="#blogHome" class="button button-primary">进入首页</a>
+              <a href="/about.html" class="button button-secondary">了解我</a>
+            </div>
+            <div class="scroll-indicator"><i class="fas fa-chevron-down"></i> 继续下滑，进入博客</div>
           </div>
-          <div class="scroll-indicator"><i class="fas fa-chevron-down"></i> 继续下滑，进入博客</div>
-        </div>
 
-        <section class="blog-home-intro" id="blogHome">
-          <div class="section-eyebrow">HOME</div>
-          <h2>最新文章与作品</h2>
-          <p class="section-copy">这里有最新文章、作品与主题标签。每次下滑，都是一段新的文字旅程。</p>
-        </section>
+          <section class="blog-home-intro" id="blogHome">
+            <div class="section-eyebrow">HOME</div>
+            <h2>最新文章与作品</h2>
+            <p class="section-copy">这里有最新文章、作品与主题标签。每次下滑，都是一段新的文字旅程。</p>
+          </section>
 
-        <!-- 统计卡片容器（由 statistics.json 填充） -->
-        <div class="stats-grid" id="statsContainer">
-          <div class="stat-card">
-            <div class="stat-icon"><i class="fas fa-spinner fa-pulse"></i></div>
-            <div class="stat-number">—</div>
-            <div class="stat-label">文章总数</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon"><i class="fas fa-feather-alt"></i></div>
-            <div class="stat-number">—</div>
-            <div class="stat-label">总字数</div>
-            <div class="stat-sub">字里行间</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-icon"><i class="fas fa-cube"></i></div>
-            <div class="stat-number">—</div>
-            <div class="stat-label">作品数量</div>
-          </div>
-        </div>
-        <!-- 标签云区域 -->
-        <div class="tags-showcase">
-          <div class="tags-section">
-            <h3><i class="fas fa-book-open"></i> 文章星系</h3>
-            <div id="articleTagsList" class="tags-list">
-              <span class="tag">加载中...</span>
+          <div class="stats-grid" id="statsContainer">
+            <div class="stat-card">
+              <div class="stat-icon"><i class="fas fa-spinner fa-pulse"></i></div>
+              <div class="stat-number">—</div>
+              <div class="stat-label">文章总数</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon"><i class="fas fa-feather-alt"></i></div>
+              <div class="stat-number">—</div>
+              <div class="stat-label">总字数</div>
+              <div class="stat-sub">字里行间</div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-icon"><i class="fas fa-cube"></i></div>
+              <div class="stat-number">—</div>
+              <div class="stat-label">作品数量</div>
             </div>
           </div>
-          <div class="tags-section">
-            <h3><i class="fas fa-code"></i> 创意工坊</h3>
-            <div id="workTagsList" class="tags-list">
-              <span class="tag">加载中...</span>
+
+          <div class="tags-showcase">
+            <div class="tags-section">
+              <h3><i class="fas fa-book-open"></i> 文章星系</h3>
+              <div id="articleTagsList" class="tags-list">
+                <span class="tag">加载中...</span>
+              </div>
+            </div>
+            <div class="tags-section">
+              <h3><i class="fas fa-code"></i> 创意工坊</h3>
+              <div id="workTagsList" class="tags-list">
+                <span class="tag">加载中...</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="last-update-badge" id="statsUpdateBadge"></div>
+
+          <div class="quick-site-nav">
+            <div class="quick-nav-links">
+              <a href="/index.html">首页</a>
+              <a href="/about.html">关于</a>
+              <a href="/articles.html">文章</a>
+              <a href="/archive.html">归档</a>
+              <a href="/works.html">作品</a>
+              <a href="/friends.html">友链</a>
+              <a href="/contact.html">留言板</a>
+            </div>
+          </div>
+
+          <div class="busuanzi-stats">
+            <div class="stat-item">
+              <i class="fas fa-chart-line"></i> 全站总访问量
+              <span id="busuanzi_site_pv" class="stat-number">-</span>
+              <span style="margin-left: 2px;">次</span>
+            </div>
+            <div class="stat-item">
+              <i class="fas fa-user-friends"></i> 全站总访客数
+              <span id="busuanzi_site_uv" class="stat-number">-</span>
+              <span style="margin-left: 2px;">人</span>
             </div>
           </div>
         </div>
-
-        <div class="last-update-badge" id="statsUpdateBadge"></div>
-
-                <div class="quick-site-nav">
-          <div class="quick-nav-links">
-            <a href="/index.html">首页</a>
-            <a href="/about.html">关于</a>
-            <a href="/articles.html">文章</a>
-            <a href="/archive.html">归档</a>
-            <a href="/works.html">作品</a>
-            <a href="/friends.html">友链</a>
-            <a href="/contact.html">留言板</a>
-          </div>
-        </div>
-
-        <!-- 不蒜子统计模块 (全站访问量/访客数) -->
-        <div class="busuanzi-stats">
-          <div class="stat-item">
-            <i class="fas fa-chart-line"></i> 全站总访问量
-            <span id="busuanzi_site_pv" class="stat-number">-</span>
-            <span style="margin-left: 2px;">次</span>
-          </div>
-          <div class="stat-item">
-            <i class="fas fa-user-friends"></i> 全站总访客数
-            <span id="busuanzi_site_uv" class="stat-number">-</span>
-            <span style="margin-left: 2px;">人</span>
-          </div>
-        </div>
-      </div>
-    </main>
+      </main>
+    </div>
   </div>
 
   <button id="backToTopBtn" class="back-to-top-btn" title="返回顶部">↑</button>

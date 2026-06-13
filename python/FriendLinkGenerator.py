@@ -95,63 +95,65 @@ def generate_html(cards_html: str) -> str:
 </head>
 <body>
     <div id="navbar-placeholder"></div>
-    <div class="two-column-layout">
-        <aside class="sidebar-profile">
-            <div id="personal-card-container"></div>
-        </aside>
-        <main class="main-content-area">
-            <div class="container">
-                <h2>我的朋友们</h2>
-                <p style="margin-bottom: 8px;">「 志合者，不以山海为远 」欢迎互访交流</p>
-                {cards_html}
-                <div class="info-card">
-                    <div class="info-title">友情提示</div>
-                    <div class="requirements-section">
-                        <div class="section-subtitle">申请要求</div>
-                        <div class="requirements-grid">
-                            <div class="requirement-item">
-                                <div class="requirement-title">友链互换</div>
-                                <p class="requirement-desc">请先添加本站友链，并确保您的站点可以被正常访问，双向奔赴才更有意义。</p>
-                            </div>
-                            <div class="requirement-item">
-                                <div class="requirement-title">信息完整</div>
-                                <p class="requirement-desc">请确保您的站点有清晰的名称、描述和头像，便于朋友们互相了解。</p>
-                            </div>
-                            <div class="requirement-item">
-                                <div class="requirement-title">内容合规</div>
-                                <p class="requirement-desc">拥有原创内容，符合中华人民共和国法律法规，共同维护纯净网络空间。</p>
-                            </div>
-                            <div class="requirement-item">
-                                <div class="requirement-title">持续更新</div>
-                                <p class="requirement-desc">建议保持一定的更新频率，热爱分享与交流。不限内容类型，期待多元碰撞。</p>
+    <div id="router-view">
+        <div class="two-column-layout">
+            <aside class="sidebar-profile">
+                <div id="personal-card-container"></div>
+            </aside>
+            <main class="main-content-area">
+                <div class="container">
+                    <h2>我的朋友们</h2>
+                    <p style="margin-bottom: 8px;">「 志合者，不以山海为远 」欢迎互访交流</p>
+                    {cards_html}
+                    <div class="info-card">
+                        <div class="info-title">友情提示</div>
+                        <div class="requirements-section">
+                            <div class="section-subtitle">申请要求</div>
+                            <div class="requirements-grid">
+                                <div class="requirement-item">
+                                    <div class="requirement-title">友链互换</div>
+                                    <p class="requirement-desc">请先添加本站友链，并确保您的站点可以被正常访问，双向奔赴才更有意义。</p>
+                                </div>
+                                <div class="requirement-item">
+                                    <div class="requirement-title">信息完整</div>
+                                    <p class="requirement-desc">请确保您的站点有清晰的名称、描述和头像，便于朋友们互相了解。</p>
+                                </div>
+                                <div class="requirement-item">
+                                    <div class="requirement-title">内容合规</div>
+                                    <p class="requirement-desc">拥有原创内容，符合中华人民共和国法律法规，共同维护纯净网络空间。</p>
+                                </div>
+                                <div class="requirement-item">
+                                    <div class="requirement-title">持续更新</div>
+                                    <p class="requirement-desc">建议保持一定的更新频率，热爱分享与交流。不限内容类型，期待多元碰撞。</p>
+                                </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="myinfo-section">
-                        <div class="myinfo-header">我的信息</div>
-                        <div class="info-hint">如果您希望交换友链，可以按照下面的 JSON 提供您的站点信息</div>
-                        <div class="code-block-wrapper">
-                            <div class="code-header">
-                                <button class="copy-btn" id="copyJsonBtn">复制</button>
-                            </div>
-                            <pre><code id="friendJsonExample">{{
+                        <div class="myinfo-section">
+                            <div class="myinfo-header">我的信息</div>
+                            <div class="info-hint">如果您希望交换友链，可以按照下面的 JSON 提供您的站点信息</div>
+                            <div class="code-block-wrapper">
+                                <div class="code-header">
+                                    <button class="copy-btn" id="copyJsonBtn">复制</button>
+                                </div>
+                                <pre><code id="friendJsonExample">{{
     "name": "高新炀的小站",
     "link": "https://xinyang-gao.github.io",
     "desc": "一个装着些稀奇古怪东西的个人小站，欢迎来逛逛~",
     "avatar": "https://xinyang-gao.github.io/assets/avatar.webp"
 }}</code></pre>
+                            </div>
+                        </div>
+                        <div class="warning-note">
+                            注意如果有<strong>违法、侵权、恶意广告</strong>等违规内容将会被撤下链接哟
                         </div>
                     </div>
-                    <div class="warning-note">
-                        注意如果有<strong>违法、侵权、恶意广告</strong>等违规内容将会被撤下链接哟
+                    <div id="twikoo-comments" class="twikoo-container"></div>
+                    <div class="contact-note">
+                        <p>友情提示部分参考了 <a href="https://blog.tianhw.top/friends/" style="color: var(--accent-color);"> THW 大佬</a> 的友链申请要求，感谢~</p>
                     </div>
                 </div>
-                <div id="twikoo-comments" class="twikoo-container"></div>
-                <div class="contact-note">
-                    <p>友情提示部分参考了 <a href="https://blog.tianhw.top/friends/" style="color: var(--accent-color);"> THW 大佬</a> 的友链申请要求，感谢~</p>
-                </div>
-            </div>
-        </main>
+            </main>
+        </div>
     </div>
     <div id="footer-placeholder"></div>
     <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>

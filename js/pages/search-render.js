@@ -1,5 +1,5 @@
 // /js/pages/search-render.js
-// 文章/作品页面的数据管理、UI渲染和搜索控制（按需加载）
+// 文章/作品页面的数据管理、UI渲染和搜索控制
 
 import { CONFIG, Utils, storageController, perf } from '/js/core/core.js';
 
@@ -145,62 +145,6 @@ export class UIRenderer {
     const html = `<div class="${type}-list">${items.map((item, idx) => UIRenderer.generateListItem(item, type.slice(0, -1), idx)).join('')}</div>`;
     perf.end(`生成${DataManager.TYPE_LABEL[type]}HTML`);
     return html;
-  }
-
-  static generatePersonalCardHTML() {
-    return `
-    <div class="profile-card">
-      <div class="profile-avatar">
-        <img src="/assets/avatar.webp" alt="高新炀的头像" class="avatar-img" onerror="this.src='https://via.placeholder.com/140?text=GXY'">
-        <h2 class="profile-name">高新炀</h2>
-        <div class="profile-bio">一个15岁爱探索的小孩子~
-        </div>
-      </div>
-      <div class="profile-details">
-        <div class="detail-item">
-          <i class="fas fa-quote-left"></i>
-          <span>「 Where there's a will, there's a way 」</span>
-        </div>
-        <div class="detail-item">
-          <i class="fas fa-envelope"></i>
-          <a href="mailto:gao-xinyang@foxmail.com">gao-xinyang@foxmail.com</a>
-        </div>
-        <div class="detail-item">
-          <i class="fas fa-globe"></i>
-          <span>中国 · 河南</span>
-        </div>
-        <div class="detail-item">
-          <i class="fas fa-code"></i>
-          <span>Java / Python</span>
-        </div>
-        <div class="social-links-side">
-          <a href="https://github.com/Xinyang-Gao" target="_blank" class="social-icon-link" aria-label="GitHub" rel="noopener noreferrer">
-            <i class="fab fa-github"></i>
-          </a>
-          <a href="https://space.bilibili.com/1064600697" target="_blank" class="social-icon-link" aria-label="Bilibili" rel="noopener noreferrer">
-            <i class="fab fa-bilibili"></i>
-          </a>
-          <a href="mailto:gao_xinyang@foxmail.com" class="social-icon-link" aria-label="邮箱">  
-            <i class="fas fa-envelope"></i>
-          </a>
-          <a href="https://user.qzone.qq.com/2489083744/" target="_blank" class="social-icon-link" aria-label="QQ" rel="noopener noreferrer">
-            <i class="fab fa-qq"></i>
-          </a>
-          <a href="/rss.xml" target="_blank" class="social-icon-link" aria-label="RSS" rel="noopener noreferrer">
-            <i class="fas fa-rss"></i>
-          </a>
-        </div>
-        <div class="detail-item" style="justify-content: center; margin-top: 12px;">
-          <span class="tag" style="background: var(--accent-color); color: white;">Python</span>
-          <span class="tag" style="background: var(--accent-color); color: white;">Html</span>
-          <span class="tag" style="background: var(--accent-color); color: white;">Scratch</span>
-          <span class="tag" style="background: var(--accent-color); color: white;">绘画</span>
-          <span class="tag" style="background: var(--accent-color); color: white;">轮滑</span>
-          <span class="tag" style="background: var(--accent-color); color: white;">Minecraft</span>
-        </div>
-      </div>
-    </div>
-    `;
   }
 }
 

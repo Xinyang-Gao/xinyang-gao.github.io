@@ -1,4 +1,4 @@
-// /js/entry/main.js (关键修改部分)
+// /js/entry/main.js (完整版，修复个人信息卡片首次加载与闪烁问题)
 
 import { CONFIG, storageController, CookieConsentManager } from '/js/core/core.js';
 import { initUIEffects, refreshScrollReveal, ensureScrollReveal } from '/js/ui/ui-effects.js';
@@ -9,6 +9,7 @@ import { StatisticsManager, preloadCriticalJSON, registerServiceWorker, initFoot
 import { handleListItemClick } from '/js/ui/list-events.js';
 import '/js/vendor/global-music-player.js';
 import { initClarityOnConsent, updateClarityPage } from '/js/core/clarity.js';
+import { renderPersonalCard } from '/js/ui/personal-card.js';   // 个人信息卡片(仅在此处导入即可)
 
 let cookieConsentManager = null;
 
@@ -34,16 +35,6 @@ async function bootstrap() {
   document.documentElement.setAttribute('data-theme', initialTheme);
 
   applyRandomBackgroundImage({ force: true, immediateColor: true });
-
-  try {
-    const personalCardContainer = document.getElementById('personal-card-container');
-    const targetPath = window.location.pathname;
-    const isRootHtml = targetPath === '/' || targetPath === '/index.html' || (/^\/[^\/]+\.html$/.test(targetPath) && targetPath !== '/404.html');
-    if (personalCardContainer && isRootHtml) {
-      const { UIRenderer } = await import('/js/pages/search-render.js');
-      personalCardContainer.innerHTML = UIRenderer.generatePersonalCardHTML();
-    }
-  } catch (e) { console.warn('[Main] 渲染个人信息卡片时出错', e); }
 
   Promise.all([loadNavbar(), loadFooter()]).catch(console.warn);
   startSiteAgeUpdater(CONFIG.SITE_BIRTH);
@@ -90,13 +81,12 @@ async function bootstrap() {
 
 document.addEventListener('DOMContentLoaded', bootstrap);
 
-// 修改注册 SW 函数：开发环境自动禁用
+// 注册 Service Worker（开发环境跳过）
 const isDev = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
 if (!isDev) {
   registerServiceWorker();
 } else {
   console.log('[Main] 开发环境，跳过 Service Worker 注册');
-  // 清除可能已注册的旧 SW
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.getRegistrations().then(registrations => {
       registrations.forEach(r => r.unregister());
@@ -104,6 +94,7 @@ if (!isDev) {
   }
 }
 
+// 暴露全局辅助函数（供设置页面等调用）
 window.fetchAndReplaceContent = fetchAndReplaceContent;
 window.refreshScrollReveal = refreshScrollReveal;
-window.clearAllServiceWorkerCache = clearAllServiceWorkerCache; // 暴露给全局，供设置页面调用
+window.clearAllServiceWorkerCache = clearAllServiceWorkerCache;

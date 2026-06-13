@@ -1,4 +1,3 @@
-<!-- settings.html -->
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -56,7 +55,6 @@
       font-size: 1.05rem;
       color: var(--text-color);
     }
-    /* 开关样式（复制navbar滑块但独立类） */
     .settings-toggle {
       position: relative;
       display: inline-block;
@@ -151,67 +149,65 @@
 <body>
   <div id="navbar-placeholder"></div>
 
-  <div class="two-column-layout">
-    <aside class="sidebar-profile">
-      <div id="personal-card-container"></div>
-    </aside>
+  <div id="router-view">
+    <div class="two-column-layout">
+      <aside class="sidebar-profile">
+        <div id="personal-card-container"></div>
+      </aside>
 
-    <main class="main-content-area">
-      <div class="container">
-        <div class="hero" style="padding-bottom: 0;">
-          <div class="eyebrow">PREFERENCES</div>
-          <h1 style="margin-top: 0.25em;">站点设置</h1>
-          <p class="hero-copy">所有设置将保存在本地，仅对你当前设备生效。</p>
-        </div>
-
-        <!-- 未同意存储时的全局提示 -->
-        <div id="consentAlert" style="display: none;" class="warning-message consent-warning">
-          <i class="fas fa-cookie-bite"></i> 您尚未同意 Cookie 使用政策，设置项仅临时生效，刷新后将丢失。<br>
-          <a href="#" id="acceptCookiesLink" style="color: var(--accent-color); text-decoration: underline;">同意条款 (您可以在页脚找到隐私政策)</a> 以便永久保存配置。
-        </div>
-
-        <!-- 设置分组：外观 -->
-        <div class="settings-group">
-          <h3><i class="fas fa-magic"></i> 外观效果</h3>
-          <div class="setting-desc">个性化光标跟随动画，为桌面端带来更细腻的交互质感。</div>
-          <div class="toggle-switch" id="cursorToggleArea">
-            <span class="toggle-label"><i class="fas fa-arrow-pointer"></i> 自定义鼠标样式 (仅桌面端)</span>
-            <label class="settings-toggle" id="cursorToggleLabel">
-              <input type="checkbox" id="cursorToggleCheckbox">
-              <span class="settings-slider"></span>
-            </label>
+      <main class="main-content-area">
+        <div class="container">
+          <div class="hero" style="padding-bottom: 0;">
+            <div class="eyebrow">PREFERENCES</div>
+            <h1 style="margin-top: 0.25em;">站点设置</h1>
+            <p class="hero-copy">所有设置将保存在本地，仅对你当前设备生效。</p>
           </div>
-          <div class="setting-desc" style="margin-top: 8px;"><strong>可能有性能影响，</strong>关闭后恢复浏览器默认光标。</div>
-        </div>
 
-        <!-- 设置分组：行为 -->
-        <div class="settings-group">
-          <h3><i class="fas fa-shield-alt"></i> 浏览安全</h3>
-          <div class="setting-desc">开启后点击外部链接会显示确认弹窗，帮助避免误触可疑站点。</div>
-          <div class="toggle-switch" id="linkWarningArea">
-            <span class="toggle-label"><i class="fas fa-external-link-alt"></i> 外链拦截弹窗</span>
-            <label class="settings-toggle" id="linkWarningLabel">
-              <input type="checkbox" id="linkWarningCheckbox">
-              <span class="settings-slider"></span>
-            </label>
+          <div id="consentAlert" style="display: none;" class="warning-message consent-warning">
+            <i class="fas fa-cookie-bite"></i> 您尚未同意 Cookie 使用政策，设置项仅临时生效，刷新后将丢失。<br>
+            <a href="#" id="acceptCookiesLink" style="color: var(--accent-color); text-decoration: underline;">同意条款 (您可以在页脚找到隐私政策)</a> 以便永久保存配置。
           </div>
-        </div>
 
-        <!-- 设置分组：隐私 / 数据清理 -->
-        <div class="settings-group">
-          <h3><i class="fas fa-database"></i> 隐私与数据</h3>
-          <div class="setting-desc">收回对本站隐私政策的同意。<br>清除站点存储的所有偏好设置以及 Cookie 同意记录。<br>清除后网站将恢复初始状态，并重新请求 Cookie 权限。</div>
-          <div class="warning-message" id="clearCookiesWarning">
-            <i class="fas fa-trash-alt" style="margin-right: 8px;"></i>
-            删除后您将退出当前个性化配置，下次访问需要重新同意 Cookie。
+          <div class="settings-group">
+            <h3><i class="fas fa-magic"></i> 外观效果</h3>
+            <div class="setting-desc">个性化光标跟随动画，为桌面端带来更细腻的交互质感。</div>
+            <div class="toggle-switch" id="cursorToggleArea">
+              <span class="toggle-label"><i class="fas fa-arrow-pointer"></i> 自定义鼠标样式 (仅桌面端)</span>
+              <label class="settings-toggle" id="cursorToggleLabel">
+                <input type="checkbox" id="cursorToggleCheckbox">
+                <span class="settings-slider"></span>
+              </label>
+            </div>
+            <div class="setting-desc" style="margin-top: 8px;"><strong>可能有性能影响，</strong>关闭后恢复浏览器默认光标。</div>
           </div>
-          <div class="settings-action">
-            <button id="clearSWCacheBtn" class="danger-btn">清除 Service Worker 缓存（解决缓存不刷新）</button>
-            <button id="clearCookiesBtn" class="danger-btn"><i class="fas fa-trash-can"></i> 删除所有 Cookies / 存储数据</button>
+
+          <div class="settings-group">
+            <h3><i class="fas fa-shield-alt"></i> 浏览安全</h3>
+            <div class="setting-desc">开启后点击外部链接会显示确认弹窗，帮助避免误触可疑站点。</div>
+            <div class="toggle-switch" id="linkWarningArea">
+              <span class="toggle-label"><i class="fas fa-external-link-alt"></i> 外链拦截弹窗</span>
+              <label class="settings-toggle" id="linkWarningLabel">
+                <input type="checkbox" id="linkWarningCheckbox">
+                <span class="settings-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="settings-group">
+            <h3><i class="fas fa-database"></i> 隐私与数据</h3>
+            <div class="setting-desc">收回对本站隐私政策的同意。<br>清除站点存储的所有偏好设置以及 Cookie 同意记录。<br>清除后网站将恢复初始状态，并重新请求 Cookie 权限。</div>
+            <div class="warning-message" id="clearCookiesWarning">
+              <i class="fas fa-trash-alt" style="margin-right: 8px;"></i>
+              删除后您将退出当前个性化配置，下次访问需要重新同意 Cookie。
+            </div>
+            <div class="settings-action">
+              <button id="clearSWCacheBtn" class="danger-btn">清除 Service Worker 缓存（解决缓存不刷新）</button>
+              <button id="clearCookiesBtn" class="danger-btn"><i class="fas fa-trash-can"></i> 删除所有 Cookies / 存储数据</button>
+            </div>
           </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </div>
   </div>
 
   <button id="backToTopBtn" class="back-to-top-btn" title="返回顶部">↑</button>
