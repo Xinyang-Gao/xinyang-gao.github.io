@@ -182,14 +182,16 @@ export class ArticlePageManager extends PageManager {
 
     bindTocLinkEvents() {
         document.querySelectorAll('.toc-link').forEach(link => {
-            link.removeEventListener('click', this.handleTocClick);
-            link.addEventListener('click', (e) => this.handleTocClick(e));
+            link.removeEventListener('click', this._boundHandleTocClick);
+            this._boundHandleTocClick = this.handleTocClick.bind(this);
+            link.addEventListener('click', this._boundHandleTocClick);
         });
     }
 
     handleTocClick(e) {
         e.preventDefault();
-        const href = this.getAttribute('href');
+        const link = e.currentTarget;
+        const href = link.getAttribute('href');
         if (!href) return;
         const targetId = href.slice(1);
         const target = document.getElementById(targetId);
