@@ -14,49 +14,23 @@
 <body>
     <div id="navbar-placeholder"></div>
     <div id="reading-progress" class="reading-progress-bar"><div id="progress-bar" class="progress-bar"></div></div>
-    <div class="article-page-container">
-        <div class="toc-container"><h2 class="toc-title">目录</h2><div id="toc-list-container"></div></div>
-        <div class="article-right-column">
-            <div class="article-content-wrapper">
-                <h1 class="article-title" id="articleTitle">markdown 渲染测试</h1>
-                <div class="article-subtitle">这是一篇 markdown 解析器渲染测试</div>
-                <div class="article-meta" id="articleMeta"><div class="meta-grid">
-            <div class="meta-item" data-label="发布日期">
-                <i class="fas fa-calendar-alt"></i>
-                <span class="meta-value">2025年12月21日</span>
-            </div>
-            <div class="meta-item" data-label="最后更新">
-                <i class="fas fa-edit"></i>
-                <span class="meta-value">2026年04月20日</span>
-            </div>
-            <div class="meta-item" data-label="作者">
-                <i class="fas fa-user"></i>
-                <span class="meta-value">高新炀 ＆ DEEPSEEK-V3</span>
-            </div>
-            <div class="meta-item" data-label="分类">
-                <i class="fas fa-folder-open"></i>
-                <span class="meta-value">网站</span>
-            </div>
-            <div class="meta-item" data-label="字数">
-                <i class="fas fa-file-alt"></i>
-                <span class="meta-value">2399</span>
-            </div>
-            <div class="meta-item" data-label="阅读时间">
-                <i class="fas fa-clock"></i>
-                <span class="meta-value">8分钟</span>
-            </div>
-            <div class="meta-item" data-label="访客数">
-                <i class="fas fa-users"></i>
-                <span class="meta-value"><span id="busuanzi_page_uv">加载中...</span></span>
-            </div>
-            <div class="meta-item" data-label="阅读量">
-                <i class="fas fa-eye"></i>
-                <span class="meta-value"><span id="busuanzi_page_pv">加载中...</span></span>
-            </div>
-            <div class="meta-item" data-label="修订次数">
-                <i class="fas fa-code-branch"></i>
-                <span class="meta-value">4</span>
-            </div></div></div>
+
+    <main class="article-grid">
+        <!-- 左侧主内容区 -->
+        <article class="article-main">
+            <div class="article-card">
+                <h1 class="article-title">markdown 渲染测试</h1>
+                <p class="article-subtitle">这是一篇 markdown 解析器渲染测试</p>
+                
+    <div class="article-meta-line">
+        <span class="meta-item"><i class="fas fa-calendar-alt"></i> 2025年12月21日</span>
+        <span class="meta-item"><i class="fas fa-user"></i> 高新炀 ＆ DEEPSEEK-V3</span>
+        <span class="meta-item"><i class="fas fa-folder-open"></i> 网站</span>
+        <span class="meta-item"><i class="fas fa-file-alt"></i> 2399字</span>
+        <span class="meta-item"><i class="fas fa-clock"></i> 8分钟</span>
+    </div>
+    <div class="article-meta-line article-meta-updated"><span class="meta-item"><i class="fas fa-edit"></i> 更新于 2026年04月20日</span></div>
+
                 <div class="article-body" id="articleBody"><h1 id="markdown-样式测试文档">Markdown 样式测试文档</h1>
 <p>本文档用于测试 Markdown 解析器对各种语法元素的支持情况。覆盖标题、段落、文本样式、列表、代码、表格、引用、媒体、脚注、公式等。</p>
 <h2 id="1-标题级别">1. 标题级别</h2>
@@ -127,7 +101,7 @@
 greet('Markdown');
 </code></pre>
 
-<pre class="codehilite"><code class="language-python"># Python 示例 {#python-示例}
+<pre class="codehilite"><code class="language-python"># Python 示例
 def fibonacci(n):
     a, b = 0, 1
     for _ in range(n):
@@ -135,7 +109,7 @@ def fibonacci(n):
         a, b = b, a + b
 </code></pre>
 
-<h2 id="6-引用块">6. 引用块</h2>
+<h2 id="python-示例">6. 引用块</h2>
 <blockquote>
 <p>这是一个引用块。
 可以跨行。</p>
@@ -153,7 +127,7 @@ def fibonacci(n):
 </ul>
 <p><code>代码块在引用中</code></p>
 </blockquote>
-<h2 id="7-表格-gfm">7. 表格 (GFM)</h2>
+<h2 id="6-引用块">7. 表格 (GFM)</h2>
 <table>
 <thead>
 <tr>
@@ -207,35 +181,35 @@ def fibonacci(n):
 </tr>
 </tbody>
 </table>
-<h2 id="8-图片">8. 图片</h2>
+<h2 id="7-表格-gfm">8. 图片</h2>
 <p>内联图片（相对路径或URL）：</p>
 <p><img alt="Markdown Logo" data-src="https://markdown-here.com/img/icon256.png" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E" class="lazy-image"  /></p>
 <p>带链接的图片：</p>
 <p><a href="https://example.com"><img alt="示例图片" data-src="https://via.placeholder.com/150" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E" class="lazy-image"  /></a></p>
-<h2 id="9-水平线">9. 水平线</h2>
+<h2 id="8-图片">9. 水平线</h2>
 <p>三种写法：</p>
 <hr />
 <hr />
 <hr />
-<h2 id="10-链接与自动识别">10. 链接与自动识别</h2>
+<h2 id="9-水平线">10. 链接与自动识别</h2>
 <ul>
 <li><a href="https://example.com" title="示例网站">带标题的链接</a></li>
 <li>引用式链接：<a href="https://example.com/reference" title="引用链接说明">一个示例</a></li>
 <li>自动链接：https://github.com 和 email@example.com (部分解析器支持自动识别)</li>
 </ul>
-<h2 id="11-html-标签支持">11. HTML 标签支持</h2>
+<h2 id="10-链接与自动识别">11. HTML 标签支持</h2>
 <p style="color: red;">这段文字使用 HTML 标签显示为红色（如果解析器允许）。</p>
 
 <div align="center">
   <b>居中的粗体文本</b>
 </div>
 
-<h2 id="12-转义字符">12. 转义字符</h2>
+<h2 id="11-html-标签支持">12. 转义字符</h2>
 <p>*星号* _下划线_ {大括号} [方括号] #井号 &gt;大于号 等。</p>
-<h2 id="13-特殊符号与-emoji">13. 特殊符号与 Emoji</h2>
+<h2 id="12-转义字符">13. 特殊符号与 Emoji</h2>
 <p>常用符号：© ® ™ ° ± × ÷<br />
 Emoji（依赖渲染器支持）：😀 🚀 ❤️ ✅ 🎉  </p>
-<h2 id="14-数学公式">14. 数学公式</h2>
+<h2 id="13-特殊符号与-emoji">14. 数学公式</h2>
 <p>行内公式：$E = mc^2$  </p>
 <p>块级公式：</p>
 <p>$$
@@ -247,7 +221,7 @@ x_{11} &amp; x_{12} \
 x_{21} &amp; x_{22}
 \end{bmatrix}
 $$</p>
-<h2 id="15-图表与流程图">15. 图表与流程图</h2>
+<h2 id="14-数学公式">15. 图表与流程图</h2>
 <pre class="codehilite"><code class="language-mermaid">graph TD;
     A--&gt;B;
     A--&gt;C;
@@ -255,19 +229,19 @@ $$</p>
     C--&gt;D;
 </code></pre>
 
-<h2 id="16-脚注与引用">16. 脚注与引用</h2>
+<h2 id="15-图表与流程图">16. 脚注与引用</h2>
 <p>另一个脚注示例<sup id="fnref:another"><a class="footnote-ref" href="#fn:another">2</a></sup>。</p>
-<h2 id="17-嵌入文件部分扩展">17. 嵌入文件（部分扩展）</h2>
+<h2 id="16-脚注与引用">17. 嵌入文件（部分扩展）</h2>
 <p>!include(example.txt)  // 非标准，仅为示例</p>
-<h2 id="18-其他扩展语法">18. 其他扩展语法</h2>
-<h3 id="警告框-提示框-某些主题">警告框 / 提示框 (某些主题)</h3>
+<h2 id="17-嵌入文件部分扩展">18. 其他扩展语法</h2>
+<h3 id="18-其他扩展语法">警告框 / 提示框 (某些主题)</h3>
 <blockquote>
 <p>[!NOTE]
 这是一个注意提示。</p>
 <p>[!WARNING]
 这是一个警告提示。</p>
 </blockquote>
-<h3 id="折叠块-details">折叠块 (details)</h3>
+<h3 id="警告框-提示框-某些主题">折叠块 (details)</h3>
 <details>
 <summary>点击展开详细内容</summary>
 
@@ -278,7 +252,7 @@ $$</p>
 
 </details>
 
-<h2 id="19-综合测试混合排版">19. 综合测试：混合排版</h2>
+<h2 id="折叠块-details">19. 综合测试：混合排版</h2>
 <blockquote>
 <p><strong>重要提示</strong>：<br />
 在阅读此文档时，请注意以下事项：</p>
@@ -305,25 +279,62 @@ echo "Hello Markdown"</code></p>
 </li>
 </ol>
 </div></div>
-                <div class="article-footer-tags"><a class="footer-tag" href="/articles.html?tags=%E7%BD%91%E7%AB%99" style="text-decoration: none; color: inherit; cursor: pointer;" title="查看「网站」相关文章">#网站</a></div>
+
+                <div class="article-tags"><a class="tag" href="/articles.html?tags=%E7%BD%91%E7%AB%99">#网站</a></div>
             </div>
-            <div class="comments-card"><div class="comments-container"><h3>评论区</h3><div id="twikoo-comments"></div></div></div>
-        </div>
-    </div>
-    <div id="imageModal" class="image-modal"><span class="close">&times;</span><div class="modal-content"><img id="modalImage" src="" alt=""></div><div class="image-info"><span id="imageCaption"></span></div></div>
+
+            <!-- 评论区 -->
+            <div class="comments-card">
+                <h3>💬 评论</h3>
+                <div id="twikoo-comments"></div>
+            </div>
+        </article>
+
+        <!-- 右侧边栏（目录 + 信息卡片） -->
+        <aside class="article-sidebar">
+            <div class="sidebar-card toc-card">
+                <div class="toc-header">
+                    <i class="fas fa-list-ul"></i>
+                    <span>目录</span>
+                </div>
+                <nav class="toc-nav" id="toc-list-container"></nav>
+            </div>
+
+            <div class="sidebar-card info-card">
+                <div class="info-item">
+                    <i class="fas fa-chart-line"></i>
+                    <div>
+                        <span class="info-label">阅读量</span>
+                        <span class="info-value" id="busuanzi_page_pv">加载中...</span>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-users"></i>
+                    <div>
+                        <span class="info-label">访客数</span>
+                        <span class="info-value" id="busuanzi_page_uv">加载中...</span>
+                    </div>
+                </div>
+                <div class="info-item"><i class="fas fa-code-branch"></i><div><span class="info-label">修订次数</span><span class="info-value">4</span></div></div>
+            </div>
+        </aside>
+    </main>
+
+    <div id="imageModal" class="image-modal"><span class="close">&times;</span><img id="modalImage" src="" alt=""></div>
     <div id="footer-placeholder"></div>
+
     <script>window.ARTICLE_HEADINGS = [{"level": 1, "text": "Markdown 样式测试文档", "id": "markdown-样式测试文档"}, {"level": 2, "text": "1. 标题级别", "id": "1-标题级别"}, {"level": 1, "text": "H1 一级标题", "id": "h1-一级标题"}, {"level": 2, "text": "H2 二级标题", "id": "h2-二级标题"}, {"level": 3, "text": "H3 三级标题", "id": "h3-三级标题"}, {"level": 4, "text": "H4 四级标题", "id": "h4-四级标题"}, {"level": 2, "text": "2. 文本样式与行内元素", "id": "2-文本样式与行内元素"}, {"level": 2, "text": "3. 段落与换行", "id": "3-段落与换行"}, {"level": 2, "text": "4. 列表", "id": "4-列表"}, {"level": 3, "text": "无序列表", "id": "无序列表"}, {"level": 3, "text": "有序列表", "id": "有序列表"}, {"level": 3, "text": "任务列表 (GFM)", "id": "任务列表-gfm"}, {"level": 3, "text": "定义列表 (某些扩展)", "id": "定义列表-某些扩展"}, {"level": 2, "text": "5. 代码块", "id": "5-代码块"}, {"level": 1, "text": "Python 示例", "id": "python-示例"}, {"level": 2, "text": "6. 引用块", "id": "6-引用块"}, {"level": 2, "text": "7. 表格 (GFM)", "id": "7-表格-gfm"}, {"level": 2, "text": "8. 图片", "id": "8-图片"}, {"level": 2, "text": "9. 水平线", "id": "9-水平线"}, {"level": 2, "text": "10. 链接与自动识别", "id": "10-链接与自动识别"}, {"level": 2, "text": "11. HTML 标签支持", "id": "11-html-标签支持"}, {"level": 2, "text": "12. 转义字符", "id": "12-转义字符"}, {"level": 2, "text": "13. 特殊符号与 Emoji", "id": "13-特殊符号与-emoji"}, {"level": 2, "text": "14. 数学公式", "id": "14-数学公式"}, {"level": 2, "text": "15. 图表与流程图", "id": "15-图表与流程图"}, {"level": 2, "text": "16. 脚注与引用", "id": "16-脚注与引用"}, {"level": 2, "text": "17. 嵌入文件（部分扩展）", "id": "17-嵌入文件部分扩展"}, {"level": 2, "text": "18. 其他扩展语法", "id": "18-其他扩展语法"}, {"level": 3, "text": "警告框 / 提示框 (某些主题)", "id": "警告框-提示框-某些主题"}, {"level": 3, "text": "折叠块 (details)", "id": "折叠块-details"}, {"level": 2, "text": "19. 综合测试：混合排版", "id": "19-综合测试混合排版"}];</script>
     <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>
     <script src="/js/vendor/busuanzi.min.js" defer></script>
     <script src="/js/entry/main.js" type="module"></script>
-    <script src="/js/pages/article.js"></script>
+    <script src="/js/pages/article.js" type="module"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
     <script src="https://registry.npmmirror.com/twikoo/1.7.11/files/dist/twikoo.nocss.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             if (typeof twikoo !== 'undefined') {
                 twikoo.init({ envId: 'https://twikoo-gxy.netlify.app/.netlify/functions/twikoo', el: '#twikoo-comments', path: window.location.pathname, lang: 'zh-CN' });
-            } else { console.warn('Twikoo 加载失败'); }
+            }
         });
     </script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>

@@ -14,49 +14,23 @@
 <body>
     <div id="navbar-placeholder"></div>
     <div id="reading-progress" class="reading-progress-bar"><div id="progress-bar" class="progress-bar"></div></div>
-    <div class="article-page-container">
-        <div class="toc-container"><h2 class="toc-title">目录</h2><div id="toc-list-container"></div></div>
-        <div class="article-right-column">
-            <div class="article-content-wrapper">
-                <h1 class="article-title" id="articleTitle">我看到了你的眼睛</h1>
-                <div class="article-subtitle">一个关于成长、自我和解与不灭希望的故事。</div>
-                <div class="article-meta" id="articleMeta"><div class="meta-grid">
-            <div class="meta-item" data-label="发布日期">
-                <i class="fas fa-calendar-alt"></i>
-                <span class="meta-value">2026年05月24日</span>
-            </div>
-            <div class="meta-item" data-label="最后更新">
-                <i class="fas fa-edit"></i>
-                <span class="meta-value">2026年05月31日</span>
-            </div>
-            <div class="meta-item" data-label="作者">
-                <i class="fas fa-user"></i>
-                <span class="meta-value">高新炀</span>
-            </div>
-            <div class="meta-item" data-label="分类">
-                <i class="fas fa-folder-open"></i>
-                <span class="meta-value">作文</span>
-            </div>
-            <div class="meta-item" data-label="字数">
-                <i class="fas fa-file-alt"></i>
-                <span class="meta-value">670</span>
-            </div>
-            <div class="meta-item" data-label="阅读时间">
-                <i class="fas fa-clock"></i>
-                <span class="meta-value">3分钟</span>
-            </div>
-            <div class="meta-item" data-label="访客数">
-                <i class="fas fa-users"></i>
-                <span class="meta-value"><span id="busuanzi_page_uv">加载中...</span></span>
-            </div>
-            <div class="meta-item" data-label="阅读量">
-                <i class="fas fa-eye"></i>
-                <span class="meta-value"><span id="busuanzi_page_pv">加载中...</span></span>
-            </div>
-            <div class="meta-item" data-label="修订次数">
-                <i class="fas fa-code-branch"></i>
-                <span class="meta-value">1</span>
-            </div></div></div>
+
+    <main class="article-grid">
+        <!-- 左侧主内容区 -->
+        <article class="article-main">
+            <div class="article-card">
+                <h1 class="article-title">我看到了你的眼睛</h1>
+                <p class="article-subtitle">一个关于成长、自我和解与不灭希望的故事。</p>
+                
+    <div class="article-meta-line">
+        <span class="meta-item"><i class="fas fa-calendar-alt"></i> 2026年05月24日</span>
+        <span class="meta-item"><i class="fas fa-user"></i> 高新炀</span>
+        <span class="meta-item"><i class="fas fa-folder-open"></i> 作文</span>
+        <span class="meta-item"><i class="fas fa-file-alt"></i> 670字</span>
+        <span class="meta-item"><i class="fas fa-clock"></i> 3分钟</span>
+    </div>
+    <div class="article-meta-line article-meta-updated"><span class="meta-item"><i class="fas fa-edit"></i> 更新于 2026年05月31日</span></div>
+
                 <div class="article-body" id="articleBody"><p>那天下着雨，你坐在窗边，手里攥着一张揉皱的卷子。</p>
 <p>我看着你——十三岁的你，把脸埋进胳膊里，肩膀微微发抖。你没哭出声，因为你从来不在别人面前哭。你以为这样就叫坚强，对吗？</p>
 <p>可是你那时候不知道，真正的坚强不是忍住眼泪，是哭完了还能站起来。</p>
@@ -72,25 +46,62 @@
 <p>雨快停了。</p>
 <p>这一次，你终于抬起了头。</p>
 <p>我看到你的眼睛。湿漉漉的，但里面有光。和我想象的一模一样。</p></div>
-                <div class="article-footer-tags"><a class="footer-tag" href="/articles.html?tags=%E8%AE%B0%E5%8F%99%E6%96%87" style="text-decoration: none; color: inherit; cursor: pointer;" title="查看「记叙文」相关文章">#记叙文</a></div>
+
+                <div class="article-tags"><a class="tag" href="/articles.html?tags=%E8%AE%B0%E5%8F%99%E6%96%87">#记叙文</a></div>
             </div>
-            <div class="comments-card"><div class="comments-container"><h3>评论区</h3><div id="twikoo-comments"></div></div></div>
-        </div>
-    </div>
-    <div id="imageModal" class="image-modal"><span class="close">&times;</span><div class="modal-content"><img id="modalImage" src="" alt=""></div><div class="image-info"><span id="imageCaption"></span></div></div>
+
+            <!-- 评论区 -->
+            <div class="comments-card">
+                <h3>💬 评论</h3>
+                <div id="twikoo-comments"></div>
+            </div>
+        </article>
+
+        <!-- 右侧边栏（目录 + 信息卡片） -->
+        <aside class="article-sidebar">
+            <div class="sidebar-card toc-card">
+                <div class="toc-header">
+                    <i class="fas fa-list-ul"></i>
+                    <span>目录</span>
+                </div>
+                <nav class="toc-nav" id="toc-list-container"></nav>
+            </div>
+
+            <div class="sidebar-card info-card">
+                <div class="info-item">
+                    <i class="fas fa-chart-line"></i>
+                    <div>
+                        <span class="info-label">阅读量</span>
+                        <span class="info-value" id="busuanzi_page_pv">加载中...</span>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-users"></i>
+                    <div>
+                        <span class="info-label">访客数</span>
+                        <span class="info-value" id="busuanzi_page_uv">加载中...</span>
+                    </div>
+                </div>
+                <div class="info-item"><i class="fas fa-code-branch"></i><div><span class="info-label">修订次数</span><span class="info-value">1</span></div></div>
+            </div>
+        </aside>
+    </main>
+
+    <div id="imageModal" class="image-modal"><span class="close">&times;</span><img id="modalImage" src="" alt=""></div>
     <div id="footer-placeholder"></div>
+
     <script>window.ARTICLE_HEADINGS = [];</script>
     <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>
     <script src="/js/vendor/busuanzi.min.js" defer></script>
     <script src="/js/entry/main.js" type="module"></script>
-    <script src="/js/pages/article.js"></script>
+    <script src="/js/pages/article.js" type="module"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
     <script src="https://registry.npmmirror.com/twikoo/1.7.11/files/dist/twikoo.nocss.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             if (typeof twikoo !== 'undefined') {
                 twikoo.init({ envId: 'https://twikoo-gxy.netlify.app/.netlify/functions/twikoo', el: '#twikoo-comments', path: window.location.pathname, lang: 'zh-CN' });
-            } else { console.warn('Twikoo 加载失败'); }
+            }
         });
     </script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>

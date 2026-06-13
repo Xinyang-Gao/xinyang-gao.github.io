@@ -28,13 +28,22 @@
   --font-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   --font-family: var(--font-sans);
   --font-mono: "SF Mono", "Fira Code", "Cascadia Code", "JetBrains Mono", monospace;
-  --font-size-base: 1.06rem;
-  --font-size-small: 0.9rem;
-  --font-size-xs: 0.8rem;
-  --font-size-tag: 0.85rem;
-  --font-size-h1: 2.3rem;
-  --font-size-h2: 1.85rem;
+  --font-size-base: 1.05rem;
+  --font-size-small: 0.875rem;
+  --font-size-xs: 0.75rem;
+  --font-size-tag: 0.8rem;
+  --font-size-h1: 2.8rem;
+  --font-size-h2: 2rem;
   --font-size-h3: 1.5rem;
+  --font-size-h4: 1.25rem;
+
+    /* 行高与间距 */
+  --line-height-base: 1.65;
+  --line-height-heading: 1.25;
+  --paragraph-margin: 0 0 1.2em 0;
+  
+  /* 正文最大宽度（提升阅读舒适度） */
+  --reading-width: 42rem;
    
   /* 间距 */
   --spacing-xs: 6px;
@@ -373,9 +382,12 @@ body {
   background-position: center;
   background-repeat: no-repeat;
   background-attachment: fixed;
-  font-family: var(--font-family);
+  font-family: var(--font-sans);
+  font-size: var(--font-size-base);
   color: var(--text-color);
-  line-height: 1.65;
+  line-height: var(--line-height-base);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
   padding: 20px;
   min-height: 100vh;
   overflow-x: hidden;
@@ -482,9 +494,9 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--accent-color);
   margin-top: 1.5em;
   margin-bottom: 0.8em;
-  line-height: 1.25;
-  font-weight: 500;
-  letter-spacing: -0.01em;
+  line-height: var(--line-height-heading);
+  letter-spacing: -0.02em;
+  font-weight: 600;
 }
 
 h1 {
@@ -514,6 +526,8 @@ p {
   font-size: var(--font-size-base);
   line-height: 1.7;
   color: var(--text-color);
+  margin: var(--paragraph-margin);
+  max-width: var(--reading-width);
 }
 
 a {

@@ -90,7 +90,7 @@ def extract_metadata(content: str) -> tuple[Dict[str, str], str]:
             except yaml.YAMLError:
                 pass
 
-        # 降级解析（保持不变）
+        # 降级解析
         for line in meta_text.split('\n'):
             line = line.strip()
             if not line or ':' not in line:
@@ -114,10 +114,17 @@ def extract_metadata(content: str) -> tuple[Dict[str, str], str]:
     return {}, content
 
 def extract_headings(content: str) -> List[Dict]:
+    """
+    提取 Markdown 中的所有标题（支持 Atx 和 Setext 风格），并为每个标题生成唯一的 id。
+    """
     headings = []
     seen = {}
-    for line in content.split('\n'):
-        m = re.match(r'^(#{1,4})\s+(.+?)\s*$', line)
+    lines = content.split('\n')
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        # 匹配 Atx 标题 (允许前导空格)
+        m = re.match(r'^\s*(#{1,4})\s+(.+?)\s*$', line)
         if m:
             level = len(m.group(1))
             text = m.group(2).strip()
@@ -126,19 +133,66 @@ def extract_headings(content: str) -> List[Dict]:
             hid = f"{base_id}-{cnt}" if cnt else base_id
             seen[base_id] = cnt + 1
             headings.append({'level': level, 'text': text, 'id': hid})
+            i += 1
+            continue
+
+        # 匹配 Setext 风格标题 (下一行是 === 或 ---)
+        if i + 1 < len(lines):
+            next_line = lines[i + 1].strip()
+            if re.match(r'^={3,}$', next_line):
+                level = 1
+                text = line.strip()
+                if text:
+                    base_id = slugify(text)
+                    cnt = seen.get(base_id, 0)
+                    hid = f"{base_id}-{cnt}" if cnt else base_id
+                    seen[base_id] = cnt + 1
+                    headings.append({'level': level, 'text': text, 'id': hid})
+                    i += 2
+                    continue
+            elif re.match(r'^-{3,}$', next_line):
+                level = 2
+                text = line.strip()
+                if text:
+                    base_id = slugify(text)
+                    cnt = seen.get(base_id, 0)
+                    hid = f"{base_id}-{cnt}" if cnt else base_id
+                    seen[base_id] = cnt + 1
+                    headings.append({'level': level, 'text': text, 'id': hid})
+                    i += 2
+                    continue
+        i += 1
     return headings
 
-def add_heading_ids(content: str, headings: List[Dict]) -> str:
-    lines = content.split('\n')
-    idx = 0
-    for i, line in enumerate(lines):
-        m = re.match(r'^(#{1,4})\s+(.+?)\s*$', line)
-        if m and idx < len(headings):
-            lines[i] = f"{m.group(1)} {m.group(2)} {{#{headings[idx]['id']}}}"
-            idx += 1
-    return '\n'.join(lines)
+def add_ids_to_headings_html(html_content: str, headings: List[Dict]) -> str:
+    """
+    给 HTML 中的 h1~h4 标签按顺序添加 id 属性，与 headings 列表中的 id 对应。
+    此方法保证了 Setext 标题也能获得 id。
+    """
+    if not headings:
+        return html_content
 
-def convert_markdown_to_html(md_content: str) -> str:
+    # 匹配 h1-h4 标签，支持各种属性
+    pattern = re.compile(r'(<h([1-4])([^>]*?)>)', re.IGNORECASE)
+    idx = 0
+    def replacer(match):
+        nonlocal idx
+        if idx >= len(headings):
+            return match.group(0)
+        tag_open = match.group(1)
+        level = int(match.group(2))
+        existing_attrs = match.group(3)
+        hid = headings[idx]['id']
+        idx += 1
+        # 如果已经有 id 属性，则覆盖（避免重复）
+        if re.search(r'\sid=["\'][^"\']*["\']', existing_attrs):
+            new_attrs = re.sub(r'\sid=["\'][^"\']*["\']', f' id="{hid}"', existing_attrs)
+        else:
+            new_attrs = f'{existing_attrs} id="{hid}"'
+        return f'<h{level}{new_attrs}>'
+    return pattern.sub(replacer, html_content)
+
+def convert_markdown_to_html(md_content: str, headings: List[Dict]) -> str:
     extensions = ['extra', 'codehilite', 'sane_lists', 'fenced_code', 'attr_list', 'footnotes']
     if StrikeExtension is not None:
         extensions.append(StrikeExtension())
@@ -149,6 +203,8 @@ def convert_markdown_to_html(md_content: str) -> str:
         lambda m: f'<img {m.group(1)}data-src={m.group(2)}{m.group(3)}{m.group(2)} src="{LAZY_PLACEHOLDER}" class="lazy-image" {m.group(4)}>',
         html_content
     )
+    # 为标题添加 id（解决 Setext 标题无 id 的问题）
+    html_content = add_ids_to_headings_html(html_content, headings)
     return html_content
 
 def create_html_page(title: str, date: str, content_html: str, headings_json: str,
@@ -172,35 +228,23 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
             display = f"#{html.escape(tag_raw)}"
             href = f"/articles.html?tags={quote(tag_raw, safe='')}"
             tag_links.append(
-                f'<a class="footer-tag" href="{href}" style="text-decoration: none; color: inherit; cursor: pointer;" '
-                f'title="查看「{html.escape(tag_raw)}」相关文章">{display}</a>'
+                f'<a class="tag" href="{href}">{display}</a>'
             )
-        footer_tags_html = f'<div class="article-footer-tags">{" ".join(tag_links)}</div>'
+        footer_tags_html = f'<div class="article-tags">{" ".join(tag_links)}</div>'
 
-    subtitle_html = f'<div class="article-subtitle">{description}</div>' if description else ""
+    # 元数据行
+    meta_html = f'''
+    <div class="article-meta-line">
+        <span class="meta-item"><i class="fas fa-calendar-alt"></i> {formatted_date}</span>
+        <span class="meta-item"><i class="fas fa-user"></i> {author if author else "高新炀"}</span>
+        <span class="meta-item"><i class="fas fa-folder-open"></i> {html.escape(category) if category else "未分类"}</span>
+        <span class="meta-item"><i class="fas fa-file-alt"></i> {word_count}字</span>
+        <span class="meta-item"><i class="fas fa-clock"></i> {read_time_str}</span>
+    </div>
+    '''
 
-    meta_items = [
-        ('发布日期', 'fas fa-calendar-alt', formatted_date),
-        ('作者', 'fas fa-user', author if author else "高新炀"),
-        ('分类', 'fas fa-folder-open', html.escape(category) if category else "未分类"),
-        ('字数', 'fas fa-file-alt', str(word_count)),
-        ('阅读时间', 'fas fa-clock', read_time_str),
-        ('访客数', 'fas fa-users', '<span id="busuanzi_page_uv">加载中...</span>'),
-        ('阅读量', 'fas fa-eye', '<span id="busuanzi_page_pv">加载中...</span>')
-    ]
     if formatted_last_updated:
-        meta_items.insert(1, ('最后更新', 'fas fa-edit', formatted_last_updated))
-    if modify_count is not None:
-        meta_items.append(('修订次数', 'fas fa-code-branch', str(modify_count)))
-
-    meta_html = '<div class="article-meta" id="articleMeta"><div class="meta-grid">'
-    for label, icon, value in meta_items:
-        meta_html += f'''
-            <div class="meta-item" data-label="{label}">
-                <i class="{icon}"></i>
-                <span class="meta-value">{value}</span>
-            </div>'''
-    meta_html += '</div></div>'
+        meta_html += f'<div class="article-meta-line article-meta-updated"><span class="meta-item"><i class="fas fa-edit"></i> 更新于 {formatted_last_updated}</span></div>'
 
     meta_description = description if description else f"{title} - GaoXinYang的文章"
 
@@ -220,33 +264,72 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
 <body>
     <div id="navbar-placeholder"></div>
     <div id="reading-progress" class="reading-progress-bar"><div id="progress-bar" class="progress-bar"></div></div>
-    <div class="article-page-container">
-        <div class="toc-container"><h2 class="toc-title">目录</h2><div id="toc-list-container"></div></div>
-        <div class="article-right-column">
-            <div class="article-content-wrapper">
-                <h1 class="article-title" id="articleTitle">{title}</h1>
-                {subtitle_html}
+
+    <main class="article-grid">
+        <!-- 左侧主内容区 -->
+        <article class="article-main">
+            <div class="article-card">
+                <h1 class="article-title">{title}</h1>
+                {f'<p class="article-subtitle">{description}</p>' if description else ''}
                 {meta_html}
+
                 <div class="article-body" id="articleBody">{content_html}</div>
+
                 {footer_tags_html}
             </div>
-            <div class="comments-card"><div class="comments-container"><h3>评论区</h3><div id="twikoo-comments"></div></div></div>
-        </div>
-    </div>
-    <div id="imageModal" class="image-modal"><span class="close">&times;</span><div class="modal-content"><img id="modalImage" src="" alt=""></div><div class="image-info"><span id="imageCaption"></span></div></div>
+
+            <!-- 评论区 -->
+            <div class="comments-card">
+                <h3>💬 评论</h3>
+                <div id="twikoo-comments"></div>
+            </div>
+        </article>
+
+        <!-- 右侧边栏（目录 + 信息卡片） -->
+        <aside class="article-sidebar">
+            <div class="sidebar-card toc-card">
+                <div class="toc-header">
+                    <i class="fas fa-list-ul"></i>
+                    <span>目录</span>
+                </div>
+                <nav class="toc-nav" id="toc-list-container"></nav>
+            </div>
+
+            <div class="sidebar-card info-card">
+                <div class="info-item">
+                    <i class="fas fa-chart-line"></i>
+                    <div>
+                        <span class="info-label">阅读量</span>
+                        <span class="info-value" id="busuanzi_page_pv">加载中...</span>
+                    </div>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-users"></i>
+                    <div>
+                        <span class="info-label">访客数</span>
+                        <span class="info-value" id="busuanzi_page_uv">加载中...</span>
+                    </div>
+                </div>
+                {f'<div class="info-item"><i class="fas fa-code-branch"></i><div><span class="info-label">修订次数</span><span class="info-value">{modify_count}</span></div></div>' if modify_count is not None else ''}
+            </div>
+        </aside>
+    </main>
+
+    <div id="imageModal" class="image-modal"><span class="close">&times;</span><img id="modalImage" src="" alt=""></div>
     <div id="footer-placeholder"></div>
+
     <script>window.ARTICLE_HEADINGS = {headings_json};</script>
     <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>
     <script src="/js/vendor/busuanzi.min.js" defer></script>
     <script src="/js/entry/main.js" type="module"></script>
-    <script src="/js/pages/article.js"></script>
+    <script src="/js/pages/article.js" type="module"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
     <script src="https://registry.npmmirror.com/twikoo/1.7.11/files/dist/twikoo.nocss.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {{
             if (typeof twikoo !== 'undefined') {{
                 twikoo.init({{ envId: 'https://twikoo-gxy.netlify.app/.netlify/functions/twikoo', el: '#twikoo-comments', path: window.location.pathname, lang: 'zh-CN' }});
-            }} else {{ console.warn('Twikoo 加载失败'); }}
+            }}
         }});
     </script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
@@ -302,8 +385,7 @@ def process_markdown_file(md_file_path: Path, old_article: Optional[dict] = None
     read_time = calculate_read_time(word_count)
 
     headings = extract_headings(cleaned)
-    content_with_ids = add_heading_ids(cleaned, headings)
-    content_html = convert_markdown_to_html(content_with_ids)
+    content_html = convert_markdown_to_html(cleaned, headings)
     headings_json = json.dumps(headings, ensure_ascii=False)
 
     hidden = "隐藏" in tags
