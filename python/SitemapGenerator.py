@@ -16,7 +16,7 @@ OUTPUT_SITEMAP = PROJECT_ROOT / "sitemap.xml"
 EXCLUDED_HTML = {"navbar.html", "footer.html", "404.html"}
 EXCLUDE_PREFIX = ("_",)
 DEFAULT_PAGE_CONFIG = {
-    "/index.html": {"changefreq": "weekly", "priority": "1.0"},
+    "/": {"changefreq": "weekly", "priority": "1.0"},
     "/about.html": {"changefreq": "weekly", "priority": "0.8"},
     "/articles.html": {"changefreq": "daily", "priority": "0.9"},
     "/archive.html": {"changefreq": "weekly", "priority": "0.8"},

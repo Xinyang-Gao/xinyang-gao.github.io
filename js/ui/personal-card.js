@@ -7,7 +7,7 @@ export function generatePersonalCardHTML() {
   return `
     <div class="profile-card">
       <div class="profile-avatar">
-        <img src="/assets/avatar.webp" alt="高新炀的头像" class="avatar-img" onerror="this.src='https://via.placeholder.com/140?text=GXY'">
+        <img src="/assets/avatar.webp" alt="高新炀的头像" class="avatar-img" fetchpriority="high" onerror="this.src='https://via.placeholder.com/140?text=GXY'">
         <h2 class="profile-name">高新炀</h2>
         <div class="profile-bio">一个15岁爱探索的小孩子~</div>
       </div>
@@ -62,18 +62,16 @@ export function renderPersonalCard() {
   const container = document.getElementById('personal-card-container');
   if (!container) return;
 
-  // 生成并缓存 HTML（仅第一次）
   if (!cachedHTML) {
     cachedHTML = generatePersonalCardHTML();
   }
 
-  // 仅在内容不同时才更新 DOM，避免闪烁
   if (container.innerHTML !== cachedHTML) {
     container.innerHTML = cachedHTML;
   }
 }
 
-// 自动监听事件，无需外部显式调用
+// 自动监听事件
 if (typeof window !== 'undefined') {
   const init = () => renderPersonalCard();
   if (document.readyState === 'loading') {

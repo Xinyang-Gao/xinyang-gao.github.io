@@ -38,6 +38,7 @@ DEFAULT_SCRIPTS = [
     "SitemapGenerator.py",
     "FriendLinkGenerator.py",
     "StaticListGenerator.py",
+    "GenerateNoJsIndex.py",
     "CodeAnalyzer.py"
 ]
 LOG_TAG_INFO = "INFO"

@@ -41,7 +41,8 @@ export function updateDynamicGreeting() {
   greetingEl.style.fontWeight = 'bold';
 }
 
-export function applyRandomBackgroundImage({ force = false, immediateColor = true } = {}) {
+// ========== 优化后的背景图加载（不阻塞 LCP） ==========
+export function applyRandomBackgroundImage({ force = false } = {}) {
   const { BACKGROUND_IMAGES } = CONFIG;
   if (!Array.isArray(BACKGROUND_IMAGES) || BACKGROUND_IMAGES.length === 0) return;
 
@@ -53,38 +54,40 @@ export function applyRandomBackgroundImage({ force = false, immediateColor = tru
   if (!overlay) {
     overlay = document.createElement('div');
     overlay.id = 'bg-image-overlay';
+    // 确保遮罩层在底部且不干扰交互
+    overlay.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+      background-size: cover;
+      background-position: center;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+      will-change: opacity;
+    `;
     document.body.appendChild(overlay);
   }
 
-  // 立即设置纯色背景（避免白屏）
-  if (immediateColor) {
-    const computedTheme = document.documentElement.getAttribute('data-theme') || 'light';
-    const fallbackColor = computedTheme === 'dark' ? '#0a0c10' : '#f5f0eb';
-    overlay.style.backgroundColor = fallbackColor;
-  }
-
-  // 避免重复动画
+  // 避免重复加载同一张图
   if (!force && overlay.style.backgroundImage === `url("${imageUrl}")` && overlay.classList.contains('active')) {
     return;
   }
 
-  overlay.classList.remove('active');
-  void overlay.offsetWidth; // 强制重绘
-
-  // 预加载图片，加载完成后再应用背景图并开始过渡
+  // 预加载图片，加载完成后淡入
   const img = new Image();
   img.onload = () => {
     overlay.style.backgroundImage = `url('${imageUrl}')`;
     overlay.classList.add('active');
+    overlay.style.opacity = '1';
     document.body.classList.remove('background-loading');
-    // 可选：移除纯色背景，让背景图完全覆盖（或保留作为fallback）
-    setTimeout(() => {
-      overlay.style.backgroundColor = 'transparent';
-    }, 300);
   };
   img.onerror = (error) => {
     console.warn('[WARN] 背景图片加载失败:', error);
     overlay.classList.add('active');
+    overlay.style.opacity = '0.3'; // 降级显示
     document.body.classList.remove('background-loading');
   };
   img.src = imageUrl;

@@ -47,7 +47,7 @@ class NavbarManager {
     navItems.id = 'navbarNav';
 
     const links = [
-      { href: '/index.html', page: 'index', text: '首页' },
+      { href: '/', page: 'index', text: '首页' },
       { href: '/about.html', page: 'about', text: '关于' },
       { href: '/articles.html', page: 'articles', text: '文章' },
       { href: '/archive.html', page: 'archive', text: '归档' },
