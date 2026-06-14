@@ -1,45 +1,45 @@
 {
-  "generated_at": "2026-06-14T18:35:58.411129",
+  "generated_at": "2026-06-14T22:41:17.033852",
   "root_dir": "c:\\Users\\Administrator\\Desktop\\编程\\xinyang-gao.github.io\\xinyang-gao.github.io",
   "total_files": 143,
-  "total_size_bytes": 1798065,
-  "total_lines": 39262,
-  "non_empty_lines": 34993,
+  "total_size_bytes": 1880207,
+  "total_lines": 39682,
+  "non_empty_lines": 35384,
   "by_extension": [
     {
       "extension": ".html",
       "count": 35,
-      "total_size_bytes": 413819,
-      "total_lines": 6909,
-      "non_empty_lines": 6379
+      "total_size_bytes": 414112,
+      "total_lines": 6914,
+      "non_empty_lines": 6384
     },
     {
       "extension": ".js",
       "count": 33,
-      "total_size_bytes": 473872,
-      "total_lines": 11138,
-      "non_empty_lines": 10125
+      "total_size_bytes": 482121,
+      "total_lines": 11331,
+      "non_empty_lines": 10304
     },
     {
       "extension": ".json",
       "count": 19,
-      "total_size_bytes": 32198,
+      "total_size_bytes": 32199,
       "total_lines": 1067,
       "non_empty_lines": 1067
     },
     {
       "extension": ".css",
       "count": 18,
-      "total_size_bytes": 307823,
-      "total_lines": 13572,
-      "non_empty_lines": 11786
+      "total_size_bytes": 310263,
+      "total_lines": 13695,
+      "non_empty_lines": 11895
     },
     {
       "extension": ".md",
       "count": 16,
-      "total_size_bytes": 135921,
-      "total_lines": 2645,
-      "non_empty_lines": 2025
+      "total_size_bytes": 136040,
+      "total_lines": 2650,
+      "non_empty_lines": 2028
     },
     {
       "extension": ".py",
@@ -65,9 +65,9 @@
     {
       "extension": ".ico",
       "count": 1,
-      "total_size_bytes": 205086,
-      "total_lines": 294,
-      "non_empty_lines": 290
+      "total_size_bytes": 270622,
+      "total_lines": 343,
+      "non_empty_lines": 338
     },
     {
       "extension": ".txt",
@@ -79,9 +79,9 @@
     {
       "extension": ".webp",
       "count": 1,
-      "total_size_bytes": 19640,
-      "total_lines": 143,
-      "non_empty_lines": 141
+      "total_size_bytes": 25144,
+      "total_lines": 188,
+      "non_empty_lines": 188
     },
     {
       "extension": ".yml",

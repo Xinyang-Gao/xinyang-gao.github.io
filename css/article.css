@@ -1,11 +1,6 @@
 /* ============================================
-   文章页面布局系统 - 优化版
-   核心改进：
-   1. 统一双栏网格布局，侧边栏粘性定位更可靠
-   2. TOC卡片采用 flex 列布局，滚动区域与标题严格分离
-   3. 优化移动端侧边栏动画与遮罩层
-   4. 完善响应式断点，适配平板与手机
-   5. 修复重复样式，提升代码可维护性
+   文章页面布局系统 - 优化版 v2.0
+   改进：TOC滚动高亮修复、焦点环、打印样式、响应式微调
    ============================================ */
 
 :root {
@@ -31,7 +26,7 @@
 
 /* 左侧主内容区：防止溢出 */
 .article-main {
-    min-width: 0;           /* 防止flex/网格溢出 */
+    min-width: 0;
     overflow-x: hidden;
 }
 
@@ -61,7 +56,6 @@
     border-color: var(--border-color);
 }
 
-/* 文章标题 */
 .article-title {
     font-size: 2.8rem;
     font-weight: 700;
@@ -83,7 +77,6 @@
     font-weight: 400;
 }
 
-/* 元数据行 */
 .article-meta-line {
     display: flex;
     flex-wrap: wrap;
@@ -180,13 +173,11 @@
     opacity: 1;
 }
 
-/* 段落 */
 .article-body p {
     margin-bottom: 1.2em;
     max-width: 100%;
 }
 
-/* 链接 */
 .article-body a {
     color: var(--accent-color);
     text-decoration: none;
@@ -198,7 +189,6 @@
     border-bottom-color: var(--accent-color);
 }
 
-/* 列表 */
 .article-body ul,
 .article-body ol {
     margin: 0 0 1.2em 0;
@@ -229,7 +219,6 @@
     margin-bottom: 0.5em;
 }
 
-/* 表格 */
 .article-body table {
     display: block;
     width: 100%;
@@ -260,7 +249,6 @@
     background-color: color-mix(in srgb, var(--accent-color) 8%, transparent);
 }
 
-/* 引用块 */
 .article-body blockquote {
     margin: 1.5em 0;
     padding: 0.5em 1em;
@@ -278,7 +266,6 @@
     margin-bottom: 0;
 }
 
-/* 代码 */
 .article-body code {
     font-family: var(--font-mono);
     background: var(--code-bg);
@@ -304,7 +291,6 @@
     color: inherit;
 }
 
-/* 水平线 */
 .article-body hr {
     height: 0.25em;
     padding: 0;
@@ -313,7 +299,6 @@
     border: 0;
 }
 
-/* 图片与懒加载 */
 .article-body img {
     max-width: 100%;
     height: auto;
@@ -342,7 +327,6 @@
     background: none;
 }
 
-/* 图片说明文本（可选） */
 .image-alt-text {
     display: block;
     text-align: center;
@@ -353,7 +337,6 @@
     font-style: italic;
 }
 
-/* 标签区 */
 .article-tags {
     display: flex;
     flex-wrap: wrap;
@@ -418,7 +401,6 @@
     padding: 0;
 }
 
-/* 目录头部（固定不滚动） */
 .toc-header {
     flex-shrink: 0;
     display: flex;
@@ -448,15 +430,14 @@
     min-height: 0;
     scrollbar-width: thin;
     scrollbar-color: var(--accent-color) var(--bg-color);
+    scroll-behavior: smooth;
 }
 
-/* 导航容器，无额外边距 */
 .toc-nav {
     padding: 0;
     margin: 0;
 }
 
-/* 目录树基础样式 */
 .toc-list,
 .toc-list ul {
     list-style: none;
@@ -470,7 +451,6 @@
     line-height: 1.4;
 }
 
-/* 链接块：使用内边距制造点击区域，不产生额外垂直偏移 */
 .toc-list a {
     display: block;
     padding: 0.4rem 0.8rem 0.4rem 1.5rem;
@@ -483,7 +463,6 @@
     white-space: normal;
 }
 
-/* 嵌套缩进（仅水平） */
 .toc-list ul a {
     padding-left: 2rem;
 }
@@ -500,14 +479,13 @@
     padding-left: 4.4rem;
 }
 
-/* 悬停效果 */
 .toc-list a:hover {
     color: var(--accent-color);
     background: rgba(180, 91, 99, 0.08);
     transform: translateX(2px);
 }
 
-/* 当前激活项高亮 */
+/* 当前激活项高亮（修复滚动高亮） */
 .toc-list li.active > a {
     color: var(--accent-color);
     background: rgba(180, 91, 99, 0.12);
@@ -516,7 +494,6 @@
     padding-left: calc(1.5rem - 3px);
 }
 
-/* 空目录提示 */
 .toc-empty {
     padding: 1rem;
     text-align: center;
@@ -524,7 +501,6 @@
     font-size: 0.85rem;
 }
 
-/* 阅读进度组件（置于 TOC 头部右侧） */
 .reading-progress-wrapper {
     display: flex;
     align-items: center;
@@ -559,7 +535,6 @@
     transition: width 0.1s linear;
 }
 
-/* 信息卡片（阅读量、修订等） */
 .info-card {
     display: flex;
     flex-direction: column;
@@ -821,7 +796,15 @@
     }
 }
 
-/* ========== 减少动画偏好支持 ========== */
+/* ========== 焦点环统一 ========== */
+:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(180, 91, 99, 0.3);
+    border-radius: var(--radius-sm);
+    transition: box-shadow 0.1s;
+}
+
+/* ========== 减少动画支持 ========== */
 @media (prefers-reduced-motion: reduce) {
     * {
         animation-duration: 0.01ms !important;
@@ -841,14 +824,38 @@
     color: #ccc;
 }
 
-/* 移动端进度组件尺寸适配 */
-@media (max-width: 768px) {
-    .reading-progress-container {
-        width: 50px;
+/* ========== 打印样式 ========== */
+@media print {
+    .article-sidebar,
+    .comments-card,
+    .floating-buttons,
+    .reading-progress-bar,
+    .image-modal,
+    .back-to-top-btn {
+        display: none !important;
     }
-
-    .reading-percent {
-        min-width: 38px;
-        font-size: 0.75rem;
+    .article-grid {
+        display: block;
+        margin: 0;
+        padding: 0;
+    }
+    .article-card {
+        box-shadow: none;
+        border: none;
+        padding: 0;
+        margin: 0;
+    }
+    .article-body a {
+        text-decoration: underline;
+        color: black;
+    }
+    .article-body a::after {
+        content: " (" attr(href) ")";
+        font-size: 0.8rem;
+    }
+    .article-tags .tag {
+        border: 1px solid #ccc;
+        background: none;
+        color: black;
     }
 }
