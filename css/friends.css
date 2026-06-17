@@ -1,4 +1,9 @@
+/* ============================================================
+   friends.css · 重构版
+   响应式优化：移动优先 + 弹性网格 + 细腻断点
+   ============================================================ */
 
+/* ---------- 统计信息 ---------- */
 .friends-stats {
     margin: 20px 0 10px;
     font-size: 0.9rem;
@@ -8,13 +13,16 @@
     display: inline-block;
 }
 
+/* ---------- 友链网格（核心） ---------- */
 .friends-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+    /* 响应式列数：最小宽度 280px，自动填充 */
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 28px;
     margin: 32px 0 20px;
 }
 
+/* ---------- 友链卡片 ---------- */
 .friend-card {
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.65), rgba(255, 255, 255, 0.45));
     background-color: rgba(255, 255, 255, 0.45);
@@ -25,9 +33,9 @@
     align-items: stretch;
     gap: 20px;
     transition: transform 0.35s var(--transition-bounce),
-        box-shadow 0.35s var(--transition-bounce),
-        border-color 0.35s var(--transition-bounce),
-        background 0.35s var(--transition-bounce);
+                box-shadow 0.35s var(--transition-bounce),
+                border-color 0.35s var(--transition-bounce),
+                background 0.35s var(--transition-bounce);
     box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255, 255, 255, 0.35);
     backdrop-filter: blur(10px) saturate(1.08);
     -webkit-backdrop-filter: blur(10px) saturate(1.08);
@@ -41,39 +49,19 @@
     animation: friendFadeInUp 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards;
 }
 
-/* 卡片逐个渐入延迟 */
-.friend-card:nth-child(1) {
-    animation-delay: 0.05s;
-}
-
-.friend-card:nth-child(2) {
-    animation-delay: 0.1s;
-}
-
-.friend-card:nth-child(3) {
-    animation-delay: 0.15s;
-}
-
-.friend-card:nth-child(4) {
-    animation-delay: 0.2s;
-}
-
-.friend-card:nth-child(5) {
-    animation-delay: 0.25s;
-}
-
-.friend-card:nth-child(6) {
-    animation-delay: 0.3s;
-}
+/* 卡片逐个渐入 */
+.friend-card:nth-child(1) { animation-delay: 0.05s; }
+.friend-card:nth-child(2) { animation-delay: 0.1s; }
+.friend-card:nth-child(3) { animation-delay: 0.15s; }
+.friend-card:nth-child(4) { animation-delay: 0.2s; }
+.friend-card:nth-child(5) { animation-delay: 0.25s; }
+.friend-card:nth-child(6) { animation-delay: 0.3s; }
 
 @keyframes friendFadeInUp {
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-/* 卡内光泽滑动效果 (继承自 .list-item) */
+/* 光泽滑动 */
 .friend-card::after {
     content: '';
     position: absolute;
@@ -86,7 +74,6 @@
     transition: transform 0.9s var(--transition-bounce);
     pointer-events: none;
 }
-
 .friend-card:hover::after {
     transform: skewX(-20deg) translateX(220%);
 }
@@ -98,7 +85,7 @@
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.5));
 }
 
-/* 暗色模式下的卡片自适应 */
+/* ---------- 暗色模式 ---------- */
 [data-theme="dark"] .friend-card {
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.02));
     background-color: rgba(255, 255, 255, 0.02);
@@ -106,13 +93,13 @@
     box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.02), var(--shadow-sm);
     backdrop-filter: blur(10px) saturate(1.05);
 }
-
 [data-theme="dark"] .friend-card:hover {
     border-color: var(--card-border-hover);
     box-shadow: var(--shadow-hover), 0 0 0 1px rgba(var(--accent-rgb), 0.18);
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0.015));
 }
 
+/* ---------- 头像 ---------- */
 .friend-avatar {
     flex-shrink: 0;
     width: 80px;
@@ -127,17 +114,14 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     transition: transform 0.2s ease;
 }
-
 .friend-card:hover .friend-avatar {
     transform: scale(1.02);
 }
-
 .avatar-wrapper {
     position: relative;
     width: 100%;
     height: 100%;
 }
-
 .avatar-placeholder {
     width: 100%;
     height: 100%;
@@ -150,7 +134,6 @@
     color: white;
     background: var(--accent-color);
 }
-
 .avatar-img {
     position: absolute;
     top: 0;
@@ -163,6 +146,7 @@
     transition: opacity 0.2s ease;
 }
 
+/* ---------- 卡片文字 ---------- */
 .friend-info {
     flex: 1;
     min-width: 0;
@@ -170,7 +154,6 @@
     flex-direction: column;
     height: 100%;
 }
-
 .friend-name {
     font-size: 1.35rem;
     font-weight: 700;
@@ -179,13 +162,15 @@
     line-height: 1.3;
     letter-spacing: -0.3px;
     transition: text-decoration 0.2s;
+    /* 长名称自动截断 */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
-
 .friend-card:hover .friend-name {
     text-decoration: underline;
     text-underline-offset: 4px;
 }
-
 .friend-desc {
     font-size: 0.9rem;
     line-height: 1.5;
@@ -196,7 +181,6 @@
     -webkit-box-orient: vertical;
     overflow: hidden;
 }
-
 .friend-url {
     margin-top: auto;
     font-size: 0.7rem;
@@ -209,12 +193,12 @@
     word-break: break-all;
     line-height: 1.4;
 }
-
 .friend-card:hover .friend-url {
     opacity: 0.95;
     color: var(--accent-color);
 }
 
+/* ---------- 信息卡片（申请区） ---------- */
 .info-card {
     background: var(--surface-color-secondary);
     border-radius: var(--radius-xl);
@@ -224,12 +208,10 @@
     transition: all var(--transition-normal);
     box-shadow: var(--shadow-sm);
 }
-
 .info-card:hover {
     box-shadow: var(--shadow-md);
     border-color: var(--accent-light);
 }
-
 .info-title {
     font-size: 1.6rem;
     font-weight: 600;
@@ -239,12 +221,9 @@
     border-left: 4px solid var(--accent-color);
     padding-left: 18px;
 }
-
-/* 申请要求区域 */
 .requirements-section {
     margin: 8px 0 32px 0;
 }
-
 .section-subtitle {
     font-size: 1.2rem;
     font-weight: 600;
@@ -255,7 +234,6 @@
     gap: 10px;
     letter-spacing: -0.2px;
 }
-
 .section-subtitle::before {
     content: '';
     width: 6px;
@@ -264,14 +242,12 @@
     border-radius: 4px;
     display: inline-block;
 }
-
 .requirements-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 20px;
     margin-bottom: 12px;
 }
-
 .requirement-item {
     background: var(--surface-color);
     border-radius: var(--radius-lg);
@@ -280,14 +256,12 @@
     border: 1px solid var(--border-light);
     backdrop-filter: blur(2px);
 }
-
 .requirement-item:hover {
     transform: translateY(-4px);
     border-color: var(--accent-light);
     box-shadow: 0 10px 20px -8px rgba(0, 0, 0, 0.12);
     background: var(--surface-color);
 }
-
 .requirement-title {
     font-size: 1.1rem;
     font-weight: 700;
@@ -298,7 +272,6 @@
     gap: 8px;
     letter-spacing: -0.2px;
 }
-
 .requirement-title::before {
     content: '';
     width: 8px;
@@ -308,7 +281,6 @@
     display: inline-block;
     opacity: 0.8;
 }
-
 .requirement-desc {
     font-size: 0.9rem;
     line-height: 1.5;
@@ -316,12 +288,11 @@
     margin: 0;
 }
 
-/* 我的信息区域 */
+/* 我的信息 */
 .myinfo-section {
     margin: 32px 0 20px;
     padding-top: 8px;
 }
-
 .myinfo-header {
     font-size: 1.2rem;
     font-weight: 600;
@@ -331,7 +302,6 @@
     align-items: center;
     gap: 10px;
 }
-
 .myinfo-header::before {
     content: '';
     width: 6px;
@@ -340,7 +310,6 @@
     border-radius: 4px;
     display: inline-block;
 }
-
 .info-hint {
     font-size: 0.85rem;
     color: var(--text-secondary);
@@ -351,7 +320,7 @@
     display: inline-block;
 }
 
-/* 代码块与复制按钮 */
+/* 代码块 */
 .code-block-wrapper {
     background: var(--code-bg);
     border-radius: var(--radius-md);
@@ -361,12 +330,10 @@
     position: relative;
     transition: all 0.2s;
 }
-
 .code-block-wrapper:hover {
     border-color: var(--accent-light);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
-
 .code-header {
     display: flex;
     justify-content: flex-end;
@@ -374,7 +341,6 @@
     background: rgba(0, 0, 0, 0.03);
     border-bottom: 1px solid var(--border-light);
 }
-
 .copy-btn {
     background: var(--surface-color);
     border: 1px solid var(--border-color);
@@ -387,14 +353,12 @@
     transition: all var(--transition-fast);
     font-family: var(--font-family);
 }
-
 .copy-btn:hover {
     background: var(--accent-color);
     color: white;
     border-color: var(--accent-color);
     transform: translateY(-1px);
 }
-
 pre {
     margin: 0;
     padding: 20px;
@@ -402,14 +366,13 @@ pre {
     background: transparent;
     font-size: 0.85rem;
 }
-
 code {
     font-family: var(--font-mono);
     color: var(--accent-color);
     background: transparent;
 }
 
-/* 警告提示 */
+/* 警告 */
 .warning-note {
     margin-top: 28px;
     padding: 14px 20px;
@@ -420,38 +383,34 @@ code {
     color: var(--text-secondary);
     transition: all 0.2s;
 }
-
 .warning-note:hover {
     background: rgba(180, 91, 99, 0.12);
 }
-
 .warning-note strong {
     color: var(--accent-color);
     font-weight: 600;
 }
 
-/* 致谢区域 */
+/* 致谢 */
 .contact-note {
     margin-top: 48px;
     padding: 20px 0;
     text-align: center;
     border-top: 1px solid var(--border-color);
 }
-
 .contact-note p {
     font-size: 0.9rem;
     color: var(--text-secondary);
     margin: 0;
 }
-
 .contact-note a {
     color: var(--accent-color);
 }
-
 .contact-note a:hover {
     text-decoration: underline;
 }
 
+/* 空状态/加载/错误 */
 .friends-empty,
 .friends-loading,
 .friends-error {
@@ -462,7 +421,6 @@ code {
     border: 1px dashed var(--border-color);
     color: var(--text-secondary);
 }
-
 .spinner {
     display: inline-block;
     width: 40px;
@@ -473,84 +431,177 @@ code {
     animation: spin 0.8s linear infinite;
     margin-bottom: 16px;
 }
-
 @keyframes spin {
-    to {
-        transform: rotate(360deg);
+    to { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   🎯 响应式断点 —— 全面重构
+   ============================================================ */
+
+/* --- 平板及以下 (≤ 1024px) --- */
+@media (max-width: 1024px) {
+    .friends-grid {
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 24px;
+    }
+    .friend-card {
+        padding: 18px 20px;
+        gap: 16px;
+    }
+    .friend-avatar {
+        width: 72px;
+        height: 72px;
+    }
+    .friend-name {
+        font-size: 1.25rem;
     }
 }
 
+/* --- 手机横屏 / 小平板 (≤ 768px) --- */
 @media (max-width: 768px) {
     .friends-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr;           /* 单列 */
         gap: 20px;
     }
-
     .friend-card {
         padding: 16px 20px;
         gap: 16px;
+        flex-direction: row;                /* 保持左右结构，不堆叠 */
     }
-
     .friend-avatar {
-        width: 64px;
-        height: 64px;
+        width: 68px;
+        height: 68px;
+    }
+    .friend-name {
+        font-size: 1.2rem;
+        white-space: normal;                /* 允许换行 */
+        overflow: visible;
+        text-overflow: unset;
+    }
+    .friend-desc {
+        font-size: 0.85rem;
+    }
+    .friend-url {
+        font-size: 0.65rem;
     }
 
     .info-card {
         padding: 20px 24px;
     }
-
     .info-title {
         font-size: 1.4rem;
     }
-
     .requirements-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: 1fr 1fr;      /* 两列 */
         gap: 16px;
     }
-
     .requirement-item {
         padding: 16px;
     }
-
-    .friend-url {
-        font-size: 0.65rem;
-    }
 }
 
+/* --- 手机小屏 (≤ 480px) --- */
 @media (max-width: 480px) {
+    .friends-grid {
+        gap: 16px;
+    }
     .friend-card {
-        flex-direction: column;
+        flex-direction: column;              /* 纵向排列，更适合窄屏 */
         align-items: center;
         text-align: center;
+        padding: 18px 16px;
+        gap: 12px;
     }
-
     .friend-avatar {
-        margin-bottom: 8px;
+        width: 72px;
+        height: 72px;
+        margin-bottom: 4px;
     }
-
     .friend-info {
         align-items: center;
+        width: 100%;
     }
-
-    .friend-url {
+    .friend-name {
+        font-size: 1.2rem;
+        white-space: normal;
         text-align: center;
-        margin-top: 8px;
     }
-
     .friend-desc {
         text-align: center;
+        font-size: 0.85rem;
+        -webkit-line-clamp: 3;              /* 小屏可显示三行 */
+    }
+    .friend-url {
+        text-align: center;
+        margin-top: 6px;
+        font-size: 0.7rem;
+    }
+
+    .info-card {
+        padding: 16px 18px;
+    }
+    .info-title {
+        font-size: 1.3rem;
+        padding-left: 14px;
+    }
+    .requirements-grid {
+        grid-template-columns: 1fr;          /* 单列 */
+        gap: 14px;
+    }
+    .requirement-item {
+        padding: 14px;
+    }
+    .section-subtitle {
+        font-size: 1.05rem;
+    }
+
+    /* 代码块 */
+    .code-header {
+        justify-content: center;
+    }
+    pre {
+        padding: 14px;
+        font-size: 0.75rem;
+    }
+    .warning-note {
+        font-size: 0.85rem;
+        padding: 12px 16px;
     }
 }
 
+/* --- 超小屏 (≤ 360px) 额外微调 --- */
+@media (max-width: 360px) {
+    .friend-card {
+        padding: 14px 12px;
+    }
+    .friend-avatar {
+        width: 60px;
+        height: 60px;
+    }
+    .friend-name {
+        font-size: 1.05rem;
+    }
+    .friend-desc {
+        font-size: 0.8rem;
+    }
+    .info-card {
+        padding: 14px 12px;
+    }
+    .requirement-item {
+        padding: 12px;
+    }
+}
+
+/* ============================================================
+   辅助工具类（保留）
+   ============================================================ */
 .text-center {
     text-align: center;
 }
-
 .mt-0 {
     margin-top: 0;
 }
-
 .mb-0 {
     margin-bottom: 0;
 }
