@@ -1,6 +1,5 @@
 // /js/router/router.js
-// 无刷新导航：替换整个 #router-view 容器，彻底解决侧边栏残留问题
-// 同时确保所有包含侧边栏的页面都能正确显示个人信息卡片
+// 无刷新导航：替换整个 #router-view 容器，支持浏览器回退/前进和平滑过渡
 
 import { CONFIG, storageController, Utils } from '/js/core/core.js';
 import { getPageNameFromPath, isSameOrigin } from '/js/core/page-utils.js';
@@ -257,13 +256,15 @@ export function initBackToTopButton() {
   btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 }
 
-// ==================== Popstate 支持 ====================
+// ==================== Popstate 支持（回退/前进） ====================
 let popstateInitialized = false;
 export function initPopstate() {
   if (popstateInitialized) return;
   popstateInitialized = true;
-  window.addEventListener('popstate', () => {
-    fetchAndReplaceContent(window.location.href, false);
+  window.addEventListener('popstate', (event) => {
+    // 从 state 中取出滚动位置（若有），交给 fetchAndReplaceContent 恢复
+    const scrollData = event.state?.scroll ?? null;
+    fetchAndReplaceContent(window.location.href, false, scrollData);
   });
 }
 
@@ -280,20 +281,54 @@ function extractPageContent(htmlText) {
   return { title, mainHtml, styles, scripts, navbarHtml, footerHtml };
 }
 
-// ==================== 替换整个 #router-view ====================
+// ==================== 替换整个 #router-view（带过渡效果） ====================
 function replaceMainContent(mainHtml) {
   const currentRouterView = document.getElementById(ROUTER_VIEW_ID);
   if (!currentRouterView || !mainHtml) return false;
+  
+  // 创建新容器并提取新的 #router-view
   const newContainer = document.createElement('div');
   newContainer.innerHTML = mainHtml;
   const newRouterView = newContainer.querySelector(`#${ROUTER_VIEW_ID}`);
-  if (newRouterView) {
-    currentRouterView.replaceWith(newRouterView);
-  } else {
+  if (!newRouterView) {
     console.warn('[Router] 新页面缺少 #router-view，无法替换');
     return false;
   }
-  return true;
+
+  // 添加过渡类（平滑淡入淡出）
+  currentRouterView.style.transition = 'opacity 0.25s ease';
+  currentRouterView.style.opacity = '0';
+
+  // 等待过渡结束后执行替换
+  return new Promise((resolve) => {
+    const onTransitionEnd = () => {
+      currentRouterView.removeEventListener('transitionend', onTransitionEnd);
+      // 替换节点
+      currentRouterView.replaceWith(newRouterView);
+      // 确保新节点透明度为0，然后渐入
+      newRouterView.style.transition = 'opacity 0.25s ease';
+      newRouterView.style.opacity = '0';
+      requestAnimationFrame(() => {
+        newRouterView.style.opacity = '1';
+        // 过渡完成后移除过渡样式（避免干扰后续）
+        setTimeout(() => {
+          newRouterView.style.transition = '';
+          newRouterView.style.opacity = '';
+        }, 300);
+        resolve(true);
+      });
+    };
+    currentRouterView.addEventListener('transitionend', onTransitionEnd);
+    // 设置超时安全回退（若 transitionend 未触发）
+    setTimeout(() => {
+      if (currentRouterView.parentNode) {
+        // 强制替换
+        currentRouterView.replaceWith(newRouterView);
+        newRouterView.style.opacity = '1';
+        resolve(true);
+      }
+    }, 400);
+  });
 }
 
 function injectStyles(styles) {
@@ -434,32 +469,22 @@ function refreshScrollRevealEffect() {
   else { ensureScrollReveal(); if (window.scrollRevealInstance) window.scrollRevealInstance.refresh(); }
 }
 
-function handlePageScroll(url) {
-  try {
-    const targetUrl = new URL(url, window.location.href);
-    const scrollKey = `scrollPosition_${targetUrl.pathname}${targetUrl.search}`;
-    if (!sessionStorage.getItem(scrollKey)) {
-      if (targetUrl.hash) {
-        const el = document.getElementById(targetUrl.hash.slice(1));
-        if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 0);
-        else setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0);
-      } else {
-        setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0);
-      }
-    }
-  } catch (e) {}
-}
-
 function clearDataCacheForPage(pageName) {
   if (!storageController.isAllowed()) return;
   if (pageName === 'articles') storageController.removeItem(CONFIG.STORAGE_KEYS.ARTICLES_DATA);
   else if (pageName === 'works') storageController.removeItem(CONFIG.STORAGE_KEYS.WORKS_DATA);
 }
 
-// ==================== 主函数：无刷新导航 ====================
-export async function fetchAndReplaceContent(url, pushState = true) {
+// ==================== 主函数：无刷新导航（支持滚动恢复） ====================
+export async function fetchAndReplaceContent(url, pushState = true, scrollData = null) {
   try {
     await destroyCurrentPageManager();
+
+    // 保存当前滚动位置（仅在 pushState 时保存到 state）
+    if (pushState) {
+      const currentScroll = { scrollX: window.scrollX, scrollY: window.scrollY };
+      history.replaceState({ ...history.state, scroll: currentScroll }, document.title);
+    }
 
     const res = await fetch(url, { credentials: 'same-origin' });
     if (!res.ok) throw new Error(`Fetch失败: ${res.status}`);
@@ -467,19 +492,30 @@ export async function fetchAndReplaceContent(url, pushState = true) {
 
     const { title, mainHtml, styles, scripts, navbarHtml, footerHtml } = extractPageContent(text);
 
-    if (!replaceMainContent(mainHtml)) {
-      console.warn('[Router] 替换失败，降级为完整刷新');
-      window.location.href = url;
-      return false;
-    }
+    // 替换内容（带过渡）
+    await replaceMainContent(mainHtml);
 
     document.title = title;
-    if (pushState) window.history.pushState({ ajax: true }, title, url);
+    if (pushState) {
+      // 新 state 中保存滚动位置（初始为 0,0 或之前的 scrollData）
+      const newScroll = scrollData || { scrollX: 0, scrollY: 0 };
+      window.history.pushState({ ...history.state, scroll: newScroll }, title, url);
+    } else {
+      // popstate 时，使用传入的 scrollData 恢复滚动
+      if (scrollData) {
+        window.scrollTo(scrollData.scrollX || 0, scrollData.scrollY || 0);
+      } else {
+        // 尝试从 history.state 读取
+        const stateScroll = history.state?.scroll;
+        if (stateScroll) {
+          window.scrollTo(stateScroll.scrollX || 0, stateScroll.scrollY || 0);
+        }
+      }
+    }
 
     refreshNavbarAfterNavigation();
 
     injectStyles(styles);
-
     await ScriptExecutor.execute(scripts, document.body);
 
     ensureGlobalElements();
@@ -497,7 +533,18 @@ export async function fetchAndReplaceContent(url, pushState = true) {
     if (manager) setCurrentPageManager(manager);
 
     refreshScrollRevealEffect();
-    handlePageScroll(url);
+
+    // 如果未恢复滚动（popstate 没有 scrollData），则按默认行为滚动到顶部或 hash
+    if (!pushState && !scrollData && !history.state?.scroll) {
+      // 处理 hash
+      const targetUrl = new URL(url, window.location.href);
+      if (targetUrl.hash) {
+        const el = document.getElementById(targetUrl.hash.slice(1));
+        if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 0);
+      } else {
+        setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0);
+      }
+    }
 
     window.dispatchEvent(new CustomEvent('ajax:navigation', { detail: { url, page: finalPageName } }));
     return true;

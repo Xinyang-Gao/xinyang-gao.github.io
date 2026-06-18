@@ -2523,3 +2523,6 @@ body.custom-cursor-enabled .list-item {
         order: 2;
     }
 }
+#router-view {
+  transition: opacity 0.25s ease;
+}

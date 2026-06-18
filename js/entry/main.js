@@ -1,18 +1,19 @@
-// /js/entry/main.js (优化 LCP 版本)
+// /js/entry/main.js (优化 LCP 版本，支持回退/前进)
 
 import { CONFIG, storageController, CookieConsentManager } from '/js/core/core.js';
 import { initUIEffects, refreshScrollReveal, ensureScrollReveal } from '/js/ui/ui-effects.js';
 import { getTimeBasedTheme, getPageNameFromPath, applyRandomBackgroundImage, startSiteAgeUpdater, updateFooterUpdateTime } from '/js/core/page-utils.js';
-import { loadNavbar, loadFooter, initBackToTopButton, enableAjaxNavigation, initPageFeatures, fetchAndReplaceContent } from '/js/router/router.js';
+import { loadNavbar, loadFooter, initBackToTopButton, enableAjaxNavigation, initPageFeatures, fetchAndReplaceContent, initPopstate } from '/js/router/router.js';
 import { LazyImageLoader, GlobalImageManager } from '/js/ui/image-manager.js';
 import { StatisticsManager, preloadCriticalJSON, registerServiceWorker, initFooterStats } from '/js/data/site-state.js';
 import { handleListItemClick } from '/js/ui/list-events.js';
+// 音乐播放器改为动态导入
 import { initClarityOnConsent, updateClarityPage } from '/js/core/clarity.js';
 import { renderPersonalCard } from '/js/ui/personal-card.js';
 
 let cookieConsentManager = null;
 
-// 新增：清除所有 Service Worker 缓存并注销 SW
+// 清除 Service Worker 缓存
 export async function clearAllServiceWorkerCache() {
   if ('serviceWorker' in navigator) {
     const registrations = await navigator.serviceWorker.getRegistrations();
@@ -28,19 +29,16 @@ export async function clearAllServiceWorkerCache() {
 
 // ========== LCP 优化：动态添加预连接和预加载 ==========
 function addOptimizationLinks() {
-  // 预连接背景图片域名 (Bing)
   const preconnectBing = document.createElement('link');
   preconnectBing.rel = 'preconnect';
   preconnectBing.href = 'https://cn.bing.com';
   document.head.appendChild(preconnectBing);
 
-  // 预连接 API 域名（音乐播放器、统计）
   const preconnectAPI = document.createElement('link');
   preconnectAPI.rel = 'preconnect';
   preconnectAPI.href = 'https://api.hypcvgm.top';
   document.head.appendChild(preconnectAPI);
 
-  // 预加载头像（关键 LCP 元素）
   const preloadAvatar = document.createElement('link');
   preloadAvatar.rel = 'preload';
   preloadAvatar.as = 'image';
@@ -50,18 +48,18 @@ function addOptimizationLinks() {
 }
 
 async function bootstrap() {
-  // 1. 立即添加优化标签（预连接、预加载）
+  // 1. 立即添加优化标签
   addOptimizationLinks();
 
-  // 2. 确保滚动揭示实例存在（轻量）
+  // 2. 滚动揭示
   ensureScrollReveal();
 
-  // 3. 主题同步（同步，轻量，必须尽快）
+  // 3. 主题同步
   const savedTheme = storageController.isAllowed() ? storageController.getItem(CONFIG.STORAGE_KEYS.THEME) : null;
   const initialTheme = savedTheme || getTimeBasedTheme();
   document.documentElement.setAttribute('data-theme', initialTheme);
 
-  // 4. 背景图加载：使用 requestIdleCallback 不阻塞 LCP
+  // 4. 背景图加载（空闲）
   if ('requestIdleCallback' in window) {
     requestIdleCallback(() => {
       applyRandomBackgroundImage({ force: true });
@@ -70,16 +68,16 @@ async function bootstrap() {
     setTimeout(() => applyRandomBackgroundImage({ force: true }), 50);
   }
 
-  // 5. 导航栏和页脚异步加载（不阻塞）
+  // 5. 导航栏和页脚（异步）
   Promise.all([loadNavbar(), loadFooter()]).catch(console.warn);
   
-  // 6. 站点年龄更新（非关键）
+  // 6. 站点年龄更新
   startSiteAgeUpdater(CONFIG.SITE_BIRTH);
 
-  // 7. 返回顶部按钮（轻量，可同步）
+  // 7. 返回顶部按钮
   initBackToTopButton();
 
-  // 8. 无刷新导航和列表点击事件延迟初始化
+  // 8. 无刷新导航和列表点击
   if ('requestIdleCallback' in window) {
     requestIdleCallback(() => {
       enableAjaxNavigation();
@@ -92,7 +90,7 @@ async function bootstrap() {
     }, 100);
   }
 
-  // 9. 当前页面特性延迟初始化
+  // 9. 当前页面特性初始化
   let currentPage = getPageNameFromPath(window.location.pathname) || 'index';
   if (document.querySelector('.article-page-container') || document.getElementById('articleBody')) {
     currentPage = 'article-detail';
@@ -105,7 +103,7 @@ async function bootstrap() {
     setTimeout(() => initPageFeatures(currentPage).catch(console.warn), 200);
   }
 
-  // 10. 其余非关键功能（统计分析、懒加载等）放在最后
+  // 10. 其他非关键功能
   if ('requestIdleCallback' in window) {
     requestIdleCallback(() => {
       initUIEffects();
@@ -128,24 +126,26 @@ async function bootstrap() {
     }, 500);
   }
 
-  // 11. Cookie 同意与 Clarity（不影响 LCP）
+  // 11. Cookie 与 Clarity
   cookieConsentManager = new CookieConsentManager(storageController);
   initClarityOnConsent();
   window.addEventListener('ajax:navigation', () => updateClarityPage());
 
-  // ========== 新增：延迟加载音乐播放器（动态导入） ==========
+  // 12. 音乐播放器延迟加载
   const loadMusicPlayer = () => {
     import('/js/vendor/global-music-player.js').catch(() => {});
   };
-
   if ('requestIdleCallback' in window) {
     requestIdleCallback(loadMusicPlayer, { timeout: 5000 });
   } else {
     setTimeout(loadMusicPlayer, 3000);
   }
 
+  // 13. 启用浏览器回退/前进支持（重要！）
+  initPopstate();
+
   document.body.setAttribute('data-loaded', 'true');
-  console.log('[Main] 初始化完成（LCP 优化版）');
+  console.log('[Main] 初始化完成（LCP 优化版 + 回退前进支持）');
 }
 
 document.addEventListener('DOMContentLoaded', bootstrap);
