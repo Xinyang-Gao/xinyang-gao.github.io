@@ -1,64 +1,38 @@
 // /js/pages/friends-manager.js
 import { PageManager } from '/js/core/page-manager.js';
+import { initTwikoo, destroyTwikoo } from '/js/core/twikoo-manager.js';
 
 export class FriendsPageManager extends PageManager {
   constructor() {
     super();
-    this.twikooInitialized = false;
-    this.copyBtnHandler = null;
     this.twikooContainer = null;
+    this.copyBtnHandler = null;
   }
 
   async init() {
-    // 等待 Twikoo 库加载（如果尚未加载）
-    await this.waitForTwikoo();
+    // 初始化 Twikoo 评论（使用通用管理器）
     this.initTwikooComments();
+    // 设置复制 JSON 功能
     this.setupCopyJson();
     console.log('[FriendsPageManager] 友链页面初始化完成');
   }
 
-  waitForTwikoo() {
-    if (typeof twikoo !== 'undefined') return Promise.resolve();
-    return new Promise((resolve) => {
-      const check = setInterval(() => {
-        if (typeof twikoo !== 'undefined') {
-          clearInterval(check);
-          resolve();
-        }
-      }, 100);
-      // 超时 5 秒后放弃
-      setTimeout(() => {
-        clearInterval(check);
-        console.warn('[FriendsPageManager] Twikoo 加载超时');
-        resolve();
-      }, 5000);
-    });
-  }
-
+  /**
+   * 初始化 Twikoo 评论容器
+   */
   initTwikooComments() {
     const container = document.getElementById('twikoo-comments');
-    if (!container || this.twikooInitialized) return;
-    // 避免重复初始化：检查容器是否已有初始化标记
-    if (container.getAttribute('data-init') === 'true') return;
-    
+    if (!container) return;
     this.twikooContainer = container;
-    container.setAttribute('data-init', 'true');
-    
-    twikoo.init({
-      envId: 'https://twikoo-gxy.netlify.app/.netlify/functions/twikoo',
-      el: '#twikoo-comments',
-      lang: 'zh-CN',
-      enableComment: true,
-    }).then(() => {
-      console.log('Twikoo 留言板初始化成功 (friends页面)');
-      this.twikooInitialized = true;
-    }).catch(err => {
-      console.error('Twikoo 初始化失败:', err);
-      // 初始化失败时移除标记，允许下次重试
-      container.removeAttribute('data-init');
+    // 调用通用管理器进行初始化（内部处理库加载和容器标记）
+    initTwikoo(container).catch(err => {
+      console.warn('[FriendsPageManager] Twikoo 初始化失败:', err);
     });
   }
 
+  /**
+   * 设置复制 JSON 示例按钮
+   */
   setupCopyJson() {
     const copyBtn = document.getElementById('copyJsonBtn');
     if (!copyBtn) return;
@@ -78,6 +52,7 @@ export class FriendsPageManager extends PageManager {
         }, 1800);
       } catch (err) {
         console.error('复制失败', err);
+        // 降级方案：使用 textarea
         const textarea = document.createElement('textarea');
         textarea.value = originalText;
         document.body.appendChild(textarea);
@@ -94,8 +69,7 @@ export class FriendsPageManager extends PageManager {
   }
 
   /**
-   * 销毁友链页面管理器
-   * 清理 Twikoo 实例：移除容器内容并清除初始化标记，避免下次进入时重复初始化冲突
+   * 销毁页面管理器，清理资源和 Twikoo 容器
    */
   destroy() {
     // 清理复制按钮事件
@@ -104,18 +78,19 @@ export class FriendsPageManager extends PageManager {
       if (copyBtn) copyBtn.removeEventListener('click', this.copyBtnHandler);
       this.copyBtnHandler = null;
     }
-    
+    // 清理 Twikoo 容器
     if (this.twikooContainer) {
-      this.twikooContainer.innerHTML = '';
-      this.twikooContainer.removeAttribute('data-init');
+      destroyTwikoo(this.twikooContainer);
       this.twikooContainer = null;
     }
-    
-    this.twikooInitialized = false;
     console.log('[FriendsPageManager] 友链页面管理器已销毁');
   }
 }
 
+/**
+ * 初始化友链页面（供 router 调用）
+ * @returns {Promise<FriendsPageManager>}
+ */
 export async function initFriendsPage() {
   const manager = new FriendsPageManager();
   await manager.init();

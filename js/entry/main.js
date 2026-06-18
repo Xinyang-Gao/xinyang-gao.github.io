@@ -7,7 +7,6 @@ import { loadNavbar, loadFooter, initBackToTopButton, enableAjaxNavigation, init
 import { LazyImageLoader, GlobalImageManager } from '/js/ui/image-manager.js';
 import { StatisticsManager, preloadCriticalJSON, registerServiceWorker, initFooterStats } from '/js/data/site-state.js';
 import { handleListItemClick } from '/js/ui/list-events.js';
-import '/js/vendor/global-music-player.js';
 import { initClarityOnConsent, updateClarityPage } from '/js/core/clarity.js';
 import { renderPersonalCard } from '/js/ui/personal-card.js';
 
@@ -133,6 +132,17 @@ async function bootstrap() {
   cookieConsentManager = new CookieConsentManager(storageController);
   initClarityOnConsent();
   window.addEventListener('ajax:navigation', () => updateClarityPage());
+
+  // ========== 新增：延迟加载音乐播放器（动态导入） ==========
+  const loadMusicPlayer = () => {
+    import('/js/vendor/global-music-player.js').catch(() => {});
+  };
+
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(loadMusicPlayer, { timeout: 5000 });
+  } else {
+    setTimeout(loadMusicPlayer, 3000);
+  }
 
   document.body.setAttribute('data-loaded', 'true');
   console.log('[Main] 初始化完成（LCP 优化版）');

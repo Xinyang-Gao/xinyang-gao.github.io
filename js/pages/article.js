@@ -1,5 +1,6 @@
 // /js/pages/article.js
 import { PageManager } from '/js/core/page-manager.js';
+import { initTwikoo, destroyTwikoo } from '/js/core/twikoo-manager.js';
 
 export class ArticlePageManager extends PageManager {
     constructor() {
@@ -11,6 +12,7 @@ export class ArticlePageManager extends PageManager {
         this.intersectionObserver = null;
         this.mutationObserver = null;
         this.cleanupFns = [];
+        this.twikooContainer = null;
     }
 
     init() {
@@ -61,17 +63,14 @@ export class ArticlePageManager extends PageManager {
         }
     }
 
-    initTwikoo() {
+    async initTwikoo() {
         const container = document.getElementById('twikoo-comments');
-        if (container && typeof twikoo !== 'undefined' && !container.getAttribute('data-init')) {
-            twikoo.init({
-                envId: 'https://twikoo-gxy.netlify.app/.netlify/functions/twikoo',
-                el: '#twikoo-comments',
-                path: window.location.pathname,
-                lang: 'zh-CN'
-            });
-            container.setAttribute('data-init', 'true');
-        }
+        if (!container) return;
+        this.twikooContainer = container;
+        // 使用通用管理器初始化，可传入额外配置（如 path）
+        await initTwikoo(container, {
+            path: window.location.pathname,
+        });
     }
 
     refreshBusuanzi() {
@@ -96,6 +95,10 @@ export class ArticlePageManager extends PageManager {
         if (floating) floating.remove();
         const overlay = document.querySelector('.article-sidebar-overlay');
         if (overlay) overlay.remove();
+        if (this.twikooContainer) {
+            destroyTwikoo(this.twikooContainer);
+            this.twikooContainer = null;
+        }
     }
 
     // ---------- 以下是从原 IIFE 提取的核心方法，稍作调整 ----------
