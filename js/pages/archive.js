@@ -1,4 +1,4 @@
-// /js/pages/archive.js - 增强版归档页面
+// /js/pages/archive.js - 优化版归档页面
 import { DataManager, UIRenderer } from '/js/pages/search-render.js';
 import { Utils } from '/js/core/core.js';
 import { PageManager } from '/js/core/page-manager.js';
@@ -7,7 +7,7 @@ import { PageManager } from '/js/core/page-manager.js';
 function renderYearCapsules(years, currentYear, onSelect) {
     if (!years.length) return '';
     return `
-        <div class="year-capsules">
+        <div class="year-capsules-wrapper">
             ${years.map(year => `
                 <button class="year-capsule ${currentYear === String(year) ? 'active' : ''}" data-year="${year}">${year}</button>
             `).join('')}
@@ -73,8 +73,8 @@ function buildTimelineHTML(items, selectedYear, filterType) {
             const itemsHtml = monthItems.map(item => renderArchiveItem(item, item._dateObj)).join('');
             return `
                 <section class="timeline-month">
-                    <h4>${Utils.formatMonthLabel(month)}</h4>
-                    <div class="timeline-month-list">${itemsHtml}</div>
+                    <h4 class="timeline-month-title">${Utils.formatMonthLabel(month)}</h4>
+                    <div class="timeline-list">${itemsHtml}</div>
                 </section>
             `;
         }).join('');
@@ -82,7 +82,7 @@ function buildTimelineHTML(items, selectedYear, filterType) {
         const countBadge = yearCountMap.get(year) ? `<span class="year-count">${yearCountMap.get(year)}</span>` : '';
         return `
             <section class="timeline-year">
-                <h3>${year} ${countBadge}</h3>
+                <h3 class="timeline-year-title">${year} ${countBadge}</h3>
                 ${monthHtml}
             </section>
         `;
@@ -95,8 +95,8 @@ function buildTimelineHTML(items, selectedYear, filterType) {
         const countBadge = yearCountMap.get('undated') ? `<span class="year-count">${yearCountMap.get('undated')}</span>` : '';
         undatedSegment = `
             <section class="timeline-year undated-year">
-                <h3>📅 日期未标注 ${countBadge}</h3>
-                <div class="timeline-month-list">${undatedHtml}</div>
+                <h3 class="timeline-year-title">日期未标注 ${countBadge}</h3>
+                <div class="timeline-list">${undatedHtml}</div>
             </section>
         `;
     }
@@ -104,7 +104,7 @@ function buildTimelineHTML(items, selectedYear, filterType) {
     return `<div class="timeline">${yearSegments.join('')}${undatedSegment}</div>`;
 }
 
-// 渲染单个归档条目（复用卡片样式）
+// ---------- 渲染单个归档条目（复用卡片样式） ----------
 function renderArchiveItem(item, dateObj) {
     const dateLabel = dateObj
         ? `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`
@@ -114,8 +114,8 @@ function renderArchiveItem(item, dateObj) {
     const title = Utils.escapeHtml(item.title || '未命名内容');
     const url = item.url || item.link || '#';
     const typeBadge = item.__archiveType === 'work'
-        ? '<span class="timeline-item-badge work-badge">🎨 作品</span>'
-        : '<span class="timeline-item-badge article-badge">📄 文章</span>';
+        ? '<span class="timeline-item-badge work-badge">作品</span>'
+        : '<span class="timeline-item-badge article-badge">文章</span>';
 
     let titleHtml;
     if (item.__archiveType === 'work') {
@@ -126,22 +126,21 @@ function renderArchiveItem(item, dateObj) {
             link: item.link || item.url || ''
         };
         const workInfoAttr = Utils.escapeHtml(encodeURIComponent(JSON.stringify(workInfo)));
-        titleHtml = `<a href="javascript:void(0)" class="timeline-item-title list-item" data-type="work" data-work-info="${workInfoAttr}">${title}</a>`;
+        titleHtml = `<a href="javascript:void(0)" class="timeline-item-title" data-type="work" data-work-info="${workInfoAttr}">${title}</a>`;
     } else {
         titleHtml = `<a href="${Utils.escapeHtml(url)}" class="timeline-item-title">${title}</a>`;
     }
 
     return `
         <article class="timeline-item" data-date="${Utils.escapeHtml(dateLabel)}">
-            <div class="timeline-item-marker"></div>
-            <div class="timeline-item-content">
-                <div class="timeline-item-header">
-                    ${titleHtml}
-                    ${typeBadge}
-                    <span class="timeline-item-date"><i class="far fa-calendar-alt"></i> ${Utils.escapeHtml(dateLabel)}</span>
-                </div>
+            <div class="timeline-item-meta">
+                <span class="timeline-item-date"><i class="far fa-calendar-alt"></i> ${Utils.escapeHtml(dateLabel)}</span>
+                ${typeBadge}
+            </div>
+            <div class="timeline-item-body">
+                ${titleHtml}
                 <p class="timeline-item-description">${description}</p>
-                ${tagsHtml}
+                ${tagsHtml ? `<div class="timeline-item-tags">${tagsHtml}</div>` : ''}
             </div>
         </article>
     `;
@@ -240,9 +239,9 @@ export class ArchiveManager extends PageManager {
         const typeSelect = document.createElement('select');
         typeSelect.id = 'archive-type-filter';
         typeSelect.innerHTML = `
-            <option value="all">📌 全部类型</option>
-            <option value="article">📄 仅文章</option>
-            <option value="work">🎨 仅作品</option>
+            <option value="all">全部类型</option>
+            <option value="article">仅文章</option>
+            <option value="work">仅作品</option>
         `;
         toolbarLeft.appendChild(typeSelect);
         this.typeFilter = typeSelect;
@@ -262,7 +261,7 @@ export class ArchiveManager extends PageManager {
     populateYearSelect(items) {
         if (!this.yearFilter) return;
         const years = getAvailableYears(items);
-        this.yearFilter.innerHTML = '<option value="all">📅 全部年份</option>' + years.map(y => `<option value="${y}">${y}</option>`).join('');
+        this.yearFilter.innerHTML = '<option value="all">全部年份</option>' + years.map(y => `<option value="${y}">${y}</option>`).join('');
     }
 
     renderYearCapsules(items) {
