@@ -257,9 +257,9 @@ def create_html_page(title: str, date: str, content_html: str, headings_json: st
     <meta name="author" content="{author if author else 'GaoXinYang'}">
     {f'<meta name="keywords" content="{", ".join(tags) if tags else ""}">' if tags else ''}
     <title>{title} - 高新炀的小站</title>
-    <link rel="stylesheet" href="/css/style.css">
-    <link rel="stylesheet" href="/css/article.css">
-    <link rel="stylesheet" href="/css/twikoo.css">
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/pages/article.css">
+    <link rel="stylesheet" href="/css/components/comments.css">
 </head>
 <body>
     <div id="navbar-placeholder"></div>

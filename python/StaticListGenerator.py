@@ -100,7 +100,7 @@ def generate_articles_page(articles: list) -> str:
     return f'''<!DOCTYPE html>
 <html lang="zh-CN">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><title>文章 - 高新炀的小站</title>
-<link rel="stylesheet" href="/css/style.css"><link rel="stylesheet" href="/css/friends.css"><link rel="stylesheet" href="/css/twikoo.css"></head>
+<link rel="stylesheet" href="/css/main.css"><link rel="stylesheet" href="/css/pages/friends.css"><link rel="stylesheet" href="/css/components/comments.css"></head>
 <body>
 <div id="navbar-placeholder"></div>
 <div id="router-view">
@@ -175,7 +175,7 @@ def generate_works_page(works: list) -> str:
     return f'''<!DOCTYPE html>
 <html lang="zh-CN">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><title>作品 - 高新炀的小站</title>
-<link rel="stylesheet" href="/css/style.css"><link rel="stylesheet" href="/css/friends.css"><link rel="stylesheet" href="/css/twikoo.css"></head>
+<link rel="stylesheet" href="/css/main.css"><link rel="stylesheet" href="/css/pages/friends.css"><link rel="stylesheet" href="/css/components/comments.css"></head>
 <body>
 <div id="navbar-placeholder"></div>
 <div id="router-view">

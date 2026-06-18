@@ -96,10 +96,10 @@ class NavbarManager {
 
   // 确保导航栏样式已加载
   static ensureCSS() {
-    if (document.querySelector('link[href="/css/navbar.css"]')) return;
+    if (document.querySelector('link[href="/css/components/navbar.css"]')) return;
     const link = document.createElement('link');
     link.rel = 'stylesheet';
-    link.href = '/css/navbar.css';
+    link.href = '/css/components/navbar.css';
     document.head.appendChild(link);
   }
 

@@ -42,7 +42,7 @@ def build_html_head() -> str:
     <meta name="robots" content="index, follow">
     <meta name="description" content="高新炀的个人网站 - 文章、作品、友链。无需 JavaScript 即可访问全部内容。">
     <title>高新炀的小站 · 静态镜像</title>
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/main.css">
     <style>
         /* 无JS增强样式：确保基本内容在任何环境下都清晰可读，且无图片占位 */
         .nojs-alert {

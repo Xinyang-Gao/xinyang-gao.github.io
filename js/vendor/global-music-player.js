@@ -12,7 +12,7 @@
 
   // 资源 URL（根据你的实际存放路径修改）
   const RESOURCES = {
-    css: '/css/netease-mini-player-v2.css',
+    css: '/css/components/player.css',
     js: '/js/vendor/netease-mini-player-v2.js'
   };
 

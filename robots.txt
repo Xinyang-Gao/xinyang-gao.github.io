@@ -1,4 +1,3 @@
 User-agent: *
-Disallow: /assets/
 
 Sitemap: https://xinyang-gao.github.io/sitemap.xml
