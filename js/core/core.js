@@ -359,8 +359,8 @@ export class CookieConsentManager {
       <div class="cookie-consent-banner-container">
         <div class="cookie-consent-text">
           <i class="fas fa-cookie-bite"></i>
-          本网站使用 Cookies 来提升您的浏览体验、分析网站流量并提供个性化内容。
-          <a href="/privacy.html" target="_blank" class="cookie-privacy-link">了解更多</a>
+          本网站使用 Cookies 来记录您的主题偏好、分析网站流量并存储一些缓存。不会使用其提供个性化服务！
+          <a href="/privacy.html" target="_blank" class="cookie-privacy-link">您可以查看完整信息</a>
         </div>
         <div class="cookie-consent-buttons">
           <button class="cookie-btn cookie-btn-decline" id="cookie-decline-btn">

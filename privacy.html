@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -9,162 +8,132 @@
   <link rel="stylesheet" href="/css/style.css">
   <link rel="stylesheet" href="/css/privacy.css">
 </head>
-
 <body>
   <div id="navbar-placeholder"></div>
 
   <div id="router-view">
-    <div class="two-column-layout">
-      <aside class="sidebar-profile">
-        <div id="personal-card-container"></div>
-      </aside>
+    <main class="privacy-main">
+      <div class="privacy-container">
+        <!-- 页面头部 -->
+        <header class="privacy-header">
+          <h1>隐私政策</h1>
+          <div class="last-updated">
+            <i class="far fa-calendar-alt"></i> 最后更新：<strong>2026年6月18日</strong>
+          </div>
+          <p class="privacy-intro">
+            本站（高新炀的小站）深知个人信息保护的重要性。本政策清晰说明我们如何收集、使用、存储和保护您的信息。
+          </p>
+          <div class="quick-nav">
+            <span>快速导航：</span>
+            <a href="#commitment">核心承诺</a>
+            <a href="#collection">信息收集</a>
+            <a href="#cookies">Cookie 控制</a>
+            <a href="#thirdparty">第三方服务</a>
+            <a href="#security">数据安全</a>
+            <a href="#rights">用户权利</a>
+          </div>
+        </header>
 
-      <main class="main-content-area" role="main" aria-live="polite">
-        <div class="container">
-          <div class="privacy-header">
-            <h1>隐私政策</h1>
-            <div class="last-updated">
-              <i class="far fa-calendar-alt"></i> 最后更新：<strong>2026年6月8日</strong>
+        <!-- 核心承诺（突出显示） -->
+        <section id="commitment" class="privacy-card highlight">
+          <h2><i class="fas fa-shield-alt"></i> 核心承诺</h2>
+          <div class="badge-notice">
+            <i class="fas fa-check-circle"></i>
+            <strong>我们不会出售、交易或非法披露您的个人信息。</strong> 所有数据处理均以提升浏览体验、保障网站安全为目的。
+          </div>
+          <p>本站采取「最小必要」原则收集数据，绝大部分功能即使您拒绝本地存储也依然可正常阅读文章、浏览作品。</p>
+        </section>
+
+        <!-- 信息收集 -->
+        <section id="collection" class="privacy-card">
+          <h2><i class="fas fa-database"></i> 一、我们收集的信息</h2>
+          <div class="info-grid">
+            <div class="info-item">
+              <h3>📊 匿名访问数据</h3>
+              <p><strong>不蒜子</strong>：聚合统计页面浏览量(PV)和独立访客(UV)，<em>不包含个人身份标识</em>（无Cookie、无指纹）。</p>
+              <p><strong>Microsoft Clarity</strong>：仅在您<strong>同意</strong>后加载，收集匿名行为数据（点击、滚动热图），帮助改进网站。不记录输入内容。</p>
             </div>
-            <p style="font-size: 1rem; margin-bottom: 0.5rem;">
-              感谢您访问 <span style="color: var(--accent-color);">高新炀的小站</span>（以下简称「本站」）。
-              本站深知个人信息保护的重要性，本隐私政策旨在向您清晰说明我们如何收集、使用、存储和保护您的信息。
-            </p>
-          </div>
-
-          <div class="privacy-card">
-            <h2><i class="fas fa-shield-alt"></i> 核心承诺</h2>
-            <div class="badge-notice">
-              <i class="fas fa-check-circle" style="color: var(--accent-color); margin-right: 8px;"></i>
-              <strong>我们不会出售、交易或非法披露您的个人信息。</strong> 所有数据处理均以提升浏览体验、保障网站安全为目的。
+            <div class="info-item">
+              <h3>💬 评论互动（Twikoo）</h3>
+              <p>您填写的昵称、邮箱（选填）、网站以及评论内容会被存储。IP地址仅用于反垃圾，站长不会公开。您可随时联系站长删除评论。</p>
             </div>
-            <p>本站采取「最小必要」原则收集数据，绝大部分功能即使您拒绝本地存储也依然可正常阅读文章、浏览作品。您对个人数据拥有充分的控制权。</p>
-          </div>
-
-          <div class="privacy-card">
-            <h2><i class="fas fa-database"></i> 一、我们收集的信息</h2>
-            <p>根据您与本站的互动方式，可能产生以下几类信息：</p>
-
-            <h3>自动收集的匿名访问数据（不蒜子 + Clarity）</h3>
-            <p>
-              <strong>不蒜子
-                (busuanzi)</strong>：极简统计服务，收集全站的页面浏览量(PV)和独立访客(UV)等聚合数据，<strong>不包含个人身份标识</strong>（无Cookie、无指纹），仅用于了解内容受欢迎程度。
-            </p>
-            <p>
-              <strong>Microsoft Clarity</strong>：仅在您通过Cookie横幅「<strong>同意</strong>」后加载。Clarity
-              会收集匿名的用户行为数据（如鼠标移动、点击热图、滚动深度），帮助我们改进网站布局和功能。Clarity 不会记录您输入的文本内容，且所有数据已脱敏处理。您可通过 <a
-                href="https://clarity.microsoft.com/" target="_blank" rel="noopener noreferrer">Microsoft Clarity 官网</a>
-              了解其隐私实践。
-            </p>
-
-            <h3>评论互动数据（Twikoo）</h3>
-            <p>当您在文章评论区或<a href="/contact.html">留言板</a>发表内容时，<strong>Twikoo
-                评论系统</strong>会存储您填写的昵称、邮箱（选填）、网站（选填）以及评论内容。您的IP地址会被记录仅用于反垃圾及安全防护，站长不会公开您的IP。所有评论数据均保存在第三方评论后端（托管于Netlify
-              Functions），您可随时联系站长删除属于您的评论。</p>
-
-            <h3>本地存储（localStorage）与缓存</h3>
-            <p>在您通过Cookie横幅「<strong>同意</strong>」后，本站会在您的浏览器中存储以下数据：</p>
-            <ul>
-              <li>主题偏好（亮色/暗色模式）；</li>
-              <li>文章/作品列表数据缓存（减少重复加载，提升速度）；</li>
-              <li>搜索筛选条件、排序方式、滚动位置（例如文章阅读进度）；</li>
-              <li>欢迎弹窗访问记录及网站版本标识；</li>
-              <li>音乐播放器偏好（音量、循环模式、播放列表缓存，可选）；</li>
-              <li>作品详情弹窗临时数据（不持久化）。</li>
-            </ul>
-            <p>您可以通过浏览器开发者工具或「清除网站数据」选项随时删除上述内容，删除后不会影响核心阅读功能。</p>
-
-            <h3>服务端基础日志（托管平台）</h3>
-            <p>本站属于静态网站，托管于GitHub Pages或相关CDN服务商，服务商可能会记录标准访问日志（如请求时间、状态码、IP地址等），这些日志仅用于诊断安全性和性能分析，我们无法访问识别特定用户的详细日志。
-            </p>
-          </div>
-
-          <div class="privacy-card">
-            <h2><i class="fas fa-cookie-bite"></i> 二、Cookie 与本地存储的控制</h2>
-            <p>本站<strong>不主动设置传统跨页面追踪Cookie</strong>，所有持久化数据均使用现代浏览器的 <code>localStorage</code>
-              实现，且必须经过您的明确同意。页面底部会显示<strong>「Cookie 同意横幅」</strong>：</p>
-            <ul>
-              <li><strong>同意</strong>：启用本地存储功能，保存主题、缓存、搜索记录等个性化设置，同时不蒜子统计正常运作，并加载 Microsoft Clarity 以优化体验。您将获得更便捷的浏览体验。
-              </li>
-              <li><strong>拒绝</strong>：本站将禁用几乎所有本地存储（StorageController 进入只读/禁用模式），已存储的本地数据会被清除。Clarity
-                不会加载，不蒜子仍会进行匿名计数（其不依赖本地存储）。您依然可以完整阅读文章、浏览作品及使用评论功能，但主题模式、搜索条件等将无法持久保存。</li>
-            </ul>
-            <p>您可随时通过浏览器清除 <code>localStorage</code> 数据来重置同意状态，横幅将再次出现以让您重新选择。</p>
-          </div>
-
-          <div class="privacy-card">
-            <h2><i class="fas fa-plug"></i> 三、我们集成的第三方服务</h2>
-            <p>为了让本站功能更丰富、体验更流畅，我们使用了以下第三方服务，它们遵循各自的隐私政策：</p>
-            <ul>
-              <li><strong>不蒜子 (busuanzi.ibruce.info)</strong> —— 仅为匿名访问计数器，不设置Cookie，请求仅包含当前页面URL及基本特性，数据完全聚合，无法追踪个体用户。
-              </li>
-              <li><strong>Microsoft Clarity</strong> —— 行为分析工具，仅在您同意后加载。收集匿名使用数据（如点击、滚动、移动轨迹），帮助我们改进网站。详细信息请参考 <a
-                  href="https://privacy.microsoft.com/zh-cn/privacystatement" target="_blank"
-                  rel="noopener noreferrer">Microsoft 隐私声明</a>。</li>
-              <li><strong>Twikoo 评论系统</strong> —— 开源评论框架，后端部署于 Netlify
-                Functions。您填写的昵称、邮箱、网址及评论内容将存储于Twikoo数据库。站长可通过后台管理评论（删除、审核）。详细数据存储策略请参阅 <a
-                  href="https://twikoo.js.org/faq.html" target="_blank" rel="noopener noreferrer">Twikoo 官方说明 <i
-                    class="fas fa-external-link-alt" style="font-size: 0.7rem;"></i></a>。</li>
-              <li><strong>网易云音乐播放器 (NeteaseMiniPlayer)</strong> —— 内嵌的音乐播放组件，通过调用第三方
-                API（<code>api.hypcvgm.top</code>）获取歌曲信息和播放地址。该播放器不会主动设置任何 Cookie，但会向网易云音乐 API 发送歌曲 ID
-                请求。您的收听行为仅停留于浏览器本地，我们不会记录您的播放历史。</li>
-              <li><strong>Service Worker 缓存</strong> —— 本站注册 Service Worker 以缓存关键 JSON（文章/作品数据），所有缓存存储于浏览器本地，不涉及用户数据上传。
-              </li>
-              <li><strong>外链跳转确认机制</strong> —— 当您点击外部链接时，本站会弹出模态框提醒您即将离开本站。此过程不记录您的跳转行为，不收集任何数据。</li>
-              <li><strong>Font Awesome / 图标库 CDN</strong> —— 通过公有 CDN 加载字体/图标，CDN 提供商可能记录标准请求日志，但无法控制其内容。</li>
-            </ul>
-            <p><strong>注意：</strong> 本站已弃用任何跨站追踪分析工具（如 Google Analytics 等），不参与任何广告联盟。</p>
-          </div>
-
-          <div class="privacy-card">
-            <h2><i class="fas fa-lock"></i> 四、数据安全与保留期限</h2>
-            <ul>
-              <li><strong>本地存储数据</strong>：完全存储于您的设备本地，可随时自行清除，站长无法远程读取。</li>
-              <li><strong>评论数据</strong>：除非你主动要求删除，否则提供的昵称、邮箱和评论内容将永久保存在 Twikoo 数据库中，用于社区交流。若您希望删除已发表的评论，请通过邮箱
-                <strong>gao_xinyang@foxmail.com</strong> 联系站长并提供相关评论链接与昵称，我们将在7个工作日内处理。</li>
-              <li><strong>不蒜子统计</strong>：聚合统计数据保留时间不定，但无法关联特定个人。</li>
-              <li><strong>Clarity 数据</strong>：Microsoft 会按照其隐私政策保留数据（通常为 12 个月），您可通过 Clarity 提供的“选择退出”功能禁用（参见其官方文档）。
-              </li>
-              <li><strong>安全传输</strong>：本站支持 HTTPS 传输（由托管平台提供），尽力保障通信安全。但由于互联网并非绝对安全，请避免在评论区发送敏感个人信息（如密码、身份证号等）。</li>
-            </ul>
-          </div>
-
-          <div class="privacy-card">
-            <h2><i class="fas fa-user-check"></i> 五、您享有的权利</h2>
-            <p>依据适用的隐私法规，您拥有以下权利：</p>
-            <ul>
-              <li><strong>知情权</strong>：本隐私政策清晰透明，您可随时查阅。</li>
-              <li><strong>撤回同意</strong>：如需撤回对本地存储的使用同意，请清空您浏览器中针对本站的 <code>localStorage</code> 并刷新页面，Cookie
-                同意横幅将重新出现，届时选择「拒绝」即可。同时，Clarity 将停止加载。</li>
-              <li><strong>删除评论</strong>：您有权要求删除自己发布的评论，具体流程见上文联系方式。</li>
-              <li><strong>限制处理</strong>：您可以使用浏览器的「隐私模式」访问本站，此时本地存储默认被隔离。</li>
-              <li><strong>拒绝跟踪</strong>：若您开启浏览器的「请勿跟踪」(DNT) 功能，本站不会额外附加任何跟踪脚本（Clarity 也会遵循 DNT 信号）。</li>
-            </ul>
-            <div class="badge-notice">
-              <i class="fas fa-envelope-open-text"></i> 如欲行使上述权利或对隐私实践有任何疑问，请发送邮件至
-              <strong>gao_xinyang@foxmail.com</strong>，我们会在合理时间内回复。
+            <div class="info-item">
+              <h3>💾 本地存储（localStorage）</h3>
+              <p>在您<strong>同意</strong>后，存储主题偏好、文章/作品缓存、搜索条件、滚动位置等。全部存储于您的设备本地，可随时清除。</p>
             </div>
           </div>
+        </section>
 
-          <div class="privacy-card">
-            <h2><i class="fas fa-child"></i> 六、未成年人保护</h2>
-            <p>
-              本网站内容以技术分享、学习心得为主。若您未满14周岁，请在父母或监护人指导下使用评论功能，切勿透露个人家庭住址、联系方式等隐私信息。我们不会故意收集未成年人的个人信息，如监护人发现相关评论涉及隐私，可联系站长进行删除。
-            </p>
-          </div>
+        <!-- Cookie 与本地存储控制 -->
+        <section id="cookies" class="privacy-card">
+          <h2><i class="fas fa-cookie-bite"></i> 二、Cookie 与本地存储的控制</h2>
+          <p>本站<strong>不主动设置传统跨页追踪Cookie</strong>，所有持久化数据均使用 <code>localStorage</code>，且必须经您明确同意。</p>
+          <ul>
+            <li><strong>同意</strong>：启用本地存储，保存个性化设置，加载 Clarity 优化体验。</li>
+            <li><strong>拒绝</strong>：禁用本地存储，清除已有数据，Clarity 不加载，不影响核心阅读功能。</li>
+          </ul>
+          <p>您可随时通过浏览器清除 <code>localStorage</code> 重置同意状态。</p>
+        </section>
 
-          <div class="privacy-card">
-            <h2><i class="fas fa-sync-alt"></i> 七、隐私政策的更新</h2>
-            <p>由于网站功能迭代或法律法规变化，本隐私政策可能会进行修订。重大变更（例如增加新的数据收集类型）会通过网站公告、Cookie横幅提示等方式通知您。修订后的政策自发布之日起生效，建议您定期查阅本页面。</p>
-            <p><strong>历史版本：</strong> 2026年5月4日（初版），2026年5月10日（第二版），2026年6月8日（第三版，新增 Clarity 与音乐播放器说明）。</p>
-            <div class="privacy-footer-note">
-              <i class="far fa-comment-dots"></i> 如您对于隐私政策有任何反馈或建议，欢迎通过 <a href="/contact.html">留言板</a> 或邮箱沟通。<br>
-              <span style="opacity: 0.6;">© 2026 高新炀的小站 | 恪守透明、安全、最小化的隐私原则</span>
-            </div>
+        <!-- 第三方服务 -->
+        <section id="thirdparty" class="privacy-card">
+          <h2><i class="fas fa-plug"></i> 三、我们集成的第三方服务</h2>
+          <ul class="service-list">
+            <li><span class="service-badge">不蒜子</span> 匿名计数器，无Cookie。</li>
+            <li><span class="service-badge">Microsoft Clarity</span> 行为分析（需同意）。</li>
+            <li><span class="service-badge">Twikoo</span> 评论系统，数据存储于 Netlify Functions。</li>
+            <li><span class="service-badge">网易云音乐播放器</span> 通过 API 获取歌曲，不设置Cookie。</li>
+            <li><span class="service-badge">Service Worker</span> 缓存静态JSON，存储于浏览器本地。</li>
+            <li><span class="service-badge">外链确认</span> 仅模态框提示，不记录跳转行为。</li>
+          </ul>
+          <p>本站已弃用任何跨站追踪分析工具（如 Google Analytics），不参与广告联盟。</p>
+        </section>
+
+        <!-- 数据安全与保留 -->
+        <section id="security" class="privacy-card">
+          <h2><i class="fas fa-lock"></i> 四、数据安全与保留期限</h2>
+          <ul>
+            <li><strong>本地存储</strong>：完全存于设备，可随时清除。</li>
+            <li><strong>评论数据</strong>：永久保存于 Twikoo 数据库，可联系站长删除。</li>
+            <li><strong>不蒜子统计</strong>：聚合数据，无法关联个人。</li>
+            <li><strong>Clarity 数据</strong>：Microsoft 保留约 12 个月，您可自行退出。</li>
+            <li><strong>传输安全</strong>：全站 HTTPS，请勿在评论中发送敏感信息。</li>
+          </ul>
+        </section>
+
+        <!-- 用户权利 -->
+        <section id="rights" class="privacy-card">
+          <h2><i class="fas fa-user-check"></i> 五、您享有的权利</h2>
+          <ul>
+            <li><strong>知情权</strong>：本政策透明公开。</li>
+            <li><strong>撤回同意</strong>：清除 <code>localStorage</code> 并刷新，重新选择“拒绝”。</li>
+            <li><strong>删除评论</strong>：通过邮箱联系站长。</li>
+            <li><strong>限制处理</strong>：使用浏览器隐私模式访问。</li>
+            <li><strong>拒绝跟踪</strong>：开启 DNT 信号，Clarity 会遵循。</li>
+          </ul>
+          <div class="badge-notice">
+            <i class="fas fa-envelope-open-text"></i> 行使权利或有疑问，请发送邮件至 <strong>gao_xinyang@foxmail.com</strong>，我们会在合理时间内回复。
           </div>
-        </div>
-      </main>
-    </div>
+        </section>
+
+        <!-- 未成年人保护 -->
+        <section class="privacy-card">
+          <h2><i class="fas fa-child"></i> 六、未成年人保护</h2>
+          <p>若您未满14周岁，请在父母指导下使用评论功能。我们不会故意收集未成年人个人信息，如发现可联系删除。</p>
+        </section>
+
+        <!-- 政策更新 -->
+        <section class="privacy-card">
+          <h2><i class="fas fa-sync-alt"></i> 七、隐私政策的更新</h2>
+          <p>本政策可能因功能迭代或法律法规变化而修订。重大变更会通过网站公告或Cookie横幅通知。修订后自发布之日起生效。</p>
+          <p><strong>历史版本：</strong> 2026年5月4日（初版），2026年5月10日（第二版），2026年6月18日（第三版）。</p>
+          <div class="privacy-footer-note">
+            <i class="far fa-comment-dots"></i> 反馈或建议，欢迎通过 <a href="/contact.html">留言板</a> 或邮箱沟通。<br>
+            <span>© 2026 高新炀的小站 | 恪守透明、安全、最小化的隐私原则</span>
+          </div>
+        </section>
+      </div>
+    </main>
   </div>
 
   <button id="backToTopBtn" class="back-to-top-btn" title="返回顶部">↑</button>
@@ -175,5 +144,4 @@
   <script src="/js/vendor/busuanzi.min.js" defer></script>
   <script src="/js/entry/main.js" type="module"></script>
 </body>
-
 </html>
