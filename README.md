@@ -131,22 +131,29 @@ tag: [网站]
 ├── contact.html               # 留言板（Twikoo）
 ├── friends.html               # 友链页面（由 FriendLinkGenerator 生成）
 ├── 404.html                   # 自定义 404 页面
-├── navbar.html                # 导航栏 HTML 片段（动态加载）
 ├── footer.html                # 页脚 HTML 片段（动态加载）
 ├── rss.xml                    # RSS Feed（自动生成）
 ├── sitemap.xml                # 站点地图（自动生成）
 │
 ├── css/
-│   ├── style.css              # 全局样式（双栏、暗黑、动画、响应式）
-│   ├── article.css            # 文章专用样式（目录、代码块、进度条）
-│   ├── stats.css              # 统计页面额外样式
-│   ├── navbar.css             # 导航栏样式
-│   ├── footer.css             # 页脚样式
-│   ├── friends.css            # 友链页面样式
-│   ├── image-viewer.css       # 图片查看器样式
-│   ├── twikoo.css             # Twikoo 评论框样式覆盖
-│   └── netease-mini-player-v2.css  # 音乐播放器样式
-│
+│   ├── core/                  # 核心基础层
+│   │   ├── variables.css      # 所有 CSS 变量（浅色/暗色主题）
+│   │   ├── base.css           # 重置、基础排版、滚动条、链接、焦点
+│   │   ├── layout.css         # 容器、网格、卡片、双栏、Hero 等布局组件
+│   │   └── components.css     # 标签、按钮、搜索、模态框、返回顶部、工具类等
+│   ├── components/            # 独立组件
+│   │   ├── navbar.css         # 导航栏
+│   │   ├── footer.css         # 页脚
+│   │   ├── image-viewer.css   # 图片查看器
+│   │   ├── player.css         # 网易云迷你播放器
+│   │   └── comments.css       # Twikoo 评论样式
+│   └── pages/                 # 页面专用样式
+│       ├── 404.css            # 404 错误页
+│       ├── article.css        # 文章页
+│       ├── friends.css        # 友链页
+│       ├── home.css           # 首页
+│       ├── privacy.css        # 隐私政策页
+│       └── stats.css          # 统计页
 ├── js/
 │   ├── entry/
 │   │   └── main.js            # 主入口：加载导航/页脚，初始化各页面功能
