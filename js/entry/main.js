@@ -3,13 +3,13 @@
 import { CONFIG, storageController, CookieConsentManager } from '/js/core/core.js';
 import { initUIEffects, refreshScrollReveal, ensureScrollReveal } from '/js/ui/ui-effects.js';
 import { getTimeBasedTheme, getPageNameFromPath, applyRandomBackgroundImage, startSiteAgeUpdater, updateFooterUpdateTime } from '/js/core/page-utils.js';
-import { loadNavbar, loadFooter, initBackToTopButton, enableAjaxNavigation, initPageFeatures, fetchAndReplaceContent, initPopstate } from '/js/router/router.js';
+import { loadNavbar, loadFooter, enableAjaxNavigation, initPageFeatures, fetchAndReplaceContent, initPopstate } from '/js/router/router.js';
 import { LazyImageLoader, GlobalImageManager } from '/js/ui/image-manager.js';
 import { StatisticsManager, preloadCriticalJSON, registerServiceWorker, initFooterStats } from '/js/data/site-state.js';
 import { handleListItemClick } from '/js/ui/list-events.js';
-// 音乐播放器改为动态导入
 import { initClarityOnConsent, updateClarityPage } from '/js/core/clarity.js';
 import { renderPersonalCard } from '/js/ui/personal-card.js';
+import { initButtons } from '/js/ui/button-manager.js';
 
 let cookieConsentManager = null;
 
@@ -75,7 +75,7 @@ async function bootstrap() {
   startSiteAgeUpdater(CONFIG.SITE_BIRTH);
 
   // 7. 返回顶部按钮
-  initBackToTopButton();
+  initButtons();
 
   // 8. 无刷新导航和列表点击
   if ('requestIdleCallback' in window) {
@@ -145,7 +145,7 @@ async function bootstrap() {
   initPopstate();
 
   document.body.setAttribute('data-loaded', 'true');
-  console.log('[Main] 初始化完成（LCP 优化版 + 回退前进支持）');
+  console.log('[Main] 初始化完成');
 }
 
 document.addEventListener('DOMContentLoaded', bootstrap);

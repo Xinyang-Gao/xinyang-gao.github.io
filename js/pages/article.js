@@ -91,8 +91,6 @@ export class ArticlePageManager extends PageManager {
         this.cleanupFns = [];
 
         // 移除动态添加的浮动按钮
-        const floating = document.querySelector('.floating-buttons');
-        if (floating) floating.remove();
         const overlay = document.querySelector('.article-sidebar-overlay');
         if (overlay) overlay.remove();
         if (this.twikooContainer) {
@@ -396,19 +394,10 @@ export class ArticlePageManager extends PageManager {
                 this.tocScrollWrapper.style.maxHeight = isMobile ? 'calc(100vh - 160px)' : 'calc(100vh - 220px)';
             }
         };
-        if (!document.querySelector('.floating-buttons')) {
-            const container = document.createElement('div');
-            container.className = 'floating-buttons';
-            container.innerHTML = `
-        <button class="floating-btn" id="tocFloatingBtn">📑</button>
-        <button class="floating-btn" id="topFloatingBtn">↑</button>
-      `;
-            document.body.appendChild(container);
-            const tocBtn = document.getElementById('tocFloatingBtn');
-            const topBtn = document.getElementById('topFloatingBtn');
-            tocBtn?.addEventListener('click', () => this.toggleMobileSidebar());
-            topBtn?.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-        }
+
+        const toggleHandler = () => this.toggleMobileSidebar();
+        window.addEventListener('article:toggleSidebar', toggleHandler);
+        this._toggleSidebarHandler = toggleHandler;
         let overlay = document.querySelector('.article-sidebar-overlay');
         if (!overlay) {
             overlay = document.createElement('div');

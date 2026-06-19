@@ -481,44 +481,91 @@
   .external-modal-btn { padding: 8px 20px; }
 }
 
-/* ---------- 返回顶部按钮 ---------- */
-.back-to-top-btn {
-  position: fixed;
-  bottom: 32px;
-  right: 32px;
-  width: 52px;
-  height: 52px;
-  background: var(--accent-color);
-  color: white;
-  border: none;
-  border-radius: 50%;
-  font-size: 1.6rem;
-  cursor: pointer;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  box-shadow: var(--shadow-md);
-  transition: all var(--transition-fast);
-  z-index: var(--z-back-to-top);
-  opacity: 0.9;
+/* ========== 统一浮动按钮（方形圆角，层次丰富） ========== */
+.floating-buttons {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;   /* 保证右对齐 */
+    gap: 12px;
+    z-index: var(--z-back-to-top);
+    pointer-events: none;   /* 容器不拦截事件 */
 }
-.back-to-top-btn:hover {
-  background: var(--accent-light);
-  transform: translateY(-4px) scale(1.05);
-  opacity: 1;
-  box-shadow: var(--shadow-lg);
-}
-.back-to-top-btn.show {
-  display: flex;
-}
-@media (max-width: 480px) {
-  .back-to-top-btn {
+
+.floating-buttons .floating-btn {
+    pointer-events: auto;   /* 按钮可点击 */
     width: 48px;
     height: 48px;
-    bottom: 20px;
-    right: 20px;
-    font-size: 1.4rem;
-  }
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    background: var(--surface-color);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    color: var(--accent-color);
+    font-size: 1.2rem;
+    display: flex;          /* 始终为 flex，保证尺寸一致 */
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 
+        0 2px 8px rgba(0, 0, 0, 0.06),
+        0 8px 24px rgba(0, 0, 0, 0.04),
+        inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    transition: all 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    user-select: none;
+    font-weight: 600;
+    /* 显隐用 opacity + pointer-events，保留布局 */
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* 隐藏状态（返回顶部默认隐藏） */
+.floating-buttons .floating-btn.hidden {
+    opacity: 0;
+    pointer-events: none;
+    transform: scale(0.92);
+}
+
+.floating-buttons .floating-btn:hover {
+    transform: translateY(-3px) scale(1.04);
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: white;
+    box-shadow: 
+        0 8px 24px rgba(0, 0, 0, 0.12),
+        0 4px 12px rgba(180, 91, 99, 0.25),
+        inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.floating-buttons .floating-btn:active {
+    transform: scale(0.94);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* 返回顶部按钮的图标可自定义（↑） */
+.floating-buttons .floating-btn#backToTopBtn {
+    /* 无需额外样式，继承以上 */
+}
+
+/* 暗色主题适配 */
+[data-theme="dark"] .floating-buttons .floating-btn {
+    background: rgba(24, 24, 31, 0.92);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 
+        0 2px 8px rgba(0, 0, 0, 0.3),
+        0 8px 24px rgba(0, 0, 0, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+[data-theme="dark"] .floating-buttons .floating-btn:hover {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: #14141a;
+    box-shadow: 
+        0 8px 24px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(var(--accent-rgb), 0.3);
 }
 
 /* ---------- Cookie 同意横幅 ---------- */

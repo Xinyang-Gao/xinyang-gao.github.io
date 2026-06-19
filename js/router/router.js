@@ -245,17 +245,6 @@ export function initNavigation() {
   });
 }
 
-// ==================== 返回顶部按钮 ====================
-export function initBackToTopButton() {
-  const btn = document.getElementById('backToTopBtn');
-  if (!btn) return;
-  const threshold = 300;
-  window.addEventListener('scroll', Utils.throttle(() => {
-    btn.classList.toggle('show', window.scrollY > threshold);
-  }, 100), { passive: true });
-  btn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-}
-
 // ==================== Popstate 支持（回退/前进） ====================
 let popstateInitialized = false;
 export function initPopstate() {
@@ -426,7 +415,6 @@ async function reinitializeGlobalComponents(navbarHtml, footerHtml) {
 
   if (typeof initNavigation === 'function') initNavigation();
   if (typeof initMobileMenuToggle === 'function') initMobileMenuToggle();
-  if (typeof initBackToTopButton === 'function') initBackToTopButton();
   if (typeof initThemeToggle === 'function') initThemeToggle();
 }
 
