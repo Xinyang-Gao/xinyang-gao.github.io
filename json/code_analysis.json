@@ -1,31 +1,31 @@
 {
-  "generated_at": "2026-06-19T16:27:34.451271",
+  "generated_at": "2026-06-19T19:14:37.501014",
   "root_dir": "c:\\Users\\Administrator\\Desktop\\编程\\xinyang-gao.github.io\\xinyang-gao.github.io",
-  "total_files": 150,
-  "total_size_bytes": 1925136,
-  "total_lines": 40969,
-  "non_empty_lines": 36744,
+  "total_files": 151,
+  "total_size_bytes": 2160861,
+  "total_lines": 43174,
+  "non_empty_lines": 38862,
   "by_extension": [
     {
       "extension": ".html",
       "count": 35,
-      "total_size_bytes": 415892,
-      "total_lines": 7010,
-      "non_empty_lines": 6477
+      "total_size_bytes": 424114,
+      "total_lines": 7112,
+      "non_empty_lines": 6576
     },
     {
       "extension": ".js",
       "count": 35,
-      "total_size_bytes": 514438,
-      "total_lines": 12439,
-      "non_empty_lines": 11281
+      "total_size_bytes": 524654,
+      "total_lines": 12684,
+      "non_empty_lines": 11498
     },
     {
       "extension": ".css",
       "count": 23,
-      "total_size_bytes": 316862,
-      "total_lines": 13690,
-      "non_empty_lines": 12110
+      "total_size_bytes": 319957,
+      "total_lines": 13793,
+      "non_empty_lines": 12205
     },
     {
       "extension": ".json",
@@ -37,16 +37,16 @@
     {
       "extension": ".md",
       "count": 16,
-      "total_size_bytes": 140048,
-      "total_lines": 2733,
-      "non_empty_lines": 2098
+      "total_size_bytes": 140343,
+      "total_lines": 2740,
+      "non_empty_lines": 2104
     },
     {
       "extension": ".py",
       "count": 11,
-      "total_size_bytes": 109435,
-      "total_lines": 2719,
-      "non_empty_lines": 2423
+      "total_size_bytes": 110567,
+      "total_lines": 2723,
+      "non_empty_lines": 2427
     },
     {
       "extension": ".xml",
@@ -96,6 +96,13 @@
       "total_size_bytes": 7880,
       "total_lines": 1,
       "non_empty_lines": 1
+    },
+    {
+      "extension": ".png",
+      "count": 1,
+      "total_size_bytes": 212765,
+      "total_lines": 1744,
+      "non_empty_lines": 1697
     },
     {
       "extension": ".sb3",

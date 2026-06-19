@@ -76,41 +76,6 @@ export class StatisticsManager {
     const remainHours = hours % 24;
     return `${days} 天${remainHours ? ` ${remainHours} 小时` : ''}`;
   }
-
-  static showWelcomeOverlay({ previousVisit, previousVersion, currentVersion, missingLocalVersion }) {
-    const overlay = document.createElement('div');
-    overlay.className = 'welcome-overlay active';
-    const awayText = previousVisit
-      ? `你已经离开 ${this.formatAwayTime(Date.now() - previousVisit)} 了，欢迎回来！`
-      : '欢迎来到本站，这是你第一次访问。';
-    const versionText = previousVersion && previousVersion !== currentVersion
-      ? `在你离开的这段时间里，网站已从版本编号 ${previousVersion} 更新到版本编号 ${currentVersion}`
-      : `当前版本编号：${currentVersion}`;
-    const warningText = missingLocalVersion ? '<p class="welcome-overlay-warning">已根据当前时间自动选择主题~</p>' : '';
-    const titleText = `${Utils.getGreetingMessage()}<br>欢迎回来`;
-
-    overlay.innerHTML = `
-      <div class="welcome-overlay-hero">
-        <div class="welcome-overlay-eyebrow">WELCOME</div>
-        <h1 class="welcome-overlay-title">${titleText}</h1>
-        <p class="welcome-overlay-copy">${awayText}</p>
-        <p class="welcome-overlay-copy">${versionText}</p>
-        ${warningText}
-        <p class="welcome-overlay-note">点击任意位置继续浏览</p>
-      </div>
-    `;
-
-    const removeOverlay = () => {
-      if (!overlay.parentNode) return;
-      overlay.classList.remove('active');
-      document.body.classList.remove('welcome-active');
-      setTimeout(() => overlay.remove(), 350);
-    };
-
-    overlay.addEventListener('click', removeOverlay);
-    document.body.classList.add('welcome-active');
-    document.body.appendChild(overlay);
-  }
 }
 
 export function preloadCriticalJSON() {

@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-06-19T16:27:28.336993",
+  "generated_at": "2026-06-19T19:14:34.334979",
   "total_articles": 14,
-  "total_word_count": 57924,
+  "total_word_count": 58105,
   "articles": [
     {
       "relative_path": "assets/source/分享/为网站嵌入一个优雅的音乐播放器.md",
@@ -190,9 +190,9 @@
     },
     {
       "relative_path": "assets/source/网站/网站更新日志.md",
-      "hash": "28badcc6f822d34402c895290a835a55",
+      "hash": "c6dc6cba62c3cd2aea86b1ca42e1f9b7",
       "last_updated": "2026-06-19",
-      "modify_count": 204,
+      "modify_count": 205,
       "hidden": false,
       "title": "网站更新日志",
       "date": "2025年12月21日",
@@ -203,7 +203,7 @@
       ],
       "category": "网站",
       "url": "/articles/网站更新日志.html",
-      "word_count": 24052,
+      "word_count": 24233,
       "read_time": "81分钟"
     },
     {

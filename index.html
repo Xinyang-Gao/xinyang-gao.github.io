@@ -11,10 +11,23 @@
 </head>
 
 <body>
+
+  <div id="loading-overlay" role="status" aria-label="页面加载中">
+    <div class="loading-log">
+      <div>[START] 正在等待 JavaScript，这可能需要几秒</div>
+    </div>
+    <div class="loading-glow"></div>
+    <div id="loading-content">
+      <span class="loading-title">GaoXinYang</span>
+    </div>
+  </div>
+
   <noscript>
-    <div style="background: #b45b63; color: white; text-align: center; padding: 12px 16px; font-size: 0.9rem; position: sticky; top: 0; z-index: 1000;">
+    <div
+      style="background: #b45b63; color: white; text-align: center; padding: 12px 16px; font-size: 0.9rem; position: sticky; top: 0; z-index: 1000;">
       诶呀！您的浏览器似乎未启用 JavaScript，或您是 AI （或者爬虫）？<br>不过别担心，我们提供无需 JS 即可访问全部内容的静态镜像页面，请移步：
-      <a href="/nojs.html" style="color: white; font-weight: bold; text-decoration: underline;">静态镜像版 /nojs.html</a> 以获得更好的体验 。
+      <a href="/nojs.html" style="color: white; font-weight: bold; text-decoration: underline;">静态镜像版 /nojs.html</a>
+      以获得更好的体验 。
     </div>
   </noscript>
 
@@ -110,7 +123,7 @@
     </div>
   </div>
 
-  
+
   <div id="pageTransition" class="page-transition"></div>
 
   <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>
