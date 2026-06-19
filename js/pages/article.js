@@ -16,7 +16,6 @@ export class ArticlePageManager extends PageManager {
     }
 
     init() {
-        // 确保必要的 DOM 存在
         if (!document.getElementById('articleBody')) {
             console.warn('[Article] 缺少文章主体元素 #articleBody');
             return;
@@ -26,9 +25,8 @@ export class ArticlePageManager extends PageManager {
         this.ensureTOCStructure();
         this.buildAndRenderTOC();
 
-        // 2. 图片懒加载 + 模态框
+        // 2. 图片懒加载（保留，与全局查看器无关）
         this.initImageLazyLoad();
-        this.initImageModal();
 
         // 3. 阅读进度条
         this.initReadingProgress();
@@ -52,6 +50,7 @@ export class ArticlePageManager extends PageManager {
         this.initTwikoo();
         this.refreshBusuanzi();
     }
+
     renderMath() {
         if (typeof renderMathInElement !== 'undefined') {
             renderMathInElement(document.getElementById('articleBody'), {
@@ -67,7 +66,6 @@ export class ArticlePageManager extends PageManager {
         const container = document.getElementById('twikoo-comments');
         if (!container) return;
         this.twikooContainer = container;
-        // 使用通用管理器初始化，可传入额外配置（如 path）
         await initTwikoo(container, {
             path: window.location.pathname,
         });
@@ -80,7 +78,6 @@ export class ArticlePageManager extends PageManager {
     }
 
     destroy() {
-        // 清理所有事件监听、计时器、Observer
         if (this.progressHandler) window.removeEventListener('scroll', this.progressHandler);
         if (this.scrollHandler) window.removeEventListener('scroll', this.scrollHandler);
         if (this.resizeHandler) window.removeEventListener('resize', this.resizeHandler);
@@ -90,7 +87,6 @@ export class ArticlePageManager extends PageManager {
         this.cleanupFns.forEach(fn => fn());
         this.cleanupFns = [];
 
-        // 移除动态添加的浮动按钮
         const overlay = document.querySelector('.article-sidebar-overlay');
         if (overlay) overlay.remove();
         if (this.twikooContainer) {
@@ -99,7 +95,7 @@ export class ArticlePageManager extends PageManager {
         }
     }
 
-    // ---------- 以下是从原 IIFE 提取的核心方法，稍作调整 ----------
+    // ---------- TOC ----------
     ensureTOCStructure() {
         const tocCard = document.querySelector('.sidebar-card.toc-card');
         if (!tocCard) return;
@@ -147,10 +143,8 @@ export class ArticlePageManager extends PageManager {
         this.tocListContainer.innerHTML = html;
         this.bindTocLinkEvents();
 
-        // 添加阅读进度组件到 TOC 头部
         this.initTocReadingProgress();
 
-        // 滚动高亮
         this.scrollHandler = () => this.onScroll();
         window.addEventListener('scroll', this.scrollHandler);
     }
@@ -273,7 +267,7 @@ export class ArticlePageManager extends PageManager {
         this.tocProgressFill.style.width = `${percent}%`;
     }
 
-    // 图片懒加载（复用原有逻辑，调整 this 引用）
+    // 图片懒加载（保留）
     initImageLazyLoad() {
         const images = document.querySelectorAll('#articleBody img');
         if (!images.length) return;
@@ -307,35 +301,7 @@ export class ArticlePageManager extends PageManager {
         temp.src = src;
     }
 
-    initImageModal() {
-        const modal = document.getElementById('imageModal');
-        if (!modal) return;
-        const modalImg = document.getElementById('modalImage');
-        const closeBtn = modal.querySelector('.close');
-        const openModal = (src) => {
-            modalImg.src = src;
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-        };
-        const closeModal = () => {
-            modal.classList.remove('active');
-            modalImg.src = '';
-            document.body.style.overflow = '';
-        };
-        document.querySelectorAll('#articleBody img').forEach(img => {
-            img.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const src = img.dataset.src || img.src;
-                if (src) openModal(src);
-            });
-        });
-        closeBtn?.addEventListener('click', closeModal);
-        modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape' && modal.classList.contains('active')) closeModal();
-        });
-    }
-
+    // 阅读进度条
     initReadingProgress() {
         const progressBar = document.getElementById('progress-bar');
         if (!progressBar) return;
@@ -348,6 +314,7 @@ export class ArticlePageManager extends PageManager {
         this.progressHandler();
     }
 
+    // 代码块复制
     initCodeBlocks() {
         document.querySelectorAll('#articleBody pre').forEach(pre => {
             if (pre.dataset.enhanced) return;
@@ -385,6 +352,7 @@ export class ArticlePageManager extends PageManager {
         });
     }
 
+    // 移动端侧边栏
     initMobileSidebar() {
         const checkMobile = () => {
             const isMobile = window.innerWidth <= 768;
@@ -426,6 +394,7 @@ export class ArticlePageManager extends PageManager {
         document.body.style.overflow = '';
     }
 
+    // 滚动位置保存
     initScrollSave() {
         const key = `scroll_${window.location.pathname}`;
         const saved = sessionStorage.getItem(key);
