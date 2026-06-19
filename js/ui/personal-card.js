@@ -68,6 +68,22 @@ export function renderPersonalCard() {
 
   if (container.innerHTML !== cachedHTML) {
     container.innerHTML = cachedHTML;
+    // 获取卡片元素
+    const card = container.querySelector('.profile-card');
+    if (card) {
+      // 等待下一帧后添加可见类，触发过渡动画
+      requestAnimationFrame(() => {
+        card.classList.add('visible');
+      });
+    }
+  } else {
+    // 如果内容未变，但卡片可能未显示（比如通过 AJAX 切换回来），确保可见
+    const card = container.querySelector('.profile-card');
+    if (card && !card.classList.contains('visible')) {
+      requestAnimationFrame(() => {
+        card.classList.add('visible');
+      });
+    }
   }
 }
 

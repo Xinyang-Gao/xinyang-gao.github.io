@@ -274,7 +274,7 @@ function extractPageContent(htmlText) {
 function replaceMainContent(mainHtml) {
   const currentRouterView = document.getElementById(ROUTER_VIEW_ID);
   if (!currentRouterView || !mainHtml) return false;
-  
+
   // 创建新容器并提取新的 #router-view
   const newContainer = document.createElement('div');
   newContainer.innerHTML = mainHtml;
@@ -284,39 +284,49 @@ function replaceMainContent(mainHtml) {
     return false;
   }
 
-  // 添加过渡类（平滑淡入淡出）
-  currentRouterView.style.transition = 'opacity 0.25s ease';
-  currentRouterView.style.opacity = '0';
-
-  // 等待过渡结束后执行替换
   return new Promise((resolve) => {
-    const onTransitionEnd = () => {
-      currentRouterView.removeEventListener('transitionend', onTransitionEnd);
+    // 1. 旧内容执行退出动画
+    currentRouterView.classList.add('page-transition-exit');
+
+    // 2. 等待退出动画结束 (0.3s)
+    const onExitEnd = () => {
+      currentRouterView.removeEventListener('animationend', onExitEnd);
       // 替换节点
       currentRouterView.replaceWith(newRouterView);
-      // 确保新节点透明度为0，然后渐入
-      newRouterView.style.transition = 'opacity 0.25s ease';
-      newRouterView.style.opacity = '0';
-      requestAnimationFrame(() => {
-        newRouterView.style.opacity = '1';
-        // 过渡完成后移除过渡样式（避免干扰后续）
-        setTimeout(() => {
-          newRouterView.style.transition = '';
-          newRouterView.style.opacity = '';
-        }, 300);
+      
+      // 3. 新内容入场（先确保没有多余类）
+      newRouterView.classList.remove('page-transition-enter');
+      // 强制回流以重新触发动画
+      void newRouterView.offsetWidth;
+      newRouterView.classList.add('page-transition-enter');
+
+      // 4. 入场动画结束后清除类（可选）
+      const onEnterEnd = () => {
+        newRouterView.removeEventListener('animationend', onEnterEnd);
+        newRouterView.classList.remove('page-transition-enter');
         resolve(true);
-      });
+      };
+      newRouterView.addEventListener('animationend', onEnterEnd);
+      // 安全回退
+      setTimeout(() => {
+        if (newRouterView.classList.contains('page-transition-enter')) {
+          newRouterView.classList.remove('page-transition-enter');
+          resolve(true);
+        }
+      }, 400);
     };
-    currentRouterView.addEventListener('transitionend', onTransitionEnd);
-    // 设置超时安全回退（若 transitionend 未触发）
+    currentRouterView.addEventListener('animationend', onExitEnd);
+    // 安全回退
     setTimeout(() => {
       if (currentRouterView.parentNode) {
-        // 强制替换
         currentRouterView.replaceWith(newRouterView);
-        newRouterView.style.opacity = '1';
-        resolve(true);
+        newRouterView.classList.add('page-transition-enter');
+        setTimeout(() => {
+          newRouterView.classList.remove('page-transition-enter');
+          resolve(true);
+        }, 400);
       }
-    }, 400);
+    }, 500);
   });
 }
 
