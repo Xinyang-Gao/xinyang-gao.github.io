@@ -1,27 +1,600 @@
 // /js/ui/ui-effects.js
-// 自定义光标、外链管理器、滚动揭示效果（支持设置动态开关，滚动揭示复用 observer）
+// 自定义光标、外链管理器、滚动揭示效果 + 鼠标特效系统（点击涟漪、长按爆发、拖拽连线）
 
 import { CONFIG, Utils, storageController } from '/js/core/core.js';
 
-// ========== 设置键名（与 settings.js 保持一致） ==========
+// 完整版鼠标特效系统
+// 包含自定义光标、外链管理器、滚动揭示效果 + 鼠标特效系统（点击涟漪、长按爆发、拖拽连线）
+
+// 设置键名（与 settings.js 保持一致）
 const SETTINGS_KEYS = {
   CURSOR_ENABLED: 'settings_cursor_enabled',
   LINK_WARNING_ENABLED: 'settings_link_warning_enabled'
 };
 
 function isFeatureEnabled(key, defaultValue = true) {
-  if (storageController && storageController.isAllowed()) {
-    const stored = storageController.getItem(key);
-    if (stored !== null) return stored === 'true';
-  }
   try {
-    const raw = localStorage.getItem(key);
-    if (raw !== null) return raw === 'true';
+    const stored = localStorage.getItem(key);
+    if (stored !== null) return stored === 'true';
   } catch (e) { }
   return defaultValue;
 }
 
-// ==================== 自定义光标（保持不变，略作格式统一） ====================
+// ===================================================================
+//  MouseEffectManager — 鼠标特效引擎（Canvas 渲染）
+//  职责：点击涟漪、长按爆发、拖拽连线
+// ===================================================================
+// ===================================================================
+//  MouseEffectManager — 鼠标特效引擎（Canvas 渲染）
+//  职责：点击涟漪、长按爆发、拖拽连线
+//  重构要点：配置分离、渲染管道化、对象池复用、性能优化
+// ===================================================================
+class MouseEffectManager {
+  // ---- 静态配置 ----
+  static CONFIG = {
+    longPressThreshold: 100,           // 长按判定 ms
+    maxParticles: 120,                 // 粒子池上限
+    maxLines: 12,                      // 线条池上限
+    click: {
+      countRange: [1, 3],              // 点击产生的圆环数
+      radiusRange: [25, 40],           // 最大半径范围
+      durationRange: [600, 1000],      // 持续时间范围 ms
+      alphaRange: [0.3, 0.5],          // 透明度范围
+      lineWidthRange: [1.5, 2.5],      // 线宽范围
+      delayStep: 100,                  // 多圆环延迟步进
+    },
+    longPress: {
+      countFactor: 20,                 // 粒子数 = 基础4 + (时长/2000)*20
+      maxCount: 30,
+      radiusBase: 50,
+      radiusFactor: 160,               // 半径扩展系数
+      durationBase: 900,
+      durationFactor: 0.6,
+      alphaRange: [0.4, 0.7],
+      lineWidthRange: [1.8, 3.0],
+      delayMax: 180,
+      sizeProgressSplit: 0.6,          // 粒子大小先增后减的拐点
+      fadeStart: 0.2,
+    },
+    line: {
+      durationBase: 300,
+      durationPerPixel: 0.5,
+      maxDuration: 700,
+      alpha: 0.5,
+      width: 1.5,
+      dash: [6, 6],
+      dotRadius: 3,
+    }
+  };
+
+  constructor() {
+    // 检测触摸设备 —— 特效仅对鼠标设备启用
+    if (window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window) {
+      this.disabled = true;
+      console.log('[MouseEffect] 触摸设备，禁用鼠标特效');
+      return;
+    }
+    this.disabled = false;
+
+    // 创建 Canvas 覆盖层
+    this.canvas = document.createElement('canvas');
+    this.canvas.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 9997;
+    `;
+    this.ctx = this.canvas.getContext('2d');
+    this.resizeCanvas();
+    document.body.appendChild(this.canvas);
+
+    // 使用对象池复用粒子对象（减少GC）
+    this.particlePool = [];
+    this.activeParticles = [];
+    this.linePool = [];
+    this.activeLines = [];
+
+    // 长按状态
+    this.pressStartX = 0;
+    this.pressStartY = 0;
+    this.pressStartTime = 0;
+    this.isLongPress = false;
+    this.longPressTimer = null;
+
+    // 连线状态
+    this.lineActive = false;
+    this.lineStartX = 0;
+    this.lineStartY = 0;
+    this.lineEndX = 0;
+    this.lineEndY = 0;
+
+    // 当前鼠标位置
+    this.currentX = 0;
+    this.currentY = 0;
+
+    // 颜色缓存
+    this.accentColor = this.getAccentColor();
+    this._rgbCache = null; // 缓存 RGB 对象
+
+    // 渲染循环控制
+    this.animId = null;
+    this._renderTimestamp = 0;
+    this.startRenderLoop();
+
+    // 绑定事件处理器以便销毁时移除
+    this._boundHandlers = {
+      theme: () => this.onThemeChanged(),
+      resize: () => this.resizeCanvas(),
+    };
+    window.addEventListener('themeChanged', this._boundHandlers.theme);
+    window.addEventListener('resize', this._boundHandlers.resize);
+
+    console.log('[MouseEffect] 特效引擎初始化完成（重构版）');
+  }
+
+  // ---- 工具方法 ----
+  getAccentColor() {
+    const root = getComputedStyle(document.documentElement);
+    return root.getPropertyValue('--accent-color').trim() || '#a55860';
+  }
+
+  getRgbFromAccent() {
+    if (this._rgbCache) return this._rgbCache;
+    const hex = this.accentColor;
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    if (!result) return { r: 165, g: 88, b: 96 };
+    this._rgbCache = {
+      r: parseInt(result[1], 16),
+      g: parseInt(result[2], 16),
+      b: parseInt(result[3], 16)
+    };
+    return this._rgbCache;
+  }
+
+  onThemeChanged() {
+    this.accentColor = this.getAccentColor();
+    this._rgbCache = null; // 强制重新解析
+  }
+
+  resizeCanvas() {
+    if (!this.canvas) return;
+    const dpr = window.devicePixelRatio || 1;
+    const rect = document.documentElement.getBoundingClientRect();
+    this.canvas.width = rect.width * dpr;
+    this.canvas.height = rect.height * dpr;
+    this.canvas.style.width = rect.width + 'px';
+    this.canvas.style.height = rect.height + 'px';
+    this.ctx.setTransform(1, 0, 0, 1, 0, 0); // reset transform
+    this.ctx.scale(dpr, dpr);
+    this.logicalWidth = rect.width;
+    this.logicalHeight = rect.height;
+  }
+
+  // ---- 缓动函数 ----
+  static easeOutQuad(t) { return t * (2 - t); }
+  static easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+  static easeOutQuart(t) { return 1 - Math.pow(1 - t, 4); }
+
+  // ---- 对象池管理 ----
+  _acquireParticle(type) {
+    let p = this.particlePool.pop();
+    if (!p) {
+      p = {};
+    }
+    p.type = type;
+    p.active = true;
+    p._startTime = 0;
+    p.delay = 0;
+    // 其他字段在调用时赋值
+    return p;
+  }
+
+  _releaseParticle(p) {
+    p.active = false;
+    // 清理引用避免内存泄露
+    for (let key in p) {
+      if (key !== 'active' && key !== 'type') {
+        delete p[key];
+      }
+    }
+    if (this.particlePool.length < MouseEffectManager.CONFIG.maxParticles) {
+      this.particlePool.push(p);
+    }
+  }
+
+  _acquireLine() {
+    let l = this.linePool.pop();
+    if (!l) l = {};
+    l.active = true;
+    l.startTime = 0;
+    return l;
+  }
+
+  _releaseLine(l) {
+    l.active = false;
+    for (let key in l) {
+      if (key !== 'active') delete l[key];
+    }
+    if (this.linePool.length < MouseEffectManager.CONFIG.maxLines) {
+      this.linePool.push(l);
+    }
+  }
+
+  // ---- 1. 点击特效 ----
+  triggerClick(x, y) {
+    if (this.disabled) return;
+    const cfg = MouseEffectManager.CONFIG.click;
+    const rgb = this.getRgbFromAccent();
+    const count = cfg.countRange[0] + Math.floor(Math.random() * (cfg.countRange[1] - cfg.countRange[0] + 1));
+
+    for (let i = 0; i < count; i++) {
+      const p = this._acquireParticle('click');
+      p.x = x + (i === 0 ? 0 : (Math.random() - 0.5) * 10);
+      p.y = y + (i === 0 ? 0 : (Math.random() - 0.5) * 10);
+      p.radius = 0;
+      p.maxRadius = cfg.radiusRange[0] + Math.random() * (cfg.radiusRange[1] - cfg.radiusRange[0]);
+      p.startAlpha = cfg.alphaRange[0] + Math.random() * (cfg.alphaRange[1] - cfg.alphaRange[0]);
+      p.alpha = p.startAlpha;
+      p.life = 0;
+      p.duration = cfg.durationRange[0] + Math.random() * (cfg.durationRange[1] - cfg.durationRange[0]);
+      p.delay = i * cfg.delayStep;
+      p.color = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, `;
+      p.lineWidth = cfg.lineWidthRange[0] + Math.random() * (cfg.lineWidthRange[1] - cfg.lineWidthRange[0]);
+      p._startTime = performance.now();
+      this.activeParticles.push(p);
+    }
+  }
+
+  // ---- 2. 长按爆发 ----
+  triggerLongPress(x, y, duration) {
+    if (this.disabled) return;
+    const cfg = MouseEffectManager.CONFIG.longPress;
+    const rgb = this.getRgbFromAccent();
+
+    const count = Math.min(
+      Math.max(4, Math.floor(4 + (duration / 2000) * cfg.countFactor)),
+      cfg.maxCount
+    );
+    const maxRadius = Math.min(
+      320,
+      cfg.radiusBase + Math.pow(duration / 1000, 0.8) * cfg.radiusFactor
+    );
+    const particleDuration = cfg.durationBase + Math.min(duration * cfg.durationFactor, 700);
+
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const dist = maxRadius * (0.3 + Math.random() * 0.7);
+      const targetX = x + Math.cos(angle) * dist;
+      const targetY = y + Math.sin(angle) * dist;
+
+      const p = this._acquireParticle('longpress');
+      p.x = x;
+      p.y = y;
+      p.targetX = targetX;
+      p.targetY = targetY;
+      p.radius = 1.5;
+      p.maxRadius = 8 + Math.random() * 10;
+      p.startAlpha = cfg.alphaRange[0] + Math.random() * (cfg.alphaRange[1] - cfg.alphaRange[0]);
+      p.alpha = p.startAlpha;
+      p.life = 0;
+      p.duration = particleDuration;
+      p.delay = Math.random() * cfg.delayMax;
+      p.color = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, `;
+      p.lineWidth = cfg.lineWidthRange[0] + Math.random() * (cfg.lineWidthRange[1] - cfg.lineWidthRange[0]);
+      p._startTime = performance.now();
+      this.activeParticles.push(p);
+    }
+  }
+
+  // ---- 3. 连线特效 ----
+  startLine(x, y) {
+    if (this.disabled) return;
+    this.lineActive = true;
+    this.lineStartX = x;
+    this.lineStartY = y;
+    this.lineEndX = x;
+    this.lineEndY = y;
+    // 清除旧的连线
+    for (const l of this.activeLines) this._releaseLine(l);
+    this.activeLines = [];
+  }
+
+  updateLine(x, y) {
+    if (this.disabled || !this.lineActive) return;
+    this.lineEndX = x;
+    this.lineEndY = y;
+    this.currentX = x;
+    this.currentY = y;
+  }
+
+  endLine(x, y) {
+    if (this.disabled || !this.lineActive) return;
+    this.lineActive = false;
+    this.lineEndX = x;
+    this.lineEndY = y;
+
+    const dx = this.lineEndX - this.lineStartX;
+    const dy = this.lineEndY - this.lineStartY;
+    const distance = Math.hypot(dx, dy);
+    if (distance < 5) return;
+
+    const cfg = MouseEffectManager.CONFIG.line;
+    const rgb = this.getRgbFromAccent();
+    const l = this._acquireLine();
+    l.startX = this.lineStartX;
+    l.startY = this.lineStartY;
+    l.endX = this.lineEndX;
+    l.endY = this.lineEndY;
+    l.progress = 0;
+    l.duration = Math.min(cfg.durationBase + distance * cfg.durationPerPixel, cfg.maxDuration);
+    l.color = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, `;
+    l.width = cfg.width;
+    l.startTime = performance.now();
+    this.activeLines.push(l);
+  }
+
+  // ---- 渲染循环 ----
+  startRenderLoop() {
+    const loop = (timestamp) => {
+      if (!this.canvas) return;
+      this._renderTimestamp = timestamp;
+      this.render(timestamp);
+      this.animId = requestAnimationFrame(loop);
+    };
+    this.animId = requestAnimationFrame(loop);
+  }
+
+  render(timestamp) {
+    const ctx = this.ctx;
+    const w = this.logicalWidth || window.innerWidth;
+    const h = this.logicalHeight || window.innerHeight;
+
+    ctx.clearRect(0, 0, w, h);
+
+    // 渲染粒子
+    this._renderParticles(ctx, timestamp);
+
+    // 渲染已完成的连线（收拢动画）
+    this._renderLines(ctx, timestamp);
+
+    // 渲染实时拖拽连线
+    if (this.lineActive) {
+      this._renderActiveLine(ctx, timestamp);
+    }
+
+    // 池子清理（防止溢出）
+    if (this.activeParticles.length > MouseEffectManager.CONFIG.maxParticles) {
+      const excess = this.activeParticles.length - MouseEffectManager.CONFIG.maxParticles;
+      for (let i = 0; i < excess; i++) {
+        const p = this.activeParticles.shift();
+        if (p) this._releaseParticle(p);
+      }
+    }
+    if (this.activeLines.length > MouseEffectManager.CONFIG.maxLines) {
+      const excess = this.activeLines.length - MouseEffectManager.CONFIG.maxLines;
+      for (let i = 0; i < excess; i++) {
+        const l = this.activeLines.shift();
+        if (l) this._releaseLine(l);
+      }
+    }
+  }
+
+  _renderParticles(ctx, timestamp) {
+    const toRemove = [];
+    for (let i = 0; i < this.activeParticles.length; i++) {
+      const p = this.activeParticles[i];
+      const elapsed = timestamp - p._startTime - p.delay;
+      if (elapsed < 0) continue;
+
+      const progress = Math.min(elapsed / p.duration, 1);
+      if (progress >= 1) {
+        toRemove.push(i);
+        continue;
+      }
+
+      // 缓动计算
+      let easedProgress;
+      if (p.type === 'click') {
+        easedProgress = MouseEffectManager.easeOutQuart(progress);
+      } else {
+        easedProgress = MouseEffectManager.easeOutCubic(progress);
+      }
+
+      // 长按粒子位移
+      if (p.type === 'longpress' && p.targetX !== undefined) {
+        p.x += (p.targetX - p.x) * 0.2;
+        p.y += (p.targetY - p.y) * 0.2;
+      }
+
+      // 半径计算
+      let currentRadius;
+      if (p.type === 'click') {
+        currentRadius = p.maxRadius * easedProgress;
+      } else {
+        const sizeProgress = progress < 0.6 ? progress / 0.6 : 1 - (progress - 0.6) / 0.4 * 0.3;
+        currentRadius = p.radius + (p.maxRadius - p.radius) * sizeProgress;
+      }
+
+      // 透明度计算
+      let alpha;
+      if (p.type === 'click') {
+        alpha = p.startAlpha * (1 - easedProgress);
+      } else {
+        const fadeStart = 0.2;
+        if (progress < fadeStart) {
+          alpha = p.startAlpha;
+        } else {
+          const fadeProgress = (progress - fadeStart) / (1 - fadeStart);
+          alpha = p.startAlpha * (1 - fadeProgress);
+        }
+      }
+
+      // 绘制空心圆环
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, Math.max(0, currentRadius), 0, Math.PI * 2);
+      ctx.strokeStyle = p.color + alpha + ')';
+      ctx.lineWidth = p.lineWidth || 1.5;
+      ctx.stroke();
+
+      // 更新生命周期（可扩展）
+    }
+
+    // 移除已完成的粒子并回收
+    for (let i = toRemove.length - 1; i >= 0; i--) {
+      const idx = toRemove[i];
+      const p = this.activeParticles[idx];
+      this.activeParticles.splice(idx, 1);
+      this._releaseParticle(p);
+    }
+  }
+
+  _renderLines(ctx, timestamp) {
+    const toRemove = [];
+    for (let i = 0; i < this.activeLines.length; i++) {
+      const line = this.activeLines[i];
+      const elapsed = timestamp - line.startTime;
+      const progress = Math.min(elapsed / line.duration, 1);
+
+      if (progress >= 1) {
+        toRemove.push(i);
+        continue;
+      }
+
+      const eased = MouseEffectManager.easeOutQuad(progress);
+      const currentStartX = line.startX + (line.endX - line.startX) * eased;
+      const currentStartY = line.startY + (line.endY - line.startY) * eased;
+      const alpha = 0.5 * (1 - eased);
+
+      ctx.beginPath();
+      ctx.moveTo(currentStartX, currentStartY);
+      ctx.lineTo(line.endX, line.endY);
+      ctx.strokeStyle = line.color + alpha + ')';
+      ctx.lineWidth = line.width * (1 - eased * 0.5);
+      ctx.lineCap = 'round';
+      ctx.stroke();
+    }
+
+    for (let i = toRemove.length - 1; i >= 0; i--) {
+      const idx = toRemove[i];
+      const l = this.activeLines[idx];
+      this.activeLines.splice(idx, 1);
+      this._releaseLine(l);
+    }
+  }
+
+  _renderActiveLine(ctx, timestamp) {
+    const rgb = this.getRgbFromAccent();
+    const dx = this.lineEndX - this.lineStartX;
+    const dy = this.lineEndY - this.lineStartY;
+    const dist = Math.hypot(dx, dy);
+
+    if (dist > 5) {
+      // 虚线
+      ctx.beginPath();
+      ctx.moveTo(this.lineStartX, this.lineStartY);
+      ctx.lineTo(this.lineEndX, this.lineEndY);
+      ctx.strokeStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.3)`;
+      ctx.lineWidth = 2;
+      ctx.lineCap = 'round';
+      ctx.setLineDash([6, 6]);
+      ctx.lineDashOffset = -timestamp / 50;
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // 端点圆点
+      ctx.fillStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, 0.4)`;
+      ctx.beginPath();
+      ctx.arc(this.lineStartX, this.lineStartY, 3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(this.lineEndX, this.lineEndY, 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // ---- 公开 API（事件驱动） ----
+  onPointerDown(x, y) {
+    if (this.disabled) return;
+    this.pressStartX = x;
+    this.pressStartY = y;
+    this.pressStartTime = performance.now();
+    this.isLongPress = false;
+    this.lineActive = false;
+    // 清空旧连线
+    for (const l of this.activeLines) this._releaseLine(l);
+    this.activeLines = [];
+
+    clearTimeout(this.longPressTimer);
+    this.longPressTimer = setTimeout(() => {
+      this.isLongPress = true;
+      this.startLine(this.pressStartX, this.pressStartY);
+      if (navigator.vibrate) navigator.vibrate(8);
+    }, MouseEffectManager.CONFIG.longPressThreshold);
+  }
+
+  onPointerMove(x, y) {
+    if (this.disabled) return;
+    this.currentX = x;
+    this.currentY = y;
+    if (this.isLongPress) {
+      this.updateLine(x, y);
+    }
+  }
+
+  onPointerUp(x, y) {
+    if (this.disabled) return;
+    const duration = performance.now() - this.pressStartTime;
+    clearTimeout(this.longPressTimer);
+    this.longPressTimer = null;
+
+    if (this.isLongPress) {
+      this.triggerLongPress(x, y, duration);
+      this.endLine(x, y);
+      this.isLongPress = false;
+      this.lineActive = false;
+    } else {
+      // 短按点击
+      if (duration < 100) {
+        this.triggerClick(x, y);
+        // 额外随机小涟漪
+        setTimeout(() => {
+          this.triggerClick(x - 6 + Math.random() * 12, y - 6 + Math.random() * 12);
+        }, 60);
+      } else {
+        this.triggerClick(x, y);
+      }
+    }
+  }
+
+  // ---- 销毁 ----
+  destroy() {
+    if (this.animId) {
+      cancelAnimationFrame(this.animId);
+      this.animId = null;
+    }
+    clearTimeout(this.longPressTimer);
+    window.removeEventListener('themeChanged', this._boundHandlers.theme);
+    window.removeEventListener('resize', this._boundHandlers.resize);
+    if (this.canvas && this.canvas.parentNode) {
+      this.canvas.parentNode.removeChild(this.canvas);
+    }
+    this.canvas = null;
+    this.ctx = null;
+    this.activeParticles = [];
+    this.activeLines = [];
+    this.particlePool = [];
+    this.linePool = [];
+    console.log('[MouseEffect] 特效引擎已销毁');
+  }
+}
+
+
+// ===================================================================
+//  CustomCursor — 自定义光标（集成鼠标特效）
+// ===================================================================
 export class CustomCursor {
   constructor(options = {}) {
     if (window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window) {
@@ -55,6 +628,9 @@ export class CustomCursor {
     this.clickTargetMultiplier = 1;
     this.clickFillMultiplier = 1;
     this.clickFillTarget = 1;
+
+    // ---- 初始化鼠标特效管理器 ----
+    this.effectManager = new MouseEffectManager();
 
     this.initDOM();
     this.initEvents();
@@ -103,6 +679,7 @@ export class CustomCursor {
   }
 
   initEvents() {
+    // ---- 鼠标移动 ----
     window.addEventListener('mousemove', (e) => {
       if (!this.visible) {
         this.visible = true;
@@ -153,6 +730,11 @@ export class CustomCursor {
       } else {
         this.targetRotation = -45;
       }
+
+      // ---- 将鼠标移动事件传递给特效管理器 ----
+      if (this.effectManager && !this.effectManager.disabled) {
+        this.effectManager.onPointerMove(e.clientX, e.clientY);
+      }
     });
 
     window.addEventListener('mouseleave', () => {
@@ -177,16 +759,29 @@ export class CustomCursor {
       if (this.snappedMode && this.snappedElement) this.updateSnappedTargetPosition();
     });
 
+    // ---- 鼠标按下 / 松开（集成特效） ----
     const onMouseDown = (e) => {
       if (e.button !== 0) return;
       this.clickTargetMultiplier = this.config.clickScale;
       this.clickFillTarget = 1;
+
+      // 通知特效管理器
+      if (this.effectManager && !this.effectManager.disabled) {
+        this.effectManager.onPointerDown(e.clientX, e.clientY);
+      }
     };
+
     const onMouseUp = (e) => {
       if (e.button !== 0) return;
       this.clickTargetMultiplier = 1;
       this.clickFillTarget = 1;
+
+      // 通知特效管理器
+      if (this.effectManager && !this.effectManager.disabled) {
+        this.effectManager.onPointerUp(e.clientX, e.clientY);
+      }
     };
+
     window.addEventListener('mousedown', onMouseDown);
     window.addEventListener('mouseup', onMouseUp);
     this._clickHandlers = { onMouseDown, onMouseUp };
@@ -299,13 +894,25 @@ export class CustomCursor {
     this.dot?.remove();
     document.body.classList.remove('custom-cursor-enabled');
     this._restoreNativeCursor();
+
+    // 销毁特效管理器
+    if (this.effectManager) {
+      this.effectManager.destroy();
+      this.effectManager = null;
+    }
   }
 }
 
-// ==================== 外链管理器（保持不变） ====================
+
+// ===================================================================
+//  ExternalLinkManager — 外链跳转确认（保持不变）
+// ===================================================================
 export class ExternalLinkManager {
   constructor() {
-    this.WHITELIST = CONFIG.EXTERNAL_WHITELIST;
+    this.WHITELIST = new Set([
+      'github.com', 'google.com', 'wikipedia.org', 'stackoverflow.com', 'youtube.com',
+      'twitter.com', 'linkedin.com', 'amazon.com', 'microsoft.com', 'apple.com'
+    ]);
     this.currentModal = null;
     this.currentOverlay = null;
     this.countdownInterval = null;
@@ -313,7 +920,7 @@ export class ExternalLinkManager {
     this.pendingUrl = null;
     this.isSafe = false;
     this.redirectTriggered = false;
-    this.internalDomains = CONFIG.INTERNAL_DOMAINS;
+    this.internalDomains = ['localhost', '127.0.0.1', window.location.hostname];
     this._boundHandleClick = null;
     this.init();
   }
@@ -420,7 +1027,7 @@ export class ExternalLinkManager {
     const messageHtml = this.isSafe ? '安全的网站<br>将自动为您跳转，您也可点击「立即前往」手动跳转。' : '本站不对第三方内容负责';
     const btnText = this.isSafe ? '立即前往' : '继续前往';
     const btnSafeClass = this.isSafe ? 'safe' : '';
-    modal.innerHTML = `<div class="external-modal-close">✕</div><div class="external-modal-content"><div class="external-modal-header"><span class="external-modal-domain ${safeClass}">${Utils.escapeHtml(hostname)}</span></div><div class="external-modal-sub">${subText}</div><div class="external-modal-url">${Utils.escapeHtml(url)}</div><div class="external-modal-message">${messageHtml}</div><div id="external-timer-area" class="external-modal-timer" style="${this.isSafe ? '' : 'display: none;'}"></div><div class="external-modal-buttons"><button class="external-modal-btn" id="external-cancel-btn">取消</button><button class="external-modal-btn external-modal-btn-primary ${btnSafeClass}" id="external-confirm-btn">${btnText}</button></div></div>`;
+    modal.innerHTML = `<div class="external-modal-close">✕</div><div class="external-modal-content"><div class="external-modal-header"><span class="external-modal-domain ${safeClass}">${this.escapeHtml(hostname)}</span></div><div class="external-modal-sub">${subText}</div><div class="external-modal-url">${this.escapeHtml(url)}</div><div class="external-modal-message">${messageHtml}</div><div id="external-timer-area" class="external-modal-timer" style="${this.isSafe ? '' : 'display: none;'}"></div><div class="external-modal-buttons"><button class="external-modal-btn" id="external-cancel-btn">取消</button><button class="external-modal-btn external-modal-btn-primary ${btnSafeClass}" id="external-confirm-btn">${btnText}</button></div></div>`;
     document.body.appendChild(modal);
     this.currentModal = modal;
     this.currentOverlay = overlay;
@@ -457,6 +1064,12 @@ export class ExternalLinkManager {
     });
     if (this.isSafe) this.startCountdown(timerArea);
     return true;
+  }
+
+  escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
   }
 
   showErrorToast(message) {
@@ -499,10 +1112,13 @@ export class ExternalLinkManager {
   }
 }
 
-// ==================== 滚动揭示效果（优化版：复用 observer） ====================
+
+// ===================================================================
+//  ScrollReveal — 滚动揭示（保持不变）
+// ===================================================================
 export class ScrollReveal {
   #observer = null;
-  #targetSelector = '.list-item';   // 可配置
+  #targetSelector = '.list-item';
 
   constructor(selector = '.list-item') {
     this.#targetSelector = selector;
@@ -525,7 +1141,6 @@ export class ScrollReveal {
     );
   }
 
-  /** 观察所有未 reveal 的目标元素 */
   observe(targets = document.querySelectorAll(this.#targetSelector)) {
     if (!this.#observer) return;
     targets.forEach(el => {
@@ -535,7 +1150,6 @@ export class ScrollReveal {
     });
   }
 
-  /** 刷新：重新观察当前文档中所有未 reveal 的元素（不重建 observer） */
   refresh() {
     const hidden = document.querySelectorAll(`${this.#targetSelector}:not(.revealed)`);
     if (hidden.length) {
@@ -543,7 +1157,6 @@ export class ScrollReveal {
     }
   }
 
-  /** 完全销毁 observer */
   destroy() {
     if (this.#observer) {
       this.#observer.disconnect();
@@ -552,8 +1165,14 @@ export class ScrollReveal {
   }
 }
 
-// ==================== 全局滚动揭示单例管理 ====================
+
+// ===================================================================
+//  全局单例管理
+// ===================================================================
 let globalScrollRevealInstance = null;
+let uiEffectsInitialized = false;
+let customCursorInstance = null;
+let externalLinkManagerInstance = null;
 
 export function ensureScrollReveal() {
   if (!globalScrollRevealInstance) {
@@ -576,11 +1195,6 @@ export function refreshScrollReveal() {
 export function getScrollReveal() {
   return globalScrollRevealInstance || window.scrollRevealInstance;
 }
-
-// ==================== 光标和外链管理器（按需初始化） ====================
-let uiEffectsInitialized = false;
-let customCursorInstance = null;
-let externalLinkManagerInstance = null;
 
 export function initUIEffects() {
   if (uiEffectsInitialized) return;
