@@ -129,6 +129,7 @@ def generate_html(cards_html: str) -> str:
                                 </div>
                             </div>
                         </div>
+                        <div class="contact-note"><p>注意如果有<strong>违法、侵权、恶意广告</strong>等违规内容将会被撤下链接哟</p></div>
                         <div class="myinfo-section">
                             <div class="myinfo-header">我的信息</div>
                             <div class="info-hint">如果您希望交换友链，可以按照下面的 JSON 提供您的站点信息</div>
@@ -144,14 +145,8 @@ def generate_html(cards_html: str) -> str:
 }}</code></pre>
                             </div>
                         </div>
-                        <div class="warning-note">
-                            注意如果有<strong>违法、侵权、恶意广告</strong>等违规内容将会被撤下链接哟
-                        </div>
                     </div>
                     <div id="twikoo-comments" class="twikoo-container"></div>
-                    <div class="contact-note">
-                        <p>友情提示部分参考了 <a href="https://blog.tianhw.top/friends/" style="color: var(--accent-color);"> THW 大佬</a> 的友链申请要求，感谢~</p>
-                    </div>
                 </div>
             </main>
         </div>

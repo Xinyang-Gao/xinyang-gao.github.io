@@ -10,15 +10,21 @@
     "avatar": "https://image.tianhw.top/avatar.webp"
 },
 {
-  "name": "LsAng", 
-  "link": "https://llds.cloud",
-  "desc": "学习、探索中",
-  "avatar": "https://llds.cloud/lsang.png"
-},
-{
 "name": "Luquiesceneの小屋",
 "link": "https://luq-blog.xyz/",
 "desc": "To be or not to be: that is the question.",
 "avatar": "https://luq-blog.xyz/avatar.webp"
+},
+{
+  "name": "Olinl Blog", 
+  "link": "https://blog.olinl.com",
+  "desc": "分享、实践、学习",
+  "avatar": "https://q2.qlogo.cn/headimg_dl?dst_uin=9892214&spec=0"
+},
+{
+  "name": "LsAng", 
+  "link": "https://llds.cloud",
+  "desc": "学习、探索中",
+  "avatar": "https://llds.cloud/lsang.png"
 }
 ]
