@@ -3,6 +3,12 @@
 @import url("/css/core/layout.css");
 @import url("/css/core/components.css");
 
+/* 加载期间禁用滚动 */
+body.loading {
+  overflow: hidden;
+}
+
+/* ===== 加载覆盖层 ===== */
 #loading-overlay {
   position: fixed;
   top: 0;
@@ -28,7 +34,7 @@
   pointer-events: none;
 }
 
-/* 内容容器（flex 列，居中）—— 保证在日志上层 */
+/* ===== 内容容器 ===== */
 #loading-content {
   display: flex;
   flex-direction: column;
@@ -43,7 +49,7 @@
   z-index: 2;
 }
 
-/* 大字 */
+/* ===== 大标题 ===== */
 .loading-title {
   font-size: clamp(3.2rem, 14vw, 7rem);
   font-weight: 800;
@@ -57,23 +63,22 @@
               opacity 0.8s cubic-bezier(0.25, 1, 0.5, 1);
 }
 
-/* 呼吸动画 */
 @keyframes loadingPulse {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.55; transform: scale(0.97); }
 }
 
-/* 更新状态：大字上移缩小 */
+/* ===== 更新状态：标题上移缩小（平滑缓出） ===== */
 #loading-content.updated .loading-title {
   animation: none;
-  transform: translateY(-60px) scale(0.8);
-  opacity: 0.9;
-  text-shadow: 0 0 60px rgba(180, 91, 99, 0.35);
-  transition: transform 1.4s cubic-bezier(0.25, 0.1, 0.25, 1),
-              opacity 1.4s cubic-bezier(0.25, 0.1, 0.25, 1);
+  transform: translateY(-50px) scale(0.85);
+  opacity: 0.95;
+  text-shadow: 0 0 60px rgba(180, 91, 99, 0.30);
+  transition: transform 1.0s cubic-bezier(0.25, 0.1, 0.25, 1),
+              opacity 1.0s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
-/* 更新状态：下方信息区域 */
+/* ===== 更新信息区域 ===== */
 .update-info {
   margin-top: 32px;
   text-align: center;
@@ -81,8 +86,8 @@
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   opacity: 0;
   transform: translateY(30px) scale(0.96);
-  transition: opacity 1s ease-out 0.2s,
-              transform 1s cubic-bezier(0.25, 0.1, 0.25, 1) 0.2s;
+  transition: opacity 0.8s cubic-bezier(0.25, 0.1, 0.25, 1) 0.15s,
+              transform 0.8s cubic-bezier(0.25, 0.1, 0.25, 1) 0.15s;
   max-width: 560px;
   width: 100%;
 }
@@ -90,6 +95,7 @@
   opacity: 1;
   transform: translateY(0) scale(1);
 }
+
 .update-info .version-badge {
   display: inline-block;
   background: rgba(43, 123, 217, 0.2);
@@ -126,7 +132,16 @@
   font-weight: 300;
 }
 
-/* 光晕装饰（可选） */
+/* ===== 内容切换过渡状态（淡出） ===== */
+#loading-overlay .update-info.transitioning {
+  opacity: 0 !important;
+  transform: scale(0.94) translateY(12px) !important;
+  transition: opacity 0.5s cubic-bezier(0.25, 0.1, 0.25, 1),
+              transform 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+  pointer-events: none;
+}
+
+/* ===== 光晕装饰 ===== */
 .loading-glow {
   position: absolute;
   width: 60vmin;
@@ -147,14 +162,7 @@
   opacity: 0;
 }
 
-/* 小屏适配 */
-@media (max-width: 480px) {
-  .loading-title { font-size: clamp(2.4rem, 16vw, 4rem); }
-  #loading-content.updated .loading-title { font-size: clamp(1.8rem, 10vw, 3rem); }
-  .update-info .welcome-message { font-size: 1rem; }
-}
-
-/* --- 加载日志（全屏，位于底层，不阻挡交互） --- */
+/* ===== 加载日志 ===== */
 #loading-overlay .loading-log {
   position: absolute;
   top: 0;
@@ -162,7 +170,7 @@
   width: 100%;
   height: 100%;
   overflow-y: auto;
-  color: rgb(150, 150, 150);
+  color: rgb(100, 100, 100);
   font-family: 'Courier New', monospace;
   font-size: 13px;
   line-height: 1.7;
@@ -170,9 +178,9 @@
   word-break: break-word;
   padding: 20px;
   box-sizing: border-box;
-  pointer-events: none;           /* 点击穿透 */
+  pointer-events: none;
   user-select: none;
-  z-index: 1;                    /* 位于中央内容下方 */
+  z-index: 1;
   scrollbar-width: thin;
   scrollbar-color: rgba(255,255,255,0.2) transparent;
 }
@@ -185,4 +193,306 @@
 #loading-overlay .loading-log::-webkit-scrollbar-thumb {
   background: rgba(255,255,255,0.2);
   border-radius: 2px;
+}
+
+/* 日志逐条滑入动画 */
+#loading-overlay .loading-log div {
+  opacity: 0;
+  transform: translateX(12px);
+  animation: logSlideIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  /* animation-delay 由 JavaScript 动态设置，此处不设默认值 */
+}
+@keyframes logSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateX(12px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* ===== Cookie 申请面板（无卡片背景，简约设计） ===== */
+
+/* 标题区域 */
+#loading-overlay .cookie-consent-title {
+  text-align: center;
+  margin-bottom: 32px;
+  opacity: 0;
+  transform: translateY(-6px);
+  animation: titleSlideDown 0.5s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+  animation-delay: 0.05s;
+}
+@keyframes titleSlideDown {
+  0% { opacity: 0; transform: translateY(-6px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+#loading-overlay .cookie-consent-title .version-badge {
+  display: inline-block;
+  background: rgba(43, 123, 217, 0.15);
+  color: #b0c8e5;
+  padding: 4px 18px;
+  border-radius: 40px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.6px;
+  border: 1px solid rgba(43, 123, 217, 0.2);
+  margin-bottom: 10px;
+}
+#loading-overlay .cookie-consent-title .welcome-message {
+  font-size: 1.25rem;
+  font-weight: 400;
+  color: #f0f4fa;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* 面板主体（无卡片背景） */
+#loading-overlay .cookie-consent-panel {
+  max-width: 480px;
+  margin: 0 auto;
+  width: 100%;
+  padding: 0 4px;
+  box-sizing: border-box;
+  opacity: 0;
+  transform: translateY(20px) scale(0.98);
+  animation: consentFadeIn 0.7s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+  animation-delay: 0.2s;
+}
+@keyframes consentFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(20px) scale(0.98);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* 好处列表 */
+#loading-overlay .consent-benefits {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 20px;
+}
+#loading-overlay .consent-benefits p {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.7);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  transition: color 0.2s ease;
+  opacity: 0;
+  transform: translateX(-8px);
+  animation: benefitSlideIn 0.45s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+}
+#loading-overlay .consent-benefits p:nth-child(1) { animation-delay: 0.25s; }
+#loading-overlay .consent-benefits p:nth-child(2) { animation-delay: 0.35s; }
+#loading-overlay .consent-benefits p:nth-child(3) { animation-delay: 0.45s; }
+#loading-overlay .consent-benefits p:hover {
+  color: rgba(255, 255, 255, 0.92);
+}
+#loading-overlay .consent-benefits i {
+  color: #3a8ae8;
+  font-size: 1.1rem;
+  width: 22px;
+  text-align: center;
+  flex-shrink: 0;
+  opacity: 0.85;
+}
+@keyframes benefitSlideIn {
+  0% {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* 隐私说明 */
+#loading-overlay .consent-privacy {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.92);
+  padding-bottom: 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  line-height: 1.5;
+  opacity: 0;
+  animation: privacyFadeIn 0.5s ease forwards;
+  animation-delay: 0.5s;
+}
+@keyframes privacyFadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+#loading-overlay .consent-privacy i {
+  color: rgba(255, 255, 255, 0.2);
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+#loading-overlay .consent-privacy a {
+  color: #3a8ae8;
+  text-decoration: none;
+  transition: color 0.2s ease, opacity 0.2s ease;
+  opacity: 0.8;
+}
+#loading-overlay .consent-privacy a:hover {
+  color: #5a9ef8;
+  opacity: 1;
+  text-decoration: underline;
+}
+
+/* 按钮组 */
+#loading-overlay .consent-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  opacity: 0;
+  transform: translateY(10px);
+  animation: actionsFadeIn 0.5s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+  animation-delay: 0.6s;
+}
+@keyframes actionsFadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+#loading-overlay .consent-btn {
+  border: none;
+  padding: 10px 30px;
+  font-size: 0.92rem;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  border-radius: 40px;
+  letter-spacing: 0.3px;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  position: relative;
+  overflow: hidden;
+}
+/* 按钮波纹效果 */
+#loading-overlay .consent-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 40px;
+  background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), rgba(255,255,255,0.1), transparent 60%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+#loading-overlay .consent-btn:hover::after {
+  opacity: 1;
+}
+#loading-overlay .consent-btn:hover {
+  transform: translateY(-2px);
+}
+#loading-overlay .consent-btn:active {
+  transform: scale(0.96);
+}
+
+/* 主要按钮 - 继续 */
+#loading-overlay .consent-accept {
+  background: #2b7bd9;
+  color: #fff;
+  border: none;
+  box-shadow: 0 4px 20px rgba(43, 123, 217, 0.25);
+  animation: acceptGlow 3s ease-in-out infinite;
+}
+@keyframes acceptGlow {
+  0%, 100% {
+    box-shadow: 0 4px 20px rgba(43, 123, 217, 0.25);
+  }
+  50% {
+    box-shadow: 0 4px 32px rgba(43, 123, 217, 0.5);
+  }
+}
+#loading-overlay .consent-accept:hover {
+  background: #3a8ae8;
+  box-shadow: 0 6px 28px rgba(43, 123, 217, 0.5);
+  transform: translateY(-3px);
+}
+#loading-overlay .consent-accept:active {
+  transform: scale(0.96);
+}
+
+/* 次要按钮 - 拒绝 */
+#loading-overlay .consent-decline {
+  background: transparent;
+  color: rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+#loading-overlay .consent-decline:hover {
+  color: rgba(255, 255, 255, 0.7);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+/* ===== 小屏适配 ===== */
+@media (max-width: 480px) {
+  .loading-title { font-size: clamp(2.4rem, 16vw, 4rem); }
+  #loading-content.updated .loading-title { font-size: clamp(1.8rem, 10vw, 3rem); }
+  .update-info .welcome-message { font-size: 1rem; }
+
+  #loading-overlay .cookie-consent-title .welcome-message {
+    font-size: 1rem;
+  }
+  #loading-overlay .consent-benefits p {
+    font-size: 0.85rem;
+    gap: 10px;
+  }
+  #loading-overlay .consent-benefits i {
+    font-size: 0.95rem;
+    width: 18px;
+  }
+  #loading-overlay .consent-privacy {
+    font-size: 0.72rem;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  #loading-overlay .consent-actions {
+    flex-direction: column;
+    gap: 10px;
+  }
+  #loading-overlay .consent-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 12px 20px;
+    font-size: 0.9rem;
+  }
+  /* 移动端动画微调 */
+  @keyframes consentFadeIn {
+    0% {
+      opacity: 0;
+      transform: translateY(16px) scale(0.98);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
 }

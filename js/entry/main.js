@@ -49,6 +49,12 @@ function addOptimizationLinks() {
 
 // ========== 加载覆盖层版本检测逻辑 ==========
 async function handleLoadingOverlay() {
+
+function restoreScroll() {
+  document.body.classList.remove('loading');
+  document.body.style.overflow = ''; // 兼容旧逻辑
+}
+
   const overlay = document.getElementById('loading-overlay');
   const content = document.getElementById('loading-content');
   if (!overlay) return;
@@ -63,26 +69,23 @@ async function handleLoadingOverlay() {
     logContainer.className = 'loading-log';
     overlay.appendChild(logContainer);
   } else {
-    // 清空硬编码内容，由 JS 完全控制
     logContainer.innerHTML = '';
   }
 
   const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms || 20));
 
   // ---- 增强的 addLog ----
-  function addLog(module, msg, indent = 0) {
-    const time = new Date().toLocaleTimeString();
-    // 生成缩进：每级用 "│ "，最后一级用 "├── "
-    const indentStr = '│ '.repeat(indent) + (indent > 0 ? '├── ' : '');
-    const line = document.createElement('div');
-    line.textContent = `[${time}][${module}] ${indentStr}${msg}`;
-    logContainer.appendChild(line);
-    logContainer.scrollTop = logContainer.scrollHeight;
-  }
-
-  function restoreScroll() {
-    document.body.style.overflow = '';
-  }
+function addLog(module, msg, indent = 0) {
+  const time = new Date().toLocaleTimeString();
+  const indentStr = '│ '.repeat(indent) + (indent > 0 ? '├── ' : '');
+  const line = document.createElement('div');
+  line.textContent = `[${time}][${module}] ${indentStr}${msg}`;
+  // 动态设置延迟，基于已有子元素数量
+  const existing = logContainer.children.length;
+  line.style.animationDelay = (existing * 0.03) + 's';
+  logContainer.appendChild(line);
+  logContainer.scrollTop = logContainer.scrollHeight;
+}
 
   // ---------- 开始日志 ----------
   addLog('System', '初始化加载环境...');
@@ -111,12 +114,10 @@ async function handleLoadingOverlay() {
   addLog('Data', '开始预加载关键数据文件...');
   await sleep(15);
 
-  // 用于保存从 statistics 获取的版本信息
   let currentVersion = null;
   let stats = null;
 
   try {
-    // 获取 statistics.json
     addLog('Data', '正在获取统计信息 (statistics.json)...');
     const statsRes = await fetch(`${CONFIG.API.STATISTICS}?t=${Date.now()}`, { cache: 'no-store' });
     if (!statsRes.ok) throw new Error('statistics.json 加载失败');
@@ -132,7 +133,6 @@ async function handleLoadingOverlay() {
     addLog('Data', `  最后更新: ${stats.last_updated || '未知'}`, 1);
     await sleep(20);
 
-    // 获取 articles.json
     addLog('Data', '正在获取文章列表 (articles.json)...');
     const articlesRes = await fetch(`${CONFIG.API.ARTICLES}?t=${Date.now()}`, { cache: 'no-store' });
     if (!articlesRes.ok) throw new Error('articles.json 加载失败');
@@ -150,7 +150,6 @@ async function handleLoadingOverlay() {
     }
     await sleep(20);
 
-    // 获取 works.json
     addLog('Data', '正在获取作品列表 (works.json)...');
     const worksRes = await fetch(`${CONFIG.API.WORKS}?t=${Date.now()}`, { cache: 'no-store' });
     if (!worksRes.ok) throw new Error('works.json 加载失败');
@@ -167,7 +166,6 @@ async function handleLoadingOverlay() {
     }
     await sleep(20);
 
-    // 获取 code_analysis.json
     addLog('Data', '正在加载代码分析数据 (code_analysis.json)...');
     const codeRes = await fetch('/json/code_analysis.json?t=' + Date.now(), { cache: 'no-store' });
     if (codeRes.ok) {
@@ -184,7 +182,6 @@ async function handleLoadingOverlay() {
     }
     await sleep(20);
 
-    // 获取 friends.json
     addLog('Data', '正在加载友链数据 (friends.json)...');
     const friendsRes = await fetch('/json/friends.json?t=' + Date.now(), { cache: 'no-store' });
     if (friendsRes.ok) {
@@ -205,7 +202,6 @@ async function handleLoadingOverlay() {
     console.warn('[LoadingOverlay] 数据加载部分失败', err);
   }
 
-  // 界面组件初始化
   addLog('UI', '初始化用户界面组件...');
   await sleep(15);
   addLog('UI', '  滚动揭示效果已就绪', 1);
@@ -259,71 +255,173 @@ async function handleLoadingOverlay() {
     await sleep(20);
     overlay.classList.add('hidden');
     restoreScroll();
+    return;
+  }
+
+  // ---------- 版本更新分支 ----------
+  if (storageController.isAllowed()) {
+    addLog('Version', '正在更新本地访问记录...');
+    await sleep(15);
+    const newRecord = {
+      version: currentVersion || cachedVersion || '未知版本',
+      lastVisit: Date.now()
+    };
+    storageController.setItem(CONFIG.STORAGE_KEYS.VISIT_RECORD, JSON.stringify(newRecord));
+    addLog('Version', '本地访问记录已更新');
+  }
+
+  let awayText = '';
+  if (lastVisit) {
+    const diff = Date.now() - lastVisit;
+    const seconds = Math.floor(diff / 1000);
+    if (seconds < 60) awayText = `你刚刚离开 ${seconds} 秒`;
+    else if (seconds < 3600) awayText = `你已经离开 ${Math.floor(seconds / 60)} 分钟`;
+    else if (seconds < 86400) awayText = `你已经离开 ${Math.floor(seconds / 3600)} 小时`;
+    else awayText = `你已经离开 ${Math.floor(seconds / 86400)} 天`;
   } else {
+    awayText = '欢迎首次访问本站';
+  }
+  addLog('Version', `离开时长: ${awayText}`);
+
+  let versionMsg = '';
+  if (cachedVersion && currentVersion && cachedVersion !== currentVersion) {
+    versionMsg = `网站已从版本 ${cachedVersion} 更新到 ${currentVersion}`;
+  } else if (currentVersion) {
+    versionMsg = `当前版本：${currentVersion}`;
+  } else {
+    versionMsg = '版本信息暂未获取，欢迎访问';
+  }
+  addLog('Version', versionMsg);
+
+  addLog('UI', '正在渲染更新提示界面...');
+  await sleep(15);
+
+  // 让 content 显示更新样式（保留标题）
+  content.classList.add('updated');
+  // 移除之前的 update-info（如果有）
+  const oldInfo = content.querySelector('.update-info');
+  if (oldInfo) oldInfo.remove();
+
+  // 创建更新信息容器
+  const infoDiv = document.createElement('div');
+  infoDiv.className = 'update-info';
+  // 内部包含标题（版本信息）和欢迎消息以及点击提示
+  infoDiv.innerHTML = `
+    <div class="version-badge">${versionMsg}</div>
+    <div class="welcome-message">${awayText}</div>
+    <div class="click-hint">点击任意位置继续</div>
+  `;
+  content.appendChild(infoDiv);
+
+  addLog('UI', '更新提示渲染完成，等待用户交互');
+  await sleep(15);
+
+  // ---------- 点击处理：显示 Cookie 申请或直接关闭 ----------
+  const handleOverlayClick = async (e) => {
+    // 如果已经同意过，直接关闭
     if (storageController.isAllowed()) {
-      addLog('Version', '正在更新本地访问记录...');
-      await sleep(15);
-      const newRecord = {
-        version: currentVersion || cachedVersion || '未知版本',
-        lastVisit: Date.now()
-      };
-      storageController.setItem(CONFIG.STORAGE_KEYS.VISIT_RECORD, JSON.stringify(newRecord));
-      addLog('Version', '本地访问记录已更新');
-    }
-
-    let awayText = '';
-    if (lastVisit) {
-      const diff = Date.now() - lastVisit;
-      const seconds = Math.floor(diff / 1000);
-      if (seconds < 60) awayText = `你刚刚离开 ${seconds} 秒`;
-      else if (seconds < 3600) awayText = `你已经离开 ${Math.floor(seconds / 60)} 分钟`;
-      else if (seconds < 86400) awayText = `你已经离开 ${Math.floor(seconds / 3600)} 小时`;
-      else awayText = `你已经离开 ${Math.floor(seconds / 86400)} 天`;
-    } else {
-      awayText = '欢迎首次访问本站';
-    }
-    addLog('Version', `离开时长: ${awayText}`);
-
-    let versionMsg = '';
-    if (cachedVersion && currentVersion && cachedVersion !== currentVersion) {
-      versionMsg = `网站已从版本 ${cachedVersion} 更新到 ${currentVersion}`;
-    } else if (currentVersion) {
-      versionMsg = `当前版本：${currentVersion}`;
-    } else {
-      versionMsg = '版本信息暂未获取，欢迎访问';
-    }
-    addLog('Version', versionMsg);
-
-    addLog('UI', '正在渲染更新提示界面...');
-    await sleep(15);
-    content.classList.add('updated');
-    const oldInfo = content.querySelector('.update-info');
-    if (oldInfo) oldInfo.remove();
-
-    const infoDiv = document.createElement('div');
-    infoDiv.className = 'update-info';
-    infoDiv.innerHTML = `
-      <div class="version-badge">${versionMsg}</div>
-      <div class="welcome-message">${awayText}</div>
-      <div class="click-hint">点击任意位置继续浏览</div>
-    `;
-    content.appendChild(infoDiv);
-
-    addLog('UI', '更新提示渲染完成，等待用户交互');
-    await sleep(15);
-
-    overlay.addEventListener('click', function handler() {
-      addLog('System', '用户点击，关闭覆盖层');
       overlay.classList.add('hidden');
       restoreScroll();
-      overlay.removeEventListener('click', handler);
       window.dispatchEvent(new CustomEvent('welcomeOverlayDismissed'));
-    }, { once: true });
+      overlay.removeEventListener('click', handleOverlayClick);
+      return;
+    }
+
+    // 未同意，替换内容为 Cookie 申请（保留标题）
+    // 获取并保留标题元素（假设标题是 .version-badge 或 .welcome-message，但我们保留整个 .update-info 的标题部分）
+    // 更稳健：保留所有 .update-info 内的 children，只移除 .click-hint
+// 在点击处理函数内部，替换内容之前：
+// 在点击处理函数内部，替换内容之前：
+const hint = infoDiv.querySelector('.click-hint');
+if (hint) hint.remove();
+
+// 添加过渡类，触发淡出（平滑）
+infoDiv.classList.add('transitioning');
+
+// 等待淡出动画完成（约 500ms，与 CSS 匹配）
+await sleep(500);
+
+// 此时构建新内容
+const titleContainer = document.createElement('div');
+titleContainer.className = 'cookie-consent-title';
+const badge = infoDiv.querySelector('.version-badge');
+const welcome = infoDiv.querySelector('.welcome-message');
+if (badge) titleContainer.appendChild(badge.cloneNode(true));
+if (welcome) titleContainer.appendChild(welcome.cloneNode(true));
+
+const consentDiv = document.createElement('div');
+consentDiv.className = 'cookie-consent-panel';
+consentDiv.innerHTML = `
+  <div class="consent-benefits">
+    <p><i class="fas fa-palette"></i> 记录主题偏好，下次访问自动应用</p>
+    <p><i class="fas fa-database"></i> 缓存文章数据，提升加载速度</p>
+    <p><i class="fas fa-chart-line"></i> 分析访问流量，优化网站体验</p>
+  </div>
+  <div class="consent-privacy">
+    <i class="fas fa-shield-alt"></i>
+    <span>我们不会使用 Cookie 投放个性化广告，<a href="/privacy.html" target="_blank">查看完整隐私政策</a></span>
+  </div>
+  <div class="consent-actions">
+    <button class="consent-btn consent-accept" id="consent-accept-btn">继续</button>
+    <button class="consent-btn consent-decline" id="consent-decline-btn">拒绝</button>
+  </div>
+`;
+
+// 清空 infoDiv 并添加新内容（此时 `transitioning` 类还在，但新内容无过渡，因为它是新元素）
+infoDiv.innerHTML = '';
+// 移除 transitioning 类以允许新内容入场（但新内容本身有动画，所以不需要该类）
+infoDiv.classList.remove('transitioning');
+
+// 添加新内容
+infoDiv.appendChild(titleContainer);
+infoDiv.appendChild(consentDiv);
+
+// 强制重排确保动画启动
+void infoDiv.offsetHeight;
+
+// ---------- 绑定按钮事件（保持不变） ----------
+const acceptBtn = infoDiv.querySelector('#consent-accept-btn');
+const declineBtn = infoDiv.querySelector('#consent-decline-btn');
+
+acceptBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const consentManager = new CookieConsentManager(storageController);
+  consentManager.setConsented(true);
+  window.dispatchEvent(new CustomEvent('cookieConsentAccepted'));
+  const banner = document.getElementById('cookie-consent-banner');
+  if (banner) banner.remove();
+  overlay.classList.add('hidden');
+  restoreScroll();
+  window.dispatchEvent(new CustomEvent('welcomeOverlayDismissed'));
+  overlay.removeEventListener('click', handleOverlayClick);
+});
+
+declineBtn.addEventListener('click', (e) => {
+  e.stopPropagation();
+  const consentManager = new CookieConsentManager(storageController);
+  consentManager.setConsented(false);
+  const banner = document.getElementById('cookie-consent-banner');
+  if (banner) {
+    banner.style.display = '';        // 恢复显示
+    banner.classList.remove('hidden');
   }
+  overlay.classList.add('hidden');
+  restoreScroll();                    // 恢复滚动
+  window.dispatchEvent(new CustomEvent('welcomeOverlayDismissed'));
+  overlay.removeEventListener('click', handleOverlayClick);
+});
+
+    // 点击覆盖层其他位置不关闭，防止误触
+  };
+
+  // 绑定点击事件
+  overlay.addEventListener('click', handleOverlayClick);
 }
 
 // ========== 主启动函数 ==========
 async function bootstrap() {
+  document.body.classList.add('loading');
+
   // 1. 立即添加优化标签
   addOptimizationLinks();
 
