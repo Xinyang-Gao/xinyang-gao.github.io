@@ -8,38 +8,51 @@
     <link rel="stylesheet" href="./style.css">
 </head>
 <body>
-<div class="glass-bg"></div>
+    <div class="glass-bg"></div>
 
-<!-- ===== 移动端横屏提示 ===== -->
-<div class="rotate-hint" id="rotateHint">
-    <span>建议横屏浏览 · 获得更佳体验</span>
-    <button class="hint-close" id="hintClose">✕</button>
-</div>
+    <!-- 横屏提示 -->
+    <div class="rotate-hint" id="rotateHint">
+        <span>建议横屏浏览 · 获得更佳体验</span>
+        <button class="hint-close" id="hintClose">✕</button>
+    </div>
 
-<div class="app">
-    <!-- 左侧导航栏 -->
-    <aside class="nav-sidebar" id="navSidebar">
-        <div class="nav-header">
-            <h2>师恩·长卷</h2>
-            <p>毕业赠诗 · 敬呈诸师</p>
-            <!-- 汉堡切换按钮（移动端可见） -->
+    <div class="app" style="display:flex;flex-direction:column;height:100vh;width:100vw;position:relative;">
+
+        <!-- ===== 顶部导航栏 ===== -->
+        <nav class="top-nav" id="topNav">
+            <!-- 品牌 -->
+            <div class="nav-brand">
+                <h2>师恩·长卷</h2>
+                <span class="sub">毕业赠诗</span>
+            </div>
+
+            <!-- 导航列表 (桌面) -->
+            <div class="nav-list-wrap" id="navListWrap">
+                <ul class="nav-list" id="navList">
+                    <!-- 由 JS 生成 -->
+                </ul>
+            </div>
+
+            <!-- 汉堡按钮 -->
             <button class="nav-toggle" id="navToggle" aria-label="切换导航">
                 <span></span><span></span><span></span>
             </button>
-        </div>
-        <ul class="nav-list" id="navList">
-            <!-- 动态js生成导航 -->
-        </ul>
-        <div class="nav-footer">初三学子 · 敬呈</div>
-    </aside>
 
-    <!-- 右侧主内容区 -->
-    <main class="main-content" id="mainContent">
-        <div class="scroll-wrapper" id="scrollWrapper">
-            <div id="dynamicCard"></div>
+            <div class="nav-footer-top">初三学子 · 敬呈</div>
+        </nav>
+
+        <!-- ===== 移动端下拉菜单 ===== -->
+        <div class="nav-mobile-dropdown" id="navMobileDropdown">
+            <!-- 由 JS 动态填充 -->
         </div>
-    </main>
-</div>
+
+        <!-- ===== 主内容区 ===== -->
+        <main class="main-content" id="mainContent">
+            <div class="scroll-wrapper" id="scrollWrapper">
+                <div id="dynamicCard"></div>
+            </div>
+        </main>
+    </div>
 
 <script src="./script.js"></script>
 </body>
