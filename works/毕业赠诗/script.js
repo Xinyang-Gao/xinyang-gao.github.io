@@ -12,14 +12,15 @@ const navToggle = document.getElementById('navToggle');
 const topNav = document.getElementById('topNav');
 
 if (navToggle) {
-    navToggle.addEventListener('click', function(e) {
+    navToggle.addEventListener('click', function (e) {
         e.stopPropagation();
         const isOpen = navMobileDropdown.classList.toggle('open');
         navToggle.classList.toggle('active', isOpen);
     });
-    document.addEventListener('click', function(e) {
+    document.addEventListener('click', function (e) {
         if (window.innerWidth <= 640) {
-            if (navMobileDropdown.classList.contains('open') && !topNav.contains(e.target) && !navMobileDropdown.contains(e.target)) {
+            if (navMobileDropdown.classList.contains('open') && !topNav.contains(e.target) && !navMobileDropdown
+                .contains(e.target)) {
                 navMobileDropdown.classList.remove('open');
                 navToggle.classList.remove('active');
             }
@@ -43,13 +44,13 @@ if (hint && hintClose) {
             }, 500);
         }, 5000);
     }
-    hintClose.addEventListener('click', function() {
+    hintClose.addEventListener('click', function () {
         hint.classList.add('hiding');
         setTimeout(() => {
             hint.classList.remove('show', 'hiding');
         }, 500);
     });
-    window.addEventListener('resize', function() {
+    window.addEventListener('resize', function () {
         if (checkMobile()) {
             if (!hint.classList.contains('show') && !hint.classList.contains('hiding')) {
                 hint.classList.add('show');
@@ -67,18 +68,10 @@ if (hint && hintClose) {
 }
 
 // ============================================================
-//  判断是否应显示印章
+//  判断是否应显示印章（数据驱动）
 // ============================================================
 function shouldShowSeal(item) {
-    if (!item) return false;
-    if (item.id === "hero") return true;
-    if (item.type === "placeholder" || item.id === "other_teacher_placeholder") return false;
-    if (item.type === "classmate" || item.id === "classmates") return false;
-    const lines = item.poemLines || [];
-    if (lines.length === 0) return false;
-    const first = lines[0] || '';
-    if (first.includes("未完待续") || first.includes("未完成喵")) return false;
-    return true;
+    return item.showSeal === true;
 }
 
 // ============================================================
@@ -101,7 +94,7 @@ function getDividerIndex(item) {
 }
 
 // ============================================================
-//  构建竖排内容
+//  构建竖排内容（返回 HTML 字符串，字符用 span 包裹）
 // ============================================================
 function buildScrollContent(columns) {
     if (!columns || columns.length === 0) {
@@ -113,7 +106,8 @@ function buildScrollContent(columns) {
         const content = col.content || '';
         const extraClass = col.small ? ' small' : '';
         if (type === 'divider') {
-            colsHtml += `<div class="verse-column type-divider"></div>`;
+            const beforeCount = col.beforeCount || 0;
+            colsHtml += `<div class="verse-column type-divider divider-hidden" data-before-count="${beforeCount}"></div>`;
             return;
         }
         if (type === 'seal') {
@@ -124,77 +118,155 @@ function buildScrollContent(columns) {
             `;
             return;
         }
-        const safeContent = content.replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        colsHtml += `<div class="verse-column type-${type}${extraClass}">${safeContent}</div>`;
+        const chars = content.split('');
+        const charSpans = chars.map(ch => `<span class="char-span">${ch}</span>`).join('');
+        colsHtml += `<div class="verse-column type-${type}${extraClass}">${charSpans}</div>`;
     });
     return `<div class="scroll-content">${colsHtml}</div>`;
 }
 
 // ============================================================
-//  渲染主函数
+//  渲染主函数（含动画控制、打断、已显示标记）
 // ============================================================
+let exitTimer = null;          // 整体完成定时器（标记已显示 + 印章按压）
+let dividerTimers = [];        // 各分割线显示定时器
+const alreadyShown = new Set(); // 记录已完整显示过的篇目 id
+
 function renderContent(item) {
     if (!dynamicCard) return;
 
-    if (item.type === "hero" || item.id === "hero") {
-        const heroColumns = [
-            { type: 'hero-title', content: '师恩长 · 行远思源' },
-            { type: 'hero-sub', content: '献给每一位照亮前路的恩师与同窗' },
-            { type: 'hero-body', content: '三载春秋，笔墨书不尽谆谆教诲；数度晨昏，背影承无数殷殷目光。' },
-            { type: 'hero-body', content: '老师，是您引我们穿越迷雾，以知识与爱陪伴成长。' },
-            { type: 'hero-body', content: '今当毕业，将心中感激化作拙词数阙，嵌名入句，愿情谊留驻。' },
-            { type: 'hero-body', content: '窗外梧桐已亭亭，师恩似海永长存。左侧名录，敬呈诸位恩师；同窗篇章，亦为青春见证。' },
-            { type: 'hero-sign', content: '—— 九年级学子 敬上' }
-        ];
-        if (shouldShowSeal(item)) {
-            heroColumns.push({ type: 'seal', content: 'LOGO.png' });
-        }
-        dynamicCard.innerHTML = buildScrollContent(heroColumns);
-        return;
-    }
+    // ---- 1. 打断：清除所有正在进行的定时器 ----
+    if (exitTimer) clearTimeout(exitTimer);
+    dividerTimers.forEach(t => clearTimeout(t));
+    dividerTimers = [];
 
+    const id = item.id;
     const columns = [];
-    let titleDisplay = item.titleMain;
-    if (!titleDisplay && item.id === "classmates") titleDisplay = "致同窗";
-    if (!titleDisplay && item.id === "other_teacher_placeholder") titleDisplay = "师恩未歇";
-    if (titleDisplay && titleDisplay !== "NULL:JSON_titleMain") {
-        columns.push({ type: 'title', content: titleDisplay });
+    let charCount = 0;   // 累计非分割/印章列的字符总数
+
+    // ---- 标题 ----
+    if (item.titleMain && item.titleMain.trim() !== '') {
+        columns.push({ type: 'title', content: item.titleMain });
+        charCount += item.titleMain.length;
     }
-    if (item.teacherName && item.teacherName !== "NULL:JSON_teacherName") {
+    // ---- 作者 ----
+    if (item.teacherName && item.teacherName.trim() !== '') {
         columns.push({ type: 'author', content: item.teacherName });
+        charCount += item.teacherName.length;
     }
-    if (item.role && item.role !== "NULL:JSON_role") {
+    if (item.role && item.role.trim() !== '') {
         columns.push({ type: 'author', content: item.role, small: true });
+        charCount += item.role.length;
     }
 
+    // ---- 诗句 ----
     const lines = (item.poemLines || []).filter(l => l.trim() !== '');
     const dividerIdx = getDividerIndex(item);
 
     lines.forEach((line, idx) => {
         if (dividerIdx !== -1 && idx === dividerIdx) {
-            columns.push({ type: 'divider', content: '' });
+            // 插入分割线，记录当前已累计的字符数
+            columns.push({ type: 'divider', content: '', beforeCount: charCount });
+            // 分割线本身不增加字符计数
         }
         columns.push({ type: 'verse', content: line });
+        charCount += line.length;
     });
 
-    const annotation = item.annotation && item.annotation !== "NULL:JSON_annotation" ? item.annotation : null;
-    const extraNote = item.extraNote && item.extraNote !== "NULL:JSON_extraNote" ? item.extraNote : null;
-    if (annotation) {
-        columns.push({ type: 'annotation', content: annotation });
+    // ---- 注释 ----
+    if (item.annotation && item.annotation.trim() !== '') {
+        columns.push({ type: 'annotation', content: item.annotation });
+        charCount += item.annotation.length;
     }
-    if (extraNote && !annotation) {
-        columns.push({ type: 'annotation', content: extraNote });
-    } else if (extraNote && annotation) {
-        columns.push({ type: 'annotation', content: extraNote });
+    if (item.extraNote && item.extraNote.trim() !== '') {
+        columns.push({ type: 'annotation', content: item.extraNote });
+        charCount += item.extraNote.length;
     }
 
-    columns.push({ type: 'signature', content: '—— 高新炀 敬赠' });
+    // ---- 落款 ----
+    const signature = item.signature || '—— 高新炀 敬赠';
+    columns.push({ type: 'signature', content: signature });
+    charCount += signature.length;
 
+    // ---- 印章 ----
     if (shouldShowSeal(item)) {
         columns.push({ type: 'seal', content: 'LOGO.png' });
+        // 印章不计入字符数
     }
 
-    dynamicCard.innerHTML = buildScrollContent(columns);
+    // ---- 生成 HTML ----
+    const html = buildScrollContent(columns);
+    dynamicCard.innerHTML = html;
+    const scrollContent = dynamicCard.querySelector('.scroll-content');
+    if (!scrollContent) return;
+
+    // ---- 2. 判断是否已显示过 ----
+    if (alreadyShown.has(id)) {
+        // 已显示过：无动画，直接显示所有内容
+        scrollContent.classList.add('no-anim');
+
+        // 显示分割线
+        scrollContent.querySelectorAll('.verse-column.type-divider').forEach(el => {
+            el.classList.add('divider-visible');
+            el.classList.remove('divider-hidden');
+        });
+
+        // 显示印章（移除按压类，直接可见）
+        const sealImg = scrollContent.querySelector('.verse-column.type-seal img');
+        if (sealImg) {
+            sealImg.style.opacity = '1';
+            sealImg.classList.remove('press');
+        }
+
+        return;
+    }
+
+    // ---- 3. 首次显示：应用非线性字符动画 ----
+    const chars = scrollContent.querySelectorAll('.char-span');
+    const total = chars.length;
+    const linearStep = 0.020;      // 可调：每字符基础间隔
+    const quadStep = 0.0005;       // 可调：二次缓动系数
+    chars.forEach((span, idx) => {
+        const delay = idx * linearStep + idx * idx * quadStep;
+        span.style.animationDelay = delay + 's';
+    });
+
+    // 计算最大延迟
+    let maxDelay = 0;
+    if (total > 0) {
+        const lastIdx = total - 1;
+        maxDelay = lastIdx * linearStep + lastIdx * lastIdx * quadStep + 1 ;
+    }
+    const animDuration = 0.3;      // 同时缩短单字淡入时间
+    const totalTime = maxDelay + animDuration;
+
+    // ---- 4. 整体完成定时器：标记已显示 + 印章按压 ----
+    exitTimer = setTimeout(() => {
+        alreadyShown.add(id);
+
+        // 印章按压动画
+        const sealImg = scrollContent.querySelector('.verse-column.type-seal img');
+        if (sealImg) {
+            sealImg.classList.add('press');
+        }
+        exitTimer = null;
+    }, totalTime * 1000 + 100);
+
+    // ---- 5. 分割线逐列显现 ----
+    const dividers = scrollContent.querySelectorAll('.verse-column.type-divider');
+    dividers.forEach(divEl => {
+        const beforeCount = parseInt(divEl.dataset.beforeCount, 10);
+        let delay = 0;
+        if (beforeCount > 0) {
+            const idx = beforeCount - 1;                // 该分割线前的最后一个字符索引
+            delay = idx * 0.035 + idx * idx * 0.001 + animDuration;
+        }
+        const timer = setTimeout(() => {
+            divEl.classList.add('divider-visible');
+            divEl.classList.remove('divider-hidden');
+        }, delay * 1000 + 50);
+        dividerTimers.push(timer);
+    });
 }
 
 // ============================================================
@@ -281,7 +353,7 @@ function setActive(activeId) {
 }
 
 // ============================================================
-//  初始化：从外部 JSON 加载数据
+//  初始化
 // ============================================================
 function init() {
     fetch('data.json')
@@ -301,13 +373,10 @@ function init() {
         })
         .catch(error => {
             console.error('加载诗词数据失败:', error);
-            // 显示错误提示
-            dynamicCard.innerHTML = `<div class="scroll-content" style="padding:2rem;color:#9e8a7a;">数据加载失败，请检查 data.json 文件是否存在。</div>`;
+            dynamicCard.innerHTML =
+                `<div class="scroll-content" style="padding:2rem;color:#9e8a7a;">数据加载失败，请检查 data.json 文件是否存在。</div>`;
         });
 }
 
-// 启动
 init();
-
-// 窗口resize时保持滚动位置
-window.addEventListener('resize', () => {});
+window.addEventListener('resize', () => { });

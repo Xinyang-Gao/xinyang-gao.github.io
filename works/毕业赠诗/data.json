@@ -2,10 +2,21 @@
     {
         "id": "hero",
         "navLabel": "首页 · 长念",
-        "type": "hero",
-        "title": "青春致意",
-        "sub": "毕业季 · 敬献恩师与同窗",
-        "heroContent": true
+        "titleMain": "师恩长 · 行远思源",
+        "poemLines": [
+            "献给每一位照亮前路的恩师与同窗",
+            "三载春秋，笔墨书不尽谆谆教诲；",
+            "数度晨昏，背影承无数殷殷目光。",
+            "老师，是您引我们穿越迷雾，",
+            "以知识与爱陪伴成长。",
+            "今当毕业，将心中感激化作拙词数阙，",
+            "嵌名入句，愿情谊留驻。",
+            "窗外梧桐已亭亭，师恩似海永长存。",
+            "左侧名录，敬呈诸位恩师；",
+            "同窗篇章，亦为青春见证。"
+        ],
+        "signature": "—— 九年级学子 敬上",
+        "showSeal": true
     },
     {
         "id": "shi_zhenping",
@@ -27,8 +38,7 @@
             "无言桃李自芳妍，",
             "声绕杏梁忆昔年。"
         ],
-        "annotation": "NULL:JSON_annotation",
-        "extraNote": "NULL:JSON_extraNote"
+        "showSeal": true
     },
     {
         "id": "song_meilian",
@@ -42,8 +52,7 @@
             "传汉赋，解楚兰，春秋笔墨写悲欢。",
             "三年立雪程门外，回首春风满故山。"
         ],
-        "annotation": "NULL:JSON_annotation",
-        "extraNote": "NULL:JSON_extraNote"
+        "showSeal": true
     },
     {
         "id": "lyu_hui",
@@ -58,8 +67,7 @@
             "纵然半路辞君去，基石深埋已稳基。",
             "且看桃李自成蹊。"
         ],
-        "annotation": "NULL:JSON_annotation",
-        "extraNote": "NULL:JSON_extraNote"
+        "showSeal": true
     },
     {
         "id": "zhang_cuiping",
@@ -75,8 +83,7 @@
             "细心批改到宵沉。",
             "不言桃李满，但记此时心。"
         ],
-        "annotation": "NULL:JSON_annotation",
-        "extraNote": "NULL:JSON_extraNote"
+        "showSeal": true
     },
     {
         "id": "chen_gang",
@@ -92,29 +99,27 @@
             "课时生动不曾闲。",
             "最喜此间活跃、似春澜。"
         ],
-        "annotation": "NULL:JSON_annotation",
-        "extraNote": "笑声满堂，知识常新。"
+        "extraNote": "笑声满堂，知识常新。",
+        "showSeal": true
     },
     {
         "id": "other_teacher_placeholder",
         "navLabel": "未完待续",
-        "type": "placeholder",
-        "teacherName": "NULL:JSON_teacherName",
-        "role": "NULL:JSON_role",
-        "titleMain": "NULL:JSON_titleMain",
-        "poemLines": ["未完待续"],
-        "annotation": "NULL:JSON_annotation",
-        "extraNote": "NULL:JSON_extraNote"
+        "titleMain": "师恩未歇",
+        "poemLines": [
+            "未完待续"
+        ],
+        "showSeal": false
     },
     {
         "id": "classmates",
         "navLabel": "同学",
-        "type": "classmate",
-        "teacherName": "致 六班每一个同学",
-        "role": "NULL:JSON_role",
-        "titleMain": "NULL:JSON_titleMain",
-        "poemLines": ["给每个同学写一首诗，未完成喵"],
+        "titleMain": "致同窗",
+        "poemLines": [
+            "给每个同学写一首诗，未完成喵"
+        ],
         "annotation": "感谢彼此陪伴，愿前程似锦，友谊常青。",
-        "extraNote": "毕业不是终点，是星河的起点。"
+        "extraNote": "毕业不是终点，是星河的起点。",
+        "showSeal": false
     }
 ]
