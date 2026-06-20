@@ -335,7 +335,7 @@ if GUI_AVAILABLE:
                 self.arg_labels.append(arg_label)
 
             # 提示文字
-            hint = ttk.Label(top_frame, text="💡 提示：双击脚本参数区域可编辑传递的参数", foreground="gray")
+            hint = ttk.Label(top_frame, text="提示：双击脚本参数区域可编辑传递的参数", foreground="gray")
             hint.pack(anchor=tk.W, pady=(5, 0))
 
             # 控制按钮

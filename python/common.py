@@ -53,30 +53,36 @@ def log_error(msg: str) -> None:
 # ---------- 日期处理 ----------
 def format_date(date_str: str, default: str = None) -> str:
     """
-    将 YYYY-MM-DD 或 YYYY年MM月DD日 转为 YYYY年MM月DD日
+    将 YYYY-MM-DD 或 YYYY年MM月DD日 转为 YYYY年MM月DD日。
+    若 date_str 为空或“未指定”，返回 default（若为 None 则返回“未指定日期”）。
     """
     if not date_str or date_str == "未指定":
-        return default or datetime.now().strftime("%Y年%m月%d日")
+        return default if default is not None else "未指定日期"
     try:
         if re.match(r'\d{4}-\d{1,2}-\d{1,2}', date_str):
             dt = datetime.strptime(date_str, '%Y-%m-%d')
             return dt.strftime("%Y年%m月%d日")
     except ValueError:
         pass
-    return date_str
+    # 尝试解析中文格式
+    try:
+        dt = datetime.strptime(date_str, "%Y年%m月%d日")
+        return dt.strftime("%Y年%m月%d日")
+    except ValueError:
+        pass
+    return date_str  # 保留原样
 
 def format_date_iso(date_str: str) -> str:
-    """返回 YYYY-MM-DD 格式，用于排序和元数据"""
+    """返回 YYYY-MM-DD 格式，用于排序和元数据。若无效则返回“未指定日期”"""
     if not date_str or date_str == "未指定":
-        return datetime.now().strftime("%Y-%m-%d")
+        return "未指定日期"
     try:
         if re.match(r'\d{4}-\d{1,2}-\d{1,2}', date_str):
             return date_str[:10]
-        # 尝试解析中文格式
         dt = datetime.strptime(date_str, "%Y年%m月%d日")
         return dt.strftime("%Y-%m-%d")
     except ValueError:
-        return datetime.now().strftime("%Y-%m-%d")
+        return "未指定日期"
 
 def get_current_date_iso() -> str:
     return datetime.now().strftime("%Y-%m-%d")

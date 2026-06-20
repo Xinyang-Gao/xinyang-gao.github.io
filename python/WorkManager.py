@@ -61,12 +61,18 @@ def main():
         else:
             log_warning(f"{metadata_path} 不存在，使用默认值")
 
+        if isinstance(tag, str):
+            # 支持逗号、中文逗号、空格分隔
+            import re
+            tag = [t.strip() for t in re.split(r'[,\s，、]+', tag) if t.strip()]
+        elif not isinstance(tag, list):
+            tag = [str(tag)] if tag else []
+
+        if not date:
+            date = "未指定日期"
+
         if not link.strip():
             link = f"./works/{title}/"
-
-        if not isinstance(tag, list):
-            log_warning(f"{metadata_path} 中的 'tag' 不是列表，转为单元素列表")
-            tag = [tag] if tag else []
 
         # 隐藏标签过滤
         if "隐藏" in tag:
@@ -82,7 +88,7 @@ def main():
             "link": link
         })
 
-    # 按日期降序排序
+    # 按日期降序排序（“未指定日期”会排在最后，因为字符串排序规则）
     works_list.sort(key=lambda x: x.get('date', ''), reverse=True)
 
     output_path = JSON_OUTPUT_DIR / "works.json"

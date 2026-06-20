@@ -37,7 +37,8 @@ except Exception:
 from common import (
     PROJECT_ROOT, SOURCE_DIR, HTML_OUTPUT_DIR, JSON_OUTPUT_DIR,
     log_info, log_warning, log_error,
-    format_date, get_current_date_iso, get_current_datetime_iso,
+    format_date, format_date_iso,
+    get_current_date_iso, get_current_datetime_iso,
     compute_content_hash, get_relative_path, slugify,
     count_words, calculate_read_time, load_json, save_json, ensure_dir
 )
@@ -379,7 +380,13 @@ def process_markdown_file(md_file_path: Path, old_article: Optional[dict] = None
         final_category = md_file_path.parent.name if md_file_path.parent != SOURCE_DIR else "未分类"
 
     title = metadata.get('title', '未命名文章')
-    date = metadata.get('date', '未指定日期')
+    
+    date_raw = metadata.get('date', '')
+    if not date_raw:
+        date = '未指定日期'
+    else:
+        date = format_date(date_raw, '')  # 若无效，format_date 会返回原字符串或“未指定日期”
+
     description = metadata.get('description', '')
     author = metadata.get('author', '')
     tags = metadata.get('tag', [])
@@ -417,7 +424,7 @@ def process_markdown_file(md_file_path: Path, old_article: Optional[dict] = None
         'modify_count': modify_count,
         'hidden': hidden,
         'title': title,
-        'date': format_date(date, ""),
+        'date': format_date_iso(date),  # 存储时用 ISO 格式，但若为“未指定日期”则保留
         'description': description,
         'author': author if author else '高新炀',
         'tags': tags,
@@ -426,7 +433,6 @@ def process_markdown_file(md_file_path: Path, old_article: Optional[dict] = None
         'word_count': word_count,
         'read_time': read_time
     }
-
 def process_all_markdown_files() -> List[dict]:
     old_articles = load_articles()
     articles_dict = {a['relative_path']: a for a in old_articles}
