@@ -1086,6 +1086,7 @@ export class ExternalLinkManager {
   handleLinkClick(e) {
     let target = e.target.closest('a');
     if (!target) return;
+    if (target.closest('[data-friend-link="true"]')) return;
     const href = target.getAttribute('href');
     if (!href) return;
     if (this.isExternalLink(href)) {

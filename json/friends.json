@@ -22,9 +22,15 @@
   "avatar": "https://q2.qlogo.cn/headimg_dl?dst_uin=9892214&spec=0"
 },
 {
-  "name": "LsAng", 
-  "link": "https://llds.cloud",
-  "desc": "学习、探索中",
-  "avatar": "https://llds.cloud/lsang.png"
+  "name": "Welcome to - 小枫_QWQ的Blog", 
+  "link": "https://blog.xiaofengqwq.com",
+  "desc": "欢迎来到小枫_QWQ的Blog！这是一个致力于分享前后端技术的博客。同时也分享一些闲聊碎语",
+  "avatar": "https://q.qlogo.cn/headimg_dl?dst_uin=1432777209&spec=640&img_type=jpg"
+},
+{
+  "name": "TT清沫uk", 
+  "link": "https://ttquk.netlify.app",
+  "desc": "TT清沫ukの博客",
+  "avatar": "https://ts1.tc.mm.bing.net/th/id/OIP-C.6WsD9caLSNQFhJOi77soRAHaHa?rs=1&pid=ImgDetMain&o=7&rm=3"
 }
 ]

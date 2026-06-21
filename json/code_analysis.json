@@ -1,52 +1,52 @@
 {
-  "generated_at": "2026-06-21T09:21:29.649848",
+  "generated_at": "2026-06-21T10:25:58.580139",
   "root_dir": "C:\\Users\\Administrator\\Desktop\\编程\\xinyang-gao.github.io\\xinyang-gao.github.io",
-  "total_files": 153,
-  "total_size_bytes": 2223883,
-  "total_lines": 44386,
-  "non_empty_lines": 40027,
+  "total_files": 155,
+  "total_size_bytes": 2242125,
+  "total_lines": 44935,
+  "non_empty_lines": 40524,
   "by_extension": [
+    {
+      "extension": ".js",
+      "count": 36,
+      "total_size_bytes": 538224,
+      "total_lines": 13071,
+      "non_empty_lines": 11824
+    },
     {
       "extension": ".html",
       "count": 35,
-      "total_size_bytes": 426619,
-      "total_lines": 7162,
-      "non_empty_lines": 6617
-    },
-    {
-      "extension": ".js",
-      "count": 35,
-      "total_size_bytes": 529604,
-      "total_lines": 12822,
-      "non_empty_lines": 11605
+      "total_size_bytes": 428941,
+      "total_lines": 7189,
+      "non_empty_lines": 6642
     },
     {
       "extension": ".css",
       "count": 23,
-      "total_size_bytes": 338122,
-      "total_lines": 14342,
-      "non_empty_lines": 12773
+      "total_size_bytes": 341493,
+      "total_lines": 14485,
+      "non_empty_lines": 12906
     },
     {
       "extension": ".json",
-      "count": 20,
-      "total_size_bytes": 37107,
-      "total_lines": 1211,
-      "non_empty_lines": 1211
+      "count": 21,
+      "total_size_bytes": 37974,
+      "total_lines": 1254,
+      "non_empty_lines": 1254
     },
     {
       "extension": ".md",
       "count": 16,
-      "total_size_bytes": 140606,
-      "total_lines": 2748,
-      "non_empty_lines": 2109
+      "total_size_bytes": 140687,
+      "total_lines": 2751,
+      "non_empty_lines": 2111
     },
     {
       "extension": ".py",
       "count": 11,
-      "total_size_bytes": 111051,
-      "total_lines": 2736,
-      "non_empty_lines": 2438
+      "total_size_bytes": 114032,
+      "total_lines": 2820,
+      "non_empty_lines": 2513
     },
     {
       "extension": ".xml",

@@ -10,6 +10,7 @@ import { handleListItemClick } from '/js/ui/list-events.js';
 import { initClarityOnConsent, updateClarityPage } from '/js/core/clarity.js';
 import { renderPersonalCard } from '/js/ui/personal-card.js';
 import { initButtons } from '/js/ui/button-manager.js';
+import { friendLinkManager } from '/js/ui/friend-link-manager.js';
 
 let cookieConsentManager = null;
 
@@ -50,10 +51,10 @@ function addOptimizationLinks() {
 // ========== 加载覆盖层版本检测逻辑 ==========
 async function handleLoadingOverlay() {
 
-function restoreScroll() {
-  document.body.classList.remove('loading');
-  document.body.style.overflow = ''; // 兼容旧逻辑
-}
+  function restoreScroll() {
+    document.body.classList.remove('loading');
+    document.body.style.overflow = ''; // 兼容旧逻辑
+  }
 
   const overlay = document.getElementById('loading-overlay');
   const content = document.getElementById('loading-content');
@@ -75,17 +76,17 @@ function restoreScroll() {
   const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms || 20));
 
   // ---- 增强的 addLog ----
-function addLog(module, msg, indent = 0) {
-  const time = new Date().toLocaleTimeString();
-  const indentStr = '│ '.repeat(indent) + (indent > 0 ? '├── ' : '');
-  const line = document.createElement('div');
-  line.textContent = `[${time}][${module}] ${indentStr}${msg}`;
-  // 动态设置延迟，基于已有子元素数量
-  const existing = logContainer.children.length;
-  line.style.animationDelay = (existing * 0.03) + 's';
-  logContainer.appendChild(line);
-  logContainer.scrollTop = logContainer.scrollHeight;
-}
+  function addLog(module, msg, indent = 0) {
+    const time = new Date().toLocaleTimeString();
+    const indentStr = '│ '.repeat(indent) + (indent > 0 ? '├── ' : '');
+    const line = document.createElement('div');
+    line.textContent = `[${time}][${module}] ${indentStr}${msg}`;
+    // 动态设置延迟，基于已有子元素数量
+    const existing = logContainer.children.length;
+    line.style.animationDelay = (existing * 0.03) + 's';
+    logContainer.appendChild(line);
+    logContainer.scrollTop = logContainer.scrollHeight;
+  }
 
   // ---------- 开始日志 ----------
   addLog('System', '初始化加载环境...');
@@ -240,7 +241,7 @@ function addLog(module, msg, indent = 0) {
   if (storageController.isAllowed()) {
     const raw = storageController.getItem(CONFIG.STORAGE_KEYS.VISIT_RECORD);
     if (raw) {
-      try { record = JSON.parse(raw); } catch {}
+      try { record = JSON.parse(raw); } catch { }
     }
   }
   const cachedVersion = record.version || null;
@@ -330,28 +331,28 @@ function addLog(module, msg, indent = 0) {
     // 未同意，替换内容为 Cookie 申请（保留标题）
     // 获取并保留标题元素（假设标题是 .version-badge 或 .welcome-message，但我们保留整个 .update-info 的标题部分）
     // 更稳健：保留所有 .update-info 内的 children，只移除 .click-hint
-// 在点击处理函数内部，替换内容之前：
-// 在点击处理函数内部，替换内容之前：
-const hint = infoDiv.querySelector('.click-hint');
-if (hint) hint.remove();
+    // 在点击处理函数内部，替换内容之前：
+    // 在点击处理函数内部，替换内容之前：
+    const hint = infoDiv.querySelector('.click-hint');
+    if (hint) hint.remove();
 
-// 添加过渡类，触发淡出（平滑）
-infoDiv.classList.add('transitioning');
+    // 添加过渡类，触发淡出（平滑）
+    infoDiv.classList.add('transitioning');
 
-// 等待淡出动画完成（约 500ms，与 CSS 匹配）
-await sleep(500);
+    // 等待淡出动画完成（约 500ms，与 CSS 匹配）
+    await sleep(500);
 
-// 此时构建新内容
-const titleContainer = document.createElement('div');
-titleContainer.className = 'cookie-consent-title';
-const badge = infoDiv.querySelector('.version-badge');
-const welcome = infoDiv.querySelector('.welcome-message');
-if (badge) titleContainer.appendChild(badge.cloneNode(true));
-if (welcome) titleContainer.appendChild(welcome.cloneNode(true));
+    // 此时构建新内容
+    const titleContainer = document.createElement('div');
+    titleContainer.className = 'cookie-consent-title';
+    const badge = infoDiv.querySelector('.version-badge');
+    const welcome = infoDiv.querySelector('.welcome-message');
+    if (badge) titleContainer.appendChild(badge.cloneNode(true));
+    if (welcome) titleContainer.appendChild(welcome.cloneNode(true));
 
-const consentDiv = document.createElement('div');
-consentDiv.className = 'cookie-consent-panel';
-consentDiv.innerHTML = `
+    const consentDiv = document.createElement('div');
+    consentDiv.className = 'cookie-consent-panel';
+    consentDiv.innerHTML = `
   <div class="consent-benefits">
     <p><i class="fas fa-palette"></i> 记录主题偏好，下次访问自动应用</p>
     <p><i class="fas fa-database"></i> 缓存文章数据，提升加载速度</p>
@@ -367,49 +368,49 @@ consentDiv.innerHTML = `
   </div>
 `;
 
-// 清空 infoDiv 并添加新内容（此时 `transitioning` 类还在，但新内容无过渡，因为它是新元素）
-infoDiv.innerHTML = '';
-// 移除 transitioning 类以允许新内容入场（但新内容本身有动画，所以不需要该类）
-infoDiv.classList.remove('transitioning');
+    // 清空 infoDiv 并添加新内容（此时 `transitioning` 类还在，但新内容无过渡，因为它是新元素）
+    infoDiv.innerHTML = '';
+    // 移除 transitioning 类以允许新内容入场（但新内容本身有动画，所以不需要该类）
+    infoDiv.classList.remove('transitioning');
 
-// 添加新内容
-infoDiv.appendChild(titleContainer);
-infoDiv.appendChild(consentDiv);
+    // 添加新内容
+    infoDiv.appendChild(titleContainer);
+    infoDiv.appendChild(consentDiv);
 
-// 强制重排确保动画启动
-void infoDiv.offsetHeight;
+    // 强制重排确保动画启动
+    void infoDiv.offsetHeight;
 
-// ---------- 绑定按钮事件（保持不变） ----------
-const acceptBtn = infoDiv.querySelector('#consent-accept-btn');
-const declineBtn = infoDiv.querySelector('#consent-decline-btn');
+    // ---------- 绑定按钮事件（保持不变） ----------
+    const acceptBtn = infoDiv.querySelector('#consent-accept-btn');
+    const declineBtn = infoDiv.querySelector('#consent-decline-btn');
 
-acceptBtn.addEventListener('click', (e) => {
-  e.stopPropagation();
-  const consentManager = new CookieConsentManager(storageController);
-  consentManager.setConsented(true);
-  window.dispatchEvent(new CustomEvent('cookieConsentAccepted'));
-  const banner = document.getElementById('cookie-consent-banner');
-  if (banner) banner.remove();
-  overlay.classList.add('hidden');
-  restoreScroll();
-  window.dispatchEvent(new CustomEvent('welcomeOverlayDismissed'));
-  overlay.removeEventListener('click', handleOverlayClick);
-});
+    acceptBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const consentManager = new CookieConsentManager(storageController);
+      consentManager.setConsented(true);
+      window.dispatchEvent(new CustomEvent('cookieConsentAccepted'));
+      const banner = document.getElementById('cookie-consent-banner');
+      if (banner) banner.remove();
+      overlay.classList.add('hidden');
+      restoreScroll();
+      window.dispatchEvent(new CustomEvent('welcomeOverlayDismissed'));
+      overlay.removeEventListener('click', handleOverlayClick);
+    });
 
-declineBtn.addEventListener('click', (e) => {
-  e.stopPropagation();
-  const consentManager = new CookieConsentManager(storageController);
-  consentManager.setConsented(false);
-  const banner = document.getElementById('cookie-consent-banner');
-  if (banner) {
-    banner.style.display = '';        // 恢复显示
-    banner.classList.remove('hidden');
-  }
-  overlay.classList.add('hidden');
-  restoreScroll();                    // 恢复滚动
-  window.dispatchEvent(new CustomEvent('welcomeOverlayDismissed'));
-  overlay.removeEventListener('click', handleOverlayClick);
-});
+    declineBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const consentManager = new CookieConsentManager(storageController);
+      consentManager.setConsented(false);
+      const banner = document.getElementById('cookie-consent-banner');
+      if (banner) {
+        banner.style.display = '';        // 恢复显示
+        banner.classList.remove('hidden');
+      }
+      overlay.classList.add('hidden');
+      restoreScroll();                    // 恢复滚动
+      window.dispatchEvent(new CustomEvent('welcomeOverlayDismissed'));
+      overlay.removeEventListener('click', handleOverlayClick);
+    });
 
     // 点击覆盖层其他位置不关闭，防止误触
   };
@@ -522,6 +523,9 @@ async function bootstrap() {
 
   document.body.setAttribute('data-loaded', 'true');
   console.log('[Main] 初始化完成');
+
+  // 15. 友链跳转管理器
+  friendLinkManager.init();
 }
 
 // ========== 启动 ==========
