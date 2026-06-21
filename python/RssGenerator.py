@@ -23,7 +23,7 @@ from common import (
 DEFAULT_CONFIG = {
     "site": {
         "title": "高新炀的个人网站",
-        "link": "https://xinyang-gao.github.io",
+        "link": "https://gxy.cn.mt",
         "description": "学生 · 开发者 · 写作者，用代码和文字探索世界",
         "language": "zh-CN",
         "generator": "RssGenerator (Python)"

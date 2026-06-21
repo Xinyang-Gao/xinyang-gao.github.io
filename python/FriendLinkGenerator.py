@@ -282,9 +282,9 @@ def generate_html(cards_html: str) -> str:
                                 </div>
                                 <pre><code id="friendJsonExample">{{
     "name": "高新炀的小站",
-    "link": "https://xinyang-gao.github.io",
+    "link": "https://gxy.cn.mt",
     "desc": "一个装着些稀奇古怪东西的个人小站，欢迎来逛逛~",
-    "avatar": "https://xinyang-gao.github.io/assets/avatar.webp"
+    "avatar": "https://gxy.cn.mt/assets/avatar.webp"
 }}</code></pre>
                             </div>
                         </div>

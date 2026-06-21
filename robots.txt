@@ -1,3 +1,3 @@
 User-agent: *
 
-Sitemap: https://xinyang-gao.github.io/sitemap.xml
+Sitemap: https://gxy.cn.mt/sitemap.xml

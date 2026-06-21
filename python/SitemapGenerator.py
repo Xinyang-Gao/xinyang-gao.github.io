@@ -11,7 +11,7 @@ from common import (
     load_json, get_current_date_iso
 )
 
-BASE_URL = "https://xinyang-gao.github.io"
+BASE_URL = "https://gxy.cn.mt"
 OUTPUT_SITEMAP = PROJECT_ROOT / "sitemap.xml"
 EXCLUDED_HTML = {"navbar.html", "footer.html", "404.html"}
 EXCLUDE_PREFIX = ("_",)

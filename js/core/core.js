@@ -27,6 +27,7 @@ export const CONFIG = {
 
   INTERNAL_DOMAINS: [
     window.location.hostname, 'localhost', '127.0.0.1',
+    'gxy.cn.mt', 'www.gxy.cn.mt',
     'xinyang-gao.github.io', 'www.xinyang-gao.github.io'
   ],
 
