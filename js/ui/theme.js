@@ -47,7 +47,7 @@ export function initThemeToggle() {
   if (storageController.isAllowed()) {
     savedTheme = storageController.getItem(CONFIG.STORAGE_KEYS.THEME);
   }
-  const initialTheme = savedTheme || getTimeBasedTheme();
+  const initialTheme = savedTheme || 'dark';
   document.documentElement.setAttribute('data-theme', initialTheme);
   checkbox.checked = initialTheme === 'dark';
 

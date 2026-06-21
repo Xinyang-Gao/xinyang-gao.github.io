@@ -431,7 +431,7 @@ async function bootstrap() {
 
   // 3. 主题同步
   const savedTheme = storageController.isAllowed() ? storageController.getItem(CONFIG.STORAGE_KEYS.THEME) : null;
-  const initialTheme = savedTheme || getTimeBasedTheme();
+  const initialTheme = savedTheme || 'dark';
   document.documentElement.setAttribute('data-theme', initialTheme);
 
   // 4. 背景图加载（空闲）
