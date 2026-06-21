@@ -3,7 +3,8 @@
     "link": "https://xinyang-gao.github.io",
     "desc": "一个装着些稀奇古怪东西的个人小站，欢迎来逛逛~",
     "avatar": "https://xinyang-gao.github.io/assets/avatar.webp"
-},{
+},
+{
     "name": "THW’s Blog",
     "link": "https://blog.tianhw.top",
     "desc": "前途似海，来日方长",
@@ -32,5 +33,11 @@
   "link": "https://ttquk.netlify.app",
   "desc": "TT清沫ukの博客",
   "avatar": "https://ts1.tc.mm.bing.net/th/id/OIP-C.6WsD9caLSNQFhJOi77soRAHaHa?rs=1&pid=ImgDetMain&o=7&rm=3"
+},
+{
+  "name": "熵", 
+  "link": "https://www.nekt.qzz.io",
+  "desc": "世界本就浑浊，罪与爱同歌",
+  "avatar": "https://www.nekt.qzz.io/head.png"
 }
 ]
