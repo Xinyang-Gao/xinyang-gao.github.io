@@ -3,29 +3,44 @@
 
 import json
 import sys
+import argparse
+import hashlib
 from pathlib import Path
 from html import escape
 from urllib.parse import urlparse
 import requests
 from colorthief import ColorThief
-from io import BytesIO
 
 from common import (
-    PROJECT_ROOT, JSON_OUTPUT_DIR, log_info, log_error, load_json, save_json, get_current_datetime_iso
+    PROJECT_ROOT, JSON_OUTPUT_DIR, log_info, log_error, load_json, save_json
 )
 
 FRIENDS_JSON = JSON_OUTPUT_DIR / "friends.json"
 OUTPUT_HTML = PROJECT_ROOT / "friends.html"
-COLOR_CACHE_FILE = JSON_OUTPUT_DIR / "friend_colors.json"   # 缓存文件
+COLOR_CACHE_FILE = JSON_OUTPUT_DIR / "friend_colors.json"
+AVATAR_CACHE_DIR = PROJECT_ROOT / "assets" / "avatars"
 
-# 默认淡色（当无法提取时使用）
-DEFAULT_LIGHT_COLOR = "rgba(180, 91, 99, 0.24)"  # 对应 --accent-color 的淡色
+DEFAULT_LIGHT_COLOR = "rgba(180, 91, 99, 0.24)"  # 默认淡色
+
+# ---------- 工具函数 ----------
+def ensure_avatar_cache_dir():
+    AVATAR_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    log_info(f"头像缓存目录: {AVATAR_CACHE_DIR}")
+
+def get_avatar_cache_path(link: str, avatar_url: str) -> Path:
+    link_hash = hashlib.md5(link.encode('utf-8')).hexdigest()
+    ext = '.jpg'
+    if avatar_url:
+        parsed = urlparse(avatar_url)
+        path = parsed.path
+        if '.' in path:
+            ext_candidate = '.' + path.split('.')[-1].split('?')[0]
+            if ext_candidate.lower() in ('.jpg', '.jpeg', '.png', '.webp', '.gif', '.bmp'):
+                ext = ext_candidate.lower()
+    return AVATAR_CACHE_DIR / (link_hash + ext)
 
 def get_avatar_initial(name: str) -> str:
-    if not name:
-        return "?"
-    first = name.strip()[0].upper()
-    return first
+    return name.strip()[0].upper() if name else "?"
 
 def get_display_url(link: str) -> str:
     if not link or link in ("#", "javascript:void(0)"):
@@ -41,8 +56,8 @@ def get_display_url(link: str) -> str:
     except Exception:
         return raw.replace("https://", "").replace("http://", "").replace("www.", "").split("/")[0]
 
+# ---------- 颜色缓存 ----------
 def load_color_cache() -> dict:
-    """加载颜色缓存"""
     if COLOR_CACHE_FILE.exists():
         try:
             with open(COLOR_CACHE_FILE, 'r', encoding='utf-8') as f:
@@ -52,65 +67,113 @@ def load_color_cache() -> dict:
     return {}
 
 def save_color_cache(cache: dict):
-    """保存颜色缓存"""
     try:
         with open(COLOR_CACHE_FILE, 'w', encoding='utf-8') as f:
             json.dump(cache, f, indent=2, ensure_ascii=False)
+        log_info(f"颜色缓存已保存: {COLOR_CACHE_FILE}")
     except Exception as e:
         log_error(f"保存颜色缓存失败: {e}")
 
-def extract_color_from_avatar(avatar_url: str, timeout: int = 3) -> tuple | None:
+# ---------- 颜色提取（直接取主色，不做筛选） ----------
+def extract_color_from_avatar(avatar_url: str, link: str, force_refresh: bool = False):
     """
-    从头像 URL 提取主色 (r, g, b)
-    返回 None 表示失败
+    从头像提取主色 (r, g, b)
+    支持相对路径补全，优先使用本地缓存图片，失败返回 None
+    不缓存失败状态，每次重试都会重新尝试下载/提取
     """
     if not avatar_url:
+        log_info("头像 URL 为空，跳过")
         return None
+
+    # 补全相对路径
+    if not avatar_url.startswith(('http://', 'https://')):
+        parsed_link = urlparse(link)
+        if parsed_link.netloc:
+            base = f"{parsed_link.scheme}://{parsed_link.netloc}"
+            full_url = base + (avatar_url if avatar_url.startswith('/') else '/' + avatar_url)
+            log_info(f"相对路径补全: {avatar_url} -> {full_url}")
+            avatar_url = full_url
+        else:
+            log_info(f"无法补全相对路径，link 无效: {link}")
+            return None
+
+    ensure_avatar_cache_dir()
+    cache_path = get_avatar_cache_path(link, avatar_url)
+
+    # 强制刷新时删除本地缓存
+    if force_refresh and cache_path.exists():
+        try:
+            cache_path.unlink()
+            log_info(f"强制刷新，删除旧缓存: {cache_path}")
+        except Exception as e:
+            log_error(f"删除缓存文件失败: {e}")
+
+    # 如果本地缓存存在，直接提取
+    if cache_path.exists():
+        try:
+            color_thief = ColorThief(str(cache_path))
+            dominant = color_thief.get_color(quality=1)
+            log_info(f"✅ 使用本地缓存，主色: RGB{dominant}")
+            return dominant
+        except Exception as e:
+            log_error(f"读取本地缓存失败 ({cache_path}): {e}")
+            # 删除损坏的缓存文件，下次重新下载
+            try:
+                cache_path.unlink()
+            except:
+                pass
+
+    # 下载头像
     try:
-        resp = requests.get(avatar_url, timeout=timeout, headers={
+        log_info(f"⬇️ 下载头像: {avatar_url}")
+        resp = requests.get(avatar_url, timeout=5, headers={
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
         })
         if resp.status_code != 200:
+            log_info(f"下载失败 HTTP {resp.status_code}: {avatar_url}")
             return None
-        # 从 BytesIO 读取图片
-        color_thief = ColorThief(BytesIO(resp.content))
-        # 获取主色 (返回 (r, g, b))
+        with open(cache_path, 'wb') as f:
+            f.write(resp.content)
+        log_info(f"✅ 头像已缓存: {cache_path} ({len(resp.content)} bytes)")
+
+        color_thief = ColorThief(str(cache_path))
         dominant = color_thief.get_color(quality=1)
+        log_info(f"🎨 提取主色成功: RGB{dominant}")
         return dominant
     except Exception as e:
-        log_info(f"提取头像颜色失败 ({avatar_url}): {e}")
+        log_error(f"下载或提取失败 ({avatar_url}): {e}")
+        # 删除可能损坏的缓存文件
+        if cache_path.exists():
+            try:
+                cache_path.unlink()
+            except:
+                pass
         return None
 
-def get_friend_background_color(friend: dict, cache: dict) -> str:
-    """
-    获取友链卡片背景色（淡色 CSS 值）
-    优先使用缓存，若缓存不存在则尝试提取，并保存到缓存
-    """
+def get_friend_background_color(friend: dict, cache: dict, force_refresh: bool = False) -> str:
     link = friend.get("link", "")
     if not link:
         return DEFAULT_LIGHT_COLOR
 
-    # 检查缓存
-    if link in cache:
+    # 只从缓存读取成功提取的颜色（不存在 None）
+    if not force_refresh and link in cache:
         rgb = cache[link]
         if isinstance(rgb, list) and len(rgb) == 3:
             return f"rgba({rgb[0]}, {rgb[1]}, {rgb[2]}, 0.24)"
 
-    # 缓存未命中，尝试提取
+    # 提取颜色
     avatar_url = friend.get("avatar", "")
-    rgb = extract_color_from_avatar(avatar_url)
+    rgb = extract_color_from_avatar(avatar_url, link, force_refresh)
     if rgb:
-        # 存入缓存
         cache[link] = list(rgb)
         save_color_cache(cache)
         return f"rgba({rgb[0]}, {rgb[1]}, {rgb[2]}, 0.24)"
     else:
-        # 提取失败，存入占位标记，避免反复请求（用 None 标记）
-        cache[link] = None
-        save_color_cache(cache)
+        # 不缓存失败状态，下次重新尝试
         return DEFAULT_LIGHT_COLOR
 
-def render_friends_cards(friends_list: list) -> str:
+# ---------- 渲染友链卡片 ----------
+def render_friends_cards(friends_list: list, force_refresh: bool = False) -> str:
     if not friends_list:
         return '<div class="friends-empty"><p>暂无友链数据，期待新的朋友～</p><p style="font-size:0.85rem; margin-top:12px;">您可以成为第一个友链！</p></div>'
 
@@ -118,9 +181,7 @@ def render_friends_cards(friends_list: list) -> str:
     if not valid:
         return '<div class="friends-empty">暂无可展示的有效友链</div>'
 
-    # 加载颜色缓存
     color_cache = load_color_cache()
-
     stats_html = f'<div id="friends-stats-area" class="friends-stats">共 {len(valid)} 位小伙伴 · 点击卡片访问友站</div>'
     cards_html = '<div class="friends-grid" id="friends-list-container-inner">'
 
@@ -131,8 +192,7 @@ def render_friends_cards(friends_list: list) -> str:
         avatar_url = friend.get("avatar", "")
         initial = get_avatar_initial(name)
 
-        # 获取该友链的背景色（淡色）
-        bg_color = get_friend_background_color(friend, color_cache)
+        bg_color = get_friend_background_color(friend, color_cache, force_refresh)
 
         has_avatar = avatar_url and (avatar_url.startswith("http") or avatar_url.startswith("/"))
         if has_avatar:
@@ -151,7 +211,6 @@ def render_friends_cards(friends_list: list) -> str:
         display_url = get_display_url(friend.get("link", ""))
         url_section = f'<div class="friend-url">{escape(display_url)}</div>' if display_url else ""
 
-        # 卡片内联样式：添加淡色背景（会与原有渐变叠加）
         cards_html += f'''
             <a href="{link}" class="friend-card" target="_blank" rel="noopener noreferrer" style="background-color: {bg_color};">
                 <div class="friend-avatar">{avatar_html}</div>
@@ -165,8 +224,8 @@ def render_friends_cards(friends_list: list) -> str:
     cards_html += '</div>'
     return stats_html + cards_html
 
+# ---------- 生成完整 HTML ----------
 def generate_html(cards_html: str) -> str:
-    # （与原来完全相同，省略）
     return f'''<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -243,10 +302,16 @@ def generate_html(cards_html: str) -> str:
 </body>
 </html>'''
 
+# ---------- 主入口 ----------
 def main():
     print("=" * 60)
     log_info("友链页面生成器启动")
     print("=" * 60)
+
+    parser = argparse.ArgumentParser(description='生成友链页面，支持头像缓存与颜色提取')
+    parser.add_argument('--refresh-cache', action='store_true', help='强制刷新所有头像缓存（重新下载并提取颜色）')
+    args = parser.parse_args()
+    force_refresh = args.refresh_cache
 
     data = load_json(FRIENDS_JSON, [])
     if isinstance(data, dict) and "friends" in data:
@@ -258,13 +323,16 @@ def main():
         sys.exit(1)
 
     log_info(f"加载到 {len(friends)} 条友链数据")
-    cards_html = render_friends_cards(friends)
+    if force_refresh:
+        log_info("强制刷新缓存模式已启用")
+
+    cards_html = render_friends_cards(friends, force_refresh)
     full_html = generate_html(cards_html)
 
     try:
         with open(OUTPUT_HTML, "w", encoding="utf-8") as f:
             f.write(full_html)
-        log_info(f"成功生成 {OUTPUT_HTML}")
+        log_info(f"✅ 成功生成 {OUTPUT_HTML}")
     except OSError as e:
         log_error(f"写入失败: {e}")
         sys.exit(1)

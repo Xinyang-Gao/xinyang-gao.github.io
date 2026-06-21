@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-06-21T10:25:58.580139",
+  "generated_at": "2026-06-21T10:49:54.063621",
   "root_dir": "C:\\Users\\Administrator\\Desktop\\编程\\xinyang-gao.github.io\\xinyang-gao.github.io",
-  "total_files": 155,
-  "total_size_bytes": 2242125,
-  "total_lines": 44935,
-  "non_empty_lines": 40524,
+  "total_files": 161,
+  "total_size_bytes": 2591463,
+  "total_lines": 47724,
+  "non_empty_lines": 43264,
   "by_extension": [
     {
       "extension": ".js",
@@ -16,9 +16,9 @@
     {
       "extension": ".html",
       "count": 35,
-      "total_size_bytes": 428941,
-      "total_lines": 7189,
-      "non_empty_lines": 6642
+      "total_size_bytes": 429106,
+      "total_lines": 7193,
+      "non_empty_lines": 6646
     },
     {
       "extension": ".css",
@@ -30,23 +30,30 @@
     {
       "extension": ".json",
       "count": 21,
-      "total_size_bytes": 37974,
+      "total_size_bytes": 37961,
       "total_lines": 1254,
       "non_empty_lines": 1254
     },
     {
       "extension": ".md",
       "count": 16,
-      "total_size_bytes": 140687,
-      "total_lines": 2751,
-      "non_empty_lines": 2111
+      "total_size_bytes": 140759,
+      "total_lines": 2754,
+      "non_empty_lines": 2113
     },
     {
       "extension": ".py",
       "count": 11,
-      "total_size_bytes": 114032,
-      "total_lines": 2820,
-      "non_empty_lines": 2513
+      "total_size_bytes": 117117,
+      "total_lines": 2888,
+      "non_empty_lines": 2572
+    },
+    {
+      "extension": ".webp",
+      "count": 4,
+      "total_size_bytes": 262924,
+      "total_lines": 2040,
+      "non_empty_lines": 2022
     },
     {
       "extension": ".xml",
@@ -56,11 +63,18 @@
       "non_empty_lines": 136
     },
     {
+      "extension": ".jpg",
+      "count": 3,
+      "total_size_bytes": 111650,
+      "total_lines": 902,
+      "non_empty_lines": 880
+    },
+    {
       "extension": "no_extension",
       "count": 2,
-      "total_size_bytes": 1184,
-      "total_lines": 25,
-      "non_empty_lines": 21
+      "total_size_bytes": 1201,
+      "total_lines": 26,
+      "non_empty_lines": 22
     },
     {
       "extension": ".png",
@@ -82,13 +96,6 @@
       "total_size_bytes": 67,
       "total_lines": 3,
       "non_empty_lines": 2
-    },
-    {
-      "extension": ".webp",
-      "count": 1,
-      "total_size_bytes": 28562,
-      "total_lines": 229,
-      "non_empty_lines": 228
     },
     {
       "extension": ".yml",
