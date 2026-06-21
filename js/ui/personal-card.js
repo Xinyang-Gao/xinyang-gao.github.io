@@ -45,6 +45,15 @@ export function generatePersonalCardHTML() {
             <i class="fas fa-rss"></i>
           </a>
         </div>
+
+        <!-- ===== 新增：开往-友链接力 ===== -->
+        <div class="travelling-section">
+          <a href="https://www.travellings.cn/go.html" target="_blank" rel="noopener" title="开往-友链接力">
+            <img class="travelling-img travelling-light" data-viewer-exclude="true" src="https://www.travellings.cn/assets/w.png" alt="开往-友链接力（浅色）" width="120" loading="lazy">
+            <img class="travelling-img travelling-dark" data-viewer-exclude="true" src="https://www.travellings.cn/assets/b.png" alt="开往-友链接力（深色）" width="120" loading="lazy">
+          </a>
+        </div>
+
         <div class="detail-item" style="justify-content: center; margin-top: 12px;">
           <span class="tag" style="background: var(--accent-color); color: white;">Python</span>
           <span class="tag" style="background: var(--accent-color); color: white;">Html</span>

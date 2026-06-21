@@ -577,3 +577,55 @@
   border-color: var(--border-color);
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.03), var(--shadow-md), var(--shadow-offset);
 }
+/* ==========================================
+   layout.css - 开往友链（个人卡片）
+============================================= */
+
+/* 开往-友链区域 */
+.travelling-section {
+  margin-top: 16px;
+  text-align: center;
+  padding: 8px 0 4px 0;
+  border-top: 1px solid var(--border-light);
+}
+
+.travelling-section a {
+  display: inline-block;
+  transition: transform 0.25s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+  border-radius: 8px;
+  overflow: hidden;
+  line-height: 0;
+}
+
+.travelling-section a:hover {
+  transform: scale(1.04) translateY(-2px);
+}
+
+.travelling-section .travelling-img {
+  border-radius: 8px;
+  display: block;
+  width: 120px;
+  height: auto;
+  transition: opacity 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* 主题适配：浅色显示 w.png，深色显示 b.png */
+[data-theme="light"] .travelling-dark { display: none; }
+[data-theme="dark"] .travelling-light { display: none; }
+
+/* 暗色主题下微调边框 */
+[data-theme="dark"] .travelling-section {
+  border-top-color: var(--border-light);
+}
+
+[data-theme="dark"] .travelling-section .travelling-img {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* 移动端适配 */
+@media (max-width: 480px) {
+  .travelling-section .travelling-img {
+    width: 100px;
+  }
+}

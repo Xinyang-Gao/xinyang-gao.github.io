@@ -910,8 +910,8 @@ export class CustomCursor {
 export class ExternalLinkManager {
   constructor() {
     this.WHITELIST = new Set([
-      'github.com', 'google.com', 'wikipedia.org', 'stackoverflow.com', 'youtube.com',
-      'twitter.com', 'linkedin.com', 'amazon.com', 'microsoft.com', 'apple.com'
+      'github.com', 'google.com', 'wikipedia.org',
+      'twitter.com', 'linkedin.com', 'amazon.com', 'microsoft.com', 'travellings.cn'
     ]);
     this.currentModal = null;
     this.currentOverlay = null;

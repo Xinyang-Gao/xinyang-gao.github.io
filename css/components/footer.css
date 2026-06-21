@@ -486,3 +486,57 @@ html[data-theme="light"] .stats-divider {
 .global-footer, .stat-chip, .social-capsule, .legal-link {
   transition: all 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
 }
+/* ==========================================
+   footer.css - 开往友链（页脚徽章）
+============================================= */
+
+/* 页脚开往链接 */
+.travelling-link {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px;
+  text-decoration: none !important;
+}
+
+.travelling-link .travelling-img {
+  border-radius: 4px;
+  vertical-align: middle;
+  height: 18px;
+  width: auto;
+  transition: opacity 0.3s ease, transform 0.2s ease;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.travelling-link:hover .travelling-img {
+  transform: scale(1.04);
+}
+
+.travelling-link span {
+  font-weight: 500;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  transition: color 0.2s ease;
+}
+
+.travelling-link:hover span {
+  color: var(--accent-color);
+}
+
+/* 主题适配：浅色显示 w.png，深色显示 b.png */
+[data-theme="light"] .travelling-link .travelling-dark { display: none; }
+[data-theme="dark"] .travelling-link .travelling-light { display: none; }
+
+/* 暗色主题微调 */
+[data-theme="dark"] .travelling-link .travelling-img {
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.5);
+}
+
+/* 响应式：小屏幕下缩小徽章 */
+@media (max-width: 640px) {
+  .travelling-link .travelling-img {
+    height: 16px;
+  }
+  .travelling-link span {
+    font-size: 0.75rem;
+  }
+}
