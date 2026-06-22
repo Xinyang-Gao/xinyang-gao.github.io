@@ -774,3 +774,58 @@ code {
 .friend-link-go:active {
   transform: scale(0.95);
 }
+/* ---------- 外部链接区域 ---------- */
+.external-links-section {
+    margin: 40px 0 20px;
+}
+.external-section-title {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--accent-color);
+    border-left: 4px solid var(--accent-color);
+    padding-left: 16px;
+    margin-bottom: 20px;
+}
+.external-links-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+.external-link-card {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: var(--surface-color);
+    border: 1px solid var(--border-light);
+    border-radius: var(--radius-full);
+    transition: all var(--transition-fast);
+    text-decoration: none;
+    color: var(--text-color);
+    box-shadow: var(--shadow-sm);
+    font-size: 0.9rem;
+}
+.external-link-card:hover {
+    border-color: var(--accent-color);
+    background: var(--surface-color-secondary);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
+}
+.external-link-name {
+    font-weight: 600;
+    color: var(--accent-color);
+}
+.external-link-desc {
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+}
+@media (max-width: 480px) {
+    .external-links-grid {
+        flex-direction: column;
+        gap: 12px;
+    }
+    .external-link-card {
+        padding: 8px 16px;
+        font-size: 0.85rem;
+    }
+}

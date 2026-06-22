@@ -224,8 +224,28 @@ def render_friends_cards(friends_list: list, force_refresh: bool = False) -> str
     cards_html += '</div>'
     return stats_html + cards_html
 
+# ---------- 渲染外部链接（新增） ----------
+def render_external_links(external_list: list) -> str:
+    if not external_list:
+        return ''
+    html = '<div class="external-links-section">'
+    html += '<h3 class="external-section-title">🔗 站点工具 & 服务</h3>'
+    html += '<div class="external-links-grid">'
+    for item in external_list:
+        name = escape(item.get("name", "未命名"))
+        link = escape(item.get("link", "#"))
+        desc = escape(item.get("desc", ""))
+        html += f'''
+            <a href="{link}" class="external-link-card" target="_blank" rel="noopener noreferrer">
+                <span class="external-link-name">{name}</span>
+                <span class="external-link-desc">{desc}</span>
+            </a>
+        '''
+    html += '</div></div>'
+    return html
+
 # ---------- 生成完整 HTML ----------
-def generate_html(cards_html: str) -> str:
+def generate_html(cards_html: str, external_html: str) -> str:
     return f'''<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -249,6 +269,7 @@ def generate_html(cards_html: str) -> str:
                     <h2>我的朋友们</h2>
                     <p style="margin-bottom: 8px;">「 志合者，不以山海为远 」欢迎互访交流</p>
                     {cards_html}
+                    {external_html}
                     <div class="info-card">
                         <div class="info-title">友情提示</div>
                         <div class="requirements-section">
@@ -296,7 +317,7 @@ def generate_html(cards_html: str) -> str:
     </div>
     <div id="footer-placeholder"></div>
     <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>
-    <script src="https://registry.npmmirror.com/twikoo/1.7.12/files/dist/twikoo.nocss.js"></script>
+    <script src="https://registry.npmmirror.com/twikoo/1.7.13/files/dist/twikoo.nocss.js"></script>
     <script src="/js/entry/main.js" type="module"></script>
     <script src="/js/vendor/busuanzi.min.js"></script>
 </body>
@@ -313,21 +334,24 @@ def main():
     args = parser.parse_args()
     force_refresh = args.refresh_cache
 
-    data = load_json(FRIENDS_JSON, [])
-    if isinstance(data, dict) and "friends" in data:
-        friends = data["friends"]
-    elif isinstance(data, list):
+    data = load_json(FRIENDS_JSON, {})
+    if isinstance(data, list):
         friends = data
+        external = []
+    elif isinstance(data, dict):
+        friends = data.get("friends", [])
+        external = data.get("external", [])
     else:
         log_error("friends.json 格式错误，应为数组或包含 'friends' 键的对象")
         sys.exit(1)
 
-    log_info(f"加载到 {len(friends)} 条友链数据")
+    log_info(f"加载到 {len(friends)} 条友链数据，{len(external)} 条外部链接")
     if force_refresh:
         log_info("强制刷新缓存模式已启用")
 
     cards_html = render_friends_cards(friends, force_refresh)
-    full_html = generate_html(cards_html)
+    external_html = render_external_links(external)
+    full_html = generate_html(cards_html, external_html)
 
     try:
         with open(OUTPUT_HTML, "w", encoding="utf-8") as f:
