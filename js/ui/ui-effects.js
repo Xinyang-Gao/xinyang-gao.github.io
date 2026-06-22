@@ -603,7 +603,7 @@ export class CustomCursor {
     }
     this.config = {
       damping: 0.92,
-      stiffness: 0.18,
+      stiffness: 0.5,
       rotationSmoothing: 0.2,
       minSpeedForRotation: 0.5,
       idleDecayFactor: 0.98,
@@ -823,10 +823,6 @@ export class CustomCursor {
       if (this.snappedMode && this.snappedElement) this.updateSnappedTargetPosition();
       this.currentX += (this.targetX - this.currentX) * this.config.stiffness;
       this.currentY += (this.targetY - this.currentY) * this.config.stiffness;
-      const dx = this.targetX - this.currentX;
-      const dy = this.targetY - this.currentY;
-      this.currentX += dx * 0.3;
-      this.currentY += dy * 0.3;
 
       if (!this.snappedMode) {
         const now = performance.now();
