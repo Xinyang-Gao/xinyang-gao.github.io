@@ -1,6 +1,6 @@
 // /js/vendor/global-music-player.js
 // 功能：动态加载 NeteaseMiniPlayer 的 CSS/JS，然后创建唯一的悬浮播放器
-(function() {
+(function () {
   // ==================== 配置区 ====================
   const PLAYER_CONFIG = {
     playlistId: '18022003523',
@@ -23,7 +23,7 @@
 
   // ==================== 辅助函数 ====================
   function isPlayerExists() {
-    return document.querySelector('.netease-mini-player[data-position="' + PLAYER_CONFIG.position + '"]') !== null;
+    return document.querySelector('.netease-mini-player[data-global="true"]') !== null;
   }
 
   function loadCSS(href) {
