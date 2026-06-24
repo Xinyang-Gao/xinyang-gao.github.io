@@ -2,14 +2,15 @@
     'use strict';
 
     // ---------- 配置 ----------
-    const BIRTHDAY = new Date(2010, 11, 21); // 2010年12月21日
+    const BIRTHDAY = new Date(2010, 11, 21);
 
     // DOM 引用
     const levelDisplay = document.getElementById('levelDisplay');
     const titleDisplay = document.getElementById('titleDisplay');
     const expFill = document.getElementById('expFill');
     const expPercent = document.getElementById('expPercent');
-    const xpValue = document.getElementById('xpValue');
+    const expEarnedDisplay = document.getElementById('expEarnedDisplay');
+    const expTotalDisplay = document.getElementById('expTotalDisplay');
     const uptimeDisplay = document.getElementById('uptimeDisplay');
     const nextLevelInfo = document.getElementById('nextLevelInfo');
 
@@ -36,8 +37,7 @@
     function getThisYearBirthday(birthday) {
         const now = new Date();
         const year = now.getFullYear();
-        const bday = new Date(year, birthday.getMonth(), birthday.getDate());
-        return bday;
+        return new Date(year, birthday.getMonth(), birthday.getDate());
     }
 
     function getNextBirthday(birthday) {
@@ -72,21 +72,27 @@
         const nextBday = getNextBirthday(BIRTHDAY);
         const totalMs = nextBday.getTime() - startBday.getTime();
         const elapsedMs = now.getTime() - startBday.getTime();
-        let progress = Math.min(100, Math.max(0, (elapsedMs / totalMs) * 100));
+        const progress = Math.min(100, Math.max(0, (elapsedMs / totalMs) * 100));
 
         expFill.style.width = progress + '%';
         expPercent.textContent = Math.floor(progress) + '%';
 
-        const remainingMs = nextBday.getTime() - now.getTime();
-        const xp = Math.floor(remainingMs / 60000);
-        xpValue.textContent = xp.toLocaleString();
+        // 计算经验值（单位：分钟）
+        const totalXp = Math.floor(totalMs / 60000);
+        const earnedXp = Math.floor(elapsedMs / 60000);
 
+        // 更新已有 / 总计 XP
+        expEarnedDisplay.textContent = earnedXp.toLocaleString();
+        expTotalDisplay.textContent = totalXp.toLocaleString();
+
+        // 下一级日期
         const dateStr = nextBday.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
         nextLevelInfo.innerHTML = `<i class="fas fa-info-circle"></i> 下一级解锁: ${dateStr}`;
 
+        // 在线时长
         const uptimeMs = now.getTime() - BIRTHDAY.getTime();
         const uptimeHours = Math.floor(uptimeMs / 3600000);
-        uptimeDisplay.textContent = uptimeHours.toLocaleString() + ' 小时' + ' h';
+        uptimeDisplay.textContent = uptimeHours.toLocaleString() + ' 小时';
     }
 
     // ---------- 随机间隔更新 (5-15秒) ----------

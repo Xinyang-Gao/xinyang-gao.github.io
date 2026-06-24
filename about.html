@@ -63,7 +63,12 @@
                                 </div>
                                 <span class="exp-percent" id="expPercent">0%</span>
                             </div>
-                            <span class="exp-countdown" id="expCountdown"><strong id="xpValue">0</strong> xp</span>
+                            <span class="exp-countdown" id="expCountdown">
+                                <span id="expEarnedDisplay">0</span>
+                                <span class="sep">/</span>
+                                <span id="expTotalDisplay">0</span>
+                                <strong> XP</strong>
+                            </span>
                         </div>
                         <div class="next-level-info" id="nextLevelInfo">
                             <i class="fas fa-info-circle"></i> 下一级解锁: 计算中...
@@ -74,20 +79,24 @@
                     <div class="instance-grid">
                         <div class="instance-card mission-main">
                             <span class="instance-label"><i class="fas fa-flag"></i> 主线任务</span>
-                            <p class="instance-name"><i class="fas fa-bullseye" style="margin-right:6px;"></i>中考 · 终章结算</p>
+                            <p class="instance-name"><i class="fas fa-bullseye" style="margin-right:6px;"></i>中考 · 终章结算
+                            </p>
                             <p class="instance-desc">已完成笔试与体育测试，等待高中新地图加载中……</p>
                         </div>
                         <div class="instance-card mission-side">
                             <span class="instance-label"><i class="fas fa-code-branch"></i> 支线任务</span>
-                            <p class="instance-name"><i class="fas fa-tools" style="margin-right:6px;"></i>个人网站 · 重构计划</p>
-                            <p class="instance-desc">把关于页面从“施工中”升级为“玩家档案”v2.0</p>
+                            <p class="instance-name"><i class="fas fa-tools" style="margin-right:6px;"></i>个人网站 · 重构计划
+                            </p>
+                            <p class="instance-desc">升级关于页面 - 增加更多文本描述</p>
                         </div>
                     </div>
 
                     <!-- ===== 3. 技能树 ===== -->
-                    <h3 style="display:flex; align-items:center; gap:10px; margin-top:1.2rem; border-bottom:none; padding-bottom:0;">
+                    <h3
+                        style="display:flex; align-items:center; gap:10px; margin-top:1.2rem; border-bottom:none; padding-bottom:0;">
                         <i class="fas fa-code-branch" style="color:var(--accent-color);"></i> 技能树
-                        <span style="font-size:0.7rem; font-weight:400; color:var(--text-secondary);">(Skill Tree)</span>
+                        <span style="font-size:0.7rem; font-weight:400; color:var(--text-secondary);">Skill
+                            Tree</span>
                     </h3>
                     <div class="skill-tree">
                         <!-- 编程 -->
@@ -103,9 +112,8 @@
                                 <div class="skill-bar-fill" style="width:72%;"></div>
                             </div>
                             <div class="skill-tags">
-                                <span class="skill-tag"># 爬虫</span>
                                 <span class="skill-tag"># 前端</span>
-                                <span class="skill-tag"># 工具链</span>
+                                <span class="skill-tag"># PCL2-Custom-Homepage-Creator</span>
                             </div>
                         </div>
                         <!-- 写作 -->
@@ -142,41 +150,54 @@
                                 <span class="skill-tag"># 统计计算器</span>
                             </div>
                         </div>
-                        <!-- 游戏 & 模组 -->
+                        <!-- 游戏 -->
                         <div class="skill-node">
                             <div class="skill-header">
                                 <span class="skill-icon"><i class="fas fa-gamepad"></i></span>
                                 <div>
-                                    <div class="skill-name">游戏 & 模组</div>
-                                    <div class="skill-sub">Minecraft · PCL2</div>
+                                    <div class="skill-name">游戏</div>
+                                    <div class="skill-sub">Minecraft</div>
                                 </div>
                             </div>
                             <div class="skill-bar">
                                 <div class="skill-bar-fill" style="width:60%;"></div>
                             </div>
                             <div class="skill-tags">
-                                <span class="skill-tag"># 主页编辑器</span>
-                                <span class="skill-tag"># 红石电路</span>
+                                <span class="skill-tag"># 生电</span>
+                                <span class="skill-tag"># 极限</span>
+                            </div>
+                        </div>
+                        <!-- 绘画 -->
+                        <div class="skill-node">
+                            <div class="skill-header">
+                                <span class="skill-icon"><i class="fas fa-palette"></i></span>
+                                <div>
+                                    <div class="skill-name">绘画</div>
+                                    <div class="skill-sub">素描 · 水彩</div>
+                                </div>
+                            </div>
+                            <div class="skill-bar">
+                                <div class="skill-bar-fill" style="width:70%;"></div>
+                            </div>
+                            <div class="skill-tags">
+                                <span class="skill-tag"># 景物</span>
+                                <span class="skill-tag"># 二次元</span>
                             </div>
                         </div>
                     </div>
 
-                    <!-- ==========================================================
-                    ===== 4. 成就 (新增) =====
-                    ========================================================== -->
+                    <!-- ===== 4. 成就 ===== -->
                     <div class="achievement-section-title">
                         <i class="fas fa-trophy"></i> 成就
-                        <span class="sub">(Achievements)</span>
+                        <span class="sub">Achievements</span>
                     </div>
 
                     <div class="achievement-grid">
                         <!-- 成就卡片：Hello World -->
                         <div class="achievement-card difficulty-hard">
-                            <!-- 图标 -->
                             <div class="achievement-icon">
                                 <i class="fas fa-earth-asia"></i>
                             </div>
-                            <!-- 信息 -->
                             <div class="achievement-info">
                                 <div class="achievement-title">Hello World</div>
                                 <div class="achievement-desc">来到这个世界</div>
@@ -190,7 +211,6 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- 后续成就可继续添加，会自适应网格 -->
                     </div>
 
                 </div>
@@ -210,4 +230,5 @@
     <script src="/js/entry/main.js" type="module"></script>
     <script src="/js/standalone/about.js"></script>
 </body>
+
 </html>
