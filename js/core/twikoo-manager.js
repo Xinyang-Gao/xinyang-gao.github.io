@@ -24,7 +24,7 @@ function loadTwikooLibrary() {
 
   libraryLoadPromise = new Promise((resolve, reject) => {
     const script = document.createElement('script');
-    script.src = 'https://cdn.jsdelivr.net/npm/twikoo@1.6.30/dist/twikoo.min.js';
+    script.src = 'https://registry.npmmirror.com/twikoo/1.7.13/files/dist/twikoo.nocss.js';
     script.async = true;
     script.onload = () => {
       console.log('[TwikooManager] 库加载成功');

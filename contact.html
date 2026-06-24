@@ -40,26 +40,7 @@
   <div id="footer-placeholder"></div>
 
   <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>
-  <script src="https://registry.npmmirror.com/twikoo/1.7.13/files/dist/twikoo.nocss.js"></script>
   <script src="/js/vendor/busuanzi.min.js" defer></script>
   <script src="/js/entry/main.js" type="module"></script>
-  
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      setTimeout(function() {
-        if (typeof twikoo === 'undefined') {
-          console.error('Twikoo 加载失败');
-          return;
-        }
-        twikoo.init({
-          envId: 'https://twikoo-gxy.netlify.app/.netlify/functions/twikoo',
-          el: '#twikoo-comments',
-          lang: 'zh-CN',
-          enableComment: true,
-        }).then(() => console.log('Twikoo 留言板初始化成功'))
-          .catch(err => console.error('Twikoo 初始化失败:', err));
-      }, 100);
-    });
-  </script>
 </body>
 </html>
