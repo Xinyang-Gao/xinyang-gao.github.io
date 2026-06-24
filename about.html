@@ -36,293 +36,315 @@
             <main class="main-content-area">
                 <div class="container player-container">
 
-                    <!-- ===== 1. 玩家 ID 卡 ===== -->
-                    <div class="player-header-card">
-                        <div class="player-title-row">
-                            <span class="player-name">高新炀</span>
-                            <span class="player-status-badge">
-                                <span class="dot"></span> 地球 Online · 在线
-                            </span>
-                        </div>
-                        <div class="player-meta-grid">
-                            <span><i class="fas fa-tag"></i> ID: GaoXinYang</span>
-                            <span><i class="fas fa-map-pin"></i> 服务器: China</span>
-                            <span><i class="fas fa-calendar-alt"></i> 注册于2010年12月21日</span>
-                            <span><i class="fas fa-clock"></i> 已累计在线 <span id="uptimeDisplay">--</span></span>
+                    <!-- ===== 翻转卡片容器 ===== -->
+                    <div class="flip-card-container">
+                        <div class="flip-card" id="aboutFlipCard">
+                            <div class="flip-card-inner">
+
+                                <!-- ===== 正面（原有全部内容） ===== -->
+                                <div class="flip-card-front">
+
+                                    <!-- 玩家 ID 卡 -->
+                                    <div class="player-header-card">
+                                        <div class="player-title-row">
+                                            <span class="player-name">高新炀</span>
+                                            <span class="player-status-badge">
+                                                <span class="dot"></span> 地球 Online · 在线
+                                            </span>
+                                        </div>
+                                        <div class="player-meta-grid">
+                                            <span><i class="fas fa-tag"></i> ID: GaoXinYang</span>
+                                            <span><i class="fas fa-map-pin"></i> 服务器: China</span>
+                                            <span><i class="fas fa-calendar-alt"></i> 注册于2010年12月21日</span>
+                                            <span><i class="fas fa-clock"></i> 已累计在线 <span
+                                                    id="uptimeDisplay">--</span></span>
+                                        </div>
+
+                                        <!-- 经验胶囊 -->
+                                        <div class="exp-capsule" id="expCapsule">
+                                            <div class="exp-level-box">
+                                                <span class="exp-level" id="levelDisplay">--</span>
+                                                <span class="exp-title" id="titleDisplay">--</span>
+                                            </div>
+                                            <div class="exp-bar-wrapper">
+                                                <div class="exp-track">
+                                                    <div class="exp-fill" id="expFill" style="width: 0%;"></div>
+                                                </div>
+                                                <span class="exp-percent" id="expPercent">0%</span>
+                                            </div>
+                                            <span class="exp-countdown" id="expCountdown">
+                                                <span id="expEarnedDisplay">0</span>
+                                                <span class="sep">/</span>
+                                                <span id="expTotalDisplay">0</span>
+                                                <strong> XP</strong>
+                                            </span>
+                                        </div>
+                                        <div class="next-level-info" id="nextLevelInfo">
+                                            <i class="fas fa-info-circle"></i> 下一级解锁: 计算中...
+                                        </div>
+                                    </div>
+
+                                    <!-- 当前副本 -->
+                                    <div class="instance-grid">
+                                        <div class="instance-card mission-main">
+                                            <span class="instance-label"><i class="fas fa-flag"></i> 主线任务</span>
+                                            <p class="instance-name"><i class="fas fa-bullseye"
+                                                    style="margin-right:6px;"></i>中考 · 终章结算</p>
+                                            <p class="instance-desc">已完成笔试与体育测试，等待高中新地图加载中……</p>
+                                        </div>
+                                        <div class="instance-card mission-side">
+                                            <span class="instance-label"><i class="fas fa-code-branch"></i> 支线任务</span>
+                                            <p class="instance-name"><i class="fas fa-tools"
+                                                    style="margin-right:6px;"></i>个人网站 · 重构计划</p>
+                                            <p class="instance-desc">升级关于页面 - 增加更多文本描述</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- 技能树 -->
+                                    <h3
+                                        style="display:flex; align-items:center; gap:10px; margin-top:1.2rem; border-bottom:none; padding-bottom:0;">
+                                        <i class="fas fa-code-branch" style="color:var(--accent-color);"></i> 技能树
+                                        <span
+                                            style="font-size:0.7rem; font-weight:400; color:var(--text-secondary);">Skill
+                                            Tree</span>
+                                    </h3>
+                                    <div class="skill-tree">
+                                        <div class="skill-node">
+                                            <div class="skill-header">
+                                                <span class="skill-icon"><i class="fas fa-keyboard"></i></span>
+                                                <div>
+                                                    <div class="skill-name">编程</div>
+                                                    <div class="skill-sub">Python · HTML/CSS · JS</div>
+                                                </div>
+                                            </div>
+                                            <div class="skill-bar">
+                                                <div class="skill-bar-fill" style="width:72%;"></div>
+                                            </div>
+                                            <div class="skill-tags">
+                                                <span class="skill-tag"># 前端</span>
+                                                <span class="skill-tag"># PCL2-Custom-Homepage-Creator</span>
+                                            </div>
+                                        </div>
+                                        <div class="skill-node">
+                                            <div class="skill-header">
+                                                <span class="skill-icon"><i class="fas fa-pen-fancy"></i></span>
+                                                <div>
+                                                    <div class="skill-name">写作</div>
+                                                    <div class="skill-sub">记叙文 · 日记 · 诗</div>
+                                                </div>
+                                            </div>
+                                            <div class="skill-bar">
+                                                <div class="skill-bar-fill" style="width:85%;"></div>
+                                            </div>
+                                            <div class="skill-tags">
+                                                <span class="skill-tag"># 情感捕捉</span>
+                                                <span class="skill-tag"># 细节描写</span>
+                                            </div>
+                                        </div>
+                                        <div class="skill-node">
+                                            <div class="skill-header">
+                                                <span class="skill-icon"><i class="fas fa-ruler-combined"></i></span>
+                                                <div>
+                                                    <div class="skill-name">数学逻辑</div>
+                                                    <div class="skill-sub">几何 · 统计 · 算法</div>
+                                                </div>
+                                            </div>
+                                            <div class="skill-bar">
+                                                <div class="skill-bar-fill" style="width:68%;"></div>
+                                            </div>
+                                            <div class="skill-tags">
+                                                <span class="skill-tag"># SVG2Desmos</span>
+                                                <span class="skill-tag"># 统计计算器</span>
+                                            </div>
+                                        </div>
+                                        <div class="skill-node">
+                                            <div class="skill-header">
+                                                <span class="skill-icon"><i class="fas fa-gamepad"></i></span>
+                                                <div>
+                                                    <div class="skill-name">游戏</div>
+                                                    <div class="skill-sub">Minecraft</div>
+                                                </div>
+                                            </div>
+                                            <div class="skill-bar">
+                                                <div class="skill-bar-fill" style="width:60%;"></div>
+                                            </div>
+                                            <div class="skill-tags">
+                                                <span class="skill-tag"># 生电</span>
+                                                <span class="skill-tag"># 极限</span>
+                                            </div>
+                                        </div>
+                                        <div class="skill-node">
+                                            <div class="skill-header">
+                                                <span class="skill-icon"><i class="fas fa-palette"></i></span>
+                                                <div>
+                                                    <div class="skill-name">绘画</div>
+                                                    <div class="skill-sub">素描 · 水彩</div>
+                                                </div>
+                                            </div>
+                                            <div class="skill-bar">
+                                                <div class="skill-bar-fill" style="width:70%;"></div>
+                                            </div>
+                                            <div class="skill-tags">
+                                                <span class="skill-tag"># 景物</span>
+                                                <span class="skill-tag"># 二次元</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 成就 -->
+                                    <div class="achievement-section-title">
+                                        <i class="fas fa-trophy"></i> 成就
+                                        <span class="sub">Achievements</span>
+                                    </div>
+                                    <div class="achievement-grid">
+                                        <div class="achievement-card difficulty-hard">
+                                            <div class="achievement-icon"><i class="fas fa-earth-asia"></i></div>
+                                            <div class="achievement-info">
+                                                <div class="achievement-title">Hello World</div>
+                                                <div class="achievement-desc">来到这个世界</div>
+                                                <div class="achievement-meta">
+                                                    <span class="achievement-date"><i class="fas fa-calendar-check"></i>
+                                                        2010年12月21日</span>
+                                                    <span class="achievement-difficulty"><i class="fas fa-skull"></i>
+                                                        困难</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="achievement-card difficulty-easy">
+                                            <div class="achievement-icon"><i class="fas fa-cube"></i></div>
+                                            <div class="achievement-info">
+                                                <div class="achievement-title">像素世界</div>
+                                                <div class="achievement-desc">在 Minecraft 中放下第一个方块</div>
+                                                <div class="achievement-meta">
+                                                    <span class="achievement-date"><i class="fas fa-calendar-check"></i>
+                                                        2017年7月</span>
+                                                    <span class="achievement-difficulty"><i class="fas fa-leaf"></i>
+                                                        简单</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="achievement-card difficulty-medium">
+                                            <div class="achievement-icon"><i class="fas fa-code"></i></div>
+                                            <div class="achievement-info">
+                                                <div class="achievement-title">代码初体验</div>
+                                                <div class="achievement-desc">写出人生中第一行 print("Hello World")</div>
+                                                <div class="achievement-meta">
+                                                    <span class="achievement-date"><i class="fas fa-calendar-check"></i>
+                                                        2021年</span>
+                                                    <span class="achievement-difficulty"><i
+                                                            class="fas fa-chart-line"></i> 中等</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="achievement-card difficulty-easy">
+                                            <div class="achievement-icon"><i class="fas fa-graduation-cap"></i></div>
+                                            <div class="achievement-info">
+                                                <div class="achievement-title">新手村毕业</div>
+                                                <div class="achievement-desc">完成小学六年学业</div>
+                                                <div class="achievement-meta">
+                                                    <span class="achievement-date"><i class="fas fa-calendar-check"></i>
+                                                        2023年6月</span>
+                                                    <span class="achievement-difficulty"><i class="fas fa-leaf"></i>
+                                                        简单</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="achievement-card difficulty-medium">
+                                            <div class="achievement-icon"><i class="fab fa-github"></i></div>
+                                            <div class="achievement-info">
+                                                <div class="achievement-title">GITHUB</div>
+                                                <div class="achievement-desc">加入github</div>
+                                                <div class="achievement-meta">
+                                                    <span class="achievement-date"><i class="fas fa-calendar-check"></i>
+                                                        2023年11月15日</span>
+                                                    <span class="achievement-difficulty"><i
+                                                            class="fas fa-chart-line"></i> 中等</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="achievement-card difficulty-medium">
+                                            <div class="achievement-icon"><i class="fas fa-globe"></i></div>
+                                            <div class="achievement-info">
+                                                <div class="achievement-title">筑巢计划</div>
+                                                <div class="achievement-desc">个人网站成功上线</div>
+                                                <div class="achievement-meta">
+                                                    <span class="achievement-date"><i class="fas fa-calendar-check"></i>
+                                                        2025年2月22日</span>
+                                                    <span class="achievement-difficulty"><i
+                                                            class="fas fa-chart-line"></i> 中等</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="achievement-card difficulty-hard">
+                                            <div class="achievement-icon"><i class="fas fa-mountain"></i></div>
+                                            <div class="achievement-info">
+                                                <div class="achievement-title">翻越山丘</div>
+                                                <div class="achievement-desc">完成中考</div>
+                                                <div class="achievement-meta">
+                                                    <span class="achievement-date"><i class="fas fa-calendar-check"></i>
+                                                        2026年6月23日</span>
+                                                    <span class="achievement-difficulty"><i class="fas fa-skull"></i>
+                                                        困难</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="achievement-card difficulty-hidden">
+                                            <div class="achievement-icon"><i class="fas fa-users"></i></div>
+                                            <div class="achievement-info">
+                                                <div class="achievement-title">百粉成就</div>
+                                                <div class="achievement-desc">成为一名UP主并达成100粉丝关注</div>
+                                                <div class="achievement-meta">
+                                                    <span class="achievement-date"><i class="fas fa-calendar-check"></i>
+                                                        未解锁</span>
+                                                    <span class="achievement-difficulty"><i class="fas fa-lock"></i>
+                                                        未解锁</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+                                <!-- ===== 正面结束 ===== -->
+
+                                <!-- ===== 反面（关于我的文本） ===== -->
+                                <div class="flip-card-back">
+                                    <div class="back-content-wrapper">
+                                        <h2
+                                            style="margin-top:0; border-bottom:2px solid var(--accent-color); padding-bottom:0.5rem; display:inline-block;">
+                                            <i class="fas fa-user-astronaut"></i> 关于我
+                                        </h2>
+
+                                        <div
+                                            style="display:flex; flex-direction:column; gap:1.2rem; margin-top:1.2rem;">
+                                            <p style="font-size:1.05rem; line-height:1.8;">
+                                                正文1
+                                            </p>
+
+                                            <p style="line-height:1.8;">
+                                                正文2
+                                            </p>
+
+                                            <p
+                                                style="line-height:1.8; color:var(--text-secondary); font-style:italic; border-top:1px dashed var(--border-color); padding-top:0.8rem;">
+                                                <i class="fas fa-quote-left"
+                                                    style="color:var(--accent-color); margin-right:6px;"></i>
+                                            斜体
+                                            </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <!-- ===== 反面结束 ===== -->
+
+                            </div>
                         </div>
 
-                        <!-- 经验胶囊 -->
-                        <div class="exp-capsule" id="expCapsule">
-                            <div class="exp-level-box">
-                                <span class="exp-level" id="levelDisplay">--</span>
-                                <span class="exp-title" id="titleDisplay">--</span>
-                            </div>
-                            <div class="exp-bar-wrapper">
-                                <div class="exp-track">
-                                    <div class="exp-fill" id="expFill" style="width: 0%;"></div>
-                                </div>
-                                <span class="exp-percent" id="expPercent">0%</span>
-                            </div>
-                            <span class="exp-countdown" id="expCountdown">
-                                <span id="expEarnedDisplay">0</span>
-                                <span class="sep">/</span>
-                                <span id="expTotalDisplay">0</span>
-                                <strong> XP</strong>
-                            </span>
-                        </div>
-                        <div class="next-level-info" id="nextLevelInfo">
-                            <i class="fas fa-info-circle"></i> 下一级解锁: 计算中...
-                        </div>
-                    </div>
-
-                    <!-- ===== 2. 当前副本 ===== -->
-                    <div class="instance-grid">
-                        <div class="instance-card mission-main">
-                            <span class="instance-label"><i class="fas fa-flag"></i> 主线任务</span>
-                            <p class="instance-name"><i class="fas fa-bullseye" style="margin-right:6px;"></i>中考 · 终章结算
-                            </p>
-                            <p class="instance-desc">已完成笔试与体育测试，等待高中新地图加载中……</p>
-                        </div>
-                        <div class="instance-card mission-side">
-                            <span class="instance-label"><i class="fas fa-code-branch"></i> 支线任务</span>
-                            <p class="instance-name"><i class="fas fa-tools" style="margin-right:6px;"></i>个人网站 · 重构计划
-                            </p>
-                            <p class="instance-desc">升级关于页面 - 增加更多文本描述</p>
-                        </div>
-                    </div>
-
-                    <!-- ===== 3. 技能树 ===== -->
-                    <h3
-                        style="display:flex; align-items:center; gap:10px; margin-top:1.2rem; border-bottom:none; padding-bottom:0;">
-                        <i class="fas fa-code-branch" style="color:var(--accent-color);"></i> 技能树
-                        <span style="font-size:0.7rem; font-weight:400; color:var(--text-secondary);">Skill
-                            Tree</span>
-                    </h3>
-                    <div class="skill-tree">
-                        <!-- 编程 -->
-                        <div class="skill-node">
-                            <div class="skill-header">
-                                <span class="skill-icon"><i class="fas fa-keyboard"></i></span>
-                                <div>
-                                    <div class="skill-name">编程</div>
-                                    <div class="skill-sub">Python · HTML/CSS · JS</div>
-                                </div>
-                            </div>
-                            <div class="skill-bar">
-                                <div class="skill-bar-fill" style="width:72%;"></div>
-                            </div>
-                            <div class="skill-tags">
-                                <span class="skill-tag"># 前端</span>
-                                <span class="skill-tag"># PCL2-Custom-Homepage-Creator</span>
-                            </div>
-                        </div>
-                        <!-- 写作 -->
-                        <div class="skill-node">
-                            <div class="skill-header">
-                                <span class="skill-icon"><i class="fas fa-pen-fancy"></i></span>
-                                <div>
-                                    <div class="skill-name">写作</div>
-                                    <div class="skill-sub">记叙文 · 日记 · 诗</div>
-                                </div>
-                            </div>
-                            <div class="skill-bar">
-                                <div class="skill-bar-fill" style="width:85%;"></div>
-                            </div>
-                            <div class="skill-tags">
-                                <span class="skill-tag"># 情感捕捉</span>
-                                <span class="skill-tag"># 细节描写</span>
-                            </div>
-                        </div>
-                        <!-- 数学逻辑 -->
-                        <div class="skill-node">
-                            <div class="skill-header">
-                                <span class="skill-icon"><i class="fas fa-ruler-combined"></i></span>
-                                <div>
-                                    <div class="skill-name">数学逻辑</div>
-                                    <div class="skill-sub">几何 · 统计 · 算法</div>
-                                </div>
-                            </div>
-                            <div class="skill-bar">
-                                <div class="skill-bar-fill" style="width:68%;"></div>
-                            </div>
-                            <div class="skill-tags">
-                                <span class="skill-tag"># SVG2Desmos</span>
-                                <span class="skill-tag"># 统计计算器</span>
-                            </div>
-                        </div>
-                        <!-- 游戏 -->
-                        <div class="skill-node">
-                            <div class="skill-header">
-                                <span class="skill-icon"><i class="fas fa-gamepad"></i></span>
-                                <div>
-                                    <div class="skill-name">游戏</div>
-                                    <div class="skill-sub">Minecraft</div>
-                                </div>
-                            </div>
-                            <div class="skill-bar">
-                                <div class="skill-bar-fill" style="width:60%;"></div>
-                            </div>
-                            <div class="skill-tags">
-                                <span class="skill-tag"># 生电</span>
-                                <span class="skill-tag"># 极限</span>
-                            </div>
-                        </div>
-                        <!-- 绘画 -->
-                        <div class="skill-node">
-                            <div class="skill-header">
-                                <span class="skill-icon"><i class="fas fa-palette"></i></span>
-                                <div>
-                                    <div class="skill-name">绘画</div>
-                                    <div class="skill-sub">素描 · 水彩</div>
-                                </div>
-                            </div>
-                            <div class="skill-bar">
-                                <div class="skill-bar-fill" style="width:70%;"></div>
-                            </div>
-                            <div class="skill-tags">
-                                <span class="skill-tag"># 景物</span>
-                                <span class="skill-tag"># 二次元</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- ===== 4. 成就 ===== -->
-                    <div class="achievement-section-title">
-                        <i class="fas fa-trophy"></i> 成就
-                        <span class="sub">Achievements</span>
-                    </div>
-
-                    <div class="achievement-grid">
-                        <!-- 成就卡片：Hello World -->
-                        <div class="achievement-card difficulty-hard">
-                            <div class="achievement-icon">
-                                <i class="fas fa-earth-asia"></i>
-                            </div>
-                            <div class="achievement-info">
-                                <div class="achievement-title">Hello World</div>
-                                <div class="achievement-desc">来到这个世界</div>
-                                <div class="achievement-meta">
-                                    <span class="achievement-date">
-                                        <i class="fas fa-calendar-check"></i> 2010年12月21日
-                                    </span>
-                                    <span class="achievement-difficulty">
-                                        <i class="fas fa-skull"></i> 困难
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- 像素世界 - 2017年7月，简单 -->
-                        <div class="achievement-card difficulty-easy">
-                            <div class="achievement-icon">
-                                <i class="fas fa-cube"></i>
-                            </div>
-                            <div class="achievement-info">
-                                <div class="achievement-title">像素世界</div>
-                                <div class="achievement-desc">在 Minecraft 中放下第一个方块</div>
-                                <div class="achievement-meta">
-                                    <span class="achievement-date">
-                                        <i class="fas fa-calendar-check"></i> 2017年7月
-                                    </span>
-                                    <span class="achievement-difficulty">
-                                        <i class="fas fa-leaf"></i> 简单
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 代码初体验 - 2021年，中等 -->
-                        <div class="achievement-card difficulty-medium">
-                            <div class="achievement-icon">
-                                <i class="fas fa-code"></i>
-                            </div>
-                            <div class="achievement-info">
-                                <div class="achievement-title">代码初体验</div>
-                                <div class="achievement-desc">写出人生中第一行 print("Hello World")</div>
-                                <div class="achievement-meta">
-                                    <span class="achievement-date">
-                                        <i class="fas fa-calendar-check"></i> 2021年
-                                    </span>
-                                    <span class="achievement-difficulty">
-                                        <i class="fas fa-chart-line"></i> 中等
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 新手村毕业 - 2023年6月，简单 -->
-                        <div class="achievement-card difficulty-easy">
-                            <div class="achievement-icon">
-                                <i class="fas fa-graduation-cap"></i>
-                            </div>
-                            <div class="achievement-info">
-                                <div class="achievement-title">新手村毕业</div>
-                                <div class="achievement-desc">完成小学六年学业</div>
-                                <div class="achievement-meta">
-                                    <span class="achievement-date">
-                                        <i class="fas fa-calendar-check"></i> 2023年6月
-                                    </span>
-                                    <span class="achievement-difficulty">
-                                        <i class="fas fa-leaf"></i> 简单
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- GITHUB -->
-                        <div class="achievement-card difficulty-medium">
-                            <div class="achievement-icon">
-                                <i class="fab fa-github"></i>
-                            </div>
-                            <div class="achievement-info">
-                                <div class="achievement-title">GITHUB</div>
-                                <div class="achievement-desc">加入github</div>
-                                <div class="achievement-meta">
-                                    <span class="achievement-date">
-                                        <i class="fas fa-calendar-check"></i> 2023年11月15日
-                                    </span>
-                                    <span class="achievement-difficulty">
-                                        <i class="fas fa-chart-line"></i> 中等
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 筑巢计划 - 2025年2月22日，中等 -->
-                        <div class="achievement-card difficulty-medium">
-                            <div class="achievement-icon">
-                                <i class="fas fa-globe"></i>
-                            </div>
-                            <div class="achievement-info">
-                                <div class="achievement-title">筑巢计划</div>
-                                <div class="achievement-desc">个人网站成功上线</div>
-                                <div class="achievement-meta">
-                                    <span class="achievement-date">
-                                        <i class="fas fa-calendar-check"></i> 2025年2月22日
-                                    </span>
-                                    <span class="achievement-difficulty">
-                                        <i class="fas fa-chart-line"></i> 中等
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 翻越山丘 - 2026年6月23日，困难 -->
-                        <div class="achievement-card difficulty-hard">
-                            <div class="achievement-icon">
-                                <i class="fas fa-mountain"></i>
-                            </div>
-                            <div class="achievement-info">
-                                <div class="achievement-title">翻越山丘</div>
-                                <div class="achievement-desc">完成中考</div>
-                                <div class="achievement-meta">
-                                    <span class="achievement-date">
-                                        <i class="fas fa-calendar-check"></i> 2026年6月23日
-                                    </span>
-                                    <span class="achievement-difficulty">
-                                        <i class="fas fa-skull"></i> 困难
-                                    </span>
-                                </div>
-                            </div>
+                        <!-- ===== 翻转按钮（卡片底部） ===== -->
+                        <div class="flip-controls">
+                            <button class="flip-btn" id="flipCardBtn">
+                                <i class="fas fa-sync-alt"></i>
+                                <span id="flipBtnLabel">翻转卡片 · 查看关于我</span>
+                            </button>
                         </div>
                     </div>
 

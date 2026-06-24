@@ -122,3 +122,92 @@
     });
 
 })();
+
+(function initFlipCard() {
+    const flipBtn = document.getElementById('flipCardBtn');
+    const flipCard = document.getElementById('aboutFlipCard');
+    const flipBtnLabel = document.getElementById('flipBtnLabel');
+
+    if (!flipBtn || !flipCard) return;
+
+    // 更新卡片高度，适配当前可见面
+    function updateFlipHeight() {
+        const inner = flipCard.querySelector('.flip-card-inner');
+        const front = flipCard.querySelector('.flip-card-front');
+        const back = flipCard.querySelector('.flip-card-back');
+        if (!inner || !front || !back) return;
+
+        // 临时重置高度，获取真实 scrollHeight
+        inner.style.height = 'auto';
+
+        let targetHeight;
+        if (flipCard.classList.contains('flipped')) {
+            targetHeight = back.scrollHeight;
+        } else {
+            targetHeight = front.scrollHeight;
+        }
+
+        // 加上 2px 余量防止滚动条闪动
+        if (targetHeight > 0) {
+            const finalHeight = targetHeight + 4;
+            inner.style.height = finalHeight + 'px';
+            flipCard.style.minHeight = finalHeight + 'px';
+        }
+    }
+
+    // 翻转点击事件
+    flipBtn.addEventListener('click', function () {
+        const isFlipped = flipCard.classList.toggle('flipped');
+
+        // 更新按钮文字
+        if (flipBtnLabel) {
+            flipBtnLabel.textContent = isFlipped ? '翻转卡片 · 回到主页' : '翻转卡片 · 查看关于我';
+        }
+
+        window.scrollTo({
+            top: 0,
+            behavior: 'smooth'  // 平滑滚动
+        });
+
+        // 延迟执行高度更新，让浏览器先应用旋转样式
+        requestAnimationFrame(() => {
+            // 等待过渡启动
+            setTimeout(updateFlipHeight, 80);
+        });
+    });
+
+    // 监听过渡结束，微调高度
+    flipCard.addEventListener('transitionend', function (e) {
+        if (e.propertyName === 'transform' || e.propertyName === 'min-height') {
+            updateFlipHeight();
+        }
+    });
+
+    // 窗口大小变化时重新计算高度
+    let resizeTimer;
+    window.addEventListener('resize', function () {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(updateFlipHeight, 150);
+    });
+
+    // 页面完全加载后初始化高度（确保所有图片/字体加载完毕）
+    if (document.readyState === 'complete') {
+        setTimeout(updateFlipHeight, 200);
+    } else {
+        window.addEventListener('load', function () {
+            setTimeout(updateFlipHeight, 300);
+        });
+    }
+
+    // DOM 内容加载完后也执行一次
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', function () {
+            setTimeout(updateFlipHeight, 100);
+        });
+    } else {
+        setTimeout(updateFlipHeight, 100);
+    }
+
+    // 暴露方法给控制台调试（可选）
+    window.updateFlipHeight = updateFlipHeight;
+})();

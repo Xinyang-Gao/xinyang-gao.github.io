@@ -1307,3 +1307,211 @@
     color: #7F8C8D;
     background: rgba(127, 140, 141, 0.12);
 }
+/* ============================================================
+   ★ 翻转卡片 · 自动适配高度
+   ============================================================ */
+.flip-card-container {
+    perspective: 1500px;
+    width: 100%;
+}
+
+.flip-card {
+    width: 100%;
+    transition: min-height 0.5s ease;
+    min-height: 200px; /* 初始占位，JS会动态覆盖 */
+}
+
+.flip-card-inner {
+    position: relative;
+    width: 100%;
+    transition: transform 0.7s cubic-bezier(0.23, 1, 0.32, 1);
+    transform-style: preserve-3d;
+    /* 高度由JS动态控制，实现自动适配 */
+}
+
+.flip-card.flipped .flip-card-inner {
+    transform: rotateY(180deg);
+}
+
+/* 正面 & 反面 - 完全重叠，采用绝对定位实现3D翻转 */
+.flip-card-front,
+.flip-card-back {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    width: 100%;
+    border-radius: var(--radius-xl);
+    background: var(--surface-color-secondary);
+    padding: var(--container-padding);
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    box-sizing: border-box;
+    transition: background 0.3s ease, border-color 0.3s ease;
+}
+
+[data-theme="dark"] .flip-card-front,
+[data-theme="dark"] .flip-card-back {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: var(--border-color);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.03), var(--shadow-sm);
+}
+
+.flip-card-back {
+    transform: rotateY(180deg);
+    background: var(--surface-color);
+}
+
+[data-theme="dark"] .flip-card-back {
+    background: rgba(24, 24, 31, 0.98);
+}
+
+/* 反面内容排版 */
+.back-content-wrapper {
+    max-width: 100%;
+}
+
+.back-content-wrapper h2 {
+    margin-top: 0;
+}
+
+.back-content-wrapper p {
+    max-width: 100%;
+}
+
+/* 翻转按钮 */
+.flip-controls {
+    text-align: center;
+    margin-top: 28px;
+    padding-bottom: 4px;
+}
+
+.flip-btn {
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    padding: 14px 36px;
+    border-radius: 60px;
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--text-color);
+    cursor: pointer;
+    transition: all 0.35s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255,255,255,0.5);
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    font-family: var(--font-sans);
+    backdrop-filter: blur(4px);
+}
+
+.flip-btn:hover {
+    background: var(--accent-color);
+    color: white;
+    border-color: var(--accent-color);
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: var(--shadow-md), 0 0 0 1px rgba(var(--accent-rgb), 0.3);
+}
+
+.flip-btn:active {
+    transform: scale(0.96);
+}
+
+.flip-btn i {
+    transition: transform 0.6s cubic-bezier(0.34, 1.2, 0.64, 1);
+    font-size: 1.1rem;
+}
+
+.flip-card.flipped .flip-btn i {
+    transform: rotate(180deg);
+}
+
+/* 暗色主题按钮适配 */
+[data-theme="dark"] .flip-btn {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.04);
+}
+[data-theme="dark"] .flip-btn:hover {
+    background: var(--accent-color);
+    border-color: var(--accent-color);
+    color: #14141a;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5), 0 0 0 1px rgba(var(--accent-rgb), 0.3);
+}
+
+/* 响应式：移动端内边距调整 */
+@media (max-width: 768px) {
+    .flip-card-front,
+    .flip-card-back {
+        padding: 28px 20px;
+    }
+    .flip-btn {
+        padding: 12px 24px;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .flip-card-front,
+    .flip-card-back {
+        padding: 24px 16px;
+    }
+    .flip-btn {
+        padding: 10px 18px;
+        font-size: 0.85rem;
+        gap: 8px;
+        width: 100%;
+        justify-content: center;
+    }
+}
+/* ============================================================
+   ★ 移除外层容器卡片样式 · 让翻转卡片成为唯一卡片
+   ============================================================ */
+.player-container {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    animation: none !important;
+    opacity: 1 !important;
+}
+
+/* 确保翻转卡片正反面有完整的卡片外观 */
+.flip-card-front,
+.flip-card-back {
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-md), var(--shadow-offset);
+    padding: var(--container-padding);
+    transition: background 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+[data-theme="dark"] .flip-card-front,
+[data-theme="dark"] .flip-card-back {
+    background: var(--surface-color);
+    border-color: var(--border-color);
+    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.03), var(--shadow-md), var(--shadow-offset);
+}
+
+/* 暗色模式下反面背景微调（保持与正面一致） */
+[data-theme="dark"] .flip-card-back {
+    background: var(--surface-color);
+}
+
+/* 调整内边距，让内容呼吸更舒服 */
+@media (max-width: 768px) {
+    .flip-card-front,
+    .flip-card-back {
+        padding: 28px 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .flip-card-front,
+    .flip-card-back {
+        padding: 24px 16px;
+    }
+}
