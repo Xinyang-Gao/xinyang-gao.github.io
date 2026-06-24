@@ -4,10 +4,20 @@
     <title>高新炀的个人网站</title>
     <link>https://gxy.cn.mt</link>
     <description>学生 · 开发者 · 写作者，用代码和文字探索世界</description>
-    <lastBuildDate>Wed, 24 Jun 2026 16:18:19 GMT</lastBuildDate>
+    <lastBuildDate>Wed, 24 Jun 2026 23:34:03 GMT</lastBuildDate>
     <language>zh-CN</language>
     <generator>RssGenerator (Python)</generator>
     <atom:link href="https://gxy.cn.mt/rss.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>网站的起源</title>
+      <link>https://gxy.cn.mt/articles/网站的起源.html</link>
+      <description><![CDATA[从编程猫到独立博客，从克隆他人模版到亲手写出自己的网站——一名初中生与代码的故事]]></description>
+      <pubDate>Wed, 24 Jun 2026 00:00:00 GMT</pubDate>
+      <author>高新炀</author>
+      <category>网站</category>
+      <category>成长</category>
+      <category>故事</category>
+    </item>
     <item>
       <title>从一株小草开始</title>
       <link>https://gxy.cn.mt/articles/从一株小草开始.html</link>

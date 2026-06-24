@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-06-24T16:18:28.477580",
+  "generated_at": "2026-06-24T23:34:09.346336",
   "root_dir": "C:\\Users\\Administrator\\Desktop\\编程\\xinyang-gao.github.io\\xinyang-gao.github.io",
-  "total_files": 168,
-  "total_size_bytes": 3606508,
-  "total_lines": 57190,
-  "non_empty_lines": 52511,
+  "total_files": 169,
+  "total_size_bytes": 3410972,
+  "total_lines": 55679,
+  "non_empty_lines": 51011,
   "by_extension": [
     {
       "extension": ".js",
@@ -15,10 +15,10 @@
     },
     {
       "extension": ".html",
-      "count": 35,
-      "total_size_bytes": 351277,
-      "total_lines": 5876,
-      "non_empty_lines": 5365
+      "count": 36,
+      "total_size_bytes": 363309,
+      "total_lines": 6024,
+      "non_empty_lines": 5496
     },
     {
       "extension": ".css",
@@ -30,16 +30,16 @@
     {
       "extension": ".json",
       "count": 22,
-      "total_size_bytes": 123947,
-      "total_lines": 3955,
-      "non_empty_lines": 3955
+      "total_size_bytes": 124769,
+      "total_lines": 3985,
+      "non_empty_lines": 3985
     },
     {
       "extension": ".md",
-      "count": 16,
-      "total_size_bytes": 142395,
-      "total_lines": 2795,
-      "non_empty_lines": 2141
+      "count": 17,
+      "total_size_bytes": 146124,
+      "total_lines": 2840,
+      "non_empty_lines": 2167
     },
     {
       "extension": ".py",
@@ -56,18 +56,11 @@
       "non_empty_lines": 2250
     },
     {
-      "extension": ".png",
-      "count": 4,
-      "total_size_bytes": 1186941,
-      "total_lines": 8722,
-      "non_empty_lines": 8545
-    },
-    {
       "extension": ".xml",
       "count": 3,
-      "total_size_bytes": 11078,
-      "total_lines": 128,
-      "non_empty_lines": 128
+      "total_size_bytes": 11724,
+      "total_lines": 138,
+      "non_empty_lines": 138
     },
     {
       "extension": ".jpg",
@@ -75,6 +68,13 @@
       "total_size_bytes": 111650,
       "total_lines": 902,
       "non_empty_lines": 880
+    },
+    {
+      "extension": ".png",
+      "count": 3,
+      "total_size_bytes": 974176,
+      "total_lines": 6978,
+      "non_empty_lines": 6848
     },
     {
       "extension": "no_extension",

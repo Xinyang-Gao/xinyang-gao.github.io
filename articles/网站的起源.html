@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="从编程猫到独立博客，从克隆他人模版到亲手写出自己的网站——一名初中生与代码的故事">
+    <meta name="author" content="高新炀">
+    <meta name="keywords" content="网站, 成长, 故事">
+    <title>网站的起源 - 高新炀的小站</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/pages/article.css">
+    <link rel="stylesheet" href="/css/components/comments.css">
+</head>
+<body>
+<div id="loading-overlay" role="status" aria-label="页面加载中"><div class="loading-log"><div>[START] 正在等待 JavaScript，这可能需要几秒</div></div><div class="loading-glow"></div><div id="loading-content"><span class="loading-title">GaoXinYang</span></div></div>
+    <div id="navbar-placeholder"></div>
+
+    <!-- 所有动态内容放在 router-view 内 -->
+    <div id="router-view">
+        <div id="reading-progress" class="reading-progress-bar">
+            <div id="progress-bar" class="progress-bar"></div>
+        </div>
+
+        <main class="article-grid">
+            <!-- 左侧主内容区 -->
+            <article class="article-main">
+                <div class="article-card">
+                    <h1 class="article-title">网站的起源</h1>
+                    <p class="article-subtitle">从编程猫到独立博客，从克隆他人模版到亲手写出自己的网站——一名初中生与代码的故事</p>
+                    
+    <div class="article-meta-line">
+        <span class="meta-item"><i class="fas fa-calendar-alt"></i> 2026年06月24日</span>
+        <span class="meta-item"><i class="fas fa-user"></i> 高新炀</span>
+        <span class="meta-item"><i class="fas fa-folder-open"></i> 网站</span>
+        <span class="meta-item"><i class="fas fa-file-alt"></i> 1197字</span>
+        <span class="meta-item"><i class="fas fa-clock"></i> 4分钟</span>
+    </div>
+    <div class="article-meta-line article-meta-updated"><span class="meta-item"><i class="fas fa-edit"></i> 更新于 2026年06月24日</span></div>
+
+                    <div class="article-body" id="articleBody"><h2 id="缘起编程猫时代">缘起：编程猫时代</h2>
+<p>我是一名刚刚初中毕业的学生，与编程的缘分，始于小学时偶然接触到的<strong>编程猫</strong>——一个类似 Scratch 的图形化编程平台。那时我还不太懂什么叫代码，只觉得把积木块拖来拖去就能让角色动起来，像变魔法一样神奇。</p>
+<p>从好奇到沉迷，我在编程猫上陆续做了几款小游戏，没想到其中有两三个还挺受欢迎，甚至被官方推上了精品推荐位。每次看到评论区有人说“好玩”，那种兴奋感至今还记得。</p>
+<p>不过后来小升初，学业压力骤增，几乎没有任何空闲时间再去维护账号。纠结了很久，最后还是痛心地把编程猫账号注销了。现在回想起来，那些作品和评论都随着一次点击消失了，还是有些遗憾——那大概是我第一次体会到“创作”和“告别”之间的拉扯。</p>
+<h2 id="星火遇见独立博客">星火：遇见独立博客</h2>
+<p>真正点燃我做个人网站念头的，是在初二左右。某天我偶然点进一个独立博客，页面很简洁，内容却很打动人。那是一个用 Markdown 构建的静态博客，虽然技术不复杂，但那种“我写的东西可以这样被看到”的感觉，让我一下子被吸引了。</p>
+<p>我也想拥有一个自己的地方，不需要多华丽，只要能安放文字和想法就行。</p>
+<p>于是我开始四处搜索教程，费了好大功夫注册了 GitHub，找到那个博客的源码克隆下来，换上自己的文章。就这么简陋地跑了起来，心里还是挺开心的。但没过几周，那种“用别人模板”的别扭感越来越强烈——我决定，<strong>自己写</strong>。</p>
+<h2 id="破土从一行欢迎语开始">破土：从一行欢迎语开始</h2>
+<p>当时我已经自学过一点 Python，对编程的基本逻辑还算熟悉，所以学起 HTML 和 JavaScript 并没有想象中那么吃力。花了一个下午，我写出了第一个 <code>index.html</code>——整个网站就只有一个页面，上面一个大大的“欢迎”，除此以外什么都没有。</p>
+<p>虽然简陋得可怜，但那是我第一次感受到“从零开始创造一个属于自己的东西”的快乐。</p>
+<h2 id="生长漫长的迭代之路">生长：漫长的迭代之路</h2>
+<p>后来就是漫长的迭代。</p>
+<p>我学会了把 HTML 拆成独立的 CSS 和 JS 文件，页面结构变清晰了；然后是功能越加越多，代码膨胀到几千行；接着学会了把 JS 拆成多个模块，又学会了建文件夹管理文件，根目录终于变得干净了。</p>
+<p>再后来，我开始拆分 CSS，新增了多个页面，增加了导航栏，网站慢慢像点样子了。</p>
+<p>有一段时间我把它改成了 SPA 模式（单页应用），页面切换确实很流畅，但后来了解到 SPA 对 SEO 不太友好，又折腾着改回正常的多页模式。最近几个月，我学会了用 AJAX 实现无刷新导航，也逐步把 JS 写得更加模块化，网站的体验和代码质量都提升了不少。</p>
+<h2 id="此刻">此刻</h2>
+<p>现在，这个网站有了文章页、作品集、友链、评论区，甚至还有一个带加载动画的炫酷进入效果。每次打开它，看到那些曾经只有“欢迎”两个字的空白页逐渐被内容填满，心里都会有很强的成就感。</p>
+<p>它不完美，代码可能也不优雅，但它是从一腔热血和无数个尝试错误的夜晚里长出来的。就像我在某篇文章里写过的那样——<strong>代码是逻辑的诗，文字是感性的代码</strong>。这个网站，大概就是这两种东西交汇的地方。</p></div>
+
+                    <div class="article-tags"><a class="tag" href="/articles.html?tags=%E7%BD%91%E7%AB%99">#网站</a> <a class="tag" href="/articles.html?tags=%E6%88%90%E9%95%BF">#成长</a> <a class="tag" href="/articles.html?tags=%E6%95%85%E4%BA%8B">#故事</a></div>
+                </div>
+
+                <!-- 评论区 -->
+                <div class="comments-card">
+                    <h3>💬 评论</h3>
+                    <div id="twikoo-comments"></div>
+                </div>
+            </article>
+
+            <!-- 右侧边栏（目录 + 信息卡片） -->
+            <aside class="article-sidebar">
+                <div class="sidebar-card toc-card">
+                    <div class="toc-header">
+                        <i class="fas fa-list-ul"></i>
+                        <span>目录</span>
+                    </div>
+                    <nav class="toc-nav" id="toc-list-container"></nav>
+                </div>
+
+                <div class="sidebar-card info-card">
+                    <div class="info-item">
+                        <i class="fas fa-chart-line"></i>
+                        <div>
+                            <span class="info-label">阅读量</span>
+                            <span class="info-value" id="busuanzi_page_pv">加载中...</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-users"></i>
+                        <div>
+                            <span class="info-label">访客数</span>
+                            <span class="info-value" id="busuanzi_page_uv">加载中...</span>
+                        </div>
+                    </div>
+                    <div class="info-item"><i class="fas fa-code-branch"></i><div><span class="info-label">修订次数</span><span class="info-value">3</span></div></div>
+                </div>
+            </aside>
+        </main>
+
+        <!-- 图片模态框（文章页特有） -->
+        <div id="imageModal" class="image-modal">
+            <span class="close">&times;</span>
+            <img id="modalImage" src="" alt="">
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+
+    <script>window.ARTICLE_HEADINGS = [{"level": 2, "text": "缘起：编程猫时代", "id": "缘起编程猫时代"}, {"level": 2, "text": "星火：遇见独立博客", "id": "星火遇见独立博客"}, {"level": 2, "text": "破土：从一行欢迎语开始", "id": "破土从一行欢迎语开始"}, {"level": 2, "text": "生长：漫长的迭代之路", "id": "生长漫长的迭代之路"}, {"level": 2, "text": "此刻", "id": "此刻"}];</script>
+    <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>
+    <script src="/js/vendor/busuanzi.min.js" defer></script>
+    <script src="/js/entry/main.js" type="module"></script>
+    <script src="/js/pages/article.js" type="module"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="https://registry.npmmirror.com/twikoo/1.7.13/files/dist/twikoo.nocss.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.getElementById('articleBody'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+</body>
+</html>
