@@ -126,13 +126,11 @@
 }
 
 @keyframes pulse-dot {
-
     0%,
     100% {
         opacity: 1;
         transform: scale(1);
     }
-
     50% {
         opacity: 0.4;
         transform: scale(0.7);
@@ -234,7 +232,6 @@
     background: rgba(255, 255, 255, 0.08);
 }
 
-/* --- 优化后的经验填充：移除流光动画，保留渐变 --- */
 .exp-fill {
     height: 100%;
     width: 0%;
@@ -290,70 +287,312 @@
     text-align: right;
 }
 
-/* --- 当前副本 (胶囊卡片) --- */
+/* ==========================================================
+   ★ 任务卡片 · 重制版（史诗 / 稀有 游戏化风格）
+   ========================================================== */
 .instance-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 1.2rem;
+    gap: 1.4rem;
     margin: 1.4rem 0 1.8rem;
 }
 
+/* ---- 卡片基座 ---- */
 .instance-card {
-    padding: 1rem 1.4rem 1.1rem;
-    border-left: 4px solid var(--accent-color);
-    background: rgba(255, 255, 255, 0.4);
-    backdrop-filter: blur(8px);
-    border: 1px solid var(--border-color);
+    position: relative;
+    padding: 1.4rem 1.6rem 1.2rem;
     border-radius: var(--radius-xl);
-    box-shadow: var(--shadow-sm);
-    transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    transition: all 0.4s cubic-bezier(0.34, 1.2, 0.64, 1);
+    overflow: hidden;
+    cursor: default;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
 }
 
-.instance-card:hover {
-    border-color: var(--accent-light);
-    box-shadow: var(--shadow-md), 0 0 0 1px rgba(var(--accent-rgb, 180, 91, 99), 0.06);
-    transform: translateY(-2px);
-}
-
-[data-theme="dark"] .instance-card {
-    background: rgba(255, 255, 255, 0.02);
-    border-color: rgba(255, 255, 255, 0.06);
-}
-
-[data-theme="dark"] .instance-card:hover {
-    border-color: var(--accent-light);
-    box-shadow: var(--shadow-md), 0 0 0 1px rgba(var(--accent-rgb, 78, 168, 255), 0.15);
-    background: rgba(255, 255, 255, 0.06);
-}
-
+/* ---- 主线任务 · 传说级 (金色史诗) ---- */
 .instance-card.mission-main {
-    border-left-color: #e67e22;
+    background: linear-gradient(145deg, rgba(255, 215, 0, 0.12), rgba(255, 160, 0, 0.06));
+    border: 2px solid rgba(255, 215, 0, 0.35);
+    box-shadow:
+        0 4px 24px rgba(255, 215, 0, 0.10),
+        inset 0 1px 0 rgba(255, 215, 0, 0.15);
 }
 
-.instance-card.mission-side {
-    border-left-color: #3498db;
+/* 金色光晕 (始终存在) */
+.instance-card.mission-main::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: var(--radius-xl);
+    background: radial-gradient(ellipse at 30% 20%, rgba(255, 215, 0, 0.06), transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+    transition: opacity 0.5s ease;
 }
 
-.instance-label {
-    font-size: 0.65rem;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    font-weight: 600;
-    color: var(--text-secondary);
-    display: block;
-    margin-bottom: 2px;
+.instance-card.mission-main:hover::after {
+    opacity: 0.5;
+    background: radial-gradient(ellipse at 40% 30%, rgba(255, 215, 0, 0.18), transparent 70%);
 }
 
-.instance-name {
-    font-size: 1.1rem;
+.instance-card.mission-main:hover {
+    border-color: #FFD700;
+    transform: translateY(-4px) scale(1.01);
+    box-shadow:
+        0 12px 40px rgba(255, 215, 0, 0.20),
+        0 0 60px rgba(255, 215, 0, 0.06),
+        inset 0 1px 0 rgba(255, 215, 0, 0.25);
+}
+
+/* 主线 · 传说 徽章 */
+.instance-card.mission-main .instance-label {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.6rem;
     font-weight: 700;
-    margin: 0;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #b8860b;
+    background: rgba(255, 215, 0, 0.15);
+    padding: 2px 14px 2px 10px;
+    border-radius: 40px;
+    border: 1px solid rgba(255, 215, 0, 0.20);
+    backdrop-filter: blur(4px);
 }
 
-.instance-desc {
+.instance-card.mission-main .instance-label i {
+    color: #FFD700;
+    font-size: 0.65rem;
+}
+
+/* 主线任务名称 — 金色渐变 */
+.instance-card.mission-main .instance-name {
+    position: relative;
+    z-index: 1;
+    font-size: 1.2rem;
+    font-weight: 800;
+    margin: 6px 0 2px;
+    background: linear-gradient(135deg, #f5a623, #f7c948, #f5a623);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: goldShimmer 4s ease-in-out infinite alternate;
+}
+
+@keyframes goldShimmer {
+    0% {
+        background-position: 0% 50%;
+    }
+    100% {
+        background-position: 100% 50%;
+    }
+}
+
+.instance-card.mission-main .instance-name i {
+    color: #FFD700;
+    margin-right: 6px;
+    filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.3));
+}
+
+.instance-card.mission-main .instance-desc {
+    position: relative;
+    z-index: 1;
     font-size: 0.85rem;
     color: var(--text-secondary);
     margin: 4px 0 0;
+    opacity: 0.85;
+}
+
+/* 主线任务 · 底部装饰线 */
+.instance-card.mission-main::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 10%;
+    width: 80%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.3), rgba(255, 215, 0, 0.6), rgba(255, 215, 0, 0.3), transparent);
+    border-radius: 4px;
+    z-index: 1;
+    opacity: 0.6;
+    transition: opacity 0.4s;
+}
+
+.instance-card.mission-main:hover::before {
+    opacity: 1;
+}
+
+/* ---- 支线任务 · 稀有级 (蓝紫史诗) ---- */
+.instance-card.mission-side {
+    background: linear-gradient(145deg, rgba(52, 152, 219, 0.10), rgba(88, 51, 200, 0.05));
+    border: 2px solid rgba(52, 152, 219, 0.30);
+    box-shadow:
+        0 4px 24px rgba(52, 152, 219, 0.08),
+        inset 0 1px 0 rgba(52, 152, 219, 0.12);
+}
+
+/* 蓝色光晕 */
+.instance-card.mission-side::after {
+    content: '';
+    position: absolute;
+    inset: -2px;
+    border-radius: var(--radius-xl);
+    background: radial-gradient(ellipse at 70% 30%, rgba(52, 152, 219, 0.05), transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+    transition: opacity 0.5s ease;
+}
+
+.instance-card.mission-side:hover::after {
+    opacity: 0.6;
+    background: radial-gradient(ellipse at 60% 40%, rgba(52, 152, 219, 0.18), transparent 70%);
+}
+
+.instance-card.mission-side:hover {
+    border-color: #3498db;
+    transform: translateY(-4px) scale(1.01);
+    box-shadow:
+        0 12px 40px rgba(52, 152, 219, 0.18),
+        0 0 60px rgba(52, 152, 219, 0.05),
+        inset 0 1px 0 rgba(52, 152, 219, 0.20);
+}
+
+/* 支线 · 稀有 徽章 */
+.instance-card.mission-side .instance-label {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #2471a3;
+    background: rgba(52, 152, 219, 0.12);
+    padding: 2px 14px 2px 10px;
+    border-radius: 40px;
+    border: 1px solid rgba(52, 152, 219, 0.18);
+    backdrop-filter: blur(4px);
+}
+
+.instance-card.mission-side .instance-label i {
+    color: #3498db;
+    font-size: 0.65rem;
+}
+
+/* 支线任务名称 — 蓝色渐变 */
+.instance-card.mission-side .instance-name {
+    position: relative;
+    z-index: 1;
+    font-size: 1.2rem;
+    font-weight: 800;
+    margin: 6px 0 2px;
+    background: linear-gradient(135deg, #3498db, #5b8def, #3498db);
+    background-size: 200% 200%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: blueShimmer 5s ease-in-out infinite alternate;
+}
+
+@keyframes blueShimmer {
+    0% {
+        background-position: 0% 50%;
+    }
+    100% {
+        background-position: 100% 50%;
+    }
+}
+
+.instance-card.mission-side .instance-name i {
+    color: #3498db;
+    margin-right: 6px;
+    filter: drop-shadow(0 0 6px rgba(52, 152, 219, 0.25));
+}
+
+.instance-card.mission-side .instance-desc {
+    position: relative;
+    z-index: 1;
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    margin: 4px 0 0;
+    opacity: 0.85;
+}
+
+/* 支线任务 · 底部装饰线 (蓝紫) */
+.instance-card.mission-side::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 10%;
+    width: 80%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(52, 152, 219, 0.25), rgba(88, 51, 200, 0.4), rgba(52, 152, 219, 0.25), transparent);
+    border-radius: 4px;
+    z-index: 1;
+    opacity: 0.5;
+    transition: opacity 0.4s;
+}
+
+.instance-card.mission-side:hover::before {
+    opacity: 1;
+}
+
+/* ---- 暗色主题适配 ---- */
+[data-theme="dark"] .instance-card.mission-main {
+    background: linear-gradient(145deg, rgba(255, 215, 0, 0.06), rgba(255, 160, 0, 0.03));
+    border-color: rgba(255, 215, 0, 0.25);
+    box-shadow: 0 4px 24px rgba(255, 215, 0, 0.04), inset 0 1px 0 rgba(255, 215, 0, 0.06);
+}
+
+[data-theme="dark"] .instance-card.mission-main:hover {
+    border-color: #FFD700;
+    box-shadow: 0 12px 40px rgba(255, 215, 0, 0.12), 0 0 60px rgba(255, 215, 0, 0.04);
+}
+
+[data-theme="dark"] .instance-card.mission-main .instance-label {
+    background: rgba(255, 215, 0, 0.08);
+    border-color: rgba(255, 215, 0, 0.12);
+    color: #d4a017;
+}
+
+[data-theme="dark"] .instance-card.mission-side {
+    background: linear-gradient(145deg, rgba(52, 152, 219, 0.05), rgba(88, 51, 200, 0.02));
+    border-color: rgba(52, 152, 219, 0.20);
+    box-shadow: 0 4px 24px rgba(52, 152, 219, 0.03), inset 0 1px 0 rgba(52, 152, 219, 0.05);
+}
+
+[data-theme="dark"] .instance-card.mission-side:hover {
+    border-color: #5b8def;
+    box-shadow: 0 12px 40px rgba(52, 152, 219, 0.10), 0 0 60px rgba(52, 152, 219, 0.03);
+}
+
+[data-theme="dark"] .instance-card.mission-side .instance-label {
+    background: rgba(52, 152, 219, 0.07);
+    border-color: rgba(52, 152, 219, 0.10);
+    color: #5b8def;
+}
+
+/* 暗色主题下底部装饰线微调 */
+[data-theme="dark"] .instance-card.mission-main::before {
+    background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.15), rgba(255, 215, 0, 0.35), rgba(255, 215, 0, 0.15), transparent);
+}
+
+[data-theme="dark"] .instance-card.mission-side::before {
+    background: linear-gradient(90deg, transparent, rgba(52, 152, 219, 0.12), rgba(88, 51, 200, 0.25), rgba(52, 152, 219, 0.12), transparent);
+}
+
+/* ---- 所有内容在 z-index 上层 ---- */
+.instance-card .instance-label,
+.instance-card .instance-name,
+.instance-card .instance-desc {
+    position: relative;
+    z-index: 2;
 }
 
 /* --- 技能树 (玻璃网格) --- */
@@ -451,8 +690,8 @@
 }
 
 /* ==========================================================
-           成就栏目（参考友链卡片）
-           ========================================================== */
+   成就栏目（参考友链卡片）
+   ========================================================== */
 .achievement-section-title {
     display: flex;
     align-items: center;
@@ -510,15 +749,12 @@
 .achievement-card:nth-child(1) {
     animation-delay: 0.05s;
 }
-
 .achievement-card:nth-child(2) {
     animation-delay: 0.1s;
 }
-
 .achievement-card:nth-child(3) {
     animation-delay: 0.15s;
 }
-
 .achievement-card:nth-child(4) {
     animation-delay: 0.2s;
 }
@@ -726,6 +962,7 @@
 @media (max-width: 768px) {
     .instance-grid {
         grid-template-columns: 1fr;
+        gap: 1rem;
     }
 
     .exp-capsule {
@@ -790,6 +1027,16 @@
     .achievement-meta {
         font-size: 0.75rem;
         gap: 6px 12px;
+    }
+
+    /* 移动端任务卡片微调 */
+    .instance-card {
+        padding: 1.2rem 1.2rem 1rem;
+    }
+
+    .instance-card.mission-main .instance-name,
+    .instance-card.mission-side .instance-name {
+        font-size: 1.1rem;
     }
 }
 
@@ -865,6 +1112,26 @@
         font-size: 0.65rem;
         padding: 2px 14px;
     }
+
+    .instance-card {
+        padding: 1rem 1rem 0.9rem;
+    }
+
+    .instance-card.mission-main .instance-name,
+    .instance-card.mission-side .instance-name {
+        font-size: 1rem;
+    }
+
+    .instance-card .instance-label {
+        font-size: 0.55rem;
+        padding: 1px 10px 1px 8px;
+    }
+
+    .instance-card.mission-main::before,
+    .instance-card.mission-side::before {
+        width: 60%;
+        left: 20%;
+    }
 }
 
 @media (max-width: 360px) {
@@ -885,6 +1152,19 @@
     .achievement-desc {
         font-size: 0.8rem;
     }
+
+    .instance-card {
+        padding: 0.8rem 0.9rem 0.7rem;
+    }
+
+    .instance-card.mission-main .instance-name,
+    .instance-card.mission-side .instance-name {
+        font-size: 0.9rem;
+    }
+
+    .instance-card .instance-desc {
+        font-size: 0.75rem;
+    }
 }
 
 [data-theme="dark"] .glass-card,
@@ -896,7 +1176,6 @@
 }
 
 @media (prefers-color-scheme: light) {
-
     .glass-card,
     .instance-card,
     .skill-node,
@@ -904,4 +1183,119 @@
     .achievement-card {
         background: rgba(255, 255, 255, 0.55);
     }
+}
+
+/* 难度：简单 → 绿色调 */
+.achievement-card.difficulty-easy {
+    background: linear-gradient(145deg, rgba(46, 204, 113, 0.18), rgba(39, 174, 96, 0.10));
+    background-color: rgba(46, 204, 113, 0.14);
+    border-color: rgba(46, 204, 113, 0.35);
+}
+.achievement-card.difficulty-easy:hover {
+    border-color: #27ae60;
+    box-shadow: 0 16px 32px -8px rgba(39, 174, 96, 0.20),
+        0 0 0 2px rgba(39, 174, 96, 0.20);
+    background: linear-gradient(145deg, rgba(46, 204, 113, 0.28), rgba(39, 174, 96, 0.16));
+}
+.achievement-card.difficulty-easy .achievement-icon {
+    color: #27ae60;
+    background: rgba(39, 174, 96, 0.10);
+}
+.achievement-card.difficulty-easy .achievement-difficulty {
+    --difficulty-bg: #27ae60;
+    background: #27ae60;
+    box-shadow: 0 2px 8px rgba(39, 174, 96, 0.30);
+}
+
+/* 难度：中等 → 橙色调 */
+.achievement-card.difficulty-medium {
+    background: linear-gradient(145deg, rgba(243, 156, 18, 0.18), rgba(211, 84, 0, 0.10));
+    background-color: rgba(243, 156, 18, 0.14);
+    border-color: rgba(243, 156, 18, 0.35);
+}
+.achievement-card.difficulty-medium:hover {
+    border-color: #d35400;
+    box-shadow: 0 16px 32px -8px rgba(211, 84, 0, 0.20),
+        0 0 0 2px rgba(211, 84, 0, 0.20);
+    background: linear-gradient(145deg, rgba(243, 156, 18, 0.28), rgba(211, 84, 0, 0.16));
+}
+.achievement-card.difficulty-medium .achievement-icon {
+    color: #d35400;
+    background: rgba(211, 84, 0, 0.10);
+}
+.achievement-card.difficulty-medium .achievement-difficulty {
+    --difficulty-bg: #d35400;
+    background: #d35400;
+    box-shadow: 0 2px 8px rgba(211, 84, 0, 0.30);
+}
+
+/* 暗色主题适配 */
+[data-theme="dark"] .achievement-card.difficulty-easy {
+    background: linear-gradient(145deg, rgba(46, 204, 113, 0.12), rgba(39, 174, 96, 0.06));
+    background-color: rgba(46, 204, 113, 0.08);
+    border-color: rgba(46, 204, 113, 0.20);
+}
+[data-theme="dark"] .achievement-card.difficulty-easy:hover {
+    border-color: #2ecc71;
+    box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.6),
+        0 0 0 2px rgba(46, 204, 113, 0.25);
+    background: linear-gradient(145deg, rgba(46, 204, 113, 0.20), rgba(39, 174, 96, 0.10));
+}
+[data-theme="dark"] .achievement-card.difficulty-easy .achievement-icon {
+    color: #2ecc71;
+    background: rgba(46, 204, 113, 0.12);
+}
+
+[data-theme="dark"] .achievement-card.difficulty-medium {
+    background: linear-gradient(145deg, rgba(243, 156, 18, 0.12), rgba(211, 84, 0, 0.06));
+    background-color: rgba(243, 156, 18, 0.08);
+    border-color: rgba(243, 156, 18, 0.20);
+}
+[data-theme="dark"] .achievement-card.difficulty-medium:hover {
+    border-color: #f39c12;
+    box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.6),
+        0 0 0 2px rgba(243, 156, 18, 0.25);
+    background: linear-gradient(145deg, rgba(243, 156, 18, 0.20), rgba(211, 84, 0, 0.10));
+}
+[data-theme="dark"] .achievement-card.difficulty-medium .achievement-icon {
+    color: #f39c12;
+    background: rgba(243, 156, 18, 0.12);
+}
+
+/* 难度：隐藏 → 神秘紫灰色调 */
+.achievement-card.difficulty-hidden {
+    background: linear-gradient(145deg, rgba(90, 100, 120, 0.18), rgba(60, 70, 90, 0.10));
+    background-color: rgba(80, 90, 110, 0.14);
+    border-color: rgba(80, 90, 110, 0.35);
+}
+.achievement-card.difficulty-hidden:hover {
+    border-color: #5D6D7E;
+    box-shadow: 0 16px 32px -8px rgba(60, 70, 90, 0.20),
+        0 0 0 2px rgba(60, 70, 90, 0.20);
+    background: linear-gradient(145deg, rgba(90, 100, 120, 0.28), rgba(60, 70, 90, 0.16));
+}
+.achievement-card.difficulty-hidden .achievement-icon {
+    color: #5D6D7E;
+    background: rgba(60, 70, 90, 0.10);
+}
+.achievement-card.difficulty-hidden .achievement-difficulty {
+    --difficulty-bg: #5D6D7E;
+    background: #5D6D7E;
+    box-shadow: 0 2px 8px rgba(60, 70, 90, 0.30);
+}
+/* 暗色主题适配 */
+[data-theme="dark"] .achievement-card.difficulty-hidden {
+    background: linear-gradient(145deg, rgba(90, 100, 120, 0.12), rgba(60, 70, 90, 0.06));
+    background-color: rgba(80, 90, 110, 0.08);
+    border-color: rgba(80, 90, 110, 0.20);
+}
+[data-theme="dark"] .achievement-card.difficulty-hidden:hover {
+    border-color: #7F8C8D;
+    box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.6),
+        0 0 0 2px rgba(127, 140, 141, 0.25);
+    background: linear-gradient(145deg, rgba(90, 100, 120, 0.20), rgba(60, 70, 90, 0.10));
+}
+[data-theme="dark"] .achievement-card.difficulty-hidden .achievement-icon {
+    color: #7F8C8D;
+    background: rgba(127, 140, 141, 0.12);
 }
