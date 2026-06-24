@@ -1,27 +1,27 @@
 {
-  "version": 162,
+  "version": 163,
   "last_updated": "2026-06-24",
-  "last_updated_full": "2026-06-24T16:18:18.519014",
-  "total_articles": 13,
-  "total_word_count": 33872,
-  "average_article_word_count": 2605,
+  "last_updated_full": "2026-06-24T23:34:02.821260",
+  "total_articles": 14,
+  "total_word_count": 35069,
+  "average_article_word_count": 2504,
   "total_works": 13,
   "total_article_categories": 6,
-  "total_article_tags": 10,
+  "total_article_tags": 12,
   "total_work_tags": 12,
   "total_authors": 3,
   "total_update_days": 26,
   "article_tags": [
+    {
+      "name": "网站",
+      "count": 4
+    },
     {
       "name": "分享",
       "count": 3
     },
     {
       "name": "日记",
-      "count": 3
-    },
-    {
-      "name": "网站",
       "count": 3
     },
     {
@@ -34,6 +34,14 @@
     },
     {
       "name": "体育",
+      "count": 1
+    },
+    {
+      "name": "成长",
+      "count": 1
+    },
+    {
+      "name": "故事",
       "count": 1
     },
     {
@@ -67,15 +75,15 @@
       "count": 2
     },
     {
+      "name": "网站",
+      "count": 2
+    },
+    {
       "name": "README文档自动构建",
       "count": 1
     },
     {
       "name": "技术",
-      "count": 1
-    },
-    {
-      "name": "网站",
       "count": 1
     }
   ],
@@ -132,7 +140,9 @@
   "article_tags_list": [
     "体育",
     "分享",
+    "成长",
     "技术",
+    "故事",
     "文言文",
     "日记",
     "网站",
