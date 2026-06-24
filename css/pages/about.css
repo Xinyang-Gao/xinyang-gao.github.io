@@ -1515,3 +1515,224 @@
         padding: 24px 16px;
     }
 }
+/* ============================================================
+   ★ 日常爱好卡片（独立暖色系）
+   ============================================================ */
+.daily-hobby-card {
+    background: linear-gradient(145deg, rgba(243, 156, 18, 0.12), rgba(211, 84, 0, 0.06));
+    border: 2px solid rgba(243, 156, 18, 0.30);
+    border-radius: var(--radius-xl);
+    padding: 1.2rem 1.6rem 1.4rem;
+    box-shadow: 0 4px 24px rgba(243, 156, 18, 0.08), inset 0 1px 0 rgba(243, 156, 18, 0.12);
+    transition: all 0.4s ease;
+}
+
+[data-theme="dark"] .daily-hobby-card {
+    background: linear-gradient(145deg, rgba(243, 156, 18, 0.10), rgba(211, 84, 0, 0.05));
+    border-color: rgba(243, 156, 18, 0.35);
+    box-shadow: 0 4px 24px rgba(243, 156, 18, 0.06), inset 0 1px 0 rgba(243, 156, 18, 0.08);
+}
+
+.daily-hobby-card .hobby-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.daily-hobby-card .hobby-icon-circle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(243, 156, 18, 0.35);
+    flex-shrink: 0;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.daily-hobby-card:hover .hobby-icon-circle {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(243, 156, 18, 0.45);
+}
+
+[data-theme="dark"] .daily-hobby-card .hobby-icon-circle {
+    background: linear-gradient(135deg, #f5a623, #e67e22);
+    box-shadow: 0 4px 16px rgba(243, 156, 18, 0.25);
+}
+
+.daily-hobby-card .hobby-title {
+    font-size: 1.1rem;
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    font-weight: 700;
+}
+
+[data-theme="dark"] .daily-hobby-card .hobby-title {
+    background: linear-gradient(135deg, #f5a623, #f7c948);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.daily-hobby-card .hobby-badge {
+    font-size: 0.55rem;
+    background: rgba(243, 156, 18, 0.15);
+    color: #d35400;
+    padding: 2px 12px;
+    border-radius: 40px;
+    border: 1px solid rgba(243, 156, 18, 0.20);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+    margin-left: 8px;
+}
+
+[data-theme="dark"] .daily-hobby-card .hobby-badge {
+    background: rgba(243, 156, 18, 0.12);
+    color: #f5a623;
+    border-color: rgba(243, 156, 18, 0.15);
+}
+
+/* 爱好网格 */
+.daily-hobby-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.daily-hobby-item {
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    border-radius: var(--radius-md);
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border: 1px solid var(--border-color);
+    transition: all 0.25s ease;
+    cursor: default;
+}
+
+.daily-hobby-item:hover {
+    transform: translateY(-2px);
+    border-color: var(--accent-light);
+    box-shadow: var(--shadow-sm);
+}
+
+[data-theme="dark"] .daily-hobby-item {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .daily-hobby-item:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(243, 156, 18, 0.30);
+}
+
+/* 各爱好图标颜色 */
+.hobby-icon-minecraft {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(46, 204, 113, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #27ae60;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+}
+
+[data-theme="dark"] .hobby-icon-minecraft {
+    background: rgba(46, 204, 113, 0.12);
+    color: #2ecc71;
+}
+
+.hobby-icon-music {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(155, 89, 182, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #8e44ad;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+}
+
+[data-theme="dark"] .hobby-icon-music {
+    background: rgba(155, 89, 182, 0.12);
+    color: #af7ac5;
+}
+
+.hobby-icon-paint {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(231, 76, 60, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #c0392b;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+}
+
+[data-theme="dark"] .hobby-icon-paint {
+    background: rgba(231, 76, 60, 0.12);
+    color: #e74c3c;
+}
+
+.hobby-icon-piano {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(52, 152, 219, 0.15);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #2980b9;
+    font-size: 0.95rem;
+    flex-shrink: 0;
+}
+
+[data-theme="dark"] .hobby-icon-piano {
+    background: rgba(52, 152, 219, 0.12);
+    color: #5b8def;
+}
+
+.daily-hobby-item .hobby-label {
+    font-weight: 600;
+    font-size: 0.85rem;
+    line-height: 1.2;
+    color: var(--text-color);
+}
+
+.daily-hobby-item .hobby-sub {
+    font-size: 0.65rem;
+    color: var(--text-secondary);
+}
+
+/* 响应式 */
+@media (max-width: 480px) {
+    .daily-hobby-grid {
+        grid-template-columns: 1fr;
+    }
+    .daily-hobby-card {
+        padding: 1rem 1.2rem 1.2rem;
+    }
+    .daily-hobby-card .hobby-icon-circle {
+        width: 36px;
+        height: 36px;
+        font-size: 1rem;
+    }
+}

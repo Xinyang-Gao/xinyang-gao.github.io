@@ -317,25 +317,136 @@
 
                                         <div
                                             style="display:flex; flex-direction:column; gap:1.2rem; margin-top:1.2rem;">
-                                            <p style="font-size:1.05rem; line-height:1.8;">
-                                                正文1
-                                            </p>
 
-                                            <p style="line-height:1.8;">
-                                                正文2
-                                            </p>
+                                            <!-- 第一段：身份与起源 -->
+                                            <div>
+                                                <p style="margin:0; line-height:1.8; font-size:1.05rem;">
+                                                    <strong>高新炀</strong>，一个出生于2010年冬天的〈地球 Online〉玩家，
+                                                    正在完成〈初中副本〉的最终结算任务。
+                                                    与代码的缘分始于小学时的<strong>编程猫</strong>，
+                                                    从图形化积木到亲手写出这个网站的每一行代码，
+                                                    一路折腾，一路成长。
+                                                </p>
+                                            </div>
 
+                                            <!-- ===== 日常爱好（纯CSS类版） ===== -->
+                                            <div class="daily-hobby-card">
+                                                <div class="hobby-header">
+                                                    <div class="hobby-icon-circle">
+                                                        <i class="fas fa-heart"></i>
+                                                    </div>
+                                                    <div>
+                                                        <span class="hobby-title">日常爱好</span>
+                                                        <span class="hobby-badge">生活碎片</span>
+                                                    </div>
+                                                </div>
+                                                <div class="daily-hobby-grid">
+                                                    <!-- Minecraft -->
+                                                    <div class="daily-hobby-item">
+                                                        <div class="hobby-icon-minecraft"><i class="fas fa-cube"></i>
+                                                        </div>
+                                                        <div>
+                                                            <div class="hobby-label">Minecraft</div>
+                                                            <div class="hobby-sub">生电 · 极限</div>
+                                                        </div>
+                                                    </div>
+                                                    <!-- 听音乐 -->
+                                                    <div class="daily-hobby-item">
+                                                        <div class="hobby-icon-music"><i class="fas fa-headphones"></i>
+                                                        </div>
+                                                        <div>
+                                                            <div class="hobby-label">听音乐</div>
+                                                            <div class="hobby-sub">网易云 · 歌单</div>
+                                                        </div>
+                                                    </div>
+                                                    <!-- 画画 -->
+                                                    <div class="daily-hobby-item">
+                                                        <div class="hobby-icon-paint"><i class="fas fa-palette"></i>
+                                                        </div>
+                                                        <div>
+                                                            <div class="hobby-label">画画</div>
+                                                            <div class="hobby-sub">素描 · 水彩</div>
+                                                        </div>
+                                                    </div>
+                                                    <!-- 弹琴 -->
+                                                    <div class="daily-hobby-item">
+                                                        <div class="hobby-icon-piano"><i class="fas fa-music"></i></div>
+                                                        <div>
+                                                            <div class="hobby-label">弹琴</div>
+                                                            <div class="hobby-sub">偶尔 · 随性</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- ===== 《三体》专区（参考支线任务卡片样式） ===== -->
+                                            <div
+                                                style="background:linear-gradient(145deg, rgba(52,152,219,0.10), rgba(88,51,200,0.05)); border:2px solid rgba(52,152,219,0.30); border-radius:var(--radius-xl); padding:1.2rem 1.6rem; box-shadow:0 4px 24px rgba(52,152,219,0.08), inset 0 1px 0 rgba(52,152,219,0.12); transition:all 0.4s ease;">
+                                                <div
+                                                    style="display:flex; align-items:center; gap:10px; margin-bottom:6px;">
+                                                    <span style="font-size:1.6rem;">🌌</span>
+                                                    <strong
+                                                        style="font-size:1.1rem; background:linear-gradient(135deg, #3498db, #5b8def); -webkit-background-clip:text; background-clip:text; color:transparent;">《三体III
+                                                        · 死神永生》</strong>
+                                                    <span
+                                                        style="font-size:0.6rem; background:rgba(52,152,219,0.12); color:#2471a3; padding:2px 12px; border-radius:40px; border:1px solid rgba(52,152,219,0.18); text-transform:uppercase; letter-spacing:1px; font-weight:600;">最爱</span>
+                                                </div>
+                                                <p
+                                                    style="margin:0 0 8px 0; line-height:1.8; font-size:0.98rem; color:var(--text-color);">
+                                                    太阳系被二维化的那一幕，那种宏大又寂静的毁灭感，让我久久无法忘记。歌者文明随手丢出的二向箔，让整个太阳系变成一幅画——在宇宙尺度下，文明是如此脆弱，却又如此壮丽。
+                                                </p>
+                                                <div style="display:flex; flex-wrap:wrap; gap:8px;">
+                                                    <span class="tag" style="font-size:0.75rem;"># 刘慈欣</span>
+                                                    <span class="tag" style="font-size:0.75rem;"># 降维打击</span>
+                                                    <span class="tag" style="font-size:0.75rem;"># 黑暗森林</span>
+                                                </div>
+                                            </div>
+
+                                            <!-- ===== 网站起源缩影（参考主线任务卡片样式） ===== -->
+                                            <div
+                                                style="background:linear-gradient(145deg, rgba(255,215,0,0.08), rgba(255,160,0,0.04)); border:2px solid rgba(255,215,0,0.25); border-radius:var(--radius-xl); padding:1.2rem 1.6rem; box-shadow:0 4px 24px rgba(255,215,0,0.06), inset 0 1px 0 rgba(255,215,0,0.10); transition:all 0.4s ease;">
+                                                <div
+                                                    style="display:flex; align-items:center; gap:10px; margin-bottom:4px;">
+                                                    <span style="font-size:1.4rem;">🚀</span>
+                                                    <strong
+                                                        style="font-size:1.05rem; background:linear-gradient(135deg, #f5a623, #f7c948); -webkit-background-clip:text; background-clip:text; color:transparent;">数字自留地</strong>
+                                                    <span
+                                                        style="font-size:0.55rem; background:rgba(255,215,0,0.15); color:#b8860b; padding:2px 12px; border-radius:40px; border:1px solid rgba(255,215,0,0.20); text-transform:uppercase; letter-spacing:1px; font-weight:600;">持续建设中</span>
+                                                </div>
+                                                <p
+                                                    style="margin:0; line-height:1.8; font-size:0.98rem; color:var(--text-color);">
+                                                    <i class="fas fa-quote-left"
+                                                        style="color:#f5a623; margin-right:4px; opacity:0.5;"></i>
+                                                    这个网站是从一个只有“欢迎”两个字的 <code
+                                                        style="background:var(--code-bg); padding:0.1rem 0.4rem; border-radius:4px; font-size:0.85rem;">index.html</code>
+                                                    慢慢长出来的。从克隆别人的博客模版，到亲手拆 CSS、拆 JS、加路由、加评论区……它不完美，但它是我的<strong
+                                                        style="color:#f5a623;">关于这个网站</strong>。
+                                                </p>
+                                                <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;">
+                                                    <span class="tag"
+                                                        style="font-size:0.7rem; background:rgba(255,215,0,0.10); border-color:rgba(255,215,0,0.15);">#
+                                                        独立博客</span>
+                                                    <span class="tag"
+                                                        style="font-size:0.7rem; background:rgba(255,215,0,0.10); border-color:rgba(255,215,0,0.15);">#
+                                                        从零到一</span>
+                                                    <span class="tag"
+                                                        style="font-size:0.7rem; background:rgba(255,215,0,0.10); border-color:rgba(255,215,0,0.15);">#
+                                                        成长轨迹</span>
+                                                </div>
+                                            </div>
+
+                                            <!-- 签名 -->
                                             <p
-                                                style="line-height:1.8; color:var(--text-secondary); font-style:italic; border-top:1px dashed var(--border-color); padding-top:0.8rem;">
+                                                style="line-height:1.8; color:var(--text-secondary); font-style:italic; border-top:1px dashed var(--border-color); padding-top:0.8rem; margin-bottom:0; text-align:center;">
                                                 <i class="fas fa-quote-left"
                                                     style="color:var(--accent-color); margin-right:6px;"></i>
-                                            斜体
+                                                我相信 <strong>代码是逻辑的诗，文字是感性的代码</strong>。
+                                                如果这片空间让你感到了一丝放松或有趣，那就够了。
                                             </p>
-                                            </div>
+
                                         </div>
                                     </div>
                                 </div>
-                                <!-- ===== 反面结束 ===== -->
 
                             </div>
                         </div>
@@ -347,7 +458,7 @@
                                 <span id="flipBtnLabel">翻转卡片 · 查看关于我</span>
                             </button>
                         </div>
-                    <div id="twikoo-comments" class="twikoo-container"></div>
+                        <div id="twikoo-comments" class="twikoo-container"></div>
                     </div>
 
                 </div>
