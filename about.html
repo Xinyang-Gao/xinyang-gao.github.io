@@ -24,7 +24,6 @@
             transform: translateY(-2px);
         }
 
-        /* --- 暗色主题玻璃适配 --- */
         [data-theme="dark"] .glass-card {
             background: rgba(255, 255, 255, 0.03);
             border-color: rgba(255, 255, 255, 0.06);
@@ -60,7 +59,9 @@
         }
 
         .player-header-card::before {
-            content: "🎮";
+            content: "\f11b";  /* Font Awesome gamepad icon unicode */
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
             position: absolute;
             font-size: 80px;
             right: -8px;
@@ -412,6 +413,8 @@
         .skill-icon {
             font-size: 1.6rem;
             line-height: 1;
+            width: 2rem;
+            text-align: center;
         }
 
         .skill-name {
@@ -459,7 +462,276 @@
             border: 1px solid var(--border-light);
         }
 
-        /* --- 响应式断点 (与 layout.css 保持一致) --- */
+        /* ==========================================================
+           新增：成就栏目（参考友链卡片）
+           ========================================================== */
+
+        /* 成就区域标题 */
+        .achievement-section-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 1.8rem;
+            border-bottom: none;
+            padding-bottom: 0;
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+        .achievement-section-title i {
+            color: var(--accent-color);
+        }
+        .achievement-section-title .sub {
+            font-size: 0.7rem;
+            font-weight: 400;
+            color: var(--text-secondary);
+        }
+
+        /* 成就网格 —— 与友链网格一致 */
+        .achievement-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 28px;
+            margin: 16px 0 20px;
+        }
+
+        /* 成就卡片 —— 完全复刻 .friend-card 样式，并增加难度色系 */
+        .achievement-card {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.4));
+            background-color: rgba(255, 255, 255, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            border-radius: var(--radius-lg);
+            padding: 22px 24px;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            transition: transform 0.3s cubic-bezier(0.34, 1.2, 0.64, 1),
+                box-shadow 0.4s ease,
+                border-color 0.3s ease,
+                background 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04),
+                inset 0 1px 0 rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(8px) saturate(1.1);
+            -webkit-backdrop-filter: blur(8px) saturate(1.1);
+            color: inherit;
+            position: relative;
+            overflow: hidden;
+            /* 入场动画 */
+            opacity: 0;
+            transform: translateY(20px);
+            animation: achievementFadeInUp 0.5s cubic-bezier(0.2, 0.9, 0.4, 1.1) forwards;
+        }
+
+        .achievement-card:nth-child(1) {
+            animation-delay: 0.05s;
+        }
+        .achievement-card:nth-child(2) {
+            animation-delay: 0.1s;
+        }
+        .achievement-card:nth-child(3) {
+            animation-delay: 0.15s;
+        }
+        .achievement-card:nth-child(4) {
+            animation-delay: 0.2s;
+        }
+
+        @keyframes achievementFadeInUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 光泽扫光（与友链一致） */
+        .achievement-card::after {
+            content: '';
+            position: absolute;
+            left: -50%;
+            top: -50%;
+            width: 60%;
+            height: 200%;
+            transform: skewX(-25deg) translateX(-100%);
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.25), rgba(255, 255, 255, 0));
+            transition: transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            pointer-events: none;
+        }
+        .achievement-card:hover::after {
+            transform: skewX(-25deg) translateX(250%);
+        }
+
+        .achievement-card:hover {
+            border-color: var(--accent-color);
+            box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.10),
+                0 0 0 2px rgba(var(--accent-rgb, 180, 91, 99), 0.15);
+            transform: translateY(-6px) scale(1.01);
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.55));
+        }
+
+        /* ----- 难度色系：困难 → 红色调 ----- */
+        .achievement-card.difficulty-hard {
+            background: linear-gradient(145deg, rgba(220, 60, 60, 0.18), rgba(180, 40, 40, 0.10));
+            background-color: rgba(200, 50, 50, 0.14);
+            border-color: rgba(200, 60, 60, 0.35);
+        }
+        .achievement-card.difficulty-hard:hover {
+            border-color: #c0392b;
+            box-shadow: 0 16px 32px -8px rgba(192, 57, 43, 0.20),
+                0 0 0 2px rgba(192, 57, 43, 0.20);
+            background: linear-gradient(145deg, rgba(220, 60, 60, 0.28), rgba(180, 40, 40, 0.16));
+        }
+
+        /* ----- 暗色主题适配 ----- */
+        [data-theme="dark"] .achievement-card {
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01));
+            background-color: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4),
+                inset 0 1px 0 rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(10px) saturate(0.9);
+        }
+        [data-theme="dark"] .achievement-card:hover {
+            border-color: var(--accent-light);
+            box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.6),
+                0 0 0 2px rgba(var(--accent-rgb, 78, 168, 255), 0.2);
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.02));
+        }
+        [data-theme="dark"] .achievement-card.difficulty-hard {
+            background: linear-gradient(145deg, rgba(200, 60, 60, 0.12), rgba(160, 40, 40, 0.06));
+            background-color: rgba(200, 50, 50, 0.08);
+            border-color: rgba(200, 60, 60, 0.20);
+        }
+        [data-theme="dark"] .achievement-card.difficulty-hard:hover {
+            border-color: #e74c3c;
+            box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.6),
+                0 0 0 2px rgba(231, 76, 60, 0.25);
+            background: linear-gradient(145deg, rgba(200, 60, 60, 0.20), rgba(160, 40, 40, 0.10));
+        }
+
+        /* ----- 成就图标（类似友链头像） ----- */
+        .achievement-icon {
+            flex-shrink: 0;
+            width: 80px;
+            height: 80px;
+            border-radius: var(--radius-md, 12px);
+            overflow: hidden;
+            background: var(--tag-bg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+            box-shadow: 0 0 0 0.5px rgba(255, 255, 255, 0.2),
+                0 2px 8px rgba(0, 0, 0, 0.03);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            font-size: 2.6rem;
+            color: var(--accent-color);
+        }
+        .achievement-card:hover .achievement-icon {
+            transform: scale(1.04);
+            box-shadow: 0 0 0 1px rgba(var(--accent-rgb, 180, 91, 99), 0.15),
+                0 4px 16px rgba(0, 0, 0, 0.06);
+        }
+
+        /* 困难难度图标微染色 */
+        .achievement-card.difficulty-hard .achievement-icon {
+            color: #c0392b;
+            background: rgba(192, 57, 43, 0.10);
+        }
+        [data-theme="dark"] .achievement-card.difficulty-hard .achievement-icon {
+            color: #e74c3c;
+            background: rgba(231, 76, 60, 0.12);
+        }
+
+        /* ----- 成就信息 ----- */
+        .achievement-info {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .achievement-title {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--accent-color);
+            margin: 0;
+            line-height: 1.3;
+            letter-spacing: -0.3px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            transition: color 0.2s, text-decoration 0.2s;
+        }
+        .achievement-card:hover .achievement-title {
+            color: var(--accent-dark);
+            text-decoration: underline;
+            text-underline-offset: 4px;
+        }
+
+        .achievement-desc {
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+            margin: 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* 元信息行：日期 + 难度标签 */
+        .achievement-meta {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px 18px;
+            margin-top: 6px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .achievement-date {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-family: var(--font-mono);
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            opacity: 0.75;
+        }
+        .achievement-date i {
+            font-size: 0.7rem;
+            color: var(--accent-color);
+        }
+
+        /* 难度标签 —— 使用背景颜色表现，同时文字辅助 */
+        .achievement-difficulty {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 2px 16px;
+            border-radius: 40px;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.4px;
+            color: #fff;
+            background: var(--difficulty-bg, #7f8c8d);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            text-transform: uppercase;
+            transition: all 0.2s;
+        }
+        .achievement-card.difficulty-hard .achievement-difficulty {
+            --difficulty-bg: #c0392b;
+            background: #c0392b;
+            box-shadow: 0 2px 8px rgba(192, 57, 43, 0.30);
+        }
+        [data-theme="dark"] .achievement-card.difficulty-hard .achievement-difficulty {
+            --difficulty-bg: #e74c3c;
+            background: #e74c3c;
+            box-shadow: 0 2px 10px rgba(231, 76, 60, 0.35);
+        }
+
+        /* ----- 响应式断点 (与 layout.css 保持一致) ----- */
         @media (max-width: 768px) {
             .instance-grid {
                 grid-template-columns: 1fr;
@@ -494,6 +766,35 @@
                 white-space: normal;
                 text-align: center;
             }
+
+            /* 成就响应式 */
+            .achievement-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+            .achievement-card {
+                padding: 18px 20px;
+                gap: 16px;
+                flex-direction: row;
+            }
+            .achievement-icon {
+                width: 68px;
+                height: 68px;
+                font-size: 2.2rem;
+            }
+            .achievement-title {
+                font-size: 1.2rem;
+                white-space: normal;
+                overflow: visible;
+                text-overflow: unset;
+            }
+            .achievement-desc {
+                font-size: 0.85rem;
+            }
+            .achievement-meta {
+                font-size: 0.75rem;
+                gap: 6px 12px;
+            }
         }
 
         @media (max-width: 480px) {
@@ -516,13 +817,76 @@
                 right: -4px;
                 bottom: -8px;
             }
+
+            /* 成就小屏 */
+            .achievement-grid {
+                gap: 16px;
+            }
+            .achievement-card {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+                padding: 18px 16px;
+                gap: 12px;
+            }
+            .achievement-icon {
+                width: 72px;
+                height: 72px;
+                font-size: 2.4rem;
+                margin-bottom: 2px;
+            }
+            .achievement-info {
+                align-items: center;
+                width: 100%;
+            }
+            .achievement-title {
+                font-size: 1.2rem;
+                white-space: normal;
+                text-align: center;
+                width: 100%;
+            }
+            .achievement-desc {
+                text-align: center;
+                font-size: 0.85rem;
+                -webkit-line-clamp: 3;
+            }
+            .achievement-meta {
+                justify-content: center;
+                text-align: center;
+                font-size: 0.75rem;
+            }
+            .achievement-date {
+                font-size: 0.72rem;
+            }
+            .achievement-difficulty {
+                font-size: 0.65rem;
+                padding: 2px 14px;
+            }
         }
 
-        /* 暗色主题下保留多彩徽章亮度 */
+        @media (max-width: 360px) {
+            .achievement-card {
+                padding: 14px 12px;
+            }
+            .achievement-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 2rem;
+            }
+            .achievement-title {
+                font-size: 1.05rem;
+            }
+            .achievement-desc {
+                font-size: 0.8rem;
+            }
+        }
+
+        /* 暗色主题下保持玻璃质感 */
         [data-theme="dark"] .glass-card,
         [data-theme="dark"] .instance-card,
         [data-theme="dark"] .skill-node,
-        [data-theme="dark"] .player-header-card {
+        [data-theme="dark"] .player-header-card,
+        [data-theme="dark"] .achievement-card {
             background: rgba(255, 255, 255, 0.02);
         }
 
@@ -531,7 +895,8 @@
             .glass-card,
             .instance-card,
             .skill-node,
-            .player-header-card {
+            .player-header-card,
+            .achievement-card {
                 background: rgba(255, 255, 255, 0.55);
             }
         }
@@ -603,28 +968,26 @@
                     <div class="instance-grid">
                         <div class="instance-card mission-main">
                             <span class="instance-label"><i class="fas fa-flag"></i> 主线任务</span>
-                            <p class="instance-name">🎯 中考 · 终章结算</p>
+                            <p class="instance-name"><i class="fas fa-bullseye" style="margin-right:6px;"></i>中考 · 终章结算</p>
                             <p class="instance-desc">已完成笔试与体育测试，等待高中新地图加载中……</p>
                         </div>
                         <div class="instance-card mission-side">
                             <span class="instance-label"><i class="fas fa-code-branch"></i> 支线任务</span>
-                            <p class="instance-name">🛠️ 个人网站 · 重构计划</p>
+                            <p class="instance-name"><i class="fas fa-tools" style="margin-right:6px;"></i>个人网站 · 重构计划</p>
                             <p class="instance-desc">把关于页面从“施工中”升级为“玩家档案”v2.0</p>
                         </div>
                     </div>
 
                     <!-- ===== 3. 技能树 ===== -->
-                    <h3
-                        style="display:flex; align-items:center; gap:10px; margin-top:1.2rem; border-bottom:none; padding-bottom:0;">
+                    <h3 style="display:flex; align-items:center; gap:10px; margin-top:1.2rem; border-bottom:none; padding-bottom:0;">
                         <i class="fas fa-code-branch" style="color:var(--accent-color);"></i> 技能树
-                        <span style="font-size:0.7rem; font-weight:400; color:var(--text-secondary);">(Skill
-                            Tree)</span>
+                        <span style="font-size:0.7rem; font-weight:400; color:var(--text-secondary);">(Skill Tree)</span>
                     </h3>
                     <div class="skill-tree">
                         <!-- 编程 -->
                         <div class="skill-node">
                             <div class="skill-header">
-                                <span class="skill-icon">⌨️</span>
+                                <span class="skill-icon"><i class="fas fa-keyboard"></i></span>
                                 <div>
                                     <div class="skill-name">编程</div>
                                     <div class="skill-sub">Python · HTML/CSS · JS</div>
@@ -642,7 +1005,7 @@
                         <!-- 写作 -->
                         <div class="skill-node">
                             <div class="skill-header">
-                                <span class="skill-icon">✍️</span>
+                                <span class="skill-icon"><i class="fas fa-pen-fancy"></i></span>
                                 <div>
                                     <div class="skill-name">写作</div>
                                     <div class="skill-sub">记叙文 · 日记 · 诗</div>
@@ -659,7 +1022,7 @@
                         <!-- 数学逻辑 -->
                         <div class="skill-node">
                             <div class="skill-header">
-                                <span class="skill-icon">📐</span>
+                                <span class="skill-icon"><i class="fas fa-ruler-combined"></i></span>
                                 <div>
                                     <div class="skill-name">数学逻辑</div>
                                     <div class="skill-sub">几何 · 统计 · 算法</div>
@@ -676,7 +1039,7 @@
                         <!-- 游戏 & 模组 -->
                         <div class="skill-node">
                             <div class="skill-header">
-                                <span class="skill-icon">🎮</span>
+                                <span class="skill-icon"><i class="fas fa-gamepad"></i></span>
                                 <div>
                                     <div class="skill-name">游戏 & 模组</div>
                                     <div class="skill-sub">Minecraft · PCL2</div>
@@ -691,6 +1054,39 @@
                             </div>
                         </div>
                     </div>
+
+                    <!-- ==========================================================
+                    ===== 4. 成就 (新增) =====
+                    ========================================================== -->
+                    <div class="achievement-section-title">
+                        <i class="fas fa-trophy"></i> 成就
+                        <span class="sub">(Achievements)</span>
+                    </div>
+
+                    <div class="achievement-grid">
+                        <!-- 成就卡片：Hello World -->
+                        <div class="achievement-card difficulty-hard">
+                            <!-- 图标 -->
+                            <div class="achievement-icon">
+                                <i class="fas fa-earth-asia"></i>
+                            </div>
+                            <!-- 信息 -->
+                            <div class="achievement-info">
+                                <div class="achievement-title">Hello World</div>
+                                <div class="achievement-desc">来到这个世界</div>
+                                <div class="achievement-meta">
+                                    <span class="achievement-date">
+                                        <i class="fas fa-calendar-check"></i> 2010年12月21日
+                                    </span>
+                                    <span class="achievement-difficulty">
+                                        <i class="fas fa-skull"></i> 困难
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 后续成就可继续添加，会自适应网格 -->
+                    </div>
+
                 </div>
             </main>
         </div>
@@ -708,7 +1104,7 @@
     <script src="/js/entry/main.js" type="module"></script>
 
     <script>
-        (function () {
+        (function() {
             'use strict';
 
             // ---------- 配置 ----------
@@ -754,7 +1150,7 @@
                 const now = new Date();
                 const thisYear = getThisYearBirthday(birthday);
                 if (thisYear > now) {
-                    return thisYear; // 今年生日还没过
+                    return thisYear;
                 } else {
                     return new Date(now.getFullYear() + 1, birthday.getMonth(), birthday.getDate());
                 }
@@ -787,19 +1183,16 @@
                 expFill.style.width = progress + '%';
                 expPercent.textContent = Math.floor(progress) + '%';
 
-                // 剩余经验（分钟）
                 const remainingMs = nextBday.getTime() - now.getTime();
                 const xp = Math.floor(remainingMs / 60000);
                 xpValue.textContent = xp.toLocaleString();
 
-                // 下一级日期
                 const dateStr = nextBday.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
                 nextLevelInfo.innerHTML = `<i class="fas fa-info-circle"></i> 下一级解锁: ${dateStr}`;
 
-                // 在线时长
                 const uptimeMs = now.getTime() - BIRTHDAY.getTime();
                 const uptimeHours = Math.floor(uptimeMs / 3600000);
-                uptimeDisplay.textContent = uptimeHours.toLocaleString() + ' 小时'; + ' h';
+                uptimeDisplay.textContent = uptimeHours.toLocaleString() + ' 小时' + ' h';
             }
 
             // ---------- 随机间隔更新 (5-15秒) ----------
@@ -816,14 +1209,13 @@
                 updateUI();
                 scheduleUpdate();
             } else {
-                document.addEventListener('DOMContentLoaded', function () {
+                document.addEventListener('DOMContentLoaded', function() {
                     updateUI();
                     scheduleUpdate();
                 });
             }
 
-            // 切回页面时立即刷新
-            document.addEventListener('visibilitychange', function () {
+            document.addEventListener('visibilitychange', function() {
                 if (!document.hidden) {
                     updateUI();
                 }
