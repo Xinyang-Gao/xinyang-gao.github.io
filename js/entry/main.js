@@ -1,6 +1,6 @@
 // /js/entry/main.js (优化 LCP 版本，支持回退/前进 + 加载覆盖层版本检测)
 
-import { CONFIG, storageController, CookieConsentManager } from '/js/core/core.js';
+import { CONFIG, storageController, CookieConsentManager, Utils } from '/js/core/core.js';
 import { initUIEffects, refreshScrollReveal, ensureScrollReveal } from '/js/ui/ui-effects.js';
 import { getTimeBasedTheme, getPageNameFromPath, applyRandomBackgroundImage, startSiteAgeUpdater, updateFooterUpdateTime } from '/js/core/page-utils.js';
 import { loadNavbar, loadFooter, enableAjaxNavigation, initPageFeatures, fetchAndReplaceContent, initPopstate } from '/js/router/router.js';
@@ -126,6 +126,7 @@ async function handleLoadingOverlay() {
     { key: 'works', url: `${CONFIG.API.WORKS}?t=${Date.now()}` },
     { key: 'code', url: '/json/code_analysis.json?t=' + Date.now() },
     { key: 'friends', url: '/json/friends.json?t=' + Date.now() },
+    { key: 'version', url: '/json/version.json?t=' + Date.now() }  // ✅ 新增
   ];
 
   const results = await Promise.allSettled(
@@ -149,6 +150,7 @@ async function handleLoadingOverlay() {
     }
   });
 
+  // ---------- 解析统计数据 ----------
   const stats = dataMap.statistics || null;
   let currentVersion = stats?.version ? String(stats.version).trim() : null;
 
@@ -222,23 +224,31 @@ async function handleLoadingOverlay() {
 
   flushLogs();
 
-  // ---------- 版本检测与更新逻辑 ----------
-  let record = {};
-  if (storageController.isAllowed()) {
-    const raw = storageController.getItem(CONFIG.STORAGE_KEYS.VISIT_RECORD);
-    if (raw) {
-      try { record = JSON.parse(raw); } catch { /* ignore */ }
+  // ---------- 版本检测（基于 version.json） ----------
+  const versionData = dataMap.version || null;
+  let allVersions = [];
+  let latestWebVersion = null;
+  if (versionData && Array.isArray(versionData.versions)) {
+    // 按 id 升序排列（确保顺序）
+    allVersions = versionData.versions.slice().sort((a, b) => a.id - b.id);
+    if (allVersions.length) {
+      latestWebVersion = allVersions[allVersions.length - 1].version;
     }
   }
-  const cachedVersion = record.version || null;
-  const lastVisit = record.lastVisit ? Number(record.lastVisit) : null;
 
-  addLog('Version', `本地缓存版本: ${cachedVersion || '无'}`);
-  addLog('Version', `远程版本: ${currentVersion || '无'}`);
+  // 读取本地存储的网站版本（独立于 statistics 版本）
+  let storedVersion = null;
+  if (storageController.isAllowed()) {
+    storedVersion = storageController.getItem('siteVersion');
+  }
 
-  const isLatest = !!(cachedVersion && currentVersion && cachedVersion === currentVersion);
+  addLog('Version', `本地存储的网站版本: ${storedVersion || '无'}`);
+  addLog('Version', `远程最新版本: ${latestWebVersion || '无'}`);
 
-  if (isLatest) {
+  // 判断是否需要更新
+  const needUpdate = !storedVersion || (latestWebVersion && storedVersion !== latestWebVersion);
+
+  if (!needUpdate) {
     addLog('Version', '版本一致，加载完成，即将进入页面');
     flushLogs();
     overlay.classList.add('hidden');
@@ -246,18 +256,57 @@ async function handleLoadingOverlay() {
     return;
   }
 
-  // ---------- 版本更新 ----------
-  if (storageController.isAllowed()) {
-    addLog('Version', '正在更新本地访问记录...');
-    const newRecord = {
-      version: currentVersion || cachedVersion || '未知版本',
-      lastVisit: Date.now()
-    };
-    storageController.setItem(CONFIG.STORAGE_KEYS.VISIT_RECORD, JSON.stringify(newRecord));
-    addLog('Version', '本地访问记录已更新');
+  // ---------- 确定要显示的版本范围 ----------
+  let startIdx = 0;
+  if (storedVersion) {
+    const foundIdx = allVersions.findIndex(v => v.version === storedVersion);
+    if (foundIdx !== -1) {
+      startIdx = foundIdx + 1; // 从下一个版本开始
+    } else {
+      // 未知版本，显示最近 3 个
+      startIdx = Math.max(0, allVersions.length - 3);
+    }
+  } else {
+    // 首次访问，显示最近 3 个版本
+    startIdx = Math.max(0, allVersions.length - 3);
+  }
+  const relevantVersions = allVersions.slice(startIdx);
+
+  // 构建版本信息文本
+  let versionMsg = '';
+  if (storedVersion && relevantVersions.length > 0) {
+    const firstVer = relevantVersions[0].version;
+    const lastVer = relevantVersions[relevantVersions.length - 1].version;
+    if (relevantVersions.length === 1) {
+      versionMsg = `网站已从版本 ${storedVersion} 更新到 ${lastVer}`;
+    } else {
+      versionMsg = `网站已从版本 ${storedVersion} 更新到 ${lastVer}，共 ${relevantVersions.length} 个版本更新`;
+    }
+  } else if (relevantVersions.length > 0) {
+    const lastVer = relevantVersions[relevantVersions.length - 1].version;
+    versionMsg = `当前版本：${lastVer}（最近 ${relevantVersions.length} 个版本）`;
+  } else {
+    versionMsg = '版本信息暂未获取，欢迎访问';
   }
 
+  // 存储最新版本（若允许）
+  if (storageController.isAllowed() && latestWebVersion) {
+    storageController.setItem('siteVersion', latestWebVersion);
+    addLog('Version', `已存储最新版本: ${latestWebVersion}`);
+  }
+
+  // 离开时长
   let awayText = '';
+  // 从 visit record 获取上次访问时间
+  let record = {};
+  if (storageController.isAllowed()) {
+    const raw = storageController.getItem(CONFIG.STORAGE_KEYS.VISIT_RECORD);
+    if (raw) {
+      try { record = JSON.parse(raw); } catch { /* ignore */ }
+    }
+  }
+  const lastVisit = record.lastVisit ? Number(record.lastVisit) : null;
+
   if (lastVisit) {
     const diff = Date.now() - lastVisit;
     const seconds = Math.floor(diff / 1000);
@@ -269,21 +318,33 @@ async function handleLoadingOverlay() {
     awayText = '欢迎首次访问本站';
   }
   addLog('Version', `离开时长: ${awayText}`);
-
-  let versionMsg = '';
-  if (cachedVersion && currentVersion && cachedVersion !== currentVersion) {
-    versionMsg = `网站已从版本 ${cachedVersion} 更新到 ${currentVersion}`;
-  } else if (currentVersion) {
-    versionMsg = `当前版本：${currentVersion}`;
-  } else {
-    versionMsg = '版本信息暂未获取，欢迎访问';
-  }
   addLog('Version', versionMsg);
+
+  // ---------- 生成更新内容 HTML ----------
+  let changesHTML = '';
+  if (relevantVersions.length > 0) {
+    // 每个版本最多显示前 5 条变更
+    const items = relevantVersions.map(v => {
+      const versionLabel = v.version || `v${v.id}`;
+      const changeItems = (v.changes || []).slice(0, 5).map(c => {
+        const type = Utils.escapeHtml(c.type || '');
+        const desc = Utils.escapeHtml(c.description || '');
+        return `<li><span class="change-type">[${type}]</span> ${desc}</li>`;
+      }).join('');
+      if (changeItems) {
+        return `<li class="version-header">${versionLabel}</li><ul class="changes-list">${changeItems}</ul>`;
+      }
+      return '';
+    }).filter(s => s).join('');
+    if (items) {
+      changesHTML = `<div class="changes-container"><h4>📋 更新内容</h4><ul class="changes-list">${items}</ul></div>`;
+    }
+  }
 
   addLog('UI', '正在渲染更新提示界面...');
   flushLogs();
 
-  // ---------- 展示更新界面 ----------
+  // ---------- 渲染覆盖层内容 ----------
   content.classList.add('updated');
   const oldInfo = content.querySelector('.update-info');
   if (oldInfo) oldInfo.remove();
@@ -293,11 +354,12 @@ async function handleLoadingOverlay() {
   infoDiv.innerHTML = `
     <div class="version-badge">${versionMsg}</div>
     <div class="welcome-message">${awayText}</div>
+    ${changesHTML}
     <div class="click-hint">点击任意位置继续</div>
   `;
   content.appendChild(infoDiv);
 
-  // ---------- 点击处理：显示 Cookie 申请或直接关闭 ----------
+  // ---------- 点击处理：Cookie 申请或直接关闭 ----------
   const handleOverlayClick = async (e) => {
     if (storageController.isAllowed()) {
       overlay.classList.add('hidden');

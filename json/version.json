@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-06-24T14:31:09.948160",
-  "total_versions": 160,
+  "generated_at": "2026-06-24T14:54:48.889660",
+  "total_versions": 161,
   "versions": [
     {
       "id": 1,
@@ -2610,6 +2610,17 @@
         {
           "type": "fix",
           "description": "更新日志生成脚本现在根据版本号排序，而不是日期"
+        }
+      ]
+    },
+    {
+      "id": 161,
+      "version": "v7.20.0",
+      "date": "2026-06-24",
+      "changes": [
+        {
+          "type": "feat",
+          "description": "添加在欢迎覆盖层上显示更新日志"
         }
       ]
     }
