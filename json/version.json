@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-06-24T14:54:48.889660",
-  "total_versions": 161,
+  "generated_at": "2026-06-24T15:58:20.603387",
+  "total_versions": 162,
   "versions": [
     {
       "id": 1,
@@ -2615,12 +2615,23 @@
     },
     {
       "id": 161,
-      "version": "v7.20.0",
+      "version": "v7.19.15",
       "date": "2026-06-24",
       "changes": [
         {
           "type": "feat",
           "description": "添加在欢迎覆盖层上显示更新日志"
+        }
+      ]
+    },
+    {
+      "id": 162,
+      "version": "v7.20.0",
+      "date": "2026-06-24",
+      "changes": [
+        {
+          "type": "feat",
+          "description": "迁移 `v7.19.13` 移除的更新日志到[新页面](/changelog.html)并添加搜索和专属样式"
         }
       ]
     }
