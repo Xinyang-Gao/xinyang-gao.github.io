@@ -37,6 +37,7 @@ DEFAULT_SCRIPTS = [
     "RssGenerator.py",
     "SitemapGenerator.py",
     "FriendLinkGenerator.py",
+    "VersionManager.py",
     "StaticListGenerator.py",
     "GenerateNoJsIndex.py",
     "CodeAnalyzer.py"

@@ -4,7 +4,7 @@
     <title>高新炀的个人网站</title>
     <link>https://gxy.cn.mt</link>
     <description>学生 · 开发者 · 写作者，用代码和文字探索世界</description>
-    <lastBuildDate>Wed, 24 Jun 2026 13:46:57 GMT</lastBuildDate>
+    <lastBuildDate>Wed, 24 Jun 2026 14:17:03 GMT</lastBuildDate>
     <language>zh-CN</language>
     <generator>RssGenerator (Python)</generator>
     <atom:link href="https://gxy.cn.mt/rss.xml" rel="self" type="application/rss+xml" />
@@ -64,14 +64,6 @@
       <description><![CDATA[这是一篇 markdown 解析器渲染测试]]></description>
       <pubDate>Sun, 21 Dec 2025 00:00:00 GMT</pubDate>
       <author>高新炀 ＆ DEEPSEEK-V3</author>
-      <category>网站</category>
-    </item>
-    <item>
-      <title>网站更新日志</title>
-      <link>https://gxy.cn.mt/articles/网站更新日志.html</link>
-      <description><![CDATA[记录网站历次更新内容]]></description>
-      <pubDate>Sun, 21 Dec 2025 00:00:00 GMT</pubDate>
-      <author>高新炀</author>
       <category>网站</category>
     </item>
     <item>

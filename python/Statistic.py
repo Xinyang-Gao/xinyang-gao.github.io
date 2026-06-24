@@ -73,9 +73,19 @@ def main():
     unique_authors = set(article_author_cnt.keys()) | set(work_author_cnt.keys())
     update_days = sorted(set(all_dates))
 
-    # 版本管理
-    old_stat = load_json(JSON_OUTPUT_DIR / "statistics.json", {})
-    version = old_stat.get("version", 0) + 1
+    # ---------- 版本号改为从 version.json 读取 ----------
+    version_json_path = JSON_OUTPUT_DIR / "version.json"
+    if version_json_path.exists():
+        version_data = load_json(version_json_path, {})
+        versions = version_data.get("versions", [])
+        if versions:
+            latest = max(versions, key=lambda v: v.get('id', 0))
+            version = latest.get('id', 0)
+        else:
+            version = 0
+    else:
+        log_warning("version.json 不存在，将 version 设为 0")
+        version = 0
 
     statistics = {
         "version": version,
@@ -99,7 +109,7 @@ def main():
     }
 
     save_json(statistics, JSON_OUTPUT_DIR / "statistics.json")
-    log_info(f"统计完成: 文章 {total_articles} 篇, 总字数 {total_word_count}, 作品 {len(works)} 个")
+    log_info(f"统计完成: 文章 {total_articles} 篇, 总字数 {total_word_count}, 作品 {len(works)} 个，版本 ID {version}")
 
 if __name__ == "__main__":
     main()
