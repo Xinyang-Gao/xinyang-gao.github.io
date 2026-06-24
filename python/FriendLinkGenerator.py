@@ -317,7 +317,6 @@ def generate_html(cards_html: str, external_html: str) -> str:
     </div>
     <div id="footer-placeholder"></div>
     <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>
-    <script src="https://registry.npmmirror.com/twikoo/1.7.13/files/dist/twikoo.nocss.js"></script>
     <script src="/js/entry/main.js" type="module"></script>
     <script src="/js/vendor/busuanzi.min.js"></script>
 </body>
