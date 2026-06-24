@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-06-25T00:18:29.028369",
-  "total_versions": 163,
+  "generated_at": "2026-06-25T01:07:28.229023",
+  "total_versions": 165,
   "versions": [
     {
       "id": 1,
@@ -2647,6 +2647,28 @@
         {
           "type": "feat",
           "description": "若用户未主动设置主题，则自动根据时间切换明暗主题"
+        }
+      ]
+    },
+    {
+      "id": 164,
+      "version": "v7.20.2",
+      "date": "2026-06-25",
+      "changes": [
+        {
+          "type": "perf",
+          "description": "删除友链、文章页的 [Twikoo CDN 调用](https://cdn.jsdelivr.net/npm/twikoo@1.7.13/dist/twikoo.min.js) 和留言板的 Twikoo 初始化，统一由 `twikoo-manager.js` 管理"
+        }
+      ]
+    },
+    {
+      "id": 165,
+      "version": "v7.21.0",
+      "date": "2026-06-25",
+      "changes": [
+        {
+          "type": "refactor(about)",
+          "description": "重构关于页面（Merge pull request #10 from Xinyang-Gao/about）"
         }
       ]
     }
