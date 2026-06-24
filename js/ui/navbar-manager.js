@@ -1,5 +1,5 @@
 // /js/ui/navbar-manager.js
-// 完全 JS 驱动的导航栏模块，整合标题替换功能
+// 完全 JS 驱动的导航栏模块，整合标题替换功能与入场动画
 
 import { CONFIG, storageController } from '/js/core/core.js';
 import { getTimeBasedTheme, getPageNameFromPath } from '/js/core/page-utils.js';
@@ -26,12 +26,15 @@ class NavbarManager {
     this.resizeObserver = null;
     this.idleTimeout = null;
     this.isIdle = false;
+
+    // 入场动画标记
+    this._entrancePlayed = false;
   }
 
-  // 生成导航栏 DOM 结构（与原始 navbar.html 完全一致）
+  // ---------- 静态方法：生成导航栏 DOM ----------
   static createNavbarDOM() {
     const navbar = document.createElement('div');
-    navbar.className = 'navbar';
+    navbar.className = 'navbar initial';   // 默认带着 initial 类，用于入场动画
 
     // Logo
     const logoDiv = document.createElement('div');
@@ -103,7 +106,17 @@ class NavbarManager {
     document.head.appendChild(link);
   }
 
-  // ---------- 标题替换功能（原 nav-title-replacer 核心） ----------
+  // ---------- 入场动画控制 ----------
+  playEntranceAnimation() {
+    if (this._entrancePlayed) return;
+    if (!this.elements.navbar) return;
+    // 移除 initial 类，触发 CSS 过渡
+    this.elements.navbar.classList.remove('initial');
+    this._entrancePlayed = true;
+    console.log('[NavbarManager] 入场动画已播放');
+  }
+
+  // ---------- 标题替换功能 ----------
   createTitlePlaceholder() {
     const placeholder = document.createElement('div');
     placeholder.className = 'nav-title-placeholder';
@@ -215,7 +228,6 @@ class NavbarManager {
     }
   }
 
-  // 监听导航栏大小变化（如窗口缩放）
   observeNavItemsResize() {
     if (!window.ResizeObserver) return;
     this.resizeObserver = new ResizeObserver(() => {
@@ -226,7 +238,6 @@ class NavbarManager {
     if (this.elements.navItems) this.resizeObserver.observe(this.elements.navItems);
   }
 
-  // 初始化标题替换事件
   initTitleReplacer() {
     if (!this.elements.navbar || !this.elements.nav || !this.elements.navItems) return;
     this.createTitlePlaceholder();
@@ -245,7 +256,6 @@ class NavbarManager {
     if (this.shouldEnableTitleMode()) this.switchToTitleMode();
   }
 
-  // 销毁标题替换功能
   destroyTitleReplacer() {
     if (this.titleHandlers.mouseEnter) {
       this.elements.navbar?.removeEventListener('mouseenter', this.titleHandlers.mouseEnter);
@@ -263,6 +273,14 @@ class NavbarManager {
     this.titleMode = false;
   }
 
+  // ---------- 重新绑定动态组件 ----------
+  rebindDynamicComponents() {
+    if (typeof initThemeToggle === 'function') initThemeToggle();
+    if (typeof initMobileMenuToggle === 'function') initMobileMenuToggle();
+    if (typeof bindNavLinks === 'function') bindNavLinks();
+    if (typeof initNavigation === 'function') initNavigation();
+  }
+
   // ---------- 公共初始化入口 ----------
   async init(placeholderId = 'navbar-placeholder') {
     if (this.initialized) return;
@@ -272,17 +290,27 @@ class NavbarManager {
       return;
     }
 
-    // 已经存在导航栏则复用
+    // 如果占位符中已存在导航栏（无刷新导航复用）
     if (placeholder.querySelector('.navbar')) {
       this.elements.navbar = placeholder.querySelector('.navbar');
       this.elements.nav = this.elements.navbar.querySelector('nav');
       this.elements.navItems = this.elements.navbar.querySelector('.nav-items');
-      // 重新绑定动态组件
+      this.elements.placeholder = placeholder;
+      // 确保移除 initial 类，避免干扰
+      this.elements.navbar.classList.remove('initial');
+      // 标记动画已播放，因为这是复用场景
+      this._entrancePlayed = true;
+      // 重新绑定组件
       this.rebindDynamicComponents();
+      // 标题替换功能重新初始化（因为 DOM 可能变化）
+      this.destroyTitleReplacer();
+      this.initTitleReplacer();
       this.initialized = true;
+      console.log('[NavbarManager] 导航栏复用完成');
       return;
     }
 
+    // 首次加载：创建导航栏
     NavbarManager.ensureCSS();
     const navbarElement = NavbarManager.createNavbarDOM();
     placeholder.innerHTML = '';
@@ -296,20 +324,14 @@ class NavbarManager {
     // 初始化所有依赖组件
     this.rebindDynamicComponents();
 
-    // 启动标题替换功能（合并 nav-title-replacer）
+    // 启动标题替换功能
     this.initTitleReplacer();
 
-    this.initialized = true;
-    console.log('[NavbarManager] 导航栏初始化完成');
-  }
+    // 入场动画标记：初始为 false，等待调用 playEntranceAnimation
+    this._entrancePlayed = false;
 
-  // 重新绑定动态行为（无刷新导航后或首次加载时调用）
-  rebindDynamicComponents() {
-    // 复用现有全局函数（保持与原有代码一致）
-    if (typeof initThemeToggle === 'function') initThemeToggle();
-    if (typeof initMobileMenuToggle === 'function') initMobileMenuToggle();
-    if (typeof bindNavLinks === 'function') bindNavLinks();
-    if (typeof initNavigation === 'function') initNavigation();
+    this.initialized = true;
+    console.log('[NavbarManager] 导航栏初始化完成（首次）');
   }
 
   // 刷新标题内容（无刷新导航后调用）
@@ -340,4 +362,9 @@ export async function initNavbar(placeholderId = 'navbar-placeholder') {
 
 export function refreshNavbarTitle() {
   if (navbarManagerInstance) navbarManagerInstance.refreshTitle();
+}
+
+// 为了方便外部调用入场动画，导出实例的方法
+export function playNavbarEntrance() {
+  if (navbarManagerInstance) navbarManagerInstance.playEntranceAnimation();
 }

@@ -80,7 +80,7 @@ function setCurrentPageManager(manager) {
 
 // ==================== 导航栏与页脚加载 ====================
 export async function loadNavbar() {
-  await initNavbar();
+  return await initNavbar();
 }
 
 export function refreshNavbarAfterNavigation() {

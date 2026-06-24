@@ -89,7 +89,6 @@ async function handleLoadingOverlay() {
     logBuffer.forEach((text) => {
       const line = document.createElement('div');
       line.textContent = text;
-      // 固定延迟间隔，使动画均匀
       line.style.animationDelay = (logIndex * 0.035) + 's';
       fragment.appendChild(line);
       logIndex++;
@@ -106,7 +105,6 @@ async function handleLoadingOverlay() {
   addLog('System', '主题偏好: 从本地存储读取或根据时段自动选择');
   addLog('System', '检查本地存储权限...');
 
-  // 存储权限判断
   if (storageController.isAllowed()) {
     addLog('System', '本地存储已授权 (Cookie 同意)');
   } else {
@@ -116,12 +114,11 @@ async function handleLoadingOverlay() {
   addLog('System', '加载核心配置参数...');
   addLog('System', '配置加载完成 (API端点、白名单、背景图列表等)');
 
-  // 先刷新一次，让系统日志立即显示
   flushLogs();
 
   // ---------- 并行加载所有数据 ----------
   addLog('Data', '开始并行加载关键数据文件...');
-  flushLogs(); // 立即显示进度
+  flushLogs();
 
   const fetchTasks = [
     { key: 'statistics', url: `${CONFIG.API.STATISTICS}?t=${Date.now()}` },
@@ -141,7 +138,6 @@ async function handleLoadingOverlay() {
     )
   );
 
-  // 收集成功的数据
   const dataMap = {};
   results.forEach((result, index) => {
     const key = fetchTasks[index].key;
@@ -153,7 +149,6 @@ async function handleLoadingOverlay() {
     }
   });
 
-  // ---------- 详细日志（基于实际数据） ----------
   const stats = dataMap.statistics || null;
   let currentVersion = stats?.version ? String(stats.version).trim() : null;
 
@@ -217,7 +212,6 @@ async function handleLoadingOverlay() {
     }
   }
 
-  // ---------- 其他组件初始化日志（简化） ----------
   addLog('UI', '用户界面组件初始化完成');
   const cursorEnabled = localStorage.getItem('settings_cursor_enabled') !== 'false';
   addLog('UI', `  自定义光标: ${cursorEnabled ? '启用' : '已禁用'}`, 1);
@@ -226,11 +220,9 @@ async function handleLoadingOverlay() {
   addLog('Player', '音乐播放器模块已就绪');
   addLog('Chart', '统计图表渲染完成');
 
-  // 刷新所有累积的日志
   flushLogs();
 
   // ---------- 版本检测与更新逻辑 ----------
-  // 从记录中读取缓存版本
   let record = {};
   if (storageController.isAllowed()) {
     const raw = storageController.getItem(CONFIG.STORAGE_KEYS.VISIT_RECORD);
@@ -265,7 +257,6 @@ async function handleLoadingOverlay() {
     addLog('Version', '本地访问记录已更新');
   }
 
-  // 计算离开时长
   let awayText = '';
   if (lastVisit) {
     const diff = Date.now() - lastVisit;
@@ -308,7 +299,6 @@ async function handleLoadingOverlay() {
 
   // ---------- 点击处理：显示 Cookie 申请或直接关闭 ----------
   const handleOverlayClick = async (e) => {
-    // 如果已经同意，直接关闭
     if (storageController.isAllowed()) {
       overlay.classList.add('hidden');
       restoreScroll();
@@ -317,16 +307,12 @@ async function handleLoadingOverlay() {
       return;
     }
 
-    // 未同意，进入 Cookie 申请流程
     const hint = infoDiv.querySelector('.click-hint');
     if (hint) hint.remove();
 
-    // 淡出过渡
     infoDiv.classList.add('transitioning');
-    // 等待淡出动画（与 CSS 一致 500ms）
     await new Promise(resolve => setTimeout(resolve, 500));
 
-    // 构建 Cookie 申请界面
     const titleContainer = document.createElement('div');
     titleContainer.className = 'cookie-consent-title';
     const badge = infoDiv.querySelector('.version-badge');
@@ -356,9 +342,8 @@ async function handleLoadingOverlay() {
     infoDiv.classList.remove('transitioning');
     infoDiv.appendChild(titleContainer);
     infoDiv.appendChild(consentDiv);
-    void infoDiv.offsetHeight; // 强制重排
+    void infoDiv.offsetHeight;
 
-    // 绑定按钮事件
     const acceptBtn = infoDiv.querySelector('#consent-accept-btn');
     const declineBtn = infoDiv.querySelector('#consent-decline-btn');
 
@@ -391,10 +376,8 @@ async function handleLoadingOverlay() {
     });
   };
 
-  // 绑定点击事件
   overlay.addEventListener('click', handleOverlayClick);
 
-  // 最后刷新一次确保所有日志显示（已经 flush 过，但保险）
   flushLogs();
 }
 
@@ -422,16 +405,19 @@ async function bootstrap() {
     setTimeout(() => applyRandomBackgroundImage({ force: true }), 50);
   }
 
-  // 5. 导航栏和页脚（异步）
-  Promise.all([loadNavbar(), loadFooter()]).catch(console.warn);
+  // 5. 加载导航栏并获取实例
+  const navbarInstance = await loadNavbar();
 
-  // 6. 站点年龄更新
+  // 6. 加载页脚（异步，不阻塞）
+  loadFooter().catch(console.warn);
+
+  // 7. 站点年龄更新
   startSiteAgeUpdater(CONFIG.SITE_BIRTH);
 
-  // 7. 返回顶部按钮
+  // 8. 返回顶部按钮
   initButtons();
 
-  // 8. 无刷新导航和列表点击
+  // 9. 无刷新导航和列表点击
   if ('requestIdleCallback' in window) {
     requestIdleCallback(() => {
       enableAjaxNavigation();
@@ -444,7 +430,7 @@ async function bootstrap() {
     }, 100);
   }
 
-  // 9. 当前页面特性初始化
+  // 10. 当前页面特性初始化
   let currentPage = getPageNameFromPath(window.location.pathname) || 'index';
   if (document.querySelector('.article-page-container') || document.getElementById('articleBody')) {
     currentPage = 'article-detail';
@@ -457,14 +443,13 @@ async function bootstrap() {
     setTimeout(() => initPageFeatures(currentPage).catch(console.warn), 200);
   }
 
-  // 10. 其他非关键功能（注意：我们不再调用 StatisticsManager.syncVisitRecord，由 handleLoadingOverlay 替代）
+  // 11. 其他非关键功能
   if ('requestIdleCallback' in window) {
     requestIdleCallback(() => {
       initUIEffects();
       preloadCriticalJSON();
       LazyImageLoader.init();
       GlobalImageManager.init();
-      // 注意：不再调用 StatisticsManager.syncVisitRecord()
       updateFooterUpdateTime().catch(console.warn);
       initFooterStats().catch(console.warn);
     }, { timeout: 3000 });
@@ -479,12 +464,12 @@ async function bootstrap() {
     }, 500);
   }
 
-  // 11. Cookie 与 Clarity
+  // 12. Cookie 与 Clarity
   cookieConsentManager = new CookieConsentManager(storageController);
   initClarityOnConsent();
   window.addEventListener('ajax:navigation', () => updateClarityPage());
 
-  // 12. 音乐播放器延迟加载
+  // 13. 音乐播放器延迟加载
   const loadMusicPlayer = () => {
     import('/js/vendor/global-music-player.js').catch(() => { });
   };
@@ -494,16 +479,20 @@ async function bootstrap() {
     setTimeout(loadMusicPlayer, 3000);
   }
 
-  // 13. 启用浏览器回退/前进支持
+  // 14. 启用浏览器回退/前进支持
   initPopstate();
 
-  // 14. 处理加载覆盖层（版本检测）
-  await handleLoadingOverlay().catch(console.warn);
+  // 15. 处理加载覆盖层（版本检测）
+  await handleLoadingOverlay();
+
+  // 16. 等待1秒后播放导航栏入场动画（仅首次加载）
+  await new Promise(resolve => setTimeout(resolve, 500));
+  navbarInstance.playEntranceAnimation();
 
   document.body.setAttribute('data-loaded', 'true');
   console.log('[Main] 初始化完成');
 
-  // 15. 友链跳转管理器
+  // 17. 友链跳转管理器
   friendLinkManager.init();
 }
 
