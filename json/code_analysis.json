@@ -1,10 +1,10 @@
 {
-  "generated_at": "2026-06-25T01:07:31.469596",
+  "generated_at": "2026-06-25T16:55:32.832355",
   "root_dir": "C:\\Users\\Administrator\\Desktop\\编程\\xinyang-gao.github.io\\xinyang-gao.github.io",
-  "total_files": 171,
-  "total_size_bytes": 3491245,
-  "total_lines": 57804,
-  "non_empty_lines": 52903,
+  "total_files": 172,
+  "total_size_bytes": 3586835,
+  "total_lines": 58561,
+  "non_empty_lines": 53648,
   "by_extension": [
     {
       "extension": ".js",
@@ -16,9 +16,9 @@
     {
       "extension": ".html",
       "count": 36,
-      "total_size_bytes": 388554,
-      "total_lines": 6182,
-      "non_empty_lines": 5656
+      "total_size_bytes": 390085,
+      "total_lines": 6205,
+      "non_empty_lines": 5677
     },
     {
       "extension": ".css",
@@ -30,9 +30,9 @@
     {
       "extension": ".json",
       "count": 22,
-      "total_size_bytes": 125427,
-      "total_lines": 4007,
-      "non_empty_lines": 4007
+      "total_size_bytes": 125735,
+      "total_lines": 4018,
+      "non_empty_lines": 4018
     },
     {
       "extension": ".md",
@@ -56,6 +56,13 @@
       "non_empty_lines": 2250
     },
     {
+      "extension": ".png",
+      "count": 4,
+      "total_size_bytes": 1067927,
+      "total_lines": 7701,
+      "non_empty_lines": 7561
+    },
+    {
       "extension": ".xml",
       "count": 3,
       "total_size_bytes": 11724,
@@ -68,13 +75,6 @@
       "total_size_bytes": 111650,
       "total_lines": 902,
       "non_empty_lines": 880
-    },
-    {
-      "extension": ".png",
-      "count": 3,
-      "total_size_bytes": 974176,
-      "total_lines": 6978,
-      "non_empty_lines": 6848
     },
     {
       "extension": "no_extension",
