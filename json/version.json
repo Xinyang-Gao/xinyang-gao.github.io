@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-06-25T18:10:32.171364",
-  "total_versions": 166,
+  "generated_at": "2026-06-25T18:24:41.446425",
+  "total_versions": 167,
   "versions": [
     {
       "id": 1,
@@ -2684,6 +2684,17 @@
         {
           "type": "style",
           "description": "给关于页的评论区添加卡片包裹，避免透明导致看不清字"
+        }
+      ]
+    },
+    {
+      "id": 167,
+      "version": "v7.21.2",
+      "date": "2026-06-25",
+      "changes": [
+        {
+          "type": "chore",
+          "description": "关于页无数无刷新导航适配（`/js/standalone/about.js` -> `/js/pages/about.js`）"
         }
       ]
     }

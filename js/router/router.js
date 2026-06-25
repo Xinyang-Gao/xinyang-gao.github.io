@@ -458,6 +458,13 @@ async function initPageManagerByPageName(pageName, isArticlePage, url) {
   } else if (pageName === 'friends') {
     const { initFriendsPage } = await import('/js/pages/friends-manager.js');
     manager = await initFriendsPage();
+  }  else if (pageName === 'about') {
+    const { initAboutPage } = await import('/js/pages/about.js');
+    manager = {
+      init: initAboutPage,
+      destroy: () => {}
+    };
+    await manager.init();
   }
   return manager;
 }

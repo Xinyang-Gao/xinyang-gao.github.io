@@ -1,3 +1,4 @@
+// /js/pages/about.js
 import { initTwikoo, destroyTwikoo } from '/js/core/twikoo-manager.js';
 
 // ---------- 配置 ----------
@@ -12,6 +13,11 @@ const expEarnedDisplay = document.getElementById('expEarnedDisplay');
 const expTotalDisplay = document.getElementById('expTotalDisplay');
 const uptimeDisplay = document.getElementById('uptimeDisplay');
 const nextLevelInfo = document.getElementById('nextLevelInfo');
+
+// ---------- 定时器管理 ----------
+let updateTimer = null;          // 经验值更新定时器
+let flipAbortController = null;  // 翻转卡片事件控制器
+let resizeTimer = null;          // 窗口 resize 防抖
 
 // ---------- 辅助函数 ----------
 function getAge(birthday) {
@@ -64,8 +70,8 @@ function updateUI() {
     const now = new Date();
     const age = getAge(BIRTHDAY);
     const title = getTitle(age);
-    levelDisplay.textContent = 'LV.' + age;
-    titleDisplay.textContent = title;
+    if (levelDisplay) levelDisplay.textContent = 'LV.' + age;
+    if (titleDisplay) titleDisplay.textContent = title;
 
     const startBday = getStartBirthday(BIRTHDAY);
     const nextBday = getNextBirthday(BIRTHDAY);
@@ -73,54 +79,34 @@ function updateUI() {
     const elapsedMs = now.getTime() - startBday.getTime();
     const progress = Math.min(100, Math.max(0, (elapsedMs / totalMs) * 100));
 
-    expFill.style.width = progress + '%';
-    expPercent.textContent = Math.floor(progress) + '%';
+    if (expFill) expFill.style.width = progress + '%';
+    if (expPercent) expPercent.textContent = Math.floor(progress) + '%';
 
     const totalXp = Math.floor(totalMs / 60000);
     const earnedXp = Math.floor(elapsedMs / 60000);
-    expEarnedDisplay.textContent = earnedXp.toLocaleString();
-    expTotalDisplay.textContent = totalXp.toLocaleString();
+    if (expEarnedDisplay) expEarnedDisplay.textContent = earnedXp.toLocaleString();
+    if (expTotalDisplay) expTotalDisplay.textContent = totalXp.toLocaleString();
 
     const dateStr = nextBday.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' });
-    nextLevelInfo.innerHTML = `<i class="fas fa-info-circle"></i> 下一级解锁: ${dateStr}`;
+    if (nextLevelInfo) {
+        nextLevelInfo.innerHTML = `<i class="fas fa-info-circle"></i> 下一级解锁: ${dateStr}`;
+    }
 
     const uptimeMs = now.getTime() - BIRTHDAY.getTime();
     const uptimeHours = Math.floor(uptimeMs / 3600000);
-    uptimeDisplay.textContent = uptimeHours.toLocaleString() + ' 小时';
+    if (uptimeDisplay) uptimeDisplay.textContent = uptimeHours.toLocaleString() + ' 小时';
 }
 
 function scheduleUpdate() {
+    clearTimeout(updateTimer);
     const delay = 5000 + Math.random() * 10000;
-    setTimeout(() => {
+    updateTimer = setTimeout(() => {
         updateUI();
         scheduleUpdate();
     }, delay);
 }
 
 // ---------- 翻转卡片 ----------
-let flipAbortController = null;
-let resizeTimer = null;
-
-function updateFlipHeight() {
-    const flipCard = document.getElementById('aboutFlipCard');
-    const inner = flipCard?.querySelector('.flip-card-inner');
-    const front = flipCard?.querySelector('.flip-card-front');
-    const back = flipCard?.querySelector('.flip-card-back');
-    if (!inner || !front || !back) return;
-    inner.style.height = 'auto';
-    let targetHeight;
-    if (flipCard.classList.contains('flipped')) {
-        targetHeight = back.scrollHeight;
-    } else {
-        targetHeight = front.scrollHeight;
-    }
-    if (targetHeight > 0) {
-        const finalHeight = targetHeight + 4;
-        inner.style.height = finalHeight + 'px';
-        flipCard.style.minHeight = finalHeight + 'px';
-    }
-}
-
 function initFlipCard() {
     // 取消旧的监听
     if (flipAbortController) {
@@ -163,41 +149,70 @@ function initFlipCard() {
     setTimeout(updateFlipHeight, 200);
 }
 
+function updateFlipHeight() {
+    const flipCard = document.getElementById('aboutFlipCard');
+    const inner = flipCard?.querySelector('.flip-card-inner');
+    const front = flipCard?.querySelector('.flip-card-front');
+    const back = flipCard?.querySelector('.flip-card-back');
+    if (!inner || !front || !back) return;
+    inner.style.height = 'auto';
+    let targetHeight;
+    if (flipCard.classList.contains('flipped')) {
+        targetHeight = back.scrollHeight;
+    } else {
+        targetHeight = front.scrollHeight;
+    }
+    if (targetHeight > 0) {
+        const finalHeight = targetHeight + 4;
+        inner.style.height = finalHeight + 'px';
+        flipCard.style.minHeight = finalHeight + 'px';
+    }
+}
+
 // ---------- 评论 ----------
 function initComments() {
     const container = document.getElementById('twikoo-comments');
     if (container) {
-        destroyTwikoo(container);
+        destroyTwikoo(container);   // 清除旧初始化标记
         initTwikoo(container).catch(console.warn);
     }
 }
 
-// ---------- 页面初始化 ----------
-function initAboutPage() {
-    initFlipCard();
-    initComments();
+// ---------- GitHub 贡献图 ----------
+function initGithubContrib() {
+    const ghContainer = document.getElementById('gh');
+    if (ghContainer && typeof window.GhContribGraph !== 'undefined') {
+        try {
+            // 有些库会自动初始化，但无刷新后需要重新调用
+            window.GhContribGraph.init();
+            console.log('[About] GitHub 贡献图已重新初始化');
+        } catch (e) {
+            console.warn('[About] GitHub 贡献图初始化失败:', e);
+        }
+    }
 }
 
-// ---------- 启动 ----------
-if (document.readyState === 'complete' || document.readyState === 'interactive') {
+// ---------- 导出初始化函数（供路由调用） ----------
+export function initAboutPage() {
+    // 清除旧定时器
+    clearTimeout(updateTimer);
+    // 更新 UI
     updateUI();
     scheduleUpdate();
-    initAboutPage();
-} else {
-    document.addEventListener('DOMContentLoaded', function () {
-        updateUI();
-        scheduleUpdate();
-        initAboutPage();
-    });
+    // 翻转卡片
+    initFlipCard();
+    // 评论
+    initComments();
+    // GitHub 贡献图
+    initGithubContrib();
 }
 
-// 监听 AJAX 导航（无刷新切换页面）
-window.addEventListener('ajax:navigation', function (e) {
-    if (e.detail && e.detail.page === 'about') {
-        initFlipCard();
-        initComments();
-    }
-});
+// ---------- 直接加载页面（非 SPA）时自动初始化 ----------
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    initAboutPage();
+} else {
+    document.addEventListener('DOMContentLoaded', initAboutPage);
+}
 
-// 暴露高度更新函数方便调试（可选）
+// 暴露高度更新函数（调试用）
 window.updateFlipHeight = updateFlipHeight;
