@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-06-25T18:24:41.446425",
-  "total_versions": 167,
+  "generated_at": "2026-06-25T20:37:07.095410",
+  "total_versions": 168,
   "versions": [
     {
       "id": 1,
@@ -2695,6 +2695,17 @@
         {
           "type": "chore",
           "description": "关于页无数无刷新导航适配（`/js/standalone/about.js` -> `/js/pages/about.js`）"
+        }
+      ]
+    },
+    {
+      "id": 168,
+      "version": "v7.21.3",
+      "date": "2026-06-25",
+      "changes": [
+        {
+          "type": "feat",
+          "description": "友链卡片每次进入随机显示，每隔 10 秒轮换一次"
         }
       ]
     }

@@ -77,6 +77,11 @@
       "desc": "网站评论系统 - 简洁、安全、免费"
     },
     {
+      "name": "github-contrib-graph",
+      "link": "https://www.npmjs.com/package/github-contrib-graph?activeTab=readme",
+      "desc": "一个轻量级、可自定义的 GitHub 贡献图小部件"
+    },
+    {
       "name": "Github Pages",
       "link": "https://github.com/xinyang-Gao/xinyang-gao.github.io",
       "desc": "网站部署"
