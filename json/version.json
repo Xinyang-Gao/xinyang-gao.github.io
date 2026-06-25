@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-06-25T16:55:27.469816",
-  "total_versions": 165,
+  "generated_at": "2026-06-25T18:10:32.171364",
+  "total_versions": 166,
   "versions": [
     {
       "id": 1,
@@ -2669,6 +2669,21 @@
         {
           "type": "refactor(about)",
           "description": "重构关于页面（Merge pull request #10 from Xinyang-Gao/about）"
+        }
+      ]
+    },
+    {
+      "id": 166,
+      "version": "v7.21.1",
+      "date": "2026-06-25",
+      "changes": [
+        {
+          "type": "feat",
+          "description": "在关于页新增 Github 贡献墙"
+        },
+        {
+          "type": "style",
+          "description": "给关于页的评论区添加卡片包裹，避免透明导致看不清字"
         }
       ]
     }

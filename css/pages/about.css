@@ -1736,3 +1736,74 @@
         font-size: 1rem;
     }
 }
+/* ============================================================
+   GitHub 贡献图
+   ============================================================ */
+.github-contrib-section {
+    margin: 1.8rem 0 0.5rem;
+}
+
+.github-contrib-section #gh {
+    background: var(--surface-color);
+    border-radius: var(--radius-lg);
+    padding: 16px;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+    min-height: 120px;
+}
+
+.github-contrib-section #gh:hover {
+    border-color: var(--accent-light);
+    box-shadow: var(--shadow-sm);
+}
+
+[data-theme="dark"] .github-contrib-section #gh {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .github-contrib-section #gh:hover {
+    border-color: var(--accent-light);
+    box-shadow: var(--shadow-md);
+}
+
+/* ============================================================
+   ★ 评论区卡片样式
+   ============================================================ */
+.comment-card {
+    background: var(--surface-color);
+    border-radius: var(--radius-xl);
+    padding: 1.8rem 2rem 1.4rem;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    margin-top: 2rem;
+    transition: all 0.3s ease;
+}
+
+.comment-card:hover {
+    border-color: var(--accent-light);
+    box-shadow: var(--shadow-md);
+}
+
+[data-theme="dark"] .comment-card {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(255, 255, 255, 0.06);
+}
+
+[data-theme="dark"] .comment-card:hover {
+    border-color: var(--accent-light);
+    box-shadow: var(--shadow-md);
+}
+
+/* 评论区卡片响应式 */
+@media (max-width: 768px) {
+    .comment-card {
+        padding: 1.2rem 1.2rem 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .comment-card {
+        padding: 1rem 0.8rem 0.8rem;
+    }
+}

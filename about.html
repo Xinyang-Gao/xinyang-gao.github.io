@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="/css/main.css">
     <link rel="stylesheet" href="/css/pages/about.css">
     <link rel="stylesheet" href="/css/components/comments.css">
+    <link rel="stylesheet" href="https://unpkg.com/github-contrib-graph@latest/dist/gh.css">
 </head>
 
 <body>
@@ -304,6 +305,18 @@
                                         </div>
                                     </div>
 
+                                    <div class="github-contrib-section">
+                                        <h3
+                                            style="display:flex; align-items:center; gap:10px; margin-top:1.8rem; border-bottom:none; padding-bottom:0;">
+                                            <i class="fab fa-github" style="color:var(--accent-color);"></i> GitHub 贡献
+                                            <span
+                                                style="font-size:0.7rem; font-weight:400; color:var(--text-secondary);">Contributions</span>
+                                        </h3>
+                                        <div id="gh" data-login="Xinyang-Gao" data-show-thumbnail="true"
+                                            data-show-header="true" data-show-footer="true">
+                                        </div>
+                                    </div>
+
                                 </div>
                                 <!-- ===== 正面结束 ===== -->
 
@@ -458,7 +471,9 @@
                                 <span id="flipBtnLabel">翻转卡片 · 查看关于我</span>
                             </button>
                         </div>
-                        <div id="twikoo-comments" class="twikoo-container"></div>
+                        <div class="comment-card">
+                            <div id="twikoo-comments" class="twikoo-container"></div>
+                        </div>
                     </div>
 
                 </div>
@@ -475,6 +490,7 @@
     <!-- 脚本 -->
     <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>
     <script src="/js/vendor/busuanzi.min.js" defer></script>
+    <script src="https://unpkg.com/github-contrib-graph@latest/dist/browser.global.js"></script>
     <script src="/js/entry/main.js" type="module"></script>
     <script type="module" src="/js/standalone/about.js"></script>
 </body>
