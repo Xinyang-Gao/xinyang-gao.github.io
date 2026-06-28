@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-06-28T16:12:32.353118",
-  "total_versions": 169,
+  "generated_at": "2026-06-28T16:23:14.515099",
+  "total_versions": 170,
   "versions": [
     {
       "id": 1,
@@ -2723,7 +2723,18 @@
           "description": "修复了一个小 BUG"
         }
       ]
+    },
+    {
+      "id": 170,
+      "version": "v7.22.1",
+      "date": "2026-06-28",
+      "changes": [
+        {
+          "type": "fix",
+          "description": "v7.13.0 重构导致的文章、作品列表搜索过滤失效"
+        }
+      ]
     }
   ],
-  "changelog_hash": "55bfca55239a5d3e17381f67a4494314"
+  "changelog_hash": "2d5af87b8b6d1229938309c6e6171b71"
 }

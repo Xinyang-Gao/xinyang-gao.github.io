@@ -8,7 +8,7 @@ let searchWorker = null;
 
 function getSearchWorker() {
   if (!searchWorker) {
-    searchWorker = new Worker('/js/searchWorker.js');
+    searchWorker = new Worker('/js/data/searchWorker.js');
   }
   return searchWorker;
 }
