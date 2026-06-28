@@ -6,8 +6,6 @@ date: 2026-04-12
 tag: [网站]
 ---
 
-# 个人网站项目 README
-
 这是一个功能完整的静态个人网站，兼具博客、作品集、留言板、友链、统计看板、站点设置等功能。网站采用**双栏布局**（左侧个人信息卡片 + 右侧主内容区），拥有现代化的界面、无刷新页面切换、暗黑模式、自定义光标、全局图片查看器、音乐播放器、歌词同步等特性。文章由 Markdown 文件自动生成 HTML，并集成 Twikoo 评论系统和不蒜子统计。
 
 [在网站上查看此文章](https://xinyang-gao.github.io/articles/README.html)
@@ -29,7 +27,7 @@ tag: [网站]
 ## 功能概览
 
 ### 前端交互
-- **无刷新页面切换**：通过 AJAX 动态加载页面内容
+- **无刷新页面切换**：通过 AJAX 动态加载页面内容，支持浏览器回退/前进。
 - **暗黑模式**：支持跟随系统或手动切换，切换时带有淡入淡出效果，主题偏好持久化存储。
 - **搜索与标签筛选**：文章和作品页面支持按标题、标签、日期搜索，可通过标签按钮快速筛选，筛选条件自动同步到 URL。
 - **自定义光标**：非触摸设备上显示独特的钢笔尖光标，悬停在可点击元素上时自动吸附并变换样式。
@@ -85,15 +83,15 @@ tag: [网站]
 - 支持短代码自动转换：在任意 HTML 或 Markdown 内容中使用 `{nmpv2:playlist=123456, position=bottom-right}` 即可插入播放器。
 
 ### 内容自动生成 (Python)
-- **Markdown → HTML**：`ArticleManager.py` 批量处理 `assets/source/` 下的 `.md` 文件，支持 YAML front matter、内容哈希与修改次数追踪。
-- **作品管理**：`WorkManager.py` 扫描 `works/` 目录生成作品索引。
-- **统计聚合**：`Statistic.py` 生成 `statistics.json`，包含文章/作品统计、标签/分类聚合。
-- **RSS 订阅**：`RssGenerator.py` 自动生成 `rss.xml`，支持配置包含文章或作品。
-- **站点地图**：`SitemapGenerator.py` 生成 `sitemap.xml`，包含所有公开文章和主要页面。
-- **友链页面**：`FriendLinkGenerator.py` 读取 `json/friends.json` 生成 `friends.html`。
-- **静态列表页**：`StaticListGenerator.py` 生成 `articles.html` 和 `works.html`（内嵌数据，提升首屏性能）。
-- **代码分析**：`CodeAnalyzer.py` 扫描项目文件，生成 `code_analysis.json`。
-- **一键构建**：`run.py` 提供命令行和图形界面（Tkinter）两种模式，支持按顺序执行所有脚本，可为每个脚本传递自定义参数。
+- **Markdown → HTML**：`input_loader.py` 批量处理 `assets/source/` 下的 `.md` 文件，支持 YAML front matter、内容哈希与修改次数追踪。
+- **作品管理**：扫描 `works/` 目录生成作品索引。
+- **统计聚合**：`aggregated.py` 生成 `statistics.json`，包含文章/作品统计、标签/分类聚合。
+- **RSS 订阅**：自动生成 `rss.xml`，支持配置包含文章或作品。
+- **站点地图**：生成 `sitemap.xml`，包含所有公开文章和主要页面。
+- **友链页面**：读取 `json/friends.json` 生成 `friends.html`。
+- **静态列表页**：生成 `articles.html` 和 `works.html`（内嵌数据，提升首屏性能）。
+- **代码分析**：扫描项目文件，生成 `code_analysis.json`。
+- **一键构建**：`run.py` 提供命令行和图形界面（Tkinter）两种模式，支持并行执行、增量构建。
 
 ---
 
@@ -215,17 +213,14 @@ tag: [网站]
 │   └── friends.json           # 友链数据（需手动维护）
 │
 ├── python/                    # Python 自动化脚本
+│   ├── build_context.py       # 数据类定义（Article, Work, Friend, BuildContext）
 │   ├── common.py              # 公共函数（日志、路径、日期、JSON读写）
-│   ├── ArticleManager.py
-│   ├── WorkManager.py
-│   ├── Statistic.py
-│   ├── RssGenerator.py
-│   ├── SitemapGenerator.py
-│   ├── FriendLinkGenerator.py
-│   ├── StaticListGenerator.py
-│   ├── CodeAnalyzer.py
+│   ├── input_loader.py        # 加载所有输入数据（文章、作品、友链、版本）
+│   ├── engine.py              # 构建引擎（调度生成器，支持并行）
+│   ├── generators/
+│   │   ├── base.py            # 生成器基类
+│   │   └── aggregated.py      # 聚合生成器（一次性生成统计、RSS、站点地图、列表页、无JS索引）
 │   ├── run.py                 # 一键构建（支持 CLI 和 GUI）
-│   ├── run_config.json        # 可选，自定义脚本顺序及参数
 │   └── rss_config.json        # RSS 生成器的配置文件
 │
 └── README.md
@@ -249,9 +244,9 @@ tag: [网站]
    cd python
    python run.py
    ```
-   默认会顺序执行所有脚本。若需要仅执行部分脚本，可使用 `--scripts` 参数：
+   默认会顺序执行所有脚本。若需要仅执行部分脚本，可使用 `--targets` 参数：
    ```bash
-   python run.py --scripts ArticleManager.py WorkManager.py
+   python run.py --targets aggregated
    ```
 
 4. **启动本地服务器**（项目根目录）：
@@ -265,7 +260,7 @@ tag: [网站]
 - 将整个项目上传至静态网站托管服务（如 GitHub Pages、Netlify、Vercel 等）。
 - 确保所有文件均已上传（特别是 `articles/`、`json/`、`css/`、`js/` 等）。
 - 配置 Twikoo 后端地址（见[配置说明](#配置说明)）。
-- 更新 `js/core.js` 中网站创建时间 `SITE_BIRTH`（如果需要精确运行时长）。
+- 更新 `js/core/core.js` 中网站创建时间 `SITE_BIRTH`（如果需要精确运行时长）。
 - 如需自定义域名，请按托管服务指引设置。
 
 ---
@@ -277,7 +272,7 @@ tag: [网站]
 - **添加新文章**：
   1. 在 `assets/source/` 下选择或创建分类子目录（如“随笔”、“技术”）。
   2. 在该目录中创建 `.md` 文件，文件头部必须包含 YAML front matter（`title`、`date`、`tag` 等）。
-  3. 运行 `python run.py`（或单独运行 `ArticleManager.py`）。
+  3. 运行 `python run.py`。
   4. 生成的 HTML 将输出到 `articles/`，同时 `articles.json` 和 `rss.xml` 自动更新。
 
 - **修改文章**：直接编辑 `.md` 文件，重新运行脚本。脚本会检测内容哈希变化，自动更新 `last_updated` 和 `modify_count`。
@@ -291,27 +286,27 @@ tag: [网站]
 - **添加新作品**：
   1. 在 `works/` 下新建文件夹，文件夹名即作品标题。
   2. 在文件夹内创建 `metadata.json`（格式见下方[数据格式](#数据格式)）。
-  3. 运行 `python/WorkManager.py` 或 `run.py`。
+  3. 运行 `python run.py`。
 
 - **隐藏作品**：在 `metadata.json` 的 `tag` 中加入 `隐藏`，该作品将被排除在索引和 RSS 外。
 
 ### 友链管理
 
 - 手动编辑 `json/friends.json`，每个条目包含 `name`、`link`、`desc`、`avatar`。
-- 运行 `FriendLinkGenerator.py` 或 `run.py` 重新生成 `friends.html`。
+- 运行 `python run.py` 重新生成 `friends.html`。
 
 ### 统计与 RSS
 
-- `Statistic.py` 聚合文章和作品数据生成 `statistics.json`。
-- `RssGenerator.py` 读取 `rss_config.json` 生成 `rss.xml`，可配置包含文章或作品、最大条目数等。
-- `CodeAnalyzer.py` 扫描项目根目录（排除 `.git`、`node_modules` 等）生成 `code_analysis.json`。
-- `SitemapGenerator.py` 生成 `sitemap.xml`，自动包含所有文章和主要页面。
-- `StaticListGenerator.py` 生成内嵌数据的 `articles.html` 和 `works.html`，大幅提升首屏加载速度。
+- `aggregated.py` 聚合文章和作品数据生成 `statistics.json`。
+- RSS 生成读取 `python/rss_config.json`，可配置包含文章或作品、最大条目数等。
+- `CodeAnalyzer` 扫描项目根目录（排除 `.git`、`node_modules` 等）生成 `code_analysis.json`。
+- 站点地图自动生成，包含所有文章和主要页面。
+- `articles.html` 和 `works.html` 内嵌数据，大幅提升首屏加载速度。
 
 ### 一键构建
 
 推荐使用 `run.py`：
-- **命令行模式**：`python run.py --nogui`，可指定脚本列表和参数。
+- **命令行模式**：`python run.py --nogui`，可指定 `--targets` 和 `--force` 等参数。
 - **图形界面模式**：直接双击 `run.py`（需要 Tkinter），支持勾选脚本、实时查看日志、停止任务等。
 
 ---
@@ -359,7 +354,7 @@ EXTERNAL_WHITELIST: new Set([
   "site": {
     "title": "高新炀的个人网站",
     "link": "https://xinyang-gao.github.io",
-    "description": "学生 · 开发者 · 写作者，用代码和文字探索世界"
+    "description": "学生 · 开发者 · 写作者"
   },
   "include": {
     "articles": true,
@@ -497,7 +492,7 @@ category: 随笔
 ## 开发与扩展
 
 ### 修改样式
-- 所有 CSS 变量定义在 `style.css` 的 `:root` 和 `[data-theme="dark"]` 中，修改这些变量即可全局调整主题色、间距、圆角等。
+- 所有 CSS 变量定义在 `css/core/variables.css` 的 `:root` 和 `[data-theme="dark"]` 中，修改这些变量即可全局调整主题色、间距、圆角等。
 
 ### 添加新页面
 1. 在根目录创建新的 `.html` 文件。
