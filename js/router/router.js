@@ -251,7 +251,6 @@ export function initPopstate() {
   if (popstateInitialized) return;
   popstateInitialized = true;
   window.addEventListener('popstate', (event) => {
-    // 从 state 中取出滚动位置（若有），交给 fetchAndReplaceContent 恢复
     const scrollData = event.state?.scroll ?? null;
     fetchAndReplaceContent(window.location.href, false, scrollData);
   });
@@ -275,7 +274,6 @@ function replaceMainContent(mainHtml) {
   const currentRouterView = document.getElementById(ROUTER_VIEW_ID);
   if (!currentRouterView || !mainHtml) return false;
 
-  // 创建新容器并提取新的 #router-view
   const newContainer = document.createElement('div');
   newContainer.innerHTML = mainHtml;
   const newRouterView = newContainer.querySelector(`#${ROUTER_VIEW_ID}`);
@@ -285,29 +283,21 @@ function replaceMainContent(mainHtml) {
   }
 
   return new Promise((resolve) => {
-    // 1. 旧内容执行退出动画
     currentRouterView.classList.add('page-transition-exit');
 
-    // 2. 等待退出动画结束 (0.3s)
     const onExitEnd = () => {
       currentRouterView.removeEventListener('animationend', onExitEnd);
-      // 替换节点
       currentRouterView.replaceWith(newRouterView);
-      
-      // 3. 新内容入场（先确保没有多余类）
       newRouterView.classList.remove('page-transition-enter');
-      // 强制回流以重新触发动画
       void newRouterView.offsetWidth;
       newRouterView.classList.add('page-transition-enter');
 
-      // 4. 入场动画结束后清除类（可选）
       const onEnterEnd = () => {
         newRouterView.removeEventListener('animationend', onEnterEnd);
         newRouterView.classList.remove('page-transition-enter');
         resolve(true);
       };
       newRouterView.addEventListener('animationend', onEnterEnd);
-      // 安全回退
       setTimeout(() => {
         if (newRouterView.classList.contains('page-transition-enter')) {
           newRouterView.classList.remove('page-transition-enter');
@@ -316,7 +306,6 @@ function replaceMainContent(mainHtml) {
       }, 400);
     };
     currentRouterView.addEventListener('animationend', onExitEnd);
-    // 安全回退
     setTimeout(() => {
       if (currentRouterView.parentNode) {
         currentRouterView.replaceWith(newRouterView);
@@ -428,7 +417,7 @@ async function reinitializeGlobalComponents(navbarHtml, footerHtml) {
   if (typeof initThemeToggle === 'function') initThemeToggle();
 }
 
-// ==================== 页面管理器按需加载 ====================
+// ==================== 页面管理器按需加载（含 contact） ====================
 async function initPageManagerByPageName(pageName, isArticlePage, url) {
   let manager = null;
   if (pageName === 'index') {
@@ -458,13 +447,29 @@ async function initPageManagerByPageName(pageName, isArticlePage, url) {
   } else if (pageName === 'friends') {
     const { initFriendsPage } = await import('/js/pages/friends-manager.js');
     manager = await initFriendsPage();
-  }  else if (pageName === 'about') {
+  } else if (pageName === 'about') {
     const { initAboutPage } = await import('/js/pages/about.js');
     manager = {
       init: initAboutPage,
       destroy: () => {}
     };
     await manager.init();
+  } else if (pageName === 'contact') {
+    // 留言板页面：仅初始化 Twikoo 评论
+    const { initTwikoo } = await import('/js/core/twikoo-manager.js');
+    const container = document.querySelector('#twikoo-comments');
+    if (container) {
+      await initTwikoo(container);
+    }
+    manager = {
+      init: () => {},
+      destroy: () => {
+        // 可选：清理 Twikoo 容器
+        const { resetTwikooContainer } = import('/js/core/twikoo-manager.js');
+        const container = document.querySelector('#twikoo-comments');
+        if (container) resetTwikooContainer(container);
+      }
+    };
   }
   return manager;
 }
@@ -485,7 +490,6 @@ export async function fetchAndReplaceContent(url, pushState = true, scrollData =
   try {
     await destroyCurrentPageManager();
 
-    // 保存当前滚动位置（仅在 pushState 时保存到 state）
     if (pushState) {
       const currentScroll = { scrollX: window.scrollX, scrollY: window.scrollY };
       history.replaceState({ ...history.state, scroll: currentScroll }, document.title);
@@ -497,20 +501,16 @@ export async function fetchAndReplaceContent(url, pushState = true, scrollData =
 
     const { title, mainHtml, styles, scripts, navbarHtml, footerHtml } = extractPageContent(text);
 
-    // 替换内容（带过渡）
     await replaceMainContent(mainHtml);
 
     document.title = title;
     if (pushState) {
-      // 新 state 中保存滚动位置（初始为 0,0 或之前的 scrollData）
       const newScroll = scrollData || { scrollX: 0, scrollY: 0 };
       window.history.pushState({ ...history.state, scroll: newScroll }, title, url);
     } else {
-      // popstate 时，使用传入的 scrollData 恢复滚动
       if (scrollData) {
         window.scrollTo(scrollData.scrollX || 0, scrollData.scrollY || 0);
       } else {
-        // 尝试从 history.state 读取
         const stateScroll = history.state?.scroll;
         if (stateScroll) {
           window.scrollTo(stateScroll.scrollX || 0, stateScroll.scrollY || 0);
@@ -539,9 +539,7 @@ export async function fetchAndReplaceContent(url, pushState = true, scrollData =
 
     refreshScrollRevealEffect();
 
-    // 如果未恢复滚动（popstate 没有 scrollData），则按默认行为滚动到顶部或 hash
     if (!pushState && !scrollData && !history.state?.scroll) {
-      // 处理 hash
       const targetUrl = new URL(url, window.location.href);
       if (targetUrl.hash) {
         const el = document.getElementById(targetUrl.hash.slice(1));

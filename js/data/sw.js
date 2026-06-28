@@ -1,9 +1,9 @@
 // /js/data/sw.js
 // Service Worker: 智能缓存策略，支持离线回退与 stale-while-revalidate
-// 修复：开发环境自动绕过缓存，预缓存资源不存在时跳过，提供版本管理
+// 优化版本：调整策略，增加缓存条目数，改进更新机制
 
 const CACHE_CONFIG = {
-  version: 'v3',                     // 升级版本号，强制旧缓存失效
+  version: 'v4',
   get name() { return `site-cache-${this.version}`; },
   preCacheUrls: [
     '/json/works.json',
@@ -11,18 +11,20 @@ const CACHE_CONFIG = {
     '/json/statistics.json',
   ],
   strategies: {
+    // 数据接口：stale-while-revalidate，保证数据新鲜度
     staleWhileRevalidate: ['/json/', '/api/'],
-    cacheFirst: ['.css', '.js', '.webp', '.svg', '.ico'],
+    // 静态资源（JS/CSS/图片/字体）：stale-while-revalidate，兼顾速度与更新
+    staticAssets: ['.css', '.js', '.webp', '.svg', '.ico', '.png', '.jpg', '.jpeg', '.gif', '.woff', '.woff2', '.ttf'],
+    // HTML 页面：网络优先，离线回退
     networkFirst: ['.html', '/']
   },
-  maxEntries: 50,
-  maxAgeSeconds: 7 * 24 * 60 * 60
+  maxEntries: 200,                   // 提高缓存条目上限
+  maxAgeSeconds: 7 * 24 * 60 * 60    // 7天（未使用，但保留）
 };
 
 const CACHE_NAME = CACHE_CONFIG.name;
 const isDev = self.location.hostname === 'localhost' ||
-              self.location.hostname === '127.0.0.1' ||
-              self.location.hostname.includes('github.io'); // 可加其他开发域
+              self.location.hostname === '127.0.0.1';
 
 function isUrlMatch(url, patterns) {
   return patterns.some(p => url.includes(p));
@@ -31,16 +33,20 @@ function isUrlMatch(url, patterns) {
 function shouldUseStaleWhileRevalidate(url) {
   return isUrlMatch(url, CACHE_CONFIG.strategies.staleWhileRevalidate);
 }
-function shouldUseCacheFirst(url) {
-  return isUrlMatch(url, CACHE_CONFIG.strategies.cacheFirst);
+
+function shouldUseStaticAssets(url) {
+  return CACHE_CONFIG.strategies.staticAssets.some(ext => url.includes(ext));
 }
+
 function shouldUseNetworkFirst(url) {
   return isUrlMatch(url, CACHE_CONFIG.strategies.networkFirst);
 }
 
+// 精简缓存：移除最旧的条目（基于存储顺序）
 async function trimCache(cache, maxEntries) {
   const keys = await cache.keys();
   if (keys.length <= maxEntries) return;
+  // 删除最早添加的条目（keys 按添加时间排序）
   const toDelete = keys.slice(0, keys.length - maxEntries);
   await Promise.all(toDelete.map(key => cache.delete(key)));
 }
@@ -97,7 +103,7 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // 1. JSON 数据：stale-while-revalidate
+  // 1. JSON / API 数据：stale-while-revalidate
   if (shouldUseStaleWhileRevalidate(url)) {
     event.respondWith(
       (async () => {
@@ -119,39 +125,40 @@ self.addEventListener('fetch', event => {
         }
         const networkResponse = await fetchPromise;
         if (networkResponse) return networkResponse;
-        if (request.headers.get('accept')?.includes('text/html')) {
-          const offlinePage = await cache.match('/offline.html');
-          if (offlinePage) return offlinePage;
-        }
+        // 降级：返回空数据提示
         return new Response('数据加载失败，请检查网络', { status: 503 });
       })()
     );
     return;
   }
 
-  // 2. 静态资源：缓存优先
-  if (shouldUseCacheFirst(url)) {
+  // 2. 静态资源（CSS/JS/图片/字体）：stale-while-revalidate
+  if (shouldUseStaticAssets(url)) {
     event.respondWith(
       (async () => {
         const cache = await caches.open(CACHE_NAME);
-        const cached = await cache.match(request);
-        if (cached) return cached;
-        try {
-          const networkResponse = await fetch(request);
+        const cachedResponse = await cache.match(request);
+        const fetchPromise = fetch(request.clone()).then(async networkResponse => {
           if (networkResponse && networkResponse.ok) {
             await cache.put(request, networkResponse.clone());
             await trimCache(cache, CACHE_CONFIG.maxEntries);
           }
           return networkResponse;
-        } catch (err) {
-          return new Response('', { status: 404 });
+        }).catch(() => null);
+        if (cachedResponse) {
+          event.waitUntil(fetchPromise);
+          return cachedResponse;
         }
+        const networkResponse = await fetchPromise;
+        if (networkResponse) return networkResponse;
+        // 极少数情况无法加载，返回一个空响应（避免报错）
+        return new Response('', { status: 404 });
       })()
     );
     return;
   }
 
-  // 3. HTML：网络优先，降级缓存
+  // 3. HTML 页面：网络优先，降级缓存或离线页面
   if (shouldUseNetworkFirst(url)) {
     event.respondWith(
       (async () => {
@@ -165,8 +172,9 @@ self.addEventListener('fetch', event => {
           throw new Error(`HTTP ${networkResponse?.status}`);
         } catch (err) {
           const cache = await caches.open(CACHE_NAME);
-          const cached = await cache.match(request);
-          if (cached) return cached;
+          const cachedResponse = await cache.match(request);
+          if (cachedResponse) return cachedResponse;
+          // 尝试返回离线页面
           const offlinePage = await cache.match('/offline.html');
           if (offlinePage) return offlinePage;
           return new Response('您当前处于离线状态，部分内容不可用', { status: 503 });
@@ -176,6 +184,6 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // 4. 其他请求：网络优先，不缓存
+  // 4. 其他请求（如外部资源或未知类型）：网络优先，不缓存
   event.respondWith(fetch(request).catch(() => new Response('', { status: 404 })));
 });

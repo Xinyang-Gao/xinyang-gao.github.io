@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-06-28T16:23:14.515099",
-  "total_versions": 170,
+  "generated_at": "2026-06-28T16:42:46.624977",
+  "total_versions": 171,
   "versions": [
     {
       "id": 1,
@@ -2734,7 +2734,18 @@
           "description": "v7.13.0 重构导致的文章、作品列表搜索过滤失效"
         }
       ]
+    },
+    {
+      "id": 171,
+      "version": "v7.22.2",
+      "date": "2026-06-28",
+      "changes": [
+        {
+          "type": "fix(sw)",
+          "description": "优化缓存策略并修复留言板评论加载问题"
+        }
+      ]
     }
   ],
-  "changelog_hash": "2d5af87b8b6d1229938309c6e6171b71"
+  "changelog_hash": "6db59ae53b236d39d4ae78ec95dd926d"
 }
