@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-06-28T16:42:46.590376",
+  "generated_at": "2026-06-28T16:49:13.258714",
   "total_articles": 14,
-  "total_word_count": 35069,
+  "total_word_count": 34814,
   "articles": [
     {
       "relative_path": "assets/source/作文/从一株小草开始.md",
@@ -247,9 +247,9 @@
     },
     {
       "relative_path": "README.md",
-      "hash": "9a9a6cc0044c39d64442467d6f1ab250",
-      "last_updated": "2026-06-18",
-      "modify_count": 8,
+      "hash": "ad1cec996f65fe222218f72a37c1c7ea",
+      "last_updated": "2026-06-28",
+      "modify_count": 9,
       "hidden": false,
       "title": "README.md",
       "date": "2026-04-12",
@@ -260,8 +260,8 @@
       ],
       "category": "README文档自动构建",
       "url": "/articles/README.html",
-      "word_count": 11126,
-      "read_time": "38分钟"
+      "word_count": 10871,
+      "read_time": "37分钟"
     }
   ]
 }
