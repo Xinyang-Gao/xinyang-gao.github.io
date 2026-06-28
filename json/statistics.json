@@ -1,7 +1,7 @@
 {
-  "version": 167,
-  "last_updated": "2026-06-25",
-  "last_updated_full": "2026-06-25T20:37:04.225530",
+  "version": 169,
+  "last_updated": "2026-06-24",
+  "last_updated_full": "2026-06-28T16:12:32.353118",
   "total_articles": 14,
   "total_word_count": 35069,
   "average_article_word_count": 2504,
@@ -10,7 +10,7 @@
   "total_article_tags": 12,
   "total_work_tags": 12,
   "total_authors": 3,
-  "total_update_days": 27,
+  "total_update_days": 26,
   "article_tags": [
     {
       "name": "网站",

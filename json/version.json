@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-06-25T20:37:07.095410",
-  "total_versions": 168,
+  "generated_at": "2026-06-28T16:12:32.353118",
+  "total_versions": 169,
   "versions": [
     {
       "id": 1,
@@ -2708,6 +2708,22 @@
           "description": "友链卡片每次进入随机显示，每隔 10 秒轮换一次"
         }
       ]
+    },
+    {
+      "id": 169,
+      "version": "v7.22.0",
+      "date": "2026-06-28",
+      "changes": [
+        {
+          "type": "refactor(build)",
+          "description": "重构构建系统，采用统一引擎与增量构建\n  - 合并重复 I/O：所有输入数据（文章、作品、友链、版本）一次性加载到 `BuildContext`，避免各脚本反复读取 JSON\n  - 消除子进程调用：废弃 11 个独立脚本，将生成逻辑整合为单一聚合生成器 (`AggregatedGenerator.py`)，在进程内顺序/并行执行\n  - 实现完整增量构建：基于输入数据组合哈希，仅当内容变化时才重新生成输出，.`build_state.json` 记录状态\n  - 自动同步版本日志：`load_version()` 会检测 `/assets/网站更新日志.md` 的哈希变化，自动重新生成 `version.json`\n\n  - 新增：\n    - build_context.py         - 数据结构定义\n    - input_loader.py          - 统一加载器（文章/作品/友链/版本）\n    - generators/base.py       - 生成器抽象基类\n    - generators/aggregated.py - 聚合生成器（统计/RSS/站点地图/列表页/无JS索引）\n    - engine.py                - 构建调度引擎（依赖解析、并行执行、增量判断）\n  - 修改：\n    - common.py                - 增加 compute_file_hash、compute_object_hash\n    - run.py                   - 改为使用新引擎，保留 CLI/GUI\n  - 删除：\n    - AggregateGenerator.py, ArticleManager.py, CodeAnalyzer.py,\n      FriendLinkGenerator.py, GenerateNoJsIndex.py, RssGenerator.py,\n      SitemapGenerator.py, StaticListGenerator.py, Statistic.py,\n      VersionManager.py, WorkManager.py\n  - 性能提升：\n    - 全量构建时间从 ~5-10s 降至 ~1-4s\n    - 增量构建可缩短到小于 0.5s\n    - 显著减少磁盘 I/O 和进程启动开销"
+        },
+        {
+          "type": "fix",
+          "description": "修复了一个小 BUG"
+        }
+      ]
     }
-  ]
+  ],
+  "changelog_hash": "55bfca55239a5d3e17381f67a4494314"
 }

@@ -7,6 +7,7 @@
 import json
 import logging
 import re
+import hashlib
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
@@ -52,10 +53,6 @@ def log_error(msg: str) -> None:
 
 # ---------- 日期处理 ----------
 def format_date(date_str: str, default: str = None) -> str:
-    """
-    将 YYYY-MM-DD 或 YYYY年MM月DD日 转为 YYYY年MM月DD日。
-    若 date_str 为空或“未指定”，返回 default（若为 None 则返回“未指定日期”）。
-    """
     if not date_str or date_str == "未指定":
         return default if default is not None else "未指定日期"
     try:
@@ -64,16 +61,14 @@ def format_date(date_str: str, default: str = None) -> str:
             return dt.strftime("%Y年%m月%d日")
     except ValueError:
         pass
-    # 尝试解析中文格式
     try:
         dt = datetime.strptime(date_str, "%Y年%m月%d日")
         return dt.strftime("%Y年%m月%d日")
     except ValueError:
         pass
-    return date_str  # 保留原样
+    return date_str
 
 def format_date_iso(date_str: str) -> str:
-    """返回 YYYY-MM-DD 格式，用于排序和元数据。若无效则返回“未指定日期”"""
     if not date_str or date_str == "未指定":
         return "未指定日期"
     try:
@@ -92,7 +87,6 @@ def get_current_datetime_iso() -> str:
 
 # ---------- JSON 读写 ----------
 def load_json(filepath: Path, default: Any = None) -> Any:
-    """安全加载 JSON，失败返回 default"""
     if not filepath.exists():
         log_warning(f"文件不存在: {filepath}")
         return default
@@ -104,7 +98,6 @@ def load_json(filepath: Path, default: Any = None) -> Any:
         return default
 
 def save_json(data: Any, filepath: Path, indent: int = 2) -> bool:
-    """保存 JSON 数据，返回是否成功"""
     try:
         with open(filepath, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=indent)
@@ -116,11 +109,25 @@ def save_json(data: Any, filepath: Path, indent: int = 2) -> bool:
 
 # ---------- 字符串处理 ----------
 def compute_content_hash(content: str) -> str:
-    import hashlib
     return hashlib.md5(content.encode('utf-8')).hexdigest()
 
+def compute_object_hash(obj: Any) -> str:
+    """计算任意可 JSON 序列化对象的哈希"""
+    try:
+        json_str = json.dumps(obj, sort_keys=True, ensure_ascii=False)
+        return hashlib.md5(json_str.encode('utf-8')).hexdigest()
+    except TypeError:
+        # 若无法序列化，则用 repr
+        return hashlib.md5(repr(obj).encode('utf-8')).hexdigest()
+
+def compute_file_hash(filepath: Path) -> str:
+    """计算文件的 MD5 哈希"""
+    if not filepath.exists():
+        return ""
+    with open(filepath, 'rb') as f:
+        return hashlib.md5(f.read()).hexdigest()
+
 def slugify(text: str) -> str:
-    """生成用于 HTML id 的 slug"""
     s = re.sub(r'<[^>]+>', '', text)
     s = s.strip().lower()
     s = re.sub(r"[\s]+", '-', s)
@@ -129,7 +136,6 @@ def slugify(text: str) -> str:
     return s or 'heading'
 
 def count_words(text: str) -> int:
-    """统计非空白字符数（中英文均算一个字符）"""
     return len(re.sub(r'\s+', '', text))
 
 def calculate_read_time(word_count: int, words_per_minute: int = 300) -> str:
@@ -140,8 +146,16 @@ def calculate_read_time(word_count: int, words_per_minute: int = 300) -> str:
 
 # ---------- 路径工具 ----------
 def get_relative_path(file_path: Path) -> str:
-    """返回相对于项目根目录的路径"""
     return file_path.relative_to(PROJECT_ROOT).as_posix()
 
 def ensure_dir(path: Path) -> None:
     path.mkdir(parents=True, exist_ok=True)
+
+# ---------- 构建状态 ----------
+BUILD_STATE_FILE = PROJECT_ROOT / ".build_state.json"
+
+def load_build_state() -> Dict:
+    return load_json(BUILD_STATE_FILE, {})
+
+def save_build_state(state: Dict) -> None:
+    save_json(state, BUILD_STATE_FILE)
