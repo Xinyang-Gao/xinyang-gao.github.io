@@ -9,8 +9,14 @@ export function getTimeBasedTheme() {
 }
 
 export function getPageNameFromPath(pathname) {
-  const name = pathname.split('/').pop() || 'index';
-  return name.replace('.html', '') || 'index';
+  // 去除首尾斜杠
+  const trimmed = pathname.replace(/^\/|\/$/g, '');
+  if (!trimmed) return 'index';          // 根路径返回 'index'
+  const parts = trimmed.split('/');
+  const last = parts[parts.length - 1];
+  // 去除可能的扩展名（如 .html）
+  const name = last.replace(/\.[^.]+$/, '');
+  return name || 'index';
 }
 
 export function isArticleDetailOr404Page() {
