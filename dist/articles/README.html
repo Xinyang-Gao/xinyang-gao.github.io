@@ -195,113 +195,113 @@
 </table>
 <hr />
 <h2 id="项目结构">项目结构</h2>
-<pre class="codehilite"><code>/
-├── index.html                 # 首页（统计卡片、标签云、最近更新）
-├── about.html                 # 关于页面
-├── articles.html              # 文章列表（由 StaticListGenerator 生成，内嵌数据）
-├── works.html                 # 作品列表（由 StaticListGenerator 生成）
-├── archive.html               # 归档页面（时间线）
-├── stats.html                 # 统计仪表板
-├── settings.html              # 站点设置页面
-├── contact.html               # 留言板（Twikoo）
-├── friends.html               # 友链页面（由 FriendLinkGenerator 生成）
-├── 404.html                   # 自定义 404 页面
-├── footer.html                # 页脚 HTML 片段（动态加载）
-├── rss.xml                    # RSS Feed（自动生成）
-├── sitemap.xml                # 站点地图（自动生成）
-│
-├── css/
-│   ├── core/                  # 核心基础层
-│   │   ├── variables.css      # 所有 CSS 变量（浅色/暗色主题）
-│   │   ├── base.css           # 重置、基础排版、滚动条、链接、焦点
-│   │   ├── layout.css         # 容器、网格、卡片、双栏、Hero 等布局组件
-│   │   └── components.css     # 标签、按钮、搜索、模态框、返回顶部、工具类等
-│   ├── components/            # 独立组件
-│   │   ├── navbar.css         # 导航栏
-│   │   ├── footer.css         # 页脚
-│   │   ├── image-viewer.css   # 图片查看器
-│   │   ├── player.css         # 网易云迷你播放器
-│   │   └── comments.css       # Twikoo 评论样式
-│   └── pages/                 # 页面专用样式
-│       ├── 404.css            # 404 错误页
-│       ├── article.css        # 文章页
-│       ├── friends.css        # 友链页
-│       ├── home.css           # 首页
-│       ├── privacy.css        # 隐私政策页
-│       └── stats.css          # 统计页
-├── js/
-│   ├── entry/
-│   │   └── main.js            # 主入口：加载导航/页脚，初始化各页面功能
-│   ├── core/
-│   │   ├── core.js            # 配置常量、工具类、存储控制器、Cookie管理器
-│   │   ├── page-manager.js    # 页面管理器基类
-│   │   ├── page-utils.js      # 页面常用工具函数
-│   │   └── clarity.js         # Microsoft Clarity 分析集成（可选）
-│   ├── router/
-│   │   └── router.js          # 无刷新路由器、页面管理器调度、导航栏/页脚加载
-│   ├── ui/
-│   │   ├── ui-effects.js      # 自定义光标、外链管理器、滚动揭示效果
-│   │   ├── image-manager.js   # 全局图片懒加载与查看器触发
-│   │   ├── image-viewer.js    # 全局图片查看器组件（缩放、拖拽、旋转）
-│   │   ├── list-events.js     # 列表项点击事件（文章跳转、作品弹窗）
-│   │   ├── navbar-manager.js  # 导航栏完全 JS 驱动（含标题替换）
-│   │   ├── theme.js           # 主题切换模块
-│   │   └── personal-card.js   # 个人信息卡片渲染
-│   ├── pages/
-│   │   ├── search-render.js   # 文章/作品列表的数据管理、UI渲染、搜索控制器（Web Worker）
-│   │   ├── article.js         # 文章详情页脚本（目录、进度条、代码块、懒加载）
-│   │   ├── archive.js         # 归档页面初始化与管理
-│   │   ├── stats-manager.js   # 统计仪表板：数据加载、图表渲染、秒级运行时间
-│   │   ├── friends-manager.js # 友链页面管理器（Twikoo 初始化、JSON 复制）
-│   │   ├── home-manager.js    # 首页管理器（统计卡片、标签云、导航事件）
-│   │   └── stats-init.js      # 统计页面入口（配合 router）
-│   ├── data/
-│   │   ├── searchWorker.js    # Web Worker（过滤、排序、标签提取）
-│   │   ├── settings.js        # 设置页面逻辑（开关、清除缓存）
-│   │   ├── site-state.js      # 统计记录管理、Service Worker 注册、欢迎弹窗
-│   │   └── sw.js              # Service Worker（缓存关键 JSON，stale-while-revalidate）
-│   ├── vendor/
-│   │   ├── busuanzi.min.js    # 不蒜子统计脚本
-│   │   ├── global-music-player.js  # 全局音乐播放器加载器
-│   │   └── netease-mini-player-v2.js  # 网易云音乐迷你播放器核心
-│   └── standalone/
-│       └── 404.js             # 404 页面独立脚本（智能路径分析）
-│
-├── articles/                  # 生成的 HTML 文章（由 ArticleManager.py 输出）
-│   ├── *.html
-│   └── .hidden/               # 隐藏文章的输出目录
-│
-├── assets/                    # 静态资源
-│   ├── source/                # Markdown 源文件目录（按分类子目录组织）
-│   │   ├── 随笔/
-│   │   ├── 技术/
-│   │   └── ...
-│   └── avatar.webp            # 头像
-│
-├── works/                     # 作品数据源目录
-│   └── 作品名/
-│       └── metadata.json
-│
-├── json/                      # 自动生成的 JSON 数据
-│   ├── articles.json
-│   ├── works.json
-│   ├── statistics.json
-│   ├── code_analysis.json
-│   └── friends.json           # 友链数据（需手动维护）
-│
-├── python/                    # Python 自动化脚本
-│   ├── build_context.py       # 数据类定义（Article, Work, Friend, BuildContext）
-│   ├── common.py              # 公共函数（日志、路径、日期、JSON读写）
-│   ├── input_loader.py        # 加载所有输入数据（文章、作品、友链、版本）
-│   ├── engine.py              # 构建引擎（调度生成器，支持并行）
-│   ├── generators/
-│   │   ├── base.py            # 生成器基类
-│   │   └── aggregated.py      # 聚合生成器（一次性生成统计、RSS、站点地图、列表页、无JS索引）
-│   ├── run.py                 # 一键构建（支持 CLI 和 GUI）
-│   └── rss_config.json        # RSS 生成器的配置文件
-│
-└── README.md
-</code></pre>
+<div class="codehilite"><pre><span></span><code><span class="o">/</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">index</span><span class="o">.</span><span class="n">html</span><span class="w">                 </span><span class="c1"># 首页（统计卡片、标签云、最近更新）</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">about</span><span class="o">.</span><span class="n">html</span><span class="w">                 </span><span class="c1"># 关于页面</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">articles</span><span class="o">.</span><span class="n">html</span><span class="w">              </span><span class="c1"># 文章列表（由 StaticListGenerator 生成，内嵌数据）</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">works</span><span class="o">.</span><span class="n">html</span><span class="w">                 </span><span class="c1"># 作品列表（由 StaticListGenerator 生成）</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">archive</span><span class="o">.</span><span class="n">html</span><span class="w">               </span><span class="c1"># 归档页面（时间线）</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">stats</span><span class="o">.</span><span class="n">html</span><span class="w">                 </span><span class="c1"># 统计仪表板</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">settings</span><span class="o">.</span><span class="n">html</span><span class="w">              </span><span class="c1"># 站点设置页面</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">contact</span><span class="o">.</span><span class="n">html</span><span class="w">               </span><span class="c1"># 留言板（Twikoo）</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">friends</span><span class="o">.</span><span class="n">html</span><span class="w">               </span><span class="c1"># 友链页面（由 FriendLinkGenerator 生成）</span>
+<span class="err">├──</span><span class="w"> </span><span class="mf">404.</span><span class="n">html</span><span class="w">                   </span><span class="c1"># 自定义 404 页面</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">footer</span><span class="o">.</span><span class="n">html</span><span class="w">                </span><span class="c1"># 页脚 HTML 片段（动态加载）</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">rss</span><span class="o">.</span><span class="n">xml</span><span class="w">                    </span><span class="c1"># RSS Feed（自动生成）</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">sitemap</span><span class="o">.</span><span class="n">xml</span><span class="w">                </span><span class="c1"># 站点地图（自动生成）</span>
+<span class="err">│</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">css</span><span class="o">/</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">core</span><span class="o">/</span><span class="w">                  </span><span class="c1"># 核心基础层</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">variables</span><span class="o">.</span><span class="n">css</span><span class="w">      </span><span class="c1"># 所有 CSS 变量（浅色/暗色主题）</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">base</span><span class="o">.</span><span class="n">css</span><span class="w">           </span><span class="c1"># 重置、基础排版、滚动条、链接、焦点</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">layout</span><span class="o">.</span><span class="n">css</span><span class="w">         </span><span class="c1"># 容器、网格、卡片、双栏、Hero 等布局组件</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">components</span><span class="o">.</span><span class="n">css</span><span class="w">     </span><span class="c1"># 标签、按钮、搜索、模态框、返回顶部、工具类等</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">components</span><span class="o">/</span><span class="w">            </span><span class="c1"># 独立组件</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">navbar</span><span class="o">.</span><span class="n">css</span><span class="w">         </span><span class="c1"># 导航栏</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">footer</span><span class="o">.</span><span class="n">css</span><span class="w">         </span><span class="c1"># 页脚</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">image</span><span class="o">-</span><span class="n">viewer</span><span class="o">.</span><span class="n">css</span><span class="w">   </span><span class="c1"># 图片查看器</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">player</span><span class="o">.</span><span class="n">css</span><span class="w">         </span><span class="c1"># 网易云迷你播放器</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">comments</span><span class="o">.</span><span class="n">css</span><span class="w">       </span><span class="c1"># Twikoo 评论样式</span>
+<span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">pages</span><span class="o">/</span><span class="w">                 </span><span class="c1"># 页面专用样式</span>
+<span class="err">│</span><span class="w">       </span><span class="err">├──</span><span class="w"> </span><span class="mf">404.</span><span class="n">css</span><span class="w">            </span><span class="c1"># 404 错误页</span>
+<span class="err">│</span><span class="w">       </span><span class="err">├──</span><span class="w"> </span><span class="n">article</span><span class="o">.</span><span class="n">css</span><span class="w">        </span><span class="c1"># 文章页</span>
+<span class="err">│</span><span class="w">       </span><span class="err">├──</span><span class="w"> </span><span class="n">friends</span><span class="o">.</span><span class="n">css</span><span class="w">        </span><span class="c1"># 友链页</span>
+<span class="err">│</span><span class="w">       </span><span class="err">├──</span><span class="w"> </span><span class="n">home</span><span class="o">.</span><span class="n">css</span><span class="w">           </span><span class="c1"># 首页</span>
+<span class="err">│</span><span class="w">       </span><span class="err">├──</span><span class="w"> </span><span class="n">privacy</span><span class="o">.</span><span class="n">css</span><span class="w">        </span><span class="c1"># 隐私政策页</span>
+<span class="err">│</span><span class="w">       </span><span class="err">└──</span><span class="w"> </span><span class="n">stats</span><span class="o">.</span><span class="n">css</span><span class="w">          </span><span class="c1"># 统计页</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">js</span><span class="o">/</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">entry</span><span class="o">/</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">main</span><span class="o">.</span><span class="n">js</span><span class="w">            </span><span class="c1"># 主入口：加载导航/页脚，初始化各页面功能</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">core</span><span class="o">/</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">core</span><span class="o">.</span><span class="n">js</span><span class="w">            </span><span class="c1"># 配置常量、工具类、存储控制器、Cookie管理器</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">page</span><span class="o">-</span><span class="n">manager</span><span class="o">.</span><span class="n">js</span><span class="w">    </span><span class="c1"># 页面管理器基类</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">page</span><span class="o">-</span><span class="n">utils</span><span class="o">.</span><span class="n">js</span><span class="w">      </span><span class="c1"># 页面常用工具函数</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">clarity</span><span class="o">.</span><span class="n">js</span><span class="w">         </span><span class="c1"># Microsoft Clarity 分析集成（可选）</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">router</span><span class="o">/</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">router</span><span class="o">.</span><span class="n">js</span><span class="w">          </span><span class="c1"># 无刷新路由器、页面管理器调度、导航栏/页脚加载</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">ui</span><span class="o">/</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">ui</span><span class="o">-</span><span class="n">effects</span><span class="o">.</span><span class="n">js</span><span class="w">      </span><span class="c1"># 自定义光标、外链管理器、滚动揭示效果</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">image</span><span class="o">-</span><span class="n">manager</span><span class="o">.</span><span class="n">js</span><span class="w">   </span><span class="c1"># 全局图片懒加载与查看器触发</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">image</span><span class="o">-</span><span class="n">viewer</span><span class="o">.</span><span class="n">js</span><span class="w">    </span><span class="c1"># 全局图片查看器组件（缩放、拖拽、旋转）</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">list</span><span class="o">-</span><span class="n">events</span><span class="o">.</span><span class="n">js</span><span class="w">     </span><span class="c1"># 列表项点击事件（文章跳转、作品弹窗）</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">navbar</span><span class="o">-</span><span class="n">manager</span><span class="o">.</span><span class="n">js</span><span class="w">  </span><span class="c1"># 导航栏完全 JS 驱动（含标题替换）</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">theme</span><span class="o">.</span><span class="n">js</span><span class="w">           </span><span class="c1"># 主题切换模块</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">personal</span><span class="o">-</span><span class="n">card</span><span class="o">.</span><span class="n">js</span><span class="w">   </span><span class="c1"># 个人信息卡片渲染</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">pages</span><span class="o">/</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">search</span><span class="o">-</span><span class="n">render</span><span class="o">.</span><span class="n">js</span><span class="w">   </span><span class="c1"># 文章/作品列表的数据管理、UI渲染、搜索控制器（Web Worker）</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">article</span><span class="o">.</span><span class="n">js</span><span class="w">         </span><span class="c1"># 文章详情页脚本（目录、进度条、代码块、懒加载）</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">archive</span><span class="o">.</span><span class="n">js</span><span class="w">         </span><span class="c1"># 归档页面初始化与管理</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">stats</span><span class="o">-</span><span class="n">manager</span><span class="o">.</span><span class="n">js</span><span class="w">   </span><span class="c1"># 统计仪表板：数据加载、图表渲染、秒级运行时间</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">friends</span><span class="o">-</span><span class="n">manager</span><span class="o">.</span><span class="n">js</span><span class="w"> </span><span class="c1"># 友链页面管理器（Twikoo 初始化、JSON 复制）</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">home</span><span class="o">-</span><span class="n">manager</span><span class="o">.</span><span class="n">js</span><span class="w">    </span><span class="c1"># 首页管理器（统计卡片、标签云、导航事件）</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">stats</span><span class="o">-</span><span class="n">init</span><span class="o">.</span><span class="n">js</span><span class="w">      </span><span class="c1"># 统计页面入口（配合 router）</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">data</span><span class="o">/</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">searchWorker</span><span class="o">.</span><span class="n">js</span><span class="w">    </span><span class="c1"># Web Worker（过滤、排序、标签提取）</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">settings</span><span class="o">.</span><span class="n">js</span><span class="w">        </span><span class="c1"># 设置页面逻辑（开关、清除缓存）</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">site</span><span class="o">-</span><span class="n">state</span><span class="o">.</span><span class="n">js</span><span class="w">      </span><span class="c1"># 统计记录管理、Service Worker 注册、欢迎弹窗</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">sw</span><span class="o">.</span><span class="n">js</span><span class="w">              </span><span class="c1"># Service Worker（缓存关键 JSON，stale-while-revalidate）</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">vendor</span><span class="o">/</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">busuanzi</span><span class="o">.</span><span class="n">min</span><span class="o">.</span><span class="n">js</span><span class="w">    </span><span class="c1"># 不蒜子统计脚本</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">global</span><span class="o">-</span><span class="n">music</span><span class="o">-</span><span class="n">player</span><span class="o">.</span><span class="n">js</span><span class="w">  </span><span class="c1"># 全局音乐播放器加载器</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">netease</span><span class="o">-</span><span class="n">mini</span><span class="o">-</span><span class="n">player</span><span class="o">-</span><span class="n">v2</span><span class="o">.</span><span class="n">js</span><span class="w">  </span><span class="c1"># 网易云音乐迷你播放器核心</span>
+<span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">standalone</span><span class="o">/</span>
+<span class="err">│</span><span class="w">       </span><span class="err">└──</span><span class="w"> </span><span class="mf">404.j</span><span class="n">s</span><span class="w">             </span><span class="c1"># 404 页面独立脚本（智能路径分析）</span>
+<span class="err">│</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">articles</span><span class="o">/</span><span class="w">                  </span><span class="c1"># 生成的 HTML 文章（由 ArticleManager.py 输出）</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="o">*.</span><span class="n">html</span>
+<span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="o">.</span><span class="n">hidden</span><span class="o">/</span><span class="w">               </span><span class="c1"># 隐藏文章的输出目录</span>
+<span class="err">│</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">assets</span><span class="o">/</span><span class="w">                    </span><span class="c1"># 静态资源</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">source</span><span class="o">/</span><span class="w">                </span><span class="c1"># Markdown 源文件目录（按分类子目录组织）</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="err">随笔</span><span class="o">/</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="err">技术</span><span class="o">/</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="o">...</span>
+<span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">avatar</span><span class="o">.</span><span class="n">webp</span><span class="w">            </span><span class="c1"># 头像</span>
+<span class="err">│</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">works</span><span class="o">/</span><span class="w">                     </span><span class="c1"># 作品数据源目录</span>
+<span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="err">作品名</span><span class="o">/</span>
+<span class="err">│</span><span class="w">       </span><span class="err">└──</span><span class="w"> </span><span class="n">metadata</span><span class="o">.</span><span class="n">json</span>
+<span class="err">│</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">json</span><span class="o">/</span><span class="w">                      </span><span class="c1"># 自动生成的 JSON 数据</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">articles</span><span class="o">.</span><span class="n">json</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">works</span><span class="o">.</span><span class="n">json</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">statistics</span><span class="o">.</span><span class="n">json</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">code_analysis</span><span class="o">.</span><span class="n">json</span>
+<span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">friends</span><span class="o">.</span><span class="n">json</span><span class="w">           </span><span class="c1"># 友链数据（需手动维护）</span>
+<span class="err">│</span>
+<span class="err">├──</span><span class="w"> </span><span class="n">python</span><span class="o">/</span><span class="w">                    </span><span class="c1"># Python 自动化脚本</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">build_context</span><span class="o">.</span><span class="n">py</span><span class="w">       </span><span class="c1"># 数据类定义（Article, Work, Friend, BuildContext）</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">common</span><span class="o">.</span><span class="n">py</span><span class="w">              </span><span class="c1"># 公共函数（日志、路径、日期、JSON读写）</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">input_loader</span><span class="o">.</span><span class="n">py</span><span class="w">        </span><span class="c1"># 加载所有输入数据（文章、作品、友链、版本）</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">engine</span><span class="o">.</span><span class="n">py</span><span class="w">              </span><span class="c1"># 构建引擎（调度生成器，支持并行）</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">generators</span><span class="o">/</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">base</span><span class="o">.</span><span class="n">py</span><span class="w">            </span><span class="c1"># 生成器基类</span>
+<span class="err">│</span><span class="w">   </span><span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">aggregated</span><span class="o">.</span><span class="n">py</span><span class="w">      </span><span class="c1"># 聚合生成器（一次性生成统计、RSS、站点地图、列表页、无JS索引）</span>
+<span class="err">│</span><span class="w">   </span><span class="err">├──</span><span class="w"> </span><span class="n">run</span><span class="o">.</span><span class="n">py</span><span class="w">                 </span><span class="c1"># 一键构建（支持 CLI 和 GUI）</span>
+<span class="err">│</span><span class="w">   </span><span class="err">└──</span><span class="w"> </span><span class="n">rss_config</span><span class="o">.</span><span class="n">json</span><span class="w">        </span><span class="c1"># RSS 生成器的配置文件</span>
+<span class="err">│</span>
+<span class="err">└──</span><span class="w"> </span><span class="n">README</span><span class="o">.</span><span class="n">md</span>
+</code></pre></div>
 
 <hr />
 <h2 id="快速开始">快速开始</h2>
@@ -402,43 +402,43 @@
 - <code>404.html</code>
 - <code>js/pages/article.js</code>（通过 ArticleManager.py 生成的文章页面也会包含该配置）</p>
 <p>示例：</p>
-<pre class="codehilite"><code class="language-javascript">twikoo.init({
-  envId: 'https://your-endpoint.netlify.app/.netlify/functions/twikoo',
-  el: '#twikoo-comments'
-});
-</code></pre>
+<div class="codehilite"><pre><span></span><code><span class="nx">twikoo</span><span class="p">.</span><span class="nx">init</span><span class="p">({</span>
+<span class="w">  </span><span class="nx">envId</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;https://your-endpoint.netlify.app/.netlify/functions/twikoo&#39;</span><span class="p">,</span>
+<span class="w">  </span><span class="nx">el</span><span class="o">:</span><span class="w"> </span><span class="s1">&#39;#twikoo-comments&#39;</span>
+<span class="p">});</span>
+</code></pre></div>
 
 <h3 id="2-网站运行起始时间">2. 网站运行起始时间</h3>
 <p>在 <code>js/core/core.js</code> 中修改 <code>SITE_BIRTH</code> 常量：</p>
-<pre class="codehilite"><code class="language-javascript">SITE_BIRTH: new Date('2025-02-22T12:23:53Z')
-</code></pre>
+<div class="codehilite"><pre><span></span><code><span class="nx">SITE_BIRTH</span><span class="o">:</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Date</span><span class="p">(</span><span class="s1">&#39;2025-02-22T12:23:53Z&#39;</span><span class="p">)</span>
+</code></pre></div>
 
 <p>页脚和统计页面将根据该时间显示网站运行时长。</p>
 <h3 id="3-外链跳转白名单">3. 外链跳转白名单</h3>
 <p>在 <code>js/core/core.js</code> 的 <code>EXTERNAL_WHITELIST</code> 中添加受信任的域名：</p>
-<pre class="codehilite"><code class="language-javascript">EXTERNAL_WHITELIST: new Set([
-  &quot;github.com&quot;, &quot;bilibili.com&quot;, ...
-])
-</code></pre>
+<div class="codehilite"><pre><span></span><code><span class="nx">EXTERNAL_WHITELIST</span><span class="o">:</span><span class="w"> </span><span class="ow">new</span><span class="w"> </span><span class="nb">Set</span><span class="p">([</span>
+<span class="w">  </span><span class="s2">&quot;github.com&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;bilibili.com&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">...</span>
+<span class="p">])</span>
+</code></pre></div>
 
 <h3 id="4-rss-生成配置">4. RSS 生成配置</h3>
 <p>编辑 <code>python/rss_config.json</code>（如果不存在则使用默认值）：</p>
-<pre class="codehilite"><code class="language-json">{
-  &quot;site&quot;: {
-    &quot;title&quot;: &quot;高新炀的个人网站&quot;,
-    &quot;link&quot;: &quot;https://xinyang-gao.github.io&quot;,
-    &quot;description&quot;: &quot;学生 · 开发者 · 写作者&quot;
-  },
-  &quot;include&quot;: {
-    &quot;articles&quot;: true,
-    &quot;works&quot;: false
-  },
-  &quot;filters&quot;: {
-    &quot;skip_hidden&quot;: true,
-    &quot;max_items&quot;: 20
-  }
-}
-</code></pre>
+<div class="codehilite"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;site&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;高新炀的个人网站&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;link&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://xinyang-gao.github.io&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;学生 · 开发者 · 写作者&quot;</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;include&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;articles&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;works&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
+<span class="w">  </span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;filters&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;skip_hidden&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;max_items&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">20</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div>
 
 <h3 id="5-背景图片">5. 背景图片</h3>
 <p>在 <code>js/core/core.js</code> 的 <code>BACKGROUND_IMAGES</code> 数组中替换或添加背景图片 URL，首页和欢迎弹窗会随机选用。</p>
@@ -447,102 +447,102 @@
 <h3 id="7-音乐播放器">7. 音乐播放器</h3>
 <p>播放器由 <code>js/vendor/global-music-player.js</code> 动态加载 CSS 和 JS，默认歌单 ID <code>18022003523</code>，位置为 <code>bottom-left</code>。如需修改，可直接编辑该文件中的 <code>PLAYER_CONFIG</code>。<br />
 此外，支持通过短代码在任意内容中插入播放器：</p>
-<pre class="codehilite"><code>{nmpv2:playlist=123456, position=bottom-right, lyric=true, minimized=false}
-</code></pre>
+<div class="codehilite"><pre><span></span><code>{nmpv2:playlist=123456, position=bottom-right, lyric=true, minimized=false}
+</code></pre></div>
 
 <p>或单曲：</p>
-<pre class="codehilite"><code>{nmpv2:123456, theme=dark}
-</code></pre>
+<div class="codehilite"><pre><span></span><code>{nmpv2:123456, theme=dark}
+</code></pre></div>
 
 <hr />
 <h2 id="数据格式">数据格式</h2>
 <h3 id="articlesjson"><code>articles.json</code></h3>
-<pre class="codehilite"><code class="language-json">{
-  &quot;generated_at&quot;: &quot;2026-04-24T...&quot;,
-  &quot;total_articles&quot;: 10,
-  &quot;total_word_count&quot;: 5000,
-  &quot;articles&quot;: [
-    {
-      &quot;relative_path&quot;: &quot;assets/source/随笔/文章.md&quot;,
-      &quot;hash&quot;: &quot;md5...&quot;,
-      &quot;last_updated&quot;: &quot;2026-04-20&quot;,
-      &quot;modify_count&quot;: 3,
-      &quot;hidden&quot;: false,
-      &quot;title&quot;: &quot;文章标题&quot;,
-      &quot;date&quot;: &quot;2026-03-01&quot;,
-      &quot;description&quot;: &quot;简介&quot;,
-      &quot;author&quot;: &quot;高新炀&quot;,
-      &quot;tags&quot;: [&quot;随笔&quot;, &quot;生活&quot;],
-      &quot;category&quot;: &quot;随笔&quot;,
-      &quot;url&quot;: &quot;/articles/%E6%96%87%E7%AB%A0.html&quot;,
-      &quot;word_count&quot;: 1200,
-      &quot;read_time&quot;: &quot;4分钟&quot;
-    }
-  ]
-}
-</code></pre>
+<div class="codehilite"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;generated_at&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-04-24T...&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;total_articles&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;total_word_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5000</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;articles&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;relative_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;assets/source/随笔/文章.md&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;hash&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;md5...&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;last_updated&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-04-20&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;modify_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">3</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;hidden&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;文章标题&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;date&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-03-01&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;简介&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;author&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;高新炀&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;tags&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;随笔&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;生活&quot;</span><span class="p">],</span>
+<span class="w">      </span><span class="nt">&quot;category&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;随笔&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/articles/%E6%96%87%E7%AB%A0.html&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;word_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">1200</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;read_time&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;4分钟&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
 
 <h3 id="worksjson"><code>works.json</code></h3>
-<pre class="codehilite"><code class="language-json">{
-  &quot;works&quot;: [
-    {
-      &quot;title&quot;: &quot;作品标题&quot;,
-      &quot;date&quot;: &quot;2026-01-01&quot;,
-      &quot;description&quot;: &quot;作品描述&quot;,
-      &quot;author&quot;: &quot;高新炀&quot;,
-      &quot;tag&quot;: [&quot;游戏&quot;, &quot;工具&quot;],
-      &quot;link&quot;: &quot;https://example.com&quot;
-    }
-  ]
-}
-</code></pre>
+<div class="codehilite"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;works&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;作品标题&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;date&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-01-01&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;作品描述&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;author&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;高新炀&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;tag&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;游戏&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;工具&quot;</span><span class="p">],</span>
+<span class="w">      </span><span class="nt">&quot;link&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://example.com&quot;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</code></pre></div>
 
 <h3 id="metadatajsonworks作品名-内"><code>metadata.json</code>（<code>works/作品名/</code> 内）</h3>
-<pre class="codehilite"><code class="language-json">{
-  &quot;title&quot;: &quot;作品标题&quot;,
-  &quot;date&quot;: &quot;2026-01-01&quot;,
-  &quot;description&quot;: &quot;详细描述&quot;,
-  &quot;author&quot;: &quot;高新炀&quot;,
-  &quot;tag&quot;: [&quot;标签1&quot;, &quot;标签2&quot;],
-  &quot;link&quot;: &quot;https://example.com&quot;
-}
-</code></pre>
+<div class="codehilite"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;title&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;作品标题&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;date&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-01-01&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;description&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;详细描述&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;author&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;高新炀&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;tag&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;标签1&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;标签2&quot;</span><span class="p">],</span>
+<span class="w">  </span><span class="nt">&quot;link&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://example.com&quot;</span>
+<span class="p">}</span>
+</code></pre></div>
 
 <h3 id="statisticsjson"><code>statistics.json</code></h3>
-<pre class="codehilite"><code class="language-json">{
-  &quot;version&quot;: 520,
-  &quot;last_updated&quot;: &quot;2026-04-20&quot;,
-  &quot;last_updated_full&quot;: &quot;2026-04-20T15:30:00+08:00&quot;,
-  &quot;total_articles&quot;: 12,
-  &quot;total_word_count&quot;: 18000,
-  &quot;total_works&quot;: 5,
-  &quot;article_tags&quot;: [{&quot;name&quot;: &quot;随笔&quot;, &quot;count&quot;: 5}, ...],
-  &quot;article_categories&quot;: [{&quot;name&quot;: &quot;随笔&quot;, &quot;count&quot;: 5}],
-  &quot;work_tags&quot;: [{&quot;name&quot;: &quot;游戏&quot;, &quot;count&quot;: 2}]
-}
-</code></pre>
+<div class="codehilite"><pre><span></span><code><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;version&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">520</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;last_updated&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-04-20&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;last_updated_full&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;2026-04-20T15:30:00+08:00&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;total_articles&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">12</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;total_word_count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">18000</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;total_works&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;article_tags&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;随笔&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">},</span><span class="w"> </span><span class="err">...</span><span class="p">],</span>
+<span class="w">  </span><span class="nt">&quot;article_categories&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;随笔&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">5</span><span class="p">}],</span>
+<span class="w">  </span><span class="nt">&quot;work_tags&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;游戏&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;count&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">2</span><span class="p">}]</span>
+<span class="p">}</span>
+</code></pre></div>
 
 <h3 id="friendsjson"><code>friends.json</code></h3>
-<pre class="codehilite"><code class="language-json">[
-  {
-    &quot;name&quot;: &quot;站点名称&quot;,
-    &quot;link&quot;: &quot;https://example.com&quot;,
-    &quot;desc&quot;: &quot;站点描述&quot;,
-    &quot;avatar&quot;: &quot;https://example.com/avatar.webp&quot;
-  }
-]
-</code></pre>
+<div class="codehilite"><pre><span></span><code><span class="p">[</span>
+<span class="w">  </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;站点名称&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;link&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://example.com&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;desc&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;站点描述&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;avatar&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;https://example.com/avatar.webp&quot;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">]</span>
+</code></pre></div>
 
 <h3 id="markdown-front-matter-yaml">Markdown Front Matter (YAML)</h3>
-<pre class="codehilite"><code class="language-yaml">---
-title: 我的文章
-date: 2026-03-01
-description: 简介
-author: 高新炀
-tag: [随笔, 生活]
-category: 随笔
----
-</code></pre>
+<div class="codehilite"><pre><span></span><code><span class="nn">---</span>
+<span class="nt">title</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">我的文章</span>
+<span class="nt">date</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">2026-03-01</span>
+<span class="nt">description</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">简介</span>
+<span class="nt">author</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">高新炀</span>
+<span class="nt">tag</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[</span><span class="nv">随笔</span><span class="p p-Indicator">,</span><span class="w"> </span><span class="nv">生活</span><span class="p p-Indicator">]</span>
+<span class="nt">category</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">随笔</span>
+<span class="nn">---</span>
+</code></pre></div>
 
 <ul>
 <li><code>tag</code> 可包含 <code>隐藏</code> 来隐藏文章。</li>

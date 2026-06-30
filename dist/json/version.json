@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-06-30T15:59:50.682376",
-  "total_versions": 171,
+  "generated_at": "2026-06-30T23:36:22.787976",
+  "total_versions": 172,
   "versions": [
     {
       "id": 1,
@@ -2745,7 +2745,18 @@
           "description": "优化缓存策略并修复留言板评论加载问题"
         }
       ]
+    },
+    {
+      "id": 172,
+      "version": "v8.0.0",
+      "date": "2026-06-30",
+      "changes": [
+        {
+          "type": "refactor",
+          "description": "重构网站结构\n      - 详见`d2f8ded782c2dd196e7c54bb1f483b21b02eee8d`和`59966e81828fe19db1989ef3b30eb908319f20f4`"
+        }
+      ]
     }
   ],
-  "changelog_hash": "47814c25dea834b5b8410308347cadce"
+  "changelog_hash": "5c7f6d565fcec54dfd60ec3da21d4909"
 }

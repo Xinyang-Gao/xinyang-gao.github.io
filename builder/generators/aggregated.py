@@ -564,8 +564,14 @@ class AggregatedGenerator(OutputGenerator):
             log_warning(f"JS 源目录不存在: {JS_SRC_DIR}")
 
         if ASSETS_DIR.exists():
-            shutil.copytree(ASSETS_DIR, ASSETS_DIST_DIR, dirs_exist_ok=True)
-            log_info("复制 assets 素材完成")
+            # 忽略 source、avatars 目录及网站更新日志.md
+            shutil.copytree(
+                ASSETS_DIR,
+                ASSETS_DIST_DIR,
+                dirs_exist_ok=True,
+                ignore=shutil.ignore_patterns('source', 'avatars', '网站更新日志.md')
+            )
+            log_info("复制 assets 素材完成（排除 source, avatars, 网站更新日志.md）")
         else:
             log_warning(f"assets 源目录不存在: {ASSETS_DIR}")
 
