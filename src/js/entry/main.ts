@@ -473,6 +473,9 @@ async function bootstrap() {
   // 6. 加载页脚（异步，不阻塞）
   loadFooter().catch(console.warn);
 
+    // 渲染个人卡片（确保模块被使用）
+  renderPersonalCard();
+
   // 7. 站点年龄更新
   startSiteAgeUpdater(CONFIG.SITE_BIRTH);
 

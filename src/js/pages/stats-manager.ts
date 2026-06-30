@@ -367,5 +367,4 @@ async function initFullStats() {
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initFullStats);
 else initFullStats();
-export { initFullStats };
 export { FullStatsManager, FullStatsManager as StatsManager, initFullStats };

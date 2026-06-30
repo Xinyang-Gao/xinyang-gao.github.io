@@ -14,6 +14,7 @@ from html import escape
 from datetime import datetime
 from collections import Counter
 from xml.etree import ElementTree as ET
+import subprocess
 
 # 使用相对导入
 from ..common import (
@@ -551,30 +552,61 @@ class AggregatedGenerator(OutputGenerator):
 
     # ---------- 复制静态资源 ----------
     def _copy_static_assets(self):
+        # ---------- 1. 调用 Vite 构建 TypeScript ----------
+        try:
+            # Windows 下强制 UTF-8 解码，避免 GBK 编码错误
+            result = subprocess.run(
+                ["npm", "run", "build"],
+                cwd=PROJECT_ROOT,
+                capture_output=True,
+                text=True,
+                encoding='utf-8',
+                shell=True
+            )
+            if result.returncode != 0:
+                log_error(f"Vite 构建失败 (返回码 {result.returncode})")
+                log_error(f"stdout: {result.stdout}")
+                log_error(f"stderr: {result.stderr}")
+                raise RuntimeError("前端 TypeScript 编译失败")
+            log_info("Vite 构建完成 (TypeScript -> JavaScript)")
+        except FileNotFoundError:
+            log_warning("未找到 npm，请确保 Node.js 已安装。跳过 TypeScript 编译。")
+            # 回退：直接复制 JS（如果有的话）
+            if JS_SRC_DIR.exists():
+                shutil.copytree(JS_SRC_DIR, JS_DIST_DIR, dirs_exist_ok=True)
+                log_info("回退：直接复制 JS 文件")
+
+        # ---------- 2. 复制所有未被 Vite 处理的 .js 文件（不覆盖已存在的） ----------
+        if JS_SRC_DIR.exists():
+            for js_file in JS_SRC_DIR.rglob("*.js"):
+                rel_path = js_file.relative_to(JS_SRC_DIR)
+                dst_file = JS_DIST_DIR / rel_path
+                # 如果目标文件不存在，则复制（避免覆盖 Vite 生成的编译产物）
+                if not dst_file.exists():
+                    dst_file.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(js_file, dst_file)
+                    log_info(f"复制额外 JS: {rel_path}")
+
+        # ---------- 3. 复制 CSS ----------
         if CSS_SRC_DIR.exists():
             shutil.copytree(CSS_SRC_DIR, CSS_DIST_DIR, dirs_exist_ok=True)
             log_info("复制 CSS 完成")
         else:
             log_warning(f"CSS 源目录不存在: {CSS_SRC_DIR}")
 
-        if JS_SRC_DIR.exists():
-            shutil.copytree(JS_SRC_DIR, JS_DIST_DIR, dirs_exist_ok=True)
-            log_info("复制 JS 完成")
-        else:
-            log_warning(f"JS 源目录不存在: {JS_SRC_DIR}")
-
+        # ---------- 4. 复制 assets 素材（排除 source, avatars, 网站更新日志.md, js, css） ----------
         if ASSETS_DIR.exists():
-            # 忽略 source、avatars 目录及网站更新日志.md
             shutil.copytree(
                 ASSETS_DIR,
                 ASSETS_DIST_DIR,
                 dirs_exist_ok=True,
-                ignore=shutil.ignore_patterns('source', 'avatars', '网站更新日志.md')
+                ignore=shutil.ignore_patterns('source', 'avatars', '网站更新日志.md', 'js', 'css')
             )
-            log_info("复制 assets 素材完成（排除 source, avatars, 网站更新日志.md）")
+            log_info("复制 assets 素材完成（排除 source, avatars, 网站更新日志.md, js, css）")
         else:
             log_warning(f"assets 源目录不存在: {ASSETS_DIR}")
 
+        # ---------- 5. 复制 favicon ----------
         favicon = PROJECT_ROOT / "favicon.ico"
         if favicon.exists():
             shutil.copy(favicon, DIST_ROOT / "favicon.ico")

@@ -1,0 +1,26 @@
+{
+  "name": "xinyang-gao.github.io",
+  "version": "1.0.0",
+  "description": "---\r title: README.md\r description: 项目介绍\r author: 高新炀 ＆ DEEPSEEK-V4\r date: 2026-04-12\r tag: [网站]\r ---",
+  "main": "index.js",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Xinyang-Gao/xinyang-gao.github.io.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/Xinyang-Gao/xinyang-gao.github.io/issues"
+  },
+  "homepage": "https://github.com/Xinyang-Gao/xinyang-gao.github.io#readme",
+  "devDependencies": {
+    "typescript": "^6.0.3",
+    "vite": "^8.1.1"
+  }
+}

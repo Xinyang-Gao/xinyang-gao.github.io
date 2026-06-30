@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-06-30T23:36:22.787976",
-  "total_versions": 172,
+  "generated_at": "2026-07-01T01:23:26.033881",
+  "total_versions": 174,
   "versions": [
     {
       "id": 1,
@@ -2756,7 +2756,33 @@
           "description": "重构网站结构\n      - 详见`d2f8ded782c2dd196e7c54bb1f483b21b02eee8d`和`59966e81828fe19db1989ef3b30eb908319f20f4`"
         }
       ]
+    },
+    {
+      "id": 173,
+      "version": "v8.0.1",
+      "date": "2026-06-30",
+      "changes": [
+        {
+          "type": "refactor",
+          "description": "移除构建一些目录\n      - `/dist/assets/source/`\n      - `/dist/assets/avatars/`\n      - `/dist/assets/网站更新日志.md`"
+        },
+        {
+          "type": "fix",
+          "description": "`aggregated.py` 可能运行失败"
+        }
+      ]
+    },
+    {
+      "id": 174,
+      "version": "v8.1.0",
+      "date": "2026-07-01",
+      "changes": [
+        {
+          "type": "feat",
+          "description": "集成 TypeScript 与 Vite 构建系统\n      - 将 src/js 下的所有模块迁移至 TypeScript，保留 vendor/ 及独立脚本为 .js\n      - 新增 vite.config.ts，配置路径别名与构建选项，使用 preserveModules 保持目录结构\n      - 修改 aggregated.py 的 _copy_static_assets 方法：\n            - 在构建过程中调用 npm run build 编译 TypeScript\n            - 遍历复制 src/js 下未被 Vite 处理的 .js 文件（如 vendor、standalone、sw.js、searchWorker.js 等）\n            - 避免覆盖 Vite 生成的编译产物\n      - 修复 TypeScript 编译错误：\n            - stats-manager.ts 中重复导出 initFullStats\n            - 调整 vite 入口键名，使 main.js 输出至 dist/js/entry/main.js\n      - 在 main.ts 中显式调用 renderPersonalCard，确保该模块不被 tree-shaking 移除\n\n使前端开发更现代，也保持了 Python 构建流程的统一性"
+        }
+      ]
     }
   ],
-  "changelog_hash": "5c7f6d565fcec54dfd60ec3da21d4909"
+  "changelog_hash": "94a9a6c2b57f583c3ddd3ed6c83d199d"
 }

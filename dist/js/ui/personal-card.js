@@ -1,10 +1,4 @@
-// /js/ui/personal-card.js
-// 个人信息卡片渲染器（带缓存，避免重复渲染导致闪烁）
-
-let cachedHTML = null;
-
-export function generatePersonalCardHTML() {
-  return `
+var e=null;function t(){return`
     <div class="profile-card">
       <div class="profile-avatar">
         <img src="/assets/avatar.webp" alt="高新炀的头像" class="avatar-img" fetchpriority="high" onerror="this.src='https://via.placeholder.com/140?text=GXY'">
@@ -64,45 +58,4 @@ export function generatePersonalCardHTML() {
         </div>
       </div>
     </div>
-  `;
-}
-
-export function renderPersonalCard() {
-  const container = document.getElementById('personal-card-container');
-  if (!container) return;
-
-  if (!cachedHTML) {
-    cachedHTML = generatePersonalCardHTML();
-  }
-
-  if (container.innerHTML !== cachedHTML) {
-    container.innerHTML = cachedHTML;
-    // 获取卡片元素
-    const card = container.querySelector('.profile-card');
-    if (card) {
-      // 等待下一帧后添加可见类，触发过渡动画
-      requestAnimationFrame(() => {
-        card.classList.add('visible');
-      });
-    }
-  } else {
-    // 如果内容未变，但卡片可能未显示（比如通过 AJAX 切换回来），确保可见
-    const card = container.querySelector('.profile-card');
-    if (card && !card.classList.contains('visible')) {
-      requestAnimationFrame(() => {
-        card.classList.add('visible');
-      });
-    }
-  }
-}
-
-// 自动监听事件
-if (typeof window !== 'undefined') {
-  const init = () => renderPersonalCard();
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
-  window.addEventListener('ajax:navigation', init);
-}
+  `}function n(){let n=document.getElementById(`personal-card-container`);if(n)if(e||=t(),n.innerHTML!==e){n.innerHTML=e;let t=n.querySelector(`.profile-card`);t&&requestAnimationFrame(()=>{t.classList.add(`visible`)})}else{let e=n.querySelector(`.profile-card`);e&&!e.classList.contains(`visible`)&&requestAnimationFrame(()=>{e.classList.add(`visible`)})}}if(typeof window<`u`){let e=()=>n();document.readyState===`loading`?document.addEventListener(`DOMContentLoaded`,e):e(),window.addEventListener(`ajax:navigation`,e)}export{t as generatePersonalCardHTML,n as renderPersonalCard};
