@@ -15,14 +15,12 @@
 <div id="loading-overlay" role="status" aria-label="页面加载中"><div class="loading-log"><div>[START] 正在等待 JavaScript，这可能需要几秒</div></div><div class="loading-glow"></div><div id="loading-content"><span class="loading-title">GaoXinYang</span></div></div>
     <div id="navbar-placeholder"></div>
 
-    <!-- 所有动态内容放在 router-view 内 -->
     <div id="router-view">
         <div id="reading-progress" class="reading-progress-bar">
             <div id="progress-bar" class="progress-bar"></div>
         </div>
 
         <main class="article-grid">
-            <!-- 左侧主内容区 -->
             <article class="article-main">
                 <div class="article-card">
                     <h1 class="article-title">你知道那个像 WiFi 一样的小图标吗？</h1>
@@ -32,10 +30,10 @@
         <span class="meta-item"><i class="fas fa-calendar-alt"></i> 2026年05月10日</span>
         <span class="meta-item"><i class="fas fa-user"></i> 高新炀</span>
         <span class="meta-item"><i class="fas fa-folder-open"></i> 分享</span>
-        <span class="meta-item"><i class="fas fa-file-alt"></i> 869字</span>
+        <span class="meta-item"><i class="fas fa-file-alt"></i> 873字</span>
         <span class="meta-item"><i class="fas fa-clock"></i> 3分钟</span>
     </div>
-    <div class="article-meta-line article-meta-updated"><span class="meta-item"><i class="fas fa-edit"></i> 更新于 2026年05月10日</span></div>
+    <div class="article-meta-line article-meta-updated"><span class="meta-item"><i class="fas fa-edit"></i> 更新于 2026年06月30日</span></div>
 
                     <div class="article-body" id="articleBody"><p>前几天我在一个博客上闲逛，地址栏旁边有个小小的橙色图标，长得像WiFi倒过来了。点了一下，出来一堆 XML 代码。我愣了一下，通过搜索我得知，这是 RSS 呀。</p>
 <p>深入了解后，我对这项技术产生了好感，也惋惜于它在快节奏的互联网中已不被大多数人所知。抽时间写了一个 Python 脚本自动生成网站的 RSS ，也用了一段时间，想要分享一下</p>
@@ -45,25 +43,19 @@
 <p>对，RSS 还活着。虽然 Google Reader 在 2013 年关了，很多年轻人压根没听说过它。但这几年，不想被算法裹挟的人越来越多，RSS 又悄悄回来了。</p>
 <p>我给自己的个人网站也写了个RSS。过程不算难，就是生成一个xml文件，里面按格式写上你的文章标题、链接、时间什么的。这样如果有人用RSS阅读器订阅我的网站，每次发新文章他们就能第一时间看到。</p>
 <p>说到阅读器，我最近在用 <a href="https://hyliu.me/fluent-reader/">Fluent Reader</a> 。界面干净，没有广告，可以把自己订阅的源全放进去。它支持本地阅读，速度很快，偶尔看看谁更新了，点一下就能读到原文，不用再一个个网站跑一遍。</p>
-<p>如果你想试试RSS，可以这样做：
-1. 找个阅读器，比如Fluent Reader
-2. 看到感兴趣的网站，找找有没有那个WiFi一样的图标
-3. 复制链接地址，贴进阅读器
-4. 完成，以后那个网站更新你就知道啦</p>
+<p>如果你想试试RSS，可以这样做： 1. 找个阅读器，比如Fluent Reader 2. 看到感兴趣的网站，找找有没有那个WiFi一样的图标 3. 复制链接地址，贴进阅读器 4. 完成，以后那个网站更新你就知道啦</p>
 <p>说实话，RSS不是每个人都需要的。如果你喜欢刷什么看什么，那现在的推荐流挺好。但如果你有点烦那些猜你喜欢的内容，想清静点自己决定看什么，RSS可能很适合你。</p>
 <p>就像偶尔想远离一下热闹的人群，找个安静的角落自己翻翻书那样。</p></div>
 
                     <div class="article-tags"><a class="tag" href="/articles/?tags=%E5%88%86%E4%BA%AB">#分享</a> <a class="tag" href="/articles/?tags=%E6%8A%80%E6%9C%AF">#技术</a></div>
                 </div>
 
-                <!-- 评论区 -->
                 <div class="comments-card">
                     <h3>💬 评论</h3>
                     <div id="twikoo-comments"></div>
                 </div>
             </article>
 
-            <!-- 右侧边栏（目录 + 信息卡片） -->
             <aside class="article-sidebar">
                 <div class="sidebar-card toc-card">
                     <div class="toc-header">
@@ -93,7 +85,6 @@
             </aside>
         </main>
 
-        <!-- 图片模态框（文章页特有） -->
         <div id="imageModal" class="image-modal">
             <span class="close">&times;</span>
             <img id="modalImage" src="" alt="">

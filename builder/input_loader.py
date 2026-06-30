@@ -18,7 +18,7 @@ from urllib.parse import quote
 # 导入公共模块（使用相对导入）
 from .common import (
     PROJECT_ROOT, SRC_ROOT, ASSETS_SOURCE_DIR, ASSETS_DIR,
-    ARTICLES_OUTPUT_DIR, JSON_OUTPUT_DIR,
+    ARTICLES_OUTPUT_DIR, JSON_OUTPUT_DIR, WORKS_SRC_DIR,
     log_info, log_warning, log_error,
     load_json, save_json, compute_content_hash, compute_file_hash,
     get_relative_path, format_date, format_date_iso,
@@ -618,7 +618,7 @@ def load_articles(force_refresh: bool = False) -> List[Article]:
 # ---------- 作品加载 ----------
 def load_works() -> List[Work]:
     works_list = []
-    works_root = PROJECT_ROOT / "works"
+    works_root = WORKS_SRC_DIR
     if not works_root.exists():
         log_warning(f"作品目录不存在: {works_root}")
         return works_list

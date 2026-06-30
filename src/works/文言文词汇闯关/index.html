@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>文心配对 · 闯关研习</title>
+    <link rel="stylesheet" href="/works/文言文词汇闯关/work-style.css">
+</head>
+<body>
+<div class="game-container" id="gameContainer">
+    <div class="lesson-bar">
+        <div class="lesson-title">📜 篇目</div>
+        <div class="lesson-buttons" id="lessonButtons"></div>
+    </div>
+
+    <div class="stats-bar">
+        <div class="stat-card"><div class="stat-label">🏆 总分</div><div class="stat-value" id="scoreValue">0</div></div>
+        <div class="stat-card"><div class="stat-label">⏱️ 剩余</div><div class="stat-value" id="timeValue">03:00</div></div>
+        <div class="stat-card"><div class="stat-label">❌ 错误</div><div class="stat-value" id="mistakeValue">0</div></div>
+        <div class="stat-card"><div class="stat-label">📖 关卡</div><div class="stat-value" id="levelInfo">1 / 1</div></div>
+    </div>
+
+    <div class="cards-grid" id="cardsGrid"></div>
+
+    <div class="action-bar">
+        <button class="reset-btn" id="resetGameBtn">🖌️ 重新闯关</button>
+        <button class="mistake-toggle-btn" id="mistakeToggleBtn">📖 错题本 <span id="mistakeCountBadge">0</span></button>
+        <div class="message-area" id="gameMessage">✨ 闯关模式：完成当前关卡所有配对进入下一关 ✨</div>
+    </div>
+
+    <div id="mistakePanel" class="mistake-panel" style="display: none;">
+        <div class="mistake-header" id="mistakeHeaderToggle">
+            <span>📚 错题本 · 温故知新</span>
+            <button id="clearMistakesBtn" class="clear-mistakes">清空记录</button>
+        </div>
+        <div id="mistakeListContainer" class="mistake-list">
+            <div class="empty-mistake">✨ 暂无错题，继续研习 ✨</div>
+        </div>
+    </div>
+
+    <footer>闯关模式 · 每关最多18组 | 配对正确+10分 | 错题自动收录 | 典雅文心 ✨</footer>
+</div>
+
+
+    <script src="/works/文言文词汇闯关/work-js.js"></script>
+</body>
+</html>

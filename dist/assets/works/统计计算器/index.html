@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>统计计算器</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/works/统计计算器/work-style.css">
+    <link rel="stylesheet" href="/css/components/navbar.css">
+</head>
+<body>
+
+
+<div class="navbar">
+    <div class="nav-logo">
+      <span class="logo-text">GaoXinYang</span>
+    </div>
+    <nav aria-label="主导航">
+      <div class="nav-items" id="navbarNav">
+          <a href="/" class="nav-item" data-page="index">首页</a>
+          <a href="/works/" class="nav-item" data-page="index">作品</a>
+          <a href="/works/统计计算器/index.html" class="nav-item active">统计计算器</a>
+      </div>
+    </nav>
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+    </div>
+</div>
+
+    <!-- 统计计算器主体 -->
+    <div class="calculator-container">
+        <h1 class="calculator-title">统计计算器</h1>
+        <div class="input-group">
+            <label for="numbers" class="input-label">请输入数字，用空格分隔（例如：1 2 5.3 8.21 10）</label>
+            <textarea
+                id="numbers"
+                class="number-input"
+                placeholder="在此输入数字..."
+                rows="3"
+            ></textarea>
+        </div>
+
+        <button id="calculateBtn" class="calculate-btn">计算统计量</button>
+
+        <div id="errorMessage" class="error-message"></div>
+
+        <section class="results-section">
+            <h2 class="results-title">计算结果</h2>
+            <div id="results">
+                <!-- 动态渲染结果 -->
+                <div class="result-item"><span class="result-label">和：</span><span class="result-value">—</span></div>
+                <div class="result-item"><span class="result-label">平均值：</span><span class="result-value">—</span></div>
+                <div class="result-item"><span class="result-label">中位数：</span><span class="result-value">—</span></div>
+                <div class="result-item"><span class="result-label">众数：</span><span class="result-value">—</span></div>
+                <div class="result-item"><span class="result-label">总体方差：</span><span class="result-value">—</span></div>
+                <div class="result-item"><span class="result-label">总体标准差：</span><span class="result-value">—</span></div>
+                <div class="result-item"><span class="result-label">极差：</span><span class="result-value">—</span></div>
+                <div class="result-item"><span class="result-label">最小值 / 最大值：</span><span class="result-value">— / —</span></div>
+            </div>
+        </section>
+    </div>
+
+    <script src="/works/统计计算器/work-js.js"></script>
+</body>
+</html>
