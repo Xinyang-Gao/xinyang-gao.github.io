@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="网站个性化设置 - 自定义光标、外链提醒与隐私清理">
+  <title>站点设置 · 高新炀的小站</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <style>
+    /* 设置页面专用微调 */
+    .settings-group {
+      background: var(--surface-color);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-lg);
+      padding: 28px 32px;
+      margin-bottom: 32px;
+      box-shadow: var(--shadow-sm);
+      transition: all var(--transition-normal);
+    }
+    .settings-group:hover {
+      border-color: var(--accent-light);
+      box-shadow: var(--shadow-md);
+    }
+    .settings-group h3 {
+      margin-top: 0;
+      margin-bottom: 12px;
+      font-size: 1.5rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      border-left: 4px solid var(--accent-color);
+      padding-left: 16px;
+    }
+    .settings-group h3 i {
+      color: var(--accent-color);
+      font-size: 1.4rem;
+    }
+    .setting-desc {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin-bottom: 20px;
+      border-left: 2px solid var(--border-color);
+      padding-left: 14px;
+    }
+    .toggle-switch {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin: 20px 0 8px;
+    }
+    .toggle-label {
+      font-weight: 600;
+      font-size: 1.05rem;
+      color: var(--text-color);
+    }
+    .settings-toggle {
+      position: relative;
+      display: inline-block;
+      width: 54px;
+      height: 28px;
+    }
+    .settings-toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    .settings-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: var(--border-color);
+      transition: 0.3s var(--transition-bounce);
+      border-radius: 34px;
+      box-shadow: inset 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .settings-slider:before {
+      position: absolute;
+      content: "";
+      height: 22px;
+      width: 22px;
+      left: 3px;
+      bottom: 3px;
+      background-color: #fff;
+      transition: transform 0.3s var(--transition-bounce);
+      border-radius: 50%;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+    }
+    input:checked + .settings-slider {
+      background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+    }
+    input:checked + .settings-slider:before {
+      transform: translateX(26px);
+    }
+    .danger-btn {
+      background: #e74c3c;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: var(--radius-full);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .danger-btn:hover {
+      background: #c0392b;
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-md);
+    }
+    .warning-message {
+      background: rgba(231,76,60,0.12);
+      border-left: 4px solid #e74c3c;
+      padding: 14px 20px;
+      border-radius: var(--radius-md);
+      margin: 20px 0 12px;
+      font-size: 0.9rem;
+      color: var(--text-color);
+    }
+    .consent-warning {
+      background: rgba(var(--accent-rgb, 180,91,99), 0.12);
+      border-left-color: var(--accent-color);
+    }
+    .settings-action {
+      margin-top: 24px;
+      display: flex;
+      justify-content: flex-end;
+    }
+    hr {
+      margin: 16px 0;
+    }
+    @media (max-width: 640px) {
+      .settings-group {
+        padding: 20px;
+      }
+      .toggle-switch {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="loading-overlay" role="status" aria-label="页面加载中">
+    <div class="loading-log">
+      <div>[START] 正在等待 JavaScript，这可能需要几秒</div>
+    </div>
+    <div class="loading-glow"></div>
+    <div id="loading-content">
+      <span class="loading-title">GaoXinYang</span>
+    </div>
+  </div>
+
+  <div id="navbar-placeholder"></div>
+
+  <div id="router-view">
+    <div class="two-column-layout">
+      <aside class="sidebar-profile">
+        <div id="personal-card-container"></div>
+      </aside>
+
+      <main class="main-content-area">
+        <div class="container">
+          <div class="hero" style="padding-bottom: 0;">
+            <div class="eyebrow">PREFERENCES</div>
+            <h1 style="margin-top: 0.25em;">站点设置</h1>
+            <p class="hero-copy">所有设置将保存在本地，仅对你当前设备生效。</p>
+          </div>
+
+          <div id="consentAlert" style="display: none;" class="warning-message consent-warning">
+            <i class="fas fa-cookie-bite"></i> 您尚未同意 Cookie 使用政策，设置项仅临时生效，刷新后将丢失。<br>
+            <a href="#" id="acceptCookiesLink" style="color: var(--accent-color); text-decoration: underline;">同意条款 (您可以在页脚找到隐私政策)</a> 以便永久保存配置。
+          </div>
+
+          <div class="settings-group">
+            <h3><i class="fas fa-magic"></i> 外观效果</h3>
+            <div class="setting-desc">个性化光标跟随动画，为桌面端带来更细腻的交互质感。</div>
+            <div class="toggle-switch" id="cursorToggleArea">
+              <span class="toggle-label"><i class="fas fa-arrow-pointer"></i> 自定义鼠标样式 (仅桌面端)</span>
+              <label class="settings-toggle" id="cursorToggleLabel">
+                <input type="checkbox" id="cursorToggleCheckbox">
+                <span class="settings-slider"></span>
+              </label>
+            </div>
+            <div class="setting-desc" style="margin-top: 8px;"><strong>可能有性能影响，</strong>关闭后恢复浏览器默认光标。</div>
+          </div>
+
+          <div class="settings-group">
+            <h3><i class="fas fa-shield-alt"></i> 浏览安全</h3>
+            <div class="setting-desc">开启后点击外部链接会显示确认弹窗，帮助避免误触可疑站点。</div>
+            <div class="toggle-switch" id="linkWarningArea">
+              <span class="toggle-label"><i class="fas fa-external-link-alt"></i> 外链拦截弹窗</span>
+              <label class="settings-toggle" id="linkWarningLabel">
+                <input type="checkbox" id="linkWarningCheckbox">
+                <span class="settings-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="settings-group">
+            <h3><i class="fas fa-database"></i> 隐私与数据</h3>
+            <div class="setting-desc">收回对本站隐私政策的同意。<br>清除站点存储的所有偏好设置以及 Cookie 同意记录。<br>清除后网站将恢复初始状态，并重新请求 Cookie 权限。</div>
+            <div class="warning-message" id="clearCookiesWarning">
+              <i class="fas fa-trash-alt" style="margin-right: 8px;"></i>
+              删除后您将退出当前个性化配置，下次访问需要重新同意 Cookie。
+            </div>
+            <div class="settings-action">
+              <button id="clearSWCacheBtn" class="danger-btn">清除 Service Worker 缓存（解决缓存不刷新）</button>
+              <button id="clearCookiesBtn" class="danger-btn"><i class="fas fa-trash-can"></i> 删除所有 Cookies / 存储数据</button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  
+  <div id="pageTransition" class="page-transition"></div>
+  <div id="footer-placeholder"></div>
+
+  <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>
+  <script src="/js/vendor/busuanzi.min.js" defer></script>
+  <script src="/js/entry/main.js" type="module"></script>
+  <script type="module" src="/js/data/settings.js"></script>
+</body>
+</html>

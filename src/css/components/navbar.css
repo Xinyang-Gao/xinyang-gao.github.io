@@ -1,0 +1,459 @@
+/* 导航栏灵动岛设计 - 更现代的外观 */
+[data-theme="dark"] .navbar {
+  border-bottom-color: var(--nav-border);
+  background: var(--nav-bg);
+  backdrop-filter: blur(20px);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+[data-theme="dark"] .nav-item.active {
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.25), rgba(var(--accent-rgb), 0.1));
+  border-color: rgba(var(--accent-rgb), 0.5);
+}
+
+[data-theme="dark"] .nav-item:hover {
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.15), rgba(var(--accent-rgb), 0.05));
+}
+
+/* ========== 灵动岛导航栏 - 现代设计 ========== */
+.navbar {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: fit-content;
+  max-width: calc(100% - 40px);
+  background: var(--nav-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--nav-border);
+  box-shadow: var(--shadow-nav), 0 6px 20px rgba(0,0,0,0.12);
+  border-radius: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 24px;
+  height: 60px;
+  z-index: var(--z-nav);
+  transition: all var(--transition-normal);
+}
+
+/* 当页面滚动或需要更强分隔时，可由 JS 添加 .scrolled */
+.navbar.scrolled {
+  box-shadow: 0 8px 30px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.08);
+  backdrop-filter: blur(32px);
+  border-color: rgba(0,0,0,0.08);
+  top: 16px;
+  height: 56px;
+}
+
+.nav-logo {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 0 16px;
+  border-radius: 50px;
+  transition: all var(--transition-fast);
+}
+
+.logo-text {
+  color: var(--accent-color);
+  font-weight: 700;
+  font-size: 1.4rem;
+  letter-spacing: -0.3px;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.logo-text:hover {
+  color: var(--accent-light);
+  transform: scale(1.05);
+}
+
+nav {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  min-height: 52px;
+}
+
+.nav-items {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  list-style: none;
+  gap: 4px;
+  padding: 0 16px;
+  transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+.nav-item {
+  color: var(--text-color);
+  padding: 12px 20px;
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  font-weight: 500;
+  text-decoration: none;
+  border-radius: 50px;
+  position: relative;
+  background: transparent;
+  border: 1px solid transparent;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-item:hover {
+  color: var(--accent-color);
+  background: rgba(180, 91, 99, 0.08);
+  transform: translateY(-1px);
+}
+
+.nav-item.active {
+  color: var(--accent-color);
+  font-weight: 600;
+  background: rgba(180, 91, 99, 0.1);
+  border-color: rgba(180, 91, 99, 0.2);
+  box-shadow: 0 4px 12px rgba(180, 91, 99, 0.1);
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-shrink: 0;
+  padding: 0 16px;
+  gap: 12px;
+}
+
+/* 主题切换开关 - 灵动岛风格 */
+.theme-switch {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 50px;
+  background: var(--surface-color);
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.08), 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.theme-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+  position: absolute;
+}
+
+.slider {
+  position: relative;
+  display: inline-block;
+  width: 52px;
+  height: 28px;
+  background-color: var(--border-color);
+  border-radius: var(--radius-full);
+  transition: background-color 0.3s var(--transition-bounce);
+  cursor: pointer;
+  box-shadow: inset 0 1px 2px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 22px;
+  width: 22px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: transform 0.3s var(--transition-bounce);
+  border-radius: 50%;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+}
+
+.slider:after {
+  position: absolute;
+  content: "☀️";
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  transition: opacity 0.2s;
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+input:checked + .slider {
+  background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+}
+
+input:checked + .slider:before {
+  transform: translateX(24px);
+}
+
+input:checked + .slider:after {
+  content: "🌙";
+  right: auto;
+  left: 6px;
+}
+
+/* 移动端菜单按钮 - 灵动岛风格 */
+.mobile-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 36px;
+  height: 36px;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all var(--transition-fast);
+  background: var(--surface-color);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+.mobile-toggle:hover {
+  background: var(--accent-color);
+  transform: scale(1.05);
+}
+
+.mobile-toggle:hover span {
+  background: white;
+}
+
+.mobile-toggle span {
+  width: 20px;
+  height: 2px;
+  background: var(--accent-color);
+  margin: 3px 0;
+  transition: all var(--transition-normal);
+  border-radius: 2px;
+}
+
+/* ========== 标题替换功能 - 重叠布局（宽度不变） ========== */
+/* 标题占位元素样式 - 绝对定位覆盖，不改变父容器宽度 */
+.nav-title-placeholder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-color);
+  font-weight: 500;
+  font-size: 1rem;
+  white-space: nowrap;
+  padding: 0 16px;
+  border-radius: 50px;
+  background: transparent;
+  pointer-events: auto;
+  z-index: 2;
+  overflow: hidden;
+}
+
+/* 滚动文本容器 */
+.nav-title-placeholder .title-scroll-container {
+  display: inline-block;
+  white-space: nowrap;
+  will-change: transform;
+}
+
+/* 滚动动画 */
+.nav-title-placeholder.scrolling .title-scroll-container {
+  animation: scrollText linear infinite;
+}
+
+/* 鼠标悬浮时暂停滚动 */
+.nav-title-placeholder.scrolling:hover .title-scroll-container {
+  animation-play-state: paused;
+}
+
+@keyframes scrollText {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(var(--scroll-distance, -50%));
+  }
+}
+
+/* 标题模式下隐藏导航按钮（保持占位） */
+.nav-items.title-mode-hidden {
+  opacity: 0 !important;
+  visibility: visible !important;
+  pointer-events: none !important;
+  transition: opacity 0.2s ease;
+}
+
+/* 禁用移动端标题替换功能（保持原有布局） */
+@media (max-width: 768px) {
+  :root {
+    --nav-height: var(--nav-height-mobile);
+  }
+
+  .navbar {
+    width: calc(100% - 40px);
+    padding: 6px 16px;
+    height: 52px;
+    top: 12px;
+  }
+
+  .logo-text {
+    font-size: 1.2rem;
+  }
+
+  .nav-items {
+    display: flex;
+    position: absolute;
+    top: 100%;
+    left: 0;
+    width: 100%;
+    flex-direction: column;
+    background: var(--nav-bg);
+    backdrop-filter: blur(24px);
+    padding: 20px 0;
+    border-radius: 24px;
+    box-shadow: var(--shadow-md);
+    border-top: 1px solid var(--border-color);
+
+    /* 动画相关 */
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-15px);
+    transition: opacity 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1),
+                visibility 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1),
+                transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    pointer-events: none;
+  }
+
+  .nav-items.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .nav-item {
+    margin: 4px 16px;
+    padding: 12px 20px;
+    text-align: center;
+    width: auto;
+  }
+
+  .mobile-toggle {
+    display: flex;
+  }
+
+  .mobile-toggle.active span:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+  }
+
+  .mobile-toggle.active span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .mobile-toggle.active span:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+  }
+
+  .nav-actions {
+    min-width: auto;
+  }
+
+  /* 移动端禁用标题替换功能相关样式 */
+  .nav-title-placeholder {
+    display: none !important;
+  }
+  
+  .nav-items.title-mode-hidden {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar {
+    width: calc(100% - 24px);
+    padding: 6px 12px;
+    height: 48px;
+  }
+
+  .logo-text {
+    font-size: 1.1rem;
+  }
+
+  .slider {
+    width: 44px;
+    height: 24px;
+  }
+
+  .slider:before {
+    width: 18px;
+    height: 18px;
+  }
+
+  input:checked + .slider:before {
+    transform: translateX(20px);
+  }
+  
+  .nav-item {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+  }
+}
+/* ========== 灵动岛入场动画 ========== */
+/* 初始状态：仅 Logo 可见，导航内容折叠 */
+.navbar.initial nav,
+.navbar.initial .nav-actions {
+  max-width: 0;
+  opacity: 0;
+  transform: translateX(-15px);
+  overflow: hidden;
+}
+
+/* 最终状态：展开至完整宽度 */
+.navbar:not(.initial) nav,
+.navbar:not(.initial) .nav-actions {
+  max-width: 1000px;          /* 足够宽以容纳所有内容 */
+  opacity: 1;
+  transform: translateX(0);
+  transition: max-width 1.2s cubic-bezier(0.22, 1, 0.36, 1),
+              opacity 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* 内部元素初始隐藏（导航项、开关、移动菜单按钮） */
+.navbar.initial .nav-item,
+.navbar.initial .theme-switch,
+.navbar.initial .mobile-toggle {
+  opacity: 0;
+  transform: translateX(-12px);
+}
+
+/* 内部元素最终可见 */
+.navbar:not(.initial) .nav-item,
+.navbar:not(.initial) .theme-switch,
+.navbar:not(.initial) .mobile-toggle {
+  opacity: 1;
+  transform: translateX(0);
+  transition: opacity 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+              transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* 
+ * 延迟链：确保导航栏扩展（1.2s）基本完成后，按钮才开始出现 
+ * 桌面端：导航项 6 个，外加主题开关和移动菜单按钮
+ */
+.navbar:not(.initial) .nav-item:nth-child(1) { transition-delay: 1.20s; }
+.navbar:not(.initial) .nav-item:nth-child(2) { transition-delay: 1.27s; }
+.navbar:not(.initial) .nav-item:nth-child(3) { transition-delay: 1.34s; }
+.navbar:not(.initial) .nav-item:nth-child(4) { transition-delay: 1.41s; }
+.navbar:not(.initial) .nav-item:nth-child(5) { transition-delay: 1.48s; }
+.navbar:not(.initial) .nav-item:nth-child(6) { transition-delay: 1.55s; }
+.navbar:not(.initial) .nav-item:nth-child(7) { transition-delay: 1.62s; }
+.navbar:not(.initial) .theme-switch          { transition-delay: 1.69s; }
+.navbar:not(.initial) .mobile-toggle        { transition-delay: 1.40s; }

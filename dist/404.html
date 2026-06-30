@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="404个性化错误页面 - 根据访问链接提供定制化提示和智能建议，帮助您快速找到想要的内容。">
+  <title>404 · 高新炀的小站</title>
+  <link rel="stylesheet" href="/css/main.css">
+  <link rel="stylesheet" href="/css/pages/404.css">
+</head>
+<body>
+    <div id="loading-overlay" role="status" aria-label="页面加载中">
+    <div class="loading-log">
+      <div>[START] 正在等待 JavaScript，这可能需要几秒</div>
+    </div>
+    <div class="loading-glow"></div>
+    <div id="loading-content">
+      <span class="loading-title">GaoXinYang</span>
+    </div>
+  </div>
+  <div id="navbar-placeholder"></div>
+
+  <div class="container" style="text-align: center;">
+    <div class="error-content">
+      <div class="error-icon-large">
+        <i class="fas fa-map-signs"></i>
+      </div>
+      <div class="error-status">404</div>
+      <h1 class="error-headline">嗯……这里好像到什么也没有</h1>
+      
+      <!-- 动态错误信息容器：优先显示自定义JSON消息，其次智能分析 -->
+      <div id="dynamicErrorBox" class="error-message-box">
+        <p><i class="fas fa-globe" style="margin-right: 8px; color: var(--accent-color);"></i> <strong>访问路径：</strong></p>
+        <div id="errorPathDisplay" class="error-path-badge">—</div>
+        <div id="personalizedMessage"><i class="fas fa-spinner fa-pulse"></i> 正在分析...</div>
+        <div id="smartSuggestions" class="suggestion-links"></div>
+      </div>
+      
+      <div class="quick-search">
+        <input type="text" id="quickSearchInput" class="quick-search-input" placeholder="站内搜索文章、作品..." aria-label="站内搜索">
+        <button id="quickSearchBtn" class="button button-primary" style="padding: 10px 24px;">搜索</button>
+      </div>
+      
+      <div class="error-buttons-group">
+        <button id="goBackBtn" class="button button-secondary">
+          <i class="fas fa-arrow-left"></i> 返回上一页
+        </button>
+        <a href="https://github.com/Xinyang-Gao/xinyang-gao.github.io/issues/new" target="_blank" rel="noopener noreferrer" class="button button-secondary">
+          <i class="fas fa-bug"></i> 反馈问题
+        </a>
+        <a href="/contact/" class="button button-secondary">
+          <i class="fas fa-comment"></i> 留言板
+        </a>
+        <a href="/" class="button button-primary">
+          <i class="fas fa-home"></i> 返回首页
+        </a>
+      </div>
+    </div>
+  </div>
+
+  
+  <div id="pageTransition" class="page-transition"></div>
+  <div id="footer-placeholder"></div>
+
+  <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>
+  <script src="/js/vendor/busuanzi.min.js" defer></script>
+  <script src="/js/entry/main.js" type="module"></script>
+  <script src="/js/standalone/404.js"></script>
+</body>
+</html>

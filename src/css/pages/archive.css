@@ -1,0 +1,459 @@
+/* ============================================
+   pages/archive.css
+   归档页专属样式：时间线、筛选工具栏、统计摘要
+   ============================================ */
+
+/* ---------- 工具栏与摘要（与文章页风格统一） ---------- */
+.archive-toolbar {
+  margin: 20px 0 24px;
+  padding: 14px 20px;
+  background: var(--surface-color-secondary);
+  border-radius: var(--radius-xl);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid var(--border-color);
+}
+
+.archive-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  flex: 1;
+}
+
+.archive-toolbar-left label {
+  font-weight: 600;
+  color: var(--accent-color);
+  white-space: nowrap;
+  font-size: 0.95rem;
+}
+
+#archive-year-filter,
+#archive-type-filter {
+  padding: 8px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  font-family: var(--font-family);
+  font-size: 0.95rem;
+  background: var(--surface-color);
+  color: var(--text-color);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  min-width: 140px;
+}
+#archive-year-filter:focus,
+#archive-type-filter:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(180, 91, 99, 0.15);
+}
+#archive-year-filter:hover,
+#archive-type-filter:hover {
+  background: var(--surface-color-secondary);
+}
+
+.btn-secondary {
+  padding: 8px 20px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  background: var(--surface-color);
+  color: var(--text-color);
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  font-family: inherit;
+}
+.btn-secondary:hover {
+  background: var(--accent-color);
+  color: white;
+  border-color: var(--accent-color);
+  transform: translateY(-2px);
+}
+
+.archive-summary {
+  margin: 16px 0 28px;
+  padding: 16px 24px;
+  background: var(--surface-color);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-around;
+  gap: 16px;
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  box-shadow: var(--shadow-sm);
+}
+.archive-summary i {
+  color: var(--accent-color);
+  margin-right: 6px;
+}
+.archive-summary strong {
+  color: var(--accent-color);
+  font-weight: 700;
+}
+
+/* ---------- 年份胶囊 ---------- */
+.year-capsules-wrapper {
+  margin: 4px 0 20px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+.year-capsule {
+  background: var(--tag-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 40px;
+  padding: 6px 18px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-secondary);
+  font-family: inherit;
+}
+.year-capsule:hover {
+  background: var(--accent-color);
+  color: white;
+  transform: translateY(-2px);
+  border-color: var(--accent-color);
+}
+.year-capsule.active {
+  background: var(--accent-color);
+  color: white;
+  border-color: var(--accent-color);
+  box-shadow: 0 2px 8px rgba(180, 91, 99, 0.3);
+}
+
+/* ---------- 时间线 ---------- */
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+/* 年份分组 */
+.timeline-year {
+  position: relative;
+}
+.timeline-year-title {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 12px;
+  font-family: var(--font-serif);
+  font-size: var(--font-size-h2);
+  color: var(--accent-color);
+  border-bottom: 2px solid var(--border-color);
+  padding-bottom: 6px;
+  margin-bottom: var(--spacing-lg);
+}
+.year-count {
+  font-size: var(--font-size-small);
+  background: var(--tag-bg);
+  padding: 2px 12px;
+  border-radius: var(--radius-full);
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* 月份分组 */
+.timeline-month {
+  margin-bottom: var(--spacing-md);
+}
+.timeline-month-title {
+  font-size: var(--font-size-h4);
+  color: var(--text-secondary);
+  margin-bottom: var(--spacing-sm);
+  font-weight: 600;
+  padding-left: 4px;
+}
+
+/* 时间线列表（垂直连线） */
+.timeline-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-left: 20px;
+  border-left: 2px solid var(--border-light);
+  margin-left: 8px;
+}
+
+/* 单个时间线条目 */
+.timeline-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 12px 24px;
+  padding: 12px 18px;
+  background: var(--surface-color);
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
+  transition: all var(--transition-fast);
+  position: relative;
+}
+.timeline-item:hover {
+  border-color: var(--border-color);
+  background: var(--surface-color-secondary);
+  transform: translateX(6px);
+  box-shadow: var(--shadow-sm);
+}
+
+/* 时间线圆点 */
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: -26px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 12px;
+  height: 12px;
+  background: var(--bg-color);
+  border: 2px solid var(--accent-color);
+  border-radius: 50%;
+  transition: all var(--transition-fast);
+  z-index: 1;
+}
+.timeline-item:hover::before {
+  background: var(--accent-color);
+  box-shadow: 0 0 0 4px rgba(180, 91, 99, 0.15);
+}
+
+/* 条目元信息（日期 + 类型徽章） */
+.timeline-item-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+  min-width: 140px;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+.timeline-item-date {
+  font-size: var(--font-size-small);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.timeline-item-date i {
+  margin-right: 4px;
+  font-size: 0.75rem;
+}
+
+.timeline-item-badge {
+  padding: 2px 12px;
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  border: 1px solid transparent;
+  line-height: 1.5;
+}
+.article-badge {
+  background: rgba(180, 91, 99, 0.12);
+  color: var(--accent-color);
+  border-color: rgba(180, 91, 99, 0.25);
+}
+.work-badge {
+  background: rgba(78, 168, 255, 0.15);
+  color: #4ea8ff;
+  border-color: rgba(78, 168, 255, 0.3);
+}
+
+/* 条目主体（标题 + 描述 + 标签） */
+.timeline-item-body {
+  flex: 1;
+  min-width: 180px;
+}
+.timeline-item-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--text-color);
+  transition: color var(--transition-fast);
+  display: inline-block;
+}
+.timeline-item-title:hover {
+  color: var(--accent-color);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.timeline-item-description {
+  font-size: var(--font-size-small);
+  color: var(--text-secondary);
+  margin: 4px 0 0 0;
+  line-height: 1.5;
+}
+
+.timeline-item-tags {
+  margin-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.timeline-item-tags .tag {
+  font-size: 0.7rem;
+  padding: 2px 10px;
+}
+
+/* ---------- 空状态 & 加载 ---------- */
+.archive-empty {
+  text-align: center;
+  padding: 48px 24px;
+  background: var(--surface-color-secondary);
+  border-radius: var(--radius-lg);
+  border: 1px dashed var(--border-color);
+  color: var(--text-secondary);
+  font-size: 1.05rem;
+}
+
+.loading-spinner {
+  text-align: center;
+  padding: 48px 20px;
+  color: var(--text-secondary);
+}
+.loading-spinner .spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid var(--border-color);
+  border-top-color: var(--accent-color);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 16px;
+}
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 768px) {
+  .archive-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+  .archive-toolbar-left {
+    flex-wrap: wrap;
+  }
+  #archive-year-filter,
+  #archive-type-filter {
+    min-width: 120px;
+    flex: 1;
+  }
+  .archive-summary {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    padding: 16px 20px;
+  }
+  .timeline-list {
+    padding-left: 12px;
+    border-left-width: 2px;
+  }
+  .timeline-item {
+    flex-direction: column;
+    gap: 6px;
+    padding: 12px 14px;
+  }
+  .timeline-item::before {
+    left: -18px;
+    width: 10px;
+    height: 10px;
+  }
+  .timeline-item-meta {
+    min-width: auto;
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  .timeline-item-body {
+    min-width: auto;
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .archive-toolbar {
+    padding: 12px 16px;
+  }
+  .archive-toolbar-left label {
+    font-size: 0.85rem;
+  }
+  #archive-year-filter,
+  #archive-type-filter {
+    font-size: 0.85rem;
+    padding: 6px 12px;
+    min-width: 100px;
+  }
+  .btn-secondary {
+    font-size: 0.8rem;
+    padding: 6px 16px;
+  }
+  .timeline-year-title {
+    font-size: 1.4rem;
+  }
+  .timeline-item {
+    padding: 10px 12px;
+  }
+  .timeline-item-title {
+    font-size: 0.95rem;
+  }
+}
+
+/* ---------- 暗色主题适配 ---------- */
+[data-theme="dark"] .archive-toolbar {
+  background: var(--surface-color-secondary);
+  border-color: var(--border-color);
+}
+[data-theme="dark"] #archive-year-filter,
+[data-theme="dark"] #archive-type-filter {
+  background: var(--surface-color);
+  border-color: var(--border-color);
+  color: var(--text-color);
+}
+[data-theme="dark"] #archive-year-filter:focus,
+[data-theme="dark"] #archive-type-filter:focus {
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.25);
+}
+[data-theme="dark"] .btn-secondary {
+  background: var(--surface-color);
+  border-color: var(--border-color);
+}
+[data-theme="dark"] .btn-secondary:hover {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: #14141a;
+}
+[data-theme="dark"] .archive-summary {
+  background: var(--surface-color);
+}
+[data-theme="dark"] .year-capsule {
+  background: var(--tag-bg);
+  border-color: var(--border-color);
+  color: var(--tag-color);
+}
+[data-theme="dark"] .year-capsule:hover,
+[data-theme="dark"] .year-capsule.active {
+  background: var(--accent-color);
+  color: #14141a;
+  border-color: var(--accent-color);
+}
+[data-theme="dark"] .timeline-item {
+  background: var(--surface-color);
+}
+[data-theme="dark"] .timeline-item:hover {
+  background: var(--surface-color-secondary);
+  border-color: var(--border-color);
+}
+[data-theme="dark"] .timeline-item::before {
+  background: var(--bg-color);
+  border-color: var(--accent-color);
+}
+[data-theme="dark"] .timeline-item:hover::before {
+  background: var(--accent-color);
+  box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.25);
+}

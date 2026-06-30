@@ -1,0 +1,179 @@
+<footer class="global-footer glass-footer" data-footer-version="3.0">
+  <div class="footer-container">
+
+    <div class="footer-grid">
+      
+      <!-- 探索 / 快速链接 -->
+      <div class="footer-col links-col">
+        <h4 class="footer-col-title">探索</h4>
+        <ul class="footer-links">
+          <li><a href="/">首页</a></li>
+          <li><a href="/articles/">文章</a></li>
+          <li><a href="/works/">作品</a></li>
+          <li><a href="/about/">关于</a></li>
+          <li><a href="/contact/">联系</a></li>
+          <li><a href="/changelog/" class="update-log-link">更新日志</a></li>
+          <li><a href="/settings/">网站设置</a></li>
+        </ul>
+      </div>
+
+      <!-- 社交联系 -->
+      <div class="footer-col social-col">
+        <h4 class="footer-col-title">联系</h4>
+        <div class="social-capsule-grid">
+          <a href="https://github.com/Xinyang-Gao" target="_blank" rel="noopener noreferrer" class="social-capsule" aria-label="GitHub">
+            <i class="fab fa-github"></i><span>GitHub</span>
+          </a>
+          <a href="https://space.bilibili.com/1064600697" target="_blank" rel="noopener noreferrer" class="social-capsule" aria-label="Bilibili">
+            <i class="fab fa-bilibili"></i><span>Bilibili</span>
+          </a>
+          <a href="mailto:gao_xinyang@foxmail.com" class="social-capsule" aria-label="邮箱">
+            <i class="fas fa-envelope"></i><span>邮箱</span>
+          </a>
+          <a href="https://user.qzone.qq.com/2489083744/" target="_blank" rel="noopener noreferrer" class="social-capsule" aria-label="QQ">
+            <i class="fab fa-qq"></i><span>QQ</span>
+          </a>
+          <a href="/rss.xml" target="_blank" rel="noopener noreferrer" class="social-capsule" aria-label="RSS">
+            <i class="fas fa-rss"></i><span>RSS订阅</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- 列3: 动态统计与信息芯片（增强统计网格） -->
+      <div class="footer-col stats-col">
+        <h4 class="footer-col-title">数据</h4>
+        
+        <!-- 站点运行时长（保留原有样式） -->
+        <div class="stat-chip">
+          <i class="fas fa-heartbeat"></i>
+          <span>已运行 <strong id="site-age">加载中...</strong></span>
+        </div>
+        
+        <!-- 不蒜子计数区块（保留原始ID确保统计可用） -->
+        <div class="stat-chip busuanzi-chip">
+          <i class="fas fa-chart-line"></i>
+          <div class="busuanzi-stats-inline">
+            <span class="stat-label">总访问</span>
+            <strong id="busuanzi_site_pv">0</strong>
+            <span class="stat-unit">次</span>
+            <span class="divider">|</span>
+            <span class="stat-label">访客</span>
+            <strong id="busuanzi_site_uv">0</strong>
+            <span class="stat-unit">人</span>
+          </div>
+        </div>
+
+        <!-- 统计信息网格：文章/字数/作品/分类 + 版本/快照 + 代码规模 -->
+        <div class="stats-divider"></div>
+        <div class="stats-grid">
+          <!-- 文章总数 -->
+          <div class="stats-grid-item">
+            <i class="fas fa-file-alt"></i>
+            <div class="stats-grid-info">
+              <span class="stats-grid-label">文章</span>
+              <strong class="stats-grid-number" id="footerTotalArticles">—</strong>
+            </div>
+          </div>
+          <!-- 总字数 -->
+          <div class="stats-grid-item">
+            <i class="fas fa-pen-fancy"></i>
+            <div class="stats-grid-info">
+              <span class="stats-grid-label">总字数</span>
+              <strong class="stats-grid-number" id="footerTotalWords">—</strong>
+            </div>
+          </div>
+          <!-- 作品数量 -->
+          <div class="stats-grid-item">
+            <i class="fas fa-cube"></i>
+            <div class="stats-grid-info">
+              <span class="stats-grid-label">作品</span>
+              <strong class="stats-grid-number" id="footerTotalWorks">—</strong>
+            </div>
+          </div>
+          <!-- 文章分类 -->
+          <div class="stats-grid-item">
+            <i class="fas fa-folder-open"></i>
+            <div class="stats-grid-info">
+              <span class="stats-grid-label">文章分类</span>
+              <strong class="stats-grid-number" id="footerTotalCategories">—</strong>
+            </div>
+          </div>
+          <!-- 版本编号 + 数据快照（整合为一项，上下排列） -->
+          <div class="stats-grid-item stats-grid-item-wide">
+            <i class="fas fa-code-branch"></i>
+            <div class="stats-grid-info">
+              <span class="stats-grid-label">版本 · 快照</span>
+              <strong class="stats-grid-number" id="footerVersionNumber">—</strong>
+              <span class="stats-grid-sub" id="footerSnapshotDate">—</span>
+            </div>
+          </div>
+          <!-- 代码规模：总文件数 -->
+          <div class="stats-grid-item">
+            <i class="fas fa-folder-tree"></i>
+            <div class="stats-grid-info">
+              <span class="stats-grid-label">源文件</span>
+              <strong class="stats-grid-number" id="footerTotalFiles">—</strong>
+            </div>
+          </div>
+          <!-- 代码规模：总代码行数（非空行） -->
+          <div class="stats-grid-item">
+            <i class="fas fa-code"></i>
+            <div class="stats-grid-info">
+              <span class="stats-grid-label">代码行数</span>
+              <strong class="stats-grid-number" id="footerTotalLines">—</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 版权 + 现代法律/许可信息 -->
+    <div class="footer-legal-panel">
+      <div class="copyright-row">
+        <div class="copyright-area">
+          <span>© 2025-2026 GaoXinYang</span>
+          <span class="separator-dot">•</span>
+          <span>All rights reserved</span>
+        </div>
+      </div>
+      
+      <!-- 隐私 | 协议 | 许可证 -->
+      <div class="legal-links-cluster">
+        <a href="/privacy/" class="legal-link" rel="nofollow">隐私政策</a>
+        <span class="legal-sep">/</span>
+        <a href="/settings/" class="legal-link" rel="nofollow">网站设置</a>
+        <span class="legal-sep">/</span>
+        <a href="/rss.xml" class="legal-link" rel="nofollow">RSS订阅</a>
+        <span class="legal-sep">/</span>
+        <a href="/sitemap.xml" class="legal-link" rel="nofollow">SiteMap</a>
+        <span class="legal-sep">/</span>
+        <a href="/stats/" class="legal-link" rel="nofollow">统计信息</a>
+      </div>
+
+      <div class="legal-links-cluster">
+        <span class="legal-sep">/</span>
+        <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="license noopener" class="legal-link">知识共享协议 (CC BY-NC-SA 4.0)</a>
+        <span class="legal-sep">/</span>
+        <a href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener" class="legal-link">开源许可 (MIT)</a>
+        <span class="legal-sep">/</span>
+        <a href="https://icp.gov.moe/?keyword=20261221" target="_blank" rel="noopener noreferrer" class="legal-link badge-icp">
+          <i class="fas fa-paw"></i> 萌ICP备 (20261221号)
+        </a>
+        <span class="legal-sep">/</span>
+        <a href="https://travel.moe/go.html?travel=on" target="_blank" rel="noopener noreferrer" class="legal-link travel-link">
+          <i class="fas fa-rocket"></i> 异次元之旅
+        </a>
+        <!-- ===== 新增：开往-友链接力（徽章版） ===== -->
+        <span class="legal-sep">/</span>
+        <a href="https://www.travellings.cn/go.html" target="_blank" rel="noopener" class="legal-link travelling-link" title="开往-友链接力">
+          <img class="travelling-img travelling-light" data-viewer-exclude="true" src="https://www.travellings.cn/assets/w.png" alt="开往-友链接力（浅色）" height="18" loading="lazy">
+          <img class="travelling-img travelling-dark" data-viewer-exclude="true" src="https://www.travellings.cn/assets/b.png" alt="开往-友链接力（深色）" height="18" loading="lazy">
+          <span>开往</span>
+        </a>
+      </div>
+    </div>
+  </div>
+
+</footer>
+
+<link rel="stylesheet" href="/css/components/footer.css">

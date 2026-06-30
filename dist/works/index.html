@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><title>作品 - 高新炀的小站</title>
+<link rel="stylesheet" href="/css/main.css"><link rel="stylesheet" href="/css/pages/friends.css"><link rel="stylesheet" href="/css/components/comments.css"></head>
+<body>
+<div id="loading-overlay" role="status" aria-label="页面加载中"><div class="loading-log"><div>[START] 正在等待 JavaScript，这可能需要几秒</div></div><div class="loading-glow"></div><div id="loading-content"><span class="loading-title">GaoXinYang</span></div></div>
+<div id="navbar-placeholder"></div>
+<div id="router-view">
+    <div class="two-column-layout">
+        <aside class="sidebar-profile">
+            <div id="personal-card-container"></div>
+        </aside>
+        <main class="main-content-area">
+            <div class="container">
+                <h2>作品</h2>
+                <p>这里有一些我做的东西（可能有些稀奇古怪的小玩意？）</p>
+                <div id="search-container"><input type="text" id="search-input" placeholder="搜索作品..."><select id="search-field"><option value="all">全部</option><option value="title">标题</option><option value="tag">标签</option><option value="date">日期</option></select></div>
+                
+                <div class="sort-controls"><label for="sort-order">排序方式：</label><select id="sort-order"><option value="updated_asc">按更新时间升序</option><option value="updated_desc" selected>按更新时间降序</option><option value="wordcount_asc">按字数升序</option><option value="wordcount_desc">按字数降序</option><option value="date_asc">按发布日期升序</option><option value="date_desc">按发布日期降序</option></select></div>
+                <div id="works-list-container"><div class="works-list"><p>暂无作品，敬请期待～</p></div></div>
+            </div>
+        </main>
+    </div>
+</div>
+<div id="footer-placeholder"></div>
+<script>window.__STATIC_WORKS_DATA = [];</script>
+<script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>
+<script src="/js/vendor/busuanzi.min.js" defer></script>
+<script src="/js/entry/main.js" type="module"></script>
+</body></html>

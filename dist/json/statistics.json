@@ -1,0 +1,34 @@
+{
+  "version": 0,
+  "last_updated": "2026-04-12",
+  "last_updated_full": "2026-06-30T14:46:44.335580",
+  "total_articles": 1,
+  "total_word_count": 10871,
+  "average_article_word_count": 10871,
+  "total_works": 0,
+  "total_article_categories": 1,
+  "total_article_tags": 1,
+  "total_work_tags": 0,
+  "total_authors": 1,
+  "total_update_days": 1,
+  "article_tags": [
+    {
+      "name": "网站",
+      "count": 1
+    }
+  ],
+  "article_categories": [
+    {
+      "name": "README文档自动构建",
+      "count": 1
+    }
+  ],
+  "work_tags": [],
+  "article_tags_list": [
+    "网站"
+  ],
+  "article_categories_list": [
+    "README文档自动构建"
+  ],
+  "work_tags_list": []
+}

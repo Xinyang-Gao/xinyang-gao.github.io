@@ -1,0 +1,238 @@
+/* ============================================
+   core/base.css
+   重置、基础样式、排版、滚动条、选中、链接、焦点
+   ============================================ */
+
+/* ---------- 重置 ---------- */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: var(--nav-height);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  position: relative;
+  isolation: isolate;
+  background-color: var(--bg-color);
+  background-image: none;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  font-family: var(--font-sans);
+  font-size: var(--font-size-base);
+  color: var(--text-color);
+  line-height: var(--line-height-base);
+  text-rendering: optimizeLegibility;
+  padding: 20px;
+  min-height: 100vh;
+  overflow-x: hidden;
+  transition: background-image 0.5s ease, background-color var(--transition-normal), color var(--transition-normal);
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  background-color: inherit;
+  background-image: inherit;
+  background-size: inherit;
+  background-position: inherit;
+  background-repeat: inherit;
+  background-attachment: inherit;
+  filter: var(--background-overlay-filter);
+  transform: scale(1.04);
+  pointer-events: none;
+}
+
+#bg-image-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  filter: blur(20px) var(--background-overlay-filter);
+  opacity: 0;
+  transition: opacity 0.6s ease, filter 3s ease;
+}
+#bg-image-overlay.active {
+  opacity: 1;
+  filter: blur(0) var(--background-overlay-filter);
+}
+
+/* ---------- 滚动条 ---------- */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-color);
+  border-radius: var(--radius-full);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--accent-color);
+  border-radius: var(--radius-full);
+  transition: background var(--transition-fast);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-light);
+}
+::-webkit-scrollbar-corner {
+  background: var(--bg-color);
+}
+
+/* ---------- 选中文本 ---------- */
+::selection {
+  background: var(--accent-color);
+  color: white;
+}
+
+/* ---------- 排版 ---------- */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
+  color: var(--accent-color);
+  margin-top: 1.5em;
+  margin-bottom: 0.8em;
+  line-height: var(--line-height-heading);
+  letter-spacing: -0.02em;
+  font-weight: 600;
+}
+
+h1 {
+  font-size: var(--font-size-h1);
+  text-align: center;
+  margin-top: 0.5em;
+  margin-bottom: 1.2em;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  font-size: var(--font-size-h2);
+  padding-bottom: 0.4em;
+  border-bottom: 2px solid var(--accent-color);
+  margin-bottom: 1.2em;
+  display: inline-block;
+}
+
+h3 {
+  font-size: var(--font-size-h3);
+  font-weight: 650;
+}
+
+p {
+  margin-bottom: 1.3em;
+  font-size: var(--font-size-base);
+  line-height: 1.7;
+  color: var(--text-color);
+  margin: var(--paragraph-margin);
+  max-width: var(--reading-width);
+}
+
+ul, ol {
+  margin-left: 0;
+  margin-bottom: 1.3em;
+  padding-left: 1.8em;
+}
+li {
+  margin-bottom: 0.6em;
+  line-height: 1.7;
+}
+
+blockquote {
+  margin: 1.8em 0;
+  padding: 1.2em 1.6em;
+  border-left: 4px solid var(--accent-color);
+  background-color: var(--blockquote-bg);
+  font-style: italic;
+  color: var(--text-color);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  transition: background-color var(--transition-normal);
+  box-shadow: var(--shadow-sm);
+}
+blockquote p {
+  margin: 0;
+}
+
+strong {
+  font-weight: 600;
+  color: var(--accent-color);
+}
+
+hr {
+  border: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--border-color), transparent);
+  margin: 2.2em 0;
+}
+
+code {
+  font-family: var(--font-mono);
+  background: var(--code-bg);
+  padding: 0.2em 0.5em;
+  border-radius: var(--radius-sm);
+  font-size: 0.9em;
+  font-weight: 500;
+}
+
+pre {
+  background: var(--code-bg);
+  padding: 1em;
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+  margin: 1.2em 0;
+}
+
+/* ---------- 链接 ---------- */
+a {
+  color: var(--accent-color);
+  text-decoration: none;
+  transition: all var(--transition-fast);
+  position: relative;
+}
+a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent-color), var(--accent-light));
+  transition: width var(--transition-fast);
+}
+a:hover::after {
+  width: 100%;
+}
+a:hover {
+  color: var(--accent-light);
+}
+
+/* ---------- 焦点环 ---------- */
+:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-color) 18%, transparent);
+  border-radius: 6px;
+}
+
+/* ---------- 减少动画偏好 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

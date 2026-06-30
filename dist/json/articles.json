@@ -1,0 +1,25 @@
+{
+  "generated_at": "2026-06-30T15:06:37.705142",
+  "total_articles": 1,
+  "total_word_count": 10871,
+  "articles": [
+    {
+      "relative_path": "README.md",
+      "hash": "ad1cec996f65fe222218f72a37c1c7ea",
+      "last_updated": "2026-06-28",
+      "modify_count": 9,
+      "hidden": false,
+      "title": "README.md",
+      "date": "2026-04-12",
+      "description": "项目介绍",
+      "author": "高新炀 ＆ DEEPSEEK-V4",
+      "tags": [
+        "网站"
+      ],
+      "category": "README文档自动构建",
+      "url": "/articles/README.html",
+      "word_count": 10871,
+      "read_time": "37分钟"
+    }
+  ]
+}

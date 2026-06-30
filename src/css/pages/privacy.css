@@ -1,0 +1,222 @@
+/* privacy.css - 简洁清晰的隐私政策样式 */
+
+.privacy-main {
+  max-width: 960px;
+  margin: calc(var(--nav-height) + 25px) auto 50px auto;
+  padding: 0 20px;
+}
+
+.privacy-container {
+  background: var(--surface-color);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--shadow-md), var(--shadow-offset);
+  padding: 40px 48px;
+  transition: background var(--transition-normal), border-color var(--transition-normal);
+}
+
+.privacy-header {
+  margin-bottom: 32px;
+  border-bottom: 1px solid var(--border-light);
+  padding-bottom: 24px;
+}
+
+.privacy-header h1 {
+  font-size: 2.4rem;
+  margin: 0 0 8px 0;
+  text-align: left;
+  border: none;
+}
+
+.last-updated {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+.privacy-intro {
+  font-size: 1.05rem;
+  line-height: 1.7;
+  color: var(--text-secondary);
+  max-width: 80%;
+}
+
+.quick-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-top: 16px;
+  font-size: 0.9rem;
+}
+
+.quick-nav span {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.quick-nav a {
+  color: var(--accent-color);
+  text-decoration: none;
+  border-bottom: 1px dashed transparent;
+  transition: border-color var(--transition-fast);
+}
+
+.quick-nav a:hover {
+  border-bottom-color: var(--accent-color);
+}
+
+.privacy-card {
+  background: var(--surface-color-secondary);
+  border-radius: var(--radius-lg);
+  padding: 24px 28px;
+  margin-bottom: 28px;
+  border: 1px solid var(--border-light);
+  transition: background var(--transition-normal);
+}
+
+.privacy-card.highlight {
+  background: rgba(180, 91, 99, 0.06);
+  border-left: 4px solid var(--accent-color);
+}
+
+.privacy-card h2 {
+  font-size: 1.5rem;
+  margin: 0 0 16px 0;
+  border: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--text-color);
+}
+
+.privacy-card h3 {
+  font-size: 1.15rem;
+  margin: 16px 0 8px 0;
+  color: var(--accent-color);
+}
+
+.privacy-card p, .privacy-card li {
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+.privacy-card ul, .privacy-card ol {
+  padding-left: 1.4em;
+  margin: 8px 0 12px;
+}
+
+.privacy-card li {
+  margin-bottom: 6px;
+}
+
+.badge-notice {
+  background: rgba(180, 91, 99, 0.08);
+  padding: 12px 18px;
+  border-radius: var(--radius-md);
+  margin: 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.badge-notice i {
+  color: var(--accent-color);
+  font-size: 1.2rem;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-top: 12px;
+}
+
+.info-item {
+  background: var(--surface-color);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  border: 1px solid var(--border-light);
+}
+
+.info-item h3 {
+  margin-top: 0;
+  font-size: 1.1rem;
+}
+
+.service-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+}
+
+.service-list li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+}
+
+.service-badge {
+  display: inline-block;
+  background: var(--accent-color);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 12px;
+  border-radius: 40px;
+  letter-spacing: 0.3px;
+}
+
+.privacy-footer-note {
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-light);
+  text-align: center;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.privacy-footer-note a {
+  color: var(--accent-color);
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .privacy-container {
+    padding: 24px 20px;
+  }
+
+  .privacy-header h1 {
+    font-size: 2rem;
+  }
+  .privacy-intro {
+    max-width: 100%;
+  }
+  .info-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .quick-nav {
+    gap: 6px 12px;
+    font-size: 0.85rem;
+  }
+  .privacy-card {
+    padding: 18px 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .privacy-container {
+    padding: 16px 12px;
+  }
+  .privacy-header h1 {
+    font-size: 1.6rem;
+  }
+  .service-list {
+    flex-direction: column;
+    gap: 8px;
+  }
+}

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="一篇关于如何将开源项目 NeteaseMiniPlayer 集成到个人网站，并适配主题、实现无刷新导航与背景融合的技术分享。">
+    <meta name="author" content="高新炀">
+    <meta name="keywords" content="分享, 技术">
+    <title>为网站嵌入一个优雅的音乐播放器 - 高新炀的小站</title>
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/pages/article.css">
+    <link rel="stylesheet" href="/css/components/comments.css">
+</head>
+<body>
+<div id="loading-overlay" role="status" aria-label="页面加载中"><div class="loading-log"><div>[START] 正在等待 JavaScript，这可能需要几秒</div></div><div class="loading-glow"></div><div id="loading-content"><span class="loading-title">GaoXinYang</span></div></div>
+    <div id="navbar-placeholder"></div>
+
+    <!-- 所有动态内容放在 router-view 内 -->
+    <div id="router-view">
+        <div id="reading-progress" class="reading-progress-bar">
+            <div id="progress-bar" class="progress-bar"></div>
+        </div>
+
+        <main class="article-grid">
+            <!-- 左侧主内容区 -->
+            <article class="article-main">
+                <div class="article-card">
+                    <h1 class="article-title">为网站嵌入一个优雅的音乐播放器</h1>
+                    <p class="article-subtitle">一篇关于如何将开源项目 NeteaseMiniPlayer 集成到个人网站，并适配主题、实现无刷新导航与背景融合的技术分享。</p>
+                    
+    <div class="article-meta-line">
+        <span class="meta-item"><i class="fas fa-calendar-alt"></i> 2026年06月06日</span>
+        <span class="meta-item"><i class="fas fa-user"></i> 高新炀</span>
+        <span class="meta-item"><i class="fas fa-folder-open"></i> 分享</span>
+        <span class="meta-item"><i class="fas fa-file-alt"></i> 4765字</span>
+        <span class="meta-item"><i class="fas fa-clock"></i> 16分钟</span>
+    </div>
+    <div class="article-meta-line article-meta-updated"><span class="meta-item"><i class="fas fa-edit"></i> 更新于 2026年06月06日</span></div>
+
+                    <div class="article-body" id="articleBody"><h2 id="为什么要在个人网站里加一个播放器">为什么要在个人网站里加一个播放器？</h2>
+<p>音乐不是必需，但它能让体验更完整，我也希望网站能更有一些氛围感。</p>
+<p>于是我决定在网站上加入一个悬浮音乐播放器，支持播放网易云歌单，不干扰浏览，且能在页面切换时持续播放。经过一番搜索，我发现了开源项目 <strong>NeteaseMiniPlayer V2</strong>（简称 NMPv2），由 BHCN STUDIO &amp; 北海的佰川 开发。它轻量、美观、功能完整，而且提供了非常灵活的配置方式。</p>
+<p><img alt="NeteaseMiniPlayerV2官网" data-src="https://s41.ax1x.com/2026/06/06/pmeqaFA.png" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E" class="lazy-image"  /></p>
+<p>在我的网站中的最终效果：网站左下角有一个圆形的迷你播放器（可展开），支持播放、暂停、上一首/下一首、音量调节、歌词显示、播放列表，甚至还有黑胶唱片的旋转动画。最关键的是 —— <strong>在无刷新导航（AJAX 页面切换）时，音乐不会中断</strong>。</p>
+<p>这篇文章我会分享如何将它集成到自己的网站中，包括动态加载、样式适配、与现有主题联动，以及解决常见的坑。</p>
+<hr />
+<h2 id="一选定播放器为什么是-neteaseminiplayer">一、选定播放器：为什么是 NeteaseMiniPlayer？</h2>
+<p>市面上有很多第三方音乐插件，但大多数要么太重（需要引入整个 UI 库），要么依赖外部服务器，要么无法自定义样式。NeteaseMiniPlayer 的设计理念打动了我：</p>
+<ol>
+<li>通过调用网易云音乐的公开 API 获取歌单和歌曲 URL，无需后端。</li>
+<li>一个 <code>&lt;div&gt;</code> 加上 CSS/JS 就可以工作，支持 <code>data-*</code> 属性配置。</li>
+<li><strong>支持固定位置和悬浮位置</strong>：可以放在页面角落，也可以嵌入内容中。</li>
+<li><strong>歌词显示、播放列表、循环/随机模式</strong> 一应俱全。</li>
+</ol>
+<p>项目的 GitHub 地址：<a href="https://github.com/numakkiyu/NeteaseMiniPlayer">https://github.com/numakkiyu/NeteaseMiniPlayer</a></p>
+<p>作者还提供了一个短代码解析器，可以在 Markdown 中通过 <code>{nmpv2:playlist=xxx}</code> 插入播放器。不过我的需求是全站统一悬浮播放器，所以只需要在全局加载一次。</p>
+<hr />
+<h2 id="二集成方案动态加载-全局单例">二、集成方案：动态加载 + 全局单例</h2>
+<p>我的网站使用了 <strong>SPA 风格的 AJAX 导航</strong>（自己写的 router.js），点击内部链接时通过 <code>fetch</code> 替换 main 内容，而不是整页刷新。这就要求播放器不能被页面替换时销毁，也不能重复创建。</p>
+<p>因此，我设计了一个独立模块 <code>global-music-player.js</code>，它的职责是：</p>
+<ol>
+<li>检查播放器是否已存在。</li>
+<li>动态加载 NMPv2 的 CSS 和 JS（仅在需要时加载，减少首屏负担）。</li>
+<li>创建播放器 DOM 并插入 <code>body</code>。</li>
+<li>监听 <code>ajax:navigation</code> 事件，确保无刷新导航后播放器依然存在（如果意外丢失则重建）。</li>
+</ol>
+<p>核心代码大致如下（简化版）：</p>
+<pre class="codehilite"><code class="language-javascript">// /js/vendor/global-music-player.js
+const PLAYER_CONFIG = {
+  playlistId: '18022003523',
+  position: 'bottom-right',
+  lyric: 'true',
+  theme: 'auto'
+};
+
+async function ensureMusicPlayer() {
+  if (document.querySelector('.netease-mini-player')) return;
+  await loadResources(); // 动态加载 CSS 和 JS
+  const playerDiv = createPlayerElement();
+  document.body.appendChild(playerDiv);
+  window.NeteaseMiniPlayer.initPlayer(playerDiv);
+}
+
+// 监听页面加载和无刷新导航
+window.addEventListener('DOMContentLoaded', ensureMusicPlayer);
+window.addEventListener('ajax:navigation', ensureMusicPlayer);
+</code></pre>
+
+<p>这样，无论用户从哪个页面进入，播放器都会自动出现在右下角，并且页面切换时不会被销毁或重复创建。</p>
+<hr />
+<h2 id="三样式适配让播放器融入网站主题">三、样式适配：让播放器融入网站主题</h2>
+<p>NeteaseMiniPlayer 的 CSS 使用了自己的一套颜色变量，但我的网站已经定义了一套完整的深色/浅色主题变量（如 <code>--accent-color</code>、<code>--surface-color</code>、<code>--border-color</code> 等）。如果直接使用原始样式，播放器会和网站视觉风格产生割裂。</p>
+<p>于是我重写了播放器的样式文件，<strong>将它的颜色变量全部映射到我的主题变量</strong>：</p>
+<pre class="codehilite"><code class="language-css">/* 适配后的 netease-mini-player-v2.css 片段 */
+.netease-mini-player {
+    --player-primary-bg: var(--surface-color);
+    --player-secondary-bg: var(--surface-color-secondary);
+    --player-accent-gradient: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-light) 100%);
+    --player-shadow-sm: var(--shadow-sm);
+    --player-shadow-md: var(--shadow-md);
+    --border-color: var(--border-color);
+    /* ... */
+}
+</code></pre>
+
+<p>同时，为了让播放器的流动背景动画（播放时出现的光晕效果）也跟随主题色，我使用了 <code>color-mix</code> 函数：</p>
+<pre class="codehilite"><code class="language-css">.netease-mini-player::before {
+    background:
+        radial-gradient(circle at 15% 20%, color-mix(in srgb, var(--accent-color) 25%, transparent) 0%, transparent 60%),
+        /* ... */
+}
+</code></pre>
+
+<p>这样，当用户通过主题切换按钮切换深色/浅色模式时，播放器会自动跟随变化（因为 <code>data-theme</code> 属性变化后，CSS 变量重新计算）。播放器本身也支持 <code>data-theme="auto"</code>，它会检测宿主主题，但我选择完全交给网站的全局主题系统。</p>
+<blockquote>
+<p>NeteaseMiniPlayer原样式:
+<img alt="NeteaseMiniPlayer原样式" data-src="https://s41.ax1x.com/2026/06/06/pmeqsOS.png" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E" class="lazy-image"  />
+<img alt="NeteaseMiniPlayer原样式-浅色" data-src="https://s41.ax1x.com/2026/06/06/pmeqry8.png" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E" class="lazy-image"  /></p>
+</blockquote>
+<p>适配后的NeteaseMiniPlayer样式:
+<img alt="适配后的NeteaseMiniPlayer样式" data-src="https://s41.ax1x.com/2026/06/06/pmeqtdH.png" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E" class="lazy-image"  /></p>
+<hr />
+<h2 id="适配后的neteaseminiplayer样式httpss41ax1xcom20260606pmeqtdhpng">四、与 AJAX 无刷新导航的深度集成</h2>
+<p>前面提到播放器在页面切换时需要保持状态。但还有一个细节：<strong>如果播放器处于展开状态（非迷你模式），在 AJAX 加载新页面后，可能会因为新页面中的某些 DOM 操作而意外关闭或丢失事件</strong>。我的解决方法是：</p>
+<ul>
+<li>播放器的 DOM 元素<strong>固定挂在 body 下</strong>，不在任何被替换的容器内。</li>
+<li>每次 <code>ajax:navigation</code> 事件触发后，不重建播放器，而是检查播放器是否存在。如果存在，什么都不做；如果不存在（极端情况），则重新创建。</li>
+<li>播放器的内部状态（当前播放歌曲、进度、音量）由 NMPv2 自己维护，无刷新导航不会影响 <code>Audio</code> 元素的运行。</li>
+</ul>
+<p>另外，为了不重复加载脚本，<code>loadResources</code> 函数使用了幂等性设计：</p>
+<pre class="codehilite"><code class="language-javascript">let resourcesLoaded = false;
+let loadingPromise = null;
+
+function loadResources() {
+  if (resourcesLoaded) return Promise.resolve();
+  if (loadingPromise) return loadingPromise;
+  loadingPromise = Promise.all([loadCSS(), loadJS()]).then(() =&gt; {
+    resourcesLoaded = true;
+    loadingPromise = null;
+  });
+  return loadingPromise;
+}
+</code></pre>
+
+<p>这样多个并发调用只会加载一次。</p>
+<hr />
+<h2 id="四与-ajax-无刷新导航的深度集成">五、最终体验与一些自定义优化</h2>
+<ul>
+<li><strong>右下角悬浮</strong>，鼠标移入展开为完整控件，移出一段时间后自动半透明停靠，不遮挡内容。</li>
+<li><strong>歌词滚动</strong>：支持原歌词和翻译歌词，当前行高亮并自动滚动。</li>
+<li><strong>播放列表</strong>：可以查看歌单内所有歌曲，点击切换。</li>
+<li><strong>响应式</strong>：在手机访问时，音量滑条会被隐藏，按钮大小调整，依然可用。</li>
+</ul>
+<p>我还额外做了两个优化：</p>
+<h3 id="五最终体验与一些自定义优化">1. 主题切换时刷新播放器颜色</h3>
+<p>因为播放器的流动背景动画使用了 CSS 变量，而主题切换时 <code>document.documentElement</code> 的 <code>data-theme</code> 变化，CSS 变量会自动更新。但某些浏览器可能需要强制重绘，我简单监听了 <code>themeChanged</code> 事件，重新设置一下播放器的 <code>data-theme</code> 属性（虽然实际上变量已经变了，但为了保险）。</p>
+<h3 id="1-主题切换时刷新播放器颜色">2. 避免自动播放策略拦截</h3>
+<p>浏览器通常禁止未经用户交互的自动播放。我的策略是：初始化播放器时，不自动播放；如果用户点击了播放按钮，正常播放。如果希望首屏有音乐，可以引导用户点击一次任意位置后启用。NMPv2 内部已经有处理 <code>autoplay</code> 属性的逻辑，但需要用户与页面有过交互。我没有启用自动播放，尊重用户的选择。</p>
+<hr />
+<h2 id="2-避免自动播放策略拦截">六、开源与致谢</h2>
+<p>这个播放器不是我写的，但我很感激能站在巨人的肩膀上。NeteaseMiniPlayer V2 的作者 <strong>北海的佰川</strong> 不仅写出了优雅的代码，还提供了详细的文档。如果你也想给自己的网站加一个音乐播放器，强烈推荐去他的 GitHub 仓库看看。</p>
+<p>我的所有修改（样式适配、动态加载模块）也开源在个人网站的仓库中，你可以从以下位置找到：</p>
+<ul>
+<li>播放器样式：<code>/css/netease-mini-player-v2.css</code></li>
+<li>播放器脚本：<code>/js/vendor/netease-mini-player-v2.js</code></li>
+<li>全局加载器：<code>/js/vendor/global-music-player.js</code></li>
+</ul>
+<hr />
+<h2 id="六开源与致谢">七、最后</h2>
+<p>音乐能传递温度。当你读到我那些关于成长、雪夜、考试的随笔时，如果恰好有一首轻柔的钢琴曲在背景里流淌，或许你就能更贴近我当时的心境。</p>
+<p>当然，播放器默认是关闭的，用户需要主动点击播放。我不希望音乐成为干扰 —— 它只是一个可选的、小小的陪伴。</p>
+<p>现在，你可以试试点击右下角的播放器，选一首歌，然后继续浏览网站……希望你喜欢。</p>
+<hr />
+<p><strong>如果你也想集成，可以这样开始：</strong></p>
+<p>可以看看 <a href="https://nmp.hypcvgm.top/">官网</a> 或 <a href="https://github.com/numakkiyu/NeteaseMiniPlayer">Github</a> 仓库</p>
+<p><img alt="NeteaseMiniPlayerV2-Github" data-src="https://s41.ax1x.com/2026/06/06/pmeqNod.png" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E" class="lazy-image"  /></p>
+<p>最后，感谢开源作者 <a href="https://github.com/numakkiyu">北海的佰川</a> 的贡献。祝你玩得开心 🎵</p></div>
+
+                    <div class="article-tags"><a class="tag" href="/articles/?tags=%E5%88%86%E4%BA%AB">#分享</a> <a class="tag" href="/articles/?tags=%E6%8A%80%E6%9C%AF">#技术</a></div>
+                </div>
+
+                <!-- 评论区 -->
+                <div class="comments-card">
+                    <h3>💬 评论</h3>
+                    <div id="twikoo-comments"></div>
+                </div>
+            </article>
+
+            <!-- 右侧边栏（目录 + 信息卡片） -->
+            <aside class="article-sidebar">
+                <div class="sidebar-card toc-card">
+                    <div class="toc-header">
+                        <i class="fas fa-list-ul"></i>
+                        <span>目录</span>
+                    </div>
+                    <nav class="toc-nav" id="toc-list-container"></nav>
+                </div>
+
+                <div class="sidebar-card info-card">
+                    <div class="info-item">
+                        <i class="fas fa-chart-line"></i>
+                        <div>
+                            <span class="info-label">阅读量</span>
+                            <span class="info-value" id="busuanzi_page_pv">加载中...</span>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <i class="fas fa-users"></i>
+                        <div>
+                            <span class="info-label">访客数</span>
+                            <span class="info-value" id="busuanzi_page_uv">加载中...</span>
+                        </div>
+                    </div>
+                    <div class="info-item"><i class="fas fa-code-branch"></i><div><span class="info-label">修订次数</span><span class="info-value">1</span></div></div>
+                </div>
+            </aside>
+        </main>
+
+        <!-- 图片模态框（文章页特有） -->
+        <div id="imageModal" class="image-modal">
+            <span class="close">&times;</span>
+            <img id="modalImage" src="" alt="">
+        </div>
+    </div>
+
+    <div id="footer-placeholder"></div>
+
+    <script>window.ARTICLE_HEADINGS = [{"level": 2, "text": "为什么要在个人网站里加一个播放器？", "id": "为什么要在个人网站里加一个播放器"}, {"level": 2, "text": "一、选定播放器：为什么是 NeteaseMiniPlayer？", "id": "一选定播放器为什么是-neteaseminiplayer"}, {"level": 2, "text": "二、集成方案：动态加载 + 全局单例", "id": "二集成方案动态加载-全局单例"}, {"level": 2, "text": "三、样式适配：让播放器融入网站主题", "id": "三样式适配让播放器融入网站主题"}, {"level": 2, "text": "![适配后的NeteaseMiniPlayer样式](https://s41.ax1x.com/2026/06/06/pmeqtdH.png)", "id": "适配后的neteaseminiplayer样式httpss41ax1xcom20260606pmeqtdhpng"}, {"level": 2, "text": "四、与 AJAX 无刷新导航的深度集成", "id": "四与-ajax-无刷新导航的深度集成"}, {"level": 2, "text": "五、最终体验与一些自定义优化", "id": "五最终体验与一些自定义优化"}, {"level": 3, "text": "1. 主题切换时刷新播放器颜色", "id": "1-主题切换时刷新播放器颜色"}, {"level": 3, "text": "2. 避免自动播放策略拦截", "id": "2-避免自动播放策略拦截"}, {"level": 2, "text": "六、开源与致谢", "id": "六开源与致谢"}, {"level": 2, "text": "七、最后", "id": "七最后"}];</script>
+    <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>
+    <script src="/js/vendor/busuanzi.min.js" defer></script>
+    <script src="/js/entry/main.js" type="module"></script>
+    <script src="/js/pages/article.js" type="module"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.getElementById('articleBody'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+</body>
+</html>

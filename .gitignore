@@ -1,7 +1,7 @@
 todolist.md
 assets/source/
-python/__pycache__/
 works/毕业赠诗/新建文本文档.md
 assets/avatars/
 assets/网站更新日志.md
-python/generators/__pycache__/
+builder/__pycache__/
+builder/generators/__pycache__/
