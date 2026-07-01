@@ -15,6 +15,7 @@ from datetime import datetime
 from collections import Counter
 from xml.etree import ElementTree as ET
 import subprocess
+from rcssmin import cssmin
 
 # 使用相对导入
 from ..common import (
@@ -554,7 +555,6 @@ class AggregatedGenerator(OutputGenerator):
     def _copy_static_assets(self):
         # ---------- 1. 调用 Vite 构建 TypeScript ----------
         try:
-            # Windows 下强制 UTF-8 解码，避免 GBK 编码错误
             result = subprocess.run(
                 ["npm", "run", "build"],
                 cwd=PROJECT_ROOT,
@@ -571,26 +571,45 @@ class AggregatedGenerator(OutputGenerator):
             log_info("Vite 构建完成 (TypeScript -> JavaScript)")
         except FileNotFoundError:
             log_warning("未找到 npm，请确保 Node.js 已安装。跳过 TypeScript 编译。")
-            # 回退：直接复制 JS（如果有的话）
             if JS_SRC_DIR.exists():
                 shutil.copytree(JS_SRC_DIR, JS_DIST_DIR, dirs_exist_ok=True)
                 log_info("回退：直接复制 JS 文件")
 
-        # ---------- 2. 复制所有未被 Vite 处理的 .js 文件（不覆盖已存在的） ----------
+        # ---------- 2. 复制所有未被 Vite 处理的 .js 文件（不覆盖已有的） ----------
         if JS_SRC_DIR.exists():
             for js_file in JS_SRC_DIR.rglob("*.js"):
                 rel_path = js_file.relative_to(JS_SRC_DIR)
                 dst_file = JS_DIST_DIR / rel_path
-                # 如果目标文件不存在，则复制（避免覆盖 Vite 生成的编译产物）
                 if not dst_file.exists():
                     dst_file.parent.mkdir(parents=True, exist_ok=True)
                     shutil.copy2(js_file, dst_file)
                     log_info(f"复制额外 JS: {rel_path}")
 
-        # ---------- 3. 复制 CSS ----------
+        # ---------- 3. 压缩并复制 CSS ----------
         if CSS_SRC_DIR.exists():
-            shutil.copytree(CSS_SRC_DIR, CSS_DIST_DIR, dirs_exist_ok=True)
-            log_info("复制 CSS 完成")
+            try:
+                from rcssmin import cssmin
+            except ImportError:
+                log_warning("rcssmin 未安装，CSS 将不压缩直接复制。可安装：pip install rcssmin")
+                # 直接复制
+                shutil.copytree(CSS_SRC_DIR, CSS_DIST_DIR, dirs_exist_ok=True)
+                log_info("复制 CSS 完成（未压缩）")
+            else:
+                for css_file in CSS_SRC_DIR.rglob("*.css"):
+                    rel_path = css_file.relative_to(CSS_SRC_DIR)
+                    dst_file = CSS_DIST_DIR / rel_path
+                    dst_file.parent.mkdir(parents=True, exist_ok=True)
+                    try:
+                        with open(css_file, 'r', encoding='utf-8') as f:
+                            content = f.read()
+                        minified = cssmin(content)
+                        with open(dst_file, 'w', encoding='utf-8') as f:
+                            f.write(minified)
+                        log_info(f"压缩 CSS: {rel_path}")
+                    except Exception as e:
+                        log_warning(f"压缩 {rel_path} 失败，使用原文件: {e}")
+                        shutil.copy2(css_file, dst_file)
+                log_info("压缩并复制 CSS 完成")
         else:
             log_warning(f"CSS 源目录不存在: {CSS_SRC_DIR}")
 
