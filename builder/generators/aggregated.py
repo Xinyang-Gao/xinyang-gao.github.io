@@ -585,10 +585,23 @@ class AggregatedGenerator(OutputGenerator):
                     shutil.copy2(js_file, dst_file)
                     log_info(f"复制额外 JS: {rel_path}")
 
-        # ---------- 3. 复制 CSS ----------
+        # ---------- 3. 压缩并复制 CSS ----------
         if CSS_SRC_DIR.exists():
-            shutil.copytree(CSS_SRC_DIR, CSS_DIST_DIR, dirs_exist_ok=True)
-            log_info("复制 CSS 完成")
+            for css_file in CSS_SRC_DIR.rglob("*.css"):
+                rel_path = css_file.relative_to(CSS_SRC_DIR)
+                dst_file = CSS_DIST_DIR / rel_path
+                dst_file.parent.mkdir(parents=True, exist_ok=True)
+                with open(css_file, 'r', encoding='utf-8') as f:
+                    content = f.read()
+                try:
+                    minified = cssmin(content)
+                except Exception as e:
+                    log_warning(f"压缩 CSS 失败 {rel_path}: {e}，使用原内容")
+                    minified = content
+                with open(dst_file, 'w', encoding='utf-8') as f:
+                    f.write(minified)
+                log_info(f"压缩 CSS: {rel_path}")
+            log_info("CSS 压缩完成")
         else:
             log_warning(f"CSS 源目录不存在: {CSS_SRC_DIR}")
 
