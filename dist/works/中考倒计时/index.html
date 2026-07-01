@@ -1,0 +1,176 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>中考冲刺 · 新乡伴学同行 | 智慧长周期趋势 · 深色模式</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/works/中考倒计时/work-style.css">
+</head>
+
+<body>
+    <div class="dashboard">
+        <div class="hero-section">
+            <div class="settings-toggle" id="settingsToggleBtn" aria-label="设置" role="button">⚙️</div>
+            <div class="fullscreen-toggle" id="fullscreenToggleBtn" aria-label="全屏显示" role="button">⛶</div>
+            <div class="wallpaper-toggle" id="wallpaperToggleBtn" aria-label="切换背景壁纸" role="button">🖼️</div>
+            <div class="theme-toggle" id="themeToggleBtn" aria-label="切换夜间模式" role="button">🌙</div>
+            <div class="real-time-card"><span class="current-time-text" id="liveClockDisplay">--/--/-- --- --:--:--</span></div>
+            <div class="target-badge">距离 6月22日08:20 还有</div>
+            <div class="countdown-grid">
+                <div class="time-card">
+                    <div class="digit" id="daysDigit">00</div>
+                    <div class="unit">天</div>
+                </div>
+                <div class="time-card">
+                    <div class="digit" id="hoursDigit">00</div>
+                    <div class="unit">时</div>
+                </div>
+                <div class="time-card">
+                    <div class="digit" id="minutesDigit">00</div>
+                    <div class="unit">分</div>
+                </div>
+                <div class="time-card">
+                    <div class="digit" id="secondsDigit">00</div>
+                    <div class="unit">秒</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="progress-section">
+            <div class="progress-grid">
+                <div class="progress-item">
+                    <div class="progress-track-wide">
+                        <div class="progress-fill-wide" id="weekFill"></div>
+                        <div class="progress-content"><span class="progress-label-left">本周剩余</span><span
+                                class="progress-percent-right" id="weekPercent">100%</span></div>
+                    </div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-track-wide">
+                        <div class="progress-fill-wide" id="dayFill"></div>
+                        <div class="progress-content"><span class="progress-label-left">今天剩余</span><span
+                                class="progress-percent-right" id="dayPercent">100%</span></div>
+                    </div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-track-wide">
+                        <div class="progress-fill-wide" id="hourFill"></div>
+                        <div class="progress-content"><span class="progress-label-left">小时剩余</span><span
+                                class="progress-percent-right" id="hourPercent">100%</span></div>
+                    </div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-track-wide">
+                        <div class="progress-fill-wide" id="minuteFill"></div>
+                        <div class="progress-content"><span class="progress-label-left">分钟剩余</span><span
+                                class="progress-percent-right" id="minutePercent">100%</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="companion-section">
+            <div class="companion-header">
+                <h3>一起学习</h3>
+            </div>
+            <div class="companion-grid">
+                <div class="companion-item">
+                    <div class="greeting-box">
+                        <span class="greeting-icon" id="greetingIcon">时段</span>
+                        <span class="greeting-text" id="greetingText">加载中...</span>
+                    </div>
+                    <div style="margin-top:var(--spacing-xl);">
+                        <div class="stat-label">当前时间</div>
+                        <div class="timer-badge" id="currentTimeDisplay">00:00:00</div>
+                    </div>
+                    <div id="lateNightAlert" class="health-tip" style="display:none;">[提醒] 熬夜警示</div>
+                </div>
+                <div class="companion-item">
+                    <div class="stat-card-accent school"></div>
+                    <div class="stat-value school-color" id="inSchoolDisplay">--</div>
+                    <div class="stat-label">🏠 在校学习学生 (实时)</div>
+                    <div class="stat-note">含延时·培优·住校晚自习</div>
+                </div>
+                <div class="companion-item">
+                    <div class="stat-card-accent home"></div>
+                    <div class="stat-value home-color" id="atHomeDisplay">--</div>
+                    <div class="stat-label">📚 在家学习学生 (实时)</div>
+                    <div class="stat-note">含走读生·周末居家</div>
+                </div>
+            </div>
+
+            <div class="trend-card">
+                <div class="trend-title">
+                    <span>📈 近3小时冲刺趋势 (每 5min 聚合)</span>
+                    <span class="influence-badge" id="influenceFactorHint">正在实时计算</span>
+                </div>
+                <div class="trend-legend">
+                    <span><span class="legend-dot school"></span><span class="legend-label">在校</span></span>
+                    <span><span class="legend-dot home"></span><span class="legend-label">在家</span></span>
+                </div>
+                <div class="chart-container">
+                    <canvas id="trendCanvas" width="800" height="200" style="width:100%;height:200px"></canvas>
+                </div>
+                <div class="chart-note">每5分钟聚合一次历史数据 | 平滑趋势展示过去3小时在校/在家冲刺热度</div>
+            </div>
+
+            <div class="saying-box">
+                <div class="saying-text" id="dynamicSaying">星光不负赶路人，江河眷顾奋楫者。</div>
+                <button class="refresh-saying" id="refreshSayingBtn">换一句 ↻</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 设置面板 -->
+    <div class="settings-panel" id="settingsPanel">
+        <div class="settings-header">
+            <h2 class="settings-title">个性化设置</h2>
+            <button class="close-settings" id="closeSettingsBtn">×</button>
+        </div>
+        
+        <div class="setting-group">
+            <label class="setting-label">卡片模糊程度</label>
+            <input type="range" id="blurSlider" class="setting-input" min="0" max="20" value="10">
+            <div>当前值: <span id="blurValue">10</span>px</div>
+        </div>
+        
+        <div class="setting-group">
+            <label class="setting-label">饱和度</label>
+            <input type="range" id="saturationSlider" class="setting-input" min="100" max="200" value="150">
+            <div>当前值: <span id="saturationValue">150</span>%</div>
+        </div>
+        
+        <div class="setting-group">
+            <label class="setting-label">亮度</label>
+            <input type="range" id="brightnessSlider" class="setting-input" min="100" max="150" value="120">
+            <div>当前值: <span id="brightnessValue">120</span>%</div>
+        </div>
+        
+        <div class="setting-group">
+            <label class="setting-label">主题色</label>
+            <div class="color-picker">
+                <div class="color-option active" style="background-color: #4e6fd8;" data-color="#4e6fd8"></div>
+                <div class="color-option" style="background-color: #6366f1;" data-color="#6366f1"></div>
+                <div class="color-option" style="background-color: #8b5cf6;" data-color="#8b5cf6"></div>
+                <div class="color-option" style="background-color: #ec4899;" data-color="#ec4899"></div>
+                <div class="color-option" style="background-color: #f43f5e;" data-color="#f43f5e"></div>
+                <div class="color-option" style="background-color: #ef4444;" data-color="#ef4444"></div>
+                <div class="color-option" style="background-color: #f97316;" data-color="#f97316"></div>
+                <div class="color-option" style="background-color: #eab308;" data-color="#eab308"></div>
+                <div class="color-option" style="background-color: #22c55e;" data-color="#22c55e"></div>
+                <div class="color-option" style="background-color: #14b8a6;" data-color="#14b8a6"></div>
+            </div>
+        </div>
+        
+        <div class="settings-buttons">
+            <button class="settings-btn reset-btn" id="resetSettingsBtn">恢复默认</button>
+            <button class="settings-btn save-btn" id="saveSettingsBtn">保存设置</button>
+        </div>
+    </div>
+
+    <script src="/works/中考倒计时/work-js.js"></script>
+</body>
+
+</html>

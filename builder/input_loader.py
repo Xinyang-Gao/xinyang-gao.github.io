@@ -647,7 +647,7 @@ def load_works() -> List[Work]:
         if not date:
             date = "未指定日期"
         if not link.strip():
-            link = f"./works/{title}/"
+            link = f"/works/{title}/"
         if "隐藏" in tag:
             log_info(f"作品 '{title}' 含有“隐藏”标签，已排除")
             continue

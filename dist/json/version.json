@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-01T14:23:23.910101",
-  "total_versions": 175,
+  "generated_at": "2026-07-01T15:02:08.028886",
+  "total_versions": 176,
   "versions": [
     {
       "id": 1,
@@ -2793,7 +2793,22 @@
           "description": "使用 Python 在构建时压缩 CSS"
         }
       ]
+    },
+    {
+      "id": 176,
+      "version": "v8.2.1",
+      "date": "2026-07-01",
+      "changes": [
+        {
+          "type": "fix",
+          "description": "作品未被构建"
+        },
+        {
+          "type": "fix",
+          "description": "作品列表地址错误"
+        }
+      ]
     }
   ],
-  "changelog_hash": "9511fbfafa0c40b3fc3887a55e1c591c"
+  "changelog_hash": "0ddcbe8e9a964d73c7bcf920a8d6cc24"
 }
