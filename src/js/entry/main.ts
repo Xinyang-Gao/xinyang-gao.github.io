@@ -60,10 +60,8 @@ async function handleLoadingOverlay() {
   const content = document.getElementById('loading-content');
   if (!overlay) return;
 
-  // 隐藏页面滚动
   document.body.style.overflow = 'hidden';
 
-  // 获取或创建日志容器
   let logContainer = document.querySelector('.loading-log');
   if (!logContainer) {
     logContainer = document.createElement('div');
@@ -73,22 +71,23 @@ async function handleLoadingOverlay() {
     logContainer.innerHTML = '';
   }
 
-  // ---------- 日志缓冲区与渲染器 ----------
-  const logBuffer = [];
-  let logIndex = 0; // 用于计算动画延迟
+  // ---------- 日志缓冲区 ----------
+  const logBuffer: { module: string; msg: string; indent: number; time: string }[] = [];
+  let logIndex = 0;
 
-  function addLog(module, msg, indent = 0) {
+  function addLog(module: string, msg: string, indent = 0) {
     const time = new Date().toLocaleTimeString();
-    const indentStr = '│ '.repeat(indent) + (indent > 0 ? '├── ' : '');
-    logBuffer.push(`[${time}][${module}] ${indentStr}${msg}`);
+    logBuffer.push({ module, msg, indent, time });
   }
 
   function flushLogs() {
     if (logBuffer.length === 0) return;
     const fragment = document.createDocumentFragment();
-    logBuffer.forEach((text) => {
+    logBuffer.forEach(({ module, msg, indent, time }) => {
       const line = document.createElement('div');
-      line.textContent = text;
+      line.className = `log-entry log-module-${module}`;
+      const indentStr = '│ '.repeat(indent) + (indent > 0 ? '├── ' : '');
+      line.innerHTML = `<span class="log-time">[${time}]</span><span class="log-module-name">[${module}]</span> ${indentStr}${msg}`;
       line.style.animationDelay = (logIndex * 0.035) + 's';
       fragment.appendChild(line);
       logIndex++;
@@ -98,26 +97,25 @@ async function handleLoadingOverlay() {
     logBuffer.length = 0;
   }
 
-  // ---------- 写入初始系统日志 ----------
-  addLog('System', '初始化加载环境...');
+  // ===== 1. 覆盖层启动 =====
+  addLog('System', '加载覆盖层已启动');
   addLog('System', `浏览器标识: ${navigator.userAgent.split(' ').slice(0, 3).join(' ')}`);
   addLog('System', `当前页面: ${window.location.href}`);
   addLog('System', '主题偏好: 从本地存储读取或根据时段自动选择');
   addLog('System', '检查本地存储权限...');
-
   if (storageController.isAllowed()) {
     addLog('System', '本地存储已授权 (Cookie 同意)');
   } else {
     addLog('System', '本地存储未授权，将使用内存缓存');
   }
-
   addLog('System', '加载核心配置参数...');
   addLog('System', '配置加载完成 (API端点、白名单、背景图列表等)');
-
   flushLogs();
 
-  // ---------- 并行加载所有数据 ----------
-  addLog('Data', '开始并行加载关键数据文件...');
+  // ===== 2. 网络与数据请求 =====
+  addLog('Data', '检查网络连接状态...');
+  addLog('Data', '网络连接正常，开始并行请求关键数据');
+  addLog('Data', '发起请求: 统计信息、文章列表、作品列表、代码分析、友链、版本信息');
   flushLogs();
 
   const fetchTasks = [
@@ -126,7 +124,7 @@ async function handleLoadingOverlay() {
     { key: 'works', url: `${CONFIG.API.WORKS}?t=${Date.now()}` },
     { key: 'code', url: '/json/code_analysis.json?t=' + Date.now() },
     { key: 'friends', url: '/json/friends.json?t=' + Date.now() },
-    { key: 'version', url: '/json/version.json?t=' + Date.now() }  // ✅ 新增
+    { key: 'version', url: '/json/version.json?t=' + Date.now() }
   ];
 
   const results = await Promise.allSettled(
@@ -139,7 +137,7 @@ async function handleLoadingOverlay() {
     )
   );
 
-  const dataMap = {};
+  const dataMap: Record<string, any> = {};
   results.forEach((result, index) => {
     const key = fetchTasks[index].key;
     if (result.status === 'fulfilled') {
@@ -149,13 +147,15 @@ async function handleLoadingOverlay() {
       addLog('Data', `${key} 加载失败: ${result.reason?.message || '未知错误'}`);
     }
   });
+  flushLogs();
 
-  // ---------- 解析统计数据 ----------
+  // ===== 3. 解析统计数据 =====
   const stats = dataMap.statistics || null;
   let currentVersion = stats?.version ? String(stats.version).trim() : null;
 
   if (stats) {
-    addLog('Data', `统计信息获取成功 (版本: ${currentVersion || '未知'})`);
+    addLog('Data', '解析统计信息...');
+    addLog('Data', `  版本号: ${currentVersion || '未知'}`, 1);
     addLog('Data', `  文章总数: ${stats.total_articles || 0}`, 1);
     addLog('Data', `  作品总数: ${stats.total_works || 0}`, 1);
     addLog('Data', `  总字数: ${(stats.total_word_count || 0).toLocaleString()}`, 1);
@@ -213,66 +213,64 @@ async function handleLoadingOverlay() {
       addLog('Data', `  友链示例: ${names}${count > 3 ? ' 等' : ''}`, 1);
     }
   }
+  flushLogs();
 
+  // ===== 4. UI 组件状态 =====
   addLog('UI', '用户界面组件初始化完成');
   const cursorEnabled = localStorage.getItem('settings_cursor_enabled') !== 'false';
   addLog('UI', `  自定义光标: ${cursorEnabled ? '启用' : '已禁用'}`, 1);
   addLog('UI', `  外链拦截: ${localStorage.getItem('settings_link_warning_enabled') !== 'false' ? '启用' : '已禁用'}`, 1);
-
   addLog('Player', '音乐播放器模块已就绪');
   addLog('Chart', '统计图表渲染完成');
-
   flushLogs();
 
-  // ---------- 版本检测（基于 version.json） ----------
+  // ===== 5. 版本检测 =====
   const versionData = dataMap.version || null;
-  let allVersions = [];
-  let latestWebVersion = null;
+  let allVersions: any[] = [];
+  let latestWebVersion: string | null = null;
   if (versionData && Array.isArray(versionData.versions)) {
-    // 按 id 升序排列（确保顺序）
     allVersions = versionData.versions.slice().sort((a, b) => a.id - b.id);
     if (allVersions.length) {
       latestWebVersion = allVersions[allVersions.length - 1].version;
     }
   }
 
-  // 读取本地存储的网站版本（独立于 statistics 版本）
-  let storedVersion = null;
+  addLog('Version', '读取本地存储的网站版本...');
+  let storedVersion: string | null = null;
   if (storageController.isAllowed()) {
     storedVersion = storageController.getItem('siteVersion');
   }
-
-  addLog('Version', `本地存储的网站版本: ${storedVersion || '无'}`);
+  addLog('Version', `本地版本: ${storedVersion || '无'}`);
   addLog('Version', `远程最新版本: ${latestWebVersion || '无'}`);
 
-  // 判断是否需要更新
   const needUpdate = !storedVersion || (latestWebVersion && storedVersion !== latestWebVersion);
+  addLog('Version', `版本比对结果: ${needUpdate ? '需要更新' : '版本一致'}`);
 
   if (!needUpdate) {
     addLog('Version', '版本一致，加载完成，即将进入页面');
     flushLogs();
     overlay.classList.add('hidden');
     restoreScroll();
+    addLog('System', '覆盖层已关闭，页面可交互');
+    flushLogs(); // 虽然已经隐藏，但可最后输出
     return;
   }
 
-  // ---------- 确定要显示的版本范围 ----------
+  // ===== 6. 生成更新信息 =====
+  addLog('Version', '检测到版本更新，准备生成更新提示');
   let startIdx = 0;
   if (storedVersion) {
     const foundIdx = allVersions.findIndex(v => v.version === storedVersion);
     if (foundIdx !== -1) {
-      startIdx = foundIdx + 1; // 从下一个版本开始
+      startIdx = foundIdx + 1;
     } else {
-      // 未知版本，显示最近 3 个
       startIdx = Math.max(0, allVersions.length - 3);
     }
   } else {
-    // 首次访问，显示最近 3 个版本
     startIdx = Math.max(0, allVersions.length - 3);
   }
   const relevantVersions = allVersions.slice(startIdx);
 
-  // 构建版本信息文本
   let versionMsg = '';
   if (storedVersion && relevantVersions.length > 0) {
     const firstVer = relevantVersions[0].version;
@@ -289,16 +287,13 @@ async function handleLoadingOverlay() {
     versionMsg = '版本信息暂未获取，欢迎访问';
   }
 
-  // 存储最新版本（若允许）
   if (storageController.isAllowed() && latestWebVersion) {
     storageController.setItem('siteVersion', latestWebVersion);
     addLog('Version', `已存储最新版本: ${latestWebVersion}`);
   }
 
-  // 离开时长
   let awayText = '';
-  // 从 visit record 获取上次访问时间
-  let record = {};
+  let record: any = {};
   if (storageController.isAllowed()) {
     const raw = storageController.getItem(CONFIG.STORAGE_KEYS.VISIT_RECORD);
     if (raw) {
@@ -318,12 +313,12 @@ async function handleLoadingOverlay() {
     awayText = '欢迎首次访问本站';
   }
   addLog('Version', `离开时长: ${awayText}`);
-  addLog('Version', versionMsg);
+  addLog('Version', `版本摘要: ${versionMsg}`);
+  flushLogs();
 
-  // ---------- 生成更新内容 HTML ----------
+  // ===== 7. 渲染更新界面 =====
   let changesHTML = '';
   if (relevantVersions.length > 0) {
-    // 每个版本最多显示前 5 条变更
     const items = relevantVersions.map(v => {
       const versionLabel = v.version || `v${v.id}`;
       const changeItems = (v.changes || []).slice(0, 5).map(c => {
@@ -344,7 +339,6 @@ async function handleLoadingOverlay() {
   addLog('UI', '正在渲染更新提示界面...');
   flushLogs();
 
-  // ---------- 渲染覆盖层内容 ----------
   content.classList.add('updated');
   const oldInfo = content.querySelector('.update-info');
   if (oldInfo) oldInfo.remove();
@@ -359,16 +353,23 @@ async function handleLoadingOverlay() {
   `;
   content.appendChild(infoDiv);
 
-  // ---------- 点击处理：Cookie 申请或直接关闭 ----------
-  const handleOverlayClick = async (e) => {
+  addLog('UI', '更新界面已渲染，等待用户交互');
+  flushLogs();
+
+  // ===== 8. 点击处理（Cookie 许可） =====
+  const handleOverlayClick = async (e: Event) => {
     if (storageController.isAllowed()) {
+      addLog('System', 'Cookie 已同意，直接关闭覆盖层');
       overlay.classList.add('hidden');
       restoreScroll();
       window.dispatchEvent(new CustomEvent('welcomeOverlayDismissed'));
       overlay.removeEventListener('click', handleOverlayClick);
+      addLog('System', '覆盖层已关闭，页面可交互');
+      flushLogs();
       return;
     }
 
+    addLog('System', '用户点击，但尚未同意 Cookie，显示许可请求');
     const hint = infoDiv.querySelector('.click-hint');
     if (hint) hint.remove();
 
@@ -411,6 +412,7 @@ async function handleLoadingOverlay() {
 
     acceptBtn.addEventListener('click', (e) => {
       e.stopPropagation();
+      addLog('System', '用户同意 Cookie，存储偏好');
       const consentManager = new CookieConsentManager(storageController);
       consentManager.setConsented(true);
       window.dispatchEvent(new CustomEvent('cookieConsentAccepted'));
@@ -420,10 +422,13 @@ async function handleLoadingOverlay() {
       restoreScroll();
       window.dispatchEvent(new CustomEvent('welcomeOverlayDismissed'));
       overlay.removeEventListener('click', handleOverlayClick);
+      addLog('System', '覆盖层已关闭，页面可交互');
+      flushLogs();
     });
 
     declineBtn.addEventListener('click', (e) => {
       e.stopPropagation();
+      addLog('System', '用户拒绝 Cookie，使用无存储模式');
       const consentManager = new CookieConsentManager(storageController);
       consentManager.setConsented(false);
       const banner = document.getElementById('cookie-consent-banner');
@@ -435,11 +440,16 @@ async function handleLoadingOverlay() {
       restoreScroll();
       window.dispatchEvent(new CustomEvent('welcomeOverlayDismissed'));
       overlay.removeEventListener('click', handleOverlayClick);
+      addLog('System', '覆盖层已关闭，页面可交互');
+      flushLogs();
     });
+
+    addLog('UI', 'Cookie 许可界面已渲染');
+    flushLogs();
   };
 
   overlay.addEventListener('click', handleOverlayClick);
-
+  addLog('System', '覆盖层就绪，等待用户操作');
   flushLogs();
 }
 

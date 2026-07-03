@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-04T00:25:45.824937",
-  "total_versions": 179,
+  "generated_at": "2026-07-04T01:03:02.062244",
+  "total_versions": 180,
   "versions": [
     {
       "id": 1,
@@ -2841,7 +2841,18 @@
           "description": "将音乐播放器核心脚本作为 ES 模块加载"
         }
       ]
+    },
+    {
+      "id": 180,
+      "version": "v8.2.5",
+      "date": "2026-07-04",
+      "changes": [
+        {
+          "type": "style",
+          "description": "优化欢迎覆盖层日志样式，给日志项添加颜色区分，并增加了一些真实日志"
+        }
+      ]
     }
   ],
-  "changelog_hash": "50055d83c8230132d38452ce64504303"
+  "changelog_hash": "02cad5d782b50ea19b33324e054bce69"
 }

@@ -544,3 +544,24 @@ body.loading {
   font-size: 0.65rem;
   letter-spacing: 0.2px;
 }
+/* ===== 日志模块颜色 ===== */
+#loading-overlay .loading-log .log-module-name {
+  font-weight: 500;
+  opacity: 0.85;
+}
+
+.log-module-System .log-module-name { color: rgba(106, 176, 230, 0.85); }
+.log-module-Data .log-module-name    { color: rgba(123, 198, 126, 0.85); }
+.log-module-UI .log-module-name      { color: rgba(197, 138, 245, 0.85); }
+.log-module-Player .log-module-name  { color: rgba(245, 176, 107, 0.85); }
+.log-module-Chart .log-module-name   { color: rgba(245, 122, 138, 0.85); }
+.log-module-Version .log-module-name { color: rgba(245, 215, 110, 0.85); }
+
+/* 调整日志条目动画选择器（原为 .loading-log div，现改为 .log-entry） */
+#loading-overlay .loading-log .log-entry {
+  opacity: 0;
+  transform: translateX(12px);
+  animation: logSlideIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* 确保旧选择器不干扰（可选移除） */
