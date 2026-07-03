@@ -1,57 +1,52 @@
-// /js/pages/article.js
+// /js/pages/article.ts
 import { PageManager } from '/js/core/page-manager.js';
 import { initTwikoo, destroyTwikoo } from '/js/core/twikoo-manager.js';
 
-export class ArticlePageManager extends PageManager {
-    constructor() {
-        super();
-        this.imageObserver = null;
-        this.progressHandler = null;
-        this.scrollHandler = null;
-        this.resizeHandler = null;
-        this.intersectionObserver = null;
-        this.mutationObserver = null;
-        this.cleanupFns = [];
-        this.twikooContainer = null;
-    }
+interface Heading {
+    id: string;
+    level: number;
+    text: string;
+    children?: Heading[];
+}
 
-    init() {
+export class ArticlePageManager extends PageManager {
+    private imageObserver: IntersectionObserver | null = null;
+    private progressHandler: (() => void) | null = null;
+    private scrollHandler: (() => void) | null = null;
+    private resizeHandler: (() => void) | null = null;
+    private intersectionObserver: IntersectionObserver | null = null;
+    private mutationObserver: MutationObserver | null = null;
+    private cleanupFns: (() => void)[] = [];
+    private twikooContainer: HTMLElement | null = null;
+    private tocScrollWrapper: HTMLElement | null = null;
+    private tocListContainer: HTMLElement | null = null;
+    private tocProgressPercent: HTMLElement | null = null;
+    private tocProgressFill: HTMLElement | null = null;
+    private scrollTimer: number | null = null;
+    private _toggleSidebarHandler: (() => void) | null = null;
+    private _boundHandleTocClick: ((e: Event) => void) | null = null;
+
+    init(): void {
         if (!document.getElementById('articleBody')) {
             console.warn('[Article] 缺少文章主体元素 #articleBody');
             return;
         }
 
-        // 1. 构建 TOC 结构并渲染
         this.ensureTOCStructure();
         this.buildAndRenderTOC();
-
-        // 2. 图片懒加载（保留，与全局查看器无关）
         this.initImageLazyLoad();
-
-        // 3. 阅读进度条
         this.initReadingProgress();
-
-        // 4. 代码块复制按钮
         this.initCodeBlocks();
-
-        // 5. 移动端侧边栏
         this.initMobileSidebar();
-
-        // 6. 滚动位置保存
-        this.initScrollSave();
-
-        // 7. 监听主题变化（如果需要）
+        this.initScrollSave(); // 注意：此方法内部处理了哈希冲突
         this.setupThemeListener();
-
-        // 8. 触发一次滚动，激活高亮
         setTimeout(() => this.onScroll(), 100);
-
         this.renderMath();
         this.initTwikoo();
         this.refreshBusuanzi();
     }
 
-    renderMath() {
+    renderMath(): void {
         if (typeof renderMathInElement !== 'undefined') {
             renderMathInElement(document.getElementById('articleBody'), {
                 delimiters: [
@@ -62,7 +57,7 @@ export class ArticlePageManager extends PageManager {
         }
     }
 
-    async initTwikoo() {
+    async initTwikoo(): Promise<void> {
         const container = document.getElementById('twikoo-comments');
         if (!container) return;
         this.twikooContainer = container;
@@ -71,13 +66,13 @@ export class ArticlePageManager extends PageManager {
         });
     }
 
-    refreshBusuanzi() {
+    refreshBusuanzi(): void {
         if (typeof busuanzi !== 'undefined' && busuanzi.fetch) {
             busuanzi.fetch();
         }
     }
 
-    destroy() {
+    destroy(): void {
         if (this.progressHandler) window.removeEventListener('scroll', this.progressHandler);
         if (this.scrollHandler) window.removeEventListener('scroll', this.scrollHandler);
         if (this.resizeHandler) window.removeEventListener('resize', this.resizeHandler);
@@ -96,7 +91,7 @@ export class ArticlePageManager extends PageManager {
     }
 
     // ---------- TOC ----------
-    ensureTOCStructure() {
+    private ensureTOCStructure(): void {
         const tocCard = document.querySelector('.sidebar-card.toc-card');
         if (!tocCard) return;
 
@@ -124,13 +119,13 @@ export class ArticlePageManager extends PageManager {
             tocCard.appendChild(wrapper);
         }
 
-        this.tocScrollWrapper = wrapper;
-        this.tocListContainer = wrapper.querySelector('.toc-nav, #toc-list-container');
+        this.tocScrollWrapper = wrapper as HTMLElement;
+        this.tocListContainer = wrapper.querySelector('.toc-nav, #toc-list-container') as HTMLElement;
         if (this.tocListContainer && !this.tocListContainer.id) this.tocListContainer.id = 'toc-list-container';
     }
 
-    buildAndRenderTOC() {
-        const headings = window.ARTICLE_HEADINGS || [];
+    private buildAndRenderTOC(): void {
+        const headings = (window as any).ARTICLE_HEADINGS as Heading[] || [];
         if (!this.tocListContainer) return;
 
         if (!headings.length) {
@@ -149,9 +144,9 @@ export class ArticlePageManager extends PageManager {
         window.addEventListener('scroll', this.scrollHandler);
     }
 
-    buildTree(headings) {
-        const root = { children: [] };
-        const stack = [{ node: root, level: 0 }];
+    private buildTree(headings: Heading[]): Heading[] {
+        const root: { children: Heading[] } = { children: [] };
+        const stack: { node: { children: Heading[] }; level: number }[] = [{ node: root, level: 0 }];
         for (const h of headings) {
             const newNode = { ...h, children: [] };
             while (stack.length > 0 && stack[stack.length - 1].level >= h.level) stack.pop();
@@ -162,7 +157,7 @@ export class ArticlePageManager extends PageManager {
         return root.children;
     }
 
-    renderTree(children) {
+    private renderTree(children: Heading[]): string {
         if (!children.length) return '';
         let html = '<ul class="toc-list">';
         for (const node of children) {
@@ -175,17 +170,17 @@ export class ArticlePageManager extends PageManager {
         return html;
     }
 
-    bindTocLinkEvents() {
+    private bindTocLinkEvents(): void {
         document.querySelectorAll('.toc-link').forEach(link => {
-            link.removeEventListener('click', this._boundHandleTocClick);
+            link.removeEventListener('click', this._boundHandleTocClick!);
             this._boundHandleTocClick = this.handleTocClick.bind(this);
             link.addEventListener('click', this._boundHandleTocClick);
         });
     }
 
-    handleTocClick(e) {
+    private handleTocClick(e: Event): void {
         e.preventDefault();
-        const link = e.currentTarget;
+        const link = e.currentTarget as HTMLAnchorElement;
         const href = link.getAttribute('href');
         if (!href) return;
         const targetId = href.slice(1);
@@ -198,27 +193,27 @@ export class ArticlePageManager extends PageManager {
         }
     }
 
-    smoothScrollTo(element, offset = 90) {
+    private smoothScrollTo(element: HTMLElement, offset = 90): void {
         const pos = element.getBoundingClientRect().top + window.scrollY - offset;
         window.scrollTo({ top: pos, behavior: 'smooth' });
     }
 
-    updateActiveItem(activeId) {
+    private updateActiveItem(activeId: string): void {
         document.querySelectorAll('.toc-list li').forEach(li => li.classList.remove('active'));
         const activeLi = document.querySelector(`.toc-list li[data-id="${activeId}"]`);
         if (activeLi) activeLi.classList.add('active');
     }
 
-    scrollTocToItem(itemId) {
+    private scrollTocToItem(itemId: string): void {
         const li = document.querySelector(`.toc-list li[data-id="${itemId}"]`);
         if (li && this.tocScrollWrapper) {
             li.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
     }
 
-    onScroll() {
+    private onScroll(): void {
         if (this.scrollTimer) return;
-        this.scrollTimer = setTimeout(() => {
+        this.scrollTimer = window.setTimeout(() => {
             const activeId = this.getCurrentActiveHeading();
             if (activeId) this.updateActiveItem(activeId);
             this.updateTocReadingProgress();
@@ -226,12 +221,12 @@ export class ArticlePageManager extends PageManager {
         }, 60);
     }
 
-    getCurrentActiveHeading() {
+    private getCurrentActiveHeading(): string | null {
         const headings = Array.from(document.querySelectorAll('#articleBody h1, #articleBody h2, #articleBody h3, #articleBody h4'))
             .filter(h => h.id);
         if (!headings.length) return null;
         const scrollTop = window.scrollY + 90;
-        let active = null;
+        let active: string | null = null;
         let minDist = Infinity;
         for (const h of headings) {
             const offset = h.getBoundingClientRect().top + window.scrollY;
@@ -243,7 +238,7 @@ export class ArticlePageManager extends PageManager {
         return active;
     }
 
-    initTocReadingProgress() {
+    private initTocReadingProgress(): void {
         const header = document.querySelector('.toc-header');
         if (!header || header.querySelector('.reading-progress-wrapper')) return;
         const wrapper = document.createElement('div');
@@ -258,35 +253,35 @@ export class ArticlePageManager extends PageManager {
         this.updateTocReadingProgress();
     }
 
-    updateTocReadingProgress() {
+    private updateTocReadingProgress(): void {
         if (!this.tocProgressFill) return;
         const docHeight = document.documentElement.scrollHeight - window.innerHeight;
         let percent = 0;
         if (docHeight > 0) percent = (window.scrollY / docHeight) * 100;
-        this.tocProgressPercent.textContent = `${Math.round(percent)}%`;
+        this.tocProgressPercent!.textContent = `${Math.round(percent)}%`;
         this.tocProgressFill.style.width = `${percent}%`;
     }
 
-    // 图片懒加载（保留）
-    initImageLazyLoad() {
+    // ---------- 图片懒加载 ----------
+    private initImageLazyLoad(): void {
         const images = document.querySelectorAll('#articleBody img');
         if (!images.length) return;
         if ('IntersectionObserver' in window) {
             this.imageObserver = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
-                        this.loadImage(entry.target);
-                        this.imageObserver.unobserve(entry.target);
+                        this.loadImage(entry.target as HTMLImageElement);
+                        this.imageObserver!.unobserve(entry.target);
                     }
                 });
             }, { rootMargin: '100px 0px', threshold: 0.01 });
-            images.forEach(img => this.imageObserver.observe(img));
+            images.forEach(img => this.imageObserver!.observe(img));
         } else {
-            images.forEach(img => this.loadImage(img));
+            images.forEach(img => this.loadImage(img as HTMLImageElement));
         }
     }
 
-    loadImage(img) {
+    private loadImage(img: HTMLImageElement): void {
         const src = img.dataset.src;
         if (!src) return;
         img.classList.add('lazy-loading');
@@ -301,8 +296,8 @@ export class ArticlePageManager extends PageManager {
         temp.src = src;
     }
 
-    // 阅读进度条
-    initReadingProgress() {
+    // ---------- 阅读进度条 ----------
+    private initReadingProgress(): void {
         const progressBar = document.getElementById('progress-bar');
         if (!progressBar) return;
         this.progressHandler = () => {
@@ -314,16 +309,16 @@ export class ArticlePageManager extends PageManager {
         this.progressHandler();
     }
 
-    // 代码块复制
-    initCodeBlocks() {
+    // ---------- 代码块复制 ----------
+    private initCodeBlocks(): void {
         document.querySelectorAll('#articleBody pre').forEach(pre => {
-            if (pre.dataset.enhanced) return;
+            if ((pre as HTMLElement).dataset.enhanced) return;
             const code = pre.querySelector('code');
             if (!code) return;
-            const lang = code.className.match(/language-(\w+)/)?.[1] || '';
+            const lang = (code.className.match(/language-(\w+)/)?.[1]) || '';
             const wrapper = document.createElement('div');
             wrapper.className = 'code-block-wrapper';
-            pre.parentNode.insertBefore(wrapper, pre);
+            pre.parentNode!.insertBefore(wrapper, pre);
             wrapper.appendChild(pre);
             const toolbar = document.createElement('div');
             toolbar.className = 'code-toolbar';
@@ -338,7 +333,7 @@ export class ArticlePageManager extends PageManager {
             copyBtn.textContent = '复制';
             copyBtn.addEventListener('click', async () => {
                 try {
-                    await navigator.clipboard.writeText(code.innerText);
+                    await navigator.clipboard.writeText(code.textContent!);
                     copyBtn.textContent = '已复制';
                     setTimeout(() => copyBtn.textContent = '复制', 1500);
                 } catch {
@@ -348,16 +343,16 @@ export class ArticlePageManager extends PageManager {
             });
             toolbar.appendChild(copyBtn);
             pre.insertBefore(toolbar, pre.firstChild);
-            pre.dataset.enhanced = 'true';
+            (pre as HTMLElement).dataset.enhanced = 'true';
         });
     }
 
-    // 移动端侧边栏
-    initMobileSidebar() {
+    // ---------- 移动端侧边栏 ----------
+    private initMobileSidebar(): void {
         const checkMobile = () => {
             const isMobile = window.innerWidth <= 768;
             const floating = document.querySelector('.floating-buttons');
-            if (floating) floating.style.display = isMobile ? 'flex' : 'none';
+            if (floating) (floating as HTMLElement).style.display = isMobile ? 'flex' : 'none';
             if (this.tocScrollWrapper) {
                 this.tocScrollWrapper.style.maxHeight = isMobile ? 'calc(100vh - 160px)' : 'calc(100vh - 220px)';
             }
@@ -378,7 +373,7 @@ export class ArticlePageManager extends PageManager {
         checkMobile();
     }
 
-    toggleMobileSidebar() {
+    private toggleMobileSidebar(): void {
         const sidebar = document.querySelector('.article-sidebar');
         const overlay = document.querySelector('.article-sidebar-overlay');
         if (!sidebar) return;
@@ -386,7 +381,7 @@ export class ArticlePageManager extends PageManager {
         overlay?.classList.toggle('open');
     }
 
-    closeMobileSidebar() {
+    private closeMobileSidebar(): void {
         const sidebar = document.querySelector('.article-sidebar');
         const overlay = document.querySelector('.article-sidebar-overlay');
         sidebar?.classList.remove('open');
@@ -394,17 +389,50 @@ export class ArticlePageManager extends PageManager {
         document.body.style.overflow = '';
     }
 
-    // 滚动位置保存
-    initScrollSave() {
+    // ---------- 滚动位置保存（修复：优先处理锚点） ----------
+    private initScrollSave(): void {
         const key = `scroll_${window.location.pathname}`;
-        const saved = sessionStorage.getItem(key);
-        if (saved) setTimeout(() => window.scrollTo(0, parseInt(saved)), 50);
-        const save = () => sessionStorage.setItem(key, window.scrollY);
+        const hash = window.location.hash;
+
+        // 如果有 hash，优先滚动到锚点，并清除保存的滚动位置
+        if (hash) {
+            const targetId = hash.slice(1);
+            setTimeout(() => {
+                const el = document.getElementById(targetId);
+                if (el) {
+                    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    // 清除保存的滚动位置，避免被覆盖
+                    sessionStorage.removeItem(key);
+                } else {
+                    // 如果元素不存在，尝试恢复保存的位置
+                    this.restoreScrollPosition(key);
+                }
+            }, 50);
+        } else {
+            // 没有 hash，直接恢复保存的位置
+            this.restoreScrollPosition(key);
+        }
+
+        // 监听滚动保存
+        const save = () => {
+            sessionStorage.setItem(key, String(window.scrollY));
+        };
         window.addEventListener('scroll', save);
         this.cleanupFns.push(() => window.removeEventListener('scroll', save));
     }
 
-    setupThemeListener() {
+    private restoreScrollPosition(key: string): void {
+        const saved = sessionStorage.getItem(key);
+        if (saved) {
+            const scrollY = parseInt(saved, 10);
+            if (!isNaN(scrollY)) {
+                setTimeout(() => window.scrollTo(0, scrollY), 50);
+            }
+        }
+    }
+
+    // ---------- 主题监听 ----------
+    private setupThemeListener(): void {
         const handler = () => {
             if (this.tocProgressFill) this.updateTocReadingProgress();
         };
@@ -412,14 +440,14 @@ export class ArticlePageManager extends PageManager {
         this.cleanupFns.push(() => window.removeEventListener('themeChanged', handler));
     }
 
-    escapeHtml(str) {
+    private escapeHtml(str: string): string {
         if (!str) return '';
         return str.replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m] || m));
     }
 }
 
 // 导出一个简单的初始化函数，供 router 调用
-export async function initArticlePage() {
+export async function initArticlePage(): Promise<ArticlePageManager> {
     const manager = new ArticlePageManager();
     await manager.init();
     return manager;

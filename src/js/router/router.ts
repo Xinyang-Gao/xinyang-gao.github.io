@@ -1,4 +1,4 @@
-// /js/router/router.js
+// /js/router/router.ts
 // 无刷新导航：替换整个 #router-view 容器，支持浏览器回退/前进和平滑过渡
 
 import { CONFIG, storageController, Utils } from '/js/core/core.js';
@@ -7,20 +7,21 @@ import { ensureScrollReveal } from '/js/ui/ui-effects.js';
 import { initNavbar, refreshNavbarTitle } from '/js/ui/navbar-manager.js';
 import { initHomePage } from '/js/pages/home-manager.js';
 import { initThemeToggle } from '/js/ui/theme.js';
+import type { PageManager } from '/js/core/page-manager.js';
 
 // ==================== 常量定义 ====================
 const ROUTER_VIEW_ID = 'router-view';
 
 // 全局当前页面管理器
-let currentPageManager = null;
+let currentPageManager: PageManager | null = null;
 
 // 记录已动态加载过的样式表和脚本
-const loadedStyles = new Set();
-const loadedScripts = new Set();
+const loadedStyles = new Set<string>();
+const loadedScripts = new Set<string>();
 
 // ==================== 脚本执行器（防重复） ====================
 class ScriptExecutor {
-  static async execute(scripts, container = document.body) {
+  static async execute(scripts: HTMLScriptElement[], container: HTMLElement = document.body): Promise<void> {
     for (const s of scripts) {
       if (s.src) {
         const src = s.getAttribute('src') || s.src;
@@ -39,7 +40,7 @@ class ScriptExecutor {
     }
   }
 
-  static #loadExternalScript(src, type, container) {
+  static #loadExternalScript(src: string, type: string | null, container: HTMLElement): Promise<void> {
     return new Promise((resolve) => {
       const script = document.createElement('script');
       if (type) script.type = type;
@@ -51,7 +52,7 @@ class ScriptExecutor {
     });
   }
 
-  static #runInlineScript(script, container) {
+  static #runInlineScript(script: HTMLScriptElement, container: HTMLElement): void {
     try {
       const inline = document.createElement('script');
       if (script.type) inline.type = script.type;
@@ -63,31 +64,33 @@ class ScriptExecutor {
 }
 
 // ==================== 页面管理器生命周期 ====================
-async function destroyCurrentPageManager() {
+async function destroyCurrentPageManager(): Promise<void> {
   if (currentPageManager && typeof currentPageManager.destroy === 'function') {
     try {
       await currentPageManager.destroy();
-    } catch (e) {}
+    } catch (e) {
+      console.warn('[Router] 销毁页面管理器时发生异常:', e);
+    }
   }
   currentPageManager = null;
-  window.__currentPageManager = null;
+  (window as any).__currentPageManager = null;
 }
 
-function setCurrentPageManager(manager) {
+function setCurrentPageManager(manager: PageManager | null): void {
   currentPageManager = manager;
-  window.__currentPageManager = manager;
+  (window as any).__currentPageManager = manager;
 }
 
 // ==================== 导航栏与页脚加载 ====================
-export async function loadNavbar() {
+export async function loadNavbar(): Promise<any> {
   return await initNavbar();
 }
 
-export function refreshNavbarAfterNavigation() {
+export function refreshNavbarAfterNavigation(): void {
   refreshNavbarTitle();
 }
 
-export async function loadFooter() {
+export async function loadFooter(): Promise<void> {
   try {
     const response = await fetch('/footer.html');
     if (!response.ok) throw new Error('加载页脚失败');
@@ -119,7 +122,7 @@ export async function loadFooter() {
     const scripts = Array.from(tmp2.querySelectorAll('script'));
     if (!scripts.length) return;
 
-    const loadNextScript = (index) => {
+    const loadNextScript = (index: number) => {
       if (index >= scripts.length) return;
       const s = scripts[index];
       const src = s.getAttribute('src');
@@ -142,7 +145,7 @@ export async function loadFooter() {
       } else {
         try {
           const inline = document.createElement('script');
-          if (s.hasAttribute('type')) inline.type = s.getAttribute('type');
+          if (s.hasAttribute('type')) inline.type = s.getAttribute('type')!;
           inline.text = s.textContent || s.innerText || '';
           document.body.appendChild(inline);
         } catch (e) {}
@@ -157,7 +160,7 @@ export async function loadFooter() {
 
 // ==================== 移动端菜单切换 ====================
 let mobileToggleInitialized = false;
-export function initMobileMenuToggle() {
+export function initMobileMenuToggle(): void {
   if (mobileToggleInitialized) return;
   mobileToggleInitialized = true;
 
@@ -173,23 +176,23 @@ export function initMobileMenuToggle() {
   };
 
   document.addEventListener('click', (e) => {
-    const toggle = e.target.closest('.mobile-toggle');
+    const toggle = (e.target as Element).closest('.mobile-toggle');
     const nav = getNav();
     if (!nav) return;
     if (toggle) {
       e.preventDefault();
       const isActive = nav.classList.contains('active');
       nav.classList.toggle('active', !isActive);
-      if (getToggle()) getToggle().classList.toggle('active', !isActive);
+      if (getToggle()) getToggle()!.classList.toggle('active', !isActive);
       return;
     }
-    const isNavItem = e.target.closest('.nav-item');
+    const isNavItem = (e.target as Element).closest('.nav-item');
     if (isNavItem && nav.classList.contains('active')) {
       closeMenu();
       return;
     }
     if (nav.classList.contains('active')) {
-      const isInsideNav = e.target.closest('.nav-items');
+      const isInsideNav = (e.target as Element).closest('.nav-items');
       if (!isInsideNav) closeMenu();
     }
   });
@@ -216,25 +219,25 @@ export function initMobileMenuToggle() {
 }
 
 // ==================== 导航链接绑定 ====================
-export function bindNavLinks() {
-  const navItems = document.querySelectorAll('.nav-item[data-page]');
+export function bindNavLinks(): void {
+  const navItems = document.querySelectorAll<HTMLAnchorElement>('.nav-item[data-page]');
   if (!navItems.length) return;
   navItems.forEach(item => {
-    if (item._navHandler) item.removeEventListener('click', item._navHandler);
-    const handler = (e) => {
+    if ((item as any)._navHandler) item.removeEventListener('click', (item as any)._navHandler);
+    const handler = (e: Event) => {
       e.preventDefault();
       e.stopImmediatePropagation();
       const href = item.getAttribute('href');
       fetchAndReplaceContent(href || `/${item.dataset.page}.html`, true);
     };
     item.addEventListener('click', handler);
-    item._navHandler = handler;
+    (item as any)._navHandler = handler;
   });
 }
 
 // ==================== 导航高亮 ====================
-export function initNavigation() {
-  const navItems = document.querySelectorAll('.nav-item[data-page]');
+export function initNavigation(): void {
+  const navItems = document.querySelectorAll<HTMLAnchorElement>('.nav-item[data-page]');
   const urlParams = new URLSearchParams(window.location.search);
   let currentPage = urlParams.get('page');
   if (!currentPage) currentPage = getPageNameFromPath(window.location.pathname);
@@ -247,39 +250,46 @@ export function initNavigation() {
 
 // ==================== Popstate 支持（回退/前进） ====================
 let popstateInitialized = false;
-export function initPopstate() {
+export function initPopstate(): void {
   if (popstateInitialized) return;
   popstateInitialized = true;
   window.addEventListener('popstate', (event) => {
-    const scrollData = event.state?.scroll ?? null;
+    const scrollData = (event.state as any)?.scroll ?? null;
     fetchAndReplaceContent(window.location.href, false, scrollData);
   });
 }
 
 // ==================== 页面内容提取 ====================
-function extractPageContent(htmlText) {
+function extractPageContent(htmlText: string): {
+  title: string;
+  mainHtml: string;
+  styles: (HTMLLinkElement | HTMLStyleElement)[];
+  scripts: HTMLScriptElement[];
+  navbarHtml: string;
+  footerHtml: string;
+} {
   const doc = new DOMParser().parseFromString(htmlText, 'text/html');
   const title = doc.querySelector('title')?.textContent || document.title;
   const routerView = doc.querySelector(`#${ROUTER_VIEW_ID}`);
   const mainHtml = routerView ? routerView.outerHTML : '';
-  const styles = Array.from(doc.querySelectorAll('link[rel="stylesheet"], style'));
-  const scripts = Array.from(doc.body.querySelectorAll('script'));
+  const styles = Array.from(doc.querySelectorAll<HTMLLinkElement | HTMLStyleElement>('link[rel="stylesheet"], style'));
+  const scripts = Array.from(doc.body.querySelectorAll<HTMLScriptElement>('script'));
   const navbarHtml = doc.getElementById('navbar-placeholder')?.innerHTML || '';
   const footerHtml = doc.getElementById('footer-placeholder')?.innerHTML || '';
   return { title, mainHtml, styles, scripts, navbarHtml, footerHtml };
 }
 
 // ==================== 替换整个 #router-view（带过渡效果） ====================
-function replaceMainContent(mainHtml) {
+function replaceMainContent(mainHtml: string): Promise<boolean> {
   const currentRouterView = document.getElementById(ROUTER_VIEW_ID);
-  if (!currentRouterView || !mainHtml) return false;
+  if (!currentRouterView || !mainHtml) return Promise.resolve(false);
 
   const newContainer = document.createElement('div');
   newContainer.innerHTML = mainHtml;
   const newRouterView = newContainer.querySelector(`#${ROUTER_VIEW_ID}`);
   if (!newRouterView) {
     console.warn('[Router] 新页面缺少 #router-view，无法替换');
-    return false;
+    return Promise.resolve(false);
   }
 
   return new Promise((resolve) => {
@@ -319,13 +329,13 @@ function replaceMainContent(mainHtml) {
   });
 }
 
-function injectStyles(styles) {
+function injectStyles(styles: (HTMLLinkElement | HTMLStyleElement)[]): void {
   styles.forEach(h => {
     if (h.tagName.toLowerCase() === 'link') {
-      const href = h.getAttribute('href') || h.href;
+      const href = h.getAttribute('href') || (h as HTMLLinkElement).href;
       if (!href) return;
       if (loadedStyles.has(href)) return;
-      const exists = Array.from(document.querySelectorAll('link[rel="stylesheet"]')).some(l => l.getAttribute('href') === href);
+      const exists = Array.from(document.querySelectorAll<HTMLLinkElement>('link[rel="stylesheet"]')).some(l => l.getAttribute('href') === href);
       if (exists) {
         loadedStyles.add(href);
         return;
@@ -349,7 +359,7 @@ function injectStyles(styles) {
   });
 }
 
-function ensureGlobalElements() {
+function ensureGlobalElements(): void {
   if (!document.getElementById(ROUTER_VIEW_ID)) {
     const container = document.createElement('div');
     container.id = ROUTER_VIEW_ID;
@@ -367,7 +377,7 @@ function ensureGlobalElements() {
   }
 }
 
-function tryInitTwikoo() {
+function tryInitTwikoo(): void {
   try {
     const twikooEl = document.querySelector('#twikoo-comments');
     if (twikooEl && typeof twikoo !== 'undefined' && twikoo && typeof twikoo.init === 'function' && !twikooEl.getAttribute('data-init')) {
@@ -382,7 +392,7 @@ function tryInitTwikoo() {
   } catch (e) {}
 }
 
-async function reinitializeGlobalComponents(navbarHtml, footerHtml) {
+async function reinitializeGlobalComponents(navbarHtml: string, footerHtml: string): Promise<void> {
   const navbarPlaceholder = document.getElementById('navbar-placeholder');
   const currentNavbar = navbarPlaceholder?.querySelector('.navbar');
   if (navbarHtml && navbarPlaceholder) {
@@ -418,44 +428,43 @@ async function reinitializeGlobalComponents(navbarHtml, footerHtml) {
 }
 
 // ==================== 页面管理器按需加载（含 contact） ====================
-async function initPageManagerByPageName(pageName, isArticlePage, url) {
-  let manager = null;
+async function initPageManagerByPageName(pageName: string, isArticlePage: boolean, url: string): Promise<PageManager | null> {
+  let manager: PageManager | null = null;
   if (pageName === 'index') {
-    manager = initHomePage();
+    manager = initHomePage() as any;
   } else if (pageName === 'articles' || pageName === 'works') {
     const refreshCallback = () => {
-      if (window.scrollRevealInstance) window.scrollRevealInstance.refresh();
-      else { ensureScrollReveal(); if (window.scrollRevealInstance) window.scrollRevealInstance.refresh(); }
+      if ((window as any).scrollRevealInstance) (window as any).scrollRevealInstance.refresh();
+      else { ensureScrollReveal(); if ((window as any).scrollRevealInstance) (window as any).scrollRevealInstance.refresh(); }
     };
     const { initSearchPage } = await import('/js/pages/search-render.js');
-    manager = await initSearchPage(pageName, refreshCallback, { forceRefresh: true });
+    manager = await initSearchPage(pageName as 'works' | 'articles', refreshCallback) as any;
   } else if (pageName === 'archive') {
     const refreshCallback = () => {
-      if (window.scrollRevealInstance) window.scrollRevealInstance.refresh();
-      else { ensureScrollReveal(); if (window.scrollRevealInstance) window.scrollRevealInstance.refresh(); }
+      if ((window as any).scrollRevealInstance) (window as any).scrollRevealInstance.refresh();
+      else { ensureScrollReveal(); if ((window as any).scrollRevealInstance) (window as any).scrollRevealInstance.refresh(); }
     };
     const { initArchivePage } = await import('/js/pages/archive.js');
-    manager = await initArchivePage(refreshCallback);
+    manager = await initArchivePage(refreshCallback) as any;
   } else if (pageName === 'article-detail' || isArticlePage) {
     if (document.querySelector('.article-page-container') || document.getElementById('articleBody')) {
       const { initArticlePage } = await import('/js/pages/article.js');
-      manager = await initArticlePage();
+      manager = await initArticlePage() as any;
     }
   } else if (pageName === 'stats') {
     const { initStatsPage } = await import('/js/pages/stats-init.js');
-    manager = await initStatsPage();
+    manager = await initStatsPage() as any;
   } else if (pageName === 'friends') {
     const { initFriendsPage } = await import('/js/pages/friends-manager.js');
-    manager = await initFriendsPage();
+    manager = await initFriendsPage() as any;
   } else if (pageName === 'about') {
     const { initAboutPage } = await import('/js/pages/about.js');
     manager = {
       init: initAboutPage,
       destroy: () => {}
-    };
+    } as PageManager;
     await manager.init();
   } else if (pageName === 'contact') {
-    // 留言板页面：仅初始化 Twikoo 评论
     const { initTwikoo } = await import('/js/core/twikoo-manager.js');
     const container = document.querySelector('#twikoo-comments');
     if (container) {
@@ -464,45 +473,49 @@ async function initPageManagerByPageName(pageName, isArticlePage, url) {
     manager = {
       init: () => {},
       destroy: () => {
-        // 可选：清理 Twikoo 容器
         const { resetTwikooContainer } = import('/js/core/twikoo-manager.js');
         const container = document.querySelector('#twikoo-comments');
         if (container) resetTwikooContainer(container);
       }
-    };
+    } as PageManager;
   }
   return manager;
 }
 
-function refreshScrollRevealEffect() {
-  if (window.scrollRevealInstance) window.scrollRevealInstance.refresh();
-  else { ensureScrollReveal(); if (window.scrollRevealInstance) window.scrollRevealInstance.refresh(); }
+function refreshScrollRevealEffect(): void {
+  if ((window as any).scrollRevealInstance) (window as any).scrollRevealInstance.refresh();
+  else { ensureScrollReveal(); if ((window as any).scrollRevealInstance) (window as any).scrollRevealInstance.refresh(); }
 }
 
-function clearDataCacheForPage(pageName) {
+function clearDataCacheForPage(pageName: string): void {
   if (!storageController.isAllowed()) return;
   if (pageName === 'articles') storageController.removeItem(CONFIG.STORAGE_KEYS.ARTICLES_DATA);
   else if (pageName === 'works') storageController.removeItem(CONFIG.STORAGE_KEYS.WORKS_DATA);
 }
 
 // ==================== 主函数：无刷新导航（支持滚动恢复） ====================
-export async function fetchAndReplaceContent(url, pushState = true, scrollData = null) {
+export async function fetchAndReplaceContent(url: string, pushState = true, scrollData: { scrollX?: number; scrollY?: number } | null = null): Promise<boolean> {
   try {
+    // 1. 销毁当前页面管理器（捕获异常）
     await destroyCurrentPageManager();
 
+    // 2. 保存当前滚动位置（用于回退）
     if (pushState) {
       const currentScroll = { scrollX: window.scrollX, scrollY: window.scrollY };
       history.replaceState({ ...history.state, scroll: currentScroll }, document.title);
     }
 
+    // 3. 获取新页面内容
     const res = await fetch(url, { credentials: 'same-origin' });
     if (!res.ok) throw new Error(`Fetch失败: ${res.status}`);
     const text = await res.text();
 
     const { title, mainHtml, styles, scripts, navbarHtml, footerHtml } = extractPageContent(text);
 
+    // 4. 替换主内容
     await replaceMainContent(mainHtml);
 
+    // 5. 更新标题和浏览历史
     document.title = title;
     if (pushState) {
       const newScroll = scrollData || { scrollX: 0, scrollY: 0 };
@@ -511,7 +524,7 @@ export async function fetchAndReplaceContent(url, pushState = true, scrollData =
       if (scrollData) {
         window.scrollTo(scrollData.scrollX || 0, scrollData.scrollY || 0);
       } else {
-        const stateScroll = history.state?.scroll;
+        const stateScroll = (history.state as any)?.scroll;
         if (stateScroll) {
           window.scrollTo(stateScroll.scrollX || 0, stateScroll.scrollY || 0);
         }
@@ -520,6 +533,7 @@ export async function fetchAndReplaceContent(url, pushState = true, scrollData =
 
     refreshNavbarAfterNavigation();
 
+    // 6. 注入样式和执行脚本
     injectStyles(styles);
     await ScriptExecutor.execute(scripts, document.body);
 
@@ -527,6 +541,7 @@ export async function fetchAndReplaceContent(url, pushState = true, scrollData =
     tryInitTwikoo();
     await reinitializeGlobalComponents(navbarHtml, footerHtml);
 
+    // 7. 初始化页面管理器
     const pathname = new URL(url, window.location.href).pathname;
     const pageName = getPageNameFromPath(pathname);
     const isArticlePage = !!document.querySelector('.article-page-container') || !!document.getElementById('articleBody');
@@ -539,7 +554,8 @@ export async function fetchAndReplaceContent(url, pushState = true, scrollData =
 
     refreshScrollRevealEffect();
 
-    if (!pushState && !scrollData && !history.state?.scroll) {
+    // 8. 处理锚点滚动
+    if (!pushState && !scrollData && !(history.state as any)?.scroll) {
       const targetUrl = new URL(url, window.location.href);
       if (targetUrl.hash) {
         const el = document.getElementById(targetUrl.hash.slice(1));
@@ -553,13 +569,15 @@ export async function fetchAndReplaceContent(url, pushState = true, scrollData =
     return true;
   } catch (e) {
     console.error('[ERROR] 无刷新导航失败:', e);
+    // 即使失败也要确保管理器被销毁
+    await destroyCurrentPageManager();
     return false;
   }
 }
 
-export function enableAjaxNavigation() {
+export function enableAjaxNavigation(): void {
   document.addEventListener('click', function (e) {
-    const a = e.target.closest('a');
+    const a = (e.target as Element).closest('a');
     if (!a) return;
     const href = a.getAttribute('href');
     if (!href) return;
@@ -576,11 +594,11 @@ export function enableAjaxNavigation() {
   });
 }
 
-export async function initPageFeatures(pageName) {
+export async function initPageFeatures(pageName: string): Promise<any> {
   const manager = await initPageManagerByPageName(pageName, false, window.location.href);
-  if (manager && typeof manager.init === 'function' && !manager._initialized) {
+  if (manager && typeof manager.init === 'function' && !(manager as any)._initialized) {
     await manager.init();
-    manager._initialized = true;
+    (manager as any)._initialized = true;
   }
   return manager;
 }
