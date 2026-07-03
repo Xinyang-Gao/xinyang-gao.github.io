@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-03T14:50:59.083417",
-  "total_versions": 178,
+  "generated_at": "2026-07-04T00:25:45.824937",
+  "total_versions": 179,
   "versions": [
     {
       "id": 1,
@@ -2830,7 +2830,18 @@
           "description": "优化构建系统，减少 JS 体积约 25%~30%"
         }
       ]
+    },
+    {
+      "id": 179,
+      "version": "v8.2.4",
+      "date": "2026-07-04",
+      "changes": [
+        {
+          "type": "fix(player)",
+          "description": "将音乐播放器核心脚本作为 ES 模块加载"
+        }
+      ]
     }
   ],
-  "changelog_hash": "f72439ad23b90ca2fc4f182459ee671a"
+  "changelog_hash": "50055d83c8230132d38452ce64504303"
 }
