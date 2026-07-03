@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-04T01:03:02.062244",
-  "total_versions": 180,
+  "generated_at": "2026-07-04T01:21:31.910006",
+  "total_versions": 181,
   "versions": [
     {
       "id": 1,
@@ -2817,6 +2817,10 @@
         {
           "type": "fix(search, router, article)",
           "description": "修复无刷新导航后搜索功能失效及内存泄漏问题\n      - 搜索控制器(SearchController)不再共享模块级 Worker 单例，每个实例独立管理 Worker 生命周期，销毁时正确终止并置空，避免已终止 Worker 被复用\n      - 增加初始化重试机制，若搜索 DOM 元素未就绪，延迟重试最多 3 次，防止页面切换过快导致静默失败\n      - 文章详情页滚动位置恢复逻辑优化：优先处理 URL 锚点 hash，避免保存的滚动位置覆盖锚点跳转\n      - 路由切换时完善页面管理器销毁异常捕获，确保所有副作用（监听器、定时器、Observer、Worker）被清理\n      - 统一各页面管理器 destroy 接口，防止内存泄漏累积"
+        },
+        {
+          "type": "refactor(router, article)",
+          "description": "用 TypeScript 重构 router.ts 、 article.ts"
         }
       ]
     },
@@ -2852,7 +2856,22 @@
           "description": "优化欢迎覆盖层日志样式，给日志项添加颜色区分，并增加了一些真实日志"
         }
       ]
+    },
+    {
+      "id": 181,
+      "version": "v8.2.6",
+      "date": "2026-07-04",
+      "changes": [
+        {
+          "type": "perf(ui-effects)",
+          "description": "增强鼠标特效性能与自适应降级能力\n      - 空渲染跳过、粒子分批生成、帧率自适应、ResizeObserver 支持等多项优化\n      - 降低 CPU 占用，提升低端设备流畅度"
+        },
+        {
+          "type": "refactor(ui-effects)",
+          "description": "用 TypeScript 重构 ui-effects.ts"
+        }
+      ]
     }
   ],
-  "changelog_hash": "02cad5d782b50ea19b33324e054bce69"
+  "changelog_hash": "5668bce8aec55abf8de65307ecb0f789"
 }
