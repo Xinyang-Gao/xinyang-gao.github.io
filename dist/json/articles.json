@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-07-01T15:04:12.793295",
+  "generated_at": "2026-07-03T13:10:58.512901",
   "total_articles": 14,
-  "total_word_count": 34613,
+  "total_word_count": 35276,
   "articles": [
     {
       "relative_path": "src/assets/source/作文/从一株小草开始.md",
@@ -247,21 +247,19 @@
     },
     {
       "relative_path": "README.md",
-      "hash": "04aa3ad30071f01626012d8c3950a528",
-      "last_updated": "2026-07-01",
-      "modify_count": 10,
+      "hash": "3c111b85601841937d530adb744f4951",
+      "last_updated": "2026-07-03",
+      "modify_count": 12,
       "hidden": false,
-      "title": "README.md",
-      "date": "2026-04-12",
-      "description": "项目介绍",
-      "author": "高新炀 ＆ DEEPSEEK-V4",
-      "tags": [
-        "网站"
-      ],
+      "title": "README",
+      "date": "未指定日期",
+      "description": "",
+      "author": "高新炀",
+      "tags": [],
       "category": "README文档自动构建",
       "url": "/articles/README.html",
-      "word_count": 10878,
-      "read_time": "37分钟"
+      "word_count": 11541,
+      "read_time": "39分钟"
     }
   ]
 }
