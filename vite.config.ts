@@ -21,7 +21,7 @@ export default defineConfig({
         'js/standalone/404': resolve(__dirname, 'src/js/standalone/404.js'),
         'js/data/sw': resolve(__dirname, 'src/js/data/sw.js'),
         'js/data/settings': resolve(__dirname, 'src/js/data/settings.js'),
-        'js/data/searchWorker': resolve(__dirname, 'src/js/data/searchWorker.js'),
+        'js/data/searchWorker': resolve(__dirname, 'src/js/data/searchWorker.ts'),
       },
       output: {
         preserveModules: true,

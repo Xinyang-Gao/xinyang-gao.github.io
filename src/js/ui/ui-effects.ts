@@ -192,7 +192,7 @@ class MouseEffectManager {
     window.addEventListener('themeChanged', this._boundHandlers.theme);
     window.addEventListener('resize', this._boundHandlers.resize);
 
-    console.log('[MouseEffect] 特效引擎初始化完成（性能优化版）');
+    console.log('[MouseEffect] 特效引擎初始化完成');
   }
 
   // ---- 工具方法 ----

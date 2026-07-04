@@ -142,7 +142,7 @@ export class UIRenderer {
 // ==================== 搜索控制器 ====================
 export class SearchController {
   private page: 'works' | 'articles';
-  private scrollRevealRefresh: (() => void) | undefined;
+  public scrollRevealRefresh: (() => void) | undefined;
   private input: HTMLInputElement | null = null;
   private field: HTMLSelectElement | null = null;
   private sortSelect: HTMLSelectElement | null = null;
@@ -152,14 +152,23 @@ export class SearchController {
   private popStateHandler: ((e: PopStateEvent) => void) | null = null;
   private skipNextPopState = false;
   private dataCache: any = null;
-  private requestIdCounter = 0;
-  private pendingRequests = new Map<number, AbortController>();
-  private worker: Worker | null = null;           // 当前控制器专属 Worker
+
+  private worker: Worker | null = null;
+  private currentRequestId = 0;
+  private timeoutId: number | null = null;
+  private renderCancelToken = 0;
+
   private _inputHandler: (() => void) | null = null;
   private _fieldHandler: (() => void) | null = null;
   private _sortHandler: (() => void) | null = null;
   private initRetryTimer: number | null = null;
   private isDestroyed = false;
+
+  // 初始化标志
+  private _initialized = false;
+  private _tagsInitialized = false;
+
+  private static readonly BATCH_SIZE = 20;
 
   constructor(page: 'works' | 'articles', scrollRevealRefreshCallback?: () => void) {
     this.page = page;
@@ -167,18 +176,14 @@ export class SearchController {
     this.init();
   }
 
-  /**
-   * 初始化：获取 DOM 引用并绑定事件
-   * 若关键元素不存在，则延迟重试最多 3 次
-   */
   private init(retryCount = 0): void {
-    if (this.isDestroyed) return;
+    if (this._initialized || this.isDestroyed) return;
+    this._initialized = true;
 
     this.input = document.getElementById('search-input') as HTMLInputElement;
     this.field = document.getElementById('search-field') as HTMLSelectElement;
     this.sortSelect = document.getElementById('sort-order') as HTMLSelectElement;
 
-    // 如果关键元素不存在，延迟重试
     if (!this.input || !this.field) {
       if (retryCount < 3) {
         console.warn(`[SearchController] 搜索元素未找到，${retryCount + 1}秒后重试 (${retryCount + 1}/3)`);
@@ -191,7 +196,6 @@ export class SearchController {
       return;
     }
 
-    // 绑定排序下拉事件
     if (this.sortSelect) {
       this._sortHandler = () => {
         this.sortOrder = this.sortSelect!.value;
@@ -201,20 +205,16 @@ export class SearchController {
       this.sortSelect.addEventListener('change', this._sortHandler);
     }
 
-    // 搜索输入防抖
     this._inputHandler = Utils.debounce(() => this.handleSearch(), 300);
     this.input.addEventListener('input', this._inputHandler);
 
-    // 搜索字段切换
     this._fieldHandler = () => this.handleSearch();
     this.field.addEventListener('change', this._fieldHandler);
 
-    // 初始化标签筛选器和 URL 状态
     this.updateTagFilters();
     this.restoreFromURL();
     this.handleSearch(true);
 
-    // popstate 支持
     this.popStateHandler = (e: PopStateEvent) => {
       if (this.skipNextPopState) { this.skipNextPopState = false; return; }
       this.restoreFromURL();
@@ -225,26 +225,29 @@ export class SearchController {
     console.log(`[SearchController] 初始化完成 (${this.page})`);
   }
 
-  /**
-   * 销毁控制器：终止 Worker，移除事件，清除定时器
-   */
   destroy(): void {
     if (this.isDestroyed) return;
     this.isDestroyed = true;
+    this._initialized = false;
+    this._tagsInitialized = false;
 
-    // 1. 终止当前 Worker
     if (this.worker) {
       this.worker.terminate();
       this.worker = null;
     }
-
-    // 2. 清除重试定时器
     if (this.initRetryTimer) {
       clearTimeout(this.initRetryTimer);
       this.initRetryTimer = null;
     }
+    if (this.timeoutId) {
+      clearTimeout(this.timeoutId);
+      this.timeoutId = null;
+    }
+    if (this.debounceTimer) {
+      clearTimeout(this.debounceTimer);
+      this.debounceTimer = null;
+    }
 
-    // 3. 移除事件监听
     if (this.input && this._inputHandler) {
       this.input.removeEventListener('input', this._inputHandler);
       this._inputHandler = null;
@@ -262,29 +265,124 @@ export class SearchController {
       this.popStateHandler = null;
     }
 
-    // 4. 清除防抖定时器
-    if (this.debounceTimer) {
-      clearTimeout(this.debounceTimer);
-      this.debounceTimer = null;
-    }
-
-    // 5. 清空未完成的请求
-    this.pendingRequests.clear();
-
     console.log(`[SearchController] 已销毁 (${this.page})`);
   }
 
-  /**
-   * 获取或创建 Worker（每个控制器拥有独立实例）
-   */
   private getWorker(): Worker {
     if (!this.worker) {
-      this.worker = new Worker('/js/data/searchWorker.js');
+      this.worker = new Worker('/js/data/searchWorker.js', { type: 'module' });
     }
     return this.worker;
   }
 
-  // ------------------- 其余私有方法 -------------------
+  private renderItemsInBatches(items: Item[], container: HTMLElement, token: number): void {
+    container.innerHTML = '';
+    if (items.length === 0) {
+      container.innerHTML = `<p>没有找到相关${DataManager.TYPE_LABEL[this.page]}！ >-<</p>`;
+      if (this.scrollRevealRefresh) this.scrollRevealRefresh();
+      return;
+    }
+
+    const wrapper = document.createElement('div');
+    wrapper.className = `${this.page}-list`; // "works-list" 或 "articles-list"
+    container.appendChild(wrapper);
+
+    const total = items.length;
+    let index = 0;
+    const type = this.page.slice(0, -1) as 'article' | 'work';
+
+    const renderBatch = () => {
+      if (this.isDestroyed || token !== this.renderCancelToken) return;
+
+      const end = Math.min(index + SearchController.BATCH_SIZE, total);
+      const fragment = document.createDocumentFragment();
+      for (let i = index; i < end; i++) {
+        const html = UIRenderer.generateListItem(items[i], type, i);
+        const temp = document.createElement('div');
+        temp.innerHTML = html;
+        const node = temp.firstElementChild;
+        if (node) fragment.appendChild(node);
+      }
+      wrapper.appendChild(fragment);
+
+      index = end;
+      if (index < total) {
+        requestAnimationFrame(renderBatch);
+      } else {
+        if (this.scrollRevealRefresh) this.scrollRevealRefresh();
+      }
+    };
+
+    requestAnimationFrame(renderBatch);
+  }
+
+  private async handleSearch(skipUpdateURL = false): Promise<void> {
+    if (this.isDestroyed) return;
+
+    const data = await this.getCachedData(this.page);
+    if (!data) return;
+
+    const q = this.input ? this.input.value.trim() : '';
+    const f = this.field ? this.field.value : 'all';
+    const items = this.page === 'works' ? [...data.works] : [...data.articles];
+
+    const requestId = ++this.currentRequestId;
+    if (this.timeoutId) {
+      clearTimeout(this.timeoutId);
+      this.timeoutId = null;
+    }
+    this.renderCancelToken++;
+
+    const worker = this.getWorker();
+
+    return new Promise<void>((resolve, reject) => {
+      const timeoutId = window.setTimeout(() => {
+        worker.removeEventListener('message', handler);
+        this.timeoutId = null;
+        if (this.worker) {
+          this.worker.terminate();
+          this.worker = null;
+        }
+        reject(new Error('Worker 搜索超时'));
+      }, 5000);
+      this.timeoutId = timeoutId;
+
+      const handler = (e: MessageEvent) => {
+        if (e.data.type === 'filterAndSortResult' && e.data.requestId === requestId) {
+          if (this.timeoutId) {
+            clearTimeout(this.timeoutId);
+            this.timeoutId = null;
+          }
+          worker.removeEventListener('message', handler);
+
+          const filteredItems = e.data.data;
+          if (!skipUpdateURL) this.updateURL();
+
+          const container = document.getElementById(`${this.page}-list-container`);
+          if (container) {
+            this.renderItemsInBatches(filteredItems, container, this.renderCancelToken);
+          }
+          resolve();
+        }
+      };
+      worker.addEventListener('message', handler);
+
+      worker.postMessage({
+        type: 'filterAndSort',
+        options: {
+          items,
+          query: q,
+          field: f,
+          selectedTags: this.selectedTags,
+          sortOrder: this.sortOrder,
+          requestId
+        }
+      });
+    }).catch(err => {
+      console.warn('[SearchController] 搜索请求失败:', err);
+    });
+  }
+
   private restoreFromURL(): void {
     const params = new URLSearchParams(window.location.search);
     const q = params.get('q') || '';
@@ -373,7 +471,9 @@ export class SearchController {
   }
 
   private async updateTagFilters(): Promise<void> {
-    if (!['works', 'articles'].includes(this.page)) return;
+    if (this._tagsInitialized) return;
+    this._tagsInitialized = true;
+
     const container = document.getElementById(`${this.page}-tags-filter`);
     if (!container) return;
     container.innerHTML = '';
@@ -430,50 +530,6 @@ export class SearchController {
     document.querySelectorAll(`#${this.page}-tags-filter .tag-button:not(:last-child)`).forEach(b => b.classList.remove('active'));
     this.handleSearch();
   }
-
-  private async handleSearch(skipUpdateURL = false): Promise<void> {
-    if (this.isDestroyed) return;
-
-    const data = await this.getCachedData(this.page);
-    if (!data) return;
-
-    const q = this.input ? this.input.value.trim() : '';
-    const f = this.field ? this.field.value : 'all';
-    const items = this.page === 'works' ? [...data.works] : [...data.articles];
-
-    const requestId = ++this.requestIdCounter;
-    const worker = this.getWorker(); // 每个控制器独立的 Worker
-
-    return new Promise<void>((resolve) => {
-      const handler = (e: MessageEvent) => {
-        if (e.data.type === 'filterAndSortResult' && e.data.requestId === requestId) {
-          worker.removeEventListener('message', handler);
-          const filteredItems = e.data.data;
-          const html = UIRenderer.generateListHTML({ [this.page]: filteredItems }, this.page);
-          const container = document.getElementById(`${this.page}-list-container`);
-          if (container) {
-            container.innerHTML = html;
-            if (this.scrollRevealRefresh) this.scrollRevealRefresh();
-          }
-          if (!skipUpdateURL) this.updateURL();
-          resolve();
-        }
-      };
-      worker.addEventListener('message', handler);
-
-      worker.postMessage({
-        type: 'filterAndSort',
-        options: {
-          items,
-          query: q,
-          field: f,
-          selectedTags: this.selectedTags,
-          sortOrder: this.sortOrder,
-          requestId
-        }
-      });
-    });
-  }
 }
 
 // ==================== 页面初始化函数 ====================
@@ -481,16 +537,22 @@ export async function initSearchPage(
   page: 'works' | 'articles',
   scrollRevealRefreshCallback?: () => void
 ): Promise<SearchController> {
-  // 销毁旧的控制器（如果存在）
-  if ((window as any)._currentSearchController) {
-    (window as any)._currentSearchController.destroy();
+  const existing = (window as any)._currentSearchController;
+  if (existing && !existing.isDestroyed && existing.page === page) {
+    console.log(`[initSearchPage] 复用已有控制器 (${page})`);
+    if (scrollRevealRefreshCallback) {
+      existing.scrollRevealRefresh = scrollRevealRefreshCallback;
+    }
+    return existing;
+  }
+
+  if (existing) {
+    existing.destroy();
     (window as any)._currentSearchController = null;
   }
 
-  // 预加载数据（不依赖控制器）
   await DataManager.fetchData(page, true);
 
-  // 创建新控制器
   const controller = new SearchController(page, scrollRevealRefreshCallback);
   (window as any)._currentSearchController = controller;
   return controller;
