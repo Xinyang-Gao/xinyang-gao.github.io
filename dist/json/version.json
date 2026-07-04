@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-04T11:12:28.519557",
+  "generated_at": "2026-07-04T11:32:36.657336",
   "total_versions": 183,
   "versions": [
     {
@@ -2893,11 +2893,11 @@
       "date": "2026-07-04",
       "changes": [
         {
-          "type": "chore(page-utils.js)",
-          "description": "删除已不被使用的 `isArticleDetailOr404Page` 函数"
+          "type": "fix(theme)",
+          "description": "修复主题切换闪烁并优化过渡动画"
         }
       ]
     }
   ],
-  "changelog_hash": "55fb4ac74604ab601360e6238f9d9fb6"
+  "changelog_hash": "d42eafa41a1b63b50b96d214b6594154"
 }

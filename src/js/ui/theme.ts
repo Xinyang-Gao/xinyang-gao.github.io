@@ -9,41 +9,15 @@ export function initThemeToggle() {
   const checkbox = document.getElementById('theme-toggle-checkbox');
   if (!checkbox) return;
 
-  /**
-   * 应用主题并更新存储
-   * @param {string} theme - 'light' 或 'dark'
-   * @param {boolean} updateCheckbox - 是否同步复选框状态
-   * @param {boolean} isUserAction - 是否为用户手动切换（用于区分自动恢复）
-   */
   const setTheme = (theme, updateCheckbox = true, isUserAction = false) => {
     const root = document.documentElement;
     const currentTheme = root.getAttribute('data-theme');
     if (currentTheme === theme) return;
-    document.body.style.transition = 'background-color 0.3s ease, color 0.3s ease';
-    const overlay = document.createElement('div');
-    overlay.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: ${theme === 'dark' ? 'rgba(0,0,0,0.1)' : 'rgba(255,255,255,0.1)'};
-      z-index: 9999;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 0.4s ease;
-    `;
-    document.body.appendChild(overlay);
-    requestAnimationFrame(() => { overlay.style.opacity = '1'; });
-    setTimeout(() => {
-      overlay.remove();
-      document.body.style.transition = '';
-    }, 400);
 
-    // 应用主题
+    // 直接应用主题，CSS transition 会处理背景色和文字颜色的平滑变化
     root.setAttribute('data-theme', theme);
 
-    // 存储主题：仅在用户手动操作时保存，避免自动时段切换覆盖用户偏好
+    // 用户手动操作时保存偏好
     if (isUserAction && storageController.isAllowed()) {
       storageController.setItem(CONFIG.STORAGE_KEYS.THEME, theme);
     }
@@ -51,8 +25,14 @@ export function initThemeToggle() {
     // 同步复选框状态
     if (updateCheckbox) checkbox.checked = theme === 'dark';
 
-    // 触发自定义事件，供其他模块监听（如光标颜色更新）
+    // 触发自定义事件
     window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme } }));
+    
+    // 切换主题后，添加临时类触发 CSS 动画
+    document.body.classList.add('theme-changing');
+    setTimeout(() => {
+      document.body.classList.remove('theme-changing');
+    }, 600);
   };
 
   // 复选框变更事件（用户手动操作）

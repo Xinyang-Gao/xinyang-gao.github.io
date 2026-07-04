@@ -35,6 +35,17 @@ body {
   min-height: 100vh;
   overflow-x: hidden;
   transition: background-image 0.5s ease, background-color var(--transition-normal), color var(--transition-normal);
+  transition: background-color 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+              color 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+body.theme-changing {
+  animation: themePulse 0.6s ease;
+}
+@keyframes themePulse {
+  0% { filter: brightness(1.02); }
+  50% { filter: brightness(0.98); }
+  100% { filter: brightness(1); }
 }
 
 body::before {
