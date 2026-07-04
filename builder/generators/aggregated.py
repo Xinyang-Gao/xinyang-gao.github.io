@@ -157,12 +157,12 @@ class AggregatedGenerator(OutputGenerator):
         config = load_json(PROJECT_ROOT / "rss_config.json", {})
         site = config.get("site", {
             "title": "高新炀的个人网站",
-            "link": "https://gxy.cn.mt",
+            "link": "https://xinyang-gao.github.io",
             "description": "学生 · 开发者 · 写作者",
             "language": "zh-CN",
             "generator": "AggregatedGenerator"
         })
-        base_url = site.get("link", "https://gxy.cn.mt").rstrip('/')
+        base_url = site.get("link", "https://xinyang-gao.github.io").rstrip('/')
 
         def parse_date_rfc822(date_str):
             if not date_str or date_str == "未指定日期":
@@ -251,7 +251,7 @@ class AggregatedGenerator(OutputGenerator):
 
     # ---------- 站点地图 ----------
     def _generate_sitemap(self, context: BuildContext) -> None:
-        base_url = "https://gxy.cn.mt"
+        base_url = "https://xinyang-gao.github.io"
         urlset = ET.Element("urlset", xmlns="http://www.sitemaps.org/schemas/sitemap/0.9")
         added = set()
 
