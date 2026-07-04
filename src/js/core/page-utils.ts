@@ -19,18 +19,6 @@ export function getPageNameFromPath(pathname) {
   return name || 'index';
 }
 
-export function isArticleDetailOr404Page() {
-  try {
-    const path = window.location.pathname || '';
-    const name = path.split('/').pop() || '';
-    if (path.includes('/articles/') && name && name !== 'articles.html') return true;
-    if (name === '404.html' || name === '404') return true;
-    return false;
-  } catch (e) {
-    return false;
-  }
-}
-
 export function isSameOrigin(href) {
   try {
     const url = new URL(href, window.location.href);

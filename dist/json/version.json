@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-04T10:57:04.508343",
-  "total_versions": 182,
+  "generated_at": "2026-07-04T11:12:28.519557",
+  "total_versions": 183,
   "versions": [
     {
       "id": 1,
@@ -2886,7 +2886,18 @@
           "description": "用 TypeScript 重构 `searchWorker.js` 为 `searchWorker.ts`"
         }
       ]
+    },
+    {
+      "id": 183,
+      "version": "v8.2.8",
+      "date": "2026-07-04",
+      "changes": [
+        {
+          "type": "chore(page-utils.js)",
+          "description": "删除已不被使用的 `isArticleDetailOr404Page` 函数"
+        }
+      ]
     }
   ],
-  "changelog_hash": "7833d30bd77a72fd6a1c578eb545985b"
+  "changelog_hash": "55fb4ac74604ab601360e6238f9d9fb6"
 }
