@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-04T11:32:36.657336",
-  "total_versions": 183,
+  "generated_at": "2026-07-05T17:39:28.511225",
+  "total_versions": 184,
   "versions": [
     {
       "id": 1,
@@ -2897,7 +2897,18 @@
           "description": "修复主题切换闪烁并优化过渡动画"
         }
       ]
+    },
+    {
+      "id": 184,
+      "version": "v8.3.0",
+      "date": "2026-07-05",
+      "changes": [
+        {
+          "type": "feat(build)",
+          "description": "重构友链与增量构建，支持头像主题色自动生成\n      - 修复 load_friends 数据源路径，从源 JSON 而非构建输出读取\n      - 增量构建加入前端资源哈希，仅在前端变更时执行 Vite 与 CSS 压缩\n      - 友链页面改为全量数据驱动生成，不再依赖静态模板\n      - 重新新增 generate_friend_colors.py 工具，自动提取友链头像主色生成配色 JSON"
+        }
+      ]
     }
   ],
-  "changelog_hash": "d42eafa41a1b63b50b96d214b6594154"
+  "changelog_hash": "aeb6711c6191136c7943c8c0642d10cc"
 }

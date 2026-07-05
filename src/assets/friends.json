@@ -1,0 +1,96 @@
+{
+  "friends": [
+    {
+      "name": "高新炀的小站",
+      "link": "https://xinyang-gao.github.io",
+      "desc": "一个装着些稀奇古怪东西的个人小站，欢迎来逛逛~",
+      "avatar": "https://xinyang-gao.github.io/assets/avatar.webp"
+    },
+    {
+      "name": "THW’s Blog",
+      "link": "https://blog.tianhw.top",
+      "desc": "前途似海，来日方长",
+      "avatar": "https://image.tianhw.top/avatar.webp"
+    },
+    {
+      "name": "Luquiesceneの小屋",
+      "link": "https://luq-blog.xyz/",
+      "desc": "To be or not to be: that is the question.",
+      "avatar": "https://luq-blog.xyz/avatar.webp"
+    },
+    {
+      "name": "Olinl Blog",
+      "link": "https://blog.olinl.com",
+      "desc": "分享、实践、学习",
+      "avatar": "https://q2.qlogo.cn/headimg_dl?dst_uin=9892214&spec=0"
+    },
+    {
+      "name": "小枫_QWQ的Blog",
+      "link": "https://blog.xiaofengqwq.com",
+      "desc": "欢迎来到小枫_QWQ的Blog！这是一个致力于分享前后端技术的博客。同时也分享一些闲聊碎语",
+      "avatar": "https://q.qlogo.cn/headimg_dl?dst_uin=1432777209&spec=640&img_type=jpg"
+    },
+    {
+      "name": "TT清沫uk",
+      "link": "https://ttquk.netlify.app",
+      "desc": "TT清沫ukの博客",
+      "avatar": "https://ts1.tc.mm.bing.net/th/id/OIP-C.6WsD9caLSNQFhJOi77soRAHaHa?rs=1&pid=ImgDetMain&o=7&rm=3"
+    },
+    {
+      "name": "熵",
+      "link": "https://www.nekt.qzz.io",
+      "desc": "世界本就浑浊，罪与爱同歌",
+      "avatar": "https://www.nekt.qzz.io/head.png"
+    },
+    {
+      "name": "口袋分享记",
+      "link": "https://111620.xyz/",
+      "desc": "所谓过往，皆为序章。虚室生白️",
+      "avatar": "https://img.111620.xyz/2025/07/29/6887b5efbf768.png"
+    },
+    {
+      "name": "启明曙光科技",
+      "link": "https://www.orientdawn.com",
+      "desc": "东方曙光，星火燎原，专注人工智能技术普惠落地",
+      "avatar": "https://orientdawn.com/image/logo.png"
+    },
+    {
+    "name": "涵哲子居",
+    "link": "https://iluc.cn",
+    "desc": "天哲地理，共公卿好",
+    "avatar": "https://iluc.cn/logo.webp"
+    }
+  ],
+  "external": [
+    {
+      "name": "开往 / Travelling",
+      "link": "https://www.travellings.cn/",
+      "desc": "开往 – 友链接力"
+    },
+    {
+      "name": "NeteaseMiniPlayer",
+      "link": "https://github.com/numakkiyu/NeteaseMiniPlayer/",
+      "desc": "网易云音乐迷你播放器"
+    },
+    {
+      "name": "Busuanzi",
+      "link": "https://www.busuanzi.cc/",
+      "desc": "不蒜子 – 极简网站计数器"
+    },
+    {
+      "name": "Twikoo",
+      "link": "https://twikoo.js.org/",
+      "desc": "网站评论系统 - 简洁、安全、免费"
+    },
+    {
+      "name": "github-contrib-graph",
+      "link": "https://www.npmjs.com/package/github-contrib-graph?activeTab=readme",
+      "desc": "一个轻量级、可自定义的 GitHub 贡献图小部件"
+    },
+    {
+      "name": "Github Pages",
+      "link": "https://github.com/xinyang-Gao/xinyang-gao.github.io",
+      "desc": "网站部署"
+    }
+  ]
+}

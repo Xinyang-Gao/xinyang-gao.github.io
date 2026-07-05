@@ -1,258 +1,304 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>友情链接 - 高新炀的小站</title>
-    <link rel="stylesheet" href="/css/main.css">
-    <link rel="stylesheet" href="/css/pages/friends.css">
-    <link rel="stylesheet" href="/css/components/comments.css">
-</head>
-<body>
-<div id="loading-overlay" role="status" aria-label="页面加载中"><div class="loading-log"><div>[START] 正在等待 JavaScript，这可能需要几秒</div></div><div class="loading-glow"></div><div id="loading-content"><span class="loading-title">GaoXinYang</span></div></div>
-    <div id="navbar-placeholder"></div>
-    <div id="router-view">
-        <div class="two-column-layout">
-            <aside class="sidebar-profile">
-                <div id="personal-card-container"></div>
-            </aside>
-            <main class="main-content-area">
-                <div class="container">
-                    <h2>我的朋友们</h2>
-                    <p style="margin-bottom: 8px;">「 志合者，不以山海为远 」欢迎互访交流</p>
-                    <div id="friends-stats-area" class="friends-stats">共 9 位小伙伴 · 点击卡片访问友站</div><div class="friends-grid" id="friends-list-container-inner">
-            <a href="https://xinyang-gao.github.io" class="friend-card" target="_blank" rel="noopener noreferrer" style="background-color: rgba(122, 162, 190, 0.24);">
-                <div class="friend-avatar">
-                <div class="avatar-wrapper">
-                    <div class="avatar-placeholder" style="background: var(--accent-color);">高</div>
-                    <img class="avatar-img" src="https://xinyang-gao.github.io/assets/avatar.webp" alt="高新炀的小站的头像" 
-                         loading="lazy" 
-                         onload="this.style.opacity='1'; this.previousElementSibling.style.display='none';"
-                         onerror="this.style.display='none'; this.previousElementSibling.style.display='flex';">
-                </div>
-            </div>
-                <div class="friend-info">
-                    <h3 class="friend-name">高新炀的小站</h3>
-                    <p class="friend-desc">一个装着些稀奇古怪东西的个人小站，欢迎来逛逛~</p>
-                    <div class="friend-url">xinyang-gao.github.io</div>
-                </div>
-            </a>
-        
-            <a href="https://blog.tianhw.top" class="friend-card" target="_blank" rel="noopener noreferrer" style="background-color: rgba(124, 145, 196, 0.24);">
-                <div class="friend-avatar">
-                <div class="avatar-wrapper">
-                    <div class="avatar-placeholder" style="background: var(--accent-color);">T</div>
-                    <img class="avatar-img" src="https://image.tianhw.top/avatar.webp" alt="THW’s Blog的头像" 
-                         loading="lazy" 
-                         onload="this.style.opacity='1'; this.previousElementSibling.style.display='none';"
-                         onerror="this.style.display='none'; this.previousElementSibling.style.display='flex';">
-                </div>
-            </div>
-                <div class="friend-info">
-                    <h3 class="friend-name">THW’s Blog</h3>
-                    <p class="friend-desc">前途似海，来日方长</p>
-                    <div class="friend-url">blog.tianhw.top</div>
-                </div>
-            </a>
-        
-            <a href="https://luq-blog.xyz/" class="friend-card" target="_blank" rel="noopener noreferrer" style="background-color: rgba(206, 193, 212, 0.24);">
-                <div class="friend-avatar">
-                <div class="avatar-wrapper">
-                    <div class="avatar-placeholder" style="background: var(--accent-color);">L</div>
-                    <img class="avatar-img" src="https://luq-blog.xyz/avatar.webp" alt="Luquiesceneの小屋的头像" 
-                         loading="lazy" 
-                         onload="this.style.opacity='1'; this.previousElementSibling.style.display='none';"
-                         onerror="this.style.display='none'; this.previousElementSibling.style.display='flex';">
-                </div>
-            </div>
-                <div class="friend-info">
-                    <h3 class="friend-name">Luquiesceneの小屋</h3>
-                    <p class="friend-desc">To be or not to be: that is the question.</p>
-                    <div class="friend-url">luq-blog.xyz</div>
-                </div>
-            </a>
-        
-            <a href="https://blog.olinl.com" class="friend-card" target="_blank" rel="noopener noreferrer" style="background-color: rgba(229, 227, 223, 0.24);">
-                <div class="friend-avatar">
-                <div class="avatar-wrapper">
-                    <div class="avatar-placeholder" style="background: var(--accent-color);">O</div>
-                    <img class="avatar-img" src="https://q2.qlogo.cn/headimg_dl?dst_uin=9892214&amp;spec=0" alt="Olinl Blog的头像" 
-                         loading="lazy" 
-                         onload="this.style.opacity='1'; this.previousElementSibling.style.display='none';"
-                         onerror="this.style.display='none'; this.previousElementSibling.style.display='flex';">
-                </div>
-            </div>
-                <div class="friend-info">
-                    <h3 class="friend-name">Olinl Blog</h3>
-                    <p class="friend-desc">分享、实践、学习</p>
-                    <div class="friend-url">blog.olinl.com</div>
-                </div>
-            </a>
-        
-            <a href="https://blog.xiaofengqwq.com" class="friend-card" target="_blank" rel="noopener noreferrer" style="background-color: rgba(217, 212, 209, 0.24);">
-                <div class="friend-avatar">
-                <div class="avatar-wrapper">
-                    <div class="avatar-placeholder" style="background: var(--accent-color);">小</div>
-                    <img class="avatar-img" src="https://q.qlogo.cn/headimg_dl?dst_uin=1432777209&amp;spec=640&amp;img_type=jpg" alt="小枫_QWQ的Blog的头像" 
-                         loading="lazy" 
-                         onload="this.style.opacity='1'; this.previousElementSibling.style.display='none';"
-                         onerror="this.style.display='none'; this.previousElementSibling.style.display='flex';">
-                </div>
-            </div>
-                <div class="friend-info">
-                    <h3 class="friend-name">小枫_QWQ的Blog</h3>
-                    <p class="friend-desc">欢迎来到小枫_QWQ的Blog！这是一个致力于分享前后端技术的博客。同时也分享一些闲聊碎语</p>
-                    <div class="friend-url">blog.xiaofengqwq.com</div>
-                </div>
-            </a>
-        
-            <a href="https://ttquk.netlify.app" class="friend-card" target="_blank" rel="noopener noreferrer" style="background-color: rgba(203, 84, 91, 0.24);">
-                <div class="friend-avatar">
-                <div class="avatar-wrapper">
-                    <div class="avatar-placeholder" style="background: var(--accent-color);">T</div>
-                    <img class="avatar-img" src="https://ts1.tc.mm.bing.net/th/id/OIP-C.6WsD9caLSNQFhJOi77soRAHaHa?rs=1&amp;pid=ImgDetMain&amp;o=7&amp;rm=3" alt="TT清沫uk的头像" 
-                         loading="lazy" 
-                         onload="this.style.opacity='1'; this.previousElementSibling.style.display='none';"
-                         onerror="this.style.display='none'; this.previousElementSibling.style.display='flex';">
-                </div>
-            </div>
-                <div class="friend-info">
-                    <h3 class="friend-name">TT清沫uk</h3>
-                    <p class="friend-desc">TT清沫ukの博客</p>
-                    <div class="friend-url">ttquk.netlify.app</div>
-                </div>
-            </a>
-        
-            <a href="https://www.nekt.qzz.io" class="friend-card" target="_blank" rel="noopener noreferrer" style="background-color: rgba(199, 129, 156, 0.24);">
-                <div class="friend-avatar">
-                <div class="avatar-wrapper">
-                    <div class="avatar-placeholder" style="background: var(--accent-color);">熵</div>
-                    <img class="avatar-img" src="https://www.nekt.qzz.io/head.png" alt="熵的头像" 
-                         loading="lazy" 
-                         onload="this.style.opacity='1'; this.previousElementSibling.style.display='none';"
-                         onerror="this.style.display='none'; this.previousElementSibling.style.display='flex';">
-                </div>
-            </div>
-                <div class="friend-info">
-                    <h3 class="friend-name">熵</h3>
-                    <p class="friend-desc">世界本就浑浊，罪与爱同歌</p>
-                    <div class="friend-url">nekt.qzz.io</div>
-                </div>
-            </a>
-        
-            <a href="https://111620.xyz/" class="friend-card" target="_blank" rel="noopener noreferrer" style="background-color: rgba(7, 5, 6, 0.24);">
-                <div class="friend-avatar">
-                <div class="avatar-wrapper">
-                    <div class="avatar-placeholder" style="background: var(--accent-color);">口</div>
-                    <img class="avatar-img" src="https://img.111620.xyz/2025/07/29/6887b5efbf768.png" alt="口袋分享记的头像" 
-                         loading="lazy" 
-                         onload="this.style.opacity='1'; this.previousElementSibling.style.display='none';"
-                         onerror="this.style.display='none'; this.previousElementSibling.style.display='flex';">
-                </div>
-            </div>
-                <div class="friend-info">
-                    <h3 class="friend-name">口袋分享记</h3>
-                    <p class="friend-desc">所谓过往，皆为序章。虚室生白️</p>
-                    <div class="friend-url">111620.xyz</div>
-                </div>
-            </a>
-        
-            <a href="https://www.orientdawn.com" class="friend-card" target="_blank" rel="noopener noreferrer" style="background-color: rgba(238, 148, 17, 0.24);">
-                <div class="friend-avatar">
-                <div class="avatar-wrapper">
-                    <div class="avatar-placeholder" style="background: var(--accent-color);">启</div>
-                    <img class="avatar-img" src="https://orientdawn.com/image/logo.png" alt="启明曙光科技的头像" 
-                         loading="lazy" 
-                         onload="this.style.opacity='1'; this.previousElementSibling.style.display='none';"
-                         onerror="this.style.display='none'; this.previousElementSibling.style.display='flex';">
-                </div>
-            </div>
-                <div class="friend-info">
-                    <h3 class="friend-name">启明曙光科技</h3>
-                    <p class="friend-desc">东方曙光，星火燎原，专注人工智能技术普惠落地</p>
-                    <div class="friend-url">orientdawn.com</div>
-                </div>
-            </a>
-        </div>
-                    <div class="external-links-section"><h3 class="external-section-title">🔗 站点工具 & 服务</h3><div class="external-links-grid">
-            <a href="https://www.travellings.cn/" class="external-link-card" target="_blank" rel="noopener noreferrer">
-                <span class="external-link-name">开往 / Travelling</span>
-                <span class="external-link-desc">开往 – 友链接力</span>
-            </a>
-        
-            <a href="https://github.com/numakkiyu/NeteaseMiniPlayer/" class="external-link-card" target="_blank" rel="noopener noreferrer">
-                <span class="external-link-name">NeteaseMiniPlayer</span>
-                <span class="external-link-desc">网易云音乐迷你播放器</span>
-            </a>
-        
-            <a href="https://www.busuanzi.cc/" class="external-link-card" target="_blank" rel="noopener noreferrer">
-                <span class="external-link-name">Busuanzi</span>
-                <span class="external-link-desc">不蒜子 – 极简网站计数器</span>
-            </a>
-        
-            <a href="https://twikoo.js.org/" class="external-link-card" target="_blank" rel="noopener noreferrer">
-                <span class="external-link-name">Twikoo</span>
-                <span class="external-link-desc">网站评论系统 - 简洁、安全、免费</span>
-            </a>
-        
-            <a href="https://www.npmjs.com/package/github-contrib-graph?activeTab=readme" class="external-link-card" target="_blank" rel="noopener noreferrer">
-                <span class="external-link-name">github-contrib-graph</span>
-                <span class="external-link-desc">一个轻量级、可自定义的 GitHub 贡献图小部件</span>
-            </a>
-        
-            <a href="https://github.com/xinyang-Gao/xinyang-gao.github.io" class="external-link-card" target="_blank" rel="noopener noreferrer">
-                <span class="external-link-name">Github Pages</span>
-                <span class="external-link-desc">网站部署</span>
-            </a>
-        </div></div>
-                    <div class="info-card">
-                        <div class="info-title">友情提示</div>
-                        <div class="requirements-section">
-                            <div class="section-subtitle">申请要求</div>
-                            <div class="requirements-grid">
-                                <div class="requirement-item">
-                                    <div class="requirement-title">友链互换</div>
-                                    <p class="requirement-desc">请先添加本站友链，并确保您的站点可以被正常访问，双向奔赴才更有意义。</p>
-                                </div>
-                                <div class="requirement-item">
-                                    <div class="requirement-title">信息完整</div>
-                                    <p class="requirement-desc">请确保您的站点有清晰的名称、描述和头像，便于朋友们互相了解。</p>
-                                </div>
-                                <div class="requirement-item">
-                                    <div class="requirement-title">内容合规</div>
-                                    <p class="requirement-desc">拥有原创内容，符合中华人民共和国法律法规，共同维护纯净网络空间。</p>
-                                </div>
-                                <div class="requirement-item">
-                                    <div class="requirement-title">持续更新</div>
-                                    <p class="requirement-desc">建议保持一定的更新频率，热爱分享与交流。不限内容类型，期待多元碰撞。</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="contact-note"><p>注意如果有<strong>违法、侵权、恶意广告</strong>等违规内容将会被撤下链接哟</p></div>
-                        <div class="myinfo-section">
-                            <div class="myinfo-header">我的信息</div>
-                            <div class="info-hint">如果您希望交换友链，可以按照下面的 JSON 提供您的站点信息</div>
-                            <div class="code-block-wrapper">
-                                <div class="code-header">
-                                    <button class="copy-btn" id="copyJsonBtn">复制</button>
-                                </div>
-                                <pre><code id="friendJsonExample">{
-    "name": "高新炀的小站",
-    "link": "https://xinyang-gao.github.io",
-    "desc": "一个装着些稀奇古怪东西的个人小站，欢迎来逛逛~",
-    "avatar": "https://xinyang-gao.github.io/assets/avatar.webp"
-}</code></pre>
-                            </div>
+    <html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+        <title>友情链接 - 高新炀的小站</title>
+        <link rel="stylesheet" href="/css/main.css">
+        <link rel="stylesheet" href="/css/pages/friends.css">
+        <link rel="stylesheet" href="/css/components/comments.css">
+    </head>
+    <body>
+    <div id="loading-overlay" role="status" aria-label="页面加载中"><div class="loading-log"><div>[START] 正在等待 JavaScript，这可能需要几秒</div></div><div class="loading-glow"></div><div id="loading-content"><span class="loading-title">GaoXinYang</span></div></div>
+        <div id="navbar-placeholder"></div>
+        <div id="router-view">
+            <div class="two-column-layout">
+                <aside class="sidebar-profile">
+                    <div id="personal-card-container"></div>
+                </aside>
+                <main class="main-content-area">
+                    <div class="container">
+                        <h2>我的朋友们</h2>
+                        <p style="margin-bottom: 8px;">「 志合者，不以山海为远 」欢迎互访交流</p>
+                        <div id="friends-stats-area" class="friends-stats">共 10 位小伙伴 · 点击卡片访问友站</div>
+                        <div class="friends-grid" id="friends-list-container-inner">
+                            
+                <a href="https://xinyang-gao.github.io" class="friend-card" target="_blank" rel="noopener noreferrer" style="background-color: rgba(122, 162, 190, 0.24);">
+                    
+                    <div class="friend-avatar">
+                        <div class="avatar-wrapper">
+                            <div class="avatar-placeholder" style="background: var(--accent-color);">高</div>
+                            <img class="avatar-img" src="https://xinyang-gao.github.io/assets/avatar.webp" alt="高新炀的小站的头像" 
+                                loading="lazy" 
+                                onload="this.style.opacity='1'; this.previousElementSibling.style.display='none';"
+                                onerror="this.style.display='none'; this.previousElementSibling.style.display='flex';">
                         </div>
                     </div>
-                    <div id="twikoo-comments" class="twikoo-container"></div>
-                </div>
-            </main>
+                    
+                    <div class="friend-info">
+                        <h3 class="friend-name">高新炀的小站</h3>
+                        <p class="friend-desc">一个装着些稀奇古怪东西的个人小站，欢迎来逛逛~</p>
+                        <div class="friend-url">xinyang-gao.github.io</div>
+                    </div>
+                </a>
+            
+                <a href="https://blog.tianhw.top" class="friend-card" target="_blank" rel="noopener noreferrer" style="background-color: rgba(124, 145, 196, 0.24);">
+                    
+                    <div class="friend-avatar">
+                        <div class="avatar-wrapper">
+                            <div class="avatar-placeholder" style="background: var(--accent-color);">T</div>
+                            <img class="avatar-img" src="https://image.tianhw.top/avatar.webp" alt="THW’s Blog的头像" 
+                                loading="lazy" 
+                                onload="this.style.opacity='1'; this.previousElementSibling.style.display='none';"
+                                onerror="this.style.display='none'; this.previousElementSibling.style.display='flex';">
+                        </div>
+                    </div>
+                    
+                    <div class="friend-info">
+                        <h3 class="friend-name">THW’s Blog</h3>
+                        <p class="friend-desc">前途似海，来日方长</p>
+                        <div class="friend-url">blog.tianhw.top</div>
+                    </div>
+                </a>
+            
+                <a href="https://luq-blog.xyz/" class="friend-card" target="_blank" rel="noopener noreferrer" style="background-color: rgba(206, 193, 212, 0.24);">
+                    
+                    <div class="friend-avatar">
+                        <div class="avatar-wrapper">
+                            <div class="avatar-placeholder" style="background: var(--accent-color);">L</div>
+                            <img class="avatar-img" src="https://luq-blog.xyz/avatar.webp" alt="Luquiesceneの小屋的头像" 
+                                loading="lazy" 
+                                onload="this.style.opacity='1'; this.previousElementSibling.style.display='none';"
+                                onerror="this.style.display='none'; this.previousElementSibling.style.display='flex';">
+                        </div>
+                    </div>
+                    
+                    <div class="friend-info">
+                        <h3 class="friend-name">Luquiesceneの小屋</h3>
+                        <p class="friend-desc">To be or not to be: that is the question.</p>
+                        <div class="friend-url">luq-blog.xyz/</div>
+                    </div>
+                </a>
+            
+                <a href="https://blog.olinl.com" class="friend-card" target="_blank" rel="noopener noreferrer" style="background-color: rgba(229, 227, 223, 0.24);">
+                    
+                    <div class="friend-avatar">
+                        <div class="avatar-wrapper">
+                            <div class="avatar-placeholder" style="background: var(--accent-color);">O</div>
+                            <img class="avatar-img" src="https://q2.qlogo.cn/headimg_dl?dst_uin=9892214&amp;spec=0" alt="Olinl Blog的头像" 
+                                loading="lazy" 
+                                onload="this.style.opacity='1'; this.previousElementSibling.style.display='none';"
+                                onerror="this.style.display='none'; this.previousElementSibling.style.display='flex';">
+                        </div>
+                    </div>
+                    
+                    <div class="friend-info">
+                        <h3 class="friend-name">Olinl Blog</h3>
+                        <p class="friend-desc">分享、实践、学习</p>
+                        <div class="friend-url">blog.olinl.com</div>
+                    </div>
+                </a>
+            
+                <a href="https://blog.xiaofengqwq.com" class="friend-card" target="_blank" rel="noopener noreferrer" style="background-color: rgba(217, 212, 209, 0.24);">
+                    
+                    <div class="friend-avatar">
+                        <div class="avatar-wrapper">
+                            <div class="avatar-placeholder" style="background: var(--accent-color);">小</div>
+                            <img class="avatar-img" src="https://q.qlogo.cn/headimg_dl?dst_uin=1432777209&amp;spec=640&amp;img_type=jpg" alt="小枫_QWQ的Blog的头像" 
+                                loading="lazy" 
+                                onload="this.style.opacity='1'; this.previousElementSibling.style.display='none';"
+                                onerror="this.style.display='none'; this.previousElementSibling.style.display='flex';">
+                        </div>
+                    </div>
+                    
+                    <div class="friend-info">
+                        <h3 class="friend-name">小枫_QWQ的Blog</h3>
+                        <p class="friend-desc">欢迎来到小枫_QWQ的Blog！这是一个致力于分享前后端技术的博客。同时也分享一些闲聊碎语</p>
+                        <div class="friend-url">blog.xiaofengqwq.com</div>
+                    </div>
+                </a>
+            
+                <a href="https://ttquk.netlify.app" class="friend-card" target="_blank" rel="noopener noreferrer" style="background-color: rgba(203, 84, 91, 0.24);">
+                    
+                    <div class="friend-avatar">
+                        <div class="avatar-wrapper">
+                            <div class="avatar-placeholder" style="background: var(--accent-color);">T</div>
+                            <img class="avatar-img" src="https://ts1.tc.mm.bing.net/th/id/OIP-C.6WsD9caLSNQFhJOi77soRAHaHa?rs=1&amp;pid=ImgDetMain&amp;o=7&amp;rm=3" alt="TT清沫uk的头像" 
+                                loading="lazy" 
+                                onload="this.style.opacity='1'; this.previousElementSibling.style.display='none';"
+                                onerror="this.style.display='none'; this.previousElementSibling.style.display='flex';">
+                        </div>
+                    </div>
+                    
+                    <div class="friend-info">
+                        <h3 class="friend-name">TT清沫uk</h3>
+                        <p class="friend-desc">TT清沫ukの博客</p>
+                        <div class="friend-url">ttquk.netlify.app</div>
+                    </div>
+                </a>
+            
+                <a href="https://www.nekt.qzz.io" class="friend-card" target="_blank" rel="noopener noreferrer" style="background-color: rgba(199, 129, 156, 0.24);">
+                    
+                    <div class="friend-avatar">
+                        <div class="avatar-wrapper">
+                            <div class="avatar-placeholder" style="background: var(--accent-color);">熵</div>
+                            <img class="avatar-img" src="https://www.nekt.qzz.io/head.png" alt="熵的头像" 
+                                loading="lazy" 
+                                onload="this.style.opacity='1'; this.previousElementSibling.style.display='none';"
+                                onerror="this.style.display='none'; this.previousElementSibling.style.display='flex';">
+                        </div>
+                    </div>
+                    
+                    <div class="friend-info">
+                        <h3 class="friend-name">熵</h3>
+                        <p class="friend-desc">世界本就浑浊，罪与爱同歌</p>
+                        <div class="friend-url">www.nekt.qzz.io</div>
+                    </div>
+                </a>
+            
+                <a href="https://111620.xyz/" class="friend-card" target="_blank" rel="noopener noreferrer" style="background-color: rgba(7, 5, 6, 0.24);">
+                    
+                    <div class="friend-avatar">
+                        <div class="avatar-wrapper">
+                            <div class="avatar-placeholder" style="background: var(--accent-color);">口</div>
+                            <img class="avatar-img" src="https://img.111620.xyz/2025/07/29/6887b5efbf768.png" alt="口袋分享记的头像" 
+                                loading="lazy" 
+                                onload="this.style.opacity='1'; this.previousElementSibling.style.display='none';"
+                                onerror="this.style.display='none'; this.previousElementSibling.style.display='flex';">
+                        </div>
+                    </div>
+                    
+                    <div class="friend-info">
+                        <h3 class="friend-name">口袋分享记</h3>
+                        <p class="friend-desc">所谓过往，皆为序章。虚室生白️</p>
+                        <div class="friend-url">111620.xyz/</div>
+                    </div>
+                </a>
+            
+                <a href="https://www.orientdawn.com" class="friend-card" target="_blank" rel="noopener noreferrer" style="background-color: rgba(238, 148, 17, 0.24);">
+                    
+                    <div class="friend-avatar">
+                        <div class="avatar-wrapper">
+                            <div class="avatar-placeholder" style="background: var(--accent-color);">启</div>
+                            <img class="avatar-img" src="https://orientdawn.com/image/logo.png" alt="启明曙光科技的头像" 
+                                loading="lazy" 
+                                onload="this.style.opacity='1'; this.previousElementSibling.style.display='none';"
+                                onerror="this.style.display='none'; this.previousElementSibling.style.display='flex';">
+                        </div>
+                    </div>
+                    
+                    <div class="friend-info">
+                        <h3 class="friend-name">启明曙光科技</h3>
+                        <p class="friend-desc">东方曙光，星火燎原，专注人工智能技术普惠落地</p>
+                        <div class="friend-url">www.orientdawn.com</div>
+                    </div>
+                </a>
+            
+                <a href="https://iluc.cn" class="friend-card" target="_blank" rel="noopener noreferrer" style="background-color: rgba(255, 255, 255, 0.24);">
+                    
+                    <div class="friend-avatar">
+                        <div class="avatar-wrapper">
+                            <div class="avatar-placeholder" style="background: var(--accent-color);">涵</div>
+                            <img class="avatar-img" src="https://iluc.cn/logo.webp" alt="涵哲子居的头像" 
+                                loading="lazy" 
+                                onload="this.style.opacity='1'; this.previousElementSibling.style.display='none';"
+                                onerror="this.style.display='none'; this.previousElementSibling.style.display='flex';">
+                        </div>
+                    </div>
+                    
+                    <div class="friend-info">
+                        <h3 class="friend-name">涵哲子居</h3>
+                        <p class="friend-desc">天哲地理，共公卿好</p>
+                        <div class="friend-url">iluc.cn</div>
+                    </div>
+                </a>
+            
+                        </div>
+                        <div class="external-links-section">
+                            <h3 class="external-section-title">🔗 站点工具 & 服务</h3>
+                            <div class="external-links-grid">
+                                
+                <a href="https://www.travellings.cn/" class="external-link-card" target="_blank" rel="noopener noreferrer">
+                    <span class="external-link-name">开往 / Travelling</span>
+                    <span class="external-link-desc">开往 – 友链接力</span>
+                </a>
+            
+                <a href="https://github.com/numakkiyu/NeteaseMiniPlayer/" class="external-link-card" target="_blank" rel="noopener noreferrer">
+                    <span class="external-link-name">NeteaseMiniPlayer</span>
+                    <span class="external-link-desc">网易云音乐迷你播放器</span>
+                </a>
+            
+                <a href="https://www.busuanzi.cc/" class="external-link-card" target="_blank" rel="noopener noreferrer">
+                    <span class="external-link-name">Busuanzi</span>
+                    <span class="external-link-desc">不蒜子 – 极简网站计数器</span>
+                </a>
+            
+                <a href="https://twikoo.js.org/" class="external-link-card" target="_blank" rel="noopener noreferrer">
+                    <span class="external-link-name">Twikoo</span>
+                    <span class="external-link-desc">网站评论系统 - 简洁、安全、免费</span>
+                </a>
+            
+                <a href="https://www.npmjs.com/package/github-contrib-graph?activeTab=readme" class="external-link-card" target="_blank" rel="noopener noreferrer">
+                    <span class="external-link-name">github-contrib-graph</span>
+                    <span class="external-link-desc">一个轻量级、可自定义的 GitHub 贡献图小部件</span>
+                </a>
+            
+                <a href="https://github.com/xinyang-Gao/xinyang-gao.github.io" class="external-link-card" target="_blank" rel="noopener noreferrer">
+                    <span class="external-link-name">Github Pages</span>
+                    <span class="external-link-desc">网站部署</span>
+                </a>
+            
+                            </div>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-title">友情提示</div>
+                            <div class="requirements-section">
+                                <div class="section-subtitle">申请要求</div>
+                                <div class="requirements-grid">
+                                    <div class="requirement-item">
+                                        <div class="requirement-title">友链互换</div>
+                                        <p class="requirement-desc">请先添加本站友链，并确保您的站点可以被正常访问，双向奔赴才更有意义。</p>
+                                    </div>
+                                    <div class="requirement-item">
+                                        <div class="requirement-title">信息完整</div>
+                                        <p class="requirement-desc">请确保您的站点有清晰的名称、描述和头像，便于朋友们互相了解。</p>
+                                    </div>
+                                    <div class="requirement-item">
+                                        <div class="requirement-title">内容合规</div>
+                                        <p class="requirement-desc">拥有原创内容，符合中华人民共和国法律法规，共同维护纯净网络空间。</p>
+                                    </div>
+                                    <div class="requirement-item">
+                                        <div class="requirement-title">持续更新</div>
+                                        <p class="requirement-desc">建议保持一定的更新频率，热爱分享与交流。不限内容类型，期待多元碰撞。</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="contact-note"><p>注意如果有<strong>违法、侵权、恶意广告</strong>等违规内容将会被撤下链接哟</p></div>
+                            <div class="myinfo-section">
+                                <div class="myinfo-header">我的信息</div>
+                                <div class="info-hint">如果您希望交换友链，可以按照下面的 JSON 提供您的站点信息</div>
+                                <div class="code-block-wrapper">
+                                    <div class="code-header">
+                                        <button class="copy-btn" id="copyJsonBtn">复制</button>
+                                    </div>
+                                    <pre><code id="friendJsonExample">{
+        "name": "高新炀的小站",
+        "link": "https://xinyang-gao.github.io",
+        "desc": "一个装着些稀奇古怪东西的个人小站，欢迎来逛逛~",
+        "avatar": "https://xinyang-gao.github.io/assets/avatar.webp"
+    }</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="twikoo-comments" class="twikoo-container"></div>
+                    </div>
+                </main>
+            </div>
         </div>
-    </div>
-    <div id="footer-placeholder"></div>
-    <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>
-    <script src="/js/entry/main.js" type="module"></script>
-    <script src="/js/vendor/busuanzi.min.js"></script>
-</body>
-</html>
+        <div id="footer-placeholder"></div>
+        <script>window.__STATIC_FRIENDS_DATA = [{"name": "高新炀的小站", "link": "https://xinyang-gao.github.io", "desc": "一个装着些稀奇古怪东西的个人小站，欢迎来逛逛~", "avatar": "https://xinyang-gao.github.io/assets/avatar.webp"}, {"name": "THW’s Blog", "link": "https://blog.tianhw.top", "desc": "前途似海，来日方长", "avatar": "https://image.tianhw.top/avatar.webp"}, {"name": "Luquiesceneの小屋", "link": "https://luq-blog.xyz/", "desc": "To be or not to be: that is the question.", "avatar": "https://luq-blog.xyz/avatar.webp"}, {"name": "Olinl Blog", "link": "https://blog.olinl.com", "desc": "分享、实践、学习", "avatar": "https://q2.qlogo.cn/headimg_dl?dst_uin=9892214&spec=0"}, {"name": "小枫_QWQ的Blog", "link": "https://blog.xiaofengqwq.com", "desc": "欢迎来到小枫_QWQ的Blog！这是一个致力于分享前后端技术的博客。同时也分享一些闲聊碎语", "avatar": "https://q.qlogo.cn/headimg_dl?dst_uin=1432777209&spec=640&img_type=jpg"}, {"name": "TT清沫uk", "link": "https://ttquk.netlify.app", "desc": "TT清沫ukの博客", "avatar": "https://ts1.tc.mm.bing.net/th/id/OIP-C.6WsD9caLSNQFhJOi77soRAHaHa?rs=1&pid=ImgDetMain&o=7&rm=3"}, {"name": "熵", "link": "https://www.nekt.qzz.io", "desc": "世界本就浑浊，罪与爱同歌", "avatar": "https://www.nekt.qzz.io/head.png"}, {"name": "口袋分享记", "link": "https://111620.xyz/", "desc": "所谓过往，皆为序章。虚室生白️", "avatar": "https://img.111620.xyz/2025/07/29/6887b5efbf768.png"}, {"name": "启明曙光科技", "link": "https://www.orientdawn.com", "desc": "东方曙光，星火燎原，专注人工智能技术普惠落地", "avatar": "https://orientdawn.com/image/logo.png"}, {"name": "涵哲子居", "link": "https://iluc.cn", "desc": "天哲地理，共公卿好", "avatar": "https://iluc.cn/logo.webp"}];</script>
+        <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>
+        <script src="/js/entry/main.js" type="module"></script>
+        <script src="/js/vendor/busuanzi.min.js"></script>
+    </body>
+    </html>

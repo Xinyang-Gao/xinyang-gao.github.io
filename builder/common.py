@@ -169,3 +169,33 @@ def load_build_state() -> Dict:
 
 def save_build_state(state: Dict) -> None:
     save_json(state, BUILD_STATE_FILE)
+
+# ---------- 目录哈希 ----------
+def compute_dir_hash(directory: Path, patterns: List[str] = None, ignore_patterns: List[str] = None) -> str:
+    """
+    计算目录下所有文件的组合哈希，用于检测前端资源是否变化。
+    :param directory: 目录路径
+    :param patterns: 要包含的文件模式列表，如 ['*.css', '*.ts']，默认所有文件
+    :param ignore_patterns: 要忽略的模式列表，如 ['*.map']
+    """
+    if not directory.exists():
+        return ""
+    hasher = hashlib.md5()
+    # 收集所有文件
+    files = []
+    if patterns:
+        for pat in patterns:
+            files.extend(directory.rglob(pat))
+    else:
+        files = list(directory.rglob("*"))
+    # 去重并排序
+    files = sorted(set(files), key=lambda p: p.relative_to(directory).as_posix())
+    # 过滤忽略模式
+    if ignore_patterns:
+        files = [f for f in files if not any(f.match(p) for p in ignore_patterns)]
+    for file_path in files:
+        if file_path.is_file():
+            rel = file_path.relative_to(directory).as_posix()
+            hasher.update(rel.encode('utf-8'))
+            hasher.update(compute_file_hash(file_path).encode('utf-8'))
+    return hasher.hexdigest()

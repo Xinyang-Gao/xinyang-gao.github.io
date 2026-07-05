@@ -96,22 +96,32 @@ export class FriendsPageManager extends PageManager {
   applyRandomSort() {
     if (!this.container) return;
 
-    // 检查是否有任意友链卡片处于鼠标悬浮状态
+    // 如果鼠标悬停在任何卡片上，本次跳过
     if (document.querySelector('.friend-card:hover')) {
-      return; // 有悬浮，本次跳过
+      return;
     }
 
     const children = Array.from(this.container.children);
-    if (children.length <= 1) return;
+    if (children.length <= 1) return; // 只有一个或没有卡片，无需排序
 
-    // Fisher–Yates 洗牌算法
-    for (let i = children.length - 1; i > 0; i--) {
+    // 固定第一个元素（即“高新炀的小站”）
+    const first = children[0];
+    const rest = children.slice(1); // 其余卡片
+
+    // 对剩余卡片执行 Fisher–Yates 洗牌
+    for (let i = rest.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
-      [children[i], children[j]] = [children[j], children[i]];
+      [rest[i], rest[j]] = [rest[j], rest[i]];
     }
 
-    // 重新追加（移动 DOM 节点，保留所有事件与属性）
-    children.forEach(child => this.container.appendChild(child));
+    // 清空容器（避免重复追加）
+    while (this.container.firstChild) {
+      this.container.removeChild(this.container.firstChild);
+    }
+
+    // 按新顺序追加：第一个固定，其余随机
+    this.container.appendChild(first);
+    rest.forEach(child => this.container.appendChild(child));
   }
 
   /**

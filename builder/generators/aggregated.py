@@ -4,6 +4,7 @@
 """
 聚合生成器：一次性生成统计 JSON、RSS、站点地图、列表页、子目录页面、复制静态资源。
 所有生成共享一次加载的数据，减少 I/O。
+支持前端资源增量判断（CSS/JS/模板/assets 哈希）。
 """
 
 import json
@@ -25,7 +26,8 @@ from ..common import (
     log_info, log_warning, log_error,
     load_json, save_json, format_date, format_date_iso,
     get_current_date_iso, get_current_datetime_iso,
-    compute_content_hash
+    compute_content_hash, compute_dir_hash, compute_file_hash, compute_object_hash,
+    load_build_state, save_build_state
 )
 from ..build_context import BuildContext
 from .base import OutputGenerator
@@ -43,7 +45,6 @@ PAGE_TEMPLATES = {
     "stats.html": "stats",
     "settings.html": "settings",
     "contact.html": "contact",
-    "friends.html": "friends",
 }
 
 class AggregatedGenerator(OutputGenerator):
@@ -53,16 +54,65 @@ class AggregatedGenerator(OutputGenerator):
         RSS_OUTPUT, SITEMAP_OUTPUT, ARTICLES_LIST_HTML, WORKS_LIST_HTML, NOJS_HTML, STATISTICS_JSON
     ] + [DIST_ROOT / f"{key}" / "index.html" for key in PAGE_TEMPLATES.values()]
 
+    # ---------- 增量判断增强 ----------
+    def _compute_frontend_hash(self) -> str:
+        """计算所有前端源文件（CSS、JS、模板、素材）的组合哈希"""
+        hashes = []
+        # CSS
+        if CSS_SRC_DIR.exists():
+            hashes.append(compute_dir_hash(CSS_SRC_DIR, patterns=["*.css"]))
+        # JS（TypeScript 源，含 ts, js）
+        if JS_SRC_DIR.exists():
+            hashes.append(compute_dir_hash(JS_SRC_DIR, patterns=["*.ts", "*.js"]))
+        # 模板
+        if TEMPLATES_DIR.exists():
+            hashes.append(compute_dir_hash(TEMPLATES_DIR, patterns=["*.html"]))
+        # Assets（排除 source，但保留 avatars，因为友链可能引用）
+        if ASSETS_DIR.exists():
+            hashes.append(compute_dir_hash(ASSETS_DIR, ignore_patterns=["source"]))
+        # 根目录的 favicon
+        favicon = PROJECT_ROOT / "favicon.ico"
+        if favicon.exists():
+            hashes.append(compute_file_hash(favicon))
+        return compute_object_hash("".join(hashes))
+
+    def is_up_to_date(self, context: BuildContext, state: dict) -> bool:
+        # 先检查基础输入（articles, works, friends, version）
+        if not super().is_up_to_date(context, state):
+            return False
+        old = state.get(self.name, {})
+        # 额外检查前端资源
+        frontend_hash = self._compute_frontend_hash()
+        return old.get("frontend_hash") == frontend_hash
+
+    def update_state(self, state: dict, context: BuildContext) -> None:
+        # 保存基础输入哈希 + 前端哈希
+        base_hash = self.compute_input_hash(context)
+        frontend_hash = self._compute_frontend_hash()
+        state[self.name] = {
+            "input_hash": base_hash,
+            "frontend_hash": frontend_hash,
+            "timestamp": datetime.now().isoformat()
+        }
+
+    # ---------- 核心生成 ----------
     def generate(self, context: BuildContext, force: bool) -> bool:
         log_info("开始聚合生成...")
         try:
+            # 读取当前状态，判断前端是否变化（用于跳过耗时的 Vite/CSS）
+            state = load_build_state()
+            frontend_hash = self._compute_frontend_hash()
+            old_frontend = state.get(self.name, {}).get("frontend_hash")
+            frontend_changed = force or (old_frontend != frontend_hash)
+
             self._build_statistics(context)
             self._generate_rss(context)
             self._generate_sitemap(context)
             self._generate_articles_page(context)
             self._generate_works_page(context)
             self._generate_nojs_index(context)
-            self._copy_static_assets()
+            self._copy_static_assets(frontend_changed)   # 传递变化标志
+            self._generate_friends_page(context)
             self._generate_subdir_pages(context)
             log_info("聚合生成完成")
             return True
@@ -551,69 +601,74 @@ class AggregatedGenerator(OutputGenerator):
             f.write(html)
         log_info(f"无JS索引页生成: {NOJS_HTML}")
 
-    # ---------- 复制静态资源 ----------
-    def _copy_static_assets(self):
-        # ---------- 1. 调用 Vite 构建 TypeScript ----------
-        try:
-            result = subprocess.run(
-                ["npm", "run", "build"],
-                cwd=PROJECT_ROOT,
-                capture_output=True,
-                text=True,
-                encoding='utf-8',
-                shell=True
-            )
-            if result.returncode != 0:
-                log_error(f"Vite 构建失败 (返回码 {result.returncode})")
-                log_error(f"stdout: {result.stdout}")
-                log_error(f"stderr: {result.stderr}")
-                raise RuntimeError("前端 TypeScript 编译失败")
-            log_info("Vite 构建完成 (TypeScript -> JavaScript)")
-        except FileNotFoundError:
-            log_warning("未找到 npm，请确保 Node.js 已安装。跳过 TypeScript 编译。")
-            if JS_SRC_DIR.exists():
-                shutil.copytree(JS_SRC_DIR, JS_DIST_DIR, dirs_exist_ok=True)
-                log_info("回退：直接复制 JS 文件")
+    # ---------- 复制静态资源（含增量优化） ----------
+    def _copy_static_assets(self, frontend_changed: bool):
+        # ---------- 1. 调用 Vite 构建 TypeScript（仅当前端变化或强制） ----------
+        if frontend_changed:
+            try:
+                result = subprocess.run(
+                    ["npm", "run", "build"],
+                    cwd=PROJECT_ROOT,
+                    capture_output=True,
+                    text=True,
+                    encoding='utf-8',
+                    shell=True
+                )
+                if result.returncode != 0:
+                    log_error(f"Vite 构建失败 (返回码 {result.returncode})")
+                    log_error(f"stdout: {result.stdout}")
+                    log_error(f"stderr: {result.stderr}")
+                    raise RuntimeError("前端 TypeScript 编译失败")
+                log_info("Vite 构建完成 (TypeScript -> JavaScript)")
+            except FileNotFoundError:
+                log_warning("未找到 npm，请确保 Node.js 已安装。跳过 TypeScript 编译。")
+                if JS_SRC_DIR.exists():
+                    shutil.copytree(JS_SRC_DIR, JS_DIST_DIR, dirs_exist_ok=True)
+                    log_info("回退：直接复制 JS 文件")
+        else:
+            log_info("前端源文件未变化，跳过 Vite 构建")
 
-        # ---------- 2. 复制所有未被 Vite 处理的 .js 文件（不覆盖已存在的） ----------
+        # ---------- 2. 复制所有未被 Vite 处理的 .js 文件（覆盖确保最新） ----------
         if JS_SRC_DIR.exists():
             for js_file in JS_SRC_DIR.rglob("*.js"):
                 rel_path = js_file.relative_to(JS_SRC_DIR)
                 dst_file = JS_DIST_DIR / rel_path
-                if not dst_file.exists():
-                    dst_file.parent.mkdir(parents=True, exist_ok=True)
-                    shutil.copy2(js_file, dst_file)
-                    log_info(f"复制额外 JS: {rel_path}")
-
-        # ---------- 3. 压缩并复制 CSS ----------
-        if CSS_SRC_DIR.exists():
-            for css_file in CSS_SRC_DIR.rglob("*.css"):
-                rel_path = css_file.relative_to(CSS_SRC_DIR)
-                dst_file = CSS_DIST_DIR / rel_path
                 dst_file.parent.mkdir(parents=True, exist_ok=True)
-                with open(css_file, 'r', encoding='utf-8') as f:
-                    content = f.read()
-                try:
-                    minified = cssmin(content)
-                except Exception as e:
-                    log_warning(f"压缩 CSS 失败 {rel_path}: {e}，使用原内容")
-                    minified = content
-                with open(dst_file, 'w', encoding='utf-8') as f:
-                    f.write(minified)
-                log_info(f"压缩 CSS: {rel_path}")
-            log_info("CSS 压缩完成")
+                shutil.copy2(js_file, dst_file)
+                log_info(f"复制额外 JS: {rel_path}")
+
+        # ---------- 3. 压缩并复制 CSS（仅当前端变化） ----------
+        if CSS_SRC_DIR.exists():
+            if frontend_changed:
+                for css_file in CSS_SRC_DIR.rglob("*.css"):
+                    rel_path = css_file.relative_to(CSS_SRC_DIR)
+                    dst_file = CSS_DIST_DIR / rel_path
+                    dst_file.parent.mkdir(parents=True, exist_ok=True)
+                    with open(css_file, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                    try:
+                        minified = cssmin(content)
+                    except Exception as e:
+                        log_warning(f"压缩 CSS 失败 {rel_path}: {e}，使用原内容")
+                        minified = content
+                    with open(dst_file, 'w', encoding='utf-8') as f:
+                        f.write(minified)
+                    log_info(f"压缩 CSS: {rel_path}")
+                log_info("CSS 压缩完成")
+            else:
+                log_info("前端未变化，跳过 CSS 压缩")
         else:
             log_warning(f"CSS 源目录不存在: {CSS_SRC_DIR}")
 
-        # ---------- 4. 复制 assets 素材（排除 source, avatars, 网站更新日志.md, js, css） ----------
+        # ---------- 4. 复制 assets 素材（排除 source，但保留 avatars） ----------
         if ASSETS_DIR.exists():
             shutil.copytree(
                 ASSETS_DIR,
                 ASSETS_DIST_DIR,
                 dirs_exist_ok=True,
-                ignore=shutil.ignore_patterns('source', 'avatars', '网站更新日志.md', 'js', 'css')
+                ignore=shutil.ignore_patterns('source')   # 只排除 source，avatars 会被复制
             )
-            log_info("复制 assets 素材完成（排除 source, avatars, 网站更新日志.md, js, css）")
+            log_info("复制 assets 素材完成（排除 source，但包含 avatars）")
         else:
             log_warning(f"assets 源目录不存在: {ASSETS_DIR}")
 
@@ -664,3 +719,167 @@ class AggregatedGenerator(OutputGenerator):
             if src.exists():
                 shutil.copy(src, DIST_ROOT / fragment)
                 log_info(f"复制 {fragment} 到 dist/")
+
+    def _generate_friends_page(self, context: BuildContext) -> None:
+        """全量生成友链页面（基于原始模板结构，动态填充数据）"""
+        # 读取数据
+        data = load_json(ASSETS_DIR / "friends.json", {})
+        friends_list = data.get("friends", [])
+        external_list = data.get("external", [])
+
+        # 读取颜色映射
+        color_map = load_json(ASSETS_DIR / "friend_colors.json", {})
+        # 标准化链接（去除尾部斜杠）
+        unique_colors = {}
+        for link, rgb in color_map.items():
+            norm = link.rstrip('/')
+            if norm not in unique_colors:
+                unique_colors[norm] = rgb
+
+        # 生成好友卡片列表（纯 <a> 标签序列）
+        cards_html = self._render_friend_cards(friends_list, unique_colors)
+        # 生成外部链接列表
+        ext_html = self._render_external_links(external_list)
+        # 统计数字
+        count_text = f"共 {len(friends_list)} 位小伙伴 · 点击卡片访问友站"
+
+        # 完整 HTML（复制原始模板结构，替换三处动态内容）
+        html = f'''<!DOCTYPE html>
+    <html lang="zh-CN">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+        <title>友情链接 - 高新炀的小站</title>
+        <link rel="stylesheet" href="/css/main.css">
+        <link rel="stylesheet" href="/css/pages/friends.css">
+        <link rel="stylesheet" href="/css/components/comments.css">
+    </head>
+    <body>
+    <div id="loading-overlay" role="status" aria-label="页面加载中"><div class="loading-log"><div>[START] 正在等待 JavaScript，这可能需要几秒</div></div><div class="loading-glow"></div><div id="loading-content"><span class="loading-title">GaoXinYang</span></div></div>
+        <div id="navbar-placeholder"></div>
+        <div id="router-view">
+            <div class="two-column-layout">
+                <aside class="sidebar-profile">
+                    <div id="personal-card-container"></div>
+                </aside>
+                <main class="main-content-area">
+                    <div class="container">
+                        <h2>我的朋友们</h2>
+                        <p style="margin-bottom: 8px;">「 志合者，不以山海为远 」欢迎互访交流</p>
+                        <div id="friends-stats-area" class="friends-stats">{count_text}</div>
+                        <div class="friends-grid" id="friends-list-container-inner">
+                            {cards_html}
+                        </div>
+                        <div class="external-links-section">
+                            <h3 class="external-section-title">🔗 站点工具 & 服务</h3>
+                            <div class="external-links-grid">
+                                {ext_html}
+                            </div>
+                        </div>
+                        <div class="info-card">
+                            <div class="info-title">友情提示</div>
+                            <div class="requirements-section">
+                                <div class="section-subtitle">申请要求</div>
+                                <div class="requirements-grid">
+                                    <div class="requirement-item">
+                                        <div class="requirement-title">友链互换</div>
+                                        <p class="requirement-desc">请先添加本站友链，并确保您的站点可以被正常访问，双向奔赴才更有意义。</p>
+                                    </div>
+                                    <div class="requirement-item">
+                                        <div class="requirement-title">信息完整</div>
+                                        <p class="requirement-desc">请确保您的站点有清晰的名称、描述和头像，便于朋友们互相了解。</p>
+                                    </div>
+                                    <div class="requirement-item">
+                                        <div class="requirement-title">内容合规</div>
+                                        <p class="requirement-desc">拥有原创内容，符合中华人民共和国法律法规，共同维护纯净网络空间。</p>
+                                    </div>
+                                    <div class="requirement-item">
+                                        <div class="requirement-title">持续更新</div>
+                                        <p class="requirement-desc">建议保持一定的更新频率，热爱分享与交流。不限内容类型，期待多元碰撞。</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="contact-note"><p>注意如果有<strong>违法、侵权、恶意广告</strong>等违规内容将会被撤下链接哟</p></div>
+                            <div class="myinfo-section">
+                                <div class="myinfo-header">我的信息</div>
+                                <div class="info-hint">如果您希望交换友链，可以按照下面的 JSON 提供您的站点信息</div>
+                                <div class="code-block-wrapper">
+                                    <div class="code-header">
+                                        <button class="copy-btn" id="copyJsonBtn">复制</button>
+                                    </div>
+                                    <pre><code id="friendJsonExample">{{
+        "name": "高新炀的小站",
+        "link": "https://xinyang-gao.github.io",
+        "desc": "一个装着些稀奇古怪东西的个人小站，欢迎来逛逛~",
+        "avatar": "https://xinyang-gao.github.io/assets/avatar.webp"
+    }}</code></pre>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="twikoo-comments" class="twikoo-container"></div>
+                    </div>
+                </main>
+            </div>
+        </div>
+        <div id="footer-placeholder"></div>
+        <script>window.__STATIC_FRIENDS_DATA = {json.dumps(friends_list, ensure_ascii=False)};</script>
+        <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>
+        <script src="/js/entry/main.js" type="module"></script>
+        <script src="/js/vendor/busuanzi.min.js"></script>
+    </body>
+    </html>'''
+
+        target_path = DIST_ROOT / "friends" / "index.html"
+        target_path.parent.mkdir(parents=True, exist_ok=True)
+        with open(target_path, 'w', encoding='utf-8') as f:
+            f.write(html)
+        log_info(f"友链页面生成: {target_path}")
+
+    def _render_friend_cards(self, friends_list, color_map):
+        """生成好友卡片列表（仅 <a> 标签，无外层容器）"""
+        cards = []
+        for friend in friends_list:
+            name = friend.get("name", "未知")
+            link = friend.get("link", "#")
+            desc = friend.get("desc", "")
+            avatar = friend.get("avatar", "")
+            norm_link = link.rstrip('/')
+            rgb = color_map.get(norm_link, [200, 200, 200])
+            bg_color = f"rgba({rgb[0]}, {rgb[1]}, {rgb[2]}, 0.24)"
+            initial = name[0] if name else "友"
+
+            avatar_html = f'''
+                    <div class="friend-avatar">
+                        <div class="avatar-wrapper">
+                            <div class="avatar-placeholder" style="background: var(--accent-color);">{escape(initial)}</div>
+                            <img class="avatar-img" src="{escape(avatar)}" alt="{escape(name)}的头像" 
+                                loading="lazy" 
+                                onload="this.style.opacity='1'; this.previousElementSibling.style.display='none';"
+                                onerror="this.style.display='none'; this.previousElementSibling.style.display='flex';">
+                        </div>
+                    </div>
+                    '''
+
+            cards.append(f'''
+                <a href="{escape(link)}" class="friend-card" target="_blank" rel="noopener noreferrer" style="background-color: {bg_color};">
+                    {avatar_html}
+                    <div class="friend-info">
+                        <h3 class="friend-name">{escape(name)}</h3>
+                        <p class="friend-desc">{escape(desc)}</p>
+                        <div class="friend-url">{escape(link.replace('https://', '').replace('http://', ''))}</div>
+                    </div>
+                </a>
+            ''')
+        return ''.join(cards)
+
+    def _render_external_links(self, external_list):
+        """生成外部链接列表（仅 <a> 标签，无外层容器）"""
+        items = []
+        for ext in external_list:
+            items.append(f'''
+                <a href="{escape(ext.get('link', '#'))}" class="external-link-card" target="_blank" rel="noopener noreferrer">
+                    <span class="external-link-name">{escape(ext.get('name', ''))}</span>
+                    <span class="external-link-desc">{escape(ext.get('desc', ''))}</span>
+                </a>
+            ''')
+        return ''.join(items)

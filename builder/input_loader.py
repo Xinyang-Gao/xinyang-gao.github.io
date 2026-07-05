@@ -666,7 +666,8 @@ def load_works() -> List[Work]:
 
 # ---------- 友链加载 ----------
 def load_friends() -> List[Friend]:
-    data = load_json(JSON_OUTPUT_DIR / "friends.json", {})
+    friends_src = ASSETS_DIR / "friends.json"
+    data = load_json(friends_src, {})
     if isinstance(data, list):
         friends_data = data
     elif isinstance(data, dict):
