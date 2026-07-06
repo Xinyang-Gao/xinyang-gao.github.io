@@ -264,9 +264,17 @@ function replaceMainContent(mainHtml: string): Promise<boolean> {
 // ==================== 组件初始化工厂 ====================
 class ComponentFactory {
   static async initPageManager(pageName: string, isArticlePage: boolean, url: string): Promise<PageManager | null> {
+    // 优先检测：如果当前页面包含文章主体元素，则必定是文章详情页!
+    if (document.getElementById('articleBody')) {
+      const { initArticlePage } = await import('/js/pages/article.js');
+      return await initArticlePage() as any;
+    }
+
+    // 其他页面按 pageName 路由
     switch (pageName) {
       case 'index':
         return initHomePage() as any;
+
       case 'articles':
       case 'works': {
         const refreshCallback = () => {
@@ -282,6 +290,7 @@ class ComponentFactory {
         const { initSearchPage } = await import('/js/pages/search-render.js');
         return await initSearchPage(pageName as 'works' | 'articles', refreshCallback) as any;
       }
+
       case 'archive': {
         const archiveRefreshCallback = () => {
           if ((window as any).scrollRevealInstance) {
@@ -296,21 +305,17 @@ class ComponentFactory {
         const { initArchivePage } = await import('/js/pages/archive.js');
         return await initArchivePage(archiveRefreshCallback) as any;
       }
-      case 'article-detail':
-      case 'article':
-        if (document.querySelector('.article-page-container') || document.getElementById('articleBody')) {
-          const { initArticlePage } = await import('/js/pages/article.js');
-          return await initArticlePage() as any;
-        }
-        break;
+
       case 'stats': {
         const { initStatsPage } = await import('/js/pages/stats-init.js');
         return await initStatsPage() as any;
       }
+
       case 'friends': {
         const { initFriendsPage } = await import('/js/pages/friends-manager.js');
         return await initFriendsPage() as any;
       }
+
       case 'about': {
         const { initAboutPage } = await import('/js/pages/about.js');
         const manager: PageManager = {
@@ -320,6 +325,7 @@ class ComponentFactory {
         await manager.init();
         return manager;
       }
+
       case 'contact': {
         const { initTwikoo } = await import('/js/core/twikoo-manager.js');
         const container = document.querySelector('#twikoo-comments');
@@ -335,8 +341,10 @@ class ComponentFactory {
           }
         } as PageManager;
       }
+
+      default:
+        return null;
     }
-    return null;
   }
 }
 

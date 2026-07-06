@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-06T18:21:03.130703",
-  "total_versions": 187,
+  "generated_at": "2026-07-06T18:56:31.014002",
+  "total_versions": 188,
   "versions": [
     {
       "id": 1,
@@ -2938,10 +2938,29 @@
       "changes": [
         {
           "type": "refactor(router)",
-          "description": "现代化优化导航路由与导航栏管理，消除重复绑定并完善入场动画\n      - 影响范围：导航栏初始化、页面切换、移动端菜单关闭，性能略有提升"
+          "description": "现代化优化导航路由与导航栏管理，消除重复绑定并完善入场动画，不再每次切换页面重复初始化页脚\n      - 影响范围：导航栏初始化、页面切换、移动端菜单关闭，性能略有提升"
+        },
+        {
+          "type": "refactor(navbar-manager)",
+          "description": "用 TypeScript 重构 `navbar-manager.js` 为 `navbar-manager.ts`"
+        }
+      ]
+    },
+    {
+      "id": 188,
+      "version": "v8.4.1",
+      "date": "2026-07-06",
+      "changes": [
+        {
+          "type": "refactor(article)",
+          "description": "现代化优化文章详情页"
+        },
+        {
+          "type": "fix(router)",
+          "description": "通过 `#articleBody` 辨别是否为文章详情页，防止无刷新导航进入导致一系列初始化问题"
         }
       ]
     }
   ],
-  "changelog_hash": "1e91433f848b900457f627c4129b7b87"
+  "changelog_hash": "cf7bcc2cbf2323f0d40c67bc29987084"
 }
