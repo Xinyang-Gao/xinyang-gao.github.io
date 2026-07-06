@@ -628,16 +628,7 @@ class AggregatedGenerator(OutputGenerator):
         else:
             log_info("前端源文件未变化，跳过 Vite 构建")
 
-        # ---------- 2. 复制所有未被 Vite 处理的 .js 文件（覆盖确保最新） ----------
-        if JS_SRC_DIR.exists():
-            for js_file in JS_SRC_DIR.rglob("*.js"):
-                rel_path = js_file.relative_to(JS_SRC_DIR)
-                dst_file = JS_DIST_DIR / rel_path
-                dst_file.parent.mkdir(parents=True, exist_ok=True)
-                shutil.copy2(js_file, dst_file)
-                log_info(f"复制额外 JS: {rel_path}")
-
-        # ---------- 3. 压缩并复制 CSS（仅当前端变化） ----------
+        # ---------- 2. 压缩并复制 CSS（仅当前端变化） ----------
         if CSS_SRC_DIR.exists():
             if frontend_changed:
                 for css_file in CSS_SRC_DIR.rglob("*.css"):
@@ -660,7 +651,7 @@ class AggregatedGenerator(OutputGenerator):
         else:
             log_warning(f"CSS 源目录不存在: {CSS_SRC_DIR}")
 
-        # ---------- 4. 复制 assets 素材（排除 source，但保留 avatars） ----------
+        # ---------- 3. 复制 assets 素材（排除 source，但保留 avatars） ----------
         if ASSETS_DIR.exists():
             shutil.copytree(
                 ASSETS_DIR,
@@ -672,13 +663,13 @@ class AggregatedGenerator(OutputGenerator):
         else:
             log_warning(f"assets 源目录不存在: {ASSETS_DIR}")
 
-        # ---------- 5. 复制 favicon ----------
+        # ---------- 4. 复制 favicon ----------
         favicon = PROJECT_ROOT / "favicon.ico"
         if favicon.exists():
             shutil.copy(favicon, DIST_ROOT / "favicon.ico")
             log_info("复制 favicon.ico")
 
-        # ---------- 6. 复制 works 目录（包含作品静态资源） ----------
+        # ---------- 5. 复制 works 目录（包含作品静态资源） ----------
         works_src = SRC_ROOT / "works"
         works_dst = DIST_ROOT / "works"
         if works_src.exists():

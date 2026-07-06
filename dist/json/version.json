@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-07-05T18:12:26.178668",
+  "generated_at": "2026-07-06T17:24:59.189442",
   "total_versions": 185,
   "versions": [
     {
@@ -2915,11 +2915,11 @@
       "date": "2026-07-05",
       "changes": [
         {
-          "type": "refactor(friends-manager)",
-          "description": "用 TypeScript 重构 `friends-manager.js` 为 `friends-manager.ts`"
+          "type": "chore(aggregated.py)",
+          "description": "删除复制 JS 的代码，构建 JS 全部交由 Vite 处理"
         }
       ]
     }
   ],
-  "changelog_hash": "8ff7655aead57126780d1e1d958c4390"
+  "changelog_hash": "b0b448fb51571c8ed39e8eedc0524717"
 }
