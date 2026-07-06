@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-06T17:51:17.182786",
-  "total_versions": 186,
+  "generated_at": "2026-07-06T18:21:03.130703",
+  "total_versions": 187,
   "versions": [
     {
       "id": 1,
@@ -2930,7 +2930,18 @@
           "description": "同步评论区引用样式与主站一致"
         }
       ]
+    },
+    {
+      "id": 187,
+      "version": "v8.4.0",
+      "date": "2026-07-06",
+      "changes": [
+        {
+          "type": "refactor(router)",
+          "description": "现代化优化导航路由与导航栏管理，消除重复绑定并完善入场动画\n      - 影响范围：导航栏初始化、页面切换、移动端菜单关闭，性能略有提升"
+        }
+      ]
     }
   ],
-  "changelog_hash": "553d092ed7fe88a7af5b7efef0ceb3ba"
+  "changelog_hash": "1e91433f848b900457f627c4129b7b87"
 }

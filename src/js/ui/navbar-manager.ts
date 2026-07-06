@@ -1,40 +1,42 @@
-// /js/ui/navbar-manager.js
-// 完全 JS 驱动的导航栏模块，整合标题替换功能与入场动画
+// /js/ui/navbar-manager.ts
+// 完全 JS 驱动的导航栏模块，整合标题替换、入场动画与 SPA 适配
 
 import { CONFIG, storageController } from '/js/core/core.js';
 import { getTimeBasedTheme, getPageNameFromPath } from '/js/core/page-utils.js';
 import { initThemeToggle } from '/js/ui/theme.js';
-import { initMobileMenuToggle, bindNavLinks, initNavigation } from '/js/router/router.js';
+import { initMobileMenuToggle, initNavigation } from '/js/router/router.js';
 
 class NavbarManager {
-  constructor() {
-    this.initialized = false;
-    this.elements = {
-      navbar: null,
-      nav: null,
-      navItems: null,
-      placeholder: null,
-      titlePlaceholder: null,
-      titleScrollContainer: null,
-    };
-    this.titleMode = false;
-    this.titleHandlers = {
-      mouseEnter: null,
-      mouseLeave: null,
-      resize: null,
-    };
-    this.resizeObserver = null;
-    this.idleTimeout = null;
-    this.isIdle = false;
+  private initialized = false;
+  private elements: {
+    navbar: HTMLElement | null;
+    nav: HTMLElement | null;
+    navItems: HTMLElement | null;
+    placeholder: HTMLElement | null;
+    titlePlaceholder: HTMLElement | null;
+    titleScrollContainer: HTMLElement | null;
+  } = {
+    navbar: null,
+    nav: null,
+    navItems: null,
+    placeholder: null,
+    titlePlaceholder: null,
+    titleScrollContainer: null,
+  };
 
-    // 入场动画标记
-    this._entrancePlayed = false;
-  }
+  private titleMode = false;
+  private titleHandlers = {
+    mouseEnter: null as (() => void) | null,
+    mouseLeave: null as (() => void) | null,
+    resize: null as (() => void) | null,
+  };
+  private resizeObserver: ResizeObserver | null = null;
+  private _entrancePlayed = false;
 
   // ---------- 静态方法：生成导航栏 DOM ----------
-  static createNavbarDOM() {
+  static createNavbarDOM(): HTMLElement {
     const navbar = document.createElement('div');
-    navbar.className = 'navbar initial';   // 默认带着 initial 类，用于入场动画
+    navbar.className = 'navbar initial';
 
     // Logo
     const logoDiv = document.createElement('div');
@@ -42,7 +44,7 @@ class NavbarManager {
     logoDiv.innerHTML = '<span class="logo-text">GaoXinYang</span>';
     navbar.appendChild(logoDiv);
 
-    // 导航菜单容器
+    // 导航菜单
     const nav = document.createElement('nav');
     nav.setAttribute('aria-label', '主导航');
     const navItems = document.createElement('div');
@@ -56,7 +58,7 @@ class NavbarManager {
       { href: '/archive/', page: 'archive', text: '归档' },
       { href: '/works/', page: 'works', text: '作品' },
       { href: '/friends/', page: 'friends', text: '友链' },
-      { href: '/contact/', page: 'contact', text: '留言板' }
+      { href: '/contact/', page: 'contact', text: '留言板' },
     ];
 
     links.forEach(link => {
@@ -97,8 +99,7 @@ class NavbarManager {
     return navbar;
   }
 
-  // 确保导航栏样式已加载
-  static ensureCSS() {
+  static ensureCSS(): void {
     if (document.querySelector('link[href="/css/components/navbar.css"]')) return;
     const link = document.createElement('link');
     link.rel = 'stylesheet';
@@ -107,17 +108,15 @@ class NavbarManager {
   }
 
   // ---------- 入场动画控制 ----------
-  playEntranceAnimation() {
-    if (this._entrancePlayed) return;
-    if (!this.elements.navbar) return;
-    // 移除 initial 类，触发 CSS 过渡
+  playEntranceAnimation(): void {
+    if (this._entrancePlayed || !this.elements.navbar) return;
     this.elements.navbar.classList.remove('initial');
     this._entrancePlayed = true;
     console.log('[NavbarManager] 入场动画已播放');
   }
 
   // ---------- 标题替换功能 ----------
-  createTitlePlaceholder() {
+  private createTitlePlaceholder(): void {
     const placeholder = document.createElement('div');
     placeholder.className = 'nav-title-placeholder';
     const scrollContainer = document.createElement('span');
@@ -125,25 +124,25 @@ class NavbarManager {
     placeholder.appendChild(scrollContainer);
     this.elements.titlePlaceholder = placeholder;
     this.elements.titleScrollContainer = scrollContainer;
-    this.elements.nav.appendChild(placeholder);
+    this.elements.nav?.appendChild(placeholder);
     placeholder.style.display = 'none';
   }
 
-  getPageTitle() {
+  private getPageTitle(): string {
     let title = document.title || '页面';
     const siteName = 'GaoXinYang';
     if (title.endsWith(` - ${siteName}`)) title = title.slice(0, -(` - ${siteName}`).length);
     return title || '首页';
   }
 
-  updateTitleText() {
+  private updateTitleText(): void {
     if (!this.elements.titleScrollContainer) return;
     const title = this.getPageTitle();
     this.elements.titleScrollContainer.textContent = title;
     this.checkTitleOverflow();
   }
 
-  checkTitleOverflow() {
+  private checkTitleOverflow(): void {
     const placeholder = this.elements.titlePlaceholder;
     const textSpan = this.elements.titleScrollContainer;
     if (!placeholder || !textSpan) return;
@@ -151,7 +150,7 @@ class NavbarManager {
     placeholder.classList.remove('scrolling');
     textSpan.style.animation = 'none';
     textSpan.style.transform = '';
-    void textSpan.offsetWidth;
+    void textSpan.offsetWidth; // 强制回流
 
     const containerWidth = placeholder.clientWidth;
     const textWidth = textSpan.scrollWidth;
@@ -167,36 +166,34 @@ class NavbarManager {
     }
   }
 
-  hasActiveNavItem() {
-    return this.elements.navItems && this.elements.navItems.querySelector('.nav-item.active') !== null;
+  private hasActiveNavItem(): boolean {
+    return !!this.elements.navItems?.querySelector('.nav-item.active');
   }
 
-  isDesktop() {
+  private isDesktop(): boolean {
     return window.innerWidth > 768;
   }
 
-  shouldEnableTitleMode() {
+  private shouldEnableTitleMode(): boolean {
     return this.isDesktop() && !this.hasActiveNavItem();
   }
 
-  switchToTitleMode() {
-    if (this.titleMode) return;
-    if (!this.elements.titlePlaceholder) return;
+  private switchToTitleMode(): void {
+    if (this.titleMode || !this.elements.titlePlaceholder) return;
     this.setNavItemsVisible(false);
     this.elements.titlePlaceholder.style.display = 'flex';
     this.updateTitleText();
     this.titleMode = true;
   }
 
-  switchToNavMode() {
-    if (!this.titleMode) return;
-    if (!this.elements.titlePlaceholder) return;
+  private switchToNavMode(): void {
+    if (!this.titleMode || !this.elements.titlePlaceholder) return;
     this.setNavItemsVisible(true);
     this.elements.titlePlaceholder.style.display = 'none';
     this.titleMode = false;
   }
 
-  setNavItemsVisible(visible) {
+  private setNavItemsVisible(visible: boolean): void {
     if (!this.elements.navItems) return;
     if (visible) {
       this.elements.navItems.classList.remove('title-mode-hidden');
@@ -205,30 +202,30 @@ class NavbarManager {
     }
   }
 
-  onMouseEnter() {
+  private onMouseEnter = (): void => {
     if (this.shouldEnableTitleMode() && this.titleMode) {
       this.switchToNavMode();
     }
-  }
+  };
 
-  onMouseLeave() {
+  private onMouseLeave = (): void => {
     if (this.shouldEnableTitleMode() && !this.titleMode) {
       this.switchToTitleMode();
     }
-  }
+  };
 
-  onResize() {
+  private onResize = (): void => {
     const shouldEnable = this.shouldEnableTitleMode();
-    if (shouldEnable && !this.titleMode && !this.isDesktop() === false) {
+    if (shouldEnable && !this.titleMode && this.isDesktop()) {
       this.switchToTitleMode();
     } else if (!shouldEnable && this.titleMode) {
       this.switchToNavMode();
     } else if (shouldEnable && this.titleMode) {
       this.updateTitleText();
     }
-  }
+  };
 
-  observeNavItemsResize() {
+  private observeNavItemsResize(): void {
     if (!window.ResizeObserver) return;
     this.resizeObserver = new ResizeObserver(() => {
       if (this.shouldEnableTitleMode() && this.titleMode) {
@@ -238,30 +235,27 @@ class NavbarManager {
     if (this.elements.navItems) this.resizeObserver.observe(this.elements.navItems);
   }
 
-  initTitleReplacer() {
+  private initTitleReplacer(): void {
     if (!this.elements.navbar || !this.elements.nav || !this.elements.navItems) return;
     this.createTitlePlaceholder();
 
-    this.titleHandlers.mouseEnter = () => this.onMouseEnter();
-    this.titleHandlers.mouseLeave = () => this.onMouseLeave();
-    this.titleHandlers.resize = () => this.onResize();
-
-    this.elements.navbar.addEventListener('mouseenter', this.titleHandlers.mouseEnter);
-    this.elements.navbar.addEventListener('mouseleave', this.titleHandlers.mouseLeave);
-    window.addEventListener('resize', this.titleHandlers.resize);
-    window.addEventListener('ajax:navigation', () => this.onResize());
+    this.elements.navbar.addEventListener('mouseenter', this.onMouseEnter);
+    this.elements.navbar.addEventListener('mouseleave', this.onMouseLeave);
+    window.addEventListener('resize', this.onResize);
+    window.addEventListener('ajax:navigation', this.onResize);
     this.observeNavItemsResize();
 
     // 初始状态
     if (this.shouldEnableTitleMode()) this.switchToTitleMode();
   }
 
-  destroyTitleReplacer() {
-    if (this.titleHandlers.mouseEnter) {
-      this.elements.navbar?.removeEventListener('mouseenter', this.titleHandlers.mouseEnter);
-      this.elements.navbar?.removeEventListener('mouseleave', this.titleHandlers.mouseLeave);
+  private destroyTitleReplacer(): void {
+    if (this.elements.navbar) {
+      this.elements.navbar.removeEventListener('mouseenter', this.onMouseEnter);
+      this.elements.navbar.removeEventListener('mouseleave', this.onMouseLeave);
     }
-    if (this.titleHandlers.resize) window.removeEventListener('resize', this.titleHandlers.resize);
+    window.removeEventListener('resize', this.onResize);
+    window.removeEventListener('ajax:navigation', this.onResize);
     if (this.resizeObserver) {
       this.resizeObserver.disconnect();
       this.resizeObserver = null;
@@ -273,16 +267,16 @@ class NavbarManager {
     this.titleMode = false;
   }
 
-  // ---------- 重新绑定动态组件 ----------
-  rebindDynamicComponents() {
-    if (typeof initThemeToggle === 'function') initThemeToggle();
-    if (typeof initMobileMenuToggle === 'function') initMobileMenuToggle();
-    if (typeof bindNavLinks === 'function') bindNavLinks();
-    if (typeof initNavigation === 'function') initNavigation();
+  // ---------- 重新绑定动态组件（无刷新导航后复用） ----------
+  private rebindDynamicComponents(): void {
+    // 主题切换、移动菜单、高亮更新（不重复绑定导航点击）
+    initThemeToggle();
+    initMobileMenuToggle();
+    initNavigation(); // 仅更新高亮，不绑定点击
   }
 
   // ---------- 公共初始化入口 ----------
-  async init(placeholderId = 'navbar-placeholder') {
+  async init(placeholderId = 'navbar-placeholder'): Promise<void> {
     if (this.initialized) return;
     const placeholder = document.getElementById(placeholderId);
     if (!placeholder) {
@@ -291,18 +285,18 @@ class NavbarManager {
     }
 
     // 如果占位符中已存在导航栏（无刷新导航复用）
-    if (placeholder.querySelector('.navbar')) {
-      this.elements.navbar = placeholder.querySelector('.navbar');
-      this.elements.nav = this.elements.navbar.querySelector('nav');
-      this.elements.navItems = this.elements.navbar.querySelector('.nav-items');
+    const existingNavbar = placeholder.querySelector('.navbar') as HTMLElement | null;
+    if (existingNavbar) {
+      this.elements.navbar = existingNavbar;
+      this.elements.nav = existingNavbar.querySelector('nav');
+      this.elements.navItems = existingNavbar.querySelector('.nav-items');
       this.elements.placeholder = placeholder;
-      // 确保移除 initial 类，避免干扰
-      this.elements.navbar.classList.remove('initial');
-      // 标记动画已播放，因为这是复用场景
+      // 确保移除 initial 类（避免动画干扰）
+      existingNavbar.classList.remove('initial');
       this._entrancePlayed = true;
-      // 重新绑定组件
+      // 重新绑定组件（高亮、菜单、主题）
       this.rebindDynamicComponents();
-      // 标题替换功能重新初始化（因为 DOM 可能变化）
+      // 重新初始化标题替换（因为 DOM 可能变化）
       this.destroyTitleReplacer();
       this.initTitleReplacer();
       this.initialized = true;
@@ -327,22 +321,22 @@ class NavbarManager {
     // 启动标题替换功能
     this.initTitleReplacer();
 
-    // 入场动画标记：初始为 false，等待调用 playEntranceAnimation
-    this._entrancePlayed = false;
+    // 首次创建后自动播放入场动画
+    this.playEntranceAnimation();
 
     this.initialized = true;
     console.log('[NavbarManager] 导航栏初始化完成（首次）');
   }
 
   // 刷新标题内容（无刷新导航后调用）
-  refreshTitle() {
+  refreshTitle(): void {
     if (this.titleMode && this.elements.titlePlaceholder) {
       this.updateTitleText();
     }
   }
 
   // 完全销毁导航栏（用于测试或动态卸载）
-  destroy() {
+  destroy(): void {
     this.destroyTitleReplacer();
     if (this.elements.placeholder) this.elements.placeholder.innerHTML = '';
     this.initialized = false;
@@ -350,9 +344,9 @@ class NavbarManager {
 }
 
 // 单例模式
-let navbarManagerInstance = null;
+let navbarManagerInstance: NavbarManager | null = null;
 
-export async function initNavbar(placeholderId = 'navbar-placeholder') {
+export async function initNavbar(placeholderId = 'navbar-placeholder'): Promise<NavbarManager> {
   if (!navbarManagerInstance) {
     navbarManagerInstance = new NavbarManager();
   }
@@ -360,11 +354,6 @@ export async function initNavbar(placeholderId = 'navbar-placeholder') {
   return navbarManagerInstance;
 }
 
-export function refreshNavbarTitle() {
-  if (navbarManagerInstance) navbarManagerInstance.refreshTitle();
-}
-
-// 为了方便外部调用入场动画，导出实例的方法
-export function playNavbarEntrance() {
-  if (navbarManagerInstance) navbarManagerInstance.playEntranceAnimation();
+export function refreshNavbarTitle(): void {
+  navbarManagerInstance?.refreshTitle();
 }
