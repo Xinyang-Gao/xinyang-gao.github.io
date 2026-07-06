@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-06T18:56:31.014002",
-  "total_versions": 188,
+  "generated_at": "2026-07-06T19:04:26.376181",
+  "total_versions": 189,
   "versions": [
     {
       "id": 1,
@@ -2960,7 +2960,18 @@
           "description": "通过 `#articleBody` 辨别是否为文章详情页，防止无刷新导航进入导致一系列初始化问题"
         }
       ]
+    },
+    {
+      "id": 189,
+      "version": "v8.4.2",
+      "date": "2026-07-06",
+      "changes": [
+        {
+          "type": "refactor(archive)",
+          "description": "用 TypeScript 重构 `archive.js` 为 `archive.ts`"
+        }
+      ]
     }
   ],
-  "changelog_hash": "cf7bcc2cbf2323f0d40c67bc29987084"
+  "changelog_hash": "0178428a411024dee54979464102aa42"
 }
