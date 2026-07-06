@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-06T19:04:26.376181",
-  "total_versions": 189,
+  "generated_at": "2026-07-06T19:17:31.292742",
+  "total_versions": 190,
   "versions": [
     {
       "id": 1,
@@ -2971,7 +2971,18 @@
           "description": "用 TypeScript 重构 `archive.js` 为 `archive.ts`"
         }
       ]
+    },
+    {
+      "id": 190,
+      "version": "v8.4.3",
+      "date": "2026-07-06",
+      "changes": [
+        {
+          "type": "fix",
+          "description": "修复 `V8.0.0` 重构遗留的问题\n      - 现在可以正常构建出 `changelog` 和 `privacy` 页面"
+        }
+      ]
     }
   ],
-  "changelog_hash": "0178428a411024dee54979464102aa42"
+  "changelog_hash": "e382fa62774a9e67629ef74e3b22c550"
 }

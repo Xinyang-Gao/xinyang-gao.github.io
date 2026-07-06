@@ -45,6 +45,8 @@ PAGE_TEMPLATES = {
     "stats.html": "stats",
     "settings.html": "settings",
     "contact.html": "contact",
+    "changelog.html": "changelog",
+    "privacy.html": "privacy",
 }
 
 class AggregatedGenerator(OutputGenerator):
