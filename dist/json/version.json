@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-06T19:17:31.292742",
-  "total_versions": 190,
+  "generated_at": "2026-07-07T01:20:56.957827",
+  "total_versions": 191,
   "versions": [
     {
       "id": 1,
@@ -2982,7 +2982,18 @@
           "description": "修复 `V8.0.0` 重构遗留的问题\n      - 现在可以正常构建出 `changelog` 和 `privacy` 页面"
         }
       ]
+    },
+    {
+      "id": 191,
+      "version": "v8.4.4",
+      "date": "2026-07-07",
+      "changes": [
+        {
+          "type": "feat(core)",
+          "description": "使用 TypeScript 重构并添加数据压缩支持"
+        }
+      ]
     }
   ],
-  "changelog_hash": "e382fa62774a9e67629ef74e3b22c550"
+  "changelog_hash": "afac00d522c9af342435caa80e6c95ab"
 }

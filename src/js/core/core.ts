@@ -1,36 +1,105 @@
-// /js/core/core.js
-// 配置常量、工具类、存储控制器和Cookie同意管理器
+// /js/core/core.ts
+// 配置常量、工具类、存储控制器和Cookie同意管理器（TypeScript重构）
+// 数据压缩使用 lz-string（需在项目中安装或通过CDN引入）
+
+// 声明全局 LZString 接口（用于没有类型定义的情况）
+declare global {
+  interface Window {
+    LZString?: {
+      compressToUTF16(input: string): string;
+      decompressFromUTF16(input: string): string;
+    };
+  }
+}
+
+// ==================== 类型定义 ====================
+export interface WorkItem {
+  id?: string | number;
+  title?: string;
+  description?: string;
+  tags?: string[];
+  tag?: string[];
+  date?: string;
+  [key: string]: unknown;
+}
+
+export interface WorksData {
+  works: WorkItem[];
+}
+
+export interface ArticleItem {
+  id?: string | number;
+  title?: string;
+  description?: string;
+  tags?: string[];
+  tag?: string[];
+  date?: string;
+  last_updated?: string;
+  updated_date?: string;
+  [key: string]: unknown;
+}
+
+export interface ArticlesData {
+  articles: ArticleItem[];
+}
+
+export interface Config {
+  STORAGE_KEYS: {
+    COOKIE_CONSENT: string;
+    WORKS_DATA: string;
+    ARTICLES_DATA: string;
+    VISIT_RECORD: string;
+    THEME: string;
+  };
+  API: {
+    WORKS: string;
+    ARTICLES: string;
+    STATISTICS: string;
+  };
+  EXTERNAL_WHITELIST: Set<string>;
+  INTERNAL_DOMAINS: string[];
+  BACKGROUND_IMAGES: string[];
+  SITE_BIRTH: Date;
+}
 
 // ==================== 配置常量 ====================
-export const CONFIG = {
-  // 存储键
+export const CONFIG: Config = {
   STORAGE_KEYS: {
     COOKIE_CONSENT: 'cookieConsentAccepted',
     WORKS_DATA: 'worksData',
     ARTICLES_DATA: 'articlesData',
     VISIT_RECORD: 'statisticsVisitRecord',
-    THEME: 'theme'
+    THEME: 'theme',
   },
-
   API: {
     WORKS: '/json/works.json',
     ARTICLES: '/json/articles.json',
-    STATISTICS: '/json/statistics.json'
+    STATISTICS: '/json/statistics.json',
   },
-
   EXTERNAL_WHITELIST: new Set([
-    "github.com", "vercel.com", "netlify.app", "wikipedia.org",
-    "bilibili.com", "bing.com", "baidu.com", "zhihu.com",
-    "csdn.net", "cloud.tencent.com", "aliyun.com",
-    "gaoxinyang.lanzouq.com", "icp.gov.moe"
+    'github.com',
+    'vercel.com',
+    'netlify.app',
+    'wikipedia.org',
+    'bilibili.com',
+    'bing.com',
+    'baidu.com',
+    'zhihu.com',
+    'csdn.net',
+    'cloud.tencent.com',
+    'aliyun.com',
+    'gaoxinyang.lanzouq.com',
+    'icp.gov.moe',
   ]),
-
   INTERNAL_DOMAINS: [
-    window.location.hostname, 'localhost', '127.0.0.1',
-    'gxy.cn.mt', 'www.gxy.cn.mt',
-    'xinyang-gao.github.io', 'www.xinyang-gao.github.io'
+    window.location.hostname,
+    'localhost',
+    '127.0.0.1',
+    'gxy.cn.mt',
+    'www.gxy.cn.mt',
+    'xinyang-gao.github.io',
+    'www.xinyang-gao.github.io',
   ],
-
   BACKGROUND_IMAGES: [
     'https://cn.bing.com/th?id=OHR.MayLaborDayY26_ZH-CN7554485395_UHD.jpg&pid=hp',
     'https://cn.bing.com/th?id=OHR.OloupenaFalls_ZH-CN2980118660_UHD.jpg&pid=hp',
@@ -40,19 +109,18 @@ export const CONFIG = {
     'https://cn.bing.com/th?id=OHR.WaitangiFjordlandNP_ZH-CN9436140228_UHD.jpg&pid=hp&w=1920',
     'https://cn.bing.com/th?id=OHR.SichuanTea_ZH-CN6703437873_UHD.jpg&pid=hp&w=1920',
     'https://cn.bing.com/th?id=OHR.EuropeFromISS_ZH-CN0722816540_UHD.jpg&pid=hp&w=1920',
-    'https://cn.bing.com/th?id=OHR.SplugenPass_ZH-CN8347591461_UHD.jpg&pid=hp&w=1920'
+    'https://cn.bing.com/th?id=OHR.SplugenPass_ZH-CN8347591461_UHD.jpg&pid=hp&w=1920',
   ],
-
-  SITE_BIRTH: new Date('2025-02-22T12:23:53Z')
+  SITE_BIRTH: new Date('2025-02-22T12:23:53Z'),
 };
 
 // ==================== 工具类 ====================
 export class Utils {
-  static getUrlParam(name) {
+  static getUrlParam(name: string): string | null {
     return new URLSearchParams(window.location.search).get(name);
   }
 
-  static getGreetingMessage() {
+  static getGreetingMessage(): string {
     const h = new Date().getHours();
     if (h < 5) return '深夜灵感迸发，也要记得休息～';
     if (h < 8) return '晨光熹微，今天也要闪闪发光！';
@@ -63,36 +131,37 @@ export class Utils {
     return '夜深人静，愿你今夜好梦';
   }
 
-  static isDataExpired(raw, minutes = 5) {
+  static isDataExpired(raw: string | null, minutes = 5): boolean {
     if (!raw) return true;
     try {
-      const { _timestamp = null } = JSON.parse(raw);
-      return !_timestamp || _timestamp < Date.now() - minutes * 60e3;
+      const parsed = JSON.parse(raw) as { _timestamp?: number };
+      const ts = parsed._timestamp ?? null;
+      return ts === null || ts < Date.now() - minutes * 60 * 1000;
     } catch {
       console.error('[ERROR] 解析缓存数据失败');
       return true;
     }
   }
 
-  static validateData(data, type) {
+  static validateData(data: unknown, type: 'works' | 'articles'): boolean {
     if (!data) return false;
     if (type === 'works') {
-      return Array.isArray(data.works) && data.works.length > 0;
+      return (data as WorksData)?.works?.length > 0;
     } else if (type === 'articles') {
-      return Array.isArray(data.articles) && data.articles.length > 0;
+      return (data as ArticlesData)?.articles?.length > 0;
     }
     return false;
   }
 
-  static getTags(item) {
+  static getTags(item: { tags?: string[]; tag?: string[] }): string[] {
     if (item.tags && Array.isArray(item.tags)) return item.tags;
     if (item.tag && Array.isArray(item.tag)) return item.tag;
     return [];
   }
 
-  static escapeHtml(str) {
+  static escapeHtml(str: unknown): string {
     if (!str) return '';
-    return String(str).replace(/[&<>]/g, function (m) {
+    return String(str).replace(/[&<>]/g, (m) => {
       if (m === '&') return '&amp;';
       if (m === '<') return '&lt;';
       if (m === '>') return '&gt;';
@@ -100,48 +169,57 @@ export class Utils {
     });
   }
 
-  static debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
+  static debounce<T extends (...args: unknown[]) => void>(
+    func: T,
+    wait: number
+  ): (...args: Parameters<T>) => void {
+    let timeout: ReturnType<typeof setTimeout> | null = null;
+    return function executedFunction(...args: Parameters<T>) {
       const later = () => {
-        clearTimeout(timeout);
+        timeout = null;
         func(...args);
       };
-      clearTimeout(timeout);
+      if (timeout) clearTimeout(timeout);
       timeout = setTimeout(later, wait);
     };
   }
 
-  static throttle(func, limit) {
-    let inThrottle;
-    return function () {
-      const args = arguments;
-      const context = this;
+  static throttle<T extends (...args: unknown[]) => void>(
+    func: T,
+    limit: number
+  ): (...args: Parameters<T>) => void {
+    let inThrottle = false;
+    return function (this: unknown, ...args: Parameters<T>) {
       if (!inThrottle) {
-        func.apply(context, args);
+        func.apply(this, args);
         inThrottle = true;
         setTimeout(() => (inThrottle = false), limit);
       }
     };
   }
 
-  static formatRelativeTime(isoString) {
+  static formatRelativeTime(isoString: string): string {
     const target = new Date(isoString);
     const now = new Date();
-    const diffMs = now - target;
+    const diffMs = now.getTime() - target.getTime();
     const diffMins = Math.floor(diffMs / (1000 * 60));
     const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    if (diffMins < 1) return "刚刚";
+
+    if (diffMins < 1) return '刚刚';
     if (diffMins < 60) return `${diffMins}分钟前`;
     if (diffHours < 24) return `${diffHours}小时前`;
-    if (diffDays === 1) return "昨天";
-    if (diffDays === 2) return "前天";
+    if (diffDays === 1) return '昨天';
+    if (diffDays === 2) return '前天';
     if (diffDays <= 7) return `${diffDays}天前`;
-    return target.toLocaleDateString('zh-CN', { year: 'numeric', month: 'numeric', day: 'numeric' });
+    return target.toLocaleDateString('zh-CN', {
+      year: 'numeric',
+      month: 'numeric',
+      day: 'numeric',
+    });
   }
 
-  static parseArticleDate(item) {
+  static parseArticleDate(item: ArticleItem): Date | null {
     const value = item.date || item.last_updated || item.updated_date;
     if (!value) return null;
     const chineseMatch = String(value).match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
@@ -152,23 +230,25 @@ export class Utils {
       const date = new Date(year, month, day);
       if (!isNaN(date.getTime())) return date;
     }
-    const date = new Date(value);
+    const date = new Date(value as string | number);
     return isNaN(date.getTime()) ? null : date;
   }
 
-  static formatMonthLabel(monthIndex) {
+  static formatMonthLabel(monthIndex: number): string {
     return `${monthIndex}月`;
   }
 }
 
-// ==================== 存储控制器 ====================
+// ==================== 存储控制器（支持数据压缩） ====================
 export class StorageController {
+  private enabled: boolean;
+
   constructor() {
     this.enabled = this.checkInitialStatus();
     this.listenForConsent();
   }
 
-  checkInitialStatus() {
+  private checkInitialStatus(): boolean {
     const consentGiven = this.getItem(CONFIG.STORAGE_KEYS.COOKIE_CONSENT) === 'true';
     if (!consentGiven) {
       this.clearAllData();
@@ -177,14 +257,14 @@ export class StorageController {
     return true;
   }
 
-  listenForConsent() {
+  private listenForConsent(): void {
     window.addEventListener('cookieConsentAccepted', () => {
       this.enableStorage();
     });
 
-    window.addEventListener('cookieConsentChanged', (event) => {
-      const consent = event.detail.consent;
-      if (consent) {
+    window.addEventListener('cookieConsentChanged', (event: Event) => {
+      const detail = (event as CustomEvent<{ consent: boolean }>).detail;
+      if (detail.consent) {
         this.enableStorage();
       } else {
         this.disableStorage();
@@ -192,26 +272,25 @@ export class StorageController {
     });
   }
 
-  enableStorage() {
+  enableStorage(): void {
     this.enabled = true;
     this.setItem(CONFIG.STORAGE_KEYS.COOKIE_CONSENT, 'true');
     console.log('[StorageController] 存储功能已启用');
   }
 
-  disableStorage() {
+  disableStorage(): void {
     this.enabled = false;
     this.clearAllData();
     console.log('[StorageController] 存储功能已禁用');
   }
 
-  isAllowed() {
+  isAllowed(): boolean {
     return this.enabled;
   }
 
-  clearAllData() {
+  clearAllData(): void {
     const keysToRemove = Object.values(CONFIG.STORAGE_KEYS);
-
-    keysToRemove.forEach(key => {
+    keysToRemove.forEach((key) => {
       try {
         this.removeItem(key);
       } catch (e) {
@@ -220,51 +299,95 @@ export class StorageController {
     });
   }
 
-  getItem(key) {
-    if (!this.isAllowed()) {
-      if (key === CONFIG.STORAGE_KEYS.COOKIE_CONSENT) {
-        try {
-          return localStorage.getItem(key);
-        } catch (e) {
-          return null;
-        }
+  // --- 压缩辅助函数 ---
+  private compressData(raw: string): string {
+    if (typeof window.LZString?.compressToUTF16 === 'function') {
+      try {
+        return window.LZString.compressToUTF16(raw);
+      } catch (e) {
+        console.warn('[StorageController] 压缩失败，使用原始数据', e);
       }
-      return null;
     }
+    return raw; // 降级：无压缩
+  }
+
+  private decompressData(compressed: string): string {
+    if (typeof window.LZString?.decompressFromUTF16 === 'function') {
+      try {
+        const decompressed = window.LZString.decompressFromUTF16(compressed);
+        if (decompressed !== null && decompressed !== undefined) {
+          return decompressed;
+        }
+      } catch (e) {
+        console.warn('[StorageController] 解压失败，尝试直接解析', e);
+      }
+    }
+    return compressed; // 降级：直接当作原始字符串
+  }
+
+  // 判断是否为需要压缩的大数据键
+  private shouldCompress(key: string): boolean {
+    return (
+      key === CONFIG.STORAGE_KEYS.WORKS_DATA ||
+      key === CONFIG.STORAGE_KEYS.ARTICLES_DATA
+    );
+  }
+
+  getItem(key: string): string | null {
+    // cookie 同意状态不受存储启用限制
+    if (key === CONFIG.STORAGE_KEYS.COOKIE_CONSENT) {
+      try {
+        return localStorage.getItem(key);
+      } catch {
+        return null;
+      }
+    }
+    if (!this.isAllowed()) return null;
+
     try {
-      return localStorage.getItem(key);
+      const raw = localStorage.getItem(key);
+      if (raw === null) return null;
+      if (this.shouldCompress(key)) {
+        return this.decompressData(raw);
+      }
+      return raw;
     } catch (e) {
       console.warn(`[WARN] 读取存储项 "${key}" 失败:`, e);
       return null;
     }
   }
 
-  setItem(key, value) {
+  setItem(key: string, value: string): void {
     if (key === CONFIG.STORAGE_KEYS.COOKIE_CONSENT) {
       try {
         localStorage.setItem(key, value);
         return;
       } catch (e) {
-        console.warn(`[WARN] 设置cookie同意状态失败:`, e);
+        console.warn('[WARN] 设置cookie同意状态失败:', e);
         return;
       }
     }
 
     if (!this.isAllowed()) return;
+
     try {
-      localStorage.setItem(key, value);
+      let storeValue = value;
+      if (this.shouldCompress(key)) {
+        storeValue = this.compressData(value);
+      }
+      localStorage.setItem(key, storeValue);
     } catch (e) {
       console.warn(`[WARN] 设置存储项 "${key}" 失败:`, e);
     }
   }
 
-  removeItem(key) {
+  removeItem(key: string): void {
     if (key === CONFIG.STORAGE_KEYS.COOKIE_CONSENT) {
       try {
         localStorage.removeItem(key);
         return;
       } catch (e) {
-        console.warn(`[WARN] 删除cookie同意状态失败:`, e);
+        console.warn('[WARN] 删除cookie同意状态失败:', e);
         return;
       }
     }
@@ -280,17 +403,19 @@ export class StorageController {
 
 // ==================== Cookie 同意管理器 ====================
 export class CookieConsentManager {
-  static STORAGE_KEY = CONFIG.STORAGE_KEYS.COOKIE_CONSENT;
-  static BANNER_ID = 'cookie-consent-banner';
+  private static readonly STORAGE_KEY = CONFIG.STORAGE_KEYS.COOKIE_CONSENT;
+  private static readonly BANNER_ID = 'cookie-consent-banner';
 
-  constructor(storageController) {
+  private storageController: StorageController;
+  private banner: HTMLElement | null = null;
+  private isInitialized = false;
+
+  constructor(storageController: StorageController) {
     this.storageController = storageController;
-    this.banner = null;
-    this.isInitialized = false;
     this.init();
   }
 
-  init() {
+  private init(): void {
     if (this.hasConsented()) {
       this.storageController.enableStorage();
       console.log('[CookieConsentManager] 用户已同意，启用存储功能');
@@ -315,17 +440,15 @@ export class CookieConsentManager {
     this.isInitialized = true;
   }
 
-  hasConsented() {
-    const consent = this.storageController.getItem(CookieConsentManager.STORAGE_KEY);
-    return consent === 'true';
+  hasConsented(): boolean {
+    return this.storageController.getItem(CookieConsentManager.STORAGE_KEY) === 'true';
   }
 
-  hasRejected() {
-    const consent = this.storageController.getItem(CookieConsentManager.STORAGE_KEY);
-    return consent === 'false';
+  hasRejected(): boolean {
+    return this.storageController.getItem(CookieConsentManager.STORAGE_KEY) === 'false';
   }
 
-  setConsented(consented) {
+  setConsented(consented: boolean): void {
     this.storageController.setItem(CookieConsentManager.STORAGE_KEY, consented ? 'true' : 'false');
 
     if (consented) {
@@ -336,26 +459,24 @@ export class CookieConsentManager {
       console.log('[CookieConsentManager] Cookie拒绝已保存，禁用存储');
     }
 
-    window.dispatchEvent(new CustomEvent('cookieConsentChanged', {
-      detail: { consent: consented }
-    }));
+    window.dispatchEvent(
+      new CustomEvent('cookieConsentChanged', {
+        detail: { consent: consented },
+      })
+    );
   }
 
-  shouldShow() {
-    if (this.hasConsented() || this.hasRejected()) return false;
-    return true;
+  shouldShow(): boolean {
+    return !this.hasConsented() && !this.hasRejected();
   }
 
-  createBanner() {
-    const existingBanner = document.getElementById(CookieConsentManager.BANNER_ID);
-    if (existingBanner) {
-      existingBanner.remove();
-    }
+  private createBanner(): void {
+    const existing = document.getElementById(CookieConsentManager.BANNER_ID);
+    if (existing) existing.remove();
 
     this.banner = document.createElement('div');
     this.banner.id = CookieConsentManager.BANNER_ID;
     this.banner.className = 'cookie-consent-banner';
-
     this.banner.innerHTML = `
       <div class="cookie-consent-banner-container">
         <div class="cookie-consent-text">
@@ -377,17 +498,17 @@ export class CookieConsentManager {
     document.body.appendChild(this.banner);
 
     requestAnimationFrame(() => {
-      this.banner.classList.add('show');
+      this.banner?.classList.add('show');
     });
   }
 
-  showBanner() {
+  showBanner(): void {
     if (this.banner && !this.banner.classList.contains('show')) {
       this.banner.classList.add('show');
     }
   }
 
-  hideBanner() {
+  hideBanner(): void {
     if (this.banner) {
       this.banner.classList.remove('show');
       setTimeout(() => {
@@ -399,29 +520,25 @@ export class CookieConsentManager {
     }
   }
 
-  attachEvents() {
+  private attachEvents(): void {
     if (!this.banner) return;
 
-    const acceptBtn = this.banner.querySelector('#cookie-accept-btn');
-    const declineBtn = this.banner.querySelector('#cookie-decline-btn');
+    const acceptBtn = this.banner.querySelector<HTMLButtonElement>('#cookie-accept-btn');
+    const declineBtn = this.banner.querySelector<HTMLButtonElement>('#cookie-decline-btn');
 
-    if (acceptBtn) {
-      acceptBtn.addEventListener('click', () => {
-        this.setConsented(true);
-        this.hideBanner();
-        window.dispatchEvent(new CustomEvent('cookieConsentAccepted'));
-      });
-    }
+    acceptBtn?.addEventListener('click', () => {
+      this.setConsented(true);
+      this.hideBanner();
+      window.dispatchEvent(new CustomEvent('cookieConsentAccepted'));
+    });
 
-    if (declineBtn) {
-      declineBtn.addEventListener('click', () => {
-        this.setConsented(false);
-        this.hideBanner();
-      });
-    }
+    declineBtn?.addEventListener('click', () => {
+      this.setConsented(false);
+      this.hideBanner();
+    });
   }
 
-  resetConsent() {
+  resetConsent(): void {
     this.storageController.removeItem(CookieConsentManager.STORAGE_KEY);
     if (!this.banner) {
       this.createBanner();
@@ -432,17 +549,15 @@ export class CookieConsentManager {
   }
 }
 
-// 创建全局存储控制器实例（同步导出供其他模块使用）
+// ==================== 全局实例 ====================
 export const storageController = new StorageController();
 
-// 性能监控器（同步导出）
+// ==================== 性能监控器 ====================
 export class PerformanceMonitor {
-  constructor() {
-    this.timers = new Map();
-    this.metrics = [];
-  }
+  private timers: Map<string, number> = new Map();
+  private metrics: Array<{ label: string; duration: number; timestamp: number }> = [];
 
-  start(label) {
+  start(label: string): void {
     if (this.timers.has(label)) {
       console.warn(`[WARN] 计时器"${label}"已在运行`);
       return;
@@ -450,12 +565,12 @@ export class PerformanceMonitor {
     this.timers.set(label, performance.now());
   }
 
-  end(label) {
+  end(label: string): number | undefined {
     if (!this.timers.has(label)) {
       console.warn(`[WARN] 计时器"${label}"不存在`);
       return;
     }
-    const startTime = this.timers.get(label);
+    const startTime = this.timers.get(label)!;
     const duration = performance.now() - startTime;
     if (duration > 100) {
       console.log(`[INFO] ${label}: ${duration.toFixed(2)}ms (较慢)`);
@@ -465,11 +580,11 @@ export class PerformanceMonitor {
     return duration;
   }
 
-  getMetrics() {
+  getMetrics(): typeof this.metrics {
     return this.metrics.slice(-50);
   }
 
-  clearMetrics() {
+  clearMetrics(): void {
     this.metrics = [];
   }
 }
