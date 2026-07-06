@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-06T17:24:59.189442",
-  "total_versions": 185,
+  "generated_at": "2026-07-06T17:51:17.182786",
+  "total_versions": 186,
   "versions": [
     {
       "id": 1,
@@ -2912,14 +2912,25 @@
     {
       "id": 185,
       "version": "v8.3.1",
-      "date": "2026-07-05",
+      "date": "2026-07-06",
       "changes": [
         {
           "type": "chore(aggregated.py)",
           "description": "删除复制 JS 的代码，构建 JS 全部交由 Vite 处理"
         }
       ]
+    },
+    {
+      "id": 186,
+      "version": "v8.3.2",
+      "date": "2026-07-06",
+      "changes": [
+        {
+          "type": "style(twikoo)",
+          "description": "同步评论区引用样式与主站一致"
+        }
+      ]
     }
   ],
-  "changelog_hash": "b0b448fb51571c8ed39e8eedc0524717"
+  "changelog_hash": "553d092ed7fe88a7af5b7efef0ceb3ba"
 }

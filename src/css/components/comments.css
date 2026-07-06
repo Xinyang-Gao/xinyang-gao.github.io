@@ -2480,12 +2480,19 @@
 /* 3. 评论内容区域 */
 /* 引用样式优化 */
 .tk-content blockquote {
+  margin: 1.8em 0;
+  padding: 1.2em 1.6em;
   border-left: 4px solid var(--accent-color);
-  margin: 1rem 0;
-  padding: 0.5rem 1rem;
-  background-color: rgba(180, 91, 99, 0.05);
-  border-radius: 8px;
-  font-style: normal;
+  background-color: var(--blockquote-bg);
+  font-style: italic;
+  color: var(--text-color);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  transition: background-color var(--transition-normal);
+  box-shadow: var(--shadow-sm);
+}
+
+.tk-content blockquote p {
+  margin: 0;
 }
 
 /* 4. 评论元信息 (时间/地点/操作) */
