@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-07T14:58:13.486944",
-  "total_versions": 192,
+  "generated_at": "2026-07-07T21:57:26.697480",
+  "total_versions": 193,
   "versions": [
     {
       "id": 1,
@@ -3004,7 +3004,18 @@
           "description": "用 TypeScript 重构 `stats-manager.js` 为 `stats-manager.ts`"
         }
       ]
+    },
+    {
+      "id": 193,
+      "version": "v8.4.6",
+      "date": "2026-07-07",
+      "changes": [
+        {
+          "type": "chore",
+          "description": "更新 twikoo 版本（1.7.13 -> 1.7.14）"
+        }
+      ]
     }
   ],
-  "changelog_hash": "e4d39cab453975109e3aab33ef8073fe"
+  "changelog_hash": "6fb62060f9f788a1aa75d5ae29f368cd"
 }
