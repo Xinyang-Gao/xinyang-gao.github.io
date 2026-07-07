@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-07T01:20:56.957827",
-  "total_versions": 191,
+  "generated_at": "2026-07-07T14:58:13.486944",
+  "total_versions": 192,
   "versions": [
     {
       "id": 1,
@@ -2993,7 +2993,18 @@
           "description": "使用 TypeScript 重构并添加数据压缩支持"
         }
       ]
+    },
+    {
+      "id": 192,
+      "version": "v8.4.5",
+      "date": "2026-07-07",
+      "changes": [
+        {
+          "type": "refactor(stats-manager)",
+          "description": "用 TypeScript 重构 `stats-manager.js` 为 `stats-manager.ts`"
+        }
+      ]
     }
   ],
-  "changelog_hash": "afac00d522c9af342435caa80e6c95ab"
+  "changelog_hash": "e4d39cab453975109e3aab33ef8073fe"
 }
