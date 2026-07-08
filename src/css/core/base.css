@@ -1,6 +1,6 @@
 /* ============================================
    core/base.css
-   重置、基础样式、排版、滚动条、选中、链接、焦点
+   重构：移动优先基础样式
    ============================================ */
 
 /* ---------- 重置 ---------- */
@@ -31,10 +31,9 @@ body {
   color: var(--text-color);
   line-height: var(--line-height-base);
   text-rendering: optimizeLegibility;
-  padding: 20px;
+  padding: 12px;
   min-height: 100vh;
   overflow-x: hidden;
-  transition: background-image 0.5s ease, background-color var(--transition-normal), color var(--transition-normal);
   transition: background-color 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94),
               color 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
@@ -84,8 +83,8 @@ body::before {
 
 /* ---------- 滚动条 ---------- */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 ::-webkit-scrollbar-track {
   background: var(--bg-color);
@@ -102,6 +101,9 @@ body::before {
 ::-webkit-scrollbar-corner {
   background: var(--bg-color);
 }
+@media (min-width: 768px) {
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+}
 
 /* ---------- 选中文本 ---------- */
 ::selection {
@@ -109,12 +111,12 @@ body::before {
   color: white;
 }
 
-/* ---------- 排版 ---------- */
+/* ---------- 排版（移动优先） ---------- */
 h1, h2, h3, h4, h5, h6 {
   font-family: var(--font-serif);
   color: var(--accent-color);
-  margin-top: 1.5em;
-  margin-bottom: 0.8em;
+  margin-top: 1.2em;
+  margin-bottom: 0.6em;
   line-height: var(--line-height-heading);
   letter-spacing: -0.02em;
   font-weight: 600;
@@ -123,47 +125,47 @@ h1, h2, h3, h4, h5, h6 {
 h1 {
   font-size: var(--font-size-h1);
   text-align: center;
-  margin-top: 0.5em;
-  margin-bottom: 1.2em;
+  margin-top: 0.4em;
+  margin-bottom: 0.8em;
   font-weight: 700;
   letter-spacing: -0.02em;
 }
-
 h2 {
   font-size: var(--font-size-h2);
-  padding-bottom: 0.4em;
+  padding-bottom: 0.3em;
   border-bottom: 2px solid var(--accent-color);
-  margin-bottom: 1.2em;
+  margin-bottom: 0.8em;
   display: inline-block;
 }
-
 h3 {
   font-size: var(--font-size-h3);
   font-weight: 650;
 }
+h4 {
+  font-size: var(--font-size-h4);
+}
 
 p {
-  margin-bottom: 1.3em;
+  margin-bottom: 1em;
   font-size: var(--font-size-base);
   line-height: 1.7;
   color: var(--text-color);
-  margin: var(--paragraph-margin);
   max-width: var(--reading-width);
 }
 
 ul, ol {
   margin-left: 0;
-  margin-bottom: 1.3em;
-  padding-left: 1.8em;
+  margin-bottom: 1em;
+  padding-left: 1.6em;
 }
 li {
-  margin-bottom: 0.6em;
+  margin-bottom: 0.4em;
   line-height: 1.7;
 }
 
 blockquote {
-  margin: 1.8em 0;
-  padding: 1.2em 1.6em;
+  margin: 1.4em 0;
+  padding: 0.8em 1.2em;
   border-left: 4px solid var(--accent-color);
   background-color: var(--blockquote-bg);
   font-style: italic;
@@ -172,9 +174,7 @@ blockquote {
   transition: background-color var(--transition-normal);
   box-shadow: var(--shadow-sm);
 }
-blockquote p {
-  margin: 0;
-}
+blockquote p { margin: 0; }
 
 strong {
   font-weight: 600;
@@ -185,24 +185,27 @@ hr {
   border: 0;
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--border-color), transparent);
-  margin: 2.2em 0;
+  margin: 1.6em 0;
 }
 
 code {
   font-family: var(--font-mono);
   background: var(--code-bg);
-  padding: 0.2em 0.5em;
+  padding: 0.15em 0.4em;
   border-radius: var(--radius-sm);
-  font-size: 0.9em;
+  font-size: 0.85em;
   font-weight: 500;
 }
-
 pre {
   background: var(--code-bg);
-  padding: 1em;
+  padding: 0.8em;
   border-radius: var(--radius-md);
   overflow-x: auto;
-  margin: 1.2em 0;
+  margin: 1em 0;
+}
+pre code {
+  background: transparent;
+  padding: 0;
 }
 
 /* ---------- 链接 ---------- */
@@ -246,4 +249,13 @@ a:hover {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* ---------- 排版增强（大屏） ---------- */
+@media (min-width: 768px) {
+  body { padding: 20px; }
+  h1 { margin-top: 0.5em; margin-bottom: 1.2em; }
+  h2 { padding-bottom: 0.4em; margin-bottom: 1.2em; }
+  blockquote { padding: 1.2em 1.6em; margin: 1.8em 0; }
+  pre { padding: 1em; }
 }

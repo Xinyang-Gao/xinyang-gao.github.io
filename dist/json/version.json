@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-07T21:57:26.697480",
-  "total_versions": 193,
+  "generated_at": "2026-07-09T01:15:47.659466",
+  "total_versions": 194,
   "versions": [
     {
       "id": 1,
@@ -3015,7 +3015,18 @@
           "description": "更新 twikoo 版本（1.7.13 -> 1.7.14）"
         }
       ]
+    },
+    {
+      "id": 194,
+      "version": "v8.5.0",
+      "date": "2026-07-09",
+      "changes": [
+        {
+          "type": "refactor(style)",
+          "description": "全面重构响应式系统\n      - 优化基础排版、间距和字体大小，适配全设备\n      - 重写布局组件（网格、双栏、卡片等）响应\n      - 重构 UI 组件（标签、搜索、模态框、浮动按钮等）移动适配\n      - 导航栏样式重写\n      - 修复移动端友链页超出显示范围的 BUG"
+        }
+      ]
     }
   ],
-  "changelog_hash": "6fb62060f9f788a1aa75d5ae29f368cd"
+  "changelog_hash": "d312d694f6d68a3d430c3ca43bf415af"
 }
