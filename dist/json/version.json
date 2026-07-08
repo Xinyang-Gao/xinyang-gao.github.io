@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-09T01:15:47.659466",
-  "total_versions": 194,
+  "generated_at": "2026-07-09T01:27:17.126250",
+  "total_versions": 195,
   "versions": [
     {
       "id": 1,
@@ -3026,7 +3026,18 @@
           "description": "全面重构响应式系统\n      - 优化基础排版、间距和字体大小，适配全设备\n      - 重写布局组件（网格、双栏、卡片等）响应\n      - 重构 UI 组件（标签、搜索、模态框、浮动按钮等）移动适配\n      - 导航栏样式重写\n      - 修复移动端友链页超出显示范围的 BUG"
         }
       ]
+    },
+    {
+      "id": 195,
+      "version": "v8.5.1",
+      "date": "2026-07-09",
+      "changes": [
+        {
+          "type": "refactor(personal-card)",
+          "description": "重构个人信息卡片样式\n      - 去除大量渐变色，使其更简洁\n      - 去除多余元素\n      - 响应式优化\n      - 改善一些小细节"
+        }
+      ]
     }
   ],
-  "changelog_hash": "d312d694f6d68a3d430c3ca43bf415af"
+  "changelog_hash": "9a130b7a10da7aa5a4c0120f41ecd40e"
 }
