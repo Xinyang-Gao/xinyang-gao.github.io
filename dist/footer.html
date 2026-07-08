@@ -17,7 +17,7 @@
         </ul>
       </div>
 
-      <!-- 社交联系 -->
+      <!-- 社交联系（紧凑胶囊） -->
       <div class="footer-col social-col">
         <h4 class="footer-col-title">联系</h4>
         <div class="social-capsule-grid">
@@ -39,33 +39,28 @@
         </div>
       </div>
 
-      <!-- 列3: 动态统计与信息芯片（增强统计网格） -->
+      <!-- 数据统计（统一网格卡片） -->
       <div class="footer-col stats-col">
         <h4 class="footer-col-title">数据</h4>
-        
-        <!-- 站点运行时长（保留原有样式） -->
-        <div class="stat-chip">
-          <i class="fas fa-heartbeat"></i>
-          <span>已运行 <strong id="site-age">加载中...</strong></span>
-        </div>
-        
-        <!-- 不蒜子计数区块（保留原始ID确保统计可用） -->
-        <div class="stat-chip busuanzi-chip">
-          <i class="fas fa-chart-line"></i>
-          <div class="busuanzi-stats-inline">
-            <span class="stat-label">总访问</span>
-            <strong id="busuanzi_site_pv">0</strong>
-            <span class="stat-unit">次</span>
-            <span class="divider">|</span>
-            <span class="stat-label">访客</span>
-            <strong id="busuanzi_site_uv">0</strong>
-            <span class="stat-unit">人</span>
-          </div>
-        </div>
-
-        <!-- 统计信息网格：文章/字数/作品/分类 + 版本/快照 + 代码规模 -->
-        <div class="stats-divider"></div>
         <div class="stats-grid">
+          <!-- 运行时长 -->
+          <div class="stats-grid-item">
+            <i class="fas fa-heartbeat"></i>
+            <div class="stats-grid-info">
+              <span class="stats-grid-label">已运行</span>
+              <strong class="stats-grid-number" id="site-age">加载中...</strong>
+            </div>
+          </div>
+          <!-- 总访问 / 访客 -->
+          <div class="stats-grid-item">
+            <i class="fas fa-chart-line"></i>
+            <div class="stats-grid-info">
+              <span class="stats-grid-label">总访问 · 访客</span>
+              <strong class="stats-grid-number">
+                <span id="busuanzi_site_pv">0</span> 次 · <span id="busuanzi_site_uv">0</span> 人
+              </strong>
+            </div>
+          </div>
           <!-- 文章总数 -->
           <div class="stats-grid-item">
             <i class="fas fa-file-alt"></i>
@@ -98,8 +93,8 @@
               <strong class="stats-grid-number" id="footerTotalCategories">—</strong>
             </div>
           </div>
-          <!-- 版本编号 + 数据快照（整合为一项，上下排列） -->
-          <div class="stats-grid-item stats-grid-item-wide">
+          <!-- 版本 · 快照 -->
+          <div class="stats-grid-item">
             <i class="fas fa-code-branch"></i>
             <div class="stats-grid-info">
               <span class="stats-grid-label">版本 · 快照</span>
@@ -107,7 +102,7 @@
               <span class="stats-grid-sub" id="footerSnapshotDate">—</span>
             </div>
           </div>
-          <!-- 代码规模：总文件数 -->
+          <!-- 源文件数 -->
           <div class="stats-grid-item">
             <i class="fas fa-folder-tree"></i>
             <div class="stats-grid-info">
@@ -115,7 +110,7 @@
               <strong class="stats-grid-number" id="footerTotalFiles">—</strong>
             </div>
           </div>
-          <!-- 代码规模：总代码行数（非空行） -->
+          <!-- 代码行数 -->
           <div class="stats-grid-item">
             <i class="fas fa-code"></i>
             <div class="stats-grid-info">
@@ -127,7 +122,7 @@
       </div>
     </div>
 
-    <!-- 版权 + 现代法律/许可信息 -->
+    <!-- 版权 + 法律信息 -->
     <div class="footer-legal-panel">
       <div class="copyright-row">
         <div class="copyright-area">
@@ -137,43 +132,35 @@
         </div>
       </div>
       
-      <!-- 隐私 | 协议 | 许可证 -->
       <div class="legal-links-cluster">
         <a href="/privacy/" class="legal-link" rel="nofollow">隐私政策</a>
         <span class="legal-sep">/</span>
         <a href="/settings/" class="legal-link" rel="nofollow">网站设置</a>
         <span class="legal-sep">/</span>
-        <a href="/rss.xml" class="legal-link" rel="nofollow">RSS订阅</a>
+        <a href="/stats/" class="legal-link" rel="nofollow">统计信息</a>
         <span class="legal-sep">/</span>
         <a href="/sitemap.xml" class="legal-link" rel="nofollow">SiteMap</a>
         <span class="legal-sep">/</span>
-        <a href="/stats/" class="legal-link" rel="nofollow">统计信息</a>
-      </div>
-
-      <div class="legal-links-cluster">
+        <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="license noopener" class="legal-link">CC BY-NC-SA 4.0</a>
         <span class="legal-sep">/</span>
-        <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/" target="_blank" rel="license noopener" class="legal-link">知识共享协议 (CC BY-NC-SA 4.0)</a>
-        <span class="legal-sep">/</span>
-        <a href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener" class="legal-link">开源许可 (MIT)</a>
+        <a href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener" class="legal-link">MIT</a>
         <span class="legal-sep">/</span>
         <a href="https://icp.gov.moe/?keyword=20261221" target="_blank" rel="noopener noreferrer" class="legal-link badge-icp">
-          <i class="fas fa-paw"></i> 萌ICP备 (20261221号)
+          <i class="fas fa-paw"></i> 萌ICP备 20261221
         </a>
         <span class="legal-sep">/</span>
         <a href="https://travel.moe/go.html?travel=on" target="_blank" rel="noopener noreferrer" class="legal-link travel-link">
           <i class="fas fa-rocket"></i> 异次元之旅
         </a>
-        <!-- ===== 新增：开往-友链接力（徽章版） ===== -->
         <span class="legal-sep">/</span>
         <a href="https://www.travellings.cn/go.html" target="_blank" rel="noopener" class="legal-link travelling-link" title="开往-友链接力">
-          <img class="travelling-img travelling-light" data-viewer-exclude="true" src="https://www.travellings.cn/assets/w.png" alt="开往-友链接力（浅色）" height="18" loading="lazy">
-          <img class="travelling-img travelling-dark" data-viewer-exclude="true" src="https://www.travellings.cn/assets/b.png" alt="开往-友链接力（深色）" height="18" loading="lazy">
+          <img class="travelling-img travelling-light" data-viewer-exclude="true" src="https://www.travellings.cn/assets/w.png" alt="开往（浅色）" height="18" loading="lazy">
+          <img class="travelling-img travelling-dark" data-viewer-exclude="true" src="https://www.travellings.cn/assets/b.png" alt="开往（深色）" height="18" loading="lazy">
           <span>开往</span>
         </a>
       </div>
     </div>
   </div>
-
 </footer>
 
 <link rel="stylesheet" href="/css/components/footer.css">

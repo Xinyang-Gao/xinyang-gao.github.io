@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-09T01:27:17.126250",
-  "total_versions": 195,
+  "generated_at": "2026-07-09T01:41:05.661774",
+  "total_versions": 196,
   "versions": [
     {
       "id": 1,
@@ -3037,7 +3037,18 @@
           "description": "重构个人信息卡片样式\n      - 去除大量渐变色，使其更简洁\n      - 去除多余元素\n      - 响应式优化\n      - 改善一些小细节"
         }
       ]
+    },
+    {
+      "id": 196,
+      "version": "v8.5.2",
+      "date": "2026-07-09",
+      "changes": [
+        {
+          "type": "style(footer)",
+          "description": "优化页脚样式\n      - 紧凑显示社交胶囊\n      - 移除原有的 `stat-chip` 和 `busuanzi-chip`，将 `运行时长` 和 `总访问/访客` 整合进 `stats-grid`\n      - 响应式优化\n      - 改善一些小细节"
+        }
+      ]
     }
   ],
-  "changelog_hash": "9a130b7a10da7aa5a4c0120f41ecd40e"
+  "changelog_hash": "ab0a7e82c99065d4fc499ae1582293e9"
 }
