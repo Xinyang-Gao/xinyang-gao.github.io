@@ -734,7 +734,7 @@ class AggregatedGenerator(OutputGenerator):
         # 生成外部链接列表
         ext_html = self._render_external_links(external_list)
         # 统计数字
-        count_text = f"共 {len(friends_list)} 位小伙伴 · 点击卡片访问友站"
+        count_text = f"共 {len(friends_list)} 位小伙伴 · 随机排序"
 
         # 完整 HTML（复制原始模板结构，替换三处动态内容）
         html = f'''<!DOCTYPE html>

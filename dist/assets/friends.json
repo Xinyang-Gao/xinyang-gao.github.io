@@ -14,7 +14,7 @@
     },
     {
       "name": "Luquiesceneの小屋",
-      "link": "https://luq-blog.xyz/",
+      "link": "https://luq-blog.xyz",
       "desc": "To be or not to be: that is the question.",
       "avatar": "https://luq-blog.xyz/avatar.webp"
     },
@@ -44,7 +44,7 @@
     },
     {
       "name": "口袋分享记",
-      "link": "https://111620.xyz/",
+      "link": "https://111620.xyz",
       "desc": "所谓过往，皆为序章。虚室生白️",
       "avatar": "https://img.111620.xyz/2025/07/29/6887b5efbf768.png"
     },
@@ -55,10 +55,22 @@
       "avatar": "https://orientdawn.com/image/logo.png"
     },
     {
-    "name": "涵哲子居",
-    "link": "https://iluc.cn",
-    "desc": "天哲地理，共公卿好",
-    "avatar": "https://iluc.cn/logo.webp"
+      "name": "涵哲子居",
+      "link": "https://iluc.cn",
+      "desc": "天哲地理，共公卿好",
+      "avatar": "https://iluc.cn/logo.webp"
+    },
+    {
+      "name": "可爱のElaina",
+      "link": "https://blog.yhx1415926.top",
+      "desc": "或许是不知梦的缘故，流离之人追逐幻影",
+      "avatar": "https://blog.yhx1415926.top/assets/music/cover/cover.jpeg"
+    },
+    {
+      "name": "凛星RinStel",
+      "link": "https://rinx.nz",
+      "desc": "物来顺应, 未来不迎, 当下不杂, 既过不恋",
+      "avatar": "https://rinx.nz/images/avatar_comp.webp"
     }
   ],
   "external": [

@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-09T01:41:05.661774",
-  "total_versions": 196,
+  "generated_at": "2026-07-10T03:51:43.448860",
+  "total_versions": 197,
   "versions": [
     {
       "id": 1,
@@ -3048,7 +3048,18 @@
           "description": "优化页脚样式\n      - 紧凑显示社交胶囊\n      - 移除原有的 `stat-chip` 和 `busuanzi-chip`，将 `运行时长` 和 `总访问/访客` 整合进 `stats-grid`\n      - 响应式优化\n      - 改善一些小细节"
         }
       ]
+    },
+    {
+      "id": 197,
+      "version": "v8.5.3",
+      "date": "2026-07-10",
+      "changes": [
+        {
+          "type": "chore",
+          "description": "删除 `/scr/` 中未使用的 `friends.html` 模板"
+        }
+      ]
     }
   ],
-  "changelog_hash": "ab0a7e82c99065d4fc499ae1582293e9"
+  "changelog_hash": "e21a823198bc0ee44bb916bde7b2f24c"
 }
