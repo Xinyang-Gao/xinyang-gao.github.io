@@ -1,22 +1,22 @@
 {
-  "generated_at": "2026-07-11T01:29:55.992691",
+  "generated_at": "2026-07-11T01:45:01.460727",
   "root_dir": "D:\\Code\\Website\\dist",
-  "total_files": 156,
-  "total_size_bytes": 2216342,
-  "total_lines": 28654,
-  "non_empty_lines": 26307,
+  "total_files": 154,
+  "total_size_bytes": 2199419,
+  "total_lines": 28497,
+  "non_empty_lines": 26150,
   "by_extension": [
     {
       "extension": ".css",
-      "count": 31,
-      "total_size_bytes": 424849,
-      "total_lines": 7753,
-      "non_empty_lines": 6905
+      "count": 30,
+      "total_size_bytes": 412365,
+      "total_lines": 7752,
+      "non_empty_lines": 6904
     },
     {
       "extension": ".html",
       "count": 44,
-      "total_size_bytes": 477392,
+      "total_size_bytes": 477390,
       "total_lines": 6663,
       "non_empty_lines": 6052
     },
@@ -36,10 +36,10 @@
     },
     {
       "extension": ".json",
-      "count": 24,
-      "total_size_bytes": 159175,
-      "total_lines": 4902,
-      "non_empty_lines": 4902
+      "count": 23,
+      "total_size_bytes": 154738,
+      "total_lines": 4746,
+      "non_empty_lines": 4746
     },
     {
       "extension": ".md",

@@ -14,6 +14,7 @@ from typing import Optional, List
 from builder.common import PROJECT_ROOT, log_info, log_error, log_warning
 from builder.engine import BuildEngine
 from builder.generators.aggregated import AggregatedGenerator
+from builder.generators.friend_colors import FriendColorsGenerator   # 新增导入
 
 
 def console_main(args):
@@ -23,11 +24,15 @@ def console_main(args):
 
     engine = BuildEngine()
     engine.register(AggregatedGenerator())
+    engine.register(FriendColorsGenerator())   # 注册友链颜色生成器
 
     target = args.targets if args.targets else None
     force = args.force
     parallel = not args.no_parallel
     max_workers = args.workers
+
+    # 构建强制覆盖字典：friend_colors 使用独立的 --force-colors
+    force_overrides = {"friend_colors": args.force_colors}
 
     def callback(msg, tag):
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -35,7 +40,8 @@ def console_main(args):
 
     success = engine.run(force=force, target_names=target,
                          parallel=parallel, max_workers=max_workers,
-                         progress_callback=callback)
+                         progress_callback=callback,
+                         force_overrides=force_overrides)
     if not success:
         sys.exit(1)
     log_info("构建完成")
@@ -44,6 +50,7 @@ def console_main(args):
 def setup_argparse():
     parser = argparse.ArgumentParser(description="统一构建系统")
     parser.add_argument("--force", action="store_true", help="强制重新生成所有输出")
+    parser.add_argument("--force-colors", action="store_true", help="强制重新生成友链主题色（即使--force未启用）")
     parser.add_argument("--targets", nargs="+", help="指定生成器名称（如 aggregated）")
     parser.add_argument("--no-parallel", action="store_true", help="禁用并行执行")
     parser.add_argument("--workers", type=int, default=4, help="并行线程数")
