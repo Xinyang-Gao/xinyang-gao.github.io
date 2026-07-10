@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-10T18:45:13.819725",
-  "total_versions": 198,
+  "generated_at": "2026-07-11T00:02:12.927263",
+  "total_versions": 201,
   "versions": [
     {
       "id": 1,
@@ -2893,13 +2893,24 @@
       "date": "2026-07-04",
       "changes": [
         {
+          "type": "chore(page-utils.js)",
+          "description": "删除已不被使用的 `isArticleDetailOr404Page` 函数"
+        }
+      ]
+    },
+    {
+      "id": 184,
+      "version": "v8.2.9",
+      "date": "2026-07-04",
+      "changes": [
+        {
           "type": "fix(theme)",
           "description": "修复主题切换闪烁并优化过渡动画"
         }
       ]
     },
     {
-      "id": 184,
+      "id": 185,
       "version": "v8.3.0",
       "date": "2026-07-05",
       "changes": [
@@ -2910,8 +2921,19 @@
       ]
     },
     {
-      "id": 185,
+      "id": 186,
       "version": "v8.3.1",
+      "date": "2026-07-05",
+      "changes": [
+        {
+          "type": "refactor(friends-manager)",
+          "description": "用 TypeScript 重构 `friends-manager.js` 为 `friends-manager.ts`"
+        }
+      ]
+    },
+    {
+      "id": 187,
+      "version": "v8.3.2",
       "date": "2026-07-06",
       "changes": [
         {
@@ -2921,8 +2943,8 @@
       ]
     },
     {
-      "id": 186,
-      "version": "v8.3.2",
+      "id": 188,
+      "version": "v8.3.3",
       "date": "2026-07-06",
       "changes": [
         {
@@ -2932,7 +2954,7 @@
       ]
     },
     {
-      "id": 187,
+      "id": 189,
       "version": "v8.4.0",
       "date": "2026-07-06",
       "changes": [
@@ -2947,7 +2969,7 @@
       ]
     },
     {
-      "id": 188,
+      "id": 190,
       "version": "v8.4.1",
       "date": "2026-07-06",
       "changes": [
@@ -2962,7 +2984,7 @@
       ]
     },
     {
-      "id": 189,
+      "id": 191,
       "version": "v8.4.2",
       "date": "2026-07-06",
       "changes": [
@@ -2973,7 +2995,7 @@
       ]
     },
     {
-      "id": 190,
+      "id": 192,
       "version": "v8.4.3",
       "date": "2026-07-06",
       "changes": [
@@ -2984,7 +3006,7 @@
       ]
     },
     {
-      "id": 191,
+      "id": 193,
       "version": "v8.4.4",
       "date": "2026-07-07",
       "changes": [
@@ -2995,7 +3017,7 @@
       ]
     },
     {
-      "id": 192,
+      "id": 194,
       "version": "v8.4.5",
       "date": "2026-07-07",
       "changes": [
@@ -3006,7 +3028,7 @@
       ]
     },
     {
-      "id": 193,
+      "id": 195,
       "version": "v8.4.6",
       "date": "2026-07-07",
       "changes": [
@@ -3017,7 +3039,7 @@
       ]
     },
     {
-      "id": 194,
+      "id": 196,
       "version": "v8.5.0",
       "date": "2026-07-09",
       "changes": [
@@ -3028,7 +3050,7 @@
       ]
     },
     {
-      "id": 195,
+      "id": 197,
       "version": "v8.5.1",
       "date": "2026-07-09",
       "changes": [
@@ -3039,7 +3061,7 @@
       ]
     },
     {
-      "id": 196,
+      "id": 198,
       "version": "v8.5.2",
       "date": "2026-07-09",
       "changes": [
@@ -3050,7 +3072,7 @@
       ]
     },
     {
-      "id": 197,
+      "id": 199,
       "version": "v8.5.3",
       "date": "2026-07-10",
       "changes": [
@@ -3061,7 +3083,7 @@
       ]
     },
     {
-      "id": 198,
+      "id": 200,
       "version": "v8.5.4",
       "date": "2026-07-10",
       "changes": [
@@ -3070,7 +3092,26 @@
           "description": "删除 `/scr/` 中未使用的 `articles.html` `works.html` `nojs.html` 模板"
         }
       ]
+    },
+    {
+      "id": 201,
+      "version": "v8.6.0",
+      "date": "2026-07-10",
+      "changes": [
+        {
+          "type": "feat",
+          "description": "使用 [APlayer(改版)](https://github.com/DIYgod/APlayer/pull/802) 替换 [NeteaseMiniPlayer-v2(改版)](https://github.com/numakkiyu/NeteaseMiniPlayer/pull/15)\n      - *因为 NeteaseMiniPlayer-v2 已停止维护，NeteaseMiniPlayer-V3 的 api 尚不稳定且更换需要重构重网站的全局音乐加载模块；综合评估下来使用了 APlayer 的改版*"
+        },
+        {
+          "type": "chore",
+          "description": "修复更新日志中重复的版本号"
+        },
+        {
+          "type": "docs",
+          "description": "更新文档"
+        }
+      ]
     }
   ],
-  "changelog_hash": "aee31582bb575a1e2643f7dbbde59e06"
+  "changelog_hash": "2e4df3807d7ad0a1e99ad6b56fac0e73"
 }

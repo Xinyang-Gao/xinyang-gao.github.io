@@ -29,7 +29,7 @@
 | **图片查看器** | 自定义 Canvas 实现，支持缩放/旋转/拖拽 |
 | **鼠标特效** | Canvas 2D 实时渲染（点击涟漪、长按爆发、拖拽连线） |
 | **Service Worker** | 自定义缓存策略（stale-while-revalidate、网络优先） |
-| **音乐播放器** | 二次开发的 NeteaseMiniPlayer v2（嵌入短代码支持） |
+| **音乐播放器** | [二次开发的 APlayer](https://github.com/DIYgod/APlayer/pull/802) |
 
 ---
 
