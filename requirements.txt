@@ -1,0 +1,7 @@
+markdown
+pyyaml
+requests
+pillow
+rcssmin
+python-dateutil
+packaging

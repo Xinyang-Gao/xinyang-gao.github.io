@@ -1,1 +1,0 @@
-var e=class{init(){throw Error(`子类必须实现 init 方法`)}destroy(){throw Error(`子类必须实现 destroy 方法`)}};export{e as PageManager};

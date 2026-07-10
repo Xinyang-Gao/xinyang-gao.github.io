@@ -1,4 +1,3 @@
-# Simple workflow for deploying static content to GitHub Pages
 name: Deploy static content to Pages
 
 on:
@@ -16,7 +15,7 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  deploy:
+  build-and-deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -25,15 +24,35 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # ---------- 设置 Python ----------
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+          cache: 'pip'
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+
+      # ---------- 设置 Node.js ----------
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+      - name: Install Node dependencies
+        run: npm ci   # 或 npm install
+
+      # ---------- 执行构建 ----------
+      - name: Build site
+        run: python run.py --force
+
+      # ---------- 部署到 Pages ----------
       - name: Setup Pages
         uses: actions/configure-pages@v5
-
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          # 只上传 dist 目录的内容，而不是整个仓库
           path: './dist'
-
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
