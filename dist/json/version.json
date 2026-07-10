@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-10T03:51:43.448860",
-  "total_versions": 197,
+  "generated_at": "2026-07-10T18:45:13.819725",
+  "total_versions": 198,
   "versions": [
     {
       "id": 1,
@@ -3059,7 +3059,18 @@
           "description": "删除 `/scr/` 中未使用的 `friends.html` 模板"
         }
       ]
+    },
+    {
+      "id": 198,
+      "version": "v8.5.4",
+      "date": "2026-07-10",
+      "changes": [
+        {
+          "type": "chore",
+          "description": "删除 `/scr/` 中未使用的 `articles.html` `works.html` `nojs.html` 模板"
+        }
+      ]
     }
   ],
-  "changelog_hash": "e21a823198bc0ee44bb916bde7b2f24c"
+  "changelog_hash": "aee31582bb575a1e2643f7dbbde59e06"
 }

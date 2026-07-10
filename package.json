@@ -1,7 +1,7 @@
 {
   "name": "xinyang-gao.github.io",
   "version": "1.0.0",
-  "description": "---\r title: README.md\r description: 项目介绍\r author: 高新炀 ＆ DEEPSEEK-V4\r date: 2026-04-12\r tag: [网站]\r ---",
+  "description": "一个个人网站",
   "main": "index.js",
   "scripts": {
     "build": "vite build",
