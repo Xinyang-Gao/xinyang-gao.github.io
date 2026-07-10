@@ -618,10 +618,11 @@ class AggregatedGenerator(OutputGenerator):
                     capture_output=True,
                     text=True,
                     encoding='utf-8',
-                    shell=True
                 )
                 if result.returncode != 0:
                     log_error(f"Vite 构建失败 (返回码 {result.returncode})")
+                    log_error(f"CWD: {PROJECT_ROOT}")
+                    log_error(f"PATH: {os.environ.get('PATH')}")
                     log_error(f"stdout: {result.stdout}")
                     log_error(f"stderr: {result.stderr}")
                     raise RuntimeError("前端 TypeScript 编译失败")
