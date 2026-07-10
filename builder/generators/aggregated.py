@@ -54,7 +54,8 @@ class AggregatedGenerator(OutputGenerator):
     inputs = {"articles", "works", "friends", "version"}
     outputs = [
         RSS_OUTPUT, SITEMAP_OUTPUT, ARTICLES_LIST_HTML, WORKS_LIST_HTML, NOJS_HTML, STATISTICS_JSON
-    ] + [DIST_ROOT / f"{key}" / "index.html" for key in PAGE_TEMPLATES.values()]
+    ] + [DIST_ROOT / f"{key}" / "index.html" for key in PAGE_TEMPLATES.values()] \
+        + [DIST_ROOT / "friends" / "index.html"]
 
     # ---------- 增量判断增强 ----------
     def _compute_frontend_hash(self) -> str:
@@ -72,10 +73,11 @@ class AggregatedGenerator(OutputGenerator):
         # Assets（排除 source，但保留 avatars，因为友链可能引用）
         if ASSETS_DIR.exists():
             hashes.append(compute_dir_hash(ASSETS_DIR, ignore_patterns=["source"]))
-        # 根目录的 favicon
-        favicon = PROJECT_ROOT / "favicon.ico"
-        if favicon.exists():
-            hashes.append(compute_file_hash(favicon))
+        # 根目录文件（favicon, BingSiteAuth, robots.txt）
+        for filename in ["favicon.ico", "BingSiteAuth.xml", "robots.txt"]:
+            file_path = SRC_ROOT / filename
+            if file_path.exists():
+                hashes.append(compute_file_hash(file_path))
         return compute_object_hash("".join(hashes))
 
     def is_up_to_date(self, context: BuildContext, state: dict) -> bool:
@@ -665,11 +667,14 @@ class AggregatedGenerator(OutputGenerator):
         else:
             log_warning(f"assets 源目录不存在: {ASSETS_DIR}")
 
-        # ---------- 4. 复制 favicon ----------
-        favicon = PROJECT_ROOT / "favicon.ico"
-        if favicon.exists():
-            shutil.copy(favicon, DIST_ROOT / "favicon.ico")
-            log_info("复制 favicon.ico")
+        # 复制 favicon.ico, BingSiteAuth.xml, robots.txt 到 dist 根目录
+        for filename in ["favicon.ico", "BingSiteAuth.xml", "robots.txt"]:
+            src_file = SRC_ROOT / filename
+            if src_file.exists():
+                shutil.copy(src_file, DIST_ROOT / filename)
+                log_info(f"复制 {filename} 到 dist/")
+            else:
+                log_warning(f"{filename} 不存在于 src/ 目录，跳过")
 
         # ---------- 5. 复制 works 目录（包含作品静态资源） ----------
         works_src = SRC_ROOT / "works"

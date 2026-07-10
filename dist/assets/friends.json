@@ -80,9 +80,9 @@
       "desc": "开往 – 友链接力"
     },
     {
-      "name": "NeteaseMiniPlayer",
-      "link": "https://github.com/numakkiyu/NeteaseMiniPlayer/",
-      "desc": "网易云音乐迷你播放器"
+      "name": "APlayer_Glassmorphism-UI",
+      "link": "https://github.com/BB0813/APlayer_Glassmorphism-UI/",
+      "desc": "现在使用的音乐播放器，APlayer但基于Vue3的新UI/UX"
     },
     {
       "name": "Busuanzi",
@@ -103,6 +103,11 @@
       "name": "Github Pages",
       "link": "https://github.com/xinyang-Gao/xinyang-gao.github.io",
       "desc": "网站部署"
+    },
+    {
+      "name": "NeteaseMiniPlayerV2",
+      "link": "https://github.com/numakkiyu/NeteaseMiniPlayer/",
+      "desc": "（曾经使用）网易云音乐迷你播放器，现已停止维护（新项目V3）"
     }
   ]
 }

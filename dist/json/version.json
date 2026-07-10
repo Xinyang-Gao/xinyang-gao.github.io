@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-11T00:02:12.927263",
-  "total_versions": 201,
+  "generated_at": "2026-07-11T00:49:55.816039",
+  "total_versions": 202,
   "versions": [
     {
       "id": 1,
@@ -3111,7 +3111,22 @@
           "description": "更新文档"
         }
       ]
+    },
+    {
+      "id": 202,
+      "version": "v8.6.1",
+      "date": "2026-07-11",
+      "changes": [
+        {
+          "type": "refactor(builder)",
+          "description": "移除 GUI 并优化增量构建策略\n      - 移除 run.py 中的 Tkinter GUI 模块，仅保留命令行入口\n      - 增强 base.py 中 is_up_to_date 方法：检查所有输出文件是否存在，若缺失则判定为过时\n      - 补全 aggregated 生成器的 outputs 列表，添加 friends/index.html\n      - 当输出文件被误删或损坏时，将自动触发重新构建，提高构建可靠性"
+        },
+        {
+          "type": "feat(builder)",
+          "description": "从 src/ 复制站点根文件到 dist/\n      - 新增复制 BingSiteAuth.xml, favicon.ico, robots.txt 从 src/ 到 dist/"
+        }
+      ]
     }
   ],
-  "changelog_hash": "2e4df3807d7ad0a1e99ad6b56fac0e73"
+  "changelog_hash": "940babd07de828c2f6c6d14479ce1ab2"
 }

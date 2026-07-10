@@ -42,7 +42,14 @@ class OutputGenerator(ABC):
         return compute_object_hash("".join(parts))
 
     def is_up_to_date(self, context: BuildContext, state: dict) -> bool:
-        """根据状态文件判断是否需要重新生成"""
+        """
+        根据状态文件判断是否需要重新生成。
+        优化：增加输出文件存在性检查，确保所有输出文件齐全。
+        """
+        # 检查所有输出文件是否存在
+        for p in self.outputs:
+            if not p.exists():
+                return False
         old = state.get(self.name, {})
         return old.get("input_hash") == self.compute_input_hash(context)
 

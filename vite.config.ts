@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
+import copy from 'rollup-plugin-copy';
 
 export default defineConfig({
   root: './',
@@ -28,10 +29,18 @@ export default defineConfig({
         entryFileNames: '[name].js',
         chunkFileNames: '[name].js',
         assetFileNames: '[name].[ext]',
-      }
+      },
+      plugins: [
+        copy({
+          targets: [
+            { src: 'src/js/vendor/*.min.js', dest: 'dist/js/vendor' }   // ← 只复制 .min.js
+          ],
+          verbose: true,
+        })
+      ]
     }
   },
   server: {
-    root: 'dist',  // 开发时以 dist 为根目录（需确保已构建）
+    root: 'dist',
   }
 });

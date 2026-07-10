@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/Xinyang-Gao/xinyang-gao.github.io#readme",
   "devDependencies": {
+    "rollup-plugin-copy": "^3.5.0",
     "typescript": "^6.0.3",
     "vite": "^8.1.1"
   }
