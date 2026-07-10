@@ -53,7 +53,8 @@ class AggregatedGenerator(OutputGenerator):
     name = "aggregated"
     inputs = {"articles", "works", "friends", "version"}
     outputs = [
-        RSS_OUTPUT, SITEMAP_OUTPUT, ARTICLES_LIST_HTML, WORKS_LIST_HTML, NOJS_HTML, STATISTICS_JSON
+        RSS_OUTPUT, SITEMAP_OUTPUT, ARTICLES_LIST_HTML, WORKS_LIST_HTML, NOJS_HTML, STATISTICS_JSON,
+        JSON_OUTPUT_DIR / "code_analysis.json",   # 新增：dist 代码分析
     ] + [DIST_ROOT / f"{key}" / "index.html" for key in PAGE_TEMPLATES.values()] \
         + [DIST_ROOT / "friends" / "index.html"]
 
@@ -118,6 +119,7 @@ class AggregatedGenerator(OutputGenerator):
             self._copy_static_assets(frontend_changed)   # 传递变化标志
             self._generate_friends_page(context)
             self._generate_subdir_pages(context)
+            self._generate_code_analysis()               # 新增：生成 dist 代码分析
             log_info("聚合生成完成")
             return True
         except Exception as e:
@@ -881,3 +883,81 @@ class AggregatedGenerator(OutputGenerator):
                 </a>
             ''')
         return ''.join(items)
+
+    # ---------- 新增：dist 代码分析 ----------
+    def _generate_code_analysis(self):
+        """生成 dist 目录的代码分析 JSON，与 code_analysis.json 格式一致"""
+        log_info("开始生成 dist 代码分析...")
+        result = self._analyze_directory(DIST_ROOT)
+        save_json(result, JSON_OUTPUT_DIR / "code_analysis.json")
+        log_info(f"dist 代码分析已保存至 {JSON_OUTPUT_DIR / 'code_analysis.json'}")
+
+    def _analyze_directory(self, directory: Path):
+        """遍历目录，统计文件信息，返回与 code_analysis.json 一致的结构"""
+        if not directory.exists():
+            log_warning(f"目录不存在: {directory}")
+            return {}
+
+        by_ext = {}
+        total_size = 0
+        total_lines = 0
+        non_empty_lines = 0
+        total_files = 0
+
+        for file_path in directory.rglob('*'):
+            if not file_path.is_file():
+                continue
+            total_files += 1
+            size = file_path.stat().st_size
+            total_size += size
+
+            ext = file_path.suffix or 'no_extension'
+            # 统计行数（尝试按文本读取）
+            lines = 0
+            non_empty = 0
+            try:
+                with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                    for line in f:
+                        lines += 1
+                        if line.strip():
+                            non_empty += 1
+            except Exception:
+                # 若无法读取（如权限问题），则行数记为 0
+                pass
+
+            if ext not in by_ext:
+                by_ext[ext] = {
+                    'count': 0,
+                    'total_size_bytes': 0,
+                    'total_lines': 0,
+                    'non_empty_lines': 0
+                }
+            by_ext[ext]['count'] += 1
+            by_ext[ext]['total_size_bytes'] += size
+            by_ext[ext]['total_lines'] += lines
+            by_ext[ext]['non_empty_lines'] += non_empty
+            total_lines += lines
+            non_empty_lines += non_empty
+
+        # 构建最终结果
+        ext_list = []
+        for ext, data in by_ext.items():
+            ext_list.append({
+                'extension': ext,
+                'count': data['count'],
+                'total_size_bytes': data['total_size_bytes'],
+                'total_lines': data['total_lines'],
+                'non_empty_lines': data['non_empty_lines']
+            })
+        ext_list.sort(key=lambda x: x['extension'])
+
+        result = {
+            'generated_at': datetime.now().isoformat(),
+            'root_dir': str(directory),
+            'total_files': total_files,
+            'total_size_bytes': total_size,
+            'total_lines': total_lines,
+            'non_empty_lines': non_empty_lines,
+            'by_extension': ext_list
+        }
+        return result

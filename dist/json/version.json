@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-11T01:24:22.437839",
-  "total_versions": 203,
+  "generated_at": "2026-07-11T01:29:53.102569",
+  "total_versions": 204,
   "versions": [
     {
       "id": 1,
@@ -3137,7 +3137,18 @@
           "description": "尊重 Markdown 源文件中的手动更新日期"
         }
       ]
+    },
+    {
+      "id": 204,
+      "version": "v8.6.3",
+      "date": "2026-07-11",
+      "changes": [
+        {
+          "type": "feat(builder)",
+          "description": "重新添加对生成 code_analysis.json 文件的支持"
+        }
+      ]
     }
   ],
-  "changelog_hash": "4f6d3063d08ea809d67760f59d09a3d0"
+  "changelog_hash": "9d7004e5379a1f633f46446bb1402517"
 }
