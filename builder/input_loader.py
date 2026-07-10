@@ -385,26 +385,13 @@ def _process_markdown_file(md_file_path: Path, old_article: Optional[Dict] = Non
     current_hash = compute_content_hash(md_content)
     rel_path = get_relative_path(md_file_path)
 
-    if old_article:
-        last_updated = old_article.get('last_updated', '')
-        modify_count = old_article.get('modify_count', 0)
-    else:
-        last_updated = ''
-        modify_count = 0
-
-    today = get_current_date_iso()
-    if not old_article:
-        last_updated = today
-        modify_count = 1
-    elif current_hash != old_article.get('hash', ''):
-        last_updated = today
-        modify_count += 1
-
-    # 提取 frontmatter
-    frontmatter_pattern = r'^\s*---\s*\n([\s\S]+?)\n\s*---\s*\n([\s\S]*)$'
-    match = re.match(frontmatter_pattern, md_content, re.MULTILINE)
+    # ---------- 初始化元数据（无论是否匹配，均赋默认值） ----------
     metadata = {}
     cleaned = md_content
+
+    # ---------- 提取 frontmatter ----------
+    frontmatter_pattern = r'^\s*---\s*\n([\s\S]+?)\n\s*---\s*\n([\s\S]*)$'
+    match = re.match(frontmatter_pattern, md_content, re.MULTILINE)
     if match:
         meta_text = match.group(1)
         cleaned = match.group(2)
@@ -424,6 +411,7 @@ def _process_markdown_file(md_file_path: Path, old_article: Optional[Dict] = Non
             except yaml.YAMLError:
                 pass
         else:
+            # 简易解析（当 yaml 不可用时）
             for line in meta_text.split('\n'):
                 line = line.strip()
                 if not line or ':' not in line:
@@ -443,6 +431,7 @@ def _process_markdown_file(md_file_path: Path, old_article: Optional[Dict] = Non
                 else:
                     metadata[key] = value
 
+    # ---------- 类别处理 ----------
     if 'category' in metadata and metadata['category']:
         final_category = metadata['category']
     elif category:
@@ -450,8 +439,12 @@ def _process_markdown_file(md_file_path: Path, old_article: Optional[Dict] = Non
     else:
         final_category = md_file_path.parent.name if md_file_path.parent != ASSETS_SOURCE_DIR else "未分类"
 
+    # ---------- 标题、日期等基本信息 ----------
     title = metadata.get('title', '未命名文章')
     date_raw = metadata.get('date', '')
+    # 如果被解析为日期对象，转为 ISO 字符串
+    if hasattr(date_raw, 'isoformat'):
+        date_raw = date_raw.isoformat()
     if not date_raw:
         date = '未指定日期'
     else:
@@ -463,13 +456,42 @@ def _process_markdown_file(md_file_path: Path, old_article: Optional[Dict] = Non
     if isinstance(tags, str):
         tags = [t.strip() for t in tags.split(',') if t.strip()]
 
+    # ---------- 核心：last_updated 优先使用 frontmatter，否则自动 ----------
+    manual_last_updated = metadata.get('last_updated', '')
+    if hasattr(manual_last_updated, 'isoformat'):
+        manual_last_updated = manual_last_updated.isoformat()
+    if old_article:
+        last_updated = old_article.get('last_updated', '')
+        modify_count = old_article.get('modify_count', 0)
+    else:
+        last_updated = ''
+        modify_count = 0
+
+    today = get_current_date_iso()
+
+    if manual_last_updated:
+        # 使用手动日期
+        last_updated = manual_last_updated
+        if not old_article:
+            modify_count = 1
+        # 若旧文章存在，保留原 modify_count（不自动递增）
+    else:
+        # 自动检测
+        if not old_article:
+            last_updated = today
+            modify_count = 1
+        elif current_hash != old_article.get('hash', ''):
+            last_updated = today
+            modify_count += 1
+
+    # ---------- 字数、阅读时间、目录 ----------
     word_count = count_words(cleaned)
     read_time = calculate_read_time(word_count)
-
     headings = _extract_headings(cleaned)
     content_html = _convert_markdown_to_html(cleaned, headings)
     headings_json = json.dumps(headings, ensure_ascii=False)
 
+    # ---------- 隐藏判断 ----------
     hidden = "隐藏" in tags
     output_filename = md_file_path.stem + '.html'
     if hidden:
@@ -478,6 +500,7 @@ def _process_markdown_file(md_file_path: Path, old_article: Optional[Dict] = Non
     else:
         output_path = ARTICLES_OUTPUT_DIR / output_filename
 
+    # ---------- 生成完整 HTML ----------
     full_html = _create_html_page(
         title, date, content_html, headings_json,
         description, tags, author, word_count, read_time,
@@ -486,6 +509,7 @@ def _process_markdown_file(md_file_path: Path, old_article: Optional[Dict] = Non
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write(full_html)
 
+    # ---------- 返回 Article 对象 ----------
     return Article(
         relative_path=rel_path,
         hash=current_hash,

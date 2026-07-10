@@ -1,6 +1,6 @@
 {
-  "generated_at": "2026-07-11T00:49:55.816039",
-  "total_versions": 202,
+  "generated_at": "2026-07-11T01:24:22.437839",
+  "total_versions": 203,
   "versions": [
     {
       "id": 1,
@@ -3126,7 +3126,18 @@
           "description": "从 src/ 复制站点根文件到 dist/\n      - 新增复制 BingSiteAuth.xml, favicon.ico, robots.txt 从 src/ 到 dist/"
         }
       ]
+    },
+    {
+      "id": 203,
+      "version": "v8.6.2",
+      "date": "2026-07-11",
+      "changes": [
+        {
+          "type": "feat(builder)",
+          "description": "尊重 Markdown 源文件中的手动更新日期"
+        }
+      ]
     }
   ],
-  "changelog_hash": "940babd07de828c2f6c6d14479ce1ab2"
+  "changelog_hash": "4f6d3063d08ea809d67760f59d09a3d0"
 }
