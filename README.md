@@ -7,7 +7,7 @@
 
 - **全自动化构建**：Python 脚本将 Markdown 文章、作品元数据、友链等转换为静态 HTML 和 JSON 数据。
 - **前端 SPA 架构**：基于原生 JavaScript（TypeScript）模块，实现无刷新页面切换、按需加载、本地缓存与 Service Worker 离线支持。
-- **丰富的交互体验**：暗黑模式、自定义光标、全局图片查看器、音乐播放器、动态图表、搜索与标签筛选、阅读进度等。
+- **丰富的交互体验**：暗黑模式、自定义光标、全局图片查看器、音乐播放器、动态图表、搜索与标签筛选、阅读进度、通用跳转弹窗等。
 - **开发者友好**：模块化设计，易于扩展新页面、新生成器，支持并行构建和增量更新。
 
 ---
@@ -30,6 +30,7 @@
 | **鼠标特效** | Canvas 2D 实时渲染（点击涟漪、长按爆发、拖拽连线） |
 | **Service Worker** | 自定义缓存策略（stale-while-revalidate、网络优先） |
 | **音乐播放器** | [APlayer 分支](https://github.com/DIYgod/APlayer/pull/802) |
+| **通用跳转弹窗** | 自定义 `jump-dialog`，复用友链卡片样式，支持锚点放大动画、倒计时、自动跳转 |
 
 ---
 
@@ -74,7 +75,7 @@ flowchart TD
     subgraph "浏览器端 SPA"
         ROUTER["无刷新路由<br/>(router.ts)"]
         PM["页面管理器<br/>(按需加载)"]
-        UI["UI 组件<br/>(光标/图片查看器/主题)"]
+        UI["UI 组件<br/>(光标/图片查看器/主题/跳转弹窗)"]
         SW["Service Worker<br/>(离线缓存)"]
         DATA["数据缓存<br/>(localStorage)"]
     end
@@ -157,7 +158,7 @@ flowchart TD
 │   ├── engine.py                # 构建引擎（依赖解析、并行执行生成器）
 │   ├── generators/
 │   │   ├── base.py              # 生成器抽象基类
-|   |   ├── friend_colors.py     # 友链卡片底层颜色生成
+│   │   ├── friend_colors.py     # 友链卡片底色生成
 │   │   └── aggregated.py        # 聚合生成器（统计、RSS、站点地图、列表页、静态资源复制）
 │   └── run.py                   # CLI 入口
 ├── src/                         # 前端源码（TypeScript/JS/CSS）
@@ -170,7 +171,7 @@ flowchart TD
 │   │   ├── core/                # 核心工具（配置、存储、页面管理器基类）
 │   │   ├── router/              # 无刷新路由与导航
 │   │   ├── pages/               # 各页面管理器（home, article, archive, stats, friends, about）
-│   │   ├── ui/                  # UI 组件（光标、图片查看器、主题切换、按钮管理）
+│   │   ├── ui/                  # UI 组件（光标、图片查看器、主题切换、跳转弹窗、按钮管理）
 │   │   ├── data/                # 数据处理（Worker、设置、Service Worker）
 │   │   ├── vendor/              # 第三方库（音乐播放器）
 │   │   └── entry/               # 入口文件 (main.ts)
@@ -257,7 +258,7 @@ flowchart TD
 4. **加载导航栏与页脚**：通过 `navbar-manager.ts` 和 `loadFooter()` 动态加载 HTML 片段。
 5. **启动路由**：启用 `enableAjaxNavigation`，拦截内部链接点击，使用 `fetchAndReplaceContent` 无刷新切换页面。
 6. **页面管理器调度**：根据当前路径，动态导入对应页面管理器（`home-manager`, `article`, `archive`, `stats`, `friends`, `about` 等）。
-7. **初始化全局 UI**：自定义光标、外链拦截、滚动揭示、图片查看器、音乐播放器（空闲时加载）。
+7. **初始化全局 UI**：自定义光标、外链拦截（基于 `jump-dialog` 通用弹窗）、滚动揭示、图片查看器、音乐播放器（空闲时加载）。
 8. **注册 Service Worker**（生产环境）。
 
 ### 5.2 路由系统（`router/router.ts`）
@@ -283,7 +284,7 @@ flowchart TD
 - `ArticlePageManager`：构建 TOC、阅读进度、代码复制、图片懒加载、移动端侧边栏、滚动保存。
 - `ArchiveManager`：年份胶囊筛选、类型筛选、时间线渲染。
 - `StatsManager`：加载 Chart.js，渲染多张图表（趋势、分类、标签、代码占比等），秒级更新运行时间。
-- `FriendsPageManager`：Twikoo 初始化、JSON 示例复制、友链随机排序（每 10 秒洗牌）。
+- `FriendsPageManager`：Twikoo 初始化、JSON 示例复制、友链随机排序（每 10 秒洗牌），同时使用 `bindJumpTriggers` 为友链卡片绑定跳转弹窗（复用 `friends.css` 样式）。
 - `AboutPageManager`：年龄经验值进度条、翻转卡片、GitHub 贡献图、Twikoo。
 - `SearchController`（用于 articles/works 列表页）：Web Worker 驱动的过滤/排序。
 
@@ -298,6 +299,12 @@ flowchart TD
 - **UIRenderer**：生成列表项 HTML，区分文章和作品（作品点击弹窗展示详情）。
 
 ### 5.5 UI 组件详解
+
+#### 通用跳转弹窗（`ui/jump-dialog.ts`）
+- 提供 `showJumpDialog` 命令式 API 和 `bindJumpTriggers` 声明式绑定。
+- 完全复用 `friends.css` 中的 `.friend-link-overlay`、`.friend-link-content` 等样式，统一视觉风格。
+- 支持从指定锚点元素放大展开（卡片放大动画）、倒计时自动跳转、ESC/点击背景关闭、自定义头像/描述/跳转目标。
+- 被 `ExternalLinkManager` 和 `FriendsPageManager` 共同使用，替代了原有的独立外链确认弹窗。
 
 #### 自定义光标（`ui/ui-effects.ts` - `CustomCursor`）
 - 使用 Canvas 与 CSS 结合，绘制钢笔尖形状（SVG 路径）。
@@ -516,4 +523,4 @@ engine.register(MyGenerator())
 
 *本文档持续更新，以项目最新代码为准。*  
 *维护者：高新炀*  
-*最后更新：2026-07-03*
+*最后更新：2026-07-12*
