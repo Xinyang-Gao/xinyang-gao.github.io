@@ -369,7 +369,7 @@ def _create_html_page(title, date, content_html, headings_json, description, tag
 
     <script>window.ARTICLE_HEADINGS = {headings_json};</script>
     <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>
-    <script src="/js/vendor/busuanzi.min.js" defer></script>
+    <script src="https://vercount.one/js" defer></script>
     <script src="/js/entry/main.js" type="module"></script>
     <script src="/js/pages/article.js" type="module"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">

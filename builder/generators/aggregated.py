@@ -490,7 +490,7 @@ class AggregatedGenerator(OutputGenerator):
 <div id="footer-placeholder"></div>
 <script>window.{json_key} = {json_str};</script>
 <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>
-<script src="/js/vendor/busuanzi.min.js" defer></script>
+<script src="https://vercount.one/js" defer></script>
 <script src="/js/entry/main.js" type="module"></script>
 </body></html>'''
 
@@ -670,14 +670,13 @@ class AggregatedGenerator(OutputGenerator):
         else:
             log_warning(f"assets 源目录不存在: {ASSETS_DIR}")
 
-        # 复制 favicon.ico, BingSiteAuth.xml, robots.txt 到 dist 根目录
-        for filename in ["favicon.ico", "BingSiteAuth.xml", "robots.txt"]:
-            src_file = SRC_ROOT / filename
-            if src_file.exists():
-                shutil.copy(src_file, DIST_ROOT / filename)
-                log_info(f"复制 {filename} 到 dist/")
-            else:
-                log_warning(f"{filename} 不存在于 src/ 目录，跳过")
+        # 复制 /src/copy/ 中的所有文件和文件夹到 dist/ 根目录
+        copy_src = SRC_ROOT / "copy"
+        if copy_src.exists():
+            shutil.copytree(copy_src, DIST_ROOT, dirs_exist_ok=True)
+            log_info(f"复制 {copy_src} 全部内容到 {DIST_ROOT}")
+        else:
+            log_warning(f"目录 {copy_src} 不存在，跳过复制根目录文件")
 
         # ---------- 5. 复制 works 目录（包含作品静态资源） ----------
         works_src = SRC_ROOT / "works"
@@ -826,7 +825,7 @@ class AggregatedGenerator(OutputGenerator):
         <script>window.__STATIC_FRIENDS_DATA = {json.dumps(friends_list, ensure_ascii=False)};</script>
         <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>
         <script src="/js/entry/main.js" type="module"></script>
-        <script src="/js/vendor/busuanzi.min.js"></script>
+        <script src="https://vercount.one/js"></script>
     </body>
     </html>'''
 

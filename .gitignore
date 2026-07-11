@@ -5,3 +5,4 @@ builder/generators/__pycache__/
 node_modules/
 tsconfig.json
 .build_state.json
+dist/
