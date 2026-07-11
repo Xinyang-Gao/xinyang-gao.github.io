@@ -1,13 +1,11 @@
 // /js/ui/ui-effects.ts
 // 自定义光标、外链管理器、滚动揭示效果 + 鼠标特效系统（点击涟漪、长按爆发、拖拽连线）
 // 性能优化版本（TypeScript 重构）
-// 改进点：
-// - 虚线样式状态管理增强（_renderActiveLine 内显式设置）
-// - 长按批次 ID 边界保护（MAX_BATCH_ID）
-// - CustomCursor 增加 ResizeObserver 支持，吸附元素尺寸变化时更新位置
-// - 低端设备判定可扩展（未强制使用 deviceMemory）
+// 外链管理器已重构为基于 jump-dialog 的轻量实现
 
-import { CONFIG, Utils, storageController } from '/js/core/core.js';
+import { CONFIG, storageController } from '/js/core/core.js';
+import { getTimeBasedTheme } from '/js/core/page-utils.js';
+import { showJumpDialog } from '/js/ui/jump-dialog.js';
 
 // 设置键名（与 settings.js 保持一致）
 const SETTINGS_KEYS = {
@@ -1103,35 +1101,20 @@ export class CustomCursor {
 }
 
 // ===================================================================
-//  ExternalLinkManager — 外链跳转确认（保持不变，仅类型化）
+//  ExternalLinkManager — 使用 jump-dialog 重构
 // ===================================================================
 export class ExternalLinkManager {
   private WHITELIST: Set<string> = new Set([
     'github.com', 'google.com', 'wikipedia.org',
     'twitter.com', 'linkedin.com', 'amazon.com', 'microsoft.com', 'travellings.cn'
   ]);
-  private currentModal: HTMLElement | null = null;
-  private currentOverlay: HTMLElement | null = null;
-  private countdownInterval: number | null = null;
-  private remainingSeconds: number = 3;
-  private pendingUrl: string | null = null;
-  private isSafe: boolean = false;
-  private redirectTriggered: boolean = false;
-  private internalDomains: string[] = ['localhost', '127.0.0.1', window.location.hostname];
+  private internalDomains: string[] = [
+    'localhost', '127.0.0.1', window.location.hostname
+  ];
   private _boundHandleClick: ((e: Event) => void) | null = null;
 
   constructor() {
     this.init();
-  }
-
-  private isWhitelistedDomain(hostname: string): boolean {
-    if (!hostname) return false;
-    const lower = hostname.toLowerCase();
-    if (this.WHITELIST.has(lower)) return true;
-    for (let domain of this.WHITELIST) {
-      if (lower.endsWith('.' + domain)) return true;
-    }
-    return false;
   }
 
   private isExternalLink(url: string): boolean {
@@ -1140,201 +1123,61 @@ export class ExternalLinkManager {
       const linkUrl = new URL(url, window.location.href);
       if (!['http:', 'https:'].includes(linkUrl.protocol)) return false;
       return !this.internalDomains.includes(linkUrl.hostname);
-    } catch (e) {
+    } catch {
       return false;
     }
   }
 
-  private clearTimer(): void {
-    if (this.countdownInterval) {
-      clearInterval(this.countdownInterval);
-      this.countdownInterval = null;
-    }
-  }
-
-  private closeModal(): void {
-    if (!this.currentModal) return;
-    this.clearTimer();
-    if (this.currentModal.classList.contains('closing')) return;
-    this.currentModal.classList.add('closing');
-    if (this.currentOverlay) this.currentOverlay.classList.remove('active');
-    setTimeout(() => {
-      if (this.currentModal) this.currentModal.remove();
-      if (this.currentOverlay) this.currentOverlay.remove();
-      this.currentModal = null;
-      this.currentOverlay = null;
-      this.pendingUrl = null;
-      this.redirectTriggered = false;
-    }, 400);
-  }
-
-  private doRedirect(): void {
-    if (this.redirectTriggered) return;
-    if (!this.pendingUrl) return;
-    this.redirectTriggered = true;
-    this.clearTimer();
-    window.open(this.pendingUrl, '_blank', 'noopener,noreferrer');
-    setTimeout(() => this.closeModal(), 300);
-  }
-
-  private startCountdown(timerElement: HTMLElement | null): void {
-    if (!this.isSafe) return;
-    if (this.redirectTriggered) return;
-    this.clearTimer();
-    this.remainingSeconds = 3;
-    if (timerElement) timerElement.innerHTML = `信任站点 · ${this.remainingSeconds} 秒后自动跳转`;
-    this.countdownInterval = window.setInterval(() => {
-      if (this.redirectTriggered || !this.currentModal) {
-        this.clearTimer();
-        return;
-      }
-      this.remainingSeconds--;
-      if (this.remainingSeconds <= 0) {
-        this.clearTimer();
-        if (!this.redirectTriggered && timerElement) timerElement.innerHTML = `✓ 正在跳转...`;
-        this.doRedirect();
-      } else if (!this.redirectTriggered && timerElement) {
-        timerElement.innerHTML = `信任站点 · ${this.remainingSeconds} 秒后自动跳转`;
-      }
-    }, 1000);
-  }
-
-  private showExternalLinkModal(url: string, targetElement?: HTMLElement | null): boolean {
-    if (this.currentModal) this.closeModal();
-    let hostname = '';
-    let isValid = false;
+  private isWhitelisted(url: string): boolean {
     try {
-      const urlObj = new URL(url);
-      if (urlObj.protocol === 'http:' || urlObj.protocol === 'https:') {
-        isValid = true;
-        hostname = urlObj.hostname;
-      } else {
-        this.showErrorToast('不支持的协议，仅支持 HTTP/HTTPS');
-        return false;
+      const hostname = new URL(url, window.location.href).hostname.toLowerCase();
+      if (this.WHITELIST.has(hostname)) return true;
+      for (const domain of this.WHITELIST) {
+        if (hostname.endsWith('.' + domain)) return true;
       }
-    } catch (err) {
-      this.showErrorToast('链接格式无效');
-      return false;
-    }
-    if (!isValid) return false;
-
-    this.isSafe = this.isWhitelistedDomain(hostname);
-    this.pendingUrl = url;
-    this.redirectTriggered = false;
-
-    const overlay = document.createElement('div');
-    overlay.className = 'modal-overlay';
-    document.body.appendChild(overlay);
-
-    const modal = document.createElement('div');
-    modal.className = 'external-modal';
-    const safeClass = this.isSafe ? 'safe' : '';
-    const subText = this.isSafe ? '安全站点' : '您即将访问外部网站';
-    const messageHtml = this.isSafe ? '安全的网站<br>将自动为您跳转，您也可点击「立即前往」手动跳转。' : '本站不对第三方内容负责';
-    const btnText = this.isSafe ? '立即前往' : '继续前往';
-    const btnSafeClass = this.isSafe ? 'safe' : '';
-
-    modal.innerHTML = `
-      <div class="external-modal-close">✕</div>
-      <div class="external-modal-content">
-        <div class="external-modal-header">
-          <span class="external-modal-domain ${safeClass}">${this.escapeHtml(hostname)}</span>
-        </div>
-        <div class="external-modal-sub">${subText}</div>
-        <div class="external-modal-url">${this.escapeHtml(url)}</div>
-        <div class="external-modal-message">${messageHtml}</div>
-        <div id="external-timer-area" class="external-modal-timer" style="${this.isSafe ? '' : 'display: none;'}"></div>
-        <div class="external-modal-buttons">
-          <button class="external-modal-btn" id="external-cancel-btn">取消</button>
-          <button class="external-modal-btn external-modal-btn-primary ${btnSafeClass}" id="external-confirm-btn">${btnText}</button>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(modal);
-
-    this.currentModal = modal;
-    this.currentOverlay = overlay;
-
-    const closeBtn = modal.querySelector('.external-modal-close') as HTMLElement;
-    const cancelBtn = modal.querySelector('#external-cancel-btn') as HTMLElement;
-    const confirmBtn = modal.querySelector('#external-confirm-btn') as HTMLElement;
-    const timerArea = modal.querySelector('#external-timer-area') as HTMLElement;
-
-    const handleClose = () => this.closeModal();
-    const handleConfirm = () => {
-      if (this.redirectTriggered) return;
-      this.clearTimer();
-      this.doRedirect();
-    };
-
-    closeBtn.addEventListener('click', handleClose);
-    cancelBtn.addEventListener('click', handleClose);
-    confirmBtn.addEventListener('click', handleConfirm);
-    overlay.addEventListener('click', handleClose);
-
-    const escHandler = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        this.closeModal();
-        document.removeEventListener('keydown', escHandler);
-      }
-    };
-    document.addEventListener('keydown', escHandler);
-
-    const originalClose = this.closeModal.bind(this);
-    this.closeModal = () => {
-      document.removeEventListener('keydown', escHandler);
-      originalClose();
-      this.closeModal = originalClose;
-    };
-
-    requestAnimationFrame(() => {
-      modal.classList.add('active');
-      overlay.classList.add('active');
-    });
-
-    if (this.isSafe) this.startCountdown(timerArea);
-    return true;
+    } catch {}
+    return false;
   }
 
-  private escapeHtml(text: string): string {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-  }
+  private handleLinkClick = (e: Event): void => {
+    const anchor = (e.target as Element).closest('a');
+    if (!anchor) return;
+    // 跳过友链卡片（由 friend-link-manager 处理）
+    if (anchor.closest('[data-friend-link="true"]')) return;
 
-  private showErrorToast(message: string): void {
-    const toast = document.createElement('div');
-    toast.textContent = message;
-    toast.style.cssText = `
-      position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%);
-      background: var(--accent-color); color: white; padding: 10px 20px;
-      border-radius: 40px; font-size: 0.9rem; z-index: 10000;
-      box-shadow: var(--shadow-md); animation: fadeInUp 0.3s ease;
-    `;
-    document.body.appendChild(toast);
-    setTimeout(() => {
-      toast.style.opacity = '0';
-      setTimeout(() => toast.remove(), 300);
-    }, 2500);
-  }
-
-  private handleLinkClick(e: Event): void {
-    const target = (e.target as HTMLElement).closest('a');
-    if (!target) return;
-    if (target.closest('[data-friend-link="true"]')) return;
-    const href = target.getAttribute('href');
+    const href = anchor.getAttribute('href');
     if (!href) return;
+
     if (this.isExternalLink(href)) {
       e.preventDefault();
       e.stopPropagation();
-      this.showExternalLinkModal(href, target as HTMLElement);
+
+      // 白名单直接跳转
+      if (this.isWhitelisted(href)) {
+        window.open(href, '_blank', 'noopener,noreferrer');
+        return;
+      }
+
+      // 使用 jump-dialog 弹窗确认
+      const name = anchor.textContent?.trim() || new URL(href, window.location.href).hostname;
+      showJumpDialog({
+        name: name || '外部链接',
+        url: href,
+        desc: '您即将访问外部网站，本站不对第三方内容负责',
+        countdown: 6,
+        redirectTarget: '_blank',
+        onRedirect: (url) => {
+          // 可添加日志或分析
+          console.log('[ExternalLinkManager] 跳转至:', url);
+        }
+      });
     }
-  }
+  };
 
   private init(): void {
-    this._boundHandleClick = this.handleLinkClick.bind(this);
+    this._boundHandleClick = this.handleLinkClick;
     document.addEventListener('click', this._boundHandleClick);
-    console.log('[INFO] 外链跳转确认管理器已启动');
+    console.log('[ExternalLinkManager] 已启用（基于 jump-dialog）');
   }
 
   public destroy(): void {
@@ -1342,15 +1185,14 @@ export class ExternalLinkManager {
       document.removeEventListener('click', this._boundHandleClick);
       this._boundHandleClick = null;
     }
-    if (this.currentModal) this.closeModal();
-    if (this.countdownInterval) clearInterval(this.countdownInterval);
-    this.countdownInterval = null;
+    console.log('[ExternalLinkManager] 已销毁');
   }
 }
 
 // ===================================================================
-//  ScrollReveal — 滚动揭示（保持不变，仅类型化）
+//  ScrollReveal — 滚动揭示
 // ===================================================================
+
 export class ScrollReveal {
   private observer: IntersectionObserver | null = null;
   private targetSelector: string;
@@ -1403,6 +1245,7 @@ export class ScrollReveal {
 // ===================================================================
 //  全局单例管理
 // ===================================================================
+
 let globalScrollRevealInstance: ScrollReveal | null = null;
 let uiEffectsInitialized = false;
 let customCursorInstance: CustomCursor | null = null;
