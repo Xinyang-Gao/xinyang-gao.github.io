@@ -613,11 +613,12 @@ class AggregatedGenerator(OutputGenerator):
         if frontend_changed:
             try:
                 result = subprocess.run(
-                    ["npm", "run", "build"],
+                    "npm run build",
                     cwd=PROJECT_ROOT,
                     capture_output=True,
                     text=True,
                     encoding='utf-8',
+                    shell=True
                 )
                 if result.returncode != 0:
                     log_error(f"Vite 构建失败 (返回码 {result.returncode})")
