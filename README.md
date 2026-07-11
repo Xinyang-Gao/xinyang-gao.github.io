@@ -24,12 +24,12 @@
 | **路由与导航** | 自定义 History API 路由，无刷新 AJAX 内容替换 |
 | **状态管理** | 单例模式 + `localStorage`（主题、缓存、设置） |
 | **图表** | Chart.js 4.4（动态加载） |
-| **评论** | Twikoo（云函数后端） |
-| **统计** | 不蒜子（Busuanzi） |
+| **评论** | [Twikoo](https://twikoo.js.org) |
+| **统计** | [vercount](https://www.vercount.one) |
 | **图片查看器** | 自定义 Canvas 实现，支持缩放/旋转/拖拽 |
 | **鼠标特效** | Canvas 2D 实时渲染（点击涟漪、长按爆发、拖拽连线） |
 | **Service Worker** | 自定义缓存策略（stale-while-revalidate、网络优先） |
-| **音乐播放器** | [二次开发的 APlayer](https://github.com/DIYgod/APlayer/pull/802) |
+| **音乐播放器** | [APlayer 分支](https://github.com/DIYgod/APlayer/pull/802) |
 
 ---
 
@@ -41,42 +41,42 @@
 
 ```mermaid
 flowchart TD
-    subgraph 源数据
-        MD[Markdown 文章\n(src/assets/source/)]
-        WKS[作品元数据\n(src/assets/works/*/metadata.json)]
-        FRI[友链 JSON\n(dist/json/friends.json)]
-        LOG[更新日志\n(src/assets/网站更新日志.md)]
+    subgraph "源数据"
+        MD["Markdown 文章<br/>(src/assets/source/)"]
+        WKS["作品元数据<br/>(src/works/*/metadata.json)"]
+        FRI["友链 JSON<br/>(dist/json/friends.json)"]
+        LOG["更新日志<br/>(src/assets/网站更新日志.md)"]
     end
 
-    subgraph Python构建系统
-        LOAD[input_loader\n加载并解析数据]
-        HASH{内容哈希变化？}
-        GEN[生成 HTML 文章\n写入 dist/articles/]
-        BUILD[聚合生成器\n(aggregated.py)]
-        STAT[统计 JSON]
-        RSS[RSS + Sitemap]
-        LIST[静态列表页\n(articles/works index)]
-        COPY[复制静态资源\n(CSS/JS/Assets)]
-        VITE[Vite 构建 TypeScript]
+    subgraph "Python构建系统"
+        LOAD["input_loader<br/>加载并解析数据"]
+        HASH{"内容哈希变化？"}
+        GEN["生成 HTML 文章<br/>写入 dist/articles/"]
+        BUILD["聚合生成器<br/>(aggregated.py)"]
+        STAT["统计 JSON"]
+        RSS["RSS + Sitemap"]
+        LIST["静态列表页<br/>(articles/works index)"]
+        COPY["复制静态资源<br/>(CSS/JS/Assets)"]
+        VITE["Vite 构建 TypeScript"]
     end
 
-    subgraph 输出目录 dist/
-        HTML[HTML 文件]
-        JSON[JSON 数据]
-        STATIC[CSS/JS/Assets]
-        INDEX[index.html]
+    subgraph "输出目录 dist/"
+        HTML["HTML 文件"]
+        JSON["JSON 数据"]
+        STATIC["CSS/JS/Assets"]
+        INDEX["index.html"]
     end
 
-    subgraph 部署
-        HOST[静态托管\n(GitHub Pages/Netlify)]
+    subgraph "部署"
+        HOST["静态托管<br/>(GitHub Pages/Netlify)"]
     end
 
-    subgraph 浏览器端 SPA
-        ROUTER[无刷新路由\n(router.ts)]
-        PM[页面管理器\n(按需加载)]
-        UI[UI 组件\n(光标/图片查看器/主题)]
-        SW[Service Worker\n(离线缓存)]
-        DATA[数据缓存\n(localStorage)]
+    subgraph "浏览器端 SPA"
+        ROUTER["无刷新路由<br/>(router.ts)"]
+        PM["页面管理器<br/>(按需加载)"]
+        UI["UI 组件<br/>(光标/图片查看器/主题)"]
+        SW["Service Worker<br/>(离线缓存)"]
+        DATA["数据缓存<br/>(localStorage)"]
     end
 
     MD --> LOAD
@@ -84,9 +84,9 @@ flowchart TD
     FRI --> LOAD
     LOG --> LOAD
     LOAD --> HASH
-    HASH -- 有变化 --> GEN
+    HASH -- "有变化" --> GEN
     GEN --> HTML
-    HASH -- 无变化 --> BUILD
+    HASH -- "无变化" --> BUILD
     GEN --> BUILD
     LOAD --> BUILD
     BUILD --> STAT
@@ -117,25 +117,25 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    START[用户访问 / 刷新页面]
-    LOAD[加载覆盖层显示]
-    FETCH[并行获取 JSON 数据\n(articles/works/statistics/version...)]
-    VERSION{版本检测\n本地 vs 远程}
-    THEME[初始化主题\n(存储 / 时段 / 系统)]
-    NAV[加载导航栏 & 页脚]
-    ROUTER[启用无刷新路由]
-    IDLE[空闲时加载非关键组件]
-    SW[注册 Service Worker]
-    MANAGER[根据路径初始化页面管理器]
-    RENDER[渲染主内容]
-    DONE[页面加载完成]
+    START["用户访问 / 刷新页面"]
+    LOAD["加载覆盖层显示"]
+    FETCH["并行获取 JSON 数据<br/>(articles/works/statistics/version...)"]
+    VERSION{"版本检测<br/>本地 vs 远程"}
+    THEME["初始化主题<br/>(存储 / 时段 / 系统)"]
+    NAV["加载导航栏 & 页脚"]
+    ROUTER["启用无刷新路由"]
+    IDLE["空闲时加载非关键组件"]
+    SW["注册 Service Worker"]
+    MANAGER["根据路径初始化页面管理器"]
+    RENDER["渲染主内容"]
+    DONE["页面加载完成"]
 
     START --> LOAD
     LOAD --> FETCH
     FETCH --> VERSION
-    VERSION -- 有新版本 --> SHOWLOG[显示更新日志]
+    VERSION -- "有新版本" --> SHOWLOG["显示更新日志"]
     SHOWLOG --> THEME
-    VERSION -- 无更新 --> THEME
+    VERSION -- "无更新" --> THEME
     THEME --> NAV
     NAV --> ROUTER
     ROUTER --> SW
@@ -157,8 +157,9 @@ flowchart TD
 │   ├── engine.py                # 构建引擎（依赖解析、并行执行生成器）
 │   ├── generators/
 │   │   ├── base.py              # 生成器抽象基类
+|   |   ├── friend_colors.py     # 友链卡片底层颜色生成
 │   │   └── aggregated.py        # 聚合生成器（统计、RSS、站点地图、列表页、静态资源复制）
-│   └── run.py                   # CLI/GUI 入口
+│   └── run.py                   # CLI 入口
 ├── src/                         # 前端源码（TypeScript/JS/CSS）
 │   ├── assets/                  # 静态资源（头像、源 Markdown 文章、作品文件）
 │   │   ├── source/              # 文章分类子目录（内含 .md）
@@ -171,7 +172,7 @@ flowchart TD
 │   │   ├── pages/               # 各页面管理器（home, article, archive, stats, friends, about）
 │   │   ├── ui/                  # UI 组件（光标、图片查看器、主题切换、按钮管理）
 │   │   ├── data/                # 数据处理（Worker、设置、Service Worker）
-│   │   ├── vendor/              # 第三方库（不蒜子、音乐播放器）
+│   │   ├── vendor/              # 第三方库（音乐播放器）
 │   │   └── entry/               # 入口文件 (main.ts)
 │   └── templates/               # HTML 模板（用于构建生成静态页）
 ├── dist/                        # 构建输出目录（部署内容）
@@ -206,7 +207,7 @@ flowchart TD
 - 构建 `Article` 对象列表，并序列化到 `articles.json`。
 
 #### 作品加载
-- 遍历 `src/assets/works/` 下每个子目录。
+- 遍历 `src/works/` 下每个子目录。
 - 读取 `metadata.json`（格式见下文）。
 - 若 `tag` 包含“隐藏”则排除。
 - 生成 `Work` 对象列表，写入 `works.json`。
