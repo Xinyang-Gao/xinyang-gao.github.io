@@ -1,21 +1,20 @@
 // /js/pages/friends-manager.ts
 import { PageManager } from '/js/core/page-manager.js';
 import { initTwikoo, destroyTwikoo } from '/js/core/twikoo-manager.js';
+import { bindJumpTriggers } from '/js/ui/jump-dialog.js';
 
 export class FriendsPageManager extends PageManager {
   private twikooContainer: HTMLElement | null = null;
   private copyBtnHandler: ((this: HTMLElement, ev: MouseEvent) => Promise<void>) | null = null;
   private container: HTMLElement | null = null;
   private randomTimer: number | null = null;
-
-  constructor() {
-    super();
-  }
+  private jumpUnbind: (() => void) | null = null;
 
   async init(): Promise<void> {
     this.initTwikooComments();
     this.setupCopyJson();
     this.setupRandomSort();
+    this.setupJumpTriggers(); // 绑定跳转弹窗
     console.log('[FriendsPageManager] 友链页面初始化完成');
   }
 
@@ -41,12 +40,10 @@ export class FriendsPageManager extends PageManager {
     const codeElement = document.getElementById('friendJsonExample');
     const originalText = codeElement?.innerText || '';
 
-    // 移除旧监听器
     if (this.copyBtnHandler) {
       copyBtn.removeEventListener('click', this.copyBtnHandler);
     }
 
-    // 普通函数，使用 this 指向按钮本身
     const handler = async function(this: HTMLElement, _ev: MouseEvent): Promise<void> {
       try {
         await navigator.clipboard.writeText(originalText);
@@ -61,7 +58,6 @@ export class FriendsPageManager extends PageManager {
         }, 1800);
       } catch (err) {
         console.error('复制失败', err);
-        // 降级方案
         const textarea = document.createElement('textarea');
         textarea.value = originalText;
         document.body.appendChild(textarea);
@@ -76,8 +72,6 @@ export class FriendsPageManager extends PageManager {
     copyBtn.addEventListener('click', handler);
     this.copyBtnHandler = handler;
   }
-
-  // ========== 随机排序相关方法 ==========
 
   /**
    * 设置随机排序：首次打乱 + 每 10 秒轮换
@@ -129,6 +123,30 @@ export class FriendsPageManager extends PageManager {
   }
 
   /**
+   * 设置友链卡片点击跳转弹窗（使用 jump-dialog）
+   */
+  private setupJumpTriggers(): void {
+    if (this.jumpUnbind) {
+      this.jumpUnbind();
+      this.jumpUnbind = null;
+    }
+
+    // 限定容器为友链列表，提高性能
+    const container = document.getElementById('friends-list-container-inner') || document.body;
+    this.jumpUnbind = bindJumpTriggers(container, {
+      triggerSelector: '.friend-card',
+      nameSelector: '.friend-name',
+      descSelector: '.friend-desc',
+      avatarSelector: '.avatar-img, .avatar-placeholder',
+      urlAttr: 'href',
+      dialogDefaults: {
+        countdown: 3,
+        redirectTarget: '_blank',
+      }
+    });
+  }
+
+  /**
    * 销毁页面管理器，清理资源
    */
   destroy(): void {
@@ -150,6 +168,11 @@ export class FriendsPageManager extends PageManager {
       this.randomTimer = null;
     }
     this.container = null;
+
+    if (this.jumpUnbind) {
+      this.jumpUnbind();
+      this.jumpUnbind = null;
+    }
 
     console.log('[FriendsPageManager] 友链页面管理器已销毁');
   }

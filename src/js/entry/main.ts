@@ -10,7 +10,6 @@ import { handleListItemClick } from '/js/ui/list-events.js';
 import { initClarityOnConsent, updateClarityPage } from '/js/core/clarity.js';
 import { renderPersonalCard } from '/js/ui/personal-card.js';
 import { initButtons } from '/js/ui/button-manager.js';
-import { friendLinkManager } from '/js/ui/friend-link-manager.js';
 
 let cookieConsentManager = null;
 
