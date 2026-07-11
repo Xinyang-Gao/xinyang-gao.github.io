@@ -12,14 +12,14 @@ interface Heading {
 interface ArticleGlobals {
     ARTICLE_HEADINGS?: Heading[];
     renderMathInElement?: (element: Element, options: unknown) => void;
-    busuanzi?: { fetch?: () => void };
+    vercount?: { fetch?: () => void };
 }
 
 declare global {
     interface Window {
         ARTICLE_HEADINGS?: Heading[];
         renderMathInElement?: (element: Element, options: unknown) => void;
-        busuanzi?: { fetch?: () => void };
+        vercount?: { fetch?: () => void };
     }
 }
 
@@ -58,7 +58,7 @@ export class ArticlePageManager extends PageManager {
         requestAnimationFrame(() => this.onScroll());
         this.renderMath();
         this.initTwikoo();
-        this.refreshBusuanzi();
+        this.refreshvercount();
     }
 
     // ---------- 数学公式渲染 ----------
@@ -90,11 +90,11 @@ export class ArticlePageManager extends PageManager {
         });
     }
 
-    refreshBusuanzi(): void {
+    refreshvercount(): void {
         const global = window as Window & ArticleGlobals;
-        if (global.busuanzi?.fetch) {
+        if (global.vercount?.fetch) {
             try {
-                global.busuanzi.fetch();
+                global.vercount.fetch();
             } catch (e) {
                 // ignore
             }

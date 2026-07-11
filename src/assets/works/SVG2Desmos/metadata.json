@@ -1,7 +1,0 @@
-{
-      "description": "一个 Python 工具，将 SVG 路径转换为数学表达式（参数方程），支持分段精确表达式和傅里叶级数拟合",
-      "author": "高新炀",
-      "date": "2026-06-06",
-      "tag": ["Python","Desmos"],
-      "link": "https://github.com/Xinyang-Gao/SVG2Desmos"
-    } 

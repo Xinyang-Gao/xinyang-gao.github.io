@@ -82,12 +82,12 @@
     {
       "name": "APlayer_Glassmorphism-UI",
       "link": "https://github.com/BB0813/APlayer_Glassmorphism-UI/",
-      "desc": "现在使用的音乐播放器，APlayer但基于Vue3的新UI/UX"
+      "desc": "现在使用的音乐播放器，APlayer分支（基于Vue3的新UI/UX）"
     },
     {
-      "name": "Busuanzi",
+      "name": "Vercount",
       "link": "https://www.busuanzi.cc/",
-      "desc": "不蒜子 – 极简网站计数器"
+      "desc": "网站流量计数器，简单、快速、可靠"
     },
     {
       "name": "Twikoo",
@@ -108,6 +108,11 @@
       "name": "NeteaseMiniPlayerV2",
       "link": "https://github.com/numakkiyu/NeteaseMiniPlayer/",
       "desc": "（曾经使用）网易云音乐迷你播放器，现已停止维护（新项目V3）"
+    },
+    {
+      "name": "Busuanzi",
+      "link": "https://www.busuanzi.cc/",
+      "desc": "（曾经使用）极简网站流量计数器"
     }
   ]
 }
