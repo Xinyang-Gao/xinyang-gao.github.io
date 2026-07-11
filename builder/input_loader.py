@@ -344,14 +344,14 @@ def _create_html_page(title, date, content_html, headings_json, description, tag
                         <i class="fas fa-chart-line"></i>
                         <div>
                             <span class="info-label">阅读量</span>
-                            <span class="info-value" id="busuanzi_page_pv">加载中...</span>
+                            <span class="info-value" id="vercount_value_page_pv">加载中...</span>
                         </div>
                     </div>
                     <div class="info-item">
                         <i class="fas fa-users"></i>
                         <div>
                             <span class="info-label">访客数</span>
-                            <span class="info-value" id="busuanzi_page_uv">加载中...</span>
+                            <span class="info-value" id="vercount_value_page_uv">加载中...</span>
                         </div>
                     </div>
                     {f'<div class="info-item"><i class="fas fa-code-branch"></i><div><span class="info-label">修订次数</span><span class="info-value">{modify_count}</span></div></div>' if modify_count is not None else ''}
