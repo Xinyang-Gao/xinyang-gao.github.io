@@ -378,135 +378,48 @@ export class CookieConsentManager {
     this.init();
   }
 
+  // 直接同意，不创建横幅
   private init(): void {
-    if (this.hasConsented()) {
-      this.storageController.enableStorage();
-      console.log('[CookieConsentManager] 用户已同意，启用存储功能');
-      return;
-    }
-
-    if (this.hasRejected()) {
-      console.log('[CookieConsentManager] 用户已拒绝Cookie，禁用存储功能');
-      this.storageController.disableStorage();
-      return;
-    }
-
-    this.createBanner();
-    this.attachEvents();
-
-    window.addEventListener('ajax:navigation', () => {
-      if (!this.hasConsented() && !this.hasRejected() && this.banner && !this.banner.classList.contains('show')) {
-        setTimeout(() => this.showBanner(), 100);
-      }
-    });
+    this.setConsented(true);
   }
 
+  // 始终返回 true
   hasConsented(): boolean {
-    return this.storageController.getItem(CONFIG.STORAGE_KEYS.COOKIE_CONSENT) === 'true';
+    return true;
   }
 
+  // 始终返回 false
   hasRejected(): boolean {
-    return this.storageController.getItem(CONFIG.STORAGE_KEYS.COOKIE_CONSENT) === 'false';
+    return false;
   }
 
+  // 设置同意状态（触发事件）
   setConsented(consented: boolean): void {
-    this.storageController.setItem(CONFIG.STORAGE_KEYS.COOKIE_CONSENT, consented ? 'true' : 'false');
-
-    if (consented) {
-      this.storageController.enableStorage();
-      console.log('[CookieConsentManager] Cookie同意已保存，启用存储');
-    } else {
-      this.storageController.disableStorage();
-      console.log('[CookieConsentManager] Cookie拒绝已保存，禁用存储');
-    }
-
+    // 无论参数如何，都强制设为同意
+    this.storageController.setItem(CONFIG.STORAGE_KEYS.COOKIE_CONSENT, 'true');
+    this.storageController.enableStorage();
     window.dispatchEvent(
       new CustomEvent('cookieConsentChanged', {
-        detail: { consent: consented },
+        detail: { consent: true },
       })
     );
+    window.dispatchEvent(new CustomEvent('cookieConsentAccepted'));
   }
 
+  // 不再需要显示横幅
   shouldShow(): boolean {
-    return !this.hasConsented() && !this.hasRejected();
+    return false;
   }
 
-  private createBanner(): void {
-    const existing = document.getElementById(CookieConsentManager.BANNER_ID);
-    if (existing) existing.remove();
+  // 空方法
+  showBanner(): void {}
 
-    this.banner = document.createElement('div');
-    this.banner.id = CookieConsentManager.BANNER_ID;
-    this.banner.className = 'cookie-consent-banner';
-    this.banner.innerHTML = `
-      <div class="cookie-consent-banner-container">
-        <div class="cookie-consent-text">
-          <i class="fas fa-cookie-bite"></i>
-          本网站使用 Cookies 来记录您的主题偏好、分析网站流量并存储一些缓存。不会使用其提供个性化服务！
-          <a href="/privacy/" target="_blank" class="cookie-privacy-link">您可以查看完整信息</a>
-        </div>
-        <div class="cookie-consent-buttons">
-          <button class="cookie-btn cookie-btn-decline" id="cookie-decline-btn">
-            <i class="fas fa-times"></i> 拒绝
-          </button>
-          <button class="cookie-btn cookie-btn-accept" id="cookie-accept-btn">
-            <i class="fas fa-check"></i> 同意
-          </button>
-        </div>
-      </div>
-    `;
+  // 空方法
+  hideBanner(): void {}
 
-    document.body.appendChild(this.banner);
-
-    requestAnimationFrame(() => {
-      this.banner?.classList.add('show');
-    });
-  }
-
-  showBanner(): void {
-    if (this.banner && !this.banner.classList.contains('show')) {
-      this.banner.classList.add('show');
-    }
-  }
-
-  hideBanner(): void {
-    if (this.banner) {
-      this.banner.classList.remove('show');
-      setTimeout(() => {
-        if (this.banner?.parentNode) {
-          this.banner.remove();
-          this.banner = null;
-        }
-      }, 400);
-    }
-  }
-
-  private attachEvents(): void {
-    if (!this.banner) return;
-
-    const acceptBtn = this.banner.querySelector<HTMLButtonElement>('#cookie-accept-btn');
-    const declineBtn = this.banner.querySelector<HTMLButtonElement>('#cookie-decline-btn');
-
-    acceptBtn?.addEventListener('click', () => {
-      this.setConsented(true);
-      this.hideBanner();
-      window.dispatchEvent(new CustomEvent('cookieConsentAccepted'));
-    });
-
-    declineBtn?.addEventListener('click', () => {
-      this.setConsented(false);
-      this.hideBanner();
-    });
-  }
-
+  // 重置时也直接同意
   resetConsent(): void {
-    this.storageController.removeItem(CONFIG.STORAGE_KEYS.COOKIE_CONSENT);
-    if (!this.banner) {
-      this.createBanner();
-      this.attachEvents();
-    } else {
-      this.showBanner();
-    }
+    this.setConsented(true);
   }
 }
 

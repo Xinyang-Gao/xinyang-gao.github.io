@@ -101,12 +101,7 @@ async function handleLoadingOverlay() {
   addLog('System', `浏览器标识: ${navigator.userAgent.split(' ').slice(0, 3).join(' ')}`);
   addLog('System', `当前页面: ${window.location.href}`);
   addLog('System', '主题偏好: 从本地存储读取或根据时段自动选择');
-  addLog('System', '检查本地存储权限...');
-  if (storageController.isAllowed()) {
-    addLog('System', '本地存储已授权 (Cookie 同意)');
-  } else {
-    addLog('System', '本地存储未授权，将使用内存缓存');
-  }
+  addLog('System', '本地存储已授权 (默认同意)');  // 修改日志，不再询问
   addLog('System', '加载核心配置参数...');
   addLog('System', '配置加载完成 (API端点、白名单、背景图列表等)');
   flushLogs();
@@ -251,7 +246,7 @@ async function handleLoadingOverlay() {
     overlay.classList.add('hidden');
     restoreScroll();
     addLog('System', '覆盖层已关闭，页面可交互');
-    flushLogs(); // 虽然已经隐藏，但可最后输出
+    flushLogs();
     return;
   }
 
@@ -355,95 +350,13 @@ async function handleLoadingOverlay() {
   addLog('UI', '更新界面已渲染，等待用户交互');
   flushLogs();
 
-  // ===== 8. 点击处理（Cookie 许可） =====
-  const handleOverlayClick = async (e: Event) => {
-    if (storageController.isAllowed()) {
-      addLog('System', 'Cookie 已同意，直接关闭覆盖层');
-      overlay.classList.add('hidden');
-      restoreScroll();
-      window.dispatchEvent(new CustomEvent('welcomeOverlayDismissed'));
-      overlay.removeEventListener('click', handleOverlayClick);
-      addLog('System', '覆盖层已关闭，页面可交互');
-      flushLogs();
-      return;
-    }
-
-    addLog('System', '用户点击，但尚未同意 Cookie，显示许可请求');
-    const hint = infoDiv.querySelector('.click-hint');
-    if (hint) hint.remove();
-
-    infoDiv.classList.add('transitioning');
-    await new Promise(resolve => setTimeout(resolve, 500));
-
-    const titleContainer = document.createElement('div');
-    titleContainer.className = 'cookie-consent-title';
-    const badge = infoDiv.querySelector('.version-badge');
-    const welcome = infoDiv.querySelector('.welcome-message');
-    if (badge) titleContainer.appendChild(badge.cloneNode(true));
-    if (welcome) titleContainer.appendChild(welcome.cloneNode(true));
-
-    const consentDiv = document.createElement('div');
-    consentDiv.className = 'cookie-consent-panel';
-    consentDiv.innerHTML = `
-      <div class="consent-benefits">
-        <p><i class="fas fa-palette"></i> 记录主题偏好，下次访问自动应用</p>
-        <p><i class="fas fa-database"></i> 缓存文章数据，提升加载速度</p>
-        <p><i class="fas fa-chart-line"></i> 分析访问流量，优化网站体验</p>
-      </div>
-      <div class="consent-privacy">
-        <i class="fas fa-shield-alt"></i>
-        <span>我们不会使用 Cookie 投放个性化广告，<a href="/privacy/" target="_blank">查看完整隐私政策</a></span>
-      </div>
-      <div class="consent-actions">
-        <button class="consent-btn consent-accept" id="consent-accept-btn">继续</button>
-        <button class="consent-btn consent-decline" id="consent-decline-btn">拒绝</button>
-      </div>
-    `;
-
-    infoDiv.innerHTML = '';
-    infoDiv.classList.remove('transitioning');
-    infoDiv.appendChild(titleContainer);
-    infoDiv.appendChild(consentDiv);
-    void infoDiv.offsetHeight;
-
-    const acceptBtn = infoDiv.querySelector('#consent-accept-btn');
-    const declineBtn = infoDiv.querySelector('#consent-decline-btn');
-
-    acceptBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      addLog('System', '用户同意 Cookie，存储偏好');
-      const consentManager = new CookieConsentManager(storageController);
-      consentManager.setConsented(true);
-      window.dispatchEvent(new CustomEvent('cookieConsentAccepted'));
-      const banner = document.getElementById('cookie-consent-banner');
-      if (banner) banner.remove();
-      overlay.classList.add('hidden');
-      restoreScroll();
-      window.dispatchEvent(new CustomEvent('welcomeOverlayDismissed'));
-      overlay.removeEventListener('click', handleOverlayClick);
-      addLog('System', '覆盖层已关闭，页面可交互');
-      flushLogs();
-    });
-
-    declineBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      addLog('System', '用户拒绝 Cookie，使用无存储模式');
-      const consentManager = new CookieConsentManager(storageController);
-      consentManager.setConsented(false);
-      const banner = document.getElementById('cookie-consent-banner');
-      if (banner) {
-        banner.style.display = '';
-        banner.classList.remove('hidden');
-      }
-      overlay.classList.add('hidden');
-      restoreScroll();
-      window.dispatchEvent(new CustomEvent('welcomeOverlayDismissed'));
-      overlay.removeEventListener('click', handleOverlayClick);
-      addLog('System', '覆盖层已关闭，页面可交互');
-      flushLogs();
-    });
-
-    addLog('UI', 'Cookie 许可界面已渲染');
+  // ===== 8. 点击处理（直接关闭，不再询问 Cookie） =====
+  const handleOverlayClick = (e: Event) => {
+    overlay.classList.add('hidden');
+    restoreScroll();
+    window.dispatchEvent(new CustomEvent('welcomeOverlayDismissed'));
+    overlay.removeEventListener('click', handleOverlayClick);
+    addLog('System', '覆盖层已关闭，页面可交互');
     flushLogs();
   };
 
