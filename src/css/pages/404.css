@@ -1,157 +1,213 @@
+.error-container {
+  position: relative;
+  overflow: hidden;
+}
+
 .error-content {
-    text-align: center;
-    max-width: 720px;
-    margin: 0 auto;
+  position: relative;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+  text-align: center;
 }
 
-.error-icon-large {
-    font-size: 5rem;
-    color: var(--accent-color);
-    margin-bottom: 1rem;
-    opacity: 0.75;
-    display: inline-block;
-    animation: subtleFloat 3s ease-in-out infinite;
+/* ------ 背景 404 ------ */
+.error-background-code {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 18rem;
+  font-weight: 800;
+  line-height: 1;
+  color: var(--accent-color);
+  opacity: 0.08;
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+  z-index: 0;
+  font-family: var(--font-serif);
 }
 
-@keyframes subtleFloat {
-    0% {
-        transform: translateY(0px);
-    }
-
-    50% {
-        transform: translateY(-8px);
-    }
-
-    100% {
-        transform: translateY(0px);
-    }
-}
-
-.error-status {
-    font-size: 7rem;
-    font-weight: 800;
-    line-height: 1;
-    margin: 0.2em 0;
-    background: linear-gradient(135deg, var(--accent-color) 0%, var(--accent-light) 100%);
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
-    letter-spacing: -0.03em;
+/* 前景内容置于上方 */
+.error-main {
+  position: relative;
+  z-index: 1;
 }
 
 .error-headline {
-    font-size: 1.9rem;
-    font-weight: 600;
-    margin: 0.2em 0 0.5em;
-    border-bottom: none;
-    color: var(--text-color);
+  font-size: 2.2rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem;
+  border-bottom: none;
+  color: var(--text-color);
 }
 
+.error-subtext {
+  font-size: 1rem;
+  color: var(--text-secondary);
+  margin: 0 0 1.5rem;
+}
+
+/* ------ 消息框（信息卡片） ------ */
 .error-message-box {
-    background: var(--surface-color-secondary);
-    border-left: 5px solid var(--accent-color);
-    padding: 20px 24px;
-    margin: 32px 0 24px;
-    border-radius: var(--radius-lg);
-    text-align: left;
-    box-shadow: var(--shadow-sm);
-    transition: all var(--transition-normal);
+  background: var(--surface-color-secondary);
+  border-radius: var(--radius-md);
+  padding: 1.5rem 2rem;
+  margin: 1.5rem 0;
+  box-shadow: var(--shadow-sm);
+  text-align: left;
+  border: 1px solid var(--border-color);
+  transition: border-color var(--transition-fast);
 }
 
-.error-message-box p {
-    margin: 0 0 12px 0;
-    font-size: 1rem;
-    line-height: 1.6;
+.error-message-box:hover {
+  border-color: var(--accent-color);
+}
+
+.error-path-row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.error-path-row i {
+  color: var(--accent-color);
+  width: 1.2rem;
+  text-align: center;
 }
 
 .error-path-badge {
-    font-family: var(--font-mono);
-    background: var(--code-bg);
-    padding: 8px 16px;
-    border-radius: var(--radius-full);
-    display: inline-block;
-    font-size: 0.85rem;
-    word-break: break-all;
-    border: 1px solid var(--border-color);
-    margin: 8px 0 4px;
+  font-family: var(--font-mono);
+  background: var(--code-bg);
+  padding: 0.2rem 0.8rem;
+  border-radius: var(--radius-full);
+  font-size: 0.85rem;
+  word-break: break-all;
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
 }
 
+.error-message-text {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--text-color);
+  margin-bottom: 0.5rem;
+}
+
+.error-message-text i {
+  color: var(--accent-color);
+  margin-right: 0.5rem;
+}
+
+/* ------ 建议链接（复用 tag 风格） ------ */
 .suggestion-links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    justify-content: center;
-    margin-top: 24px;
-    margin-bottom: 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  justify-content: flex-start;
+  margin-top: 1rem;
 }
 
 .suggestion-link {
-    background: transparent;
-    border: 1px solid var(--border-color);
-    padding: 6px 18px;
-    border-radius: var(--radius-full);
-    font-size: 0.85rem;
-    color: var(--accent-color);
-    transition: all 0.2s ease;
-    text-decoration: none;
+  background: var(--tag-bg);
+  color: var(--tag-color);
+  padding: 0.3rem 1rem;
+  border-radius: var(--radius-full);
+  font-size: 0.85rem;
+  border: 1px solid var(--border-color);
+  transition: all var(--transition-fast);
+  text-decoration: none;
 }
 
 .suggestion-link:hover {
-    background: var(--accent-color);
-    color: white;
-    border-color: var(--accent-color);
-    transform: translateY(-2px);
+  background: var(--accent-color);
+  color: #fff;
+  border-color: var(--accent-color);
+  transform: translateY(-2px);
 }
 
+/* ------ 搜索框 ------ */
 .quick-search {
-    margin-top: 32px;
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    flex-wrap: wrap;
+  display: flex;
+  gap: 0.75rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 1.5rem 0;
 }
 
 .quick-search-input {
-    flex: 1;
-    min-width: 200px;
-    padding: 12px 20px;
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-full);
-    background: var(--surface-color);
-    color: var(--text-color);
-    font-family: var(--font-family);
-    font-size: 0.9rem;
-    transition: all 0.2s;
+  flex: 1;
+  min-width: 200px;
+  padding: 0.6rem 1.2rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  background: var(--surface-color);
+  color: var(--text-color);
+  font-size: 0.95rem;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .quick-search-input:focus {
-    border-color: var(--accent-color);
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(180, 91, 99, 0.2);
+  border-color: var(--accent-color);
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb, 180, 91, 99), 0.15);
 }
 
+/* ------ 操作按钮 ------ */
 .error-buttons-group {
-    display: flex;
-    gap: 18px;
-    justify-content: center;
-    margin-top: 28px;
-    flex-wrap: wrap;
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: 0.5rem;
 }
 
+/* 按钮样式已在 layout.css 定义，微调 */
+.button {
+  padding: 0.6rem 1.6rem;
+  font-size: 0.95rem;
+}
+
+/* ------ 响应式 ------ */
 @media (max-width: 640px) {
-    .error-status {
-        font-size: 5rem;
-    }
+  .error-content {
+    padding: 1.5rem 1rem;
+  }
 
-    .error-headline {
-        font-size: 1.5rem;
-    }
+  .error-background-code {
+    font-size: 12rem;
+    opacity: 0.06;
+  }
 
-    .error-icon-large {
-        font-size: 3.8rem;
-    }
+  .error-headline {
+    font-size: 1.6rem;
+  }
 
-    .error-message-box {
-        padding: 16px 20px;
-    }
+  .error-message-box {
+    padding: 1rem 1.2rem;
+  }
+
+  .error-path-badge {
+    font-size: 0.75rem;
+    padding: 0.15rem 0.6rem;
+  }
+
+  .quick-search {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .quick-search-input {
+    min-width: auto;
+  }
+}
+
+@media (min-width: 768px) {
+  .error-background-code {
+    font-size: 22rem;
+  }
 }
