@@ -4,6 +4,7 @@
 let container = null;
 let backToTopBtn = null;
 let tocBtn = null;
+let settingsBtn = null;
 let resizeHandler = null;
 let resizeTimeout = null;
 let updateVisibilityFn = null; // 暴露更新函数
@@ -140,15 +141,41 @@ export function initTocFloatingButton() {
   window.addEventListener('resize', resizeHandler);
 }
 
+export function initSettingsButton() {
+  if (settingsBtn) return;
+  const c = ensureContainer();
+  const btn = document.createElement('button');
+  btn.className = 'floating-btn';
+  btn.id = 'settingsFloatingBtn';
+  btn.setAttribute('aria-label', '打开设置');
+  btn.innerHTML = '<i class="fas fa-cog"></i>';
+  c.appendChild(btn);
+  settingsBtn = btn;
+
+  btn.addEventListener('click', () => {
+    // 动态加载设置浮窗
+    import('/js/data/settings.js').then(module => {
+      if (module.showSettingsPanel) {
+        module.showSettingsPanel();
+      } else {
+        console.warn('[Settings] showSettingsPanel 未导出');
+      }
+    }).catch(err => {
+      console.error('[Settings] 加载设置模块失败:', err);
+    });
+  });
+}
+
 /**
  * 统一初始化所有浮动按钮
  */
 export function initButtons() {
   initBackToTop();
   initTocFloatingButton();
+  initSettingsButton(); // 新增
 }
 
-// 监听无刷新导航，重新评估 TOC 按钮，并延迟更新返回按钮（确保滚动位置稳定）
+// 监听无刷新导航，重新评估 TOC 按钮，并延迟更新返回按钮
 window.addEventListener('ajax:navigation', () => {
   // 处理 TOC
   if (resizeHandler) {
@@ -160,6 +187,10 @@ window.addEventListener('ajax:navigation', () => {
     tocBtn = null;
   }
   initTocFloatingButton();
+
+  // 设置按钮通常不受影响，但为保险，可重新创建（如果被意外移除）
+  // 由于已有单例保护，再次调用不会重复添加
+  initSettingsButton();
 
   // 延迟更新返回按钮，等待滚动位置稳定
   if (updateVisibilityFn) {

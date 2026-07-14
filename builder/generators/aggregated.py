@@ -44,7 +44,6 @@ PAGE_TEMPLATES = {
     "about.html": "about",
     "archive.html": "archive",
     "stats.html": "stats",
-    "settings.html": "settings",
     "contact.html": "contact",
     "changelog.html": "changelog",
     "privacy.html": "privacy",

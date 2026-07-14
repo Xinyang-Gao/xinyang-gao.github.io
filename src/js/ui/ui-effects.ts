@@ -1251,6 +1251,29 @@ let uiEffectsInitialized = false;
 let customCursorInstance: CustomCursor | null = null;
 let externalLinkManagerInstance: ExternalLinkManager | null = null;
 
+export function refreshUIEffects(): void {
+  // 销毁现有实例
+  if (customCursorInstance) {
+    customCursorInstance.destroy();
+    customCursorInstance = null;
+  }
+  if (externalLinkManagerInstance) {
+    externalLinkManagerInstance.destroy();
+    externalLinkManagerInstance = null;
+  }
+
+  // 根据当前设置重新创建
+  const cursorEnabled = isFeatureEnabled(SETTINGS_KEYS.CURSOR_ENABLED, true);
+  const linkWarningEnabled = isFeatureEnabled(SETTINGS_KEYS.LINK_WARNING_ENABLED, true);
+
+  if (cursorEnabled && !customCursorInstance) {
+    customCursorInstance = new CustomCursor();
+  }
+  if (linkWarningEnabled && !externalLinkManagerInstance) {
+    externalLinkManagerInstance = new ExternalLinkManager();
+  }
+}
+
 export function ensureScrollReveal(): ScrollReveal {
   if (!globalScrollRevealInstance) {
     globalScrollRevealInstance = new ScrollReveal();
@@ -1278,22 +1301,7 @@ export function initUIEffects(): void {
   uiEffectsInitialized = true;
 
   const initFn = () => {
-    const cursorEnabled = isFeatureEnabled(SETTINGS_KEYS.CURSOR_ENABLED, true);
-    const linkWarningEnabled = isFeatureEnabled(SETTINGS_KEYS.LINK_WARNING_ENABLED, true);
-
-    if (cursorEnabled && !customCursorInstance) {
-      customCursorInstance = new CustomCursor();
-    } else if (!cursorEnabled && customCursorInstance) {
-      customCursorInstance.destroy();
-      customCursorInstance = null;
-    }
-
-    if (linkWarningEnabled && !externalLinkManagerInstance) {
-      externalLinkManagerInstance = new ExternalLinkManager();
-    } else if (!linkWarningEnabled && externalLinkManagerInstance) {
-      externalLinkManagerInstance.destroy();
-      externalLinkManagerInstance = null;
-    }
+    refreshUIEffects();
   };
 
   if ('requestIdleCallback' in window) {
