@@ -23,15 +23,6 @@
     --secondary-text: #5B6E8C;
     --companion-item-bg: rgba(249, 251, 254, 0.3);
     --companion-item-border: rgba(0, 0, 0, 0.05);
-    --trend-card-bg: rgba(249, 251, 254, 0.3);
-    --trend-border: rgba(59, 130, 246, 0.2);
-    --canvas-bg: rgba(255, 255, 255, 0.4);
-    --canvas-grid: rgba(233, 239, 244, 0.5);
-    --canvas-text: #6B7C93;
-    --canvas-line: #3B82F6;
-    --canvas-line-home: #F97316;
-    --canvas-point: #1E40AF;
-    --canvas-point-home: #EA580C;
     --health-tip-bg: rgba(255, 245, 232, 0.4);
     --health-tip-border: #F97316;
     --health-tip-color: #B45309;
@@ -40,10 +31,6 @@
     --shadow-sm: 0 12px 28px -12px rgba(0, 0, 0, 0.1);
     --shadow-md: 0 16px 32px -14px rgba(0, 0, 0, 0.15);
     --btn-hover: rgba(59, 130, 246, 0.3);
-    --legend-school-dot: #3B82F6;
-    --legend-home-dot: #F97316;
-    --card-accent-school: #3B82F6;
-    --card-accent-home: #F97316;
     --border-radius-xs: 8px;
     --border-radius-sm: 12px;
     --border-radius-md: 16px;
@@ -98,15 +85,6 @@ body.dark {
     --label-bg: rgba(0, 0, 0, 0.4);
     --companion-item-bg: rgba(30, 41, 59, 0.4);
     --companion-item-border: rgba(255, 255, 255, 0.1);
-    --trend-card-bg: rgba(15, 23, 42, 0.3);
-    --trend-border: rgba(59, 130, 246, 0.35);
-    --canvas-bg: rgba(15, 23, 42, 0.4);
-    --canvas-grid: rgba(51, 65, 85, 0.5);
-    --canvas-text: #94A3B8;
-    --canvas-line: #60A5FA;
-    --canvas-line-home: #FB923C;
-    --canvas-point: #93C5FD;
-    --canvas-point-home: #FDBA74;
     --health-tip-bg: rgba(45, 31, 13, 0.4);
     --health-tip-border: #F97316;
     --health-tip-color: #FDE68A;
@@ -115,10 +93,6 @@ body.dark {
     --shadow-sm: 0 12px 28px -12px rgba(0, 0, 0, 0.5);
     --shadow-md: 0 16px 32px -14px rgba(0, 0, 0, 0.6);
     --btn-hover: rgba(59, 130, 246, 0.5);
-    --legend-school-dot: #60A5FA;
-    --legend-home-dot: #FB923C;
-    --card-accent-school: #60A5FA;
-    --card-accent-home: #FB923C;
 }
 
 /* 液态玻璃效果 */
@@ -488,22 +462,6 @@ body.has-wallpaper::before {
     transform: translateY(-3px);
 }
 
-.stat-card-accent {
-    width: 100%;
-    height: 4px;
-    border-radius: var(--border-radius-xs);
-    margin-bottom: var(--spacing-md);
-    transition: background-color var(--transition-normal);
-}
-
-.stat-card-accent.school {
-    background: var(--card-accent-school);
-}
-
-.stat-card-accent.home {
-    background: var(--card-accent-home);
-}
-
 .greeting-box {
     display: flex;
     align-items: center;
@@ -534,22 +492,6 @@ body.has-wallpaper::before {
     color: var(--accent-light);
 }
 
-.stat-value {
-    font-family: 'Space Grotesk', monospace;
-    font-weight: 700;
-    font-size: var(--font-size-4xl);
-    color: var(--accent-blue);
-    line-height: 1.2;
-}
-
-.stat-value.school-color {
-    color: var(--card-accent-school);
-}
-
-.stat-value.home-color {
-    color: var(--card-accent-home);
-}
-
 .stat-label {
     font-size: var(--font-size-xs);
     text-transform: uppercase;
@@ -557,14 +499,6 @@ body.has-wallpaper::before {
     letter-spacing: 1px;
     color: var(--secondary-text);
     margin-top: var(--spacing-xs);
-}
-
-.stat-note {
-    font-size: var(--font-size-xs);
-    color: var(--secondary-text);
-    margin-top: var(--spacing-md);
-    border-top: 1px dashed var(--progress-track);
-    padding-top: var(--spacing-md);
 }
 
 .health-tip {
@@ -623,97 +557,6 @@ body.has-wallpaper::before {
 .refresh-saying:hover {
     background: var(--accent-light);
     color: white;
-}
-
-.trend-card {
-    margin-top: var(--spacing-xl);
-    background: var(--trend-card-bg);
-    backdrop-filter: blur(8px) saturate(150%);
-    -webkit-backdrop-filter: blur(8px) saturate(150%);
-    border-radius: var(--border-radius-lg);
-    padding: var(--spacing-md) var(--spacing-lg) var(--spacing-lg) var(--spacing-lg);
-    border: 1px solid var(--trend-border);
-    transition: background var(--transition-normal), border var(--transition-normal);
-}
-
-.trend-title {
-    font-size: var(--font-size-lg);
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: var(--spacing-xs);
-    letter-spacing: 0.3px;
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-md);
-    justify-content: space-between;
-    flex-wrap: wrap;
-}
-
-.trend-legend {
-    display: flex;
-    align-items: center;
-    gap: var(--spacing-3xl);
-    font-size: var(--font-size-xs);
-    font-weight: 500;
-    color: var(--secondary-text);
-    margin-bottom: var(--spacing-sm);
-}
-
-.legend-dot {
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    margin-right: var(--spacing-xs);
-    transition: background-color var(--transition-normal);
-}
-
-.legend-dot.school {
-    background: var(--legend-school-dot);
-}
-
-.legend-dot.home {
-    background: var(--legend-home-dot);
-}
-
-.legend-label {
-    font-size: var(--font-size-xs);
-    color: var(--secondary-text);
-    transition: color var(--transition-normal);
-}
-
-.influence-badge {
-    font-size: var(--font-size-xs);
-    background: var(--badge-bg);
-    padding: var(--spacing-xs) var(--spacing-sm);
-    border-radius: var(--border-radius-full);
-    font-weight: 500;
-    color: var(--badge-text);
-}
-
-.chart-container {
-    width: 100%;
-    height: 200px;
-    position: relative;
-}
-
-canvas {
-    width: 100%;
-    height: 100%;
-    display: block;
-    background: var(--canvas-bg);
-    backdrop-filter: blur(6px) saturate(150%);
-    -webkit-backdrop-filter: blur(6px) saturate(150%);
-    border-radius: var(--border-radius-lg);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    transition: background var(--transition-normal);
-}
-
-.chart-note {
-    font-size: var(--font-size-xs);
-    color: var(--secondary-text);
-    text-align: right;
-    margin-top: var(--spacing-md);
 }
 
 .digit-shine {
@@ -894,17 +737,9 @@ canvas {
         font-size: 2.5rem;
     }
 
-    .stat-value {
-        font-size: var(--font-size-4xl);
-    }
-
     .companion-item {
         min-width: 120px;
         padding: var(--spacing-md) var(--spacing-lg);
-    }
-
-    .chart-container {
-        height: 170px;
     }
 
     .wallpaper-toggle {
@@ -971,15 +806,6 @@ canvas {
         right: 115px;
     }
 
-    .trend-legend {
-        gap: var(--spacing-md);
-        font-size: var(--font-size-xs);
-    }
-
-    .chart-container {
-        height: 150px;
-    }
-
     .countdown-grid {
         gap: var(--spacing-xl);
     }
@@ -1036,10 +862,6 @@ canvas {
     .companion-item {
         min-width: 100%;
         padding: var(--spacing-md) var(--spacing-md);
-    }
-
-    .stat-value {
-        font-size: var(--font-size-3xl);
     }
 
     .greeting-box {

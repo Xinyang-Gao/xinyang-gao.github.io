@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+﻿﻿<!DOCTYPE html>
 <html lang="zh-CN">
 
 <head>
@@ -87,34 +87,10 @@
                     </div>
                     <div id="lateNightAlert" class="health-tip" style="display:none;">[提醒] 熬夜警示</div>
                 </div>
-                <div class="companion-item">
-                    <div class="stat-card-accent school"></div>
-                    <div class="stat-value school-color" id="inSchoolDisplay">--</div>
-                    <div class="stat-label">🏠 在校学习学生 (实时)</div>
-                    <div class="stat-note">含延时·培优·住校晚自习</div>
-                </div>
-                <div class="companion-item">
-                    <div class="stat-card-accent home"></div>
-                    <div class="stat-value home-color" id="atHomeDisplay">--</div>
-                    <div class="stat-label">📚 在家学习学生 (实时)</div>
-                    <div class="stat-note">含走读生·周末居家</div>
-                </div>
+                <!-- 删除了在校/在家人数显示项 -->
             </div>
 
-            <div class="trend-card">
-                <div class="trend-title">
-                    <span>📈 近3小时冲刺趋势 (每 5min 聚合)</span>
-                    <span class="influence-badge" id="influenceFactorHint">正在实时计算</span>
-                </div>
-                <div class="trend-legend">
-                    <span><span class="legend-dot school"></span><span class="legend-label">在校</span></span>
-                    <span><span class="legend-dot home"></span><span class="legend-label">在家</span></span>
-                </div>
-                <div class="chart-container">
-                    <canvas id="trendCanvas" width="800" height="200" style="width:100%;height:200px"></canvas>
-                </div>
-                <div class="chart-note">每5分钟聚合一次历史数据 | 平滑趋势展示过去3小时在校/在家冲刺热度</div>
-            </div>
+            <!-- 删除了趋势卡片及canvas -->
 
             <div class="saying-box">
                 <div class="saying-text" id="dynamicSaying">星光不负赶路人，江河眷顾奋楫者。</div>
