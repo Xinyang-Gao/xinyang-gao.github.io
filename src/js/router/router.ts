@@ -435,7 +435,6 @@ async function processPageContent(
   // 导航栏的 initNavigation 已在 navbar-manager 的 rebindDynamicComponents 中绑定，
   // 但无刷新导航后需要重新执行高亮，所以我们在外部调用一次 initNavigation。
   // 导入 initNavigation 用于高亮更新
-  const { initNavigation } = await import('/js/router/router.js');
   initNavigation();
 
   // 6. 加载样式和脚本
