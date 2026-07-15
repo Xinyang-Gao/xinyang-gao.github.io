@@ -1,98 +1,348 @@
-const FULL_LESSONS_DATA = {
-    "鱼我所欲也": [
-        { "苟得": "苟且取得。这里是苟且偷生的意思。" }, { "恶": "讨厌，憎恨。" }, { "患": "祸患，灾难。" }, { "辟": "同“避”，躲避。" },
-        { "如使": "假如，假使。" }, { "何不用也": "什么（手段）不用呢？" }, { "是心": "这种心。" }, { "丧": "丧失。" },
-        { "豆": "古代盛食物的一种容器，形似高脚盘。" }, { "羹": "用肉（或肉菜相杂）调和五味做的粥状食物。" },
-        { "呼尔而与之": "意思是没有礼貌地吆喝着给他。尔，用作后缀。" }, { "蹴": "踩踏。" }, { "不屑": "认为不值得，表示轻视而不肯接受。" },
-        { "万钟": "优厚的俸禄。钟，古代的一种量器。" }, { "辩": "同“辨”，辨别。" }, { "何加": "有什么益处。" }, { "奉": "侍奉。" },
-        { "所识穷乏者得我与": "所认识的穷困的人感激我吗？得，同“德”，感恩、感激。与，同“欤”，语气词。" },
-        { "乡为身死而不受": "先前为了“礼义”，宁愿死也不接受施舍。乡，同“向”，先前、从前。" }, { "已": "停止。" }, { "本心": "本性。这里指人的羞恶之心。" }
-    ],
-    "送东阳马生序": [
-        { "致": "得到" }, { "假借": "借" }, { "弗之怠": "即“弗怠之”，不懈怠，指不放松抄录书" }, { "走": "跑" }, { "逾约": "超过约定期限" }, { "以是": "因此" },
-        { "既加冠": "加冠之后，指已成年。" }, { "硕师": "学问渊博的老师" }, { "趋": "快步走" }, { "从乡之先达执经叩问": "拿着经书向同乡有道德有学问的前辈请教。叩问，请教" },
-        { "德隆望尊": "道德声望高" }, { "填": "挤满" }, { "稍降辞色": "把言辞和脸色略变得温和一些" }, { "援疑质理": "提出疑难，询问道理" }, { "俯身倾耳以请": "弯下身子，侧着耳朵来请教" },
-        { "叱咄": "训斥，呵责" }, { "至": "周到" }, { "复": "回答，答复。这里是辩解的意思" }, { "俟": "等待" }, { "负箧曳屣": "背着书箱，拖着鞋子" }, { "穷冬": "深冬，隆冬" },
-        { "皲裂": "皮肤因寒冷干燥而开裂" }, { "舍": "这里指客舍" }, { "四支僵劲": "四肢僵硬。支，同“肢”" }, { "媵人": "侍婢。这里指旅舍中的仆役" }, { "持汤沃灌": "拿了热水来洗濯" },
-        { "和": "暖" }, { "寓逆旅，主人日再食": "寄居在旅店，店主人每天供给两顿饭" }, { "被绮绣": "穿着华丽的丝绸衣服" }, { "缨": "系帽的带子" }, { "腰": "用作动词，在腰间佩戴" },
-        { "容臭": "香袋。臭，香气" }, { "烨然": "光彩鲜明的样子" }, { "缊袍敝衣": "破旧的衣服" }, { "慕艳": "羡慕" }, { "以中有足乐者，不知口体之奉不若人也": "因为内心有值得快乐的事，不觉得吃的穿的不如人" },
-        { "预君子之列": "意思是做了官" }, { "宠光": "恩宠光耀" }, { "缀": "跟随" }, { "日侍坐备顾问": "每天在皇帝座位旁边侍奉，准备接受询问" }, { "谬称其氏名": "错误地称说我的姓名" },
-        { "太学": "我国古代设在京城的最高学府。" }, { "县官": "这里指朝廷" }, { "廪稍": "公家按时供给的粮食" }, { "裘葛": "冬天的皮衣和夏天的葛衣" }, { "遗": "给予，赠送" },
-        { "馁": "饥饿" }, { "司业、博士": "都是古代学官名" }, { "假诸人": "即“假之于人”，向别人借" }, { "流辈": "同辈" }, { "谒": "拜见" }, { "撰长书以为贽": "写了一封长信作为礼物" },
-        { "言和而色夷": "言辞谦和，脸色平易" }, { "诋": "诋毁，毁谤" }, { "夸际遇之盛而骄乡人": "夸耀自己的际遇好而在同乡面前表示骄傲" }, { "论辨": "议论辩驳" }
-    ],
-    "出师表": [
-        { "崩殂": "指帝王之死" }, { "秋": "时候" }, { "内": "朝廷" }, { "外": "这里指疆场" }, { "追": "追念" }, { "殊遇": "特殊的礼遇" }, { "开张": "扩大" },
-        { "光": "发扬光大" }, { "恢弘": "发扬，扩展" }, { "妄自菲薄": "随意地看轻自己" }, { "引喻失义": "说话不恰当" }, { "陟罚臧否，不宜异同": "晋升、处罚，赞扬、批评，不应该因在宫中或在丞相府中而不同" },
-        { "作奸犯科": "做奸邪事情，触犯科条" }, { "刑": "罚" }, { "平明之理": "公平清明的治理" }, { "良实": "忠良诚实的人" }, { "志虑忠纯": "志向和思虑忠诚纯正" },
-        { "简拔": "选拔" }, { "愚": "我，谦称" }, { "咨": "询问" }, { "裨补阙漏": "弥补缺失疏漏" }, { "有所广益": "这里指有启发和帮助" }, { "性行淑均": "性情品行善良公正" },
-        { "行阵": "行伍，部队" }, { "痛恨": "痛心、遗憾" }, { "贞良死节": "忠正贤明，为保全节操而死" }, { "躬耕": "亲身耕种" }, { "闻达": "有名望，显贵" },
-        { "卑鄙": "社会地位低微，见识短浅" }, { "猥": "辱。谦辞" }, { "枉屈": "屈尊就卑" }, { "感激": "感奋激发" }, { "驱驰": "奔走效劳" }, { "夙夜": "早晚，日日夜夜" },
-        { "不效": "没有效果" }, { "不毛": "不生长草木。这里指贫瘠、未开垦的地方" }, { "攘除": "排除，铲除" }, { "斟酌损益": "斟酌利弊" }, { "效": "这里是功效的意思" },
-        { "告": "祭告" }, { "兴德之言": "发扬圣德的话" }, { "慢": "怠慢，疏忽" }, { "彰其咎": "揭示他们的过失" }, { "咨诹善道": "询问（治国的）好方法" }, { "奖": "鼓励" },
-        { "雅言": "指正确合理的言论" }, { "庶": "表示期望" }, { "驽钝": "比喻才能平庸，这是诸葛亮自谦的话。" }, { "涕零": "流泪，落泪" }
-    ]
+// ========== 配置常量 ==========
+const CONFIG = {
+  MAX_PAIRS: 18,
+  LEVEL_TIME: 180,
+  DATA_URL: 'data.json'
 };
 
-const MAX_PAIRS_PER_LEVEL = 18;
-const LEVEL_TIME_SEC = 180;
+// ========== DOM 引用 ==========
+const $ = (id) => document.getElementById(id);
+const els = {
+  score: $('scoreValue'),
+  time: $('timeValue'),
+  mistake: $('mistakeValue'),
+  level: $('levelInfo'),
+  grid: $('cardsGrid'),
+  msg: $('gameMessage'),
+  lessonBtns: $('lessonButtons'),
+  mistakePanel: $('mistakePanel'),
+  toggleBtn: $('mistakeToggleBtn'),
+  badge: $('mistakeCountBadge'),
+  clearBtn: $('clearMistakesBtn'),
+  mistakeList: $('mistakeListContainer'),
+  resetBtn: $('resetGameBtn'),
+  headerToggle: $('mistakeHeaderToggle')
+};
 
-let currentLessonKey = "出师表";
-let allPairs = [];
-let levels = [];
-let totalLevels = 0;
-let currentLevelIndex = 0;
-let cards = [];
-let score = 0;
-let mistakes = 0;
-let timeLeft = LEVEL_TIME_SEC;
-let gameActive = true;
-let gameWinFlag = false;
-let timerInterval = null;
-let selectedCardIdx = null;
-let mistakeList = [];
-let processingAnimation = false;
+// ========== 游戏状态 ==========
+let state = {
+  data: {},
+  currentLesson: '',
+  allPairs: [],
+  levels: [],
+  totalLevels: 0,
+  levelIndex: 0,
+  cards: [],
+  score: 0,
+  mistakes: 0,
+  timeLeft: CONFIG.LEVEL_TIME,
+  active: true,
+  win: false,
+  timer: null,
+  selected: null,
+  mistakeList: [],
+  animating: false,
+  panelVisible: false
+};
 
-const scoreEl = document.getElementById('scoreValue');
-const timeEl = document.getElementById('timeValue');
-const mistakeEl = document.getElementById('mistakeValue');
-const levelInfoEl = document.getElementById('levelInfo');
-const cardsGrid = document.getElementById('cardsGrid');
-const resetBtn = document.getElementById('resetGameBtn');
-const gameMessage = document.getElementById('gameMessage');
-const lessonButtonsContainer = document.getElementById('lessonButtons');
-const mistakePanel = document.getElementById('mistakePanel');
-const mistakeToggleBtn = document.getElementById('mistakeToggleBtn');
-const mistakeCountBadge = document.getElementById('mistakeCountBadge');
-const clearMistakesBtn = document.getElementById('clearMistakesBtn');
-const mistakeListContainer = document.getElementById('mistakeListContainer');
-let panelVisible = false;
+// ========== 工具函数 ==========
+const fmt = (s) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+const shuffle = (arr) => { for (let i = arr.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; };
+const esc = (s) => s.replace(/[&<>]/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[m] || m);
 
-function formatTime(seconds) { const mins = Math.floor(seconds / 60); const secs = seconds % 60; return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`; }
-function updateStatsUI() { scoreEl.innerText = score; mistakeEl.innerText = mistakes; timeEl.innerText = formatTime(timeLeft); levelInfoEl.innerText = `${currentLevelIndex + 1} / ${totalLevels}`; updateMistakeBadge(); }
-function updateMistakeBadge() { const count = mistakeList.length; mistakeCountBadge.innerText = count; if (mistakeToggleBtn) mistakeToggleBtn.innerHTML = `📖 错题本 <span id="mistakeCountBadge">${count}</span>`; const badgeSpan = document.getElementById('mistakeCountBadge'); if (badgeSpan) badgeSpan.innerText = count; }
-function shuffleArray(arr) { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1));[arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; }
-function convertRawToPairs(rawArray) { const pairs = []; for (const item of rawArray) { for (const [term, annotation] of Object.entries(item)) { if (term && annotation) pairs.push({ term: term.trim(), annotation: annotation.trim() }); } } return pairs; }
-function buildLevelsFromPairs(pairs) { const levelsArr = []; for (let i = 0; i < pairs.length; i += MAX_PAIRS_PER_LEVEL) { const pairIds = pairs.slice(i, i + MAX_PAIRS_PER_LEVEL).map((_, idx) => i + idx); levelsArr.push(pairIds); } return levelsArr; }
-function generateCardsForLevel(levelIdx) { if (!levels[levelIdx]) return []; const pairIds = levels[levelIdx]; const newCards = []; let uniqueId = 0; for (const globalPairId of pairIds) { const pair = allPairs[globalPairId]; if (!pair) continue; newCards.push({ id: uniqueId++, pairId: globalPairId, type: 'term', text: pair.term, matched: false }); newCards.push({ id: uniqueId++, pairId: globalPairId, type: 'anno', text: pair.annotation, matched: false }); } return shuffleArray(newCards); }
-function applyCorrectMatch(idxA, idxB) { if (!gameActive || gameWinFlag) return; const cardA = cards[idxA], cardB = cards[idxB]; if (!cardA || !cardB || cardA.matched || cardB.matched) return; cardA.matched = true; cardB.matched = true; score += 10; updateStatsUI(); selectedCardIdx = null; cards = cards.filter(card => !card.matched); renderCards(); gameMessage.innerText = '✓ 配对正确！ +10分 ✨'; setTimeout(() => { if (gameActive && !gameWinFlag && cards.length > 0) gameMessage.innerText = '📖 继续研读，慧心配对'; }, 900); checkLevelComplete(); }
-function applyWrongMatch(termCardObj, annoCardObj) { if (!gameActive || gameWinFlag) return; mistakes++; updateStatsUI(); const termPair = allPairs[termCardObj.pairId]; const annoPair = allPairs[annoCardObj.pairId]; const termCorrectAnno = termPair ? termPair.annotation : "（无法获取）"; const annoCorrectTerm = annoPair ? annoPair.term : "（无法获取）"; mistakeList.push({ termText: termCardObj.text, annoText: annoCardObj.text, termCorrectAnno, annoCorrectTerm }); renderMistakeList(); updateMistakeBadge(); selectedCardIdx = null; renderCards(); gameMessage.innerText = '❌ 配对错误！已收录错题本 ❌'; setTimeout(() => { if (gameActive && !gameWinFlag) gameMessage.innerText = '📖 再试一次，仔细对照注释'; }, 1200); }
-function animateAndExecute(selectedIdx, clickedIdx, isCorrect, termCard, annoCard) { if (processingAnimation) return; processingAnimation = true; const cardElements = document.querySelectorAll('.card'); const elem1 = cardElements[selectedIdx]; const elem2 = cardElements[clickedIdx]; if (elem1 && elem2) { if (isCorrect) { elem1.classList.add('correct-animate'); elem2.classList.add('correct-animate'); setTimeout(() => { if (elem1) elem1.classList.remove('correct-animate'); if (elem2) elem2.classList.remove('correct-animate'); }, 500); } else { elem1.classList.add('wrong-animate'); elem2.classList.add('wrong-animate'); setTimeout(() => { if (elem1) elem1.classList.remove('wrong-animate'); if (elem2) elem2.classList.remove('wrong-animate'); }, 450); } } setTimeout(() => { if (isCorrect) applyCorrectMatch(selectedIdx, clickedIdx); else applyWrongMatch(termCard, annoCard); processingAnimation = false; }, 330); }
-function onCardClick(clickedIdx) { if (!gameActive || gameWinFlag || processingAnimation) return; if (clickedIdx < 0 || clickedIdx >= cards.length) return; const clickedCard = cards[clickedIdx]; if (clickedCard.matched) return; if (selectedCardIdx === null) { selectedCardIdx = clickedIdx; renderCards(); gameMessage.innerText = `👉 已选中: ${clickedCard.type === 'term' ? '【原词】' : '【注释】'} “${clickedCard.text.substring(0, 32)}”，再点击对应卡片配对`; return; } if (selectedCardIdx === clickedIdx) { selectedCardIdx = null; renderCards(); gameMessage.innerText = '✨ 已取消选择 ✨'; return; } const selectedCard = cards[selectedCardIdx]; if (selectedCard.matched) { selectedCardIdx = null; renderCards(); return; } const isSamePair = (selectedCard.pairId === clickedCard.pairId); const isDifferentType = (selectedCard.type !== clickedCard.type); if (isSamePair && isDifferentType) { animateAndExecute(selectedCardIdx, clickedIdx, true, null, null); } else { let termCard, annoCard; if (selectedCard.type === 'term' && clickedCard.type === 'anno') { termCard = selectedCard; annoCard = clickedCard; } else if (selectedCard.type === 'anno' && clickedCard.type === 'term') { termCard = clickedCard; annoCard = selectedCard; } else { termCard = selectedCard; annoCard = clickedCard; } animateAndExecute(selectedCardIdx, clickedIdx, false, termCard, annoCard); } }
-function renderCards() { if (!cardsGrid) return; cardsGrid.innerHTML = ''; cards.forEach((card, idx) => { const cardDiv = document.createElement('div'); cardDiv.className = 'card'; if (card.type === 'term') cardDiv.classList.add('term-card'); else cardDiv.classList.add('anno-card'); if (card.matched) cardDiv.classList.add('matched'); if (selectedCardIdx === idx && !card.matched && gameActive) cardDiv.classList.add('selected'); cardDiv.innerText = card.text; cardDiv.addEventListener('click', (e) => { e.stopPropagation(); onCardClick(idx); }); cardsGrid.appendChild(cardDiv); }); }
-function checkLevelComplete() { const unmatched = cards.filter(c => !c.matched).length; if (unmatched === 0 && gameActive && !gameWinFlag) { if (currentLevelIndex + 1 < totalLevels) { currentLevelIndex++; gameMessage.innerText = `🎉 过关！进入第${currentLevelIndex + 1}/${totalLevels}关，再接再厉 🎉`; loadLevel(currentLevelIndex); } else { gameWinFlag = true; gameActive = false; if (timerInterval) clearInterval(timerInterval); timerInterval = null; gameMessage.innerText = `🏆 大获全胜！《${currentLessonKey}》全部通关！文心宗师！🏆`; document.getElementById('gameContainer').classList.add('game-inactive'); renderCards(); } } }
-function loadLevel(levelIndex) { if (timerInterval) clearInterval(timerInterval); cards = generateCardsForLevel(levelIndex); selectedCardIdx = null; timeLeft = LEVEL_TIME_SEC; gameActive = true; gameWinFlag = false; processingAnimation = false; updateStatsUI(); renderCards(); startTimerForLevel(); const currentPairCount = levels[levelIndex].length; gameMessage.innerText = `📖 第${levelIndex + 1}/${totalLevels}关 · ${currentPairCount}组词句，配对正确+10分！`; document.getElementById('gameContainer').classList.remove('game-inactive'); }
-function startTimerForLevel() { if (timerInterval) clearInterval(timerInterval); timerInterval = setInterval(() => { if (!gameActive) return; if (timeLeft <= 1) { clearInterval(timerInterval); timerInterval = null; timeLeft = 0; updateStatsUI(); gameActive = false; gameWinFlag = false; gameMessage.innerText = '⏰ 时间耗尽... 点击「重新闯关」继续研习吧 ⏰'; document.getElementById('gameContainer').classList.add('game-inactive'); renderCards(); } else { timeLeft--; updateStatsUI(); } }, 1000); }
-function resetGame() { if (timerInterval) clearInterval(timerInterval); timerInterval = null; score = 0; mistakes = 0; mistakeList = []; currentLevelIndex = 0; gameActive = true; gameWinFlag = false; selectedCardIdx = null; processingAnimation = false; allPairs = convertRawToPairs(FULL_LESSONS_DATA[currentLessonKey]); levels = buildLevelsFromPairs(allPairs); totalLevels = levels.length; updateStatsUI(); renderMistakeList(); updateMistakeBadge(); loadLevel(0); document.getElementById('gameContainer').classList.remove('game-inactive'); gameMessage.innerText = `✨ 重新闯关《${currentLessonKey}》，共 ${totalLevels} 关，加油 ✨`; }
-function switchLesson(lessonKey) { if (!FULL_LESSONS_DATA[lessonKey]) return; if (lessonKey === currentLessonKey) { resetGame(); return; } currentLessonKey = lessonKey; if (timerInterval) clearInterval(timerInterval); timerInterval = null; score = 0; mistakes = 0; mistakeList = []; currentLevelIndex = 0; gameActive = true; gameWinFlag = false; selectedCardIdx = null; processingAnimation = false; allPairs = convertRawToPairs(FULL_LESSONS_DATA[currentLessonKey]); levels = buildLevelsFromPairs(allPairs); totalLevels = levels.length; updateStatsUI(); renderMistakeList(); updateMistakeBadge(); loadLevel(0); document.getElementById('gameContainer').classList.remove('game-inactive'); gameMessage.innerText = `📖 已切换至《${currentLessonKey}》，共 ${totalLevels} 关，文心配对 📖`; document.querySelectorAll('.lesson-btn').forEach(btn => { if (btn.getAttribute('data-lesson') === lessonKey) btn.classList.add('active'); else btn.classList.remove('active'); }); if (panelVisible) { mistakePanel.style.display = 'block'; renderMistakeList(); } else mistakePanel.style.display = 'none'; }
-function buildLessonButtons() { lessonButtonsContainer.innerHTML = ''; Object.keys(FULL_LESSONS_DATA).forEach(key => { const btn = document.createElement('button'); btn.className = 'lesson-btn'; if (key === currentLessonKey) btn.classList.add('active'); btn.setAttribute('data-lesson', key); btn.innerText = key; btn.addEventListener('click', () => switchLesson(key)); lessonButtonsContainer.appendChild(btn); }); }
-function renderMistakeList() { if (!mistakeListContainer) return; if (mistakeList.length === 0) { mistakeListContainer.innerHTML = '<div class="empty-mistake">📖 暂无错题，继续研习 📖</div>'; return; } let html = ''; mistakeList.forEach((item) => { html += `<div class="mistake-item"><div class="wrong-pair">❌ 你配对的： 「${escapeHtml(item.termText)}」 ↔ 「${escapeHtml(item.annoText)}」</div><div class="correct-pair"><div class="correct-line"><span class="correct-badge">✅ 正确</span><span><span class="term-word">「${escapeHtml(item.termText)}」</span> 的正确注释 → <span class="anno-text">${escapeHtml(item.termCorrectAnno)}</span></span></div><div class="correct-line"><span class="correct-badge">✅ 正确</span><span><span class="term-word">「${escapeHtml(item.annoText)}」</span> 对应的原词 → <span class="anno-text">${escapeHtml(item.annoCorrectTerm)}</span></span></div></div></div>`; }); mistakeListContainer.innerHTML = html; }
-function escapeHtml(str) { return str.replace(/[&<>]/g, function (m) { if (m === '&') return '&amp;'; if (m === '<') return '&lt;'; if (m === '>') return '&gt;'; return m; }); }
-function clearMistakeList() { mistakeList = []; renderMistakeList(); updateMistakeBadge(); gameMessage.innerText = '错题本已清空，砥砺前行'; setTimeout(() => { if (gameActive && !gameWinFlag) gameMessage.innerText = '📖 再试一次，仔细对照注释'; }, 1200); }
-function toggleMistakePanel() { panelVisible = !panelVisible; mistakePanel.style.display = panelVisible ? 'block' : 'none'; if (panelVisible) renderMistakeList(); }
-resetBtn.addEventListener('click', () => resetGame());
-mistakeToggleBtn.addEventListener('click', toggleMistakePanel);
-clearMistakesBtn.addEventListener('click', (e) => { e.stopPropagation(); clearMistakeList(); });
-document.getElementById('mistakeHeaderToggle')?.addEventListener('click', (e) => { if (e.target !== clearMistakesBtn) toggleMistakePanel(); });
-function initGame() { buildLessonButtons(); allPairs = convertRawToPairs(FULL_LESSONS_DATA[currentLessonKey]); levels = buildLevelsFromPairs(allPairs); totalLevels = levels.length; score = 0; mistakes = 0; currentLevelIndex = 0; gameActive = true; gameWinFlag = false; selectedCardIdx = null; mistakeList = []; renderMistakeList(); updateMistakeBadge(); updateStatsUI(); loadLevel(0); mistakePanel.style.display = 'none'; panelVisible = false; }
-initGame();
+// ========== 数据加载 ==========
+async function loadData() {
+  try {
+    const res = await fetch(CONFIG.DATA_URL);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    state.data = await res.json();
+    return true;
+  } catch (e) {
+    console.error('加载失败:', e);
+    els.grid.innerHTML = `<div class="error-tip"><p>数据加载失败，请检查网络或 data.json</p><button onclick="location.reload()">重新加载</button></div>`;
+    return false;
+  }
+}
+
+// ========== 数据转换 ==========
+function buildPairs(raw) {
+  const pairs = [];
+  raw.forEach(item => Object.entries(item).forEach(([k, v]) => k && v && pairs.push({ term: k.trim(), annotation: v.trim() })));
+  return pairs;
+}
+
+function buildLevels(pairs) {
+  const levels = [];
+  for (let i = 0; i < pairs.length; i += CONFIG.MAX_PAIRS) {
+    levels.push(pairs.slice(i, i + CONFIG.MAX_PAIRS).map((_, idx) => i + idx));
+  }
+  return levels;
+}
+
+function generateCards(levelIdx) {
+  const ids = state.levels[levelIdx] || [];
+  const cards = [];
+  ids.forEach(pid => {
+    const p = state.allPairs[pid];
+    if (p) {
+      cards.push({ id: cards.length, pairId: pid, type: 'term', text: p.term, matched: false });
+      cards.push({ id: cards.length, pairId: pid, type: 'anno', text: p.annotation, matched: false });
+    }
+  });
+  return shuffle(cards);
+}
+
+// ========== UI 刷新 ==========
+function refreshUI() {
+  const { score, mistakes, timeLeft, levelIndex, totalLevels, mistakeList } = state;
+  els.score.textContent = score;
+  els.mistake.textContent = mistakes;
+  els.time.textContent = fmt(timeLeft);
+  els.level.textContent = `${levelIndex+1} / ${totalLevels}`;
+  els.badge.textContent = mistakeList.length;
+  if (state.panelVisible) renderMistakeList();
+}
+
+// ========== 修复：直接操作 DOM，确保事件绑定 ==========
+function renderCards() {
+  const grid = els.grid;
+  grid.innerHTML = ''; // 清空
+
+  state.cards.forEach((card, idx) => {
+    const div = document.createElement('div');
+    div.className = `card ${card.type === 'term' ? 'term-card' : 'anno-card'}${card.matched ? ' matched' : ''}${state.selected === idx && !card.matched && state.active ? ' selected' : ''}`;
+    div.textContent = card.text;
+    // 绑定点击事件
+    div.addEventListener('click', (e) => {
+      e.stopPropagation();
+      onCardClick(idx);
+    });
+    grid.appendChild(div);
+  });
+}
+
+function renderMistakeList() {
+  const list = state.mistakeList;
+  els.mistakeList.innerHTML = list.length ? list.map(item => `
+    <div class="mistake-item">
+      <div class="wrong-pair">你配对的： 「${esc(item.termText)}」 ↔ 「${esc(item.annoText)}」</div>
+      <div class="correct-pair">
+        <div class="correct-line"><span class="correct-badge">正确</span><span><span class="term-word">「${esc(item.termText)}」</span> 的正确注释 → <span class="anno-text">${esc(item.termCorrectAnno)}</span></span></div>
+        <div class="correct-line"><span class="correct-badge">正确</span><span><span class="term-word">「${esc(item.annoText)}」</span> 对应的原词 → <span class="anno-text">${esc(item.annoCorrectTerm)}</span></span></div>
+      </div>
+    </div>
+  `).join('') : '<div class="empty-mistake">暂无错题，继续研习</div>';
+}
+
+// ========== 游戏逻辑 ==========
+function onCardClick(idx) {
+  const { cards, active, win, animating, selected } = state;
+  if (!active || win || animating || cards[idx].matched) return;
+  if (selected === null) {
+    state.selected = idx;
+    renderCards();
+    els.msg.textContent = `已选中: ${cards[idx].type === 'term' ? '原词' : '注释'} “${cards[idx].text.substring(0, 32)}”，再点击对应卡片配对`;
+    return;
+  }
+  if (selected === idx) {
+    state.selected = null;
+    renderCards();
+    els.msg.textContent = '已取消选择';
+    return;
+  }
+  const a = cards[selected], b = cards[idx];
+  if (a.matched) { state.selected = null; renderCards(); return; }
+  const correct = a.pairId === b.pairId && a.type !== b.type;
+  const termCard = a.type === 'term' ? a : b;
+  const annoCard = a.type === 'anno' ? a : b;
+  state.animating = true;
+  const elems = document.querySelectorAll('.card');
+  const el1 = elems[selected], el2 = elems[idx];
+  if (el1 && el2) {
+    const cls = correct ? 'correct-animate' : 'wrong-animate';
+    el1.classList.add(cls); el2.classList.add(cls);
+    setTimeout(() => { el1?.classList.remove(cls); el2?.classList.remove(cls); }, correct ? 500 : 450);
+  }
+  setTimeout(() => {
+    if (correct) {
+      a.matched = true; b.matched = true;
+      state.score += 10;
+      state.selected = null;
+      state.cards = state.cards.filter(c => !c.matched);
+      renderCards();
+      els.msg.textContent = '配对正确！ +10分';
+      setTimeout(() => { if (state.active && !state.win && state.cards.length) els.msg.textContent = '继续研读，慧心配对'; }, 900);
+      checkLevelComplete();
+    } else {
+      state.mistakes++;
+      const tp = state.allPairs[a.pairId], ap = state.allPairs[b.pairId];
+      state.mistakeList.push({
+        termText: termCard.text,
+        annoText: annoCard.text,
+        termCorrectAnno: tp ? tp.annotation : '（无法获取）',
+        annoCorrectTerm: ap ? ap.term : '（无法获取）'
+      });
+      state.selected = null;
+      renderCards();
+      renderMistakeList();
+      els.msg.textContent = '配对错误！已收录错题本';
+      setTimeout(() => { if (state.active && !state.win) els.msg.textContent = '再试一次，仔细对照注释'; }, 1200);
+    }
+    refreshUI();
+    state.animating = false;
+  }, 330);
+}
+
+function checkLevelComplete() {
+  if (state.cards.some(c => !c.matched) || !state.active || state.win) return;
+  if (state.levelIndex + 1 < state.totalLevels) {
+    state.levelIndex++;
+    els.msg.textContent = `过关！进入第${state.levelIndex+1}/${state.totalLevels}关，再接再厉`;
+    loadLevel(state.levelIndex);
+  } else {
+    state.win = true; state.active = false;
+    if (state.timer) clearInterval(state.timer);
+    state.timer = null;
+    els.msg.textContent = `大获全胜！《${state.currentLesson}》全部通关！文心宗师！`;
+    document.getElementById('gameContainer').classList.add('game-inactive');
+    renderCards();
+  }
+}
+
+// ========== 关卡与计时 ==========
+function loadLevel(idx) {
+  if (state.timer) clearInterval(state.timer);
+  state.cards = generateCards(idx);
+  state.selected = null;
+  state.timeLeft = CONFIG.LEVEL_TIME;
+  state.active = true;
+  state.win = false;
+  state.animating = false;
+  refreshUI();
+  renderCards();
+  startTimer();
+  const cnt = state.levels[idx].length;
+  els.msg.textContent = `第${idx+1}/${state.totalLevels}关 · ${cnt}组词句，配对正确+10分`;
+  document.getElementById('gameContainer').classList.remove('game-inactive');
+}
+
+function startTimer() {
+  if (state.timer) clearInterval(state.timer);
+  state.timer = setInterval(() => {
+    if (!state.active) return;
+    if (state.timeLeft <= 1) {
+      clearInterval(state.timer); state.timer = null;
+      state.timeLeft = 0;
+      refreshUI();
+      state.active = false;
+      state.win = false;
+      els.msg.textContent = '时间耗尽... 点击「重新闯关」继续研习吧';
+      document.getElementById('gameContainer').classList.add('game-inactive');
+      renderCards();
+    } else {
+      state.timeLeft--;
+      refreshUI();
+    }
+  }, 1000);
+}
+
+// ========== 重置与切换 ==========
+function resetGame() {
+  if (state.timer) clearInterval(state.timer);
+  state.timer = null;
+  state.score = 0;
+  state.mistakes = 0;
+  state.mistakeList = [];
+  state.levelIndex = 0;
+  state.active = true;
+  state.win = false;
+  state.selected = null;
+  state.animating = false;
+  state.allPairs = buildPairs(state.data[state.currentLesson]);
+  state.levels = buildLevels(state.allPairs);
+  state.totalLevels = state.levels.length;
+  refreshUI();
+  renderMistakeList();
+  loadLevel(0);
+  document.getElementById('gameContainer').classList.remove('game-inactive');
+  els.msg.textContent = `重新闯关《${state.currentLesson}》，共 ${state.totalLevels} 关，加油`;
+}
+
+function switchLesson(key) {
+  if (!state.data[key]) return;
+  if (key === state.currentLesson) { resetGame(); return; }
+  state.currentLesson = key;
+  if (state.timer) clearInterval(state.timer);
+  state.timer = null;
+  state.score = 0; state.mistakes = 0; state.mistakeList = [];
+  state.levelIndex = 0; state.active = true; state.win = false;
+  state.selected = null; state.animating = false;
+  state.allPairs = buildPairs(state.data[key]);
+  state.levels = buildLevels(state.allPairs);
+  state.totalLevels = state.levels.length;
+  refreshUI();
+  renderMistakeList();
+  loadLevel(0);
+  document.getElementById('gameContainer').classList.remove('game-inactive');
+  els.msg.textContent = `已切换至《${key}》，共 ${state.totalLevels} 关，文心配对`;
+  document.querySelectorAll('.lesson-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.lesson === key);
+  });
+  if (state.panelVisible) { mistakePanel.style.display = 'block'; renderMistakeList(); }
+  else mistakePanel.style.display = 'none';
+}
+
+// ========== 构建篇目按钮 ==========
+function buildLessonBtns() {
+  els.lessonBtns.innerHTML = '';
+  Object.keys(state.data).forEach(key => {
+    const btn = document.createElement('button');
+    btn.className = `lesson-btn${key === state.currentLesson ? ' active' : ''}`;
+    btn.dataset.lesson = key;
+    btn.textContent = key;
+    btn.addEventListener('click', () => switchLesson(key));
+    els.lessonBtns.appendChild(btn);
+  });
+}
+
+// ========== 错题本面板 ==========
+function togglePanel() {
+  state.panelVisible = !state.panelVisible;
+  els.mistakePanel.style.display = state.panelVisible ? 'block' : 'none';
+  if (state.panelVisible) renderMistakeList();
+}
+
+function clearMistakes() {
+  state.mistakeList = [];
+  renderMistakeList();
+  refreshUI();
+  els.msg.textContent = '错题本已清空，砥砺前行';
+  setTimeout(() => { if (state.active && !state.win) els.msg.textContent = '再试一次，仔细对照注释'; }, 1200);
+}
+
+// ========== 初始化 ==========
+async function init() {
+  const ok = await loadData();
+  if (!ok) return;
+  const keys = Object.keys(state.data);
+  if (!keys.length) { els.grid.innerHTML = '<div class="error-tip">数据为空，请检查 data.json</div>'; return; }
+  state.currentLesson = keys[0];
+  buildLessonBtns();
+  state.allPairs = buildPairs(state.data[state.currentLesson]);
+  state.levels = buildLevels(state.allPairs);
+  state.totalLevels = state.levels.length;
+  state.mistakeList = [];
+  refreshUI();
+  renderMistakeList();
+  loadLevel(0);
+  els.mistakePanel.style.display = 'none';
+  state.panelVisible = false;
+
+  // 事件绑定
+  els.resetBtn.addEventListener('click', resetGame);
+  els.toggleBtn.addEventListener('click', togglePanel);
+  els.clearBtn.addEventListener('click', (e) => { e.stopPropagation(); clearMistakes(); });
+  els.headerToggle?.addEventListener('click', (e) => { if (e.target !== els.clearBtn) togglePanel(); });
+}
+
+init();
