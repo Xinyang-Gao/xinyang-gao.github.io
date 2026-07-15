@@ -1,5 +1,5 @@
 // /js/router/router.ts
-// 现代高性能无刷新导航：优化版SPA路由系统
+// 无刷新导航
 
 import { CONFIG, storageController, Utils } from '/js/core/core.js';
 import { getPageNameFromPath, isSameOrigin } from '/js/core/page-utils.js';
@@ -9,29 +9,16 @@ import { initHomePage } from '/js/pages/home-manager.js';
 import { initThemeToggle } from '/js/ui/theme.js';
 import type { PageManager } from '/js/core/page-manager.js';
 
-// ==================== 性能优化常量 ====================
+// ==================== 常量 ====================
 const ROUTER_VIEW_ID = 'router-view';
 const TRANSITION_DURATION = 300;
 const MAX_CACHE_SIZE = 50;
+const IDLE_TIMEOUT = 10000; // 请求超时
 
-// 全局状态管理
-interface RouterState {
-  currentPageManager: PageManager | null;
-  loadedStyles: Set<string>;
-  loadedScripts: Set<string>;
-  pageCache: Map<string, PageCacheEntry>;
-  pendingRequests: Map<string, Promise<PageResponse>>;
-}
-
+// ==================== 类型 ====================
 interface PageCacheEntry {
   content: ExtractedContent;
   timestamp: number;
-  dependencies: string[];
-}
-
-interface PageResponse {
-  html: string;
-  url: string;
 }
 
 interface ExtractedContent {
@@ -39,221 +26,167 @@ interface ExtractedContent {
   mainHtml: string;
   styles: (HTMLLinkElement | HTMLStyleElement)[];
   scripts: HTMLScriptElement[];
-  navbarHtml: string;
-  footerHtml: string;
   pageName: string;
 }
 
-// 全局路由器状态
-const routerState: RouterState = {
-  currentPageManager: null,
-  loadedStyles: new Set(),
-  loadedScripts: new Set(),
-  pageCache: new Map(),
-  pendingRequests: new Map()
-};
-
-// ==================== 缓存管理 ====================
-class CacheManager {
-  static cleanExpiredEntries(): void {
-    const now = Date.now();
-    const expiredKeys: string[] = [];
-    for (const [key, entry] of routerState.pageCache.entries()) {
-      if (now - entry.timestamp > 10 * 60 * 1000) expiredKeys.push(key);
-    }
-    expiredKeys.forEach(key => routerState.pageCache.delete(key));
-  }
-
-  static evictOldestEntries(): void {
-    if (routerState.pageCache.size <= MAX_CACHE_SIZE) return;
-    const entries = Array.from(routerState.pageCache.entries())
-      .sort((a, b) => a[1].timestamp - b[1].timestamp);
-    while (entries.length > MAX_CACHE_SIZE * 0.8) {
-      const [key] = entries.shift()!;
-      routerState.pageCache.delete(key);
-    }
-  }
-
-  static async set(key: string, content: ExtractedContent): Promise<void> {
-    this.cleanExpiredEntries();
-    this.evictOldestEntries();
-    const dependencies = [
-      ...content.styles.map(s => s.getAttribute('href') || ''),
-      ...content.scripts.map(s => s.src || '')
-    ].filter(Boolean) as string[];
-    routerState.pageCache.set(key, {
-      content,
-      timestamp: Date.now(),
-      dependencies
-    });
-  }
-
-  static get(key: string): ExtractedContent | null {
-    const entry = routerState.pageCache.get(key);
-    if (!entry) return null;
-    routerState.pageCache.delete(key);
-    entry.timestamp = Date.now();
-    routerState.pageCache.set(key, entry);
-    return entry.content;
-  }
+interface PageResponse {
+  html: string;
+  url: string;
 }
 
-// ==================== 异步资源加载器 ====================
-class ResourceLoader {
-  static async loadStyles(styles: (HTMLLinkElement | HTMLStyleElement)[]): Promise<void> {
-    const promises = styles.map(async (style) => {
-      if (style.tagName.toLowerCase() === 'link') {
+// ==================== 状态 ====================
+const state = {
+  currentManager: null as PageManager | null,
+  loadedStyles: new Set<string>(),
+  loadedScripts: new Set<string>(),
+  cache: new Map<string, PageCacheEntry>(),
+  pending: new Map<string, Promise<PageResponse>>(),
+};
+
+// ==================== 缓存工具 ====================
+const cache = {
+  get(key: string): ExtractedContent | null {
+    const entry = state.cache.get(key);
+    if (!entry) return null;
+    state.cache.delete(key);
+    entry.timestamp = Date.now();
+    state.cache.set(key, entry);
+    return entry.content;
+  },
+  set(key: string, content: ExtractedContent): void {
+    // 清理过期（10分钟）
+    const now = Date.now();
+    for (const [k, v] of state.cache) {
+      if (now - v.timestamp > 600_000) state.cache.delete(k);
+    }
+    // 淘汰旧条目
+    if (state.cache.size >= MAX_CACHE_SIZE) {
+      const oldest = [...state.cache.entries()].sort((a, b) => a[1].timestamp - b[1].timestamp)[0];
+      if (oldest) state.cache.delete(oldest[0]);
+    }
+    state.cache.set(key, { content, timestamp: now });
+  },
+};
+
+// ==================== 资源加载 ====================
+const resourceLoader = {
+  async loadStyles(styles: (HTMLLinkElement | HTMLStyleElement)[]): Promise<void> {
+    await Promise.all(styles.map(async (style) => {
+      if (style.tagName === 'LINK') {
         const href = style.getAttribute('href') || (style as HTMLLinkElement).href;
-        if (!href || routerState.loadedStyles.has(href)) return;
-        const exists = document.querySelector(`link[href="${href}"]`);
-        if (exists) {
-          routerState.loadedStyles.add(href);
+        if (!href || state.loadedStyles.has(href)) return;
+        if (document.querySelector(`link[href="${href}"]`)) {
+          state.loadedStyles.add(href);
           return;
         }
         const link = document.createElement('link');
         link.rel = 'stylesheet';
         link.href = href;
         document.head.appendChild(link);
-        routerState.loadedStyles.add(href);
-        return new Promise((resolve) => {
-          link.onload = resolve;
-          link.onerror = resolve;
-        });
+        state.loadedStyles.add(href);
+        await new Promise(r => { link.onload = r; link.onerror = r; });
       } else {
         const text = (style.textContent || '').trim();
         if (!text) return;
-        const styleId = `injected-style-${Math.random().toString(36).substr(2, 9)}`;
-        if (document.getElementById(styleId)) return;
+        const id = `injected-style-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+        if (document.getElementById(id)) return;
         const newStyle = document.createElement('style');
-        newStyle.id = styleId;
+        newStyle.id = id;
         newStyle.textContent = text;
         document.head.appendChild(newStyle);
       }
-    });
-    await Promise.all(promises);
-  }
+    }));
+  },
 
-  static async loadScripts(scripts: HTMLScriptElement[]): Promise<void> {
+  async loadScripts(scripts: HTMLScriptElement[]): Promise<void> {
     for (const script of scripts) {
       if (script.src) {
         const src = script.getAttribute('src') || script.src;
-        if (!src || routerState.loadedScripts.has(src)) continue;
-        const existing = document.querySelector(`script[src="${src}"]`);
-        if (existing) {
-          routerState.loadedScripts.add(src);
+        if (!src || state.loadedScripts.has(src)) continue;
+        if (document.querySelector(`script[src="${src}"]`)) {
+          state.loadedScripts.add(src);
           continue;
         }
-        await this.loadExternalScript(src, script.type || '');
-        routerState.loadedScripts.add(src);
+        await new Promise<void>((resolve) => {
+          const el = document.createElement('script');
+          if (script.type) el.type = script.type;
+          el.src = src;
+          el.async = false;
+          el.onload = () => resolve();
+          el.onerror = () => { console.warn('[Router] 脚本加载失败:', src); resolve(); };
+          document.head.appendChild(el);
+        });
+        state.loadedScripts.add(src);
       } else {
-        this.runInlineScript(script);
+        // 内联脚本：通过临时容器执行
+        try {
+          const inline = document.createElement('script');
+          if (script.type) inline.type = script.type;
+          inline.textContent = script.textContent || '';
+          const temp = document.createElement('div');
+          temp.appendChild(inline);
+          document.head.appendChild(temp);
+          temp.remove();
+        } catch (e) { console.error('[Router] 内联脚本执行失败:', e); }
       }
     }
-  }
-
-  private static loadExternalScript(src: string, type: string): Promise<void> {
-    return new Promise((resolve) => {
-      const script = document.createElement('script');
-      if (type) script.type = type;
-      script.src = src;
-      script.async = false;
-      script.onload = () => resolve();
-      script.onerror = () => {
-        console.warn(`[Router] 脚本加载失败: ${src}`);
-        resolve();
-      };
-      document.head.appendChild(script);
-    });
-  }
-
-  private static runInlineScript(script: HTMLScriptElement): void {
-    try {
-      const inline = document.createElement('script');
-      if (script.type) inline.type = script.type;
-      inline.textContent = script.textContent || '';
-      const temp = document.createElement('div');
-      temp.appendChild(inline);
-      document.head.appendChild(temp);
-      temp.remove();
-    } catch (e) {
-      console.error('[Router] 内联脚本执行失败:', e);
-    }
-  }
-}
-
-// ==================== 页面管理器生命周期 ====================
-async function destroyCurrentPageManager(): Promise<void> {
-  if (routerState.currentPageManager && typeof routerState.currentPageManager.destroy === 'function') {
-    try {
-      await routerState.currentPageManager.destroy();
-    } catch (e) {
-      console.warn('[Router] 销毁页面管理器时发生异常:', e);
-    }
-  }
-  routerState.currentPageManager = null;
-  (window as any).__currentPageManager = null;
-}
-
-function setCurrentPageManager(manager: PageManager | null): void {
-  routerState.currentPageManager = manager;
-  (window as any).__currentPageManager = manager;
-}
+  },
+};
 
 // ==================== 页面内容提取 ====================
-function extractPageContent(htmlText: string, url: string): ExtractedContent {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(htmlText, 'text/html');
-  const title = doc.querySelector('title')?.textContent || document.title;
+function extractPageContent(html: string, url: string): ExtractedContent {
+  const doc = new DOMParser().parseFromString(html, 'text/html');
   const routerView = doc.querySelector(`#${ROUTER_VIEW_ID}`);
-  const mainHtml = routerView ? routerView.outerHTML : '';
+  const mainHtml = routerView?.outerHTML || '';
   const styles = Array.from(doc.querySelectorAll<HTMLLinkElement | HTMLStyleElement>(
     'head link[rel="stylesheet"], head style'
   ));
   const scripts = Array.from(doc.querySelectorAll<HTMLScriptElement>('body script'));
-  const navbarHtml = doc.getElementById('navbar-placeholder')?.innerHTML || '';
-  const footerHtml = doc.getElementById('footer-placeholder')?.innerHTML || '';
-  const pathname = new URL(url, window.location.href).pathname;
-  const pageName = getPageNameFromPath(pathname);
-  return { title, mainHtml, styles, scripts, navbarHtml, footerHtml, pageName };
+  const pageName = getPageNameFromPath(new URL(url, location.href).pathname);
+  return {
+    title: doc.querySelector('title')?.textContent || document.title,
+    mainHtml,
+    styles,
+    scripts,
+    pageName,
+  };
 }
 
-// ==================== 高性能内容替换 ====================
-function replaceMainContent(mainHtml: string): Promise<boolean> {
-  const currentRouterView = document.getElementById(ROUTER_VIEW_ID);
-  if (!currentRouterView || !mainHtml) return Promise.resolve(false);
-  const newContainer = document.createElement('div');
-  newContainer.innerHTML = mainHtml;
-  const newRouterView = newContainer.querySelector(`#${ROUTER_VIEW_ID}`);
-  if (!newRouterView) {
-    console.warn('[Router] 新页面缺少 #router-view，无法替换');
-    return Promise.resolve(false);
-  }
+// ==================== 内容替换（过渡动画） ====================
+function replaceContent(mainHtml: string): Promise<boolean> {
+  const current = document.getElementById(ROUTER_VIEW_ID);
+  if (!current || !mainHtml) return Promise.resolve(false);
+  const temp = document.createElement('div');
+  temp.innerHTML = mainHtml;
+  const newView = temp.querySelector(`#${ROUTER_VIEW_ID}`);
+  if (!newView) return Promise.resolve(false);
+
   return new Promise((resolve) => {
-    currentRouterView.classList.add('page-transition-exit');
-    const onExitComplete = () => {
-      currentRouterView.removeEventListener('transitionend', onExitComplete);
-      currentRouterView.replaceWith(newRouterView);
-      newRouterView.classList.add('page-transition-enter');
-      const onEnterComplete = () => {
-        newRouterView.removeEventListener('transitionend', onEnterComplete);
-        newRouterView.classList.remove('page-transition-enter');
+    current.classList.add('page-transition-exit');
+    const onExit = () => {
+      current.removeEventListener('transitionend', onExit);
+      current.replaceWith(newView);
+      newView.classList.add('page-transition-enter');
+      const onEnter = () => {
+        newView.removeEventListener('transitionend', onEnter);
+        newView.classList.remove('page-transition-enter');
         resolve(true);
       };
-      newRouterView.addEventListener('transitionend', onEnterComplete);
+      newView.addEventListener('transitionend', onEnter);
       setTimeout(() => {
-        if (newRouterView.classList.contains('page-transition-enter')) {
-          newRouterView.classList.remove('page-transition-enter');
+        if (newView.classList.contains('page-transition-enter')) {
+          newView.classList.remove('page-transition-enter');
           resolve(true);
         }
       }, TRANSITION_DURATION * 1.5);
     };
-    currentRouterView.addEventListener('transitionend', onExitComplete);
+    current.addEventListener('transitionend', onExit);
     setTimeout(() => {
-      if (currentRouterView.parentNode) {
-        currentRouterView.replaceWith(newRouterView);
-        newRouterView.classList.add('page-transition-enter');
+      if (current.parentNode) {
+        current.replaceWith(newView);
+        newView.classList.add('page-transition-enter');
         setTimeout(() => {
-          newRouterView.classList.remove('page-transition-enter');
+          newView.classList.remove('page-transition-enter');
           resolve(true);
         }, TRANSITION_DURATION);
       }
@@ -261,215 +194,176 @@ function replaceMainContent(mainHtml: string): Promise<boolean> {
   });
 }
 
-// ==================== 组件初始化工厂 ====================
-class ComponentFactory {
-  static async initPageManager(pageName: string, isArticlePage: boolean, url: string): Promise<PageManager | null> {
-    // 优先检测：如果当前页面包含文章主体元素，则必定是文章详情页!
-    if (document.getElementById('articleBody')) {
-      const { initArticlePage } = await import('/js/pages/article.js');
-      return await initArticlePage() as any;
-    }
+// ==================== 页面管理器工厂 ====================
+const pageManagerMap: Record<string, () => Promise<PageManager>> = {
+  index: () => Promise.resolve(initHomePage() as any),
+  articles: async () => {
+    const { initSearchPage } = await import('/js/pages/search-render.js');
+    return initSearchPage('articles', refreshScrollReveal) as any;
+  },
+  works: async () => {
+    const { initSearchPage } = await import('/js/pages/search-render.js');
+    return initSearchPage('works', refreshScrollReveal) as any;
+  },
+  archive: async () => {
+    const { initArchivePage } = await import('/js/pages/archive.js');
+    return initArchivePage(refreshScrollReveal) as any;
+  },
+  stats: async () => {
+    const { initStatsPage } = await import('/js/pages/stats-init.js');
+    return initStatsPage() as any;
+  },
+  friends: async () => {
+    const { initFriendsPage } = await import('/js/pages/friends-manager.js');
+    return initFriendsPage() as any;
+  },
+  about: async () => {
+    const { initAboutPage } = await import('/js/pages/about.js');
+    const manager: PageManager = { init: initAboutPage, destroy: () => { } };
+    await manager.init();
+    return manager;
+  },
+  contact: async () => {
+    const { initTwikoo } = await import('/js/core/twikoo-manager.js');
+    const container = document.querySelector('#twikoo-comments');
+    if (container) await initTwikoo(container);
+    return {
+      init: () => { },
+      destroy: () => {
+        const { resetTwikooContainer } = import('/js/core/twikoo-manager.js');
+        const c = document.querySelector('#twikoo-comments');
+        if (c) resetTwikooContainer(c);
+      },
+    } as PageManager;
+  },
+};
 
-    // 其他页面按 pageName 路由
-    switch (pageName) {
-      case 'index':
-        return initHomePage() as any;
+async function initPageManager(pageName: string): Promise<PageManager | null> {
+  // 文章详情页特殊判断
+  if (document.getElementById('articleBody')) {
+    const { initArticlePage } = await import('/js/pages/article.js');
+    return initArticlePage() as any;
+  }
+  const factory = pageManagerMap[pageName];
+  if (!factory) return null;
+  const manager = await factory();
+  if (manager && typeof manager.init === 'function' && !(manager as any)._initialized) {
+    await manager.init();
+    (manager as any)._initialized = true;
+  }
+  return manager;
+}
 
-      case 'articles':
-      case 'works': {
-        const refreshCallback = () => {
-          if ((window as any).scrollRevealInstance) {
-            (window as any).scrollRevealInstance.refresh();
-          } else {
-            ensureScrollReveal();
-            if ((window as any).scrollRevealInstance) {
-              (window as any).scrollRevealInstance.refresh();
-            }
-          }
-        };
-        const { initSearchPage } = await import('/js/pages/search-render.js');
-        return await initSearchPage(pageName as 'works' | 'articles', refreshCallback) as any;
-      }
+function refreshScrollReveal(): void {
+  const instance = (window as any).scrollRevealInstance;
+  if (instance) instance.refresh();
+  else ensureScrollReveal()?.refresh();
+}
 
-      case 'archive': {
-        const archiveRefreshCallback = () => {
-          if ((window as any).scrollRevealInstance) {
-            (window as any).scrollRevealInstance.refresh();
-          } else {
-            ensureScrollReveal();
-            if ((window as any).scrollRevealInstance) {
-              (window as any).scrollRevealInstance.refresh();
-            }
-          }
-        };
-        const { initArchivePage } = await import('/js/pages/archive.js');
-        return await initArchivePage(archiveRefreshCallback) as any;
-      }
-
-      case 'stats': {
-        const { initStatsPage } = await import('/js/pages/stats-init.js');
-        return await initStatsPage() as any;
-      }
-
-      case 'friends': {
-        const { initFriendsPage } = await import('/js/pages/friends-manager.js');
-        return await initFriendsPage() as any;
-      }
-
-      case 'about': {
-        const { initAboutPage } = await import('/js/pages/about.js');
-        const manager: PageManager = {
-          init: initAboutPage,
-          destroy: () => {}
-        };
-        await manager.init();
-        return manager;
-      }
-
-      case 'contact': {
-        const { initTwikoo } = await import('/js/core/twikoo-manager.js');
-        const container = document.querySelector('#twikoo-comments');
-        if (container) {
-          await initTwikoo(container);
-        }
-        return {
-          init: () => {},
-          destroy: () => {
-            const { resetTwikooContainer } = import('/js/core/twikoo-manager.js');
-            const container = document.querySelector('#twikoo-comments');
-            if (container) resetTwikooContainer(container);
-          }
-        } as PageManager;
-      }
-
-      default:
-        return null;
-    }
+// ==================== 核心导航函数 ====================
+async function fetchPageContent(url: string): Promise<PageResponse> {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), IDLE_TIMEOUT);
+  try {
+    const res = await fetch(url, { credentials: 'same-origin', signal: controller.signal });
+    if (!res.ok) throw new Error(`Fetch失败: ${res.status}`);
+    return { html: await res.text(), url };
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
-// ==================== 主导航函数 ====================
 export async function fetchAndReplaceContent(
   url: string,
   pushState = true,
   scrollData: { scrollX?: number; scrollY?: number } | null = null
 ): Promise<boolean> {
   try {
-    if (routerState.pendingRequests.has(url)) {
-      await routerState.pendingRequests.get(url);
-    }
-    const cachedContent = CacheManager.get(url);
-    if (cachedContent) {
-      return await processPageContent(cachedContent, url, pushState, scrollData);
-    }
-    const requestPromise = fetchPageContent(url);
-    routerState.pendingRequests.set(url, requestPromise);
-    try {
-      const response = await requestPromise;
-      const extractedContent = extractPageContent(response.html, url);
-      await CacheManager.set(url, extractedContent);
-      return await processPageContent(extractedContent, url, pushState, scrollData);
-    } finally {
-      routerState.pendingRequests.delete(url);
-    }
+    // 取消重复请求
+    if (state.pending.has(url)) await state.pending.get(url);
+    // 检查缓存
+    const cached = cache.get(url);
+    if (cached) return await processContent(cached, url, pushState, scrollData);
+
+    // 发起请求
+    const promise = fetchPageContent(url);
+    state.pending.set(url, promise);
+    const response = await promise;
+    state.pending.delete(url);
+
+    const content = extractPageContent(response.html, url);
+    cache.set(url, content);
+    return await processContent(content, url, pushState, scrollData);
   } catch (e) {
-    console.error('[ERROR] 无刷新导航失败:', e);
-    await destroyCurrentPageManager();
+    console.error('[Router] 导航失败:', e);
+    await destroyCurrentManager();
     return false;
   }
 }
 
-async function fetchPageContent(url: string): Promise<PageResponse> {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 10000);
-  try {
-    const res = await fetch(url, {
-      credentials: 'same-origin',
-      signal: controller.signal
-    });
-    if (!res.ok) throw new Error(`Fetch失败: ${res.status} ${res.statusText}`);
-    const html = await res.text();
-    return { html, url };
-  } finally {
-    clearTimeout(timeoutId);
-  }
-}
-
-async function processPageContent(
+async function processContent(
   content: ExtractedContent,
   url: string,
   pushState: boolean,
   scrollData: { scrollX?: number; scrollY?: number } | null
 ): Promise<boolean> {
-  // 1. 销毁当前页面管理器
-  await destroyCurrentPageManager();
+  // 1. 销毁旧管理器
+  await destroyCurrentManager();
 
-  // 2. 保存当前滚动位置
+  // 2. 保存当前滚动
   if (pushState) {
-    const currentScroll = { scrollX: window.scrollX, scrollY: window.scrollY };
-    history.replaceState({ ...history.state, scroll: currentScroll }, document.title, window.location.href);
+    history.replaceState(
+      { ...history.state, scroll: { scrollX: window.scrollX, scrollY: window.scrollY } },
+      document.title,
+      location.href
+    );
   }
 
-  // 3. 替换主内容
-  await replaceMainContent(content.mainHtml);
+  // 3. 替换内容
+  await replaceContent(content.mainHtml);
 
-  // 4. 更新标题和历史记录
+  // 4. 更新标题和URL
   document.title = content.title;
   if (pushState) {
     const newScroll = scrollData || { scrollX: 0, scrollY: 0 };
-    window.history.pushState({ ...history.state, scroll: newScroll }, content.title, url);
+    history.pushState({ ...history.state, scroll: newScroll }, content.title, url);
+  } else if (scrollData) {
+    window.scrollTo(scrollData.scrollX || 0, scrollData.scrollY || 0);
   } else {
-    if (scrollData) {
-      window.scrollTo(scrollData.scrollX || 0, scrollData.scrollY || 0);
-    } else {
-      const stateScroll = (history.state as any)?.scroll;
-      if (stateScroll) {
-        window.scrollTo(stateScroll.scrollX || 0, stateScroll.scrollY || 0);
-      }
-    }
+    const stateScroll = (history.state as any)?.scroll;
+    if (stateScroll) window.scrollTo(stateScroll.scrollX || 0, stateScroll.scrollY || 0);
   }
 
-  // 5. 更新导航栏：标题占位 + 高亮
+  // 5. 更新导航栏
   refreshNavbarTitle();
-  // 高亮更新（由 initNavigation 处理）
-  // 导航栏的 initNavigation 已在 navbar-manager 的 rebindDynamicComponents 中绑定，
-  // 但无刷新导航后需要重新执行高亮，所以我们在外部调用一次 initNavigation。
-  // 导入 initNavigation 用于高亮更新
   initNavigation();
 
-  // 6. 加载样式和脚本
-  await ResourceLoader.loadStyles(content.styles);
-  await ResourceLoader.loadScripts(content.scripts);
+  // 6. 加载资源
+  await resourceLoader.loadStyles(content.styles);
+  await resourceLoader.loadScripts(content.scripts);
 
   // 7. 初始化页面管理器
-  const isArticlePage = !!document.querySelector('.article-page-container') || !!document.getElementById('articleBody');
-  const manager = await ComponentFactory.initPageManager(content.pageName, isArticlePage, url);
-  if (manager) setCurrentPageManager(manager);
-
-  // 8. 处理滚动效果
-  if ((window as any).scrollRevealInstance) {
-    (window as any).scrollRevealInstance.refresh();
-  } else {
-    ensureScrollReveal();
-    if ((window as any).scrollRevealInstance) {
-      (window as any).scrollRevealInstance.refresh();
-    }
+  const manager = await initPageManager(content.pageName);
+  if (manager) {
+    state.currentManager = manager;
+    (window as any).__currentPageManager = manager;
   }
 
-  // 9. 处理锚点滚动
+  // 8. 滚动揭示刷新
+  refreshScrollReveal();
+
+  // 9. 锚点滚动处理
   if (!pushState && !scrollData && !(history.state as any)?.scroll) {
-    const targetUrl = new URL(url, window.location.href);
+    const targetUrl = new URL(url, location.href);
     if (targetUrl.hash) {
-      const element = document.getElementById(targetUrl.hash.slice(1));
-      if (element) {
-        setTimeout(() => element.scrollIntoView({ behavior: 'smooth' }), 0);
-      }
+      const el = document.getElementById(targetUrl.hash.slice(1));
+      if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth' }), 0);
     } else {
       setTimeout(() => window.scrollTo({ top: 0, behavior: 'smooth' }), 0);
     }
   }
 
-  // 10. 触发导航事件
+  // 10. 触发事件
   window.dispatchEvent(new CustomEvent('ajax:navigation', {
     detail: { url, page: content.pageName }
   }));
@@ -477,9 +371,26 @@ async function processPageContent(
   return true;
 }
 
-// ==================== 公共API ====================
+async function destroyCurrentManager(): Promise<void> {
+  if (state.currentManager && typeof state.currentManager.destroy === 'function') {
+    try { await state.currentManager.destroy(); } catch (e) { /* ignore */ }
+  }
+  state.currentManager = null;
+  (window as any).__currentPageManager = null;
+}
+
+// ==================== 导航高亮 ====================
+export function initNavigation(): void {
+  const items = document.querySelectorAll<HTMLAnchorElement>('.nav-item[data-page]');
+  const current = getPageNameFromPath(location.pathname);
+  items.forEach(el => {
+    el.classList.toggle('active', el.dataset.page === current);
+  });
+}
+
+// ==================== 无刷新导航启用 ====================
 export function enableAjaxNavigation(): void {
-  document.addEventListener('click', function (e) {
+  document.addEventListener('click', (e) => {
     const anchor = (e.target as Element).closest('a');
     if (!anchor) return;
     const href = anchor.getAttribute('href');
@@ -491,145 +402,92 @@ export function enableAjaxNavigation(): void {
       anchor.hasAttribute('data-no-ajax') ||
       !isSameOrigin(href)
     ) return;
-    const isHtml = href.endsWith('.html') || href.includes('?') || href.endsWith('/');
-    if (!isHtml) return;
+    if (!href.endsWith('.html') && !href.includes('?') && !href.endsWith('/')) return;
     e.preventDefault();
-    const fullUrl = new URL(href, window.location.href).href;
-    if (fullUrl === window.location.href) return;
+    const fullUrl = new URL(href, location.href).href;
+    if (fullUrl === location.href) return;
     fetchAndReplaceContent(fullUrl, true);
   });
 }
 
-export async function initPageFeatures(pageName: string): Promise<any> {
-  const manager = await ComponentFactory.initPageManager(pageName, false, window.location.href);
-  if (manager && typeof manager.init === 'function' && !(manager as any)._initialized) {
-    await manager.init();
-    (manager as any)._initialized = true;
-  }
-  return manager;
+// ==================== 浏览器历史 ====================
+let popstateBound = false;
+export function initPopstate(): void {
+  if (popstateBound) return;
+  popstateBound = true;
+  window.addEventListener('popstate', (event) => {
+    const scroll = (event.state as any)?.scroll ?? null;
+    fetchAndReplaceContent(location.href, false, scroll);
+  });
 }
 
-// ==================== 导航栏与页脚管理 ====================
+// ==================== 导航栏与页脚 ====================
 export async function loadNavbar(): Promise<any> {
-  return await initNavbar();
-}
-
-export function refreshNavbarAfterNavigation(): void {
-  refreshNavbarTitle();
+  return initNavbar();
 }
 
 export async function loadFooter(): Promise<void> {
   try {
-    const response = await fetch('/footer.html');
-    if (!response.ok) throw new Error('加载页脚失败');
-    const footerHTML = await response.text();
+    const res = await fetch('/footer.html');
+    if (!res.ok) throw new Error('加载页脚失败');
+    const html = await res.text();
     const placeholder = document.getElementById('footer-placeholder');
-    if (!placeholder) return;
-    placeholder.innerHTML = footerHTML;
-  } catch (error) {
-    console.error('[ERROR] 加载页脚错误:', error);
+    if (placeholder) placeholder.innerHTML = html;
+  } catch (e) {
+    console.error('[Router] 页脚加载失败:', e);
   }
 }
 
-// ==================== 移动端菜单管理 ====================
-let mobileToggleInitialized = false;
+// ==================== 移动端菜单 ====================
+let menuInitialized = false;
 export function initMobileMenuToggle(): void {
-  if (mobileToggleInitialized) return;
-  mobileToggleInitialized = true;
-  const getNav = () => document.getElementById('navbarNav');
-  const getToggle = () => document.querySelector('.mobile-toggle');
+  if (menuInitialized) return;
+  menuInitialized = true;
+
+  const toggle = document.querySelector('.mobile-toggle');
+  const nav = document.getElementById('navbarNav');
+
   const closeMenu = () => {
-    const nav = getNav();
-    const toggle = getToggle();
-    if (nav && nav.classList.contains('active')) {
-      nav.classList.remove('active');
-      if (toggle) toggle.classList.remove('active');
-    }
+    nav?.classList.remove('active');
+    toggle?.classList.remove('active');
   };
+
   document.addEventListener('click', (e) => {
-    const toggle = (e.target as Element).closest('.mobile-toggle');
-    const nav = getNav();
-    if (!nav) return;
-    if (toggle) {
+    const target = e.target as Element;
+    if (target.closest('.mobile-toggle')) {
       e.preventDefault();
-      const isActive = nav.classList.contains('active');
-      nav.classList.toggle('active', !isActive);
-      if (getToggle()) getToggle()!.classList.toggle('active', !isActive);
+      nav?.classList.toggle('active');
+      toggle?.classList.toggle('active');
       return;
     }
-    const isNavItem = (e.target as Element).closest('.nav-item');
-    if (isNavItem && nav.classList.contains('active')) {
+    if (target.closest('.nav-item') && nav?.classList.contains('active')) {
       closeMenu();
       return;
     }
-    if (nav.classList.contains('active')) {
-      const isInsideNav = (e.target as Element).closest('.nav-items');
-      if (!isInsideNav) closeMenu();
+    if (nav?.classList.contains('active') && !target.closest('.nav-items')) {
+      closeMenu();
     }
   });
+
   window.addEventListener('resize', () => {
-    if (window.innerWidth > 768) {
-      const nav = getNav();
-      const toggle = getToggle();
-      if (nav && nav.classList.contains('active')) {
-        nav.classList.remove('active');
-        if (toggle) toggle.classList.remove('active');
-      }
-    }
+    if (window.innerWidth > 768) closeMenu();
   });
-  window.addEventListener('ajax:navigation', () => {
-    const nav = getNav();
-    const toggle = getToggle();
-    if (nav && nav.classList.contains('active')) {
-      nav.classList.remove('active');
-      if (toggle) toggle.classList.remove('active');
-    }
-  });
+
+  window.addEventListener('ajax:navigation', closeMenu);
 }
 
-// ==================== 导航链接绑定（已弃用，保留空函数以防兼容） ====================
-export function bindNavLinks(): void {
-  // 不再绑定导航点击，全局监听已处理
-  // 仅保留该函数以避免破坏现有调用
-  console.debug('[Router] bindNavLinks 已弃用，导航由全局点击监听处理');
-}
-
-// ==================== 导航高亮 ====================
-export function initNavigation(): void {
-  const navItems = document.querySelectorAll<HTMLAnchorElement>('.nav-item[data-page]');
-  const urlParams = new URLSearchParams(window.location.search);
-  let currentPage = urlParams.get('page');
-  if (!currentPage) {
-    currentPage = getPageNameFromPath(window.location.pathname);
-  }
-  navItems.forEach(item => {
-    const page = item.dataset.page;
-    if (page === currentPage) {
-      item.classList.add('active');
-    } else {
-      item.classList.remove('active');
-    }
-  });
-}
-
-// ==================== 浏览器历史管理 ====================
-let popstateInitialized = false;
-export function initPopstate(): void {
-  if (popstateInitialized) return;
-  popstateInitialized = true;
-  window.addEventListener('popstate', (event) => {
-    const scrollData = (event.state as any)?.scroll ?? null;
-    fetchAndReplaceContent(window.location.href, false, scrollData);
-  });
+// ==================== 页面特性初始化（兼容） ====================
+export async function initPageFeatures(pageName: string): Promise<any> {
+  return initPageManager(pageName);
 }
 
 // ==================== 性能监控 ====================
 export function getRouterStats(): Record<string, any> {
   return {
-    cacheSize: routerState.pageCache.size,
-    loadedStyles: routerState.loadedStyles.size,
-    loadedScripts: routerState.loadedScripts.size,
-    activePageManager: !!routerState.currentPageManager,
-    pendingRequests: routerState.pendingRequests.size
+    cacheSize: state.cache.size,
+    loadedStyles: state.loadedStyles.size,
+    loadedScripts: state.loadedScripts.size,
+    activePageManager: !!state.currentManager,
+    pendingRequests: state.pending.size,
   };
 }
