@@ -1,156 +1,401 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="description" content="高新炀的小站 - 隐私政策。我们承诺保护您的个人信息，保障数据安全与透明度。">
-  <title>隐私政策 · 高新炀的小站</title>
-  <link rel="stylesheet" href="/css/main.css">
-  <link rel="stylesheet" href="/css/pages/privacy.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="description" content="高新炀的小站 · 隐私政策 — 透明、安全、最小化的数据保护承诺。" />
+    <title>隐私政策 · 高新炀的小站</title>
+    <link rel="stylesheet" href="/css/main.css" />
+
+    <style>
+        #privacy-policy-content {
+            display: block;
+        }
+
+        /* ---------- 头部 ---------- */
+        .privacy-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .privacy-header h1 {
+            margin: 0 0 0.25rem 0;
+            text-align: left;
+            border: none;
+        }
+        .last-updated {
+            font-size: var(--font-size-small);
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+        }
+        .privacy-intro {
+            font-size: 1.05rem;
+            color: var(--text-secondary);
+            max-width: 80%;
+            margin-bottom: 0.75rem;
+        }
+
+        /* ---------- 快速导航 ---------- */
+        .quick-nav {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px 14px;
+            font-size: 0.85rem;
+            margin-top: 0.5rem;
+        }
+        .quick-nav span {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+        .quick-nav a {
+            color: var(--accent-color);
+            border-bottom: 1px dashed transparent;
+            transition: border-color var(--transition-fast);
+            text-decoration: none;
+        }
+        .quick-nav a:hover {
+            border-bottom-color: var(--accent-color);
+        }
+        .quick-nav a::after {
+            display: none;
+        }
+
+        /* ---------- 章节卡片 ---------- */
+        .privacy-section {
+            background: var(--surface-color-secondary);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem 1.75rem;
+            margin-bottom: 1.75rem;
+            border: 1px solid var(--border-light);
+            transition: background var(--transition-normal), border-color var(--transition-normal);
+        }
+        .privacy-section.highlight {
+            background: rgba(180, 91, 99, 0.06);
+            border-left: 4px solid var(--accent-color);
+        }
+        .privacy-section h2 {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin: 0 0 0.75rem 0;
+            border: none;
+            font-size: var(--font-size-h3);
+            color: var(--text-color);
+        }
+        .privacy-section h2 i {
+            color: var(--accent-color);
+            font-size: 1.2rem;
+        }
+        .privacy-section h3 {
+            font-size: 1.05rem;
+            margin: 0.75rem 0 0.25rem 0;
+            color: var(--accent-color);
+        }
+        .privacy-section p,
+        .privacy-section li {
+            line-height: 1.7;
+            color: var(--text-secondary);
+        }
+        .privacy-section ul,
+        .privacy-section ol {
+            padding-left: 1.4em;
+            margin: 0.5rem 0 0.75rem;
+        }
+        .privacy-section li {
+            margin-bottom: 0.3rem;
+        }
+        .privacy-section code {
+            font-size: 0.8em;
+        }
+
+        /* ---------- 徽章通知 ---------- */
+        .badge-notice {
+            background: rgba(180, 91, 99, 0.08);
+            padding: 0.6rem 1.2rem;
+            border-radius: var(--radius-md);
+            margin: 0.5rem 0 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .badge-notice i {
+            color: var(--accent-color);
+            font-size: 1.1rem;
+        }
+
+        /* ---------- 信息网格 ---------- */
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.25rem;
+            margin-top: 0.5rem;
+        }
+        .info-item {
+            background: var(--surface-color);
+            border-radius: var(--radius-md);
+            padding: 1rem 1.25rem;
+            border: 1px solid var(--border-light);
+        }
+        .info-item h3 {
+            margin-top: 0;
+            font-size: 1rem;
+        }
+        .info-item p {
+            font-size: 0.92rem;
+            margin-bottom: 0.25rem;
+        }
+
+        /* ---------- 服务列表 ---------- */
+        .service-list {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem 1.5rem;
+            margin: 0.25rem 0 0.5rem;
+        }
+        .service-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            margin: 0;
+        }
+        .service-badge {
+            display: inline-block;
+            background: var(--accent-color);
+            color: #fff;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 0.1rem 0.7rem;
+            border-radius: 40px;
+            letter-spacing: 0.2px;
+            white-space: nowrap;
+        }
+        [data-theme="dark"] .service-badge {
+            color: #14141a;
+        }
+
+        /* ---------- 页脚 ---------- */
+        .privacy-footer-note {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-light);
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        .privacy-footer-note a {
+            color: var(--accent-color);
+        }
+        .privacy-footer-note a::after {
+            display: none;
+        }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 768px) {
+            .privacy-header h1 {
+                font-size: var(--font-size-h1);
+            }
+            .privacy-intro {
+                max-width: 100%;
+            }
+            .info-grid {
+                grid-template-columns: 1fr;
+                gap: 0.75rem;
+            }
+            .privacy-section {
+                padding: 1rem 1.1rem;
+            }
+            .quick-nav {
+                gap: 4px 10px;
+                font-size: 0.8rem;
+            }
+            .service-list {
+                flex-direction: column;
+                gap: 0.3rem;
+            }
+        }
+        @media (max-width: 480px) {
+            .privacy-section {
+                padding: 0.75rem 0.85rem;
+            }
+            .privacy-header h1 {
+                font-size: 1.5rem;
+            }
+            .badge-notice {
+                padding: 0.5rem 0.8rem;
+                font-size: 0.9rem;
+            }
+        }
+
+        /* ---------- 暗色适配（自动跟随全局） ---------- */
+        [data-theme="dark"] .privacy-section {
+            background: rgba(255, 255, 255, 0.02);
+            border-color: var(--border-light);
+        }
+        [data-theme="dark"] .privacy-section.highlight {
+            background: rgba(var(--accent-rgb), 0.06);
+        }
+        [data-theme="dark"] .info-item {
+            background: var(--surface-color);
+            border-color: var(--border-light);
+        }
+        [data-theme="dark"] .badge-notice {
+            background: rgba(var(--accent-rgb), 0.08);
+        }
+    </style>
 </head>
+
 <body>
+
     <div id="loading-overlay" role="status" aria-label="页面加载中">
-    <div class="loading-log">
-      <div>[START] 正在等待 JavaScript，这可能需要几秒</div>
+        <div class="loading-log"><div>[START] 正在等待 JavaScript，这可能需要几秒</div></div>
+        <div class="loading-glow"></div>
+        <div id="loading-content"><span class="loading-title">GaoXinYang</span></div>
     </div>
-    <div class="loading-glow"></div>
-    <div id="loading-content">
-      <span class="loading-title">GaoXinYang</span>
+
+    <div id="navbar-placeholder"></div>
+
+    <div id="router-view">
+
+        <main class="container" style="animation: fadeIn 0.5s ease forwards;">
+
+            <div id="privacy-policy-content">
+
+                <!-- 头部 -->
+                <header class="privacy-header">
+                    <h1>隐私政策</h1>
+                    <div class="last-updated">
+                        <i class="far fa-calendar-alt"></i> 最后更新：<strong>2026年6月18日</strong>
+                    </div>
+                    <p class="privacy-intro">
+                        本站重视个人信息保护。本政策说明我们如何收集、使用、存储和保护您的信息。
+                    </p>
+                    <nav class="quick-nav">
+                        <span>快速导航：</span>
+                        <a href="#commitment">核心承诺</a>
+                        <a href="#collection">信息收集</a>
+                        <a href="#cookies">Cookie 控制</a>
+                        <a href="#thirdparty">第三方服务</a>
+                        <a href="#security">数据安全</a>
+                        <a href="#rights">用户权利</a>
+                    </nav>
+                </header>
+
+                <!-- 1. 核心承诺 -->
+                <section id="commitment" class="privacy-section highlight">
+                    <h2><i class="fas fa-shield-alt"></i> 核心承诺</h2>
+                    <div class="badge-notice">
+                        <i class="fas fa-check-circle"></i>
+                        <strong>我们不会出售、交易或非法披露您的个人信息。</strong>
+                        所有数据处理均以提升浏览体验、保障网站安全为目的。
+                    </div>
+                    <p>本站采取「最小必要」原则收集数据，绝大部分功能即使您拒绝本地存储也依然可正常阅读文章、浏览作品。</p>
+                </section>
+
+                <!-- 2. 信息收集 -->
+                <section id="collection" class="privacy-section">
+                    <h2><i class="fas fa-database"></i> 一、我们收集的信息</h2>
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <h3>📊 匿名访问数据</h3>
+                            <p><strong>不蒜子</strong>：聚合统计页面浏览量 (PV) 和独立访客 (UV)，<em>不包含个人身份标识</em>（无 Cookie、无指纹）。</p>
+                            <p><strong>Microsoft Clarity</strong>：仅在您<strong>同意</strong>后加载，收集匿名行为数据（点击、滚动热图），帮助改进网站。不记录输入内容。</p>
+                        </div>
+                        <div class="info-item">
+                            <h3>💬 评论互动（Twikoo）</h3>
+                            <p>您填写的昵称、邮箱（选填）、网站以及评论内容会被存储。IP 地址仅用于反垃圾，站长不会公开。您可随时联系站长删除评论。</p>
+                        </div>
+                        <div class="info-item">
+                            <h3>💾 本地存储（localStorage）</h3>
+                            <p>在您<strong>同意</strong>后，存储主题偏好、文章/作品缓存、搜索条件、滚动位置等。全部存储于您的设备本地，可随时清除。</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 3. Cookie 与本地存储控制 -->
+                <section id="cookies" class="privacy-section">
+                    <h2><i class="fas fa-cookie-bite"></i> 二、Cookie 与本地存储的控制</h2>
+                    <p>本站<strong>不主动设置传统跨页追踪 Cookie</strong>，所有持久化数据均使用 <code>localStorage</code>，且必须经您明确同意。</p>
+                    <ul>
+                        <li><strong>同意</strong>：启用本地存储，保存个性化设置，加载 Clarity 优化体验。</li>
+                        <li><strong>拒绝</strong>：禁用本地存储，清除已有数据，Clarity 不加载，不影响核心阅读功能。</li>
+                    </ul>
+                    <p>您可随时通过浏览器清除 <code>localStorage</code> 重置同意状态。</p>
+                </section>
+
+                <!-- 4. 第三方服务 -->
+                <section id="thirdparty" class="privacy-section">
+                    <h2><i class="fas fa-plug"></i> 三、我们集成的第三方服务</h2>
+                    <ul class="service-list">
+                        <li><span class="service-badge">不蒜子</span> 匿名计数器，无 Cookie。</li>
+                        <li><span class="service-badge">Microsoft Clarity</span> 行为分析（需同意）。</li>
+                        <li><span class="service-badge">Twikoo</span> 评论系统，数据存储于 Netlify Functions。</li>
+                        <li><span class="service-badge">网易云音乐</span> 通过 API 获取歌曲，不设置 Cookie。</li>
+                        <li><span class="service-badge">Service Worker</span> 缓存静态 JSON，存储于浏览器本地。</li>
+                        <li><span class="service-badge">外链确认</span> 仅模态框提示，不记录跳转行为。</li>
+                    </ul>
+                    <p>本站已弃用任何跨站追踪分析工具（如 Google Analytics），不参与广告联盟。</p>
+                </section>
+
+                <!-- 5. 数据安全与保留 -->
+                <section id="security" class="privacy-section">
+                    <h2><i class="fas fa-lock"></i> 四、数据安全与保留期限</h2>
+                    <ul>
+                        <li><strong>本地存储</strong>：完全存于设备，可随时清除。</li>
+                        <li><strong>评论数据</strong>：永久保存于 Twikoo 数据库，可联系站长删除。</li>
+                        <li><strong>不蒜子统计</strong>：聚合数据，无法关联个人。</li>
+                        <li><strong>Clarity 数据</strong>：Microsoft 保留约 12 个月，您可自行退出。</li>
+                        <li><strong>传输安全</strong>：全站 HTTPS，请勿在评论中发送敏感信息。</li>
+                    </ul>
+                </section>
+
+                <!-- 6. 用户权利 -->
+                <section id="rights" class="privacy-section">
+                    <h2><i class="fas fa-user-check"></i> 五、您享有的权利</h2>
+                    <ul>
+                        <li><strong>知情权</strong>：本政策透明公开。</li>
+                        <li><strong>撤回同意</strong>：清除 <code>localStorage</code> 并刷新，重新选择“拒绝”。</li>
+                        <li><strong>删除评论</strong>：通过邮箱联系站长。</li>
+                        <li><strong>限制处理</strong>：使用浏览器隐私模式访问。</li>
+                        <li><strong>拒绝跟踪</strong>：开启 DNT 信号，Clarity 会遵循。</li>
+                    </ul>
+                    <div class="badge-notice">
+                        <i class="fas fa-envelope-open-text"></i>
+                        行使权利或有疑问，请发送邮件至 <strong>gao_xinyang@foxmail.com</strong>，我们会在合理时间内回复。
+                    </div>
+                </section>
+
+                <!-- 7. 未成年人保护 -->
+                <section class="privacy-section">
+                    <h2><i class="fas fa-child"></i> 六、未成年人保护</h2>
+                    <p>若您未满 14 周岁，请在父母指导下使用评论功能。我们不会故意收集未成年人个人信息，如发现可联系删除。</p>
+                </section>
+
+                <!-- 8. 政策更新 -->
+                <section class="privacy-section">
+                    <h2><i class="fas fa-sync-alt"></i> 七、隐私政策的更新</h2>
+                    <p>本政策可能因功能迭代或法律法规变化而修订。重大变更会通过网站公告或 Cookie 横幅通知。修订后自发布之日起生效。</p>
+                    <p><strong>历史版本：</strong> 2026年5月4日（初版），2026年5月10日（第二版），2026年6月18日（第三版）。</p>
+                    <div class="privacy-footer-note">
+                        <i class="far fa-comment-dots"></i> 反馈或建议，欢迎通过 <a href="/contact/">留言板</a> 或邮箱沟通。<br />
+                        <span>© 2026 高新炀的小站 ｜ 恪守透明、安全、最小化的隐私原则</span>
+                    </div>
+                </section>
+
+            </div>
+        </main>
     </div>
-  </div>
-  <div id="navbar-placeholder"></div>
 
-  <div id="router-view">
-    <main class="privacy-main">
-      <div class="privacy-container">
-        <!-- 页面头部 -->
-        <header class="privacy-header">
-          <h1>隐私政策</h1>
-          <div class="last-updated">
-            <i class="far fa-calendar-alt"></i> 最后更新：<strong>2026年6月18日</strong>
-          </div>
-          <p class="privacy-intro">
-            本站（高新炀的小站）深知个人信息保护的重要性。本政策清晰说明我们如何收集、使用、存储和保护您的信息。
-          </p>
-          <div class="quick-nav">
-            <span>快速导航：</span>
-            <a href="#commitment">核心承诺</a>
-            <a href="#collection">信息收集</a>
-            <a href="#cookies">Cookie 控制</a>
-            <a href="#thirdparty">第三方服务</a>
-            <a href="#security">数据安全</a>
-            <a href="#rights">用户权利</a>
-          </div>
-        </header>
+    <div id="pageTransition" class="page-transition"></div>
 
-        <!-- 核心承诺（突出显示） -->
-        <section id="commitment" class="privacy-card highlight">
-          <h2><i class="fas fa-shield-alt"></i> 核心承诺</h2>
-          <div class="badge-notice">
-            <i class="fas fa-check-circle"></i>
-            <strong>我们不会出售、交易或非法披露您的个人信息。</strong> 所有数据处理均以提升浏览体验、保障网站安全为目的。
-          </div>
-          <p>本站采取「最小必要」原则收集数据，绝大部分功能即使您拒绝本地存储也依然可正常阅读文章、浏览作品。</p>
-        </section>
+    <div id="footer-placeholder"></div>
 
-        <!-- 信息收集 -->
-        <section id="collection" class="privacy-card">
-          <h2><i class="fas fa-database"></i> 一、我们收集的信息</h2>
-          <div class="info-grid">
-            <div class="info-item">
-              <h3>📊 匿名访问数据</h3>
-              <p><strong>不蒜子</strong>：聚合统计页面浏览量(PV)和独立访客(UV)，<em>不包含个人身份标识</em>（无Cookie、无指纹）。</p>
-              <p><strong>Microsoft Clarity</strong>：仅在您<strong>同意</strong>后加载，收集匿名行为数据（点击、滚动热图），帮助改进网站。不记录输入内容。</p>
-            </div>
-            <div class="info-item">
-              <h3>💬 评论互动（Twikoo）</h3>
-              <p>您填写的昵称、邮箱（选填）、网站以及评论内容会被存储。IP地址仅用于反垃圾，站长不会公开。您可随时联系站长删除评论。</p>
-            </div>
-            <div class="info-item">
-              <h3>💾 本地存储（localStorage）</h3>
-              <p>在您<strong>同意</strong>后，存储主题偏好、文章/作品缓存、搜索条件、滚动位置等。全部存储于您的设备本地，可随时清除。</p>
-            </div>
-          </div>
-        </section>
+    <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous">
+    </script>
+    <script src="https://vercount.one/js" defer></script>
+    <script src="/js/entry/main.js" type="module"></script>
 
-        <!-- Cookie 与本地存储控制 -->
-        <section id="cookies" class="privacy-card">
-          <h2><i class="fas fa-cookie-bite"></i> 二、Cookie 与本地存储的控制</h2>
-          <p>本站<strong>不主动设置传统跨页追踪Cookie</strong>，所有持久化数据均使用 <code>localStorage</code>，且必须经您明确同意。</p>
-          <ul>
-            <li><strong>同意</strong>：启用本地存储，保存个性化设置，加载 Clarity 优化体验。</li>
-            <li><strong>拒绝</strong>：禁用本地存储，清除已有数据，Clarity 不加载，不影响核心阅读功能。</li>
-          </ul>
-          <p>您可随时通过浏览器清除 <code>localStorage</code> 重置同意状态。</p>
-        </section>
-
-        <!-- 第三方服务 -->
-        <section id="thirdparty" class="privacy-card">
-          <h2><i class="fas fa-plug"></i> 三、我们集成的第三方服务</h2>
-          <ul class="service-list">
-            <li><span class="service-badge">不蒜子</span> 匿名计数器，无Cookie。</li>
-            <li><span class="service-badge">Microsoft Clarity</span> 行为分析（需同意）。</li>
-            <li><span class="service-badge">Twikoo</span> 评论系统，数据存储于 Netlify Functions。</li>
-            <li><span class="service-badge">网易云音乐播放器</span> 通过 API 获取歌曲，不设置Cookie。</li>
-            <li><span class="service-badge">Service Worker</span> 缓存静态JSON，存储于浏览器本地。</li>
-            <li><span class="service-badge">外链确认</span> 仅模态框提示，不记录跳转行为。</li>
-          </ul>
-          <p>本站已弃用任何跨站追踪分析工具（如 Google Analytics），不参与广告联盟。</p>
-        </section>
-
-        <!-- 数据安全与保留 -->
-        <section id="security" class="privacy-card">
-          <h2><i class="fas fa-lock"></i> 四、数据安全与保留期限</h2>
-          <ul>
-            <li><strong>本地存储</strong>：完全存于设备，可随时清除。</li>
-            <li><strong>评论数据</strong>：永久保存于 Twikoo 数据库，可联系站长删除。</li>
-            <li><strong>不蒜子统计</strong>：聚合数据，无法关联个人。</li>
-            <li><strong>Clarity 数据</strong>：Microsoft 保留约 12 个月，您可自行退出。</li>
-            <li><strong>传输安全</strong>：全站 HTTPS，请勿在评论中发送敏感信息。</li>
-          </ul>
-        </section>
-
-        <!-- 用户权利 -->
-        <section id="rights" class="privacy-card">
-          <h2><i class="fas fa-user-check"></i> 五、您享有的权利</h2>
-          <ul>
-            <li><strong>知情权</strong>：本政策透明公开。</li>
-            <li><strong>撤回同意</strong>：清除 <code>localStorage</code> 并刷新，重新选择“拒绝”。</li>
-            <li><strong>删除评论</strong>：通过邮箱联系站长。</li>
-            <li><strong>限制处理</strong>：使用浏览器隐私模式访问。</li>
-            <li><strong>拒绝跟踪</strong>：开启 DNT 信号，Clarity 会遵循。</li>
-          </ul>
-          <div class="badge-notice">
-            <i class="fas fa-envelope-open-text"></i> 行使权利或有疑问，请发送邮件至 <strong>gao_xinyang@foxmail.com</strong>，我们会在合理时间内回复。
-          </div>
-        </section>
-
-        <!-- 未成年人保护 -->
-        <section class="privacy-card">
-          <h2><i class="fas fa-child"></i> 六、未成年人保护</h2>
-          <p>若您未满14周岁，请在父母指导下使用评论功能。我们不会故意收集未成年人个人信息，如发现可联系删除。</p>
-        </section>
-
-        <!-- 政策更新 -->
-        <section class="privacy-card">
-          <h2><i class="fas fa-sync-alt"></i> 七、隐私政策的更新</h2>
-          <p>本政策可能因功能迭代或法律法规变化而修订。重大变更会通过网站公告或Cookie横幅通知。修订后自发布之日起生效。</p>
-          <p><strong>历史版本：</strong> 2026年5月4日（初版），2026年5月10日（第二版），2026年6月18日（第三版）。</p>
-          <div class="privacy-footer-note">
-            <i class="far fa-comment-dots"></i> 反馈或建议，欢迎通过 <a href="/contact/">留言板</a> 或邮箱沟通。<br>
-            <span>© 2026 高新炀的小站 | 恪守透明、安全、最小化的隐私原则</span>
-          </div>
-        </section>
-      </div>
-    </main>
-  </div>
-
-  
-  <div id="pageTransition" class="page-transition"></div>
-  <div id="footer-placeholder"></div>
-
-  <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>
-  <script src="https://vercount.one/js" defer></script>
-  <script src="/js/entry/main.js" type="module"></script>
 </body>
 </html>
