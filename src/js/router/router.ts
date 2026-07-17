@@ -1,12 +1,11 @@
 // /js/router/router.ts
 // 无刷新导航（优化版：资源清理、错误恢复、性能增强）
 
-import { CONFIG, storageController, Utils } from '/js/core/core.js';
+import { CONFIG } from '/js/core/core.js';
 import { getPageNameFromPath, isSameOrigin } from '/js/core/page-utils.js';
 import { ensureScrollReveal, refreshScrollReveal } from '/js/ui/ui-effects.js';
 import { initNavbar, refreshNavbarTitle } from '/js/ui/navbar-manager.js';
 import { initHomePage } from '/js/pages/home-manager.js';
-import { initThemeToggle } from '/js/ui/theme.js';
 import type { PageManager } from '/js/core/page-manager.js';
 import { LazyImageLoader } from '/js/ui/image-manager.js';
 
@@ -14,8 +13,8 @@ import { LazyImageLoader } from '/js/ui/image-manager.js';
 const ROUTER_VIEW_ID = 'router-view';
 const TRANSITION_DURATION = 300;
 const MAX_CACHE_SIZE = 50;
-const IDLE_TIMEOUT = 10000; // 请求超时
-const RETRY_DELAY = 2000;   // 重试间隔
+const IDLE_TIMEOUT = 10000; // 请求超时（毫秒）
+const RETRY_LIMIT = 2;      // 最大重试次数
 
 // ==================== 类型 ====================
 interface PageCacheEntry {
@@ -39,23 +38,30 @@ interface PageResponse {
   url: string;
 }
 
-// ==================== 状态 ====================
-const state = {
-  currentManager: null as PageManager | null,
-  /** 当前页面注入的资源ID列表，用于卸载 */
-  currentResources: { styleIds: string[]; scriptIds: string[] } = { styleIds: [], scriptIds: [] },
-  /** 全局已加载的外部资源（仅用于去重） */
+type PageManagerFactory = (refreshFn: () => void) => Promise<PageManager>;
+
+// ==================== 状态（显式类型） ====================
+interface RouterState {
+  currentManager: PageManager | null;
+  currentResources: { styleIds: string[]; scriptIds: string[] };
+  loadedStyles: Set<string>;
+  loadedScripts: Set<string>;
+  cache: Map<string, PageCacheEntry>;
+  pending: Map<string, Promise<PageResponse>>;
+  navigationAborted: boolean;
+}
+
+const state: RouterState = {
+  currentManager: null,
+  currentResources: { styleIds: [], scriptIds: [] },
   loadedStyles: new Set<string>(),
   loadedScripts: new Set<string>(),
   cache: new Map<string, PageCacheEntry>(),
   pending: new Map<string, Promise<PageResponse>>(),
-  /** 当前导航是否被取消 */
   navigationAborted: false,
 };
 
 // ==================== 页面管理器注册表 ====================
-type PageManagerFactory = (refreshFn: () => void) => Promise<PageManager>;
-
 class PageManagerRegistry {
   private static factories = new Map<string, PageManagerFactory>();
 
@@ -79,7 +85,7 @@ class PageManagerRegistry {
   }
 }
 
-// 注册内置页面（由外部调用）
+// 导出注册函数供外部使用
 export function registerPageManager(pageName: string, factory: PageManagerFactory): void {
   PageManagerRegistry.register(pageName, factory);
 }
@@ -96,8 +102,8 @@ const cache = {
     return entry.content;
   },
   set(key: string, content: ExtractedContent): void {
-    // 清理过期（10分钟）
     const now = Date.now();
+    // 清理过期（10分钟）
     for (const [k, v] of state.cache) {
       if (now - v.timestamp > 600_000) state.cache.delete(k);
     }
@@ -114,7 +120,7 @@ const cache = {
 let currentAbortController: AbortController | null = null;
 
 const resourceLoader = {
-  /** 加载样式，返回注入的ID列表用于清理 */
+  /** 加载样式，返回注入的ID列表 */
   async loadStyles(styles: (HTMLLinkElement | HTMLStyleElement)[]): Promise<string[]> {
     const injectedIds: string[] = [];
     const promises = styles.map(async (style) => {
@@ -187,34 +193,46 @@ const resourceLoader = {
           temp.appendChild(inline);
           document.head.appendChild(temp);
           temp.remove();
-          injectedIds.push(id); // 记录ID用于清理（虽然元素已移除，但为了统一清理逻辑）
+          injectedIds.push(id);
         } catch (e) { console.error('[Router] 内联脚本执行失败:', e); }
       }
     }
     return injectedIds;
   },
 
-  /** 卸载指定ID的资源 */
+  /** 卸载指定ID的资源，并清理去重集合中的对应URL */
   unloadResources(styleIds: string[], scriptIds: string[]): void {
     // 移除样式
     styleIds.forEach(id => {
       const el = document.querySelector(`[data-router-style="${id}"]`) as HTMLElement;
-      if (el) el.remove();
-      // 如果是内联样式，也可能用id直接查找
+      if (el) {
+        // 从 loadedStyles 中移除对应的 href（如果存在）
+        if (el.tagName === 'LINK') {
+          const href = el.getAttribute('href');
+          if (href) state.loadedStyles.delete(href);
+        }
+        el.remove();
+      }
+      // 内联样式可能用 id 直接查找
       const byId = document.getElementById(id);
-      if (byId && byId.tagName === 'STYLE') byId.remove();
+      if (byId && byId.tagName === 'STYLE') {
+        byId.remove();
+        // 内联样式没有 href，无需清理 loadedStyles
+      }
     });
-    // 移除脚本（仅限外部，内联脚本已随temp移除，但为了保险清理标记）
+
+    // 移除脚本（仅限外部，内联已随temp移除）
     scriptIds.forEach(id => {
       const el = document.querySelector(`[data-router-script="${id}"]`) as HTMLElement;
-      if (el) el.remove();
+      if (el) {
+        if (el.tagName === 'SCRIPT' && el.hasAttribute('src')) {
+          const src = el.getAttribute('src');
+          if (src) state.loadedScripts.delete(src);
+        }
+        el.remove();
+      }
     });
-    // 清理去重集合中已被移除的资源（可选）
-    // 不清理去重集合，因为卸载后仍应避免重复加载（但若页面重新加载同一资源，还需重新注入，所以需要清空？）
-    // 处理：如果资源被卸载，应从loaded集合中删除，以便再次加载
-    // 但为了简单，我们不清除集合，因为资源可能被其他页面共享，若清除会导致重复加载
-    // 更好的策略：记录每个资源属于哪个页面，但复杂度高，暂不处理
-  }
+  },
 };
 
 // ==================== 页面内容提取 ====================
@@ -280,8 +298,7 @@ function replaceContent(mainHtml: string): Promise<boolean> {
   });
 }
 
-// ==================== 页面管理器工厂（动态注册） ====================
-// 预先注册默认页面
+// ==================== 页面管理器工厂（默认注册） ====================
 function registerDefaultPages(): void {
   PageManagerRegistry.register('index', async () => {
     const manager = initHomePage() as any;
@@ -309,7 +326,10 @@ function registerDefaultPages(): void {
   });
   PageManagerRegistry.register('about', async () => {
     const { initAboutPage } = await import('/js/pages/about.js');
-    const manager: PageManager = { init: initAboutPage, destroy: () => { /* 清理逻辑 */ } };
+    const manager: PageManager = {
+      init: initAboutPage,
+      destroy: () => { /* 清理逻辑（若有） */ }
+    };
     await manager.init();
     return manager;
   });
@@ -320,17 +340,17 @@ function registerDefaultPages(): void {
     return {
       init: () => {},
       destroy: () => {
-        const { resetTwikooContainer } = import('/js/core/twikoo-manager.js');
-        const c = document.querySelector('#twikoo-comments');
-        if (c) resetTwikooContainer(c);
+        import('/js/core/twikoo-manager.js').then(({ resetTwikooContainer }) => {
+          const c = document.querySelector('#twikoo-comments');
+          if (c) resetTwikooContainer(c);
+        });
       },
     } as PageManager;
   });
 }
-
 registerDefaultPages();
 
-// 对于文章详情页，通过路径前缀匹配 /articles/xxx
+// 文章详情页初始化（路径匹配 /articles/xxx 且不是列表页）
 async function initArticlePage(refreshFn: () => void): Promise<PageManager | null> {
   const { initArticlePage } = await import('/js/pages/article.js');
   const manager = initArticlePage() as any;
@@ -342,9 +362,9 @@ async function initArticlePage(refreshFn: () => void): Promise<PageManager | nul
 }
 
 async function initPageManager(pageName: string, refreshFn: () => void): Promise<PageManager | null> {
-  // 判断是否为文章详情页（路径匹配 /articles/ 且不是 /articles/）
   const path = window.location.pathname;
-  if (path.startsWith('/articles/') && path !== '/articles/' && path !== '/articles') {
+  // 精确匹配 /articles/xxx（且不是 /articles/ 或 /articles）
+  if (/^\/articles\/[^/]+$/.test(path)) {
     return initArticlePage(refreshFn);
   }
   return PageManagerRegistry.create(pageName, refreshFn);
@@ -354,7 +374,6 @@ function refreshScrollReveal(): void {
   const instance = (window as any).scrollRevealInstance;
   if (instance) instance.refresh();
   else ensureScrollReveal()?.refresh();
-  // 刷新懒加载图片
   LazyImageLoader.refresh();
 }
 
@@ -366,8 +385,7 @@ async function fetchPageContent(url: string, signal: AbortSignal): Promise<PageR
 }
 
 // 显示错误覆盖层（可复用）
-function showErrorOverlay(message: string, retryFn: () => void): void {
-  // 移除旧错误覆盖
+function showErrorOverlay(message: string, retryFn: () => void, fallbackUrl?: string): void {
   const old = document.querySelector('.router-error-overlay');
   if (old) old.remove();
 
@@ -390,7 +408,10 @@ function showErrorOverlay(message: string, retryFn: () => void): void {
     <div style="background: var(--surface-color, #1e1e1e); padding: 2rem 3rem; border-radius: 16px; max-width: 400px; text-align: center;">
       <h2>加载失败</h2>
       <p style="color: #ccc;">${message}</p>
-      <button id="router-retry-btn" style="margin-top: 1.5rem; padding: 0.6rem 2rem; border: none; border-radius: 30px; background: var(--accent-color, #a55860); color: white; font-weight: bold; cursor: pointer;">重试</button>
+      <div style="margin-top: 1.5rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <button id="router-retry-btn" style="padding: 0.6rem 2rem; border: none; border-radius: 30px; background: var(--accent-color, #a55860); color: white; font-weight: bold; cursor: pointer;">重试</button>
+        ${fallbackUrl ? `<button id="router-reload-btn" style="padding: 0.6rem 2rem; border: none; border-radius: 30px; background: #666; color: white; font-weight: bold; cursor: pointer;">刷新页面</button>` : ''}
+      </div>
     </div>
   `;
   document.body.appendChild(overlay);
@@ -399,7 +420,11 @@ function showErrorOverlay(message: string, retryFn: () => void): void {
     overlay.remove();
     retryFn();
   });
-  // 点击背景也可重试
+  if (fallbackUrl) {
+    document.getElementById('router-reload-btn')?.addEventListener('click', () => {
+      window.location.href = fallbackUrl;
+    });
+  }
   overlay.addEventListener('click', (e) => {
     if (e.target === overlay) {
       overlay.remove();
@@ -430,18 +455,16 @@ export async function fetchAndReplaceContent(
     // 检查缓存
     const cached = cache.get(url);
     if (cached) {
-      // 如果仅有哈希变化，不重新请求
+      // 仅哈希变化不重新请求
       const currentHash = window.location.hash;
       const newHash = new URL(url, location.href).hash;
       if (currentHash !== newHash) {
-        // 仅哈希变化，直接滚动
         if (newHash) {
           const el = document.getElementById(newHash.slice(1));
-          if (el) { el.scrollIntoView({ behavior: 'smooth' }); }
+          if (el) el.scrollIntoView({ behavior: 'smooth' });
         } else {
           window.scrollTo({ top: 0, behavior: 'smooth' });
         }
-        // 更新URL
         if (pushState) {
           history.pushState({ ...history.state, scroll: { scrollX: window.scrollX, scrollY: window.scrollY } }, document.title, url);
         }
@@ -456,7 +479,6 @@ export async function fetchAndReplaceContent(
     const response = await promise;
     state.pending.delete(url);
 
-    // 检查是否被取消
     if (signal.aborted) {
       state.navigationAborted = true;
       return false;
@@ -472,16 +494,20 @@ export async function fetchAndReplaceContent(
       return false;
     }
     console.error('[Router] 导航失败:', e);
-    // 错误恢复：显示覆盖层，提供重试
-    if (retryCount < 2) {
-      showErrorOverlay(`加载失败 (${e.message || '未知错误'})，点击重试`, () => {
-        fetchAndReplaceContent(url, pushState, scrollData, retryCount + 1);
-      });
-      // 保留当前内容，不销毁管理器
+    if (retryCount < RETRY_LIMIT) {
+      showErrorOverlay(
+        `加载失败 (${e.message || '未知错误'})，点击重试`,
+        () => fetchAndReplaceContent(url, pushState, scrollData, retryCount + 1),
+        url
+      );
       return false;
     } else {
-      // 重试次数耗尽，回退到传统刷新
-      window.location.href = url;
+      // 重试次数用尽，提供“刷新页面”选项（已经由 showErrorOverlay 提供）
+      showErrorOverlay(
+        `加载失败 (${e.message || '未知错误'})，请手动刷新`,
+        () => fetchAndReplaceContent(url, pushState, scrollData, retryCount + 1),
+        url
+      );
       return false;
     }
   } finally {
@@ -497,7 +523,7 @@ async function processContent(
   pushState: boolean,
   scrollData: { scrollX?: number; scrollY?: number } | null
 ): Promise<boolean> {
-  // 1. 卸载旧页面的资源（样式和脚本）
+  // 1. 卸载旧页面的资源
   const { styleIds: oldStyles, scriptIds: oldScripts } = state.currentResources;
   resourceLoader.unloadResources(oldStyles, oldScripts);
   state.currentResources = { styleIds: [], scriptIds: [] };
@@ -529,20 +555,18 @@ async function processContent(
     if (stateScroll) window.scrollTo(stateScroll.scrollX || 0, stateScroll.scrollY || 0);
   }
 
-  // 6. 更新导航栏
+  // 6. 更新导航栏高亮
   refreshNavbarTitle();
   initNavigation();
 
-  // 7. 加载新资源（并行，但非阻塞）
-  const styleIdsPromise = resourceLoader.loadStyles(content.styles);
-  const scriptIdsPromise = resourceLoader.loadScripts(content.scripts);
-
-  // 为了性能，不阻塞管理器初始化，但需要确保资源加载完成后再执行其他依赖
-  // 使用 Promise.all 等待，但可以延迟到空闲
-  const [styleIds, scriptIds] = await Promise.all([styleIdsPromise, scriptIdsPromise]);
+  // 7. 加载新资源（并行）
+  const [styleIds, scriptIds] = await Promise.all([
+    resourceLoader.loadStyles(content.styles),
+    resourceLoader.loadScripts(content.scripts),
+  ]);
   state.currentResources = { styleIds, scriptIds };
 
-  // 8. 初始化页面管理器（在资源加载完成后）
+  // 8. 初始化页面管理器
   const refreshFn = refreshScrollReveal;
   const manager = await initPageManager(content.pageName, refreshFn);
   if (manager) {
@@ -590,7 +614,6 @@ export function initNavigation(): void {
 }
 
 // ==================== 无刷新导航启用 ====================
-// 判断是否为特殊协议链接
 function isSpecialProtocol(href: string): boolean {
   return /^(mailto|tel|javascript|data):/i.test(href);
 }
@@ -610,15 +633,14 @@ export function enableAjaxNavigation(): void {
       isSpecialProtocol(href)
     ) return;
 
-    // 拦截所有同源链接（不再局限于 .html 等）
     e.preventDefault();
     const fullUrl = new URL(href, location.href).href;
     if (fullUrl === location.href) return;
-    // 检查是否仅哈希变化（仅当完整URL除hash外相同）
+
+    // 仅哈希变化
     const currentWithoutHash = location.href.split('#')[0];
     const targetWithoutHash = fullUrl.split('#')[0];
     if (currentWithoutHash === targetWithoutHash) {
-      // 仅哈希变化，使用pushState并滚动
       const hash = new URL(fullUrl).hash;
       if (hash) {
         const el = document.getElementById(hash.slice(1));
@@ -641,7 +663,6 @@ export function initPopstate(): void {
   window.addEventListener('popstate', (event) => {
     const scroll = (event.state as any)?.scroll ?? null;
     const currentUrl = location.href;
-    // 检查是否仅哈希变化
     const stateUrl = event.state?.url || currentUrl;
     if (stateUrl.split('#')[0] === currentUrl.split('#')[0]) {
       // 仅哈希变化，只滚动
