@@ -1,6 +1,6 @@
 const AppState = {
     homeworkData: [],
-    homeworkMetadata: [], // 新增：存储科目元数据
+    homeworkMetadata: [],
     currentSelectedTask: null,
     isDarkMode: false,
     tomatoTimer: null,
@@ -13,30 +13,19 @@ const AppState = {
     isTomatoMode: false,
     currentDate: new Date(),
     currentMonthView: new Date(),
-
-    // 科目配置映射 - 移到AppState属性中
-    subjectConfigMap: {
-        'chinese': { name: '语文作业', icon: '语', color: '#e74c3c' },
-        'math': { name: '数学作业', icon: '数', color: '#3498db' },
-        'english': { name: '英语作业', icon: '英', color: '#f39c12' },
-        'chemistry': { name: '化学作业', icon: '化', color: '#9b59b6' },
-        'history': { name: '历史作业', icon: '历', color: '#27ae60' },
-        'physics': { name: '物理作业', icon: '物', color: '#8e44ad' },
-        'biology': { name: '生物作业', icon: '生', color: '#16a085' },
-        'geography': { name: '地理作业', icon: '地', color: '#d35400' },
-        'politics': { name: '政治作业', icon: '政', color: '#c0392b' }
-    },
+    subjectConfigMap: {},// 科目配置映射 - 从metadata动态构建，不再硬编码
 
     init() {
         this.loadHomeworkData()
             .then(() => {
+                // 从metadata构建配置映射
+                this.buildSubjectConfigMap();
                 this.applySavedTheme();
                 this.generateDatePicker();
                 this.updateTimeDisplay();
                 this.setupEventListeners();
                 this.startTimers();
 
-                // 默认显示当前日期的作业
                 const currentDate = this.getCurrentDate();
                 this.selectDate(currentDate, this.formatDate(currentDate));
             })
@@ -44,6 +33,17 @@ const AppState = {
                 console.error('初始化失败:', error);
                 this.handleDataLoadError(error);
             });
+    },
+
+    buildSubjectConfigMap() {
+        this.subjectConfigMap = {};
+        this.homeworkMetadata.forEach(item => {
+            this.subjectConfigMap[item.name] = {
+                name: item.name + '作业',
+                icon: item.icon || item.name.charAt(0),
+                color: item.color || '#666'
+            };
+        });
     },
 
     async loadHomeworkData() {
@@ -57,8 +57,13 @@ const AppState = {
             } else {
                 const jsonData = await response.json();
                 this.homeworkData = jsonData.data;
-                this.homeworkMetadata = jsonData.metadata ||
-                    ['chinese', 'math', 'english', 'chemistry', 'history'];
+                this.homeworkMetadata = jsonData.metadata || [
+                    { name: '语文', icon: '语', color: '#e74c3c' },
+                    { name: '英语', icon: '英', color: '#f39c12' },
+                    { name: '数学', icon: '数', color: '#3498db' },
+                    { name: '化学', icon: '化', color: '#9b59b6' },
+                    { name: '历史', icon: '历', color: '#27ae60' }
+                ];
             }
         } catch (error) {
             console.error('加载作业数据失败:', error);
@@ -72,15 +77,24 @@ const AppState = {
 
     getMockData() {
         return {
-            metadata: ["chinese", "math", "english", "chemistry", "history"],
+            metadata: [
+                { name: '语文', icon: '语', color: '#e74c3c' },
+                { name: '英语', icon: '英', color: '#f39c12' },
+                { name: '数学', icon: '数', color: '#3498db' },
+                { name: '化学', icon: '化', color: '#9b59b6' },
+                { name: '历史', icon: '历', color: '#27ae60' }
+            ],
             data: [
                 {
+                    id: 0,
                     date: "0000/00/00",
-                    chinese: "语文",
-                    math: "数学",
-                    english: "英语",
-                    chemistry: "化学",
-                    history: "历史"
+                    items: {
+                        "语文": "语文",
+                        "英语": "英语",
+                        "数学": "数学",
+                        "化学": "化学",
+                        "历史": "历史"
+                    }
                 }
             ]
         };
@@ -239,7 +253,6 @@ const AppState = {
     },
 
     toggleMode() {
-        // 在主题切换前添加过渡类
         document.body.classList.add('theme-transition');
 
         this.isDarkMode = !this.isDarkMode;
@@ -258,7 +271,6 @@ const AppState = {
 
         localStorage.setItem('theme', this.isDarkMode ? 'dark' : 'light');
 
-        // 在主题切换后移除过渡类
         setTimeout(() => {
             document.body.classList.remove('theme-transition');
         }, 300);
@@ -352,15 +364,17 @@ const AppState = {
         let totalTasks = 0;
         let completedTasks = 0;
 
-        this.homeworkMetadata.forEach(subject => {
-            const content = this.getSubjectContentByDate(date, subject);
+        const subjectNames = this.homeworkMetadata.map(m => m.name);
+
+        subjectNames.forEach(subjectName => {
+            const content = this.getSubjectContentByDate(date, subjectName);
             if (!content || content.trim() === '') return;
 
             const taskItems = content.split('<br>');
             taskItems.forEach((task, index) => {
                 if (!task.trim()) return;
 
-                const taskId = `task-${date}-${subject}-${index}`;
+                const taskId = `task-${date}-${subjectName}-${index}`;
                 totalTasks++;
 
                 if (localStorage.getItem(taskId) === 'true') {
@@ -377,59 +391,69 @@ const AppState = {
         document.getElementById('progressFill').style.width = `${completionRate}%`;
     },
 
-    getSubjectContentByDate(date, subjectKey) {
+    getSubjectContentByDate(date, subjectName) {
         const entry = this.homeworkData.find(item => item.date === date);
         if (!entry) return '';
 
-        const content = entry[subjectKey];
+        // 新格式：从 items 中获取
+        if (entry.items) {
+            const content = entry.items[subjectName];
+            if (content === '' || content === undefined || content === null) {
+                return '';
+            }
+
+            // 如果内容是一个数字（指向其他日期的ID）
+            if (typeof content === 'number' || !isNaN(content)) {
+                const targetId = parseInt(content);
+                const targetEntry = this.homeworkData.find(item => item.id === targetId);
+                if (targetEntry && targetEntry.items && targetEntry.items[subjectName]) {
+                    return this.getSubjectContentByDate(targetEntry.date, subjectName);
+                }
+                return '';
+            }
+
+            return content;
+        }
+
+        // 兼容旧格式（如果还有旧格式数据）
+        const content = entry[subjectName];
         if (content === '' || content === undefined || content === null) {
             return '';
         }
 
-        // 如果内容是一个数字（指向其他日期的ID）
         if (typeof content === 'number' || !isNaN(content)) {
             const targetId = parseInt(content);
             const targetEntry = this.homeworkData.find(item => item.id === targetId);
-            if (targetEntry && targetEntry[subjectKey]) {
-                return this.getSubjectContentByDate(targetEntry.date, subjectKey);
+            if (targetEntry && targetEntry[subjectName]) {
+                return this.getSubjectContentByDate(targetEntry.date, subjectName);
             }
             return '';
         }
 
-        // 如果是正常字符串内容
         return content;
     },
 
-    generateSubjectConfig(subjectKey) {
-        const presetConfig = this.subjectConfigMap[subjectKey];
-        if (presetConfig) {
-            return presetConfig;
+    generateSubjectConfig(subjectName) {
+        // 从metadata中查找
+        const meta = this.homeworkMetadata.find(m => m.name === subjectName);
+        if (meta) {
+            return {
+                name: meta.name + '作业',
+                icon: meta.icon || meta.name.charAt(0),
+                color: meta.color || '#666'
+            };
         }
 
-        // 如果没有预设配置，生成动态配置
-        const subjectNameMap = {
-            'chinese': '语文',
-            'math': '数学',
-            'english': '英语',
-            'physics': '物理',
-            'chemistry': '化学',
-            'biology': '生物',
-            'history': '历史',
-            'geography': '地理',
-            'politics': '政治'
-        };
-
-        // 生成随机但稳定的颜色
+        // 如果metadata中没有，生成动态配置
         const colors = [
             '#e74c3c', '#3498db', '#f39c12', '#9b59b6', '#27ae60',
             '#1abc9c', '#d35400', '#c0392b', '#8e44ad', '#16a085'
         ];
-
-        const colorIndex = Math.abs(this.hashCode(subjectKey)) % colors.length;
+        const colorIndex = Math.abs(this.hashCode(subjectName)) % colors.length;
 
         return {
-            name: subjectNameMap[subjectKey] ? `${subjectNameMap[subjectKey]}作业` : `${subjectKey}作业`,
-            icon: subjectNameMap[subjectKey] ? subjectNameMap[subjectKey].charAt(0) : subjectKey.charAt(0).toUpperCase(),
+            name: subjectName + '作业',
+            icon: subjectName.charAt(0),
             color: colors[colorIndex]
         };
     },
@@ -460,18 +484,18 @@ const AppState = {
             return;
         }
 
-        // 根据metadata动态生成科目
-        const subjects = this.homeworkMetadata.map(subjectKey => {
+        // 从metadata获取科目列表
+        const subjects = this.homeworkMetadata.map(meta => {
             return {
-                key: subjectKey,
-                ...this.generateSubjectConfig(subjectKey)
+                name: meta.name,
+                ...this.generateSubjectConfig(meta.name)
             };
         });
 
-        let hasTasks = false; // 修复：添加变量声明
+        let hasTasks = false;
 
         subjects.forEach(subject => {
-            const content = this.getSubjectContentByDate(date, subject.key);
+            const content = this.getSubjectContentByDate(date, subject.name);
             if (!content || content.trim() === '') return;
 
             hasTasks = true;
@@ -487,7 +511,7 @@ const AppState = {
                         <div class="subject-icon" style="background-color: ${subject.color}">
                             ${subject.icon}
                         </div>
-                        <div class="subject-name">${subject.name}</div>
+                        <div class="subject-name">${subject.name}作业</div>
                     `;
 
             const taskList = document.createElement('ul');
@@ -499,15 +523,14 @@ const AppState = {
                 const taskItem = document.createElement('li');
                 taskItem.className = 'task-item';
 
-                const taskId = `task-${date}-${subject.key}-${index}`;
+                const taskId = `task-${date}-${subject.name}-${index}`;
                 const isCompleted = localStorage.getItem(taskId) === 'true';
 
                 // 检测是否为引用内容并添加提示
-                const entry = this.homeworkData.find(item => item.date === date);
                 let taskHint = '';
-
-                if (entry && typeof entry[subject.key] === 'number') {
-                    const referencedEntry = this.homeworkData.find(item => item.id === entry[subject.key]);
+                const entryData = this.homeworkData.find(item => item.date === date);
+                if (entryData && entryData.items && typeof entryData.items[subject.name] === 'number') {
+                    const referencedEntry = this.homeworkData.find(item => item.id === entryData.items[subject.name]);
                     if (referencedEntry) {
                         taskHint = `<div class="task-hint" style="font-size: 0.8em; color: var(--md-sys-color-secondary); margin-top: 4px; font-style: italic;">
                 <继承自 ${referencedEntry.date} 的任务>
@@ -526,7 +549,6 @@ const AppState = {
 
                 taskItem.classList.toggle('completed', isCompleted);
 
-                // 添加复选框事件监听器
                 const checkbox = taskItem.querySelector('.task-checkbox');
                 checkbox.addEventListener('change', () => {
                     localStorage.setItem(taskId, checkbox.checked);
@@ -594,11 +616,9 @@ const AppState = {
         const progressFill = document.getElementById('tomatoProgressFill');
         const progressBar = document.getElementById('tomatoProgressBar');
 
-        // 根据当前状态选择总时间
         const totalTime = this.isWorking ? this.tomatoTotalTime : this.tomatoBreakTime;
         const progressPercent = ((totalTime - this.tomatoTimeLeft) / totalTime) * 100;
 
-        // 使用更流畅的动画
         let rotation;
         if (progressPercent <= 50) {
             rotation = (progressPercent / 50) * 180;
@@ -610,7 +630,6 @@ const AppState = {
             progressFill.style.transform = `rotate(${rotation}deg)`;
         }
 
-        // 动态改变颜色
         if (progressPercent > 90) {
             progressFill.style.background = this.isWorking ? 'var(--warning-color)' : 'var(--success-color)';
         } else {
@@ -669,7 +688,6 @@ const AppState = {
             this.tomatoTimeLeft = this.tomatoBreakTime;
         }
 
-        // 重置进度环的 DOM 类名和样式
         const progressFill = document.getElementById('tomatoProgressFill');
         const progressBar = document.getElementById('tomatoProgressBar');
         progressBar.className = 'tomato-progress-bar';
@@ -692,7 +710,6 @@ const AppState = {
             this.tomatoSessions++;
             this.showNotification('专注时间结束！开始休息 5 分钟', 'success');
 
-            // 重置进度环为初始状态
             const progressBar = document.getElementById('tomatoProgressBar');
             const progressFill = document.getElementById('tomatoProgressFill');
             progressBar.classList.remove('full');
@@ -842,7 +859,7 @@ const AppState = {
             }, 300);
         }
     },
-}
+};
 
 window.addEventListener('load', () => {
     AppState.init();
