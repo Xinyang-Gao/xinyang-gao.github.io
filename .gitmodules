@@ -1,0 +1,3 @@
+[submodule "src/works"]
+	path = src/works
+	url = https://github.com/Xinyang-Gao/gaoxinyang-works.git
