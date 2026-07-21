@@ -259,6 +259,40 @@ def _convert_markdown_to_html(md_content: str, headings: List[Dict]) -> str:
 
     return html_content
 
+# ---------- 新增：TOC 渲染 ----------
+def _render_toc_html(headings: List[Dict]) -> str:
+    """递归构建 TOC 的 HTML 嵌套列表"""
+    if not headings:
+        return ''
+
+    def build_tree(items):
+        root = {'children': []}
+        stack = [{'node': root, 'level': 0}]
+        for h in items:
+            new_node = {'id': h['id'], 'level': h['level'], 'text': h['text'], 'children': []}
+            while len(stack) > 0 and stack[-1]['level'] >= h['level']:
+                stack.pop()
+            parent = stack[-1]['node']
+            parent['children'].append(new_node)
+            stack.append({'node': new_node, 'level': h['level']})
+        return root['children']
+
+    def render_children(children):
+        if not children:
+            return ''
+        html_out = '<ul class="toc-list">'
+        for node in children:
+            html_out += f'<li data-id="{node["id"]}" class="toc-depth-{node["level"]}">'
+            html_out += f'<a href="#{node["id"]}" class="toc-link">{html.escape(node["text"])}</a>'
+            html_out += render_children(node['children'])
+            html_out += '</li>'
+        html_out += '</ul>'
+        return html_out
+
+    tree = build_tree(headings)
+    return render_children(tree)
+
+# ---------- 生成完整的文章 HTML ----------
 def _create_html_page(title, date, content_html, headings_json, description, tags, author,
                       word_count, read_time_str, category, last_updated, modify_count):
     formatted_date = format_date(date)
@@ -289,6 +323,10 @@ def _create_html_page(title, date, content_html, headings_json, description, tag
         meta_html += f'<div class="article-meta-line article-meta-updated"><span class="meta-item"><i class="fas fa-edit"></i> 更新于 {formatted_last_updated}</span></div>'
 
     meta_description = description if description else f"{title} - GaoXinYang的文章"
+
+    # 生成 TOC HTML
+    headings = json.loads(headings_json) if headings_json else []
+    toc_html = _render_toc_html(headings)
 
     return f'''<!DOCTYPE html>
 <html lang="zh-CN">
@@ -336,7 +374,9 @@ def _create_html_page(title, date, content_html, headings_json, description, tag
                         <i class="fas fa-list-ul"></i>
                         <span>目录</span>
                     </div>
-                    <nav class="toc-nav" id="toc-list-container"></nav>
+                    <nav class="toc-nav" id="toc-list-container">
+                        {toc_html}
+                    </nav>
                 </div>
 
                 <div class="sidebar-card info-card">

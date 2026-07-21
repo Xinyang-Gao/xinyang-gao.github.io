@@ -47,14 +47,13 @@ export class ArticlePageManager extends PageManager {
         }
 
         this.ensureTOCStructure();
-        this.buildAndRenderTOC();
+        this.initTOC();
         this.initImageLazyLoad();
         this.initReadingProgress();
         this.initCodeBlocks();
         this.initMobileSidebar();
         this.initScrollSave();
         this.setupThemeListener();
-        // 延迟执行确保 DOM 渲染完成
         requestAnimationFrame(() => this.onScroll());
         this.renderMath();
         this.initTwikoo();
@@ -150,11 +149,12 @@ export class ArticlePageManager extends PageManager {
         }
     }
 
-    // ---------- TOC 构建 ----------
+    // ---------- TOC 交互（基于后端预渲染的 DOM） ----------
     private ensureTOCStructure(): void {
         const tocCard = document.querySelector('.sidebar-card.toc-card');
         if (!tocCard) return;
 
+        // 确保 header 存在
         let header = tocCard.querySelector('.toc-header');
         if (!header) {
             header = document.createElement('div');
@@ -163,14 +163,16 @@ export class ArticlePageManager extends PageManager {
             tocCard.prepend(header);
         }
 
+        // 确保 wrapper 存在，但不要覆盖已有内容（后端已渲染）
         let wrapper = tocCard.querySelector('.toc-list-wrapper');
         if (!wrapper) {
             wrapper = document.createElement('div');
             wrapper.className = 'toc-list-wrapper';
-            const oldNav = tocCard.querySelector('.toc-nav');
-            if (oldNav) {
-                wrapper.appendChild(oldNav);
+            const existingNav = tocCard.querySelector('.toc-nav');
+            if (existingNav) {
+                wrapper.appendChild(existingNav);
             } else {
+                // 如果没有 nav，创建一个（但后端渲染应该已包含）
                 const newNav = document.createElement('nav');
                 newNav.className = 'toc-nav';
                 newNav.id = 'toc-list-container';
@@ -186,61 +188,35 @@ export class ArticlePageManager extends PageManager {
         }
     }
 
-    private buildAndRenderTOC(): void {
-        const global = window as Window & ArticleGlobals;
-        const headings = global.ARTICLE_HEADINGS || [];
-        if (!this.tocListContainer) return;
-
-        if (!headings.length) {
-            this.tocListContainer.innerHTML = '<p class="toc-empty">暂无目录</p>';
+    private initTOC(): void {
+        // 获取已存在的 TOC 容器（由后端渲染）
+        this.tocListContainer = document.getElementById('toc-list-container');
+        if (!this.tocListContainer) {
+            console.warn('[Article] TOC 容器不存在，可能页面未包含目录');
             return;
         }
 
-        const tree = this.buildTree(headings);
-        const html = this.renderTree(tree);
-        this.tocListContainer.innerHTML = html;
+        // 绑定链接点击事件
         this.bindTocLinkEvents();
 
+        // 初始化阅读进度条（如果尚未添加）
         this.initTocReadingProgress();
 
         // 滚动监听更新高亮
+        if (this.scrollHandler) {
+            window.removeEventListener('scroll', this.scrollHandler);
+        }
         this.scrollHandler = () => this.onScroll();
         window.addEventListener('scroll', this.scrollHandler);
-        // 在清理时移除
         this.cleanupFns.push(() => {
             if (this.scrollHandler) {
                 window.removeEventListener('scroll', this.scrollHandler);
                 this.scrollHandler = null;
             }
         });
-    }
 
-    private buildTree(headings: Heading[]): Heading[] {
-        const root: { children: Heading[] } = { children: [] };
-        const stack: { node: { children: Heading[] }; level: number }[] = [{ node: root, level: 0 }];
-        for (const h of headings) {
-            const newNode = { ...h, children: [] };
-            while (stack.length > 0 && stack[stack.length - 1].level >= h.level) {
-                stack.pop();
-            }
-            const parent = stack[stack.length - 1].node;
-            parent.children.push(newNode);
-            stack.push({ node: newNode, level: h.level });
-        }
-        return root.children;
-    }
-
-    private renderTree(children: Heading[]): string {
-        if (!children.length) return '';
-        let html = '<ul class="toc-list">';
-        for (const node of children) {
-            html += `<li data-id="${node.id}" class="toc-depth-${node.level}">`;
-            html += `<a href="#${node.id}" class="toc-link">${this.escapeHtml(node.text)}</a>`;
-            if (node.children.length) html += this.renderTree(node.children);
-            html += '</li>';
-        }
-        html += '</ul>';
-        return html;
+        // 首次更新高亮
+        this.onScroll();
     }
 
     private bindTocLinkEvents(): void {
