@@ -490,7 +490,7 @@ class AggregatedGenerator(OutputGenerator):
 <div id="footer-placeholder"></div>
 <script>window.{json_key} = {json_str};</script>
 <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>
-<script src="https://vercount.one/js" defer></script>
+<script src="/js/vendor/vercount.min.js" defer></script>
 <script src="/js/entry/main.js" type="module"></script>
 </body></html>'''
 
@@ -825,7 +825,7 @@ class AggregatedGenerator(OutputGenerator):
         <script>window.__STATIC_FRIENDS_DATA = {json.dumps(friends_list, ensure_ascii=False)};</script>
         <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>
         <script src="/js/entry/main.js" type="module"></script>
-        <script src="https://vercount.one/js"></script>
+        <script src="/js/vendor/vercount.min.js"></script>
     </body>
     </html>'''
 
