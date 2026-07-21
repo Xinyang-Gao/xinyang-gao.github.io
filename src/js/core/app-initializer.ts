@@ -9,12 +9,11 @@ import { LazyImageLoader, GlobalImageManager } from '/js/ui/image-manager.js';
 import { initButtons } from '/js/ui/button-manager.js';
 import { renderPersonalCard } from '/js/ui/personal-card.js';
 import { initClarityOnConsent, updateClarityPage } from '/js/core/clarity.js';
-import { preloadCriticalJSON, registerServiceWorker, initFooterStats } from '/js/data/site-state.js';
+import { registerServiceWorker, initFooterStats } from '/js/data/site-state.js';
 import { handleListItemClick } from '/js/ui/list-events.js';
 import { LoadingOverlayManager } from '/js/ui/loading-overlay-manager.js';
-
-// 导入友链管理器（假设已实现）
 import { friendLinkManager } from '/js/pages/friends-manager.js';
+import { DataService } from '/js/core/data-service.js';
 
 export class AppInitializer {
   private static navbarInstance: any = null;
@@ -72,7 +71,10 @@ export class AppInitializer {
     // 12. 其他非关键功能（空闲）
     this.scheduleIdle(() => {
       initUIEffects();
-      preloadCriticalJSON();
+      const service = DataService.getInstance();
+      service.getArticles().catch(() => { });
+      service.getWorks().catch(() => { });
+      service.getStatistics().catch(() => { });
       LazyImageLoader.init();
       GlobalImageManager.init();
       updateFooterUpdateTime().catch(console.warn);
@@ -86,7 +88,7 @@ export class AppInitializer {
 
     // 14. 音乐播放器（空闲）
     this.scheduleIdle(() => {
-      import('/js/vendor/global-music-player.js').catch(() => {});
+      import('/js/vendor/global-music-player.js').catch(() => { });
     }, { timeout: 5000 });
 
     // 15. 浏览器回退/前进支持

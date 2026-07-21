@@ -2,6 +2,7 @@
 // 全域统计管理器（安全 DOM 操作版）
 
 import { CONFIG } from '/js/core/core.js';
+import { DataService } from '/js/core/data-service.js';
 
 // ==================== 类型定义 ====================
 interface StatisticsData {
@@ -124,22 +125,21 @@ class FullStatsManager {
 
   // ---- 数据获取 ----
   private async fetchAllData(): Promise<void> {
-    const endpoints = [
-      { key: 'statistics', url: CONFIG?.API?.STATISTICS || '/json/statistics.json' },
-      { key: 'articles', url: CONFIG?.API?.ARTICLES || '/json/articles.json' },
-      { key: 'works', url: CONFIG?.API?.WORKS || '/json/works.json' },
-      { key: 'codeAnalysis', url: '/json/code_analysis.json' },
-    ] as const;
-
-    for (const ep of endpoints) {
-      try {
-        const res = await fetch(`${ep.url}?t=${Date.now()}`, { cache: 'no-store' });
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        this.data[ep.key] = await res.json();
-      } catch (err) {
-        console.warn(`[FullStats] 加载 ${ep.key} 失败`, err);
-        this.data[ep.key] = null;
-      }
+    const service = DataService.getInstance();
+    try {
+      const [statistics, articles, works, codeAnalysis] = await Promise.all([
+        service.getStatistics(),
+        service.getArticles(),
+        service.getWorks(),
+        service.getCodeAnalysis(),
+      ]);
+      this.data.statistics = statistics;
+      this.data.articles = articles;
+      this.data.works = works;
+      this.data.codeAnalysis = codeAnalysis;
+    } catch (err) {
+      console.warn('[FullStats] 加载数据失败', err);
+      // 保持已有数据为空对象，防止后续报错
     }
 
     this.articlesList = this.data.articles?.articles?.filter(a => !a.hidden) || [];

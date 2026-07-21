@@ -3,6 +3,7 @@
 
 import { CONFIG, Utils, storageController, perf } from '/js/core/core.js';
 import type { Item, TagCount } from '/js/types/data.js';
+import { DataService } from '/js/core/data-service.js';
 
 // ==================== 工具函数 ====================
 const getTags = (item: Item): string[] => item.tags?.length ? item.tags : (item.tag?.length ? item.tag : []);
@@ -26,34 +27,15 @@ export class DataManager {
       return { [type]: win[staticKey] };
     }
 
-    const { url, cacheKey } = this.CONFIG[type];
-    const label = this.TYPE_LABEL[type];
-    perf.start(`获取${label}数据`);
-
-    // 缓存读取
-    if (useCache && storageController.isAllowed()) {
-      const raw = storageController.getItem(cacheKey);
-      if (raw && !Utils.isDataExpired(raw)) {
-        try {
-          const parsed = JSON.parse(raw);
-          delete parsed._timestamp;
-          if (isDataValid(parsed, type)) {
-            perf.end(`获取${label}数据`);
-            return parsed;
-          }
-        } catch { /* ignore */ }
-      }
-    }
-
-    // 网络请求
+    const service = DataService.getInstance();
     try {
-      console.log(`[INFO] 从服务器获取${label}数据`);
-      const res = await fetch(url + '?t=' + Date.now(), { cache: 'no-store' });
-      if (!res.ok) throw new Error(res.statusText);
-      const data = await res.json();
-      if (!isDataValid(data, type)) throw new Error('数据格式无效');
-
-      // 文章字段标准化
+      let data;
+      if (type === 'articles') {
+        data = await service.getArticles(!useCache);
+      } else {
+        data = await service.getWorks(!useCache);
+      }
+      // 确保数据格式（如字段标准化）
       if (type === 'articles' && data.articles) {
         data.articles = data.articles.map((a: any) => ({
           ...a,
@@ -62,15 +44,9 @@ export class DataManager {
           updated_date: a.last_updated || a.date,
         }));
       }
-
-      if (storageController.isAllowed()) {
-        storageController.setItem(cacheKey, JSON.stringify({ ...data, _timestamp: Date.now() }));
-      }
-      perf.end(`获取${label}数据`);
-      return data;
+      return { [type]: data[type] };
     } catch (e) {
-      console.error(`[ERROR] 获取${label}数据失败:`, e);
-      perf.end(`获取${label}数据`);
+      console.error(`[DataManager] 获取${this.TYPE_LABEL[type]}数据失败:`, e);
       throw e;
     }
   }

@@ -2,6 +2,7 @@
 // 加载覆盖层：版本检测、数据预加载、更新提示
 
 import { CONFIG, storageController, Utils } from '/js/core/core.js';
+import { DataService } from '/js/core/data-service.js';
 
 export class LoadingOverlayManager {
   private overlay: HTMLElement | null = null;
@@ -11,12 +12,20 @@ export class LoadingOverlayManager {
   private logIndex = 0;
 
   private async fetchData(endpoints: Array<{ key: string; url: string }>) {
+    const service = DataService.getInstance();
+    const fetchMap: Record<string, () => Promise<any>> = {
+      statistics: () => service.getStatistics(),
+      articles: () => service.getArticles(),
+      works: () => service.getWorks(),
+      code: () => service.getCodeAnalysis(),
+      friends: () => service.getFriends(),
+      version: () => service.getVersion(),
+    };
+
     const results = await Promise.allSettled(
-      endpoints.map(({ url }) =>
-        fetch(url, { cache: 'no-store' })
-          .then(res => (res.ok ? res.json() : Promise.reject(new Error(`HTTP ${res.status}`))))
-      )
+      endpoints.map(({ key }) => fetchMap[key]?.() ?? Promise.reject(new Error(`Unknown key: ${key}`)))
     );
+
     const dataMap: Record<string, any> = {};
     results.forEach((result, idx) => {
       const key = endpoints[idx].key;
@@ -93,12 +102,12 @@ export class LoadingOverlayManager {
 
       // 2. 网络请求
       const endpoints = [
-        { key: 'statistics', url: `${CONFIG.API.STATISTICS}?t=${Date.now()}` },
-        { key: 'articles', url: `${CONFIG.API.ARTICLES}?t=${Date.now()}` },
-        { key: 'works', url: `${CONFIG.API.WORKS}?t=${Date.now()}` },
-        { key: 'code', url: '/json/code_analysis.json?t=' + Date.now() },
-        { key: 'friends', url: '/json/friends.json?t=' + Date.now() },
-        { key: 'version', url: '/json/version.json?t=' + Date.now() },
+        { key: 'statistics', url: '' },
+        { key: 'articles', url: '' },
+        { key: 'works', url: '' },
+        { key: 'code', url: '' },
+        { key: 'friends', url: '' },
+        { key: 'version', url: '' },
       ];
 
       this.addLog('Data', '检查网络连接状态...');

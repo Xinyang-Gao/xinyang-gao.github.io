@@ -1,5 +1,6 @@
 // /js/pages/home-manager.js
 import { PageManager } from '/js/core/page-manager.js';
+import { DataService } from '/js/core/data-service.js';
 
 export class HomePageManager extends PageManager {
     constructor() {
@@ -17,9 +18,9 @@ export class HomePageManager extends PageManager {
     loadStatisticsAndTags() {
         const statsContainer = document.getElementById('statsContainer');
         if (!statsContainer) return;
-        
-        fetch('/json/statistics.json')
-            .then(res => res.ok ? res.json() : Promise.reject())
+
+        const service = DataService.getInstance();
+        service.getStatistics()
             .then(stat => {
                 const totalArticles = stat.total_articles ?? 0;
                 const totalWords = stat.total_word_count ?? 0;

@@ -1,83 +1,69 @@
 // /js/data/sw.js
-// Service Worker: 智能缓存策略，支持离线回退与 stale-while-revalidate
-// 优化版本：调整策略，增加缓存条目数，改进更新机制
+// Service Worker v5 —— 现代化优化版
+// 核心改进：剥离 ?t= 缓存破坏参数，启用 Navigation Preload，精细化缓存策略
 
-const CACHE_CONFIG = {
-  version: 'v4',
-  get name() { return `site-cache-${this.version}`; },
-  preCacheUrls: [
-    '/json/works.json',
-    '/json/articles.json',
-    '/json/statistics.json',
-  ],
-  strategies: {
-    // 数据接口：stale-while-revalidate，保证数据新鲜度
-    staleWhileRevalidate: ['/json/', '/api/'],
-    // 静态资源（JS/CSS/图片/字体）：stale-while-revalidate，兼顾速度与更新
-    staticAssets: ['.css', '.js', '.webp', '.svg', '.ico', '.png', '.jpg', '.jpeg', '.gif', '.woff', '.woff2', '.ttf'],
-    // HTML 页面：网络优先，离线回退
-    networkFirst: ['.html', '/']
-  },
-  maxEntries: 200,                   // 提高缓存条目上限
-  maxAgeSeconds: 7 * 24 * 60 * 60    // 7天（未使用，但保留）
-};
+const CACHE_VERSION = 'v5';
+const CACHE_NAME = `site-cache-${CACHE_VERSION}`;
+const isDev = self.location.hostname === 'localhost' || self.location.hostname === '127.0.0.1';
 
-const CACHE_NAME = CACHE_CONFIG.name;
-const isDev = self.location.hostname === 'localhost' ||
-              self.location.hostname === '127.0.0.1';
+// ---------- 预缓存列表（仅确保关键离线资源） ----------
+const PRE_CACHE_URLS = [
+  '/json/statistics.json',
+  '/json/works.json',
+  '/json/articles.json',
+  '/offline.html',    // 需确保该文件存在，或移除该项
+];
 
-function isUrlMatch(url, patterns) {
-  return patterns.some(p => url.includes(p));
+// ---------- 工具：剥离 ?t= 时间戳，用于缓存匹配 ----------
+function stripCacheBusting(urlStr) {
+  try {
+    const url = new URL(urlStr, self.location.href);
+    if (url.searchParams.has('t')) {
+      url.searchParams.delete('t');
+      return url.toString();
+    }
+    return urlStr;
+  } catch {
+    return urlStr;
+  }
 }
 
-function shouldUseStaleWhileRevalidate(url) {
-  return isUrlMatch(url, CACHE_CONFIG.strategies.staleWhileRevalidate);
-}
-
-function shouldUseStaticAssets(url) {
-  return CACHE_CONFIG.strategies.staticAssets.some(ext => url.includes(ext));
-}
-
-function shouldUseNetworkFirst(url) {
-  return isUrlMatch(url, CACHE_CONFIG.strategies.networkFirst);
-}
-
-// 精简缓存：移除最旧的条目（基于存储顺序）
-async function trimCache(cache, maxEntries) {
+// ---------- 缓存清理（按 LRU 策略，最多 300 条） ----------
+async function trimCache(cache, maxEntries = 300) {
   const keys = await cache.keys();
   if (keys.length <= maxEntries) return;
-  // 删除最早添加的条目（keys 按添加时间排序）
   const toDelete = keys.slice(0, keys.length - maxEntries);
   await Promise.all(toDelete.map(key => cache.delete(key)));
 }
 
-// 安装事件：预缓存关键资源（跳过不存在的文件）
+// ---------- 安装：预缓存核心资源 ----------
 self.addEventListener('install', event => {
   console.log('[SW] 安装中...', CACHE_NAME);
   event.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE_NAME);
-      const validUrls = [];
-      for (const url of CACHE_CONFIG.preCacheUrls) {
+      const valid = [];
+      for (const url of PRE_CACHE_URLS) {
         try {
           const res = await fetch(url, { method: 'HEAD', cache: 'no-store' });
-          if (res.ok) validUrls.push(url);
-          else console.warn(`[SW] 预缓存资源不存在，跳过: ${url}`);
-        } catch (err) {
-          console.warn(`[SW] 预缓存资源不可达，跳过: ${url}`, err);
+          if (res.ok) valid.push(url);
+          else console.warn(`[SW] 预缓存跳过 (404): ${url}`);
+        } catch {
+          console.warn(`[SW] 预缓存跳过 (不可达): ${url}`);
         }
       }
-      if (validUrls.length) await cache.addAll(validUrls);
-    })().catch(err => console.error('[SW] 安装失败:', err))
+      if (valid.length) await cache.addAll(valid);
+      await self.skipWaiting();
+    })()
   );
-  self.skipWaiting();
 });
 
-// 激活事件：清理旧缓存
+// ---------- 激活：清理旧缓存 + 启用 Navigation Preload ----------
 self.addEventListener('activate', event => {
   console.log('[SW] 激活中...', CACHE_NAME);
   event.waitUntil(
     (async () => {
+      // 1. 清理旧版本缓存
       const cacheNames = await caches.keys();
       await Promise.all(
         cacheNames.filter(name => name !== CACHE_NAME).map(name => {
@@ -85,105 +71,145 @@ self.addEventListener('activate', event => {
           return caches.delete(name);
         })
       );
+
+      // 2. 启用 Navigation Preload（提升导航速度）
+      if (self.registration.navigationPreload) {
+        try {
+          await self.registration.navigationPreload.enable();
+          console.log('[SW] Navigation Preload 已启用');
+        } catch (e) {
+          console.warn('[SW] Navigation Preload 不可用', e);
+        }
+      }
+
       await self.clients.claim();
     })()
   );
 });
 
-// 请求拦截：开发环境直接走网络，其他请求按策略处理
+// ---------- 请求拦截 ----------
 self.addEventListener('fetch', event => {
-  const url = event.request.url;
   const request = event.request;
+  const url = new URL(request.url);
 
-  if (request.method !== 'GET') return;
-
-  // 开发环境：完全绕过缓存，直接 fetch
+  // 开发环境完全绕过缓存
   if (isDev) {
     event.respondWith(fetch(request));
     return;
   }
 
-  // 1. JSON / API 数据：stale-while-revalidate
-  if (shouldUseStaleWhileRevalidate(url)) {
+  // 只处理 GET 请求
+  if (request.method !== 'GET') return;
+
+  // ---------- 策略 1：静态资源（JS/CSS/字体/图片）—— Cache First ----------
+  // 匹配常见静态资源扩展名（这些文件通常带有哈希，适合长期缓存）
+  const staticExts = ['.js', '.css', '.woff', '.woff2', '.ttf', '.ico', '.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg'];
+  if (staticExts.some(ext => url.pathname.endsWith(ext))) {
     event.respondWith(
       (async () => {
         const cache = await caches.open(CACHE_NAME);
-        const cachedResponse = await cache.match(request);
-        const fetchPromise = fetch(request.clone()).then(async networkResponse => {
+        // 剥离时间戳，用规范 URL 匹配缓存
+        const cacheKey = stripCacheBusting(request.url);
+        const cachedResponse = await cache.match(cacheKey);
+        if (cachedResponse) return cachedResponse;
+
+        // 缓存未命中，请求网络
+        try {
+          const networkResponse = await fetch(request);
           if (networkResponse && networkResponse.ok) {
-            await cache.put(request, networkResponse.clone());
-            await trimCache(cache, CACHE_CONFIG.maxEntries);
+            // 同样用规范 URL 存储
+            await cache.put(cacheKey, networkResponse.clone());
+            await trimCache(cache);
           }
           return networkResponse;
-        }).catch(err => {
-          console.warn(`[SW] 网络请求失败 (${url}):`, err);
-          return null;
-        });
-        if (cachedResponse) {
-          event.waitUntil(fetchPromise);
-          return cachedResponse;
+        } catch {
+          // 图片等静态资源降级：返回空占位（避免页面破裂）
+          if (url.pathname.match(/\.(png|jpg|jpeg|gif|webp|svg|ico)$/i)) {
+            return new Response('', { status: 404 });
+          }
+          throw new Error('静态资源加载失败');
         }
-        const networkResponse = await fetchPromise;
-        if (networkResponse) return networkResponse;
-        // 降级：返回空数据提示
-        return new Response('数据加载失败，请检查网络', { status: 503 });
       })()
     );
     return;
   }
 
-  // 2. 静态资源（CSS/JS/图片/字体）：stale-while-revalidate
-  if (shouldUseStaticAssets(url)) {
+  // ---------- 策略 2：API / JSON 数据 —— Stale-While-Revalidate ----------
+  // 匹配 /json/ 或 /api/ 路径
+  if (url.pathname.startsWith('/json/') || url.pathname.startsWith('/api/')) {
     event.respondWith(
       (async () => {
         const cache = await caches.open(CACHE_NAME);
-        const cachedResponse = await cache.match(request);
-        const fetchPromise = fetch(request.clone()).then(async networkResponse => {
+        const cacheKey = stripCacheBusting(request.url);
+        const cachedResponse = await cache.match(cacheKey);
+
+        // 网络请求（用于后台更新）
+        const fetchPromise = fetch(request).then(async (networkResponse) => {
           if (networkResponse && networkResponse.ok) {
-            await cache.put(request, networkResponse.clone());
-            await trimCache(cache, CACHE_CONFIG.maxEntries);
+            await cache.put(cacheKey, networkResponse.clone());
+            await trimCache(cache);
           }
           return networkResponse;
         }).catch(() => null);
+
+        // 如果有缓存，立即返回；同时触发后台更新
         if (cachedResponse) {
+          // 不等待 fetchPromise，让它在后台完成
           event.waitUntil(fetchPromise);
           return cachedResponse;
         }
+
+        // 无缓存，等待网络响应
         const networkResponse = await fetchPromise;
         if (networkResponse) return networkResponse;
-        // 极少数情况无法加载，返回一个空响应（避免报错）
-        return new Response('', { status: 404 });
+
+        // 完全失败：返回友好的空数据
+        return new Response(
+          JSON.stringify({ error: '数据加载失败，请检查网络' }),
+          { status: 503, headers: { 'Content-Type': 'application/json' } }
+        );
       })()
     );
     return;
   }
 
-  // 3. HTML 页面：网络优先，降级缓存或离线页面
-  if (shouldUseNetworkFirst(url)) {
+  // ---------- 策略 3：HTML 文档 —— Network First，回退缓存 ----------
+  // 匹配 .html 或根路径（且不是静态资源）
+  if (url.pathname.endsWith('.html') || url.pathname === '/' || !url.pathname.includes('.')) {
     event.respondWith(
       (async () => {
         try {
+          // 尝试网络请求（带上预加载响应，如果有）
+          const preloadResponse = await event.preloadResponse;
+          if (preloadResponse) return preloadResponse;
+
           const networkResponse = await fetch(request);
           if (networkResponse && networkResponse.ok) {
             const cache = await caches.open(CACHE_NAME);
             await cache.put(request, networkResponse.clone());
             return networkResponse;
           }
-          throw new Error(`HTTP ${networkResponse?.status}`);
-        } catch (err) {
+          throw new Error('网络响应异常');
+        } catch {
+          // 网络失败，尝试缓存
           const cache = await caches.open(CACHE_NAME);
-          const cachedResponse = await cache.match(request);
-          if (cachedResponse) return cachedResponse;
-          // 尝试返回离线页面
-          const offlinePage = await cache.match('/offline.html');
-          if (offlinePage) return offlinePage;
-          return new Response('您当前处于离线状态，部分内容不可用', { status: 503 });
+          const cached = await cache.match(request);
+          if (cached) return cached;
+
+          // 终极降级：离线页面
+          const offline = await cache.match('/offline.html');
+          if (offline) return offline;
+
+          return new Response('您当前处于离线状态，部分内容不可用', {
+            status: 503,
+            headers: { 'Content-Type': 'text/html; charset=utf-8' },
+          });
         }
       })()
     );
     return;
   }
 
-  // 4. 其他请求（如外部资源或未知类型）：网络优先，不缓存
+  // ---------- 其他请求（默认网络优先，不缓存） ----------
   event.respondWith(fetch(request).catch(() => new Response('', { status: 404 })));
 });
