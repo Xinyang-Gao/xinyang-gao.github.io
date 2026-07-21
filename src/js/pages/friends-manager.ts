@@ -9,13 +9,21 @@ export class FriendsPageManager extends PageManager {
   private container: HTMLElement | null = null;
   private randomTimer: number | null = null;
   private jumpUnbind: (() => void) | null = null;
+  private _initialized = false;
 
   async init(): Promise<void> {
+    if (this._initialized) {
+      console.log('[FriendsPageManager] 已初始化，跳过重复执行');
+      return;
+    }
+
     this.initTwikooComments();
     this.setupCopyJson();
     this.setupRandomSort();
-    this.setupJumpTriggers(); // 绑定跳转弹窗
+    this.setupJumpTriggers();
     console.log('[FriendsPageManager] 友链页面初始化完成');
+
+    this._initialized = true;
   }
 
   /**
@@ -174,9 +182,14 @@ export class FriendsPageManager extends PageManager {
       this.jumpUnbind = null;
     }
 
+    this._initialized = false;
+
     console.log('[FriendsPageManager] 友链页面管理器已销毁');
   }
 }
+
+// ==================== 导出单例 ====================
+export const friendLinkManager = new FriendsPageManager();
 
 /**
  * 初始化友链页面（供 router 调用）

@@ -8,6 +8,7 @@ import { initNavbar, refreshNavbarTitle } from '/js/ui/navbar-manager.js';
 import { initHomePage } from '/js/pages/home-manager.js';
 import type { PageManager } from '/js/core/page-manager.js';
 import { LazyImageLoader } from '/js/ui/image-manager.js';
+import { friendLinkManager, initFriendsPage } from '/js/pages/friends-manager.js';
 
 // ==================== 常量 ====================
 const ROUTER_VIEW_ID = 'router-view';
@@ -206,18 +207,15 @@ const resourceLoader = {
     styleIds.forEach(id => {
       const el = document.querySelector(`[data-router-style="${id}"]`) as HTMLElement;
       if (el) {
-        // 从 loadedStyles 中移除对应的 href（如果存在）
         if (el.tagName === 'LINK') {
           const href = el.getAttribute('href');
           if (href) state.loadedStyles.delete(href);
         }
         el.remove();
       }
-      // 内联样式可能用 id 直接查找
       const byId = document.getElementById(id);
       if (byId && byId.tagName === 'STYLE') {
         byId.remove();
-        // 内联样式没有 href，无需清理 loadedStyles
       }
     });
 
@@ -321,8 +319,12 @@ function registerDefaultPages(): void {
     return initStatsPage() as any;
   });
   PageManagerRegistry.register('friends', async () => {
-    const { initFriendsPage } = await import('/js/pages/friends-manager.js');
-    return initFriendsPage() as any;
+    // 如果已初始化则先销毁，避免事件重复绑定
+    if ((friendLinkManager as any)._initialized) {
+      friendLinkManager.destroy();
+    }
+    await friendLinkManager.init();
+    return friendLinkManager;
   });
   PageManagerRegistry.register('about', async () => {
     const { initAboutPage } = await import('/js/pages/about.js');
@@ -338,7 +340,7 @@ function registerDefaultPages(): void {
     const container = document.querySelector('#twikoo-comments');
     if (container) await initTwikoo(container);
     return {
-      init: () => {},
+      init: () => { },
       destroy: () => {
         import('/js/core/twikoo-manager.js').then(({ resetTwikooContainer }) => {
           const c = document.querySelector('#twikoo-comments');
@@ -502,7 +504,6 @@ export async function fetchAndReplaceContent(
       );
       return false;
     } else {
-      // 重试次数用尽，提供“刷新页面”选项（已经由 showErrorOverlay 提供）
       showErrorOverlay(
         `加载失败 (${e.message || '未知错误'})，请手动刷新`,
         () => fetchAndReplaceContent(url, pushState, scrollData, retryCount + 1),
