@@ -277,18 +277,18 @@
 .profile-avatar {
   width: 100px;
   height: 100px;
-  border-radius: 50%;
+  border-radius: var(--radius-md, 12px);
   object-fit: cover;
-  border: 2px solid var(--accent-color);
   background-color: var(--surface-color-secondary);
-  transition: transform var(--transition-bounce),
-              box-shadow var(--transition-fast);
+  transition: transform var(--transition-bounce), box-shadow var(--transition-fast);
   display: block;
+  box-shadow: 0 0 0 0.5px rgba(255,255,255,0.2), 0 2px 8px rgba(0,0,0,0.03);
 }
 
-.profile-avatar:hover {
-  transform: scale(1.02);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+.profile-card:hover .profile-avatar {
+  transform: scale(1.04);
+  box-shadow: 0 0 0 1px rgba(var(--accent-rgb, 180,91,99), 0.15),
+              0 4px 16px rgba(0,0,0,0.06);
 }
 
 .profile-name {
