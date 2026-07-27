@@ -1,7 +1,8 @@
 /* ==========================================
-   footer.css v4.2 — 简约信尾 · 通栏实色
-   容器：全宽纸带，硬边接缝，直达页底
-   数据：去图标化，编辑式数据条
+   footer.css v5.1 — 简约信尾 · 协调版
+   容器：通栏实色纸带，硬边接缝，直达页底
+   数据区：静默索引条目 —— 与链接列共用同一套词汇
+   （1px 发丝线、悬停变色 + 下划线扫入），无外来装饰
    ========================================== */
 
 :root {
@@ -11,7 +12,7 @@
 }
 
 /* ---------- 容器：通栏实色纸带 ----------
-   背景图在纸带上缘被硬边切断，1px 发丝线
+   背景图在纸带上缘被硬边切断，内层 1px 发丝线
    与色变接缝重合，形成一条干脆的"落地线"。 */
 .global-footer.glass-footer {
   max-width: none;                 /* 通栏铺满视口 */
@@ -32,7 +33,7 @@
   max-width: 1200px;
   margin: 0 auto;
   padding: 2.4rem 0 2.2rem;
-  border-top: 1px solid var(--footer-rule);  /* 与纸带上缘重合的接缝线 */
+  border-top: 1px solid var(--footer-rule);
   position: relative;
   animation: footer-rise 0.55s ease both;
 }
@@ -62,7 +63,7 @@
 
 .footer-col { display: flex; flex-direction: column; gap: 1.05rem; }
 
-/* 栏目标题：小号大写标签 */
+/* ---------- 栏目标题 ---------- */
 .footer-col-title {
   display: block;
   font-family: var(--font-sans);
@@ -147,68 +148,77 @@
 }
 .social-capsule:hover i { opacity: 1; transform: translateY(-1px); }
 
-/* ---------- 数据区：编辑式数据条 ----------
-   移除图标，以顶部发丝线分栏；
-   悬停时主题色短线从左向右扫过，数字转为强调色。 */
+/* ---------- 数据区：静默索引条目 ----------
+   与链接列同一套语法：发丝线分条、悬停变色 + 下划线扫入；
+   图标是条目旁的小号字符（呼应栏目标题与社交图标），
+   数字是全列唯一的粗重音。无卡片、无填充、无竖线。 */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 1.5rem 2.2rem;
+  column-gap: 1.5rem;
 }
-.stats-grid-item {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  padding: 0.95rem 0 0.1rem;
-  background: transparent;
-  border: 0;
-  border-radius: 0;
-  backdrop-filter: none;
-}
-.stats-grid-item i { display: none; }   /* 图标退场 */
 
-/* 每项顶部的发丝线 */
-.stats-grid-item::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: var(--footer-hairline);
+.stats-grid-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  padding: 0.72rem 0 0.8rem;
+  border-top: 1px solid var(--footer-hairline);  /* 与底栏、容器同款发丝线 */
+  background: transparent;
 }
-/* 悬停扫过的主题色短线 */
-.stats-grid-item::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 0;
-  height: 1px;
-  background: var(--accent-color);
-  transition: width 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+
+/* 图标：条目左侧的小号字符 */
+.stats-grid-item i {
+  margin-top: 0.18rem;
+  width: 0.85rem;
+  font-size: 0.72rem;
+  line-height: 1;
+  text-align: center;
+  color: var(--accent-color);
+  opacity: 0.6;
+  transition: opacity 0.25s ease, transform 0.25s ease;
 }
-.stats-grid-item:hover::after { width: 100%; }
+.stats-grid-item:hover i { opacity: 1; transform: translateY(-1px); }
+
+/* 心跳项：页脚里唯一持续脉动的"活物" */
+.stats-grid-item i.fa-heartbeat {
+  animation: stat-pulse 2s ease-in-out infinite;
+}
+@keyframes stat-pulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.15); }
+}
 
 .stats-grid-info {
   display: flex;
   flex-direction: column;
   min-width: 0;
 }
+
 .stats-grid-label {
   font-family: var(--font-sans);
-  font-size: 0.66rem;
+  font-size: 0.64rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.12em;
+  line-height: 1;
   color: var(--footer-muted);
+  transition: color 0.25s ease;
 }
+.stats-grid-item:hover .stats-grid-label { color: var(--text-color); }
+
+/* 数字：加粗的主角，悬停时下线扫入（与全局链接下划线同为 1px） */
 .stats-grid-number {
-  margin-top: 0.3rem;
+  position: relative;
+  align-self: flex-start;          /* 下划线只贴合数字本身的宽度 */
+  max-width: 100%;
+  margin-top: 0.45rem;
+  padding-bottom: 2px;
   font-family: var(--font-mono);
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   font-weight: 600;
   line-height: 1.15;
+  letter-spacing: -0.01em;
   font-variant-numeric: tabular-nums;
   color: var(--text-color);
   white-space: nowrap;
@@ -216,13 +226,28 @@
   text-overflow: ellipsis;
   transition: color 0.25s ease;
 }
+.stats-grid-number::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 1px;
+  background: var(--accent-color);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
 .stats-grid-item:hover .stats-grid-number { color: var(--accent-color); }
+.stats-grid-item:hover .stats-grid-number::after { transform: scaleX(1); }
+
 .stats-grid-sub {
-  margin-top: 0.2rem;
+  margin-top: 0.3rem;
   font-family: var(--font-mono);
-  font-size: 0.68rem;
+  font-size: 0.66rem;
+  letter-spacing: 0.02em;
   color: var(--footer-muted);
-  opacity: 0.75;
+  opacity: 0.72;
 }
 
 /* ---------- 底栏 ---------- */
@@ -303,7 +328,6 @@
 @media (max-width: 640px) {
   .footer-container { padding: 2rem 0 1.8rem; }
   .footer-grid { grid-template-columns: 1fr; gap: 1.9rem; }
-  .stats-grid { grid-template-columns: 1fr 1fr; gap: 1.2rem 1.5rem; }
   .footer-legal-panel {
     flex-direction: column;
     align-items: center;
@@ -311,4 +335,15 @@
     gap: 0.7rem;
   }
   .copyright-area, .legal-links-cluster { justify-content: center; }
+}
+
+@media (max-width: 480px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); column-gap: 1.1rem; }
+}
+
+/* 尊重系统"减弱动态效果"设置 */
+@media (prefers-reduced-motion: reduce) {
+  .footer-container { animation: none; }
+  .stats-grid-item i.fa-heartbeat { animation: none; }
+  .stats-grid-number::after { transition: none; }
 }
