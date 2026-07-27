@@ -25,7 +25,7 @@
   <noscript>
     <div
       style="background: #b45b63; color: white; text-align: center; padding: 12px 16px; font-size: 0.9rem; position: sticky; top: 0; z-index: 1000;">
-      诶呀！您的浏览器似乎未启用 JavaScript，或您是 AI （或者爬虫）？<br>不过别担心，我们提供无需 JS 即可访问全部内容的静态镜像页面，请移步：
+      诶呀！您的浏览器似乎未启用 JavaScript，或您使用了爬虫（或 AI ）？<br>不过别担心，我们提供无需 JS 即可访问全部内容的静态镜像页面，请移步：
       <a href="/nojs.html" style="color: white; font-weight: bold; text-decoration: underline;">静态镜像版 /nojs.html</a>
       以获得更好的体验 。
     </div>
@@ -41,83 +41,95 @@
 
       <main class="main-content-area" role="main" aria-live="polite">
         <div class="container">
-          <div class="hero landing-hero">
-            <div class="eyebrow">WELCOME</div>
-            <h1>GaoXinYang's Website</h1>
-            <p class="hero-copy">谢谢你在茫茫互联网世界中找到我</p>
-            <div class="hero-actions">
-              <a href="#blogHome" class="button button-primary">进入首页</a>
-              <a href="/about/" class="button button-secondary">了解我</a>
+          <!-- ========== 首页开场：信头 + 姓名 + 印章 ========== -->
+          <section class="home-hero">
+            <div class="hero-meta">
+              <span class="hero-path">~/gaoxinyang · personal site</span>
+              <span class="hero-clock">
+                <i class="live-dot" aria-hidden="true"></i>
+                <span id="live-clock">--:--:--</span>
+              </span>
             </div>
-            <div class="scroll-indicator"><i class="fas fa-chevron-down"></i> 继续下滑，进入博客</div>
-          </div>
 
-          <section class="blog-home-intro" id="blogHome">
-            <div class="section-eyebrow">HOME</div>
-            <h2>最新文章与作品</h2>
-            <p class="section-copy">这里有最新文章、作品与主题标签。每次下滑，都是一段新的文字旅程。</p>
+            <p class="hero-greeting" id="dynamic-greeting">你好</p>
+
+            <h1 class="hero-name">
+              Gao<span class="hero-name-dot">·</span>XinYang
+              <span class="hero-seal" aria-hidden="true">G</span>
+            </h1>
+
+            <p class="hero-copy">
+              谢谢你在茫茫互联网世界中找到我。<br />
+              这里写文章、做作品，也记录思考的吉光片羽。
+            </p>
+
+            <div class="hero-actions">
+              <a href="#blogHome" class="hero-btn hero-btn--solid">进入首页 <i class="fas fa-arrow-down"></i></a>
+              <a href="/about/" class="hero-btn hero-btn--line">了解我</a>
+            </div>
+
+            <a href="#blogHome" class="hero-scroll-hint">
+              <span>继续下滑，进入博客</span>
+              <i class="fas fa-chevron-down"></i>
+            </a>
           </section>
 
-          <div class="stats-grid" id="statsContainer">
-            <div class="stat-card">
-              <div class="stat-icon"><i class="fas fa-spinner fa-pulse"></i></div>
-              <div class="stat-number">—</div>
-              <div class="stat-label">文章总数</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon"><i class="fas fa-feather-alt"></i></div>
-              <div class="stat-number">—</div>
-              <div class="stat-label">总字数</div>
-              <div class="stat-sub">字里行间</div>
-            </div>
-            <div class="stat-card">
-              <div class="stat-icon"><i class="fas fa-cube"></i></div>
-              <div class="stat-number">—</div>
-              <div class="stat-label">作品数量</div>
-            </div>
-          </div>
+          <!-- ========== 首页主体 ========== -->
+          <main class="home-main" id="blogHome">
 
-          <div class="tags-showcase">
-            <div class="tags-section">
-              <h3><i class="fas fa-book-open"></i> 文章星系</h3>
-              <div id="articleTagsList" class="tags-list">
-                <span class="tag">加载中...</span>
+            <!-- 01 · 统计 -->
+            <section class="home-section reveal">
+              <header class="section-head">
+                <span class="section-index">01</span>
+                <h2 class="section-title">最新文章与作品</h2>
+                <span class="section-rule" aria-hidden="true"></span>
+                <span class="section-badge" id="statsUpdateBadge"></span>
+              </header>
+              <p class="section-sub">这里有最新文章、作品与主题标签。每次下滑，都是一段新的文字旅程。</p>
+              <div class="stats-strip" id="statsContainer" aria-live="polite">
+                <div class="stats-loading"><i class="fas fa-circle-notch fa-spin"></i>加载中…</div>
               </div>
-            </div>
-            <div class="tags-section">
-              <h3><i class="fas fa-code"></i> 创意工坊</h3>
-              <div id="workTagsList" class="tags-list">
-                <span class="tag">加载中...</span>
+            </section>
+
+            <!-- 02 · 标签 -->
+            <section class="home-section reveal">
+              <header class="section-head">
+                <span class="section-index">02</span>
+                <h2 class="section-title">按标签漫游</h2>
+                <span class="section-rule" aria-hidden="true"></span>
+              </header>
+              <div class="tags-grid">
+                <div class="tags-block">
+                  <h3 class="tags-block-title"><i class="fas fa-hashtag"></i>文章星系</h3>
+                  <div class="tags-list" id="articleTagsList"><span class="tag">加载中…</span></div>
+                </div>
+                <div class="tags-block tags-block--side">
+                  <h3 class="tags-block-title"><i class="fas fa-flask"></i>创意工坊</h3>
+                  <div class="tags-list" id="workTagsList"><span class="tag">加载中…</span></div>
+                </div>
               </div>
-            </div>
-          </div>
+            </section>
 
-          <div class="last-update-badge" id="statsUpdateBadge"></div>
+            <!-- 03 · 语录（可换一句） -->
+            <section class="home-section home-section--quote reveal">
+              <blockquote class="inspire-quote">
+                <i class="fas fa-quote-left quote-mark" aria-hidden="true"></i>
+                <p>代码是写给人读的，只是顺便能在机器上运行。</p>
+                <cite class="inspire-author">Harold Abelson</cite>
+              </blockquote>
+              <button class="quote-refresh" id="quoteRefresh" type="button" title="换一句" aria-label="换一句">
+                <i class="fas fa-sync-alt" aria-hidden="true"></i>
+              </button>
+            </section>
 
-          <div class="quick-site-nav">
-            <div class="quick-nav-links">
-              <a href="/">首页</a>
-              <a href="/about/">关于</a>
-              <a href="/articles/">文章</a>
-              <a href="/archive/">归档</a>
-              <a href="/works/">作品</a>
-              <a href="/friends/">友链</a>
-              <a href="/contact/">留言板</a>
-            </div>
-          </div>
-
-          <div class="vercount-stats">
-            <div class="stat-item">
-              <i class="fas fa-chart-line"></i> 全站总访问量
-              <span id="vercount_value_site_pv" class="stat-number">-</span>
-              <span style="margin-left: 2px;">次</span>
-            </div>
-            <div class="stat-item">
-              <i class="fas fa-user-friends"></i> 全站总访客数
-              <span id="vercount_value_site_uv" class="stat-number">-</span>
-              <span style="margin-left: 2px;">人</span>
-            </div>
-          </div>
+            <!-- 快捷导航 -->
+            <nav class="quick-site-nav reveal" aria-label="全站快捷导航">
+              <div class="quick-nav-links">
+                <a href="/">首页</a><a href="/about/">关于</a><a href="/articles/">文章</a>
+                <a href="/archive/">归档</a><a href="/works/">作品</a><a href="/friends/">友链</a><a href="/contact/">留言板</a>
+              </div>
+            </nav>
+          </main>
         </div>
       </main>
     </div>
