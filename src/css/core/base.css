@@ -31,7 +31,7 @@ body {
   color: var(--text-color);
   line-height: var(--line-height-base);
   text-rendering: optimizeLegibility;
-  padding: 12px;
+  padding: 0px;
   min-height: 100vh;
   overflow-x: hidden;
   transition: background-color 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94),
@@ -253,7 +253,6 @@ a:hover {
 
 /* ---------- 排版增强（大屏） ---------- */
 @media (min-width: 768px) {
-  body { padding: 20px; }
   h1 { margin-top: 0.5em; margin-bottom: 1.2em; }
   h2 { padding-bottom: 0.4em; margin-bottom: 1.2em; }
   blockquote { padding: 1.2em 1.6em; margin: 1.8em 0; }

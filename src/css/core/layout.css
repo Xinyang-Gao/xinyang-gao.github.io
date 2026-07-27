@@ -932,7 +932,6 @@
 
 /* 桌面 (≥ 1024px) */
 @media (min-width: 1024px) {
-  body { padding: 24px; }
   .container {
     margin: calc(var(--nav-height) + 25px) auto 50px auto;
     padding: var(--container-padding);

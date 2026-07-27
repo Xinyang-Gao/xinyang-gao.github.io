@@ -114,6 +114,8 @@ export function generatePersonalCardHTML() {
       <div class="profile-tags">
         <span class="tag tag-interest">Python</span>
         <span class="tag tag-interest">Html</span>
+        <span class="tag tag-interest">JavaScript</span>
+        <span class="tag tag-interest">TypeScript</span>
         <span class="tag tag-interest">Scratch</span>
         <span class="tag tag-interest">绘画</span>
         <span class="tag tag-interest">轮滑</span>
