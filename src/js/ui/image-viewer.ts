@@ -1,531 +1,632 @@
-// /js/ui/image-viewer.ts
-// 现代化的图片查看器，支持缩放、旋转、拖拽、键盘快捷键
-// 样式由外部 CSS (/css/components/image-viewer.css) 提供
+/**
+ * image-viewer.ts — 极简图片查看器（重构 v2）
+ *
+ * 交互模型：
+ *  - 滚轮 / 双指捏合：以光标为锚点缩放（0.5x – 5x）
+ *  - 双击：定点放大 2.5x / 还原
+ *  - 拖拽：放大后自由平移；1x 时阻尼拖动，横滑松手切换上/下一张
+ *  - 键盘：← → 切换，+ − 缩放，0 重置，R 旋转，F 全屏，Esc 关闭
+ *
+ * 生命周期：全部监听挂载在同一个 AbortController 上，destroy() 一次性中断，零残留
+ */
 
 export interface ImageItem {
   src: string;
   alt?: string;
   title?: string;
+  /** 可选：胶片条缩略图，缺省时回退到 src */
+  thumb?: string;
 }
 
 export interface ImageViewerOptions {
   onClose?: () => void;
+  /** 到两端后是否循环浏览，默认 true；传 false 恢复"到头停止"行为 */
+  loop?: boolean;
 }
 
+const MIN_SCALE = 0.5;
+const MAX_SCALE = 5;
+const ZOOM_STEP = 1.35;
+const SWIPE_DISTANCE = 72;
+
+const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
+const pad2 = (n: number) => String(n).padStart(2, '0');
+const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+
+const svg = (inner: string) =>
+  `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
+
+const ICONS = {
+  close: svg('<path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/>'),
+  prev: svg('<path d="M14.5 5.5L8 12l6.5 6.5"/>'),
+  next: svg('<path d="M9.5 5.5L16 12l-6.5 6.5"/>'),
+  zoomIn: svg('<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3M11 8.5v5M8.5 11h5"/>'),
+  zoomOut: svg('<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3M8.5 11h5"/>'),
+  rotate: svg('<polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>'),
+  fsEnter: svg('<path d="M9 4H4v5M15 4h5v5M9 20H4v-5M15 20h5v-5"/>'),
+  fsExit: svg('<path d="M4 9h5V4M20 9h-5V4M4 15h5v5M20 15h-5v5"/>'),
+};
+
 export class ImageViewer {
-  // 单例管理，确保同时只有一个查看器
-  static #currentInstance: ImageViewer | null = null;
+  private static current: ImageViewer | null = null;
 
-  // 私有字段
-  #images: ImageItem[];
-  #currentIndex: number;
-  #transform: { scale: number; translateX: number; translateY: number };
-  #rotateDeg: number;
-  #isDragging: boolean;
-  #dragStart: { x: number; y: number };
-  #viewerElement: HTMLElement | null;
-  #viewerImage: HTMLImageElement | null;
-  #viewerWrapper: HTMLElement | null;
-  #loadingEl: HTMLElement | null;
-  #errorEl: HTMLElement | null;
-  #imageLoadError: boolean;
-  #currentLoadId: number;
-  #abortController: AbortController | null;
-  #keydownHandler: ((e: KeyboardEvent) => void) | null;
-  #onClose: (() => void) | null;
-  #buttons: { [key: string]: HTMLElement | null };
-  #dragHandlers: {
-    onPointerDown: (e: PointerEvent) => void;
-    onPointerMove: (e: PointerEvent) => void;
-    onPointerUp: () => void;
-  } | null;
-  #rafId: number | null;
-
-  constructor(images: ImageItem[], startIndex: number = 0, options: ImageViewerOptions = {}) {
-    console.log('[ImageViewer] 构造函数调用', {
-      imageCount: images.length,
-      startIndex,
-      options,
-    });
-
-    // 关闭已存在的查看器，确保单例
-    if (ImageViewer.#currentInstance) {
-      ImageViewer.#currentInstance.close(true);
-    }
-    ImageViewer.#currentInstance = this;
-
-    this.#images = images;
-    this.#currentIndex = Math.min(Math.max(0, startIndex), this.#images.length - 1);
-    this.#onClose = options.onClose || null;
-    this.#transform = { scale: 1, translateX: 0, translateY: 0 };
-    this.#rotateDeg = 0;
-    this.#isDragging = false;
-    this.#dragStart = { x: 0, y: 0 };
-    this.#viewerElement = null;
-    this.#viewerImage = null;
-    this.#viewerWrapper = null;
-    this.#loadingEl = null;
-    this.#errorEl = null;
-    this.#imageLoadError = false;
-    this.#currentLoadId = 0;
-    this.#abortController = null;
-    this.#keydownHandler = null;
-    this.#buttons = {};
-    this.#dragHandlers = null;
-    this.#rafId = null;
-
-    this.#init();
+  /** 静态便捷方法 */
+  static open(images: ImageItem[], startIndex = 0, options: ImageViewerOptions = {}) {
+    return new ImageViewer(images, startIndex, options);
+  }
+  static close() {
+    ImageViewer.current?.destroy();
   }
 
-  // ---------- 初始化 ----------
-  #init(): void {
-    console.log('[ImageViewer] 初始化开始');
-    this.#createDOM();
-    this.#updateImage();
-    this.#bindEvents();
-    this.#updateCounter();
+  // ---- 状态 ----
+  private images: ImageItem[];
+  private index: number;
+  private loop: boolean;
+  private onCloseCb?: () => void;
+  private destroyed = false;
+
+  private tx = { scale: 1, x: 0, y: 0, rotate: 0 };
+
+  // ---- DOM ----
+  private root!: HTMLElement;
+  private stage!: HTMLElement;
+  private frame!: HTMLElement;
+  private img!: HTMLImageElement;
+  private spinner!: HTMLElement;
+  private errorBtn!: HTMLButtonElement;
+  private progress!: HTMLElement;
+  private curEl!: HTMLElement;
+  private captionEl!: HTMLElement;
+  private closeBtn!: HTMLButtonElement;
+  private prevBtn!: HTMLButtonElement;
+  private nextBtn!: HTMLButtonElement;
+  private hud!: HTMLElement;
+  private controls!: HTMLElement;
+  private strip!: HTMLElement;
+
+  // ---- 生命周期 / 竞态 ----
+  private listeners = new AbortController();
+  private loadToken = 0;
+  private pendingDir: -1 | 0 | 1 = 0;
+  private hudTimer = 0;
+  private savedOverflow = '';
+  private lastFocused: HTMLElement | null = null;
+
+  // ---- 手势 ----
+  private pointers = new Map<number, { x: number; y: number }>();
+  private pinch: { dist: number; scale: number; x: number; y: number; midX: number; midY: number } | null = null;
+  private dragStart = { x: 0, y: 0 };
+  private dragBase = { x: 0, y: 0 };
+  private moved = false;
+  private downTarget: EventTarget | null = null;
+
+  constructor(images: ImageItem[], startIndex = 0, options: ImageViewerOptions = {}) {
+    ImageViewer.current?.destroy();
+    ImageViewer.current = this;
+
+    this.images = (images || []).filter((it) => it && it.src);
+    if (!this.images.length) throw new Error('ImageViewer: 没有可用的图片');
+
+    this.loop = options.loop ?? true;
+    this.onCloseCb = options.onClose;
+    this.index = clamp(startIndex, 0, this.images.length - 1);
+
+    this.build();
+    this.bind();
+    this.buildStrip();
+
+    this.savedOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    requestAnimationFrame(() => {
-      if (this.#viewerElement) {
-        this.#viewerElement.classList.add('active');
-        console.log('[ImageViewer] 激活类已添加，查看器应可见');
-      } else {
-        console.warn('[ImageViewer] viewerElement 不存在，无法激活');
-      }
-    });
+    this.lastFocused = document.activeElement as HTMLElement | null;
+
+    this.show(this.index, 0);
+    requestAnimationFrame(() => this.root.classList.add('is-open'));
+    this.closeBtn.focus({ preventScroll: true });
   }
 
-  // ---------- DOM 创建 ----------
-  #createDOM(): void {
-    console.log('[ImageViewer] 创建 DOM 结构');
+  /* ================= 公开 API ================= */
 
-    // 移除可能遗留的旧查看器 DOM（以防万一）
-    const existingViewer = document.querySelector('.modern-image-viewer');
-    if (existingViewer) {
-      existingViewer.remove();
-    }
+  prev() { this.nav(-1); }
+  next() { this.nav(1); }
+  go(index: number) {
+    if (index === this.index || index < 0 || index >= this.images.length) return;
+    this.show(index, index > this.index ? 1 : -1);
+  }
 
-    const viewer = document.createElement('div');
-    viewer.className = 'modern-image-viewer';
-    viewer.innerHTML = `
-      <div class="viewer-overlay"></div>
-      <div class="viewer-container">
-        <button class="viewer-close" aria-label="关闭">&times;</button>
-        <button class="viewer-prev" aria-label="上一张">‹</button>
-        <button class="viewer-next" aria-label="下一张">›</button>
-        <div class="viewer-toolbar">
-          <button class="viewer-zoom-in" aria-label="放大">+</button>
-          <button class="viewer-zoom-out" aria-label="缩小">-</button>
-          <button class="viewer-reset" aria-label="重置">重置</button>
-          <button class="viewer-rotate" aria-label="旋转">⟳</button>
-          <button class="viewer-reload" aria-label="重新加载">↻</button>
-          <span class="viewer-counter">1 / 1</span>
+  destroy() {
+    if (this.destroyed) return;
+    this.destroyed = true;
+
+    this.loadToken++;          // 使所有在途加载的回调失效
+    this.listeners.abort();    // 移除全部事件监听
+    window.clearTimeout(this.hudTimer);
+
+    this.root.classList.remove('is-open');
+    const el = this.root;
+    window.setTimeout(() => el.remove(), 320);
+
+    document.body.style.overflow = this.savedOverflow;
+    if (ImageViewer.current === this) ImageViewer.current = null;
+    this.lastFocused?.focus?.({ preventScroll: true });
+    this.onCloseCb?.();
+  }
+
+  /* ================= 构建 ================= */
+
+  private build() {
+    const root = document.createElement('div');
+    root.className = 'modern-image-viewer';
+    root.setAttribute('role', 'dialog');
+    root.setAttribute('aria-modal', 'true');
+    root.setAttribute('aria-label', '图片查看器');
+
+    root.innerHTML = `
+      <div class="viewer-progress" aria-hidden="true"></div>
+
+      <header class="viewer-top">
+        <div class="viewer-meta">
+          <div class="viewer-count" aria-live="polite">
+            <span class="viewer-cur">--</span><span class="viewer-sep">/</span><span class="viewer-total">${pad2(this.images.length)}</span>
+          </div>
+          <p class="viewer-caption" hidden></p>
         </div>
-        <div class="viewer-image-wrapper">
-          <img class="viewer-image" alt="" draggable="false">
-          <div class="viewer-loading" style="display: none;">加载中</div>
-          <div class="viewer-error" style="display: none;"></div>
-        </div>
+        <button class="viewer-close" type="button" aria-label="关闭（Esc）">${ICONS.close}</button>
+      </header>
+
+      <div class="viewer-stage">
+        <figure class="viewer-frame">
+          <img class="viewer-image" alt="" draggable="false" decoding="async" />
+        </figure>
+        <div class="viewer-spinner" hidden aria-hidden="true"></div>
+        <button class="viewer-error" type="button" hidden>加载失败 · 点击重试</button>
       </div>
+
+      <button class="viewer-nav viewer-prev" type="button" aria-label="上一张（←）">${ICONS.prev}</button>
+      <button class="viewer-nav viewer-next" type="button" aria-label="下一张（→）">${ICONS.next}</button>
+
+      <div class="viewer-hud" aria-hidden="true">100%</div>
+
+      <div class="viewer-controls" role="toolbar" aria-label="查看器工具">
+        <button type="button" data-act="zoom-out" aria-label="缩小（−）">${ICONS.zoomOut}</button>
+        <button type="button" data-act="zoom-in" aria-label="放大（+）">${ICONS.zoomIn}</button>
+        <button type="button" data-act="rotate" aria-label="旋转（R）">${ICONS.rotate}</button>
+        <button type="button" data-act="fullscreen" aria-label="全屏（F）">
+          <span class="i-enter">${ICONS.fsEnter}</span><span class="i-exit">${ICONS.fsExit}</span>
+        </button>
+      </div>
+
+      <nav class="viewer-strip" aria-label="图片列表"></nav>
     `;
 
-    document.body.appendChild(viewer);
-    this.#viewerElement = viewer;
-    this.#viewerImage = viewer.querySelector('.viewer-image');
-    this.#viewerWrapper = viewer.querySelector('.viewer-image-wrapper');
-    this.#loadingEl = viewer.querySelector('.viewer-loading');
-    this.#errorEl = viewer.querySelector('.viewer-error');
+    document.body.appendChild(root);
 
-    this.#buttons = {
-      zoomIn: viewer.querySelector('.viewer-zoom-in'),
-      zoomOut: viewer.querySelector('.viewer-zoom-out'),
-      reset: viewer.querySelector('.viewer-reset'),
-      rotate: viewer.querySelector('.viewer-rotate'),
-      reload: viewer.querySelector('.viewer-reload'),
-      prev: viewer.querySelector('.viewer-prev'),
-      next: viewer.querySelector('.viewer-next'),
-      close: viewer.querySelector('.viewer-close'),
-      overlay: viewer.querySelector('.viewer-overlay'),
-    };
-
-    console.log('[ImageViewer] DOM 创建完成，元素已追加到 body');
+    const q = <T extends HTMLElement>(sel: string) => root.querySelector<T>(sel)!;
+    this.root = root;
+    this.stage = q('.viewer-stage');
+    this.frame = q('.viewer-frame');
+    this.img = q<HTMLImageElement>('.viewer-image');
+    this.spinner = q('.viewer-spinner');
+    this.errorBtn = q<HTMLButtonElement>('.viewer-error');
+    this.progress = q('.viewer-progress');
+    this.curEl = q('.viewer-cur');
+    this.captionEl = q('.viewer-caption');
+    this.closeBtn = q<HTMLButtonElement>('.viewer-close');
+    this.prevBtn = q<HTMLButtonElement>('.viewer-prev');
+    this.nextBtn = q<HTMLButtonElement>('.viewer-next');
+    this.hud = q('.viewer-hud');
+    this.controls = q('.viewer-controls');
+    this.strip = q('.viewer-strip');
   }
 
-  // ---------- 加载状态控制 ----------
-  #showLoading(): void {
-    if (this.#loadingEl) {
-      this.#loadingEl.style.display = 'flex';
-      console.log('[ImageViewer] 显示加载中');
-    }
-    if (this.#viewerImage) this.#viewerImage.style.display = 'none';
-    if (this.#errorEl) this.#errorEl.style.display = 'none';
-  }
+  /* ================= 事件 ================= */
 
-  #hideLoading(): void {
-    if (this.#loadingEl) this.#loadingEl.style.display = 'none';
-  }
+  private bind() {
+    const { signal } = this.listeners;
+    const on = (
+      target: EventTarget,
+      type: string,
+      fn: (e: Event) => void,
+      opts?: AddEventListenerOptions
+    ) => target.addEventListener(type, fn, { signal, ...opts });
 
-  #showError(message: string): void {
-    console.warn('[ImageViewer] 显示错误:', message);
-    if (!this.#errorEl) return;
-    const imgData = this.#images[this.#currentIndex];
-    const src = imgData?.src || '未知地址';
-    const alt = imgData?.alt || '';
-    const title = imgData?.title || '';
+    on(this.closeBtn, 'click', () => this.destroy());
+    on(this.prevBtn, 'click', () => this.nav(-1));
+    on(this.nextBtn, 'click', () => this.nav(1));
+    on(this.errorBtn, 'click', () => this.show(this.index, 0));
 
-    this.#errorEl.innerHTML = `
-      <div style="font-weight:600; margin-bottom:8px;">${this.#escapeHtml(message)}</div>
-      <div style="font-size:13px; word-break:break-all; line-height:1.5;">
-        <div><strong>来源：</strong><span title="${this.#escapeHtml(src)}">${this.#truncateUrl(src)}</span></div>
-        ${alt ? `<div><strong>描述：</strong>${this.#escapeHtml(alt)}</div>` : ''}
-        ${title ? `<div><strong>标题：</strong>${this.#escapeHtml(title)}</div>` : ''}
-        <div style="margin-top:8px; color:#ffaa00;">可能原因：网络中断、图片不存在、跨域限制</div>
-        <div style="font-size:12px; color:#aaa;">请检查网络或点击重载按钮重试</div>
-      </div>
-    `;
-    this.#errorEl.style.display = 'flex';
-    if (this.#viewerImage) this.#viewerImage.style.display = 'none';
-    this.#hideLoading();
-    this.#setControlsDisabled(true);
-    this.#imageLoadError = true;
-  }
-
-  #hideError(): void {
-    if (this.#errorEl) this.#errorEl.style.display = 'none';
-  }
-
-  #showImage(): void {
-    console.log('[ImageViewer] 图片显示成功');
-    if (this.#viewerImage) this.#viewerImage.style.display = 'block';
-    this.#hideLoading();
-    this.#hideError();
-    this.#setControlsDisabled(false);
-    this.#imageLoadError = false;
-  }
-
-  #setControlsDisabled(disabled: boolean): void {
-    const keys = ['zoomIn', 'zoomOut', 'reset', 'rotate'] as const;
-    for (const key of keys) {
-      const btn = this.#buttons[key];
-      if (btn) {
-        (btn as HTMLButtonElement).disabled = disabled;
-      }
-    }
-    const reloadBtn = this.#buttons.reload;
-    if (reloadBtn) {
-      (reloadBtn as HTMLButtonElement).disabled = false;
-      reloadBtn.classList.toggle('highlight', disabled);
-    }
-  }
-
-  // ---------- 图片切换与更新 ----------
-  #updateImage(): void {
-    console.log('[ImageViewer] 更新图片，索引:', this.#currentIndex);
-    if (!this.#viewerImage) {
-      console.warn('[ImageViewer] viewerImage 不存在，无法更新');
-      return;
-    }
-    const imgData = this.#images[this.#currentIndex];
-    if (!imgData) {
-      console.warn('[ImageViewer] 当前索引无图片数据');
-      return;
-    }
-
-    // 取消之前的加载
-    this.#abortController?.abort();
-    this.#abortController = new AbortController();
-
-    this.#imageLoadError = false;
-    this.#rotateDeg = 0;
-    this.#setControlsDisabled(false);
-
-    const loadId = ++this.#currentLoadId;
-    console.log('[ImageViewer] 加载图片:', imgData.src);
-
-    this.#showLoading();
-    this.#viewerImage.style.opacity = '0';
-    // 清空旧图片，取消正在进行的加载
-    this.#viewerImage.src = '';
-
-    // 使用 AbortController 监听中止
-    const signal = this.#abortController.signal;
-
-    // 直接使用 viewerImage 加载
-    this.#viewerImage.onload = () => {
-      if (signal.aborted || loadId !== this.#currentLoadId) return;
-      console.log('[ImageViewer] 图片加载成功');
-      this.#viewerImage.style.opacity = '1';
-      this.#showImage();
-      this.#resetTransform();
-      this.#applyTransform();
-    };
-
-    this.#viewerImage.onerror = () => {
-      if (signal.aborted || loadId !== this.#currentLoadId) return;
-      console.warn('[ImageViewer] 图片加载失败（onerror）');
-      this.#handleLoadError(imgData);
-    };
-
-    this.#viewerImage.src = imgData.src;
-    this.#updateCounter();
-  }
-
-  #handleLoadError(imgData: ImageItem): void {
-    console.error('[ImageViewer] 图片加载失败:', imgData.src);
-    this.#showError('诶呀…图片好像找不到了…');
-  }
-
-  #switchImage(direction: number): void {
-    const newIndex =
-      (this.#currentIndex + direction + this.#images.length) % this.#images.length;
-    if (newIndex === this.#currentIndex) return;
-    this.#currentIndex = newIndex;
-    console.log('[ImageViewer] 切换到图片索引:', this.#currentIndex);
-    this.#updateImage();
-  }
-
-  #reloadCurrentImage(): void {
-    console.log('[ImageViewer] 手动重载当前图片');
-    if (this.#imageLoadError) {
-      this.#imageLoadError = false;
-    }
-    this.#updateImage();
-  }
-
-  // ---------- 变换操作 ----------
-  #resetTransform(): void {
-    this.#transform = { scale: 1, translateX: 0, translateY: 0 };
-    this.#rotateDeg = 0;
-    this.#applyTransform();
-  }
-
-  #applyTransform(): void {
-    if (!this.#viewerImage || this.#imageLoadError) return;
-    // 使用 requestAnimationFrame 合并更新
-    if (this.#rafId) {
-      cancelAnimationFrame(this.#rafId);
-      this.#rafId = null;
-    }
-    this.#rafId = requestAnimationFrame(() => {
-      const { translateX, translateY, scale } = this.#transform;
-      this.#viewerImage!.style.transform =
-        `translate(${translateX}px, ${translateY}px) scale(${scale}) rotate(${this.#rotateDeg}deg)`;
-      this.#rafId = null;
+    // 点击空白处关闭：必须 pointerdown 与 click 都落在舞台上
+    // （Pointer Capture 会把 click 目标重定向到舞台，需借助 downTarget 判别真实起点）
+    on(this.stage, 'click', (e) => {
+      if (this.moved) return;
+      if (e.target === this.stage && this.downTarget === this.stage) this.destroy();
     });
-  }
 
-  #zoom(delta: number): void {
-    if (this.#imageLoadError) return;
-    let newScale = Math.min(Math.max(0.5, this.#transform.scale + delta), 5);
-    if (newScale !== this.#transform.scale) {
-      const maxTranslate = Math.max(200, (newScale - 1) * 400);
-      this.#transform.translateX = Math.min(
-        Math.max(this.#transform.translateX, -maxTranslate),
-        maxTranslate
-      );
-      this.#transform.translateY = Math.min(
-        Math.max(this.#transform.translateY, -maxTranslate),
-        maxTranslate
-      );
-      this.#transform.scale = newScale;
-      this.#applyTransform();
-    }
-  }
-
-  #rotateImage(): void {
-    if (this.#imageLoadError) return;
-    this.#rotateDeg = (this.#rotateDeg + 90) % 360;
-    this.#transform.translateX = 0;
-    this.#transform.translateY = 0;
-    this.#applyTransform();
-  }
-
-  // ---------- 拖拽支持 ----------
-  #initDragEvents(): void {
-    if (!this.#viewerImage) return;
-
-    const onPointerDown = (e: PointerEvent) => {
-      if (this.#imageLoadError || this.#transform.scale <= 1) return;
+    on(this.stage, 'dblclick', (e) => {
       e.preventDefault();
-      this.#isDragging = true;
-      this.#dragStart = {
-        x: e.clientX - this.#transform.translateX,
-        y: e.clientY - this.#transform.translateY,
-      };
-      this.#viewerImage!.style.cursor = 'grabbing';
-    };
+      const me = e as MouseEvent;
+      if (this.tx.scale > 1.01) this.resetTransform(true, true);
+      else this.zoomAt(me.clientX, me.clientY, 2.5, true);
+    });
 
-    const onPointerMove = (e: PointerEvent) => {
-      if (!this.#isDragging || this.#imageLoadError) return;
-      const newX = e.clientX - this.#dragStart.x;
-      const newY = e.clientY - this.#dragStart.y;
-      const maxTranslate = Math.max(200, (this.#transform.scale - 1) * 400);
-      this.#transform.translateX = Math.min(Math.max(newX, -maxTranslate), maxTranslate);
-      this.#transform.translateY = Math.min(Math.max(newY, -maxTranslate), maxTranslate);
-      this.#applyTransform();
-    };
+    on(this.stage, 'wheel', (e) => {
+      e.preventDefault();
+      const we = e as WheelEvent;
+      this.zoomAt(we.clientX, we.clientY, Math.exp(-we.deltaY * 0.0015), false);
+    }, { passive: false });
 
-    const onPointerUp = () => {
-      this.#isDragging = false;
-      if (this.#viewerImage) this.#viewerImage.style.cursor = 'grab';
-    };
+    on(this.stage, 'pointerdown', (e) => this.onPointerDown(e as PointerEvent));
+    on(window, 'pointermove', (e) => this.onPointerMove(e as PointerEvent));
+    on(window, 'pointerup', (e) => this.onPointerUp(e as PointerEvent));
+    on(window, 'pointercancel', (e) => this.onPointerUp(e as PointerEvent));
+    on(this.stage, 'dragstart', (e) => e.preventDefault());
 
-    this.#viewerImage.addEventListener('pointerdown', onPointerDown);
-    window.addEventListener('pointermove', onPointerMove);
-    window.addEventListener('pointerup', onPointerUp);
+    on(document, 'keydown', (e) => this.onKeydown(e as KeyboardEvent));
 
-    this.#dragHandlers = { onPointerDown, onPointerMove, onPointerUp };
+    // 工具栏事件委托
+    on(this.controls, 'click', (e) => {
+      const btn = (e.target as HTMLElement).closest('button[data-act]');
+      if (!btn) return;
+      switch (btn.getAttribute('data-act')) {
+        case 'zoom-in': this.zoomBy(ZOOM_STEP); break;
+        case 'zoom-out': this.zoomBy(1 / ZOOM_STEP); break;
+        case 'rotate': this.rotate(); break;
+        case 'fullscreen': this.toggleFullscreen(); break;
+      }
+    });
+
+    // 胶片条事件委托
+    on(this.strip, 'click', (e) => {
+      const btn = (e.target as HTMLElement).closest<HTMLElement>('.viewer-thumb');
+      if (!btn) return;
+      const i = Number(btn.dataset.index);
+      if (!Number.isNaN(i)) this.go(i);
+    });
   }
 
-  #cleanupDragEvents(): void {
-    if (!this.#dragHandlers) return;
-    const { onPointerDown, onPointerMove, onPointerUp } = this.#dragHandlers;
-    if (this.#viewerImage) {
-      this.#viewerImage.removeEventListener('pointerdown', onPointerDown);
-    }
-    window.removeEventListener('pointermove', onPointerMove);
-    window.removeEventListener('pointerup', onPointerUp);
-    this.#dragHandlers = null;
-  }
+  private onKeydown(e: KeyboardEvent) {
+    if (e.key === 'Tab') { this.trapFocus(e); return; }
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
 
-  // ---------- UI 更新 ----------
-  #updateCounter(): void {
-    const counter = this.#viewerElement?.querySelector('.viewer-counter');
-    if (counter) {
-      counter.textContent = `${this.#currentIndex + 1} / ${this.#images.length}`;
-    }
-    const prev = this.#buttons.prev;
-    const next = this.#buttons.next;
-    if (this.#images.length <= 1) {
-      if (prev) prev.style.display = 'none';
-      if (next) next.style.display = 'none';
-    } else {
-      if (prev) prev.style.display = 'flex';
-      if (next) next.style.display = 'flex';
-    }
-  }
-
-  // ---------- 事件绑定 ----------
-  #bindEvents(): void {
-    if (!this.#viewerElement) return;
-    console.log('[ImageViewer] 绑定事件');
-
-    // 按钮事件
-    this.#buttons.close?.addEventListener('click', () => this.close());
-    this.#buttons.overlay?.addEventListener('click', () => this.close());
-    this.#buttons.prev?.addEventListener('click', () => this.#switchImage(-1));
-    this.#buttons.next?.addEventListener('click', () => this.#switchImage(1));
-    this.#buttons.zoomIn?.addEventListener('click', () => this.#zoom(0.2));
-    this.#buttons.zoomOut?.addEventListener('click', () => this.#zoom(-0.2));
-    this.#buttons.reset?.addEventListener('click', () => this.#resetTransform());
-    this.#buttons.reload?.addEventListener('click', () => this.#reloadCurrentImage());
-    this.#buttons.rotate?.addEventListener('click', () => this.#rotateImage());
-
-    // 双击重置
-    this.#viewerImage?.addEventListener('dblclick', () => this.#resetTransform());
-
-    // 键盘事件
-    this.#keydownHandler = (e: KeyboardEvent) => this.#handleKeydown(e);
-    document.addEventListener('keydown', this.#keydownHandler);
-
-    // 拖拽
-    this.#initDragEvents();
-  }
-
-  #handleKeydown(e: KeyboardEvent): void {
-    if (!this.#viewerElement) return;
     switch (e.key) {
       case 'Escape':
-        this.close();
+        if (document.fullscreenElement) return; // 全屏时第一次 Esc 只退出全屏
+        this.destroy();
         break;
-      case 'ArrowLeft':
-        this.#switchImage(-1);
-        break;
-      case 'ArrowRight':
-        this.#switchImage(1);
-        break;
-      case '+':
-      case '=':
-        this.#zoom(0.2);
-        break;
-      case '-':
-        this.#zoom(-0.2);
-        break;
-      case 'r':
-      case 'R':
-        this.#rotateImage();
-        break;
+      case 'ArrowLeft': e.preventDefault(); this.nav(-1); break;
+      case 'ArrowRight': e.preventDefault(); this.nav(1); break;
+      case '+': case '=': e.preventDefault(); this.zoomBy(ZOOM_STEP); break;
+      case '-': case '_': e.preventDefault(); this.zoomBy(1 / ZOOM_STEP); break;
+      case '0': e.preventDefault(); this.resetTransform(true, true); break;
+      case 'r': case 'R': this.rotate(); break;
+      case 'f': case 'F': this.toggleFullscreen(); break;
     }
   }
 
-  // ---------- 关闭与清理 ----------
-  close(immediate: boolean = false): void {
-    console.log('[ImageViewer] 关闭查看器', immediate ? '立即' : '动画');
-    if (!this.#viewerElement) return;
+  private trapFocus(e: KeyboardEvent) {
+    const focusables = Array.from(
+      this.root.querySelectorAll<HTMLElement>('button:not([disabled])')
+    ).filter((el) => !el.closest('[hidden]'));
+    if (!focusables.length) return;
 
-    // 解绑事件（立即执行）
-    document.removeEventListener('keydown', this.#keydownHandler!);
-    this.#cleanupDragEvents();
-    this.#keydownHandler = null;
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    const active = document.activeElement;
 
-    // 取消正在进行的图片加载
-    this.#abortController?.abort();
-    this.#abortController = null;
+    if (e.shiftKey && (active === first || active === this.root)) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && active === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
 
-    // 清空图片引用，释放内存
-    if (this.#viewerImage) {
-      this.#viewerImage.onload = null;
-      this.#viewerImage.onerror = null;
-      this.#viewerImage.src = '';
+  /* ================= 加载与切换 ================= */
+
+  private show(index: number, dir: -1 | 0 | 1) {
+    const total = this.images.length;
+    this.index = ((index % total) + total) % total;
+    this.pendingDir = dir;
+
+    const item = this.images[this.index];
+    const token = ++this.loadToken;
+
+    // 顶部元信息
+    this.curEl.textContent = pad2(this.index + 1);
+    const caption = item.title || item.alt || '';
+    this.captionEl.textContent = caption;
+    this.captionEl.hidden = !caption;
+    this.img.alt = item.alt || item.title || '';
+
+    // 导航按钮
+    const single = total <= 1;
+    this.prevBtn.hidden = single;
+    this.nextBtn.hidden = single;
+    if (!this.loop) {
+      this.prevBtn.disabled = this.index === 0;
+      this.nextBtn.disabled = this.index === total - 1;
     }
 
-    // 取消待执行的动画帧
-    if (this.#rafId) {
-      cancelAnimationFrame(this.#rafId);
-      this.#rafId = null;
+    // 胶片条高亮 + 滚动居中
+    Array.from(this.strip.children).forEach((el, i) => {
+      el.classList.toggle('is-active', i === this.index);
+    });
+    const active = this.strip.children[this.index] as HTMLElement | undefined;
+    if (active) {
+      this.strip.scrollTo({
+        left: active.offsetLeft - (this.strip.clientWidth - active.offsetWidth) / 2,
+        behavior: 'smooth',
+      });
     }
 
-    // 从静态引用中移除
-    if (ImageViewer.#currentInstance === this) {
-      ImageViewer.#currentInstance = null;
-    }
+    // 加载状态：先隐藏旧图，避免快速切换时闪现
+    this.frame.classList.remove('in-zoom', 'in-right', 'in-left');
+    this.resetTransform(false);
+    this.spinner.hidden = false;
+    this.errorBtn.hidden = true;
+    this.progress.classList.add('is-loading');
 
-    if (immediate) {
-      // 立即移除 DOM
-      this.#viewerElement.remove();
-      this.#viewerElement = null;
-      document.body.style.overflow = '';
-      if (this.#onClose) this.#onClose();
-      console.log('[ImageViewer] 查看器已立即移除');
+    const loader = new Image();
+    loader.decoding = 'async';
+    loader.src = item.src;
+
+    const done = () => {
+      if (token !== this.loadToken || this.destroyed) return;
+      this.spinner.hidden = true;
+      this.progress.classList.remove('is-loading');
+      this.img.src = item.src;
+      this.playEnter();
+      this.preloadNeighbors();
+    };
+    const fail = () => {
+      if (token !== this.loadToken || this.destroyed) return;
+      this.spinner.hidden = true;
+      this.progress.classList.remove('is-loading');
+      this.errorBtn.hidden = false;
+    };
+
+    if (typeof loader.decode === 'function') {
+      loader.decode().then(done).catch(fail);
     } else {
-      // 动画关闭
-      this.#viewerElement.classList.remove('active');
-      document.body.style.overflow = '';
-      setTimeout(() => {
-        this.#viewerElement?.remove();
-        this.#viewerElement = null;
-        if (this.#onClose) this.#onClose();
-        console.log('[ImageViewer] 查看器已完全移除');
-      }, 300);
+      loader.onload = done;
+      loader.onerror = fail;
     }
   }
 
-  // ---------- 工具方法 ----------
-  #escapeHtml(str: string): string {
-    if (!str) return '';
-    return String(str).replace(/[&<>]/g, (m) => {
-      if (m === '&') return '&amp;';
-      if (m === '<') return '&lt;';
-      if (m === '>') return '&gt;';
-      return m;
+  private playEnter() {
+    const cls = this.pendingDir > 0 ? 'in-right' : this.pendingDir < 0 ? 'in-left' : 'in-zoom';
+    this.pendingDir = 0;
+    void this.frame.offsetWidth; // 强制重排，确保动画可重复触发
+    this.frame.classList.add(cls);
+  }
+
+  private preloadNeighbors() {
+    const total = this.images.length;
+    if (total < 2) return;
+    [(this.index + 1) % total, (this.index - 1 + total) % total].forEach((i) => {
+      const im = new Image();
+      im.decoding = 'async';
+      im.src = this.images[i].src;
     });
   }
 
-  #truncateUrl(url: string, maxLength: number = 80): string {
-    if (!url) return '';
-    if (url.length <= maxLength) return this.#escapeHtml(url);
-    const start = url.substring(0, maxLength / 2 - 3);
-    const end = url.substring(url.length - maxLength / 2 + 3);
-    return this.#escapeHtml(`${start}...${end}`);
+  private nav(dir: -1 | 1) {
+    const total = this.images.length;
+    if (total < 2) return;
+    let next = this.index + dir;
+    if (next < 0 || next >= total) {
+      if (!this.loop) return;
+      next = (next + total) % total;
+    }
+    this.show(next, dir);
+  }
+
+  /* ================= 变换 ================= */
+
+  private apply(smooth = false) {
+    this.img.classList.toggle('is-smooth', smooth);
+    const { scale, x, y, rotate } = this.tx;
+    this.img.style.transform =
+      `translate3d(${x}px, ${y}px, 0) scale(${scale}) rotate(${rotate}deg)`;
+  }
+
+  private resetTransform(smooth: boolean, flash = false) {
+    this.tx = { scale: 1, x: 0, y: 0, rotate: 0 };
+    this.apply(smooth);
+    if (flash) this.flashHud();
+  }
+
+  /** 以光标为锚点缩放，保证指针下的图像内容不动 */
+  private zoomAt(clientX: number, clientY: number, factor: number, smooth = true) {
+    const next = clamp(this.tx.scale * factor, MIN_SCALE, MAX_SCALE);
+    if (next === this.tx.scale) return;
+
+    const rect = this.stage.getBoundingClientRect();
+    const px = clientX - (rect.left + rect.width / 2);
+    const py = clientY - (rect.top + rect.height / 2);
+    const k = next / this.tx.scale;
+
+    this.tx.x = px - k * (px - this.tx.x);
+    this.tx.y = py - k * (py - this.tx.y);
+    this.tx.scale = next;
+
+    this.clampPan();
+    this.apply(smooth);
+    this.flashHud();
+  }
+
+  private zoomBy(factor: number) {
+    const rect = this.stage.getBoundingClientRect();
+    this.zoomAt(rect.left + rect.width / 2, rect.top + rect.height / 2, factor);
+  }
+
+  /** 约束平移范围，图片不会完全移出视野（允许少量越界） */
+  private clampPan() {
+    if (this.tx.scale <= 1) return; // 1x 时的位移由松手回弹处理
+    const stageRect = this.stage.getBoundingClientRect();
+    const imgRect = this.img.getBoundingClientRect();
+    const w = imgRect.width / this.tx.scale;
+    const h = imgRect.height / this.tx.scale;
+    const pad = 48;
+    const maxX = Math.max(0, (w * this.tx.scale - stageRect.width) / 2 + pad);
+    const maxY = Math.max(0, (h * this.tx.scale - stageRect.height) / 2 + pad);
+    this.tx.x = clamp(this.tx.x, -maxX, maxX);
+    this.tx.y = clamp(this.tx.y, -maxY, maxY);
+  }
+
+  private rotate() {
+    this.tx.rotate = (this.tx.rotate + 90) % 360;
+    this.apply(true);
+  }
+
+  private toggleFullscreen() {
+    if (document.fullscreenElement) document.exitFullscreen?.();
+    else this.root.requestFullscreen?.();
+  }
+
+  private flashHud() {
+    this.hud.textContent = `${Math.round(this.tx.scale * 100)}%`;
+    this.hud.classList.add('is-visible');
+    window.clearTimeout(this.hudTimer);
+    this.hudTimer = window.setTimeout(() => this.hud.classList.remove('is-visible'), 900);
+  }
+
+  /* ================= 手势 ================= */
+
+  private onPointerDown(e: PointerEvent) {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    // 按钮（如"加载失败·重试"）不参与拖拽逻辑
+    if ((e.target as HTMLElement).closest('button')) return;
+
+    this.downTarget = e.target;
+    try { this.stage.setPointerCapture(e.pointerId); } catch { /* 忽略 */ }
+    this.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    // 第二根手指落下 → 进入捏合
+    if (this.pointers.size === 2) {
+      const [a, b] = [...this.pointers.values()];
+      this.pinch = {
+        dist: Math.hypot(a.x - b.x, a.y - b.y) || 1,
+        scale: this.tx.scale,
+        x: this.tx.x,
+        y: this.tx.y,
+        midX: (a.x + b.x) / 2,
+        midY: (a.y + b.y) / 2,
+      };
+      this.moved = true;
+      this.stage.classList.add('is-grabbing');
+      return;
+    }
+
+    this.dragStart = { x: e.clientX, y: e.clientY };
+    this.dragBase = { x: this.tx.x, y: this.tx.y };
+    this.moved = false;
+    this.img.classList.remove('is-smooth');
+    this.stage.classList.add('is-grabbing');
+  }
+
+  private onPointerMove(e: PointerEvent) {
+    if (!this.pointers.has(e.pointerId)) return;
+    this.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
+
+    // 捏合缩放（锚定双指中点）
+    if (this.pinch && this.pointers.size >= 2) {
+      const [a, b] = [...this.pointers.values()];
+      const dist = Math.hypot(a.x - b.x, a.y - b.y) || 1;
+      const midX = (a.x + b.x) / 2;
+      const midY = (a.y + b.y) / 2;
+
+      const next = clamp(this.pinch.scale * (dist / this.pinch.dist), MIN_SCALE, MAX_SCALE);
+      const k = next / this.pinch.scale;
+      const rect = this.stage.getBoundingClientRect();
+      const px = this.pinch.midX - (rect.left + rect.width / 2);
+      const py = this.pinch.midY - (rect.top + rect.height / 2);
+
+      this.tx.scale = next;
+      this.tx.x = px - k * (px - this.pinch.x) + (midX - this.pinch.midX);
+      this.tx.y = py - k * (py - this.pinch.y) + (midY - this.pinch.midY);
+      this.moved = true;
+      this.apply(false);
+      this.flashHud();
+      return;
+    }
+
+    // 单指 / 鼠标拖拽
+    if (this.pointers.size !== 1) return;
+    const dx = e.clientX - this.dragStart.x;
+    const dy = e.clientY - this.dragStart.y;
+    if (!this.moved && Math.hypot(dx, dy) > 4) this.moved = true;
+    if (!this.moved) return;
+
+    if (this.tx.scale > 1.01) {
+      this.tx.x = this.dragBase.x + dx;
+      this.tx.y = this.dragBase.y + dy;
+      this.clampPan();
+    } else {
+      // 1x 时的阻尼反馈，暗示可滑动翻页
+      this.tx.x = dx * 0.32;
+      this.tx.y = dy * 0.1;
+    }
+    this.apply(false);
+  }
+
+  private onPointerUp(e: PointerEvent) {
+    if (!this.pointers.has(e.pointerId)) return;
+    this.pointers.delete(e.pointerId);
+
+    // 捏合结束
+    if (this.pinch) {
+      if (this.pointers.size < 2) {
+        this.pinch = null;
+        if (this.pointers.size === 1) {
+          // 剩一根手指 → 无缝切换为拖拽
+          const [p] = [...this.pointers.values()];
+          this.dragStart = { x: p.x, y: p.y };
+          this.dragBase = { x: this.tx.x, y: this.tx.y };
+          this.moved = true;
+        }
+      }
+      if (this.pointers.size === 0) {
+        this.stage.classList.remove('is-grabbing');
+        this.clampPan();
+        this.apply(true);
+      }
+      return;
+    }
+
+    if (this.pointers.size > 0) return;
+    this.stage.classList.remove('is-grabbing');
+
+    const dx = e.clientX - this.dragStart.x;
+    const dy = e.clientY - this.dragStart.y;
+
+    if (this.tx.scale <= 1.01) {
+      const isSwipe = Math.abs(dx) > SWIPE_DISTANCE && Math.abs(dx) > Math.abs(dy) * 1.4;
+      if (isSwipe) this.nav(dx < 0 ? 1 : -1);
+      // 回弹（若已翻页，show() 内部也会重置，这里是幂等的）
+      this.tx.x = 0;
+      this.tx.y = 0;
+      this.apply(true);
+    } else {
+      this.clampPan();
+      this.apply(true);
+    }
+  }
+
+  /* ================= 胶片条 ================= */
+
+  private buildStrip() {
+    if (this.images.length < 2) {
+      this.strip.hidden = true;
+      return;
+    }
+    this.strip.innerHTML = this.images
+      .map(
+        (it, i) => `
+          <button class="viewer-thumb" type="button" data-index="${i}" aria-label="第 ${i + 1} 张">
+            <img src="${esc(it.thumb || it.src)}" alt="" loading="lazy" decoding="async" draggable="false" />
+          </button>`
+      )
+      .join('');
   }
 }
