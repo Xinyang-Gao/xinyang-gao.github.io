@@ -7,116 +7,173 @@
 //  职责：长按拖拽连线、长按结束爆发粒子（点击涟漪已移除）
 // ===================================================================
 
-interface BaseParticle {
+const TWO_PI = Math.PI * 2;
+const EMPTY_DASH: number[] = [];
+
+/** 爆发粒子（生成时覆盖全部字段，回收无需重置） */
+interface BurstParticle {
   active: boolean;
-  type: 'click' | 'longpress';   // 实际只使用 'longpress'
   x: number;
   y: number;
-  radius: number;
-  maxRadius: number;
+  targetX: number;          // 扩散目标点
+  targetY: number;
+  radius: number;           // 初始半径
+  maxRadius: number;        // 扩散峰值半径
   startAlpha: number;
-  alpha: number;
-  life: number;
   duration: number;
-  delay: number;
-  colorPrefix: string;        // 如 "rgba(r,g,b,"
+  delay: number;            // 错峰出现延迟
   lineWidth: number;
-  _startTime: number;
-  targetX?: number;
-  targetY?: number;
+  color: string;            // 纯色 'rgb(r, g, b)'，透明度走 globalAlpha
+  startTime: number;
 }
 
-interface Line {
+/** 长按结束后残留的连线动画 */
+interface TrailLine {
   active: boolean;
   startX: number;
   startY: number;
   endX: number;
   endY: number;
-  progress: number;
   duration: number;
-  colorPrefix: string;
   width: number;
+  color: string;
   startTime: number;
 }
 
+/** 极简对象池：复用空闲对象，降低 GC 压力 */
+class Pool<T extends { active: boolean }> {
+  #idle: T[] = [];
+  #create: () => T;
+  #capacity: number;
+
+  constructor(create: () => T, capacity: number) {
+    this.#create = create;
+    this.#capacity = capacity;
+  }
+
+  acquire(): T {
+    const item = this.#idle.pop() ?? this.#create();
+    item.active = true;
+    return item;
+  }
+
+  release(item: T): void {
+    item.active = false;
+    if (this.#idle.length < this.#capacity) this.#idle.push(item);
+  }
+
+  clear(): void {
+    this.#idle.length = 0;
+  }
+}
+
 export class MouseEffectManager {
-  // ---- 静态配置 ----
+  // ---- 静态配置（只读，运行时不再被改写） ----
   private static readonly CONFIG = {
     longPressThreshold: 100,
-    maxParticles: 120,
     maxLines: 12,
-    longPress: {
-      countFactor: 20,
-      maxCount: 30,
+    burst: {
+      countBase: 4,              // 最少粒子数
+      countTimeFactor: 20,       // 长按每 2000ms 额外增加的数量
+      countMax: 30,
       radiusBase: 50,
-      radiusFactor: 160,
+      radiusTimeFactor: 160,     // 扩散半径 = base + sec^0.8 * factor
+      radiusCap: 320,
       durationBase: 900,
-      durationFactor: 0.6,
-      alphaRange: [0.4, 0.7],
-      lineWidthRange: [1.8, 3.0],
-      delayMax: 180,
+      durationTimeFactor: 0.6,   // 粒子寿命 = base + min(按压时长 * factor, extraCap)
+      durationExtraCap: 700,
+      alphaMin: 0.4,
+      alphaMax: 0.7,
+      lineWidthMin: 1.8,
+      lineWidthMax: 3.0,
+      delayMax: 180,             // 随机出现延迟
+      batchSize: 6,              // 仅用于模拟旧实现"逐帧批量生成"的节奏
+      batchFrameMs: 16.7,
+      sizeStart: 1.5,
+      sizeMaxBase: 8,
+      sizeMaxRand: 10,
+      spreadMin: 0.3,            // 散布距离 = 扩散半径 * (0.3 ~ 1.0)
+      chaseRate: 13.39,          // 追逐趋近率：60fps 下每帧系数 ≈ 0.2，与旧实现一致
     },
     line: {
+      minDist: 5,                // 短于此距离不产生连线动画
       durationBase: 300,
       durationPerPixel: 0.5,
-      maxDuration: 700,
+      durationMax: 700,
       alpha: 0.5,
       width: 1.5,
-      dash: [6, 6],
-      dotRadius: 3,
-    }
+      drag: {                    // 实时拖拽虚线
+        alpha: 0.3,
+        dotAlpha: 0.4,
+        width: 2,
+        dotRadius: 3,
+        dash: [6, 6],
+        dashSpeed: 50,           // lineDashOffset = -now / dashSpeed
+      },
+    },
+    fps: { interval: 1000, low: 30, shrink: 0.7, floor: 30 },
+    particles: { highEnd: 120, lowEnd: 60 },
   };
 
-  private static readonly MAX_BATCH_ID = 1_000_000_000;
-  private static readonly TWO_PI = Math.PI * 2;
-
-  // ---- 私有字段 ----
+  // ---- 画布 ----
   #disabled = false;
   #canvas: HTMLCanvasElement | null = null;
   #ctx: CanvasRenderingContext2D | null = null;
   #logicalWidth = 0;
   #logicalHeight = 0;
 
-  #particlePool: BaseParticle[] = [];
-  #activeParticles: BaseParticle[] = [];
-  #linePool: Line[] = [];
-  #activeLines: Line[] = [];
+  // ---- 对象池与活跃列表 ----
+  #particles: BurstParticle[] = [];
+  #trails: TrailLine[] = [];
+  #particlePool = new Pool<BurstParticle>(() => ({
+    active: false, x: 0, y: 0, targetX: 0, targetY: 0,
+    radius: 0, maxRadius: 0, startAlpha: 0, duration: 1,
+    delay: 0, lineWidth: 0, color: '', startTime: 0,
+  }), MouseEffectManager.CONFIG.particles.highEnd);
+  #trailPool = new Pool<TrailLine>(() => ({
+    active: false, startX: 0, startY: 0, endX: 0, endY: 0,
+    duration: 1, width: 0, color: '', startTime: 0,
+  }), MouseEffectManager.CONFIG.maxLines);
 
+  // ---- 长按状态 ----
   #pressStartX = 0;
   #pressStartY = 0;
   #pressStartTime = 0;
   #isLongPress = false;
   #longPressTimer: number | null = null;
 
+  // ---- 拖拽连线状态 ----
   #lineActive = false;
   #lineStartX = 0;
   #lineStartY = 0;
   #lineEndX = 0;
   #lineEndY = 0;
 
-  #accentColor = '#a55860';
-  #rgbCache: { r: number; g: number; b: number } | null = null;
-  #currentRgbString: string = ''; // 缓存当前 RGB 字符串前缀
+  // ---- 主题色缓存（纯色字符串 + globalAlpha，避免每帧拼接 rgba） ----
+  #accentRgb = 'rgb(165, 88, 96)';
 
   // ---- 渲染循环控制 ----
   #renderLoopId: number | null = null;
   #isRendering = false;
-  #batchId = 0;
+  #lastFrameTs = 0;
 
   // ---- 帧率自适应 ----
   #frameCount = 0;
   #lastFpsCheck = 0;
-  #maxParticles = MouseEffectManager.CONFIG.maxParticles;
+  #particleLimit = MouseEffectManager.CONFIG.particles.highEnd;
 
-  // ---- 可见性控制 ----
-  #visibilityHandler: (() => void) | null = null;
   #pageHidden = false;
 
-  // ---- 主题 / 尺寸处理器 ----
-  #boundHandlers = {
-    theme: () => this.#onThemeChanged(),
-    resize: () => this.#resizeCanvas(),
-    visibility: () => this.#onVisibilityChange(),
+  // ---- 事件处理器（箭头函数字段，add/remove 天然同引用） ----
+  #onThemeChanged = (): void => this.#refreshAccentColor();
+  #onResize = (): void => this.#resizeCanvas();
+  #onVisibility = (): void => {
+    this.#pageHidden = document.hidden;
+    if (this.#pageHidden) {
+      if (this.#isRendering) this.#stopRenderLoop();
+    } else if (this.#hasActiveWork()) {
+      this.#startRenderLoop();
+    }
   };
 
   constructor() {
@@ -127,15 +184,16 @@ export class MouseEffectManager {
       return;
     }
 
-    // 性能自适应
+    // 性能自适应：低端设备降低粒子上限（只影响实例，不修改静态配置）
     const isLowEnd = window.devicePixelRatio < 2 ||
-      (navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4);
-    this.#maxParticles = isLowEnd ? 60 : 120;
-    MouseEffectManager.CONFIG.maxParticles = this.#maxParticles;
+      !!(navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4);
+    this.#particleLimit = isLowEnd
+      ? MouseEffectManager.CONFIG.particles.lowEnd
+      : MouseEffectManager.CONFIG.particles.highEnd;
 
     // 创建 Canvas
-    this.#canvas = document.createElement('canvas');
-    this.#canvas.style.cssText = `
+    const canvas = document.createElement('canvas');
+    canvas.style.cssText = `
       position: fixed;
       top: 0;
       left: 0;
@@ -145,394 +203,310 @@ export class MouseEffectManager {
       z-index: 9997;
       will-change: transform;
     `;
-    this.#ctx = this.#canvas.getContext('2d', { alpha: true }); // 明确 alpha
+    this.#canvas = canvas;
+    this.#ctx = canvas.getContext('2d', { alpha: true });
     this.#resizeCanvas();
-    document.body.appendChild(this.#canvas);
+    document.body.appendChild(canvas);
 
-    this.#accentColor = this.#getAccentColor();
-    this.#updateRgbCache();
+    this.#refreshAccentColor();
 
-    // 事件绑定
-    window.addEventListener('themeChanged', this.#boundHandlers.theme);
-    window.addEventListener('resize', this.#boundHandlers.resize);
-    document.addEventListener('visibilitychange', this.#boundHandlers.visibility);
+    window.addEventListener('themeChanged', this.#onThemeChanged);
+    window.addEventListener('resize', this.#onResize);
+    document.addEventListener('visibilitychange', this.#onVisibility);
 
     console.log('[MouseEffect] 特效引擎初始化完成（长按连线 + 爆发粒子）');
   }
 
-  // ---- 工具方法 ----
-  #getAccentColor(): string {
-    const root = getComputedStyle(document.documentElement);
-    return root.getPropertyValue('--accent-color').trim() || '#a55860';
+  // ---- 主题色 ----
+  #refreshAccentColor(): void {
+    const hex = getComputedStyle(document.documentElement)
+      .getPropertyValue('--accent-color').trim() || '#a55860';
+    const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    const r = m ? parseInt(m[1], 16) : 165;
+    const g = m ? parseInt(m[2], 16) : 88;
+    const b = m ? parseInt(m[3], 16) : 96;
+    this.#accentRgb = `rgb(${r}, ${g}, ${b})`;
   }
 
-  #updateRgbCache(): void {
-    const hex = this.#accentColor;
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    if (result) {
-      this.#rgbCache = {
-        r: parseInt(result[1], 16),
-        g: parseInt(result[2], 16),
-        b: parseInt(result[3], 16),
-      };
-      this.#currentRgbString = `rgba(${this.#rgbCache.r}, ${this.#rgbCache.g}, ${this.#rgbCache.b}, `;
-    } else {
-      this.#rgbCache = { r: 165, g: 88, b: 96 };
-      this.#currentRgbString = 'rgba(165, 88, 96, ';
-    }
-  }
-
-  #getRgbFromAccent(): { r: number; g: number; b: number } {
-    if (!this.#rgbCache) this.#updateRgbCache();
-    return this.#rgbCache!;
-  }
-
-  #onThemeChanged(): void {
-    this.#accentColor = this.#getAccentColor();
-    this.#updateRgbCache();
-  }
-
+  // ---- 尺寸 ----
   #resizeCanvas(): void {
-    if (!this.#canvas || !this.#ctx) return;
+    const canvas = this.#canvas, ctx = this.#ctx;
+    if (!canvas || !ctx) return;
+
     const dpr = window.devicePixelRatio || 1;
     const rect = document.documentElement.getBoundingClientRect();
-    
-    // 只有尺寸真正变化时才重设 canvas 大小，避免不必要的清空
-    if (this.#canvas.width === rect.width * dpr && this.#canvas.height === rect.height * dpr) {
-      return;
-    }
+    const bufferW = Math.round(rect.width * dpr);
+    const bufferH = Math.round(rect.height * dpr);
 
-    this.#canvas.width = rect.width * dpr;
-    this.#canvas.height = rect.height * dpr;
-    this.#canvas.style.width = rect.width + 'px';
-    this.#canvas.style.height = rect.height + 'px';
-    this.#ctx.setTransform(1, 0, 0, 1, 0, 0);
-    this.#ctx.scale(dpr, dpr);
+    // 只有尺寸真正变化时才重设缓冲区，避免不必要的清空（旧实现因浮点比较永远不相等而失效）
+    if (canvas.width === bufferW && canvas.height === bufferH) return;
+
+    canvas.width = bufferW;
+    canvas.height = bufferH;
+    canvas.style.width = `${rect.width}px`;
+    canvas.style.height = `${rect.height}px`;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     this.#logicalWidth = rect.width;
     this.#logicalHeight = rect.height;
   }
 
-  #onVisibilityChange(): void {
-    this.#pageHidden = document.hidden;
-    if (this.#pageHidden && this.#isRendering) {
-      this.#stopRenderLoop();
-    } else if (!this.#pageHidden && (this.#activeParticles.length || this.#activeLines.length || this.#lineActive)) {
-      this.#startRenderLoop();
-    }
-  }
-
-  // ---- 缓动函数 ----
-  static #easeOutCubic(t: number): number { return 1 - Math.pow(1 - t, 3); }
-  static #easeOutQuart(t: number): number { return 1 - Math.pow(1 - t, 4); }
-
-  // ---- 对象池 ----
-  #acquireParticle(type: 'click' | 'longpress'): BaseParticle {
-    const p = this.#particlePool.pop() ?? ({} as BaseParticle);
-    p.active = true;
-    p.type = type;
-    p._startTime = 0;
-    p.delay = 0;
-    return p;
-  }
-
-  #releaseParticle(p: BaseParticle): void {
-    p.active = false;
-    // 重置关键属性，防止内存泄漏或错误引用
-    p.x = 0; p.y = 0; p.radius = 0; p.maxRadius = 0;
-    p.startAlpha = 0; p.alpha = 0; p.life = 0; p.duration = 0;
-    p.delay = 0; p.colorPrefix = ''; p.lineWidth = 0; p._startTime = 0;
-    p.targetX = undefined; p.targetY = undefined;
-    if (this.#particlePool.length < this.#maxParticles) {
-      this.#particlePool.push(p);
-    }
-  }
-
-  #acquireLine(): Line {
-    const l = this.#linePool.pop() ?? ({} as Line);
-    l.active = true;
-    l.startTime = 0;
-    return l;
-  }
-
-  #releaseLine(l: Line): void {
-    l.active = false;
-    l.startX = 0; l.startY = 0; l.endX = 0; l.endY = 0;
-    l.progress = 0; l.duration = 0; l.colorPrefix = ''; l.width = 0; l.startTime = 0;
-    if (this.#linePool.length < MouseEffectManager.CONFIG.maxLines) {
-      this.#linePool.push(l);
-    }
-  }
-
   // ---- 渲染循环控制 ----
+  #hasActiveWork(): boolean {
+    return this.#particles.length > 0 || this.#trails.length > 0 || this.#lineActive;
+  }
+
   #startRenderLoop(): void {
-    if (this.#disabled || this.#pageHidden) return;
-    if (this.#isRendering) return;
+    if (this.#disabled || this.#pageHidden || this.#isRendering) return;
     this.#isRendering = true;
-    const loop = (timestamp: number) => {
-      if (this.#pageHidden) {
-        this.#isRendering = false;
-        this.#renderLoopId = null;
-        return;
-      }
-      this.#render(timestamp);
-      // 检查是否还有活跃元素，如果没有则停止循环
-      if (this.#activeParticles.length || this.#activeLines.length || this.#lineActive) {
-        this.#renderLoopId = requestAnimationFrame(loop);
-      } else {
-        this.#isRendering = false;
-        this.#renderLoopId = null;
-        // 清除最后一帧
-        this.#ctx?.clearRect(0, 0, this.#logicalWidth, this.#logicalHeight);
-      }
-    };
-    this.#renderLoopId = requestAnimationFrame(loop);
+    this.#lastFrameTs = 0;
+    this.#renderLoopId = requestAnimationFrame(this.#frame);
   }
 
   #stopRenderLoop(): void {
-    if (this.#renderLoopId) {
+    if (this.#renderLoopId !== null) {
       cancelAnimationFrame(this.#renderLoopId);
       this.#renderLoopId = null;
     }
     this.#isRendering = false;
+    this.#clearCanvas();
+  }
+
+  #frame = (now: number): void => {
+    if (this.#pageHidden) {
+      this.#isRendering = false;
+      this.#renderLoopId = null;
+      return;
+    }
+
+    const dt = this.#lastFrameTs > 0
+      ? Math.min((now - this.#lastFrameTs) / 1000, 0.05)
+      : 1 / 60;
+    this.#lastFrameTs = now;
+
+    this.#render(now, dt);
+
+    if (this.#hasActiveWork()) {
+      this.#renderLoopId = requestAnimationFrame(this.#frame);
+    } else {
+      // 所有动画结束：停止循环并清除最后一帧
+      this.#isRendering = false;
+      this.#renderLoopId = null;
+      this.#clearCanvas();
+    }
+  };
+
+  #clearCanvas(): void {
     this.#ctx?.clearRect(0, 0, this.#logicalWidth, this.#logicalHeight);
   }
 
   // ---- 核心渲染 ----
-  #render(timestamp: number): void {
+  #render(now: number, dt: number): void {
     const ctx = this.#ctx;
     if (!ctx) return;
-    const w = this.#logicalWidth || window.innerWidth;
-    const h = this.#logicalHeight || window.innerHeight;
 
-    ctx.clearRect(0, 0, w, h);
+    ctx.clearRect(0, 0,
+      this.#logicalWidth || window.innerWidth,
+      this.#logicalHeight || window.innerHeight);
 
-    // 渲染粒子
-    this.#renderParticles(ctx, timestamp);
-    // 渲染已完成的连线
-    this.#renderLines(ctx, timestamp);
-    // 渲染实时拖拽连线
-    if (this.#lineActive) {
-      this.#renderActiveLine(ctx, timestamp);
-    }
+    this.#renderBurst(ctx, now, dt);
+    this.#renderTrails(ctx, now);
+    if (this.#lineActive) this.#renderDragLine(ctx, now);
 
-    // 池子清理
-    if (this.#activeParticles.length > this.#maxParticles) {
-      const excess = this.#activeParticles.length - this.#maxParticles;
-      for (let i = 0; i < excess; i++) {
-        const p = this.#activeParticles.shift();
-        if (p) this.#releaseParticle(p);
-      }
-    }
-    if (this.#activeLines.length > MouseEffectManager.CONFIG.maxLines) {
-      const excess = this.#activeLines.length - MouseEffectManager.CONFIG.maxLines;
-      for (let i = 0; i < excess; i++) {
-        const l = this.#activeLines.shift();
-        if (l) this.#releaseLine(l);
-      }
-    }
-
-    // 帧率自适应（只对粒子有效）
-    this.#frameCount++;
-    const now = performance.now();
-    if (now - this.#lastFpsCheck > 1000) {
-      const fps = this.#frameCount;
-      if (fps < 30 && this.#maxParticles > 30) {
-        this.#maxParticles = Math.max(30, Math.floor(this.#maxParticles * 0.7));
-        console.warn('[MouseEffect] 低帧率，降低粒子上限至', this.#maxParticles);
-      }
-      this.#frameCount = 0;
-      this.#lastFpsCheck = now;
-    }
+    this.#enforceLimits();
+    this.#adaptParticleLimit(now);
   }
 
-  #renderParticles(ctx: CanvasRenderingContext2D, timestamp: number): void {
-    const particles = this.#activeParticles;
-    const len = particles.length;
-    
-    // 倒序遍历，方便直接 splice 删除，避免创建额外数组
-    for (let i = len - 1; i >= 0; i--) {
-      const p = particles[i];
-      const elapsed = timestamp - p._startTime - p.delay;
-      
-      if (elapsed < 0) continue;
+  #renderBurst(ctx: CanvasRenderingContext2D, now: number, dt: number): void {
+    const list = this.#particles;
+    // 帧率无关的追逐趋近：60fps 时单帧系数 ≈ 0.2，与旧实现逐帧 lerp 观感一致
+    const chase = 1 - Math.exp(-MouseEffectManager.CONFIG.burst.chaseRate * dt);
+    let strokedColor = '';
 
-      const progress = elapsed / p.duration;
-      if (progress >= 1) {
-        particles.splice(i, 1);
-        this.#releaseParticle(p);
+    for (let i = list.length - 1; i >= 0; i--) {
+      const p = list[i];
+      const t = (now - p.startTime - p.delay) / p.duration;
+      if (t < 0) continue;                          // 延迟未到，尚未出现
+      if (t >= 1) {                                 // 生命周期结束，回收
+        list.splice(i, 1);
+        this.#particlePool.release(p);
         continue;
       }
 
-      // 长按粒子使用 cubic 缓出
-      const easedProgress = MouseEffectManager.#easeOutCubic(progress);
+      // 从按压点向外追逐目标点
+      p.x += (p.targetX - p.x) * chase;
+      p.y += (p.targetY - p.y) * chase;
 
-      // 长按粒子位移（从中心向外扩散）
-      if (p.type === 'longpress' && p.targetX !== undefined) {
-        // 优化：减少乘法次数，使用固定系数
-        p.x += (p.targetX - p.x) * 0.2;
-        p.y += (p.targetY - p.y) * 0.2;
+      // 半径：前 60% 生命周期扩张到峰值，之后轻微回缩至 70%
+      const sizeT = t < 0.6 ? t / 0.6 : 1 - ((t - 0.6) / 0.4) * 0.3;
+      const radius = Math.max(0, p.radius + (p.maxRadius - p.radius) * sizeT);
+
+      // 透明度：前 20% 保持，随后线性淡出
+      const alpha = t < 0.2 ? p.startAlpha : p.startAlpha * (1 - (t - 0.2) / 0.8);
+
+      // 同色合并 strokeStyle 切换；透明度走 globalAlpha，全程无字符串拼接
+      if (p.color !== strokedColor) {
+        strokedColor = p.color;
+        ctx.strokeStyle = p.color;
       }
-
-      let currentRadius: number;
-      // 长按粒子半径先增长再略微缩小
-      const sizeProgress = progress < 0.6 ? progress / 0.6 : 1 - (progress - 0.6) / 0.4 * 0.3;
-      currentRadius = p.radius + (p.maxRadius - p.radius) * sizeProgress;
-
-      let alpha: number;
-      const fadeStart = 0.2;
-      if (progress < fadeStart) {
-        alpha = p.startAlpha;
-      } else {
-        const fadeProgress = (progress - fadeStart) / (1 - fadeStart);
-        alpha = p.startAlpha * (1 - fadeProgress);
-      }
-
-      // 优化：尽量减少 strokeStyle 的设置次数，如果颜色相同可以合并绘制
-      // 但由于每个粒子 alpha 不同，必须单独设置
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, Math.max(0, currentRadius), 0, MouseEffectManager.TWO_PI);
-      ctx.strokeStyle = p.colorPrefix + alpha.toFixed(3) + ')'; // toFixed 减少字符串长度波动
+      ctx.globalAlpha = alpha;
       ctx.lineWidth = p.lineWidth;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, radius, 0, TWO_PI);
       ctx.stroke();
     }
+
+    ctx.globalAlpha = 1;
   }
 
-  #renderLines(ctx: CanvasRenderingContext2D, timestamp: number): void {
-    const lines = this.#activeLines;
-    const len = lines.length;
+  #renderTrails(ctx: CanvasRenderingContext2D, now: number): void {
+    const list = this.#trails;
+    const baseAlpha = MouseEffectManager.CONFIG.line.alpha;
+    let strokedColor = '';
+    ctx.lineCap = 'round';
 
-    for (let i = len - 1; i >= 0; i--) {
-      const line = lines[i];
-      const elapsed = timestamp - line.startTime;
-      const progress = elapsed / line.duration;
-
-      if (progress >= 1) {
-        lines.splice(i, 1);
-        this.#releaseLine(line);
+    for (let i = list.length - 1; i >= 0; i--) {
+      const line = list[i];
+      const t = (now - line.startTime) / line.duration;
+      if (t >= 1) {
+        list.splice(i, 1);
+        this.#trailPool.release(line);
         continue;
       }
 
-      const eased = progress * (2 - progress); // easeOutQuad
-      const currentStartX = line.startX + (line.endX - line.startX) * eased;
-      const currentStartY = line.startY + (line.endY - line.startY) * eased;
-      const alpha = 0.5 * (1 - eased);
+      // easeOutQuad：起点向终点"收拢"，同时整体淡出、线条变细
+      const eased = t * (2 - t);
 
-      ctx.beginPath();
-      ctx.moveTo(currentStartX, currentStartY);
-      ctx.lineTo(line.endX, line.endY);
-      ctx.strokeStyle = line.colorPrefix + alpha.toFixed(3) + ')';
+      if (line.color !== strokedColor) {
+        strokedColor = line.color;
+        ctx.strokeStyle = line.color;
+      }
+      ctx.globalAlpha = baseAlpha * (1 - eased);
       ctx.lineWidth = line.width * (1 - eased * 0.5);
-      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(
+        line.startX + (line.endX - line.startX) * eased,
+        line.startY + (line.endY - line.startY) * eased);
+      ctx.lineTo(line.endX, line.endY);
       ctx.stroke();
     }
+
+    ctx.globalAlpha = 1;
   }
 
-  #renderActiveLine(ctx: CanvasRenderingContext2D, timestamp: number): void {
-    // 使用缓存的 RGB 字符串
-    const rgbStr = this.#currentRgbString;
+  #renderDragLine(ctx: CanvasRenderingContext2D, now: number): void {
     const dx = this.#lineEndX - this.#lineStartX;
     const dy = this.#lineEndY - this.#lineStartY;
-    const distSq = dx * dx + dy * dy; // 使用平方距离比较，避免开方
+    const minDist = MouseEffectManager.CONFIG.line.minDist;
+    if (dx * dx + dy * dy <= minDist * minDist) return;
 
-    if (distSq > 25) { // 5 * 5
-      ctx.setLineDash([6, 6]);
-      ctx.lineDashOffset = -timestamp / 50;
-      ctx.beginPath();
-      ctx.moveTo(this.#lineStartX, this.#lineStartY);
-      ctx.lineTo(this.#lineEndX, this.#lineEndY);
-      ctx.strokeStyle = rgbStr + '0.3)';
-      ctx.lineWidth = 2;
-      ctx.lineCap = 'round';
-      ctx.stroke();
+    const drag = MouseEffectManager.CONFIG.line.drag;
+    ctx.strokeStyle = this.#accentRgb;
+    ctx.fillStyle = this.#accentRgb;
+    ctx.lineWidth = drag.width;
+    ctx.lineCap = 'round';
 
-      ctx.fillStyle = rgbStr + '0.4)';
-      ctx.beginPath();
-      ctx.arc(this.#lineStartX, this.#lineStartY, 3, 0, MouseEffectManager.TWO_PI);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(this.#lineEndX, this.#lineEndY, 3, 0, MouseEffectManager.TWO_PI);
-      ctx.fill();
-      
-      // 恢复实线，避免影响其他绘制
-      ctx.setLineDash([]);
+    // 流动虚线
+    ctx.globalAlpha = drag.alpha;
+    ctx.setLineDash(drag.dash);
+    ctx.lineDashOffset = -now / drag.dashSpeed;
+    ctx.beginPath();
+    ctx.moveTo(this.#lineStartX, this.#lineStartY);
+    ctx.lineTo(this.#lineEndX, this.#lineEndY);
+    ctx.stroke();
+
+    // 两端实心圆点
+    ctx.setLineDash(EMPTY_DASH);
+    ctx.globalAlpha = drag.dotAlpha;
+    ctx.beginPath();
+    ctx.arc(this.#lineStartX, this.#lineStartY, drag.dotRadius, 0, TWO_PI);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(this.#lineEndX, this.#lineEndY, drag.dotRadius, 0, TWO_PI);
+    ctx.fill();
+
+    ctx.globalAlpha = 1;
+  }
+
+  // ---- 上限与帧率自适应 ----
+  #enforceLimits(): void {
+    const excessP = this.#particles.length - this.#particleLimit;
+    if (excessP > 0) {
+      const removed = this.#particles.splice(0, excessP);  // 挤出最旧的
+      for (const p of removed) this.#particlePool.release(p);
+    }
+    const excessL = this.#trails.length - MouseEffectManager.CONFIG.maxLines;
+    if (excessL > 0) {
+      const removed = this.#trails.splice(0, excessL);
+      for (const l of removed) this.#trailPool.release(l);
     }
   }
 
-  // ---- 公开 API（触发渲染循环） ----
-  // triggerClick 不再被调用，保留以防外部使用（但实际已弃用）
-  public triggerClick(x: number, y: number): void {
-    // 点击涟漪已移除，此方法为空操作
+  #adaptParticleLimit(now: number): void {
+    this.#frameCount++;
+    const fps = MouseEffectManager.CONFIG.fps;
+    if (now - this.#lastFpsCheck < fps.interval) return;
+
+    const measured = this.#frameCount;
+    this.#frameCount = 0;
+    this.#lastFpsCheck = now;
+
+    if (measured < fps.low && this.#particleLimit > fps.floor) {
+      this.#particleLimit = Math.max(fps.floor, Math.floor(this.#particleLimit * fps.shrink));
+      console.warn('[MouseEffect] 低帧率，降低粒子上限至', this.#particleLimit);
+    }
   }
+
+  // ---- 公开 API ----
+
+  /** @deprecated 点击涟漪已移除，保留空操作以兼容外部调用 */
+  public triggerClick(_x: number, _y: number): void { /* no-op */ }
 
   public triggerLongPress(x: number, y: number, duration: number): void {
     if (this.#disabled) return;
-    const cfg = MouseEffectManager.CONFIG.longPress;
-    // 使用缓存的 RGB 字符串前缀
-    const colorPrefix = this.#currentRgbString;
 
+    const b = MouseEffectManager.CONFIG.burst;
     const count = Math.min(
-      Math.max(4, Math.floor(4 + (duration / 2000) * cfg.countFactor)),
-      cfg.maxCount
-    );
-    const maxRadius = Math.min(
-      320,
-      cfg.radiusBase + Math.pow(duration / 1000, 0.8) * cfg.radiusFactor
-    );
-    const particleDuration = cfg.durationBase + Math.min(duration * cfg.durationFactor, 700);
+      Math.max(b.countBase, Math.floor(b.countBase + (duration / 2000) * b.countTimeFactor)),
+      b.countMax);
+    const spreadRadius = Math.min(
+      b.radiusCap,
+      b.radiusBase + Math.pow(duration / 1000, 0.8) * b.radiusTimeFactor);
+    const lifetime = b.durationBase + Math.min(duration * b.durationTimeFactor, b.durationExtraCap);
 
-    this.#batchId++;
-    if (this.#batchId > MouseEffectManager.MAX_BATCH_ID) this.#batchId = 1;
-    const batchId = this.#batchId;
-    let generated = 0;
-    const batchSize = 6;
+    const now = performance.now();
+    const alphaSpan = b.alphaMax - b.alphaMin;
+    const widthSpan = b.lineWidthMax - b.lineWidthMin;
 
-    const createBatch = () => {
-      if (batchId !== this.#batchId) return;
-      for (let i = 0; i < batchSize && generated < count; i++, generated++) {
-        const angle = Math.random() * MouseEffectManager.TWO_PI;
-        const dist = maxRadius * (0.3 + Math.random() * 0.7);
-        const targetX = x + Math.cos(angle) * dist;
-        const targetY = y + Math.sin(angle) * dist;
+    for (let i = 0; i < count; i++) {
+      const angle = Math.random() * TWO_PI;
+      const dist = spreadRadius * (b.spreadMin + Math.random() * (1 - b.spreadMin));
 
-        const p = this.#acquireParticle('longpress');
-        p.x = x;
-        p.y = y;
-        p.targetX = targetX;
-        p.targetY = targetY;
-        p.radius = 1.5;
-        p.maxRadius = 8 + Math.random() * 10;
-        p.startAlpha = cfg.alphaRange[0] + Math.random() * (cfg.alphaRange[1] - cfg.alphaRange[0]);
-        p.alpha = p.startAlpha;
-        p.life = 0;
-        p.duration = particleDuration;
-        p.delay = Math.random() * cfg.delayMax;
-        p.colorPrefix = colorPrefix; // 使用缓存的前缀
-        p.lineWidth = cfg.lineWidthRange[0] + Math.random() * (cfg.lineWidthRange[1] - cfg.lineWidthRange[0]);
-        p._startTime = performance.now();
-        this.#activeParticles.push(p);
-      }
-      if (generated < count && batchId === this.#batchId) {
-        requestAnimationFrame(createBatch);
-      } else {
-        this.#startRenderLoop();
-      }
-    };
-    requestAnimationFrame(createBatch);
+      const p = this.#particlePool.acquire();
+      p.x = x;
+      p.y = y;
+      p.targetX = x + Math.cos(angle) * dist;
+      p.targetY = y + Math.sin(angle) * dist;
+      p.radius = b.sizeStart;
+      p.maxRadius = b.sizeMaxBase + Math.random() * b.sizeMaxRand;
+      p.startAlpha = b.alphaMin + Math.random() * alphaSpan;
+      p.duration = lifetime;
+      // 随机延迟 + 模拟旧实现"每帧生成一批"的展开节奏；不需要时删掉后半项即可
+      p.delay = Math.random() * b.delayMax + Math.floor(i / b.batchSize) * b.batchFrameMs;
+      p.lineWidth = b.lineWidthMin + Math.random() * widthSpan;
+      p.color = this.#accentRgb;
+      p.startTime = now;
+      this.#particles.push(p);
+    }
+
     this.#startRenderLoop();
   }
 
   public startLine(x: number, y: number): void {
     if (this.#disabled) return;
+    this.#clearTrails();
     this.#lineActive = true;
-    this.#lineStartX = x;
-    this.#lineStartY = y;
-    this.#lineEndX = x;
-    this.#lineEndY = y;
-    
-    // 清空之前的活跃线条
-    for (const l of this.#activeLines) this.#releaseLine(l);
-    this.#activeLines.length = 0; // 更快清空数组
-    
+    this.#lineStartX = this.#lineEndX = x;
+    this.#lineStartY = this.#lineEndY = y;
     this.#startRenderLoop();
   }
 
@@ -549,91 +523,93 @@ export class MouseEffectManager {
     this.#lineEndX = x;
     this.#lineEndY = y;
 
-    const dx = this.#lineEndX - this.#lineStartX;
-    const dy = this.#lineEndY - this.#lineStartY;
-    const distance = Math.hypot(dx, dy);
-    
-    if (distance < 5) {
-      // 如果距离太短，不创建线条动画，直接停止
-      // 注意：这里不需要手动 stopRenderLoop，因为 render 循环会检查 active 元素
-      return;
-    }
-
     const cfg = MouseEffectManager.CONFIG.line;
-    const l = this.#acquireLine();
-    l.startX = this.#lineStartX;
-    l.startY = this.#lineStartY;
-    l.endX = this.#lineEndX;
-    l.endY = this.#lineEndY;
-    l.progress = 0;
-    l.duration = Math.min(cfg.durationBase + distance * cfg.durationPerPixel, cfg.maxDuration);
-    l.colorPrefix = this.#currentRgbString; // 使用缓存前缀
-    l.width = cfg.width;
-    l.startTime = performance.now();
-    this.#activeLines.push(l);
+    const dx = x - this.#lineStartX;
+    const dy = y - this.#lineStartY;
+    const distance = Math.hypot(dx, dy);
+    if (distance < cfg.minDist) return;   // 太短：不产生残留动画
+
+    const line = this.#trailPool.acquire();
+    line.startX = this.#lineStartX;
+    line.startY = this.#lineStartY;
+    line.endX = x;
+    line.endY = y;
+    line.duration = Math.min(cfg.durationBase + distance * cfg.durationPerPixel, cfg.durationMax);
+    line.width = cfg.width;
+    line.color = this.#accentRgb;
+    line.startTime = performance.now();
+    this.#trails.push(line);
+
     this.#startRenderLoop();
   }
 
+  #clearTrails(): void {
+    for (const l of this.#trails) this.#trailPool.release(l);
+    this.#trails.length = 0;
+  }
+
+  // ---- 指针事件集成 ----
   public onPointerDown(x: number, y: number): void {
     if (this.#disabled) return;
+
     this.#pressStartX = x;
     this.#pressStartY = y;
     this.#pressStartTime = performance.now();
     this.#isLongPress = false;
     this.#lineActive = false;
-    
-    for (const l of this.#activeLines) this.#releaseLine(l);
-    this.#activeLines.length = 0;
+    this.#clearTrails();
 
-    if (this.#longPressTimer) clearTimeout(this.#longPressTimer);
+    if (this.#longPressTimer !== null) clearTimeout(this.#longPressTimer);
     this.#longPressTimer = window.setTimeout(() => {
+      this.#longPressTimer = null;
       this.#isLongPress = true;
       this.startLine(this.#pressStartX, this.#pressStartY);
-      if (navigator.vibrate) navigator.vibrate(8);
+      navigator.vibrate?.(8);
     }, MouseEffectManager.CONFIG.longPressThreshold);
   }
 
   public onPointerMove(x: number, y: number): void {
-    if (this.#disabled) return;
-    if (this.#isLongPress) {
-      this.updateLine(x, y);
-    }
+    if (this.#disabled || !this.#isLongPress) return;
+    this.updateLine(x, y);
   }
 
   public onPointerUp(x: number, y: number): void {
     if (this.#disabled) return;
-    const duration = performance.now() - this.#pressStartTime;
-    if (this.#longPressTimer) {
+
+    if (this.#longPressTimer !== null) {
       clearTimeout(this.#longPressTimer);
       this.#longPressTimer = null;
     }
+    if (!this.#isLongPress) return;   // 短按：无任何特效
 
-    // 仅当为长按时触发特效（短按无涟漪）
-    if (this.#isLongPress) {
-      this.triggerLongPress(x, y, duration);
-      this.endLine(x, y);
-      this.#isLongPress = false;
-      this.#lineActive = false;
-    }
-    // 短按不做任何特效
+    this.#isLongPress = false;
+    const duration = performance.now() - this.#pressStartTime;
+    this.triggerLongPress(x, y, duration);
+    this.endLine(x, y);
   }
 
   public destroy(): void {
+    this.#disabled = true;   // 阻断销毁后的任何新渲染（修复旧实现可能残留的空转 rAF）
     this.#stopRenderLoop();
-    if (this.#longPressTimer) {
+
+    if (this.#longPressTimer !== null) {
       clearTimeout(this.#longPressTimer);
       this.#longPressTimer = null;
     }
-    window.removeEventListener('themeChanged', this.#boundHandlers.theme);
-    window.removeEventListener('resize', this.#boundHandlers.resize);
-    document.removeEventListener('visibilitychange', this.#boundHandlers.visibility);
-    if (this.#canvas?.parentNode) this.#canvas.parentNode.removeChild(this.#canvas);
+
+    window.removeEventListener('themeChanged', this.#onThemeChanged);
+    window.removeEventListener('resize', this.#onResize);
+    document.removeEventListener('visibilitychange', this.#onVisibility);
+
+    this.#canvas?.remove();
     this.#canvas = null;
     this.#ctx = null;
-    this.#activeParticles.length = 0;
-    this.#activeLines.length = 0;
-    this.#particlePool.length = 0;
-    this.#linePool.length = 0;
+
+    this.#particles.length = 0;
+    this.#trails.length = 0;
+    this.#particlePool.clear();
+    this.#trailPool.clear();
+
     console.log('[MouseEffect] 特效引擎已销毁');
   }
 }
@@ -643,6 +619,7 @@ export class MouseEffectManager {
 //  使用圆点 + 圆环，完全基于 DOM + transform，不再使用 SVG
 //  集成 MouseEffectManager 的长按功能
 //  特性：延迟跟随、悬停贴合、文本竖条模式、滚动拖尾、点击弹簧、空闲暂停
+//  自动检测 Cursor FX 用户脚本，若已存在则让出控制权
 // ===================================================================
 
 export class CustomCursor {
@@ -721,11 +698,13 @@ export class CustomCursor {
     'input:not([type="button"]):not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="reset"]):not([type="image"]):not([type="range"]):not([type="color"]):not([type="file"]),' +
     'textarea,[contenteditable="true"],[contenteditable=""],[contenteditable="plaintext-only"],[role="textbox"]';
 
+  // ================================================================
+  //  构造函数：检测触摸设备、探测用户脚本，决定是否初始化
+  // ================================================================
   constructor(options: Partial<typeof CustomCursor.DEFAULTS> = {}) {
+    // 触摸设备直接禁用
     if (window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window) {
       console.log('[CustomCursor] 触摸设备，跳过自定义光标');
-      // 但仍然需要创建 effectManager？还是完全禁用？
-      // 为了兼容，不创建 effectManager，所有方法为空
       this.#effectManager = null;
       this.#dot = document.createElement('div');
       this.#ring = document.createElement('div');
@@ -734,6 +713,54 @@ export class CustomCursor {
 
     this.#config = { ...CustomCursor.DEFAULTS, ...options };
 
+    // 异步探测 Cursor FX 用户脚本是否已加载
+    // 使用 Promise.race 实现超时降级，避免阻塞主线程
+    const probeTimeoutMs = 30;
+    const probePromise = new Promise<boolean>((resolve) => {
+      const requestId = `cursorfx-probe-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      
+      const onResponse = (e: Event) => {
+        const detail = (e as CustomEvent).detail;
+        if (detail?.requestId === requestId && detail?.result?.status === 'alive') {
+          cleanup();
+          resolve(true);
+        }
+      };
+      
+      const cleanup = () => {
+        window.removeEventListener('CURSORFX_RESPONSE', onResponse);
+      };
+      
+      window.addEventListener('CURSORFX_RESPONSE', onResponse);
+      window.dispatchEvent(new CustomEvent('CURSORFX_REQUEST', {
+        detail: { action: 'ping', requestId }
+      }));
+    });
+
+    const timeoutPromise = new Promise<boolean>((resolve) => {
+      setTimeout(() => resolve(false), probeTimeoutMs);
+    });
+
+    // 不阻塞构造函数，异步完成初始化
+    Promise.race([probePromise, timeoutPromise]).then((scriptExists) => {
+      if (scriptExists) {
+        console.log('[CustomCursor] 检测到 Cursor FX 用户脚本已激活，让出控制权');
+        // 创建占位元素防止后续方法报错，但不注入样式/不启动循环
+        this.#dot = document.createElement('div');
+        this.#ring = document.createElement('div');
+        this.#effectManager = null;
+        return;
+      }
+
+      // 用户脚本不存在，正常初始化
+      this.#init(options);
+    });
+  }
+
+  // ================================================================
+  //  真正的初始化（仅在确认无用户脚本时调用）
+  // ================================================================
+  #init(_options: Partial<typeof CustomCursor.DEFAULTS>): void {
     // 创建 EffectManager（长按特效）
     this.#effectManager = new MouseEffectManager();
 
@@ -773,6 +800,9 @@ export class CustomCursor {
     console.log('[CustomCursor] 自定义光标初始化完成（仿 cursor-fx）');
   }
 
+  // ================================================================
+  //  样式注入
+  // ================================================================
   #injectStyles(): void {
     const cfg = this.#config;
     const style = document.createElement('style');
@@ -811,26 +841,22 @@ export class CustomCursor {
 
   #applyInitialStyles(): void {
     const cfg = this.#config;
-    // 圆点默认圆形，之后可能变为竖条
     this.#dot.style.width = cfg.DOT_SIZE + 'px';
     this.#dot.style.height = cfg.DOT_SIZE + 'px';
     this.#dot.style.borderRadius = '50%';
 
-    // 圆环初始大小
     this.#rw = cfg.RING_SIZE;
     this.#rh = cfg.RING_SIZE;
     this.#rr = cfg.RING_SIZE / 2;
     this.#ring.style.width = this.#rw + 'px';
     this.#ring.style.height = this.#rh + 'px';
     this.#ring.style.borderRadius = this.#rr + 'px';
-    // 透明度通过变量控制
-    this.#ring.style.setProperty('--ccA', String(cfg.RING_ALPHA));
-    // 实际 border 的透明度由 --ccA 控制? 但上面 style 已经固定了 rgba，为了动态切换文本模式，我们使用自定义属性
-    // 我们采用更灵活的方式：在 setRingAlpha 中直接修改 border-color
-    // 但为了方便，我们使用 class 或直接修改 style，这里先不处理
+    // 初始透明度由样式中的 rgba 决定，后续通过 #setRingAlpha 动态修改 borderColor
   }
 
-  // ---- 辅助方法 ----
+  // ================================================================
+  //  工具方法
+  // ================================================================
   #clamp(v: number, a: number, b: number): number {
     return v < a ? a : (v > b ? b : v);
   }
@@ -871,7 +897,9 @@ export class CustomCursor {
     }
   }
 
-  // ---- 事件绑定 ----
+  // ================================================================
+  //  事件绑定
+  // ================================================================
   #bindEvents(): void {
     // 指针移动
     window.addEventListener('pointermove', (e) => {
@@ -879,7 +907,6 @@ export class CustomCursor {
       this.#mx = e.clientX;
       this.#my = e.clientY;
       if (this.#focusEl) this.#focusEl = null;
-      // 通知 effectManager
       this.#effectManager?.onPointerMove(e.clientX, e.clientY);
       this.#wake();
     }, { passive: true });
@@ -959,7 +986,9 @@ export class CustomCursor {
     window.addEventListener('focus', () => { if (this.#inside) this.#wake(); }, { passive: true });
   }
 
-  // ---- 形状 / 透明度切换 ----
+  // ================================================================
+  //  形状 / 透明度切换
+  // ================================================================
   #setDotShape(bar: boolean): void {
     if (this.#dotIsBar === bar) return;
     this.#dotIsBar = bar;
@@ -974,14 +1003,7 @@ export class CustomCursor {
     this.#ringDim = dim;
     const cfg = this.#config;
     const alpha = dim ? cfg.TEXT_RING_ALPHA : cfg.RING_ALPHA;
-    // 由于 border 颜色已经在 style 中固定，我们需要动态调整透明度
-    // 直接修改 border-color 的 alpha 值
-    // 简便方法：使用变量
-    this.#ring.style.setProperty('--ccA', String(alpha));
-    // 但我们的 border 最初写的是 rgba(255,255,255, ${cfg.RING_ALPHA})，无法通过变量改变
-    // 我们改为在样式表中使用 var(--ccA)
-    // 在注入样式时，将 .cc-ring 的 border 改为 border: ${cfg.RING_BORDER}px solid rgba(255,255,255, var(--ccA, ${cfg.RING_ALPHA}));
-    // 但为了兼容，我们动态修改 style 属性
+    // 直接修改 border-color 的 alpha 值（覆盖内联样式）
     this.#ring.style.borderColor = `rgba(255,255,255,${alpha})`;
   }
 
