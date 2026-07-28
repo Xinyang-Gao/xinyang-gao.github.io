@@ -1,5 +1,5 @@
 /**
- * image-viewer.ts — 极简图片查看器（重构 v2）
+ * image-viewer.ts — 极简图片查看器
  *
  * 交互模型：
  *  - 滚轮 / 双指捏合：以光标为锚点缩放（0.5x – 5x）
@@ -24,11 +24,18 @@ export interface ImageViewerOptions {
   loop?: boolean;
 }
 
+// Constants
 const MIN_SCALE = 0.5;
 const MAX_SCALE = 5;
 const ZOOM_STEP = 1.35;
 const SWIPE_DISTANCE = 72;
+const DAMPING_FACTOR = 0.32;
+const Y_DAMPING_FACTOR = 0.1;
+const MOVE_THRESHOLD = 4;
+const HUD_VISIBLE_DURATION = 900;
+const CLOSE_DELAY = 320;
 
+// Utilities
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 const pad2 = (n: number) => String(n).padStart(2, '0');
 const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
@@ -120,8 +127,14 @@ export class ImageViewer {
     this.lastFocused = document.activeElement as HTMLElement | null;
 
     this.show(this.index, 0);
-    requestAnimationFrame(() => this.root.classList.add('is-open'));
-    this.closeBtn.focus({ preventScroll: true });
+    
+    // 使用 requestAnimationFrame 确保 DOM 渲染后再添加动画类
+    requestAnimationFrame(() => {
+        if (!this.destroyed) {
+            this.root.classList.add('is-open');
+            this.closeBtn.focus({ preventScroll: true });
+        }
+    });
   }
 
   /* ================= 公开 API ================= */
@@ -142,12 +155,23 @@ export class ImageViewer {
     window.clearTimeout(this.hudTimer);
 
     this.root.classList.remove('is-open');
+    
+    // 延迟移除 DOM，允许关闭动画播放
     const el = this.root;
-    window.setTimeout(() => el.remove(), 320);
+    window.setTimeout(() => {
+        if (el.parentNode) {
+            el.parentNode.removeChild(el);
+        }
+    }, CLOSE_DELAY);
 
     document.body.style.overflow = this.savedOverflow;
     if (ImageViewer.current === this) ImageViewer.current = null;
-    this.lastFocused?.focus?.({ preventScroll: true });
+    
+    // 恢复焦点
+    if (this.lastFocused && typeof this.lastFocused.focus === 'function') {
+        this.lastFocused.focus({ preventScroll: true });
+    }
+    
     this.onCloseCb?.();
   }
 
@@ -200,7 +224,9 @@ export class ImageViewer {
 
     document.body.appendChild(root);
 
+    // Helper to query elements with type assertion
     const q = <T extends HTMLElement>(sel: string) => root.querySelector<T>(sel)!;
+    
     this.root = root;
     this.stage = q('.viewer-stage');
     this.frame = q('.viewer-frame');
@@ -235,7 +261,6 @@ export class ImageViewer {
     on(this.errorBtn, 'click', () => this.show(this.index, 0));
 
     // 点击空白处关闭：必须 pointerdown 与 click 都落在舞台上
-    // （Pointer Capture 会把 click 目标重定向到舞台，需借助 downTarget 判别真实起点）
     on(this.stage, 'click', (e) => {
       if (this.moved) return;
       if (e.target === this.stage && this.downTarget === this.stage) this.destroy();
@@ -251,6 +276,7 @@ export class ImageViewer {
     on(this.stage, 'wheel', (e) => {
       e.preventDefault();
       const we = e as WheelEvent;
+      // 优化缩放灵敏度
       this.zoomAt(we.clientX, we.clientY, Math.exp(-we.deltaY * 0.0015), false);
     }, { passive: false });
 
@@ -289,7 +315,8 @@ export class ImageViewer {
 
     switch (e.key) {
       case 'Escape':
-        if (document.fullscreenElement) return; // 全屏时第一次 Esc 只退出全屏
+        // 全屏时第一次 Esc 只退出全屏，由浏览器处理
+        if (document.fullscreenElement) return; 
         this.destroy();
         break;
       case 'ArrowLeft': e.preventDefault(); this.nav(-1); break;
@@ -345,6 +372,9 @@ export class ImageViewer {
     if (!this.loop) {
       this.prevBtn.disabled = this.index === 0;
       this.nextBtn.disabled = this.index === total - 1;
+    } else {
+        this.prevBtn.disabled = false;
+        this.nextBtn.disabled = false;
     }
 
     // 胶片条高亮 + 滚动居中
@@ -480,15 +510,22 @@ export class ImageViewer {
   }
 
   private toggleFullscreen() {
-    if (document.fullscreenElement) document.exitFullscreen?.();
-    else this.root.requestFullscreen?.();
+    if (document.fullscreenElement) {
+        document.exitFullscreen?.().catch(console.error);
+    } else {
+        this.root.requestFullscreen?.().catch(console.error);
+    }
   }
 
   private flashHud() {
     this.hud.textContent = `${Math.round(this.tx.scale * 100)}%`;
     this.hud.classList.add('is-visible');
     window.clearTimeout(this.hudTimer);
-    this.hudTimer = window.setTimeout(() => this.hud.classList.remove('is-visible'), 900);
+    this.hudTimer = window.setTimeout(() => {
+        if (!this.destroyed) {
+            this.hud.classList.remove('is-visible');
+        }
+    }, HUD_VISIBLE_DURATION);
   }
 
   /* ================= 手势 ================= */
@@ -555,7 +592,7 @@ export class ImageViewer {
     if (this.pointers.size !== 1) return;
     const dx = e.clientX - this.dragStart.x;
     const dy = e.clientY - this.dragStart.y;
-    if (!this.moved && Math.hypot(dx, dy) > 4) this.moved = true;
+    if (!this.moved && Math.hypot(dx, dy) > MOVE_THRESHOLD) this.moved = true;
     if (!this.moved) return;
 
     if (this.tx.scale > 1.01) {
@@ -564,8 +601,8 @@ export class ImageViewer {
       this.clampPan();
     } else {
       // 1x 时的阻尼反馈，暗示可滑动翻页
-      this.tx.x = dx * 0.32;
-      this.tx.y = dy * 0.1;
+      this.tx.x = dx * DAMPING_FACTOR;
+      this.tx.y = dy * Y_DAMPING_FACTOR;
     }
     this.apply(false);
   }
@@ -603,7 +640,7 @@ export class ImageViewer {
     if (this.tx.scale <= 1.01) {
       const isSwipe = Math.abs(dx) > SWIPE_DISTANCE && Math.abs(dx) > Math.abs(dy) * 1.4;
       if (isSwipe) this.nav(dx < 0 ? 1 : -1);
-      // 回弹（若已翻页，show() 内部也会重置，这里是幂等的）
+      // 回弹
       this.tx.x = 0;
       this.tx.y = 0;
       this.apply(true);
