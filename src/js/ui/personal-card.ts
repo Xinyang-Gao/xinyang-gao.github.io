@@ -22,20 +22,7 @@ export function generatePersonalCardHTML() {
 
       <div class="profile-body">
         <div class="profile-info-item">
-          <i class="fas fa-quote-left" aria-hidden="true"></i>
-          <span>Where there's a will, there's a way</span>
-        </div>
-        <div class="profile-info-item">
-          <i class="fas fa-envelope" aria-hidden="true"></i>
-          <a href="mailto:gao-xinyang@foxmail.com">gao-xinyang@foxmail.com</a>
-        </div>
-        <div class="profile-info-item">
-          <i class="fas fa-map-marker-alt" aria-hidden="true"></i>
-          <span>中国 · 河南</span>
-        </div>
-        <div class="profile-info-item">
-          <i class="fas fa-code" aria-hidden="true"></i>
-          <span>Java / Python</span>
+          <span>网站正在重构ing，即将完成</span>
         </div>
       </div>
 
