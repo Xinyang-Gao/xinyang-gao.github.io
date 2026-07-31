@@ -1,0 +1,248 @@
+:root {
+    --gh-bg-color: #0d1117;
+    --gh-base-size-4: 0.25rem;
+    --gh-base-size-8: 0.5rem;
+    --gh-base-size-12: 0.75rem;
+    --gh-base-size-16: 1rem;
+    --gh-base-size-32: 2rem;
+    --gh-cell-size: 10px;
+    --gh-cell-gap: 3px;
+    --gh-cell-radius: 2px;
+    --gh-cell-level0-color: #21262d;
+    --gh-cell-level1-color: #0e4429;
+    --gh-cell-level2-color: #006d32;
+    --gh-cell-level3-color: #26a641;
+    --gh-cell-level4-color: #39d353;
+    --gh-cell-info-bg-color: #6e7681;
+    --gh-tooltip-text-color: var(--gh-text-default-color);
+    --gh-tooltip-padding: 10px;
+    --gh-tooltip-radius: 6px;
+    --gh-tooltip-font-size: 12px;
+    --gh-cell-outline-color: #ffffff0d;
+    --gh-cell-border-color: rgba(255, 255, 255, 0.03);
+    --gh-border-card-color: #30363d;
+    --gh-border-card-width: max(1px, 0.0625rem);
+    --gh-card-padding: var(--gh-base-size-16);
+    --gh-card-padding-block: 0.5rem;
+    --gh-card-radius: 6px;
+    --gh-canvas-padding-top: var(--gh-base-size-8);
+    --gh-canvas-margin-inline: var(--gh-base-size-8);
+    --gh-header-height: 20px;
+    --gh-header-margin-bottom: var(--gh-base-size-4);
+    --gh-header-font-size: inherit;
+    --gh-avatar-size: 20px;
+    --gh-footer-padding: var(--gh-base-size-4) var(--gh-base-size-32);
+    --gh-footer-font-size: var(--gh-base-size-12);
+    --gh-text-default-color: #e6edf3;
+    --gh-text-inactive-color: #848D97;
+    --gh-link-hover-color: #2f81f7;
+    --gh-font-default-family: -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+}
+
+/* Main block */
+:where(#gh, .ghContributionGraph) {
+    color: var(--gh-text-default-color);
+    width: fit-content;
+    font-family: var(--gh-font-default-family);
+}
+:where(#gh, .ghContributionGraph) a {
+    text-decoration: none;
+    color: var(--gh-text-inactive-color)
+}
+:where(#gh, .ghContributionGraph) a:hover {
+    color: var(--gh-link-hover-color);
+}
+
+/* Table */
+.ghCalendarTable {
+    color: var(--gh-text-default-color);
+    border-spacing: var(--gh-cell-gap);
+    border-collapse: separate;  
+}
+.ghCalendarTable tr {
+    height: var(--gh-cell-size);
+}
+.ghCalendarTable td {
+    text-align: left;
+    box-sizing: border-box;
+    position: relative;
+}
+
+/* DayCell */
+.ghCalendarDayCell {
+    width: var(--gh-cell-size);
+    height: var(--gh-cell-size);
+    border-radius: var(--gh-cell-radius);
+    border: 1px solid var(--gh-cell-border-color);
+    outline: 1px solid var(--gh-cell-outline-color);
+    outline-offset: -2px;
+}
+.ghCalendarDayCell[data-level="NONE"] {
+    background-color: var(--gh-cell-level0-color);
+    border: none;
+    outline: none;
+}
+.ghCalendarDayCell[data-level="FIRST_QUARTILE"] {
+    background-color: var(--gh-cell-level1-color);
+}
+.ghCalendarDayCell[data-level="SECOND_QUARTILE"] {
+    background-color: var(--gh-cell-level2-color);
+}
+.ghCalendarDayCell[data-level="THIRD_QUARTILE"] {
+    background-color: var(--gh-cell-level3-color);
+}
+.ghCalendarDayCell[data-level="FOURTH_QUARTILE"] {
+    background-color: var(--gh-cell-level4-color);
+}
+.ghCalendarDayCell .ghCalendarTooltip {
+    visibility: hidden;
+    position: absolute;
+    transform: translate(-50%, -130%);
+    word-wrap: normal;
+    text-wrap: nowrap;
+    pointer-events: none;
+    background-color: var(--gh-cell-info-bg-color);
+    color: var(--gh-tooltip-text-color);
+    padding: var(--gh-tooltip-padding);
+    font-size: var(--gh-tooltip-font-size);
+    border-radius: var(--gh-tooltip-radius);
+    font-family: var(--gh-font-default-family);
+}
+.ghCalendarDayCell .ghCalendarTooltip::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    border-width: 5px;
+    border-style: solid;
+    border-color: var(--gh-cell-info-bg-color) transparent transparent transparent;
+}
+.ghCalendarDayCell:hover .ghCalendarTooltip {
+    visibility: visible;
+}
+.ghCalendarLabel {
+    font-size: 12px;
+    position: absolute;
+    bottom: -3px;
+    font-weight: 400;
+    font-family: var(--gh-font-default-family);
+}
+
+/* Containers */
+.ghCalendarCard {
+    background-color: var(--gh-bg-color);
+    padding: var(--gh-card-padding);
+    padding-top: var(--gh-card-padding-block);
+    padding-bottom: var(--gh-card-padding-block);
+    border-radius: var(--gh-card-radius);
+    border: var(--gh-border-card-width, 1px) solid var(--gh-border-card-color);
+}
+.ghCalendarCanvas {
+    display: flex !important;
+    flex-direction: column;
+    padding-top: var(--gh-canvas-padding-top, 4px) !important;
+    text-align: center !important;
+    margin-right: var(--gh-canvas-margin-inline, 8px) !important;
+    margin-left: var(--gh-canvas-margin-inline, 8px) !important;
+    overflow: visible;
+}
+
+/* Header */
+.ghCalendarHeader {
+    margin-bottom: var(--gh-header-margin-bottom);
+    height: var(--gh-header-height);
+    font-size: var(--gh-header-font-size);
+}
+.ghCalendarHeader span {
+    float: left;
+}
+.ghCalendarHeader div {
+    display: flex;
+    flex-direction: row;
+    float: right;
+}
+.ghCalendarHeader div img {
+    width: var(--gh-avatar-size);
+    height: var(--gh-avatar-size);
+    border-radius: calc(var(--gh-avatar-size) / 2);
+    margin-left: var(--gh-base-size-4);
+}
+
+/* Footer */
+.ghCalendarCardFooter {
+    display: block;
+    padding: var(--gh-footer-padding) !important;
+    text-align: center !important;
+    font-size: var(--gh-footer-font-size);
+    font-family: var(--gh-font-default-family);
+    color: var(--gh-text-inactive-color);
+}
+.ghCalendarCardFooterLink {
+    display: block;
+    float: left;
+}
+.ghCalendarCardFooterColors {
+    display: flex;
+    flex-direction: row;
+    float: right;
+    align-items: center;
+}
+.ghCalendarCardFooterColors * {
+    margin-right: var(--gh-base-size-4);
+}
+.ghCalendarCardFooterColors div {
+    width: var(--gh-cell-size);
+    height: var(--gh-cell-size);
+}
+
+/* Loading State */
+.ghCalendarLoading,
+[data-loading="true"] {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 150px;
+    width: 100%;
+    color: transparent;
+    font-size: 0;
+    user-select: none;
+    overflow: hidden;
+    background-color: var(--gh-bg-color, #0d1117);
+    border: var(--gh-border-card-width, 1px) solid var(--gh-border-card-color, #30363d);
+    border-radius: 6px;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+.ghCalendarLoading::after,
+[data-loading="true"]::after {
+    content: '';
+    display: block;
+    width: 100%;
+    max-width: 720px;
+    height: 94px;
+    flex-shrink: 0;
+    background-color: var(--gh-cell-level0-color, #21262d);
+    background-image: 
+        repeating-linear-gradient(
+            var(--gh-bg-color, #0d1117) 0px, 
+            var(--gh-bg-color, #0d1117) 4px, 
+            transparent 4px, 
+            transparent 14px
+        ),
+        repeating-linear-gradient(
+            90deg, 
+            var(--gh-bg-color, #0d1117) 0px, 
+            var(--gh-bg-color, #0d1117) 4px, 
+            transparent 4px, 
+            transparent 14px
+        );
+    animation: ghLoadingPulse 1.2s ease-in-out infinite alternate;
+    border-radius: 2px;
+}
+
+@keyframes ghLoadingPulse {
+    0% { opacity: 0.4; }
+    100% { opacity: 1; }
+}

@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="/css/main.css" />
 
     <style>
-        /* 头部区域 */
         .privacy-header {
             margin-bottom: 2.5rem;
             text-align: center;
@@ -48,7 +47,6 @@
             display: none;
         }
 
-        /* 隐私章节卡片 */
         .privacy-section {
             background: var(--surface-color);
             border: 1px solid var(--border-color);
@@ -80,7 +78,6 @@
             font-size: 1.2em;
         }
 
-        /* 内容排版 */
         .privacy-section p, 
         .privacy-section li {
             color: var(--text-secondary);
@@ -99,7 +96,6 @@
             font-family: var(--font-mono);
         }
 
-        /* 信息网格 (用于展示收集的信息类型) */
         .info-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -126,7 +122,6 @@
             margin-bottom: 0;
         }
 
-        /* 徽章通知 (核心承诺内容) */
         .badge-notice {
             background: rgba(var(--accent-rgb), 0.08);
             border: 1px solid rgba(var(--accent-rgb), 0.15);
@@ -149,7 +144,6 @@
             margin-bottom: 4px;
         }
 
-        /* 服务列表 (胶囊样式) */
         .service-list {
             list-style: none;
             padding: 0;
@@ -188,7 +182,6 @@
             color: #14141a;
         }
 
-        /* 页脚备注 */
         .privacy-footer-note {
             margin-top: 3rem;
             padding-top: 1.5rem;
@@ -201,7 +194,6 @@
             color: var(--accent-color);
         }
 
-        /* 响应式调整 */
         @media (max-width: 768px) {
             .privacy-section {
                 padding: 1.5rem;
@@ -245,7 +237,6 @@
                 </nav>
             </header>
 
-            <!-- 核心承诺 -->
             <section id="commitment" class="privacy-section">
                 <h2><i class="fas fa-shield-alt"></i> 核心承诺</h2>
                 <div class="badge-notice">
@@ -258,7 +249,6 @@
                 <p>本站采取「最小必要」原则收集数据。您可以随时通过浏览器设置清除本地数据，这不会影响您阅读文章或浏览作品。</p>
             </section>
 
-            <!-- 信息收集 -->
             <section id="collection" class="privacy-section">
                 <h2><i class="fas fa-database"></i> 一、我们收集的信息</h2>
                 <div class="info-grid">
@@ -278,7 +268,6 @@
                 </div>
             </section>
 
-            <!-- Cookie 与本地存储控制 -->
             <section id="cookies" class="privacy-section">
                 <h2><i class="fas fa-cookie-bite"></i> 二、Cookie 与本地存储的控制</h2>
                 <p>本站<strong>不主动设置传统跨页追踪 Cookie</strong>，所有持久化数据均使用 <code>localStorage</code>，且必须经您明确同意。</p>
@@ -289,7 +278,6 @@
                 <p>您可随时通过浏览器清除 <code>localStorage</code> 重置同意状态。</p>
             </section>
 
-            <!-- 第三方服务 -->
             <section id="thirdparty" class="privacy-section">
                 <h2><i class="fas fa-plug"></i> 三、我们集成的第三方服务</h2>
                 <p>以下服务有助于提升网站性能与体验：</p>
@@ -305,7 +293,6 @@
                 </p>
             </section>
 
-            <!-- 数据安全与保留 -->
             <section id="security" class="privacy-section">
                 <h2><i class="fas fa-lock"></i> 四、数据安全与保留期限</h2>
                 <ul>
@@ -317,7 +304,6 @@
                 </ul>
             </section>
 
-            <!-- 用户权利 -->
             <section id="rights" class="privacy-section">
                 <h2><i class="fas fa-user-check"></i> 五、您享有的权利</h2>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
@@ -342,13 +328,11 @@
                 </div>
             </section>
 
-            <!-- 未成年人保护 -->
             <section class="privacy-section">
                 <h2><i class="fas fa-child"></i> 六、未成年人保护</h2>
                 <p>若您未满 14 周岁，请在父母指导下合理使用评论功能。我们不会故意收集未成年人个人信息，如发现可联系删除。</p>
             </section>
 
-            <!-- 政策更新 -->
             <section class="privacy-section">
                 <h2><i class="fas fa-sync-alt"></i> 七、隐私政策的更新</h2>
                 <p>本政策可能因功能迭代或法律法规变化而修订。重大变更会通过网站公告或 Cookie 横幅通知。修订后自发布之日起生效。</p>

@@ -8,11 +8,10 @@
     <link rel="stylesheet" href="/css/main.css">
     <link rel="stylesheet" href="/css/pages/about.css">
     <link rel="stylesheet" href="/css/components/comments.css">
-    <link rel="stylesheet" href="https://unpkg.com/github-contrib-graph@latest/dist/gh.css">
+    <link rel="stylesheet" href="/css/components/github-contrib-graph.css">
 </head>
 
 <body>
-    <!-- 加载动画 -->
     <div id="loading-overlay" role="status" aria-label="页面加载中">
         <div class="loading-log">
             <div>[START] 正在等待 JavaScript，这可能需要几秒</div>
@@ -23,30 +22,23 @@
         </div>
     </div>
 
-    <!-- 导航栏占位 -->
     <div id="navbar-placeholder"></div>
 
-    <!-- 主内容 -->
     <div id="router-view">
         <div class="two-column-layout">
-            <!-- 侧边栏个人卡片 -->
             <aside class="sidebar-profile">
                 <div id="personal-card-container"></div>
             </aside>
 
-            <!-- 主内容区 -->
             <main class="main-content-area">
                 <div class="container player-container">
 
-                    <!-- ===== 翻转卡片容器 ===== -->
                     <div class="flip-card-container">
                         <div class="flip-card" id="aboutFlipCard">
                             <div class="flip-card-inner">
 
-                                <!-- ===== 正面（原有全部内容） ===== -->
                                 <div class="flip-card-front">
 
-                                    <!-- 玩家 ID 卡 -->
                                     <div class="player-header-card">
                                         <div class="player-title-row">
                                             <span class="player-name">高新炀</span>
@@ -62,7 +54,6 @@
                                                     id="uptimeDisplay">--</span></span>
                                         </div>
 
-                                        <!-- 经验胶囊 -->
                                         <div class="exp-capsule" id="expCapsule">
                                             <div class="exp-level-box">
                                                 <span class="exp-level" id="levelDisplay">--</span>
@@ -86,7 +77,6 @@
                                         </div>
                                     </div>
 
-                                    <!-- 当前副本 -->
                                     <div class="instance-grid">
                                         <div class="instance-card mission-main">
                                             <span class="instance-label"><i class="fas fa-flag"></i> 主线任务</span>
@@ -102,7 +92,6 @@
                                         </div>
                                     </div>
 
-                                    <!-- 技能树 -->
                                     <h3
                                         style="display:flex; align-items:center; gap:10px; margin-top:1.2rem; border-bottom:none; padding-bottom:0;">
                                         <i class="fas fa-code-branch" style="color:var(--accent-color);"></i> 技能树
@@ -193,7 +182,6 @@
                                         </div>
                                     </div>
 
-                                    <!-- 成就 -->
                                     <div class="achievement-section-title">
                                         <i class="fas fa-trophy"></i> 成就
                                         <span class="sub">Achievements</span>
@@ -318,9 +306,8 @@
                                     </div>
 
                                 </div>
-                                <!-- ===== 正面结束 ===== -->
 
-                                <!-- ===== 反面（关于我的文本） ===== -->
+                                <!-- ===== 反面 ===== -->
                                 <div class="flip-card-back">
                                     <div class="back-content-wrapper">
                                         <h2
@@ -331,7 +318,6 @@
                                         <div
                                             style="display:flex; flex-direction:column; gap:1.2rem; margin-top:1.2rem;">
 
-                                            <!-- 第一段：身份与起源 -->
                                             <div>
                                                 <p style="margin:0; line-height:1.8; font-size:1.05rem;">
                                                     <strong>高新炀</strong>，一个出生于2010年冬天的〈地球 Online〉玩家，
@@ -342,7 +328,6 @@
                                                 </p>
                                             </div>
 
-                                            <!-- ===== 日常爱好（纯CSS类版） ===== -->
                                             <div class="daily-hobby-card">
                                                 <div class="hobby-header">
                                                     <div class="hobby-icon-circle">
@@ -354,7 +339,6 @@
                                                     </div>
                                                 </div>
                                                 <div class="daily-hobby-grid">
-                                                    <!-- Minecraft -->
                                                     <div class="daily-hobby-item">
                                                         <div class="hobby-icon-minecraft"><i class="fas fa-cube"></i>
                                                         </div>
@@ -363,7 +347,7 @@
                                                             <div class="hobby-sub">生电 · 极限</div>
                                                         </div>
                                                     </div>
-                                                    <!-- 听音乐 -->
+
                                                     <div class="daily-hobby-item">
                                                         <div class="hobby-icon-music"><i class="fas fa-headphones"></i>
                                                         </div>
@@ -372,7 +356,7 @@
                                                             <div class="hobby-sub">网易云 · 歌单</div>
                                                         </div>
                                                     </div>
-                                                    <!-- 画画 -->
+
                                                     <div class="daily-hobby-item">
                                                         <div class="hobby-icon-paint"><i class="fas fa-palette"></i>
                                                         </div>
@@ -381,7 +365,7 @@
                                                             <div class="hobby-sub">素描 · 水彩</div>
                                                         </div>
                                                     </div>
-                                                    <!-- 弹琴 -->
+
                                                     <div class="daily-hobby-item">
                                                         <div class="hobby-icon-piano"><i class="fas fa-music"></i></div>
                                                         <div>
@@ -392,7 +376,6 @@
                                                 </div>
                                             </div>
 
-                                            <!-- ===== 《三体》专区（参考支线任务卡片样式） ===== -->
                                             <div
                                                 style="background:linear-gradient(145deg, rgba(52,152,219,0.10), rgba(88,51,200,0.05)); border:2px solid rgba(52,152,219,0.30); border-radius:var(--radius-xl); padding:1.2rem 1.6rem; box-shadow:0 4px 24px rgba(52,152,219,0.08), inset 0 1px 0 rgba(52,152,219,0.12); transition:all 0.4s ease;">
                                                 <div
@@ -415,7 +398,6 @@
                                                 </div>
                                             </div>
 
-                                            <!-- ===== 网站起源缩影（参考主线任务卡片样式） ===== -->
                                             <div
                                                 style="background:linear-gradient(145deg, rgba(255,215,0,0.08), rgba(255,160,0,0.04)); border:2px solid rgba(255,215,0,0.25); border-radius:var(--radius-xl); padding:1.2rem 1.6rem; box-shadow:0 4px 24px rgba(255,215,0,0.06), inset 0 1px 0 rgba(255,215,0,0.10); transition:all 0.4s ease;">
                                                 <div
@@ -448,7 +430,6 @@
                                                 </div>
                                             </div>
 
-                                            <!-- 签名 -->
                                             <p
                                                 style="line-height:1.8; color:var(--text-secondary); font-style:italic; border-top:1px dashed var(--border-color); padding-top:0.8rem; margin-bottom:0; text-align:center;">
                                                 <i class="fas fa-quote-left"
@@ -464,7 +445,6 @@
                             </div>
                         </div>
 
-                        <!-- ===== 翻转按钮（卡片底部） ===== -->
                         <div class="flip-controls">
                             <button class="flip-btn" id="flipCardBtn">
                                 <i class="fas fa-sync-alt"></i>
@@ -481,13 +461,10 @@
         </div>
     </div>
 
-    <!-- 页面过渡 -->
     <div id="pageTransition" class="page-transition"></div>
 
-    <!-- 页脚占位 -->
     <div id="footer-placeholder"></div>
 
-    <!-- 脚本 -->
     <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>
     <script src="/js/vendor/vercount.min.js" defer></script>
     <script src="/js/vendor/browser.global.min.js"></script>

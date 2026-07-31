@@ -22,7 +22,7 @@ export function generatePersonalCardHTML() {
 
       <div class="profile-body">
         <div class="profile-info-item">
-          <span>网站正在重构ing，即将完成</span>
+          <span>网站重构ing，即将完成</span>
         </div>
       </div>
 
