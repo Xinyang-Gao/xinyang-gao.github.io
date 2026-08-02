@@ -590,3 +590,159 @@
   .article-body a::after { content: " (" attr(href) ")"; font-size: 0.75rem; }
   .article-tags .tag { border: 1px solid #ccc; background: none; color: #000; }
 }
+
+/* ============================================
+   Admonition / 提示框扩展样式
+   适配 note / tip / important / warning / caution
+   ============================================ */
+
+/* ---------- 颜色变量（亮/暗主题） ---------- */
+:root {
+  --admonition-note-color: #0969da;
+  --admonition-note-bg: #f6f8fa;
+  --admonition-tip-color: #1a7f37;
+  --admonition-tip-bg: #f0faf3;
+  --admonition-important-color: #8250df;
+  --admonition-important-bg: #f8f6fc;
+  --admonition-warning-color: #9a6700;
+  --admonition-warning-bg: #fff8e7;
+  --admonition-caution-color: #cf222e;
+  --admonition-caution-bg: #fff5f5;
+}
+
+[data-theme="dark"] {
+  --admonition-note-color: #58a6ff;
+  --admonition-note-bg: #1c1c2a;
+  --admonition-tip-color: #3fb950;
+  --admonition-tip-bg: #1a2a1a;
+  --admonition-important-color: #a371f7;
+  --admonition-important-bg: #261a33;
+  --admonition-warning-color: #d29922;
+  --admonition-warning-bg: #2d2416;
+  --admonition-caution-color: #f85149;
+  --admonition-caution-bg: #2d1b1b;
+}
+
+/* ---------- 基础容器 ---------- */
+.admonition {
+  position: relative;
+  margin: 1.6rem 0;
+  padding: 0.8rem 1.2rem;
+  border-left: 4px solid var(--admonition-color, var(--accent-color));
+  background-color: var(--admonition-bg, var(--blockquote-bg));
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  transition: background-color var(--transition-normal),
+              border-color var(--transition-normal);
+}
+
+/* 与已有 blockquote 保持视觉层级一致 */
+.admonition p:last-child {
+  margin-bottom: 0;
+}
+.admonition > :last-child {
+  margin-bottom: 0;
+}
+
+/* ---------- 标题行（图标 + 文本） ---------- */
+.admonition-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--admonition-color, var(--accent-color));
+  margin: 0 0 0.4rem 0;
+  line-height: 1.4;
+}
+
+/* 标题图标（伪元素 + FontAwesome） */
+.admonition-title::before {
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  font-size: 0.9em;
+  display: inline-block;
+  width: 1.2em;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* 各类型专属图标和颜色 */
+.admonition.note {
+  --admonition-color: var(--admonition-note-color);
+  --admonition-bg: var(--admonition-note-bg);
+}
+.admonition.note .admonition-title::before {
+  content: "\f05a"; /* fa-info-circle */
+}
+
+.admonition.tip {
+  --admonition-color: var(--admonition-tip-color);
+  --admonition-bg: var(--admonition-tip-bg);
+}
+.admonition.tip .admonition-title::before {
+  content: "\f0eb"; /* fa-lightbulb */
+}
+
+.admonition.important {
+  --admonition-color: var(--admonition-important-color);
+  --admonition-bg: var(--admonition-important-bg);
+}
+.admonition.important .admonition-title::before {
+  content: "\f06a"; /* fa-exclamation-circle */
+}
+
+.admonition.warning {
+  --admonition-color: var(--admonition-warning-color);
+  --admonition-bg: var(--admonition-warning-bg);
+}
+.admonition.warning .admonition-title::before {
+  content: "\f071"; /* fa-exclamation-triangle */
+}
+
+.admonition.caution {
+  --admonition-color: var(--admonition-caution-color);
+  --admonition-bg: var(--admonition-caution-bg);
+}
+.admonition.caution .admonition-title::before {
+  content: "\f0e7"; /* fa-bolt */
+}
+
+/* ---------- 内部内容排版 ---------- */
+.admonition p,
+.admonition ul,
+.admonition ol,
+.admonition blockquote,
+.admonition pre {
+  margin-top: 0.4rem;
+  margin-bottom: 0.6rem;
+}
+.admonition > *:first-child {
+  margin-top: 0;
+}
+.admonition > *:last-child {
+  margin-bottom: 0;
+}
+
+/* 与普通 blockquote 区分：标题突出 */
+.admonition .admonition-title + p {
+  margin-top: 0.2rem;
+}
+
+/* ---------- 嵌套代码块、列表等保持一致 ---------- */
+.admonition code {
+  background: rgba(0, 0, 0, 0.06);
+}
+[data-theme="dark"] .admonition code {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* ---------- 响应式微调 ---------- */
+@media (max-width: 480px) {
+  .admonition {
+    padding: 0.6rem 1rem;
+    margin: 1.2rem 0;
+  }
+  .admonition-title {
+    font-size: 0.9rem;
+  }
+}

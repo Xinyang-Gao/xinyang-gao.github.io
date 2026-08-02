@@ -5,3 +5,4 @@ pillow
 rcssmin
 python-dateutil
 packaging
+pymdown-extensions

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+
 """
 公共模块：日志、路径、工具函数
 """
@@ -10,7 +11,7 @@ import re
 import hashlib
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
 # ---------- 项目根目录（builder 目录的父级） ----------
 PROJECT_ROOT = Path(__file__).parent.parent
@@ -102,7 +103,6 @@ def get_current_datetime_iso() -> str:
 # ---------- JSON 读写 ----------
 def load_json(filepath: Path, default: Any = None) -> Any:
     if not filepath.exists():
-        log_warning(f"文件不存在: {filepath}")
         return default
     try:
         with open(filepath, 'r', encoding='utf-8') as f:
@@ -113,21 +113,21 @@ def load_json(filepath: Path, default: Any = None) -> Any:
 
 def save_json(data: Any, filepath: Path, indent: int = 2) -> bool:
     try:
+        filepath.parent.mkdir(parents=True, exist_ok=True)
         with open(filepath, 'w', encoding='utf-8') as f:
             json.dump(data, f, ensure_ascii=False, indent=indent)
-        log_info(f"已保存 {filepath}")
         return True
     except OSError as e:
         log_error(f"写入 {filepath} 失败: {e}")
         return False
 
-# ---------- 字符串处理 ----------
+# ---------- 字符串与哈希处理 ----------
 def compute_content_hash(content: str) -> str:
     return hashlib.md5(content.encode('utf-8')).hexdigest()
 
 def compute_object_hash(obj: Any) -> str:
     try:
-        json_str = json.dumps(obj, sort_keys=True, ensure_ascii=False)
+        json_str = json.dumps(obj, sort_keys=True, ensure_ascii=False, default=str)
         return hashlib.md5(json_str.encode('utf-8')).hexdigest()
     except TypeError:
         return hashlib.md5(repr(obj).encode('utf-8')).hexdigest()
@@ -159,9 +159,6 @@ def calculate_read_time(word_count: int, words_per_minute: int = 300) -> str:
 def get_relative_path(file_path: Path) -> str:
     return file_path.relative_to(PROJECT_ROOT).as_posix()
 
-def ensure_dir(path: Path) -> None:
-    path.mkdir(parents=True, exist_ok=True)
-
 # ---------- 构建状态 ----------
 BUILD_STATE_FILE = PROJECT_ROOT / ".build_state.json"
 
@@ -175,25 +172,22 @@ def save_build_state(state: Dict) -> None:
 def compute_dir_hash(directory: Path, patterns: List[str] = None, ignore_patterns: List[str] = None) -> str:
     """
     计算目录下所有文件的组合哈希，用于检测前端资源是否变化。
-    :param directory: 目录路径
-    :param patterns: 要包含的文件模式列表，如 ['*.css', '*.ts']，默认所有文件
-    :param ignore_patterns: 要忽略的模式列表，如 ['*.map']
     """
     if not directory.exists():
         return ""
     hasher = hashlib.md5()
-    # 收集所有文件
     files = []
     if patterns:
         for pat in patterns:
             files.extend(directory.rglob(pat))
     else:
         files = list(directory.rglob("*"))
-    # 去重并排序
+    
     files = sorted(set(files), key=lambda p: p.relative_to(directory).as_posix())
-    # 过滤忽略模式
+    
     if ignore_patterns:
         files = [f for f in files if not any(f.match(p) for p in ignore_patterns)]
+        
     for file_path in files:
         if file_path.is_file():
             rel = file_path.relative_to(directory).as_posix()

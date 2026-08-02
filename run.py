@@ -14,7 +14,7 @@ from typing import Optional, List
 from builder.common import PROJECT_ROOT, log_info, log_error, log_warning
 from builder.engine import BuildEngine
 from builder.generators.aggregated import AggregatedGenerator
-from builder.generators.friend_colors import FriendColorsGenerator   # 新增导入
+from builder.generators.friend_colors import FriendColorsGenerator
 
 
 def console_main(args):
@@ -24,14 +24,14 @@ def console_main(args):
 
     engine = BuildEngine()
     engine.register(AggregatedGenerator())
-    engine.register(FriendColorsGenerator())   # 注册友链颜色生成器
+    engine.register(FriendColorsGenerator())
 
     target = args.targets if args.targets else None
     force = args.force
     parallel = not args.no_parallel
     max_workers = args.workers
 
-    # 构建强制覆盖字典：friend_colors 使用独立的 --force-colors
+    # 构建强制覆盖字典
     force_overrides = {"friend_colors": args.force_colors}
 
     def callback(msg, tag):

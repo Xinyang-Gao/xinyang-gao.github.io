@@ -3,8 +3,6 @@
 
 """
 聚合生成器：一次性生成统计 JSON、RSS、站点地图、列表页、子目录页面、复制静态资源。
-所有生成共享一次加载的数据，减少 I/O。
-支持前端资源增量判断（CSS/JS/模板/assets 哈希）。
 """
 
 import json
@@ -27,19 +25,19 @@ from ..common import (
     log_info, log_warning, log_error,
     load_json, save_json, format_date, format_date_iso,
     get_current_date_iso, get_current_datetime_iso,
-    compute_content_hash, compute_dir_hash, compute_file_hash, compute_object_hash,
-    load_build_state, save_build_state
+    compute_dir_hash, compute_file_hash, compute_object_hash,
+    load_build_state
 )
 from ..build_context import BuildContext
 from .base import OutputGenerator
 
-# 输出路径（在 dist/ 下）—— 改为 /articles/ 和 /works/
+# 输出路径
 ARTICLES_LIST_HTML = DIST_ROOT / "articles" / "index.html"
 WORKS_LIST_HTML = DIST_ROOT / "works" / "index.html"
 NOJS_HTML = DIST_ROOT / "nojs.html"
 STATISTICS_JSON = JSON_OUTPUT_DIR / "statistics.json"
 
-# 需要从模板生成到子目录的页面（模板名 -> 目标子目录）
+# 需要从模板生成到子目录的页面
 PAGE_TEMPLATES = {
     "about.html": "about",
     "archive.html": "archive",
@@ -54,7 +52,7 @@ class AggregatedGenerator(OutputGenerator):
     inputs = {"articles", "works", "friends", "version"}
     outputs = [
         RSS_OUTPUT, SITEMAP_OUTPUT, ARTICLES_LIST_HTML, WORKS_LIST_HTML, NOJS_HTML, STATISTICS_JSON,
-        JSON_OUTPUT_DIR / "code_analysis.json",   # 新增：dist 代码分析
+        JSON_OUTPUT_DIR / "code_analysis.json",
     ] + [DIST_ROOT / f"{key}" / "index.html" for key in PAGE_TEMPLATES.values()] \
         + [DIST_ROOT / "friends" / "index.html"]
 
@@ -62,19 +60,14 @@ class AggregatedGenerator(OutputGenerator):
     def _compute_frontend_hash(self) -> str:
         """计算所有前端源文件（CSS、JS、模板、素材）的组合哈希"""
         hashes = []
-        # CSS
         if CSS_SRC_DIR.exists():
             hashes.append(compute_dir_hash(CSS_SRC_DIR, patterns=["*.css"]))
-        # JS（TypeScript 源，含 ts, js）
         if JS_SRC_DIR.exists():
             hashes.append(compute_dir_hash(JS_SRC_DIR, patterns=["*.ts", "*.js"]))
-        # 模板
         if TEMPLATES_DIR.exists():
             hashes.append(compute_dir_hash(TEMPLATES_DIR, patterns=["*.html"]))
-        # Assets（排除 source，但保留 avatars，因为友链可能引用）
         if ASSETS_DIR.exists():
             hashes.append(compute_dir_hash(ASSETS_DIR, ignore_patterns=["source"]))
-        # 根目录文件（favicon, BingSiteAuth, robots.txt）
         for filename in ["favicon.ico", "BingSiteAuth.xml", "robots.txt"]:
             file_path = SRC_ROOT / filename
             if file_path.exists():
@@ -82,16 +75,13 @@ class AggregatedGenerator(OutputGenerator):
         return compute_object_hash("".join(hashes))
 
     def is_up_to_date(self, context: BuildContext, state: dict) -> bool:
-        # 先检查基础输入（articles, works, friends, version）
         if not super().is_up_to_date(context, state):
             return False
         old = state.get(self.name, {})
-        # 额外检查前端资源
         frontend_hash = self._compute_frontend_hash()
         return old.get("frontend_hash") == frontend_hash
 
     def update_state(self, state: dict, context: BuildContext) -> None:
-        # 保存基础输入哈希 + 前端哈希
         base_hash = self.compute_input_hash(context)
         frontend_hash = self._compute_frontend_hash()
         state[self.name] = {
@@ -104,7 +94,6 @@ class AggregatedGenerator(OutputGenerator):
     def generate(self, context: BuildContext, force: bool) -> bool:
         log_info("开始聚合生成...")
         try:
-            # 读取当前状态，判断前端是否变化（用于跳过耗时的 Vite/CSS）
             state = load_build_state()
             frontend_hash = self._compute_frontend_hash()
             old_frontend = state.get(self.name, {}).get("frontend_hash")
@@ -116,10 +105,10 @@ class AggregatedGenerator(OutputGenerator):
             self._generate_articles_page(context)
             self._generate_works_page(context)
             self._generate_nojs_index(context)
-            self._copy_static_assets(frontend_changed)   # 传递变化标志
+            self._copy_static_assets(frontend_changed)
             self._generate_friends_page(context)
             self._generate_subdir_pages(context)
-            self._generate_code_analysis()               # 新增：生成 dist 代码分析
+            self._generate_code_analysis()
             log_info("聚合生成完成")
             return True
         except Exception as e:
@@ -330,7 +319,7 @@ class AggregatedGenerator(OutputGenerator):
                 lastmod = get_current_date_iso()
             add_url(base_url + art.url, lastmod[:10], "weekly", "0.9")
 
-        # 固定页面（干净 URL）—— 已改为 /articles/ 和 /works/
+        # 固定页面
         default_pages = {
             "/": {"changefreq": "weekly", "priority": "1.0"},
             "/about/": {"changefreq": "weekly", "priority": "0.8"},
@@ -609,7 +598,7 @@ class AggregatedGenerator(OutputGenerator):
 
     # ---------- 复制静态资源（含增量优化） ----------
     def _copy_static_assets(self, frontend_changed: bool):
-        # ---------- 1. 调用 Vite 构建 TypeScript（仅当前端变化或强制） ----------
+        # 1. 调用 Vite 构建 TypeScript
         if frontend_changed:
             try:
                 result = subprocess.run(
@@ -635,7 +624,7 @@ class AggregatedGenerator(OutputGenerator):
         else:
             log_info("前端源文件未变化，跳过 Vite 构建")
 
-        # ---------- 2. 压缩并复制 CSS（仅当前端变化） ----------
+        # 2. 压缩并复制 CSS
         if CSS_SRC_DIR.exists():
             if frontend_changed:
                 for css_file in CSS_SRC_DIR.rglob("*.css"):
@@ -658,19 +647,19 @@ class AggregatedGenerator(OutputGenerator):
         else:
             log_warning(f"CSS 源目录不存在: {CSS_SRC_DIR}")
 
-        # ---------- 3. 复制 assets 素材（排除 source，但保留 avatars） ----------
+        # 3. 复制 assets 素材
         if ASSETS_DIR.exists():
             shutil.copytree(
                 ASSETS_DIR,
                 ASSETS_DIST_DIR,
                 dirs_exist_ok=True,
-                ignore=shutil.ignore_patterns('source')   # 只排除 source，avatars 会被复制
+                ignore=shutil.ignore_patterns('source')
             )
             log_info("复制 assets 素材完成（排除 source，但包含 avatars）")
         else:
             log_warning(f"assets 源目录不存在: {ASSETS_DIR}")
 
-        # 复制 /src/copy/ 中的所有文件和文件夹到 dist/ 根目录
+        # 4. 复制 /src/copy/
         copy_src = SRC_ROOT / "copy"
         if copy_src.exists():
             shutil.copytree(copy_src, DIST_ROOT, dirs_exist_ok=True)
@@ -678,7 +667,7 @@ class AggregatedGenerator(OutputGenerator):
         else:
             log_warning(f"目录 {copy_src} 不存在，跳过复制根目录文件")
 
-        # ---------- 5. 复制 works 目录（包含作品静态资源） ----------
+        # 5. 复制 works 目录
         works_src = SRC_ROOT / "works"
         works_dst = DIST_ROOT / "works"
         if works_src.exists():
@@ -721,29 +710,22 @@ class AggregatedGenerator(OutputGenerator):
                 log_info(f"复制 {fragment} 到 dist/")
 
     def _generate_friends_page(self, context: BuildContext) -> None:
-        """全量生成友链页面（基于原始模板结构，动态填充数据）"""
-        # 读取数据
+        """全量生成友链页面"""
         data = load_json(ASSETS_DIR / "friends.json", {})
         friends_list = data.get("friends", [])
         external_list = data.get("external", [])
 
-        # 读取颜色映射
         color_map = load_json(ASSETS_DIR / "friend_colors.json", {})
-        # 标准化链接（去除尾部斜杠）
         unique_colors = {}
         for link, rgb in color_map.items():
             norm = link.rstrip('/')
             if norm not in unique_colors:
                 unique_colors[norm] = rgb
 
-        # 生成好友卡片列表（纯 <a> 标签序列）
         cards_html = self._render_friend_cards(friends_list, unique_colors)
-        # 生成外部链接列表
         ext_html = self._render_external_links(external_list)
-        # 统计数字
         count_text = f"共 {len(friends_list)} 位小伙伴 · 随机排序"
 
-        # 完整 HTML（复制原始模板结构，替换三处动态内容）
         html = f'''<!DOCTYPE html>
     <html lang="zh-CN">
     <head>
@@ -836,7 +818,6 @@ class AggregatedGenerator(OutputGenerator):
         log_info(f"友链页面生成: {target_path}")
 
     def _render_friend_cards(self, friends_list, color_map):
-        """生成好友卡片列表（仅 <a> 标签，无外层容器）"""
         cards = []
         for friend in friends_list:
             name = friend.get("name", "未知")
@@ -873,7 +854,6 @@ class AggregatedGenerator(OutputGenerator):
         return ''.join(cards)
 
     def _render_external_links(self, external_list):
-        """生成外部链接列表（仅 <a> 标签，无外层容器）"""
         items = []
         for ext in external_list:
             items.append(f'''
@@ -884,16 +864,14 @@ class AggregatedGenerator(OutputGenerator):
             ''')
         return ''.join(items)
 
-    # ---------- 新增：dist 代码分析 ----------
+    # ---------- dist 代码分析 ----------
     def _generate_code_analysis(self):
-        """生成 dist 目录的代码分析 JSON，与 code_analysis.json 格式一致"""
         log_info("开始生成 dist 代码分析...")
         result = self._analyze_directory(DIST_ROOT)
         save_json(result, JSON_OUTPUT_DIR / "code_analysis.json")
         log_info(f"dist 代码分析已保存至 {JSON_OUTPUT_DIR / 'code_analysis.json'}")
 
     def _analyze_directory(self, directory: Path):
-        """遍历目录，统计文件信息，返回与 code_analysis.json 一致的结构"""
         if not directory.exists():
             log_warning(f"目录不存在: {directory}")
             return {}
@@ -912,7 +890,6 @@ class AggregatedGenerator(OutputGenerator):
             total_size += size
 
             ext = file_path.suffix or 'no_extension'
-            # 统计行数（尝试按文本读取）
             lines = 0
             non_empty = 0
             try:
@@ -922,7 +899,6 @@ class AggregatedGenerator(OutputGenerator):
                         if line.strip():
                             non_empty += 1
             except Exception:
-                # 若无法读取（如权限问题），则行数记为 0
                 pass
 
             if ext not in by_ext:
@@ -939,7 +915,6 @@ class AggregatedGenerator(OutputGenerator):
             total_lines += lines
             non_empty_lines += non_empty
 
-        # 构建最终结果
         ext_list = []
         for ext, data in by_ext.items():
             ext_list.append({

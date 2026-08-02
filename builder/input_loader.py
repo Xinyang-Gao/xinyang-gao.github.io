@@ -3,7 +3,8 @@
 
 """
 InputLoader：从文件系统加载文章、作品、友链、版本等，返回 BuildContext 对象。
-包含自动解析网站更新日志生成 version.json 的功能，以及文章 Markdown 转 HTML 的完整流程。
+支持增强 Markdown 语法（任务列表、Admonition、选项卡、高亮、上/下标、删除线等），
+并自动将 GitHub 风格的 [!NOTE] 警告块转换为标准 admonition 语法。
 """
 
 import sys
@@ -15,7 +16,7 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime
 from urllib.parse import quote
 
-# 导入公共模块（使用相对导入）
+# 导入公共模块
 from .common import (
     PROJECT_ROOT, SRC_ROOT, ASSETS_SOURCE_DIR, ASSETS_DIR,
     ARTICLES_OUTPUT_DIR, JSON_OUTPUT_DIR, WORKS_SRC_DIR,
@@ -23,7 +24,7 @@ from .common import (
     load_json, save_json, compute_content_hash, compute_file_hash,
     get_relative_path, format_date, format_date_iso,
     get_current_date_iso, get_current_datetime_iso,
-    count_words, calculate_read_time, slugify, ensure_dir
+    count_words, calculate_read_time, slugify,
 )
 
 # 导入数据结构
@@ -43,17 +44,13 @@ except ImportError:
     HAS_YAML = False
     log_warning("PyYAML 未安装，将使用简易 frontmatter 解析")
 
-# 删除线扩展
+# 尝试导入 pymdownx 扩展（可选，但强烈推荐）
 try:
-    from markdown.extensions import Extension
-    from markdown.inlinepatterns import SimpleTagInlineProcessor
-
-    class StrikeExtension(Extension):
-        def extendMarkdown(self, md):
-            STRIKE_RE = r'(~~)(.+?)(~~)'
-            md.inlinePatterns.register(SimpleTagInlineProcessor(STRIKE_RE, 'del'), 'strikethrough', 175)
-except Exception:
-    StrikeExtension = None
+    import pymdownx
+    HAS_PYMDOWN = True
+except ImportError:
+    HAS_PYMDOWN = False
+    log_warning("pymdown-extensions 未安装，部分高级语法将不可用。建议: pip install pymdown-extensions")
 
 # 图片懒加载占位符
 LAZY_PLACEHOLDER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E"
@@ -89,8 +86,6 @@ def parse_changelog(md_text: str) -> Dict:
                     'date': current_date,
                     'changes': changes.copy()
                 }
-            else:
-                log_warning(f"重复的版本号: {current_version}，已忽略后出现的条目")
             current_version = None
             current_date = None
             changes = []
@@ -225,19 +220,121 @@ def _extract_headings(content: str) -> List[Dict]:
         i += 1
     return headings
 
+def _preprocess_github_alerts(md_text: str) -> str:
+    """
+    将 GitHub 风格的 [!NOTE] 等警告块转换为标准 admonition 语法（!!! note）。
+    支持类型：NOTE, TIP, IMPORTANT, WARNING, CAUTION
+    注意：生成的 !!! 块必须从行首开始，且内容缩进 4 个空格。
+    此函数处理块引用 > 语法。
+    """
+    alert_map = {
+        'NOTE': 'note',
+        'TIP': 'tip',
+        'IMPORTANT': 'important',
+        'WARNING': 'warning',
+        'CAUTION': 'caution',
+    }
+    lines = md_text.splitlines()
+    output = []
+    i = 0
+    while i < len(lines):
+        line = lines[i]
+        # 匹配以 > 开头的块引用，后跟 [ALERT] 类型（可能带空格）
+        m = re.match(r'^>\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*(.*)$', line, re.IGNORECASE)
+        if m:
+            alert_type = m.group(1).upper()
+            admonition_type = alert_map.get(alert_type, 'note')
+            # 标题内容：如果后面有文本，则作为标题；否则用类型名
+            title_part = m.group(2).strip()
+            if not title_part:
+                title_part = alert_type.capitalize()
+            # 生成 !!! 块头部，从行首开始
+            output.append(f'!!! {admonition_type} "{title_part}"')
+            i += 1
+            # 收集后续所有以 > 开头的行作为内容，直到遇到非 > 行或空行
+            content_lines = []
+            while i < len(lines) and lines[i].strip().startswith('>'):
+                # 去掉 > 和可能的前导空格（保留一个空格用于缩进）
+                content_line = lines[i].lstrip('>').lstrip()
+                if content_line:
+                    content_lines.append(content_line)
+                else:
+                    # 空行也保留，但缩进处理
+                    content_lines.append('')
+                i += 1
+            # 如果 content_lines 非空，则缩进 4 个空格输出
+            if content_lines:
+                # 去除首尾空行（但保留中间空行）
+                while content_lines and not content_lines[0].strip():
+                    content_lines.pop(0)
+                while content_lines and not content_lines[-1].strip():
+                    content_lines.pop()
+                for cline in content_lines:
+                    output.append(f'    {cline}')
+            else:
+                # 如果没有内容，添加一个空行占位（缩进 4 个空格）
+                output.append('    ')
+            # 继续处理下一行（i 已经指向非 > 行）
+            continue
+        else:
+            output.append(line)
+            i += 1
+    return '\n'.join(output)
+
 def _convert_markdown_to_html(md_content: str, headings: List[Dict]) -> str:
-    extensions = ['extra', 'codehilite', 'sane_lists', 'fenced_code', 'attr_list', 'footnotes']
-    if StrikeExtension is not None:
-        extensions.append(StrikeExtension())
-    md = markdown.Markdown(extensions=extensions, tab_length=2)
+    """
+    将 Markdown 转换为 HTML，使用增强扩展。
+    支持：任务列表、Admonition、选项卡、高亮、上标/下标、删除线、代码高亮等。
+    预处理将 GitHub 警告块转换为标准 admonition 语法。
+    """
+    # 预处理 GitHub 风格的 [ALERT] 块
+    md_content = _preprocess_github_alerts(md_content)
+
+    # 基础扩展（使用内置 admonition 替代 pymdownx.details，避免兼容性问题）
+    extensions = [
+        'extra',               # 表格、围栏代码、脚注等
+        'admonition',          # 内置 admonition 扩展，支持 !!! 语法
+        'codehilite',          # 代码高亮
+        'pymdownx.tasklist',
+        'pymdownx.superfences',
+        'pymdownx.tabbed',
+        'pymdownx.betterem',
+        'pymdownx.caret',
+        'pymdownx.mark',
+        'pymdownx.tilde',
+    ]
+
+    extension_configs = {
+        'codehilite': {
+            'css_class': 'highlight',
+            'guess_lang': False,
+            'linenums': False,
+        },
+        'pymdownx.tasklist': {
+            'clickable_checkbox': False,
+            'custom_checkbox': True,
+        },
+        # 其他扩展使用默认配置
+    }
+
+    md = markdown.Markdown(
+        extensions=extensions,
+        extension_configs=extension_configs,
+        tab_length=2,
+        lazy_ol=False,
+        output_format='html5'
+    )
+
     html_content = md.convert(md_content)
 
+    # 图片懒加载处理
     html_content = re.sub(
         r'<img\s+([^>]*?)src=(["\'])([^"\']+)\2([^>]*)>',
         lambda m: f'<img {m.group(1)}data-src={m.group(2)}{m.group(3)}{m.group(2)} src="{LAZY_PLACEHOLDER}" class="lazy-image" {m.group(4)}>',
         html_content
     )
 
+    # 为标题添加 id（增强兼容性）
     if headings:
         pattern = re.compile(r'(<h([1-4])([^>]*?)>)', re.IGNORECASE)
         idx = 0
@@ -259,9 +356,8 @@ def _convert_markdown_to_html(md_content: str, headings: List[Dict]) -> str:
 
     return html_content
 
-# ---------- 新增：TOC 渲染 ----------
+# ---------- TOC 渲染 ----------
 def _render_toc_html(headings: List[Dict]) -> str:
-    """递归构建 TOC 的 HTML 嵌套列表"""
     if not headings:
         return ''
 
@@ -297,6 +393,9 @@ def _create_html_page(title, date, content_html, headings_json, description, tag
                       word_count, read_time_str, category, last_updated, modify_count):
     formatted_date = format_date(date)
     formatted_last_updated = format_date(last_updated) if last_updated else ""
+
+    # 缓存版本号，用于静态资源
+    cache_buster = datetime.now().strftime("%Y%m%d%H%M%S")
 
     footer_tags_html = ""
     if tags:
@@ -337,9 +436,9 @@ def _create_html_page(title, date, content_html, headings_json, description, tag
     <meta name="author" content="{author if author else 'GaoXinYang'}">
     {f'<meta name="keywords" content="{", ".join(tags) if tags else ""}">' if tags else ''}
     <title>{title} - 高新炀的小站</title>
-    <link rel="stylesheet" href="/css/main.css">
-    <link rel="stylesheet" href="/css/pages/article.css">
-    <link rel="stylesheet" href="/css/components/comments.css">
+    <link rel="stylesheet" href="/css/main.css?v={cache_buster}">
+    <link rel="stylesheet" href="/css/pages/article.css?v={cache_buster}">
+    <link rel="stylesheet" href="/css/components/comments.css?v={cache_buster}">
 </head>
 <body>
 <div id="loading-overlay" role="status" aria-label="页面加载中"><div class="loading-log"><div>[START] 正在等待 JavaScript，这可能需要几秒</div></div><div class="loading-glow"></div><div id="loading-content"><span class="loading-title">GaoXinYang</span></div></div>
@@ -410,8 +509,8 @@ def _create_html_page(title, date, content_html, headings_json, description, tag
     <script>window.ARTICLE_HEADINGS = {headings_json};</script>
     <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>
     <script src="https://vercount.one/js" defer></script>
-    <script src="/js/entry/main.js" type="module"></script>
-    <script src="/js/pages/article.js" type="module"></script>
+    <script src="/js/entry/main.js?v={cache_buster}" type="module"></script>
+    <script src="/js/pages/article.js?v={cache_buster}" type="module"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.getElementById('articleBody'), {{delimiters: [{{left: '$$', right: '$$', display: true}}, {{left: '$', right: '$', display: false}}]}});"></script>
@@ -425,7 +524,7 @@ def _process_markdown_file(md_file_path: Path, old_article: Optional[Dict] = Non
     current_hash = compute_content_hash(md_content)
     rel_path = get_relative_path(md_file_path)
 
-    # ---------- 初始化元数据（无论是否匹配，均赋默认值） ----------
+    # ---------- 初始化元数据 ----------
     metadata = {}
     cleaned = md_content
 
@@ -451,7 +550,7 @@ def _process_markdown_file(md_file_path: Path, old_article: Optional[Dict] = Non
             except yaml.YAMLError:
                 pass
         else:
-            # 简易解析（当 yaml 不可用时）
+            # 简易解析
             for line in meta_text.split('\n'):
                 line = line.strip()
                 if not line or ':' not in line:
@@ -482,7 +581,6 @@ def _process_markdown_file(md_file_path: Path, old_article: Optional[Dict] = Non
     # ---------- 标题、日期等基本信息 ----------
     title = metadata.get('title', '未命名文章')
     date_raw = metadata.get('date', '')
-    # 如果被解析为日期对象，转为 ISO 字符串
     if hasattr(date_raw, 'isoformat'):
         date_raw = date_raw.isoformat()
     if not date_raw:
@@ -510,13 +608,10 @@ def _process_markdown_file(md_file_path: Path, old_article: Optional[Dict] = Non
     today = get_current_date_iso()
 
     if manual_last_updated:
-        # 使用手动日期
         last_updated = manual_last_updated
         if not old_article:
             modify_count = 1
-        # 若旧文章存在，保留原 modify_count（不自动递增）
     else:
-        # 自动检测
         if not old_article:
             last_updated = today
             modify_count = 1
@@ -613,7 +708,7 @@ def load_articles(force_refresh: bool = False) -> List[Article]:
     else:
         log_error(f"文章源目录不存在: {ASSETS_SOURCE_DIR}")
 
-    # 处理 README.md（如果放置在项目根目录）
+    # 处理 README.md
     readme_path = PROJECT_ROOT / "README.md"
     if readme_path.exists():
         rel = get_relative_path(readme_path)

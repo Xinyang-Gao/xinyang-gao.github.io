@@ -5,10 +5,9 @@
 构建引擎：加载输入，按生成器依赖执行，支持增量判断和并行执行。
 """
 
-import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import List, Optional, Callable, Tuple, Dict
+from typing import List, Optional, Callable, Dict
 
 from .common import log_info, log_error, log_warning, load_build_state, save_build_state
 from .build_context import BuildContext
@@ -30,12 +29,6 @@ class BuildEngine:
             force_overrides: Optional[Dict[str, bool]] = None) -> bool:
         """
         执行构建。
-        :param force: 全局强制标志，若 force_overrides 中未指定则使用此值
-        :param target_names: 指定要运行的生成器名称列表，若为 None 则运行所有
-        :param parallel: 是否在无依赖的生成器间并行
-        :param max_workers: 并行线程数
-        :param progress_callback: 进度回调 (msg, tag)
-        :param force_overrides: 对特定生成器的强制覆盖，键为生成器名称，值为布尔值
         """
         ctx = load_all(force_articles=force)
 

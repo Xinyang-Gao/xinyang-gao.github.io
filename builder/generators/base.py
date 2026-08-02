@@ -3,11 +3,11 @@
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Set, List, Any
+from typing import Set, List
 from datetime import datetime
 
 from ..build_context import BuildContext
-from ..common import compute_object_hash, log_info, log_warning
+from ..common import compute_object_hash
 
 class OutputGenerator(ABC):
     @property
@@ -44,7 +44,6 @@ class OutputGenerator(ABC):
     def is_up_to_date(self, context: BuildContext, state: dict) -> bool:
         """
         根据状态文件判断是否需要重新生成。
-        优化：增加输出文件存在性检查，确保所有输出文件齐全。
         """
         # 检查所有输出文件是否存在
         for p in self.outputs:

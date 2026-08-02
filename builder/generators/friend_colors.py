@@ -19,12 +19,12 @@ from collections import Counter
 from ..common import (
     PROJECT_ROOT, ASSETS_DIR, FRIEND_COLORS_JSON,
     log_info, log_warning, log_error,
-    load_json, save_json, compute_object_hash
+    load_json, save_json
 )
 from ..build_context import BuildContext, Friend
 from .base import OutputGenerator
 
-# ---------- 颜色提取函数（移植自原脚本） ----------
+# ---------- 颜色提取函数 ----------
 TIMEOUT = 10
 IMAGE_SIZE = (64, 64)
 QUANTIZE_COLORS = 16
@@ -87,7 +87,7 @@ class FriendColorsGenerator(OutputGenerator):
             log_error(f"缺少依赖库: {e}，请安装 requests 和 pillow")
             return False
 
-        # 加载现有颜色映射（用于增量更新）
+        # 加载现有颜色映射
         existing_colors = {}
         if not force and FRIEND_COLORS_JSON.exists():
             existing_colors = load_json(FRIEND_COLORS_JSON, {})
@@ -108,7 +108,6 @@ class FriendColorsGenerator(OutputGenerator):
                 continue
 
             norm_link = normalize_link(link)
-            # 如果已存在且不强制，跳过
             if not force and norm_link in new_colors:
                 continue
 
@@ -118,7 +117,6 @@ class FriendColorsGenerator(OutputGenerator):
                 new_colors[norm_link] = list(color)
                 updated = True
             else:
-                # 保留原有或使用默认灰色
                 if norm_link not in new_colors:
                     new_colors[norm_link] = [200, 200, 200]
                     updated = True
