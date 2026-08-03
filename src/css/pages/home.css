@@ -88,13 +88,13 @@
   font-family: var(--font-serif);
   writing-mode: vertical-rl;
   letter-spacing: 0.12em;
-  transform: rotate(6deg) translateY(-8px);
+  transform: rotate(-65deg) translateY(-8px);
   box-shadow: 2px 3px 0 rgba(0, 0, 0, 0.14), inset 0 0 0 2px rgba(255, 255, 255, 0.28);
   transition: transform 0.35s var(--transition-bounce);
   user-select: none;
   align-self: flex-start;
 }
-.hero-name:hover .hero-seal { transform: rotate(-4deg) translateY(-10px) scale(1.06); }
+.hero-name:hover .hero-seal { transform: rotate(-75deg) translateY(-10px) scale(1.06); }
 
 .hero-copy {
   font-size: clamp(1rem, 1.4vw, 1.12rem);
