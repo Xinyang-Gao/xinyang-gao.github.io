@@ -128,7 +128,7 @@ export function showSettingsPanel(): void {
 
   // 主面板
   const panel = document.createElement('div');
-  panel.className = 'settings-panel';
+  panel.className = 'settings-panel minimal-style'; // 添加 minimal-style 类用于特定样式
 
   // 关闭按钮
   const closeBtn = document.createElement('button');
@@ -139,61 +139,49 @@ export function showSettingsPanel(): void {
 
   // ----- 内容 HTML -----
   const settingsHTML = `
-    <div class="settings-panel-header">
+    <div class="settings-header">
       <h2><i class="fas fa-sliders-h"></i> 站点设置</h2>
-      <p class="settings-subtitle">
-        所有设置将保存在本地，仅对当前设备生效，<strong>即时生效</strong>。
-      </p>
+      <p class="settings-subtitle">个性化您的浏览体验，所有配置仅保存在当前设备。</p>
     </div>
 
-    <div class="settings-section">
-      <div class="settings-section-header">
-        <h3><i class="fas fa-magic"></i> 外观效果</h3>
-        <p class="settings-section-desc">个性化光标跟随动画，为桌面端带来更细腻的交互质感。</p>
+    <div class="settings-group">
+      <div class="setting-item">
+        <div class="setting-info">
+          <span class="setting-label"><i class="fas fa-arrow-pointer"></i> 自定义光标</span>
+          <span class="setting-desc">启用独特的鼠标跟随动画效果 (仅桌面端)</span>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="cursorToggleCheckbox">
+          <span class="toggle-slider"></span>
+        </label>
       </div>
-      <div class="settings-item">
-        <span class="settings-item-label"><i class="fas fa-arrow-pointer"></i> 自定义鼠标样式 <span style="font-weight:400;color:var(--text-secondary);font-size:0.8rem;">(仅桌面端)</span></span>
-        <span class="settings-item-control">
-          <label class="settings-toggle">
-            <input type="checkbox" id="cursorToggleCheckbox">
-            <span class="settings-slider"></span>
-          </label>
-        </span>
-      </div>
-      <div class="settings-item-hint"><i class="fas fa-info-circle"></i> 可能有性能影响，关闭后恢复浏览器默认光标。</div>
-    </div>
 
-    <div class="settings-section">
-      <div class="settings-section-header">
-        <h3><i class="fas fa-shield-alt"></i> 浏览安全</h3>
-        <p class="settings-section-desc">开启后点击外部链接会显示确认弹窗，帮助避免误触可疑站点。</p>
-      </div>
-      <div class="settings-item">
-        <span class="settings-item-label"><i class="fas fa-external-link-alt"></i> 外链拦截弹窗</span>
-        <span class="settings-item-control">
-          <label class="settings-toggle">
-            <input type="checkbox" id="linkWarningCheckbox">
-            <span class="settings-slider"></span>
-          </label>
-        </span>
+      <div class="setting-item">
+        <div class="setting-info">
+          <span class="setting-label"><i class="fas fa-shield-alt"></i> 外链安全拦截</span>
+          <span class="setting-desc">点击外部链接时显示确认弹窗，防止误触</span>
+        </div>
+        <label class="toggle-switch">
+          <input type="checkbox" id="linkWarningCheckbox">
+          <span class="toggle-slider"></span>
+        </label>
       </div>
     </div>
 
-    <div class="settings-section">
-      <div class="settings-section-header">
-        <h3><i class="fas fa-database"></i> 隐私与数据</h3>
-        <p class="settings-section-desc">
-          收回对本站隐私政策的同意。<br>清除站点存储的所有偏好设置以及 Cookie 同意记录。<br>清除后网站将恢复初始状态，并重新请求 Cookie 权限。
-        </p>
+    <div class="settings-group danger-zone">
+      <div class="group-header">
+        <h3><i class="fas fa-database"></i> 数据管理</h3>
       </div>
-      <div class="settings-warning">
-        <i class="fas fa-trash-alt"></i>
-        删除后您将退出当前个性化配置，下次访问需要重新同意 Cookie。
+      
+      <div class="action-buttons">
+        <button id="clearSWCacheBtn" class="btn-outline">
+          <i class="fas fa-broom"></i> 清除缓存
+        </button>
+        <button id="clearCookiesBtn" class="btn-danger">
+          <i class="fas fa-trash-can"></i> 重置所有数据
+        </button>
       </div>
-      <div class="settings-actions">
-        <button id="clearSWCacheBtn" class="danger-btn"><i class="fas fa-broom"></i> 清除 Service Worker 缓存</button>
-        <button id="clearCookiesBtn" class="danger-btn"><i class="fas fa-trash-can"></i> 删除所有存储数据</button>
-      </div>
+      <p class="danger-hint">重置后将清除所有本地偏好设置并恢复初始状态。</p>
     </div>
   `;
 

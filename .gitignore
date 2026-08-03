@@ -1,8 +1,8 @@
 todo.md
-works/毕业赠诗/新建文本文档.md
 builder/__pycache__/
 builder/generators/__pycache__/
 node_modules/
 tsconfig.json
 .build_state.json
 dist/
+test.bat

@@ -1,6 +1,5 @@
 // /js/ui/ui-effects.ts
-// 自定义光标、外链管理器、滚动揭示效果 + 鼠标特效系统（点击涟漪、长按爆发、拖拽连线）
-// 鼠标特效与自定义光标已拆分至 ./mouse-effects.js
+// 滚动揭示效果
 
 import { CONFIG, storageController } from '/js/core/core.js';
 import { getTimeBasedTheme } from '/js/core/page-utils.js';
