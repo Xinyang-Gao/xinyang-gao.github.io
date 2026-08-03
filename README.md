@@ -38,78 +38,53 @@
 
 ### 3.1 整体流程
 
-#### 整体数据流（构建 → 部署 → 运行时）
+#### 整体数据流（构建 → 部署）
 
 ```mermaid
 flowchart TD
-    subgraph "源数据"
-        MD["Markdown 文章<br/>(src/assets/source/)"]
-        WKS["作品元数据<br/>(src/works/*/metadata.json)"]
-        FRI["友链 JSON<br/>(dist/json/friends.json)"]
-        LOG["更新日志<br/>(src/assets/网站更新日志.md)"]
+    A[开发者推送代码到 main 分支] --> B[触发 GitHub Actions 工作流 static.yml]
+    B --> C[检出代码（含子模块）]
+    C --> D[设置 Python 3.10 并安装依赖<br>（pip install -r requirements.txt）]
+    D --> E[设置 Node.js 22.12 并安装依赖<br>（npm ci）]
+    E --> F[执行构建命令：python run.py --force]
+
+    subgraph 构建引擎 [Build Engine - run.py]
+        F --> G[注册生成器<br>AggregatedGenerator + FriendColorsGenerator]
+        G --> H[加载所有输入数据<br>（文章、作品、友链、版本）]
+        H --> I[遍历生成器（顺序或并行）]
+        I --> J{生成器是否需要执行？<br>（增量检查，force 强制）}
+        J -->|跳过| K[标记为最新，继续]
+        J -->|执行| L[执行生成器]
     end
 
-    subgraph "Python构建系统"
-        LOAD["input_loader<br/>加载并解析数据"]
-        HASH{"内容哈希变化？"}
-        GEN["生成 HTML 文章<br/>写入 dist/articles/"]
-        BUILD["聚合生成器<br/>(aggregated.py)"]
-        STAT["统计 JSON"]
-        RSS["RSS + Sitemap"]
-        LIST["静态列表页<br/>(articles/works index)"]
-        COPY["复制静态资源<br/>(CSS/JS/Assets)"]
-        VITE["Vite 构建 TypeScript"]
+    subgraph FriendColorsGenerator [FriendColorsGenerator]
+        L --> M[从友链头像提取主题色]
+        M --> N[生成 dist/assets/friend_colors.json]
     end
 
-    subgraph "输出目录 dist/"
-        HTML["HTML 文件"]
-        JSON["JSON 数据"]
-        STATIC["CSS/JS/Assets"]
-        INDEX["index.html"]
+    subgraph AggregatedGenerator [AggregatedGenerator]
+        L --> O[生成统计信息 statistics.json]
+        O --> P[生成 RSS 和 站点地图]
+        P --> Q[生成文章列表页 /articles/index.html]
+        Q --> R[生成作品列表页 /works/index.html]
+        R --> S[生成友链页面 /friends/index.html]
+        S --> T[生成无 JS 索引页 nojs.html]
+        T --> U[生成各子目录页面<br>（about, archive, stats, ...）]
+        U --> V[调用 Vite 构建 TypeScript → JavaScript]
+        V --> W[压缩并复制 CSS]
+        W --> X[复制 assets 素材（排除 source）]
+        X --> Y[复制 /src/copy/ 下根目录文件]
+        Y --> Z[复制 works 目录（排除 metadata.json）]
     end
 
-    subgraph "部署"
-        HOST["静态托管<br/>(GitHub Pages/Netlify)"]
-    end
+    K --> AA[更新构建状态 .build_state.json]
+    N --> AA
+    Z --> AA
 
-    subgraph "浏览器端 SPA"
-        ROUTER["无刷新路由<br/>(router.ts)"]
-        PM["页面管理器<br/>(按需加载)"]
-        UI["UI 组件<br/>(光标/图片查看器/主题/跳转弹窗)"]
-        SW["Service Worker<br/>(离线缓存)"]
-        DATA["数据缓存<br/>(localStorage)"]
-    end
-
-    MD --> LOAD
-    WKS --> LOAD
-    FRI --> LOAD
-    LOG --> LOAD
-    LOAD --> HASH
-    HASH -- "有变化" --> GEN
-    GEN --> HTML
-    HASH -- "无变化" --> BUILD
-    GEN --> BUILD
-    LOAD --> BUILD
-    BUILD --> STAT
-    BUILD --> RSS
-    BUILD --> LIST
-    BUILD --> COPY
-    COPY --> STATIC
-    VITE --> STATIC
-    STATIC --> HTML
-    INDEX --> HTML
-
-    HTML --> HOST
-    JSON --> HOST
-    STATIC --> HOST
-    INDEX --> HOST
-
-    HOST --> ROUTER
-    ROUTER --> PM
-    ROUTER --> UI
-    ROUTER --> DATA
-    SW --> DATA
-    PM --> DATA
+    AA --> AB[构建完成，dist 目录就绪]
+    AB --> AC[使用 actions/upload-pages-artifact<br>上传 dist 为 artifact]
+    AC --> AD[使用 actions/deploy-pages<br>部署到 GitHub Pages]
+    AD --> AE[网站发布成功]
 ```
 
 ---
@@ -118,33 +93,133 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    START["用户访问 / 刷新页面"]
-    LOAD["加载覆盖层显示"]
-    FETCH["并行获取 JSON 数据<br/>(articles/works/statistics/version...)"]
-    VERSION{"版本检测<br/>本地 vs 远程"}
-    THEME["初始化主题<br/>(存储 / 时段 / 系统)"]
-    NAV["加载导航栏 & 页脚"]
-    ROUTER["启用无刷新路由"]
-    IDLE["空闲时加载非关键组件"]
-    SW["注册 Service Worker"]
-    MANAGER["根据路径初始化页面管理器"]
-    RENDER["渲染主内容"]
-    DONE["页面加载完成"]
+    A[用户访问页面] --> B[加载 HTML 文档]
+    B --> C[加载 main.ts 入口]
+    C --> D[DOMContentLoaded 事件触发]
+    D --> E[AppInitializer.start 启动]
 
-    START --> LOAD
-    LOAD --> FETCH
-    FETCH --> VERSION
-    VERSION -- "有新版本" --> SHOWLOG["显示更新日志"]
-    SHOWLOG --> THEME
-    VERSION -- "无更新" --> THEME
-    THEME --> NAV
-    NAV --> ROUTER
-    ROUTER --> SW
-    ROUTER --> IDLE
-    IDLE --> MANAGER
-    MANAGER --> RENDER
-    RENDER --> DONE
-    SW --> DONE
+    subgraph AppInitializer[AppInitializer 应用启动编排器]
+        direction TB
+        E --> E1[添加优化标签<br>preconnect / preload]
+        E1 --> E2[同步主题<br>getTimeBasedTheme]
+        E2 --> E3[调度空闲任务<br>背景图加载]
+        E3 --> E4[等待 loadNavbar<br>导航栏加载与渲染]
+        E4 --> E5[非阻塞加载页脚<br>loadFooter]
+        E5 --> E6[渲染个人卡片<br>renderPersonalCard]
+        E6 --> E7[启动站点年龄更新器<br>startSiteAgeUpdater]
+        E7 --> E8[初始化浮动按钮<br>initButtons]
+        E8 --> E9[调度空闲任务<br>无刷新导航 + 列表点击]
+        E9 --> E10[调度空闲任务<br>当前页面特性初始化]
+        E10 --> E11[调度空闲任务<br>UI特效 / 数据预加载 / 图片]
+        E11 --> E12[初始化 Clarity 分析<br>initClarityOnConsent]
+        E12 --> E13[调度空闲任务<br>加载音乐播放器]
+        E13 --> E14[初始化浏览器历史<br>initPopstate]
+        E14 --> E15[显示加载覆盖层<br>LoadingOverlayManager.show]
+        E15 --> E16[等待用户交互<br>点击继续]
+        E16 --> E17[延迟 500ms 播放导航栏入场动画]
+        E17 --> E18[标记加载完成<br>data-loaded="true"]
+        E18 --> E19[初始化友链管理器<br>friendLinkManager.init]
+        E19 --> E20[注册 Service Worker<br>registerServiceWorker]
+    end
+
+    subgraph IdleTasks[空闲任务调度 requestIdleCallback]
+        direction LR
+        I1[背景图加载<br>applyRandomBackgroundImage] --> I2[无刷新导航启用<br>enableAjaxNavigation]
+        I2 --> I3[列表点击事件<br>handleListItemClick]
+        I3 --> I4[页面特性初始化<br>initPageFeatures]
+        I4 --> I5[UI特效初始化<br>initUIEffects]
+        I5 --> I6[数据服务预加载<br>DataService 预热]
+        I6 --> I7[图片懒加载<br>LazyImageLoader.init]
+        I7 --> I8[全局图片查看器<br>GlobalImageManager.init]
+        I8 --> I9[页脚更新时间<br>updateFooterUpdateTime]
+        I9 --> I10[页脚统计信息<br>initFooterStats]
+        I10 --> I11[音乐播放器<br>global-music-player]
+    end
+
+    subgraph Navbar[导航栏加载流程]
+        direction TB
+        N1[initNavbar] --> N2[NavbarManager.initNavbar]
+        N2 --> N3[生成导航 DOM<br>createNavbarDOM]
+        N3 --> N4[注入 CSS<br>navbar.css]
+        N4 --> N5[挂载到 placeholder]
+        N5 --> N6[绑定滚动事件]
+        N6 --> N7[初始化主题切换<br>initThemeToggle]
+        N7 --> N8[初始化导航高亮<br>initNavigation]
+        N8 --> N9[初始化移动菜单<br>initMobileMenuToggle]
+        N9 --> N10[创建标题占位<br>createTitlePlaceholder]
+        N10 --> N11[播放入场动画<br>playEntranceAnimation]
+    end
+
+    subgraph PageInit[页面特性初始化]
+        direction TB
+        P1{页面类型判断} --> P2[index 首页<br>initHomePage]
+        P1 --> P3[articles 列表<br>initSearchPage]
+        P1 --> P4[works 列表<br>initSearchPage]
+        P1 --> P5[archive 归档<br>initArchivePage]
+        P1 --> P6[stats 统计<br>initStatsPage]
+        P1 --> P7[friends 友链<br>initFriendsPage]
+        P1 --> P8[about 关于<br>initAboutPage]
+        P1 --> P9[contact 留言板<br>initTwikoo]
+        P1 --> P10[article-detail 详情<br>initArticlePage]
+    end
+
+    subgraph HomePage[首页初始化 home-manager]
+        H1[加载统计与标签<br>loadStatisticsAndTags] --> H2[绑定导航事件<br>bindGlobalNavigateEvents]
+        H2 --> H3[启动问候更新器<br>startGreetingUpdater]
+        H3 --> H4[启动实时时钟<br>startLiveClock]
+        H4 --> H5[设置滚动揭示<br>setupReveal]
+        H5 --> H6[绑定名言刷新<br>bindQuoteRefresh]
+        H6 --> H7[加载名言<br>loadQuote]
+    end
+
+    subgraph ArticlePage[文章详情初始化 article]
+        A1[确保 TOC 结构<br>ensureTOCStructure] --> A2[初始化目录<br>initTOC]
+        A2 --> A3[图片懒加载<br>initImageLazyLoad]
+        A3 --> A4[阅读进度条<br>initReadingProgress]
+        A4 --> A5[代码块复制<br>initCodeBlocks]
+        A5 --> A6[移动端侧边栏<br>initMobileSidebar]
+        A6 --> A7[滚动位置保存<br>initScrollSave]
+        A7 --> A8[数学公式渲染<br>renderMath]
+        A8 --> A9[初始化评论<br>initTwikoo]
+        A9 --> A10[刷新访问统计<br>refreshvercount]
+    end
+
+    subgraph LoadingOverlay[加载覆盖层 loading-overlay-manager]
+        L1[显示覆盖层] --> L2[添加系统日志]
+        L2 --> L3[并行请求关键数据<br>statistics / articles / works<br>code / friends / version]
+        L3 --> L4[解析统计数据]
+        L4 --> L5[解析文章列表]
+        L5 --> L6[解析作品列表]
+        L6 --> L7[解析代码分析]
+        L7 --> L8[解析友链]
+        L8 --> L9[版本检测与比对]
+        L9 --> L10{需要更新?}
+        L10 -->|是| L11[渲染更新提示界面]
+        L10 -->|否| L12[隐藏覆盖层]
+        L11 --> L13[等待用户点击]
+        L13 --> L12
+    end
+
+    subgraph CoreModules[核心模块依赖]
+        C1[core.ts<br>配置 / 工具 / 存储] --> C2[data-service.ts<br>数据服务]
+        C1 --> C3[page-utils.ts<br>页面工具]
+        C1 --> C4[twikoo-manager.ts<br>评论管理]
+        C2 --> C5[site-state.ts<br>SW注册 / 统计]
+        C3 --> C6[theme.ts<br>主题切换]
+        C6 --> C7[ui-effects.ts<br>滚动揭示 / 鼠标特效]
+        C7 --> C8[router.ts<br>无刷新导航]
+        C8 --> C9[页面管理器]
+    end
+
+    AppInitializer --> Navbar
+    AppInitializer --> IdleTasks
+    AppInitializer --> LoadingOverlay
+    IdleTasks --> PageInit
+    PageInit --> HomePage
+    PageInit --> ArticlePage
+    AppInitializer --> CoreModules
+
+    E18 --> F[页面可交互]
 ```
 
 ### 3.2 目录结构（关键部分）
