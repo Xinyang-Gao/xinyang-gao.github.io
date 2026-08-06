@@ -124,7 +124,7 @@ function initFlipCard() {
     flipBtn.addEventListener('click', function () {
         const isFlipped = flipCard.classList.toggle('flipped');
         if (flipBtnLabel) {
-            flipBtnLabel.textContent = isFlipped ? '翻转卡片 · 回到主页' : '翻转卡片 · 查看关于我';
+            flipBtnLabel.textContent = isFlipped ? '翻转' : '翻转';
         }
         window.scrollTo({ top: 0, behavior: 'smooth' });
         requestAnimationFrame(() => {
