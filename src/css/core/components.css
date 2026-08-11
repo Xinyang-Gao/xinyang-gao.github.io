@@ -265,6 +265,15 @@
   box-shadow: 0 6px 14px rgba(var(--accent-rgb), 0.3);
 }
 .work-details-link::after { display: none; }
+.work-details-envelope .dialog-source {
+  position: absolute;
+  bottom: 16px;
+  right: 20px;
+  font-size: 0.8rem;
+  color: var(--text-secondary, #888);
+  opacity: 0.7;
+  pointer-events: none;
+}
 
 /* ---------- 统一浮动按钮 ---------- */
 .floating-buttons {
@@ -776,75 +785,11 @@ body.custom-cursor-enabled .list-item { cursor: none; }
    设置面板
    ============================================ */
 
-/* 遮罩层 */
-.settings-panel-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.3);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  z-index: 9999;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-.settings-panel-overlay.active { opacity: 1; }
-
-/* 主面板 */
-.settings-panel {
-  background: var(--surface-color);
-  border: 1px solid var(--border-color);
-  border-radius: 24px;
-  max-width: 560px;
-  width: 90%;
-  max-height: 85vh;
-  overflow-y: auto;
-  padding: 32px;
-  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.1), 
-              0 0 0 1px rgba(255, 255, 255, 0.05);
-  transform: scale(0.95) translateY(10px);
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease;
-  position: relative;
-  color: var(--text-color);
-}
-.settings-panel.active { 
-  transform: scale(1) translateY(0); 
-}
-
 /* 滚动条 */
 .settings-panel::-webkit-scrollbar { width: 6px; }
 .settings-panel::-webkit-scrollbar-thumb {
   background: var(--border-color);
   border-radius: 10px;
-}
-
-/* 关闭按钮 */
-.settings-close-btn {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  background: var(--surface-color-secondary);
-  border: 1px solid var(--border-color);
-  font-size: 20px;
-  line-height: 1;
-  color: var(--text-secondary);
-  cursor: pointer;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 5;
-  transition: all 0.2s ease;
-}
-.settings-close-btn:hover {
-  background: var(--accent-color);
-  color: #fff;
-  border-color: var(--accent-color);
-  transform: rotate(90deg);
 }
 
 /* 头部 */
@@ -1034,16 +979,6 @@ body.custom-cursor-enabled .list-item { cursor: none; }
 
 /* 移动端适配 */
 @media (max-width: 480px) {
-  .settings-panel {
-    padding: 24px 20px;
-    border-radius: 20px 20px 0 0; /* 底部贴边 */
-    max-height: 90vh;
-    align-self: flex-end; /* 底部对齐 */
-    transform: translateY(100%);
-  }
-  .settings-panel.active {
-    transform: translateY(0);
-  }
   .setting-item {
     flex-direction: column;
     align-items: flex-start;
@@ -1062,9 +997,6 @@ body.custom-cursor-enabled .list-item { cursor: none; }
   }
 }
 
-/* ============================================
-   响应式组件增强
-   ============================================ */
 @media (min-width: 481px) {
   .tags { gap: 10px; }
   .tag { padding: 5px 14px; }
@@ -1172,7 +1104,6 @@ body.custom-cursor-enabled .list-item { cursor: none; }
 }
 
 @media (min-width: 481px) and (max-width: 767px) {
-  .settings-panel { padding: 24px 22px 28px; }
   .settings-item { flex-wrap: wrap; }
   .settings-item-label { flex: 1 1 140px; }
 }

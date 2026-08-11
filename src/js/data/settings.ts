@@ -1,6 +1,7 @@
 // /js/data/settings.ts
 
 import { CONFIG, storageController, CookieConsentManager } from '/js/core/core.js';
+import { showDetailDialog } from '/js/ui/detail-dialog.js';
 
 const SETTINGS_KEYS = {
   CURSOR_ENABLED: 'settings_cursor_enabled',
@@ -118,98 +119,60 @@ export function bindSettingsControls(container: HTMLElement): void {
 }
 
 export function showSettingsPanel(): void {
-  // 如果已存在则关闭
-  const existing = document.querySelector('.settings-panel-overlay');
-  if (existing) existing.remove();
-
-  // 遮罩层
-  const overlay = document.createElement('div');
-  overlay.className = 'settings-panel-overlay';
-
-  // 主面板
-  const panel = document.createElement('div');
-  panel.className = 'settings-panel minimal-style'; // 添加 minimal-style 类用于特定样式
-
-  // 关闭按钮
-  const closeBtn = document.createElement('button');
-  closeBtn.className = 'settings-close-btn';
-  closeBtn.innerHTML = '&times;';
-  closeBtn.setAttribute('aria-label', '关闭设置面板');
-  panel.appendChild(closeBtn);
-
-  // ----- 内容 HTML -----
+  // 构建设置内容的 HTML（不包含关闭按钮和外部遮罩）
   const settingsHTML = `
-    <div class="settings-header">
-      <h2><i class="fas fa-sliders-h"></i> 站点设置</h2>
-      <p class="settings-subtitle">个性化您的浏览体验，所有配置仅保存在当前设备。</p>
-    </div>
-
-    <div class="settings-group">
-      <div class="setting-item">
-        <div class="setting-info">
-          <span class="setting-label"><i class="fas fa-arrow-pointer"></i> 自定义光标</span>
-          <span class="setting-desc">启用独特的鼠标跟随动画效果 (仅桌面端)</span>
+      <div class="settings-group">
+        <div class="setting-item">
+          <div class="setting-info">
+            <span class="setting-label"><i class="fas fa-arrow-pointer"></i> 自定义光标</span>
+            <span class="setting-desc">启用独特的鼠标跟随动画效果 (仅桌面端)</span>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="cursorToggleCheckbox">
+            <span class="toggle-slider"></span>
+          </label>
         </div>
-        <label class="toggle-switch">
-          <input type="checkbox" id="cursorToggleCheckbox">
-          <span class="toggle-slider"></span>
-        </label>
-      </div>
 
-      <div class="setting-item">
-        <div class="setting-info">
-          <span class="setting-label"><i class="fas fa-shield-alt"></i> 外链安全拦截</span>
-          <span class="setting-desc">点击外部链接时显示确认弹窗，防止误触</span>
+        <div class="setting-item">
+          <div class="setting-info">
+            <span class="setting-label"><i class="fas fa-shield-alt"></i> 外链安全拦截</span>
+            <span class="setting-desc">点击外部链接时显示确认弹窗，防止误触</span>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="linkWarningCheckbox">
+            <span class="toggle-slider"></span>
+          </label>
         </div>
-        <label class="toggle-switch">
-          <input type="checkbox" id="linkWarningCheckbox">
-          <span class="toggle-slider"></span>
-        </label>
       </div>
-    </div>
 
-    <div class="settings-group danger-zone">
-      <div class="group-header">
-        <h3><i class="fas fa-database"></i> 数据管理</h3>
+      <div class="settings-group danger-zone">
+        <div class="group-header">
+          <h3><i class="fas fa-database"></i> 数据管理</h3>
+        </div>
+        
+        <div class="action-buttons">
+          <button id="clearSWCacheBtn" class="btn-outline">
+            <i class="fas fa-broom"></i> 清除缓存
+          </button>
+          <button id="clearCookiesBtn" class="btn-danger">
+            <i class="fas fa-trash-can"></i> 重置所有数据
+          </button>
+        </div>
+        <p class="danger-hint">重置后将清除所有本地偏好设置并恢复初始状态。</p>
       </div>
-      
-      <div class="action-buttons">
-        <button id="clearSWCacheBtn" class="btn-outline">
-          <i class="fas fa-broom"></i> 清除缓存
-        </button>
-        <button id="clearCookiesBtn" class="btn-danger">
-          <i class="fas fa-trash-can"></i> 重置所有数据
-        </button>
-      </div>
-      <p class="danger-hint">重置后将清除所有本地偏好设置并恢复初始状态。</p>
-    </div>
   `;
 
-  panel.insertAdjacentHTML('beforeend', settingsHTML);
-  overlay.appendChild(panel);
-  document.body.appendChild(overlay);
-
-  // 绑定控件
-  bindSettingsControls(panel);
-
-  // ----- 关闭逻辑 -----
-  const closePanel = () => {
-    overlay.classList.remove('active');
-    panel.classList.remove('active');
-    setTimeout(() => overlay.remove(), 350);
-  };
-
-  closeBtn.addEventListener('click', closePanel);
-  overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) closePanel();
-  });
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closePanel();
+  // 显示通用弹窗
+  const { close } = showDetailDialog({
+    title: '站点设置',
+    htmlContent: settingsHTML,
+    source: 'settings',
   });
 
-  // ----- 入场动画 -----
-  requestAnimationFrame(() => {
-    overlay.classList.add('active');
-    panel.classList.add('active');
-  });
+  // 弹窗内容已插入 DOM，绑定控件事件
+  const contentEl = document.querySelector('.work-details-content');
+  if (contentEl) {
+    // 注意：原有的 bindSettingsControls 接受一个容器，我们传入内容区域
+    bindSettingsControls(contentEl);
+  }
 }

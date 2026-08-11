@@ -62,9 +62,9 @@
   padding: 0 2px 0 8px;
   text-decoration: none;
 }
-.nav-logo::after { content: none; } /* 移除 base.css 全局 a::after 下划线 */
+.nav-logo::after { content: none; }
 .logo-text {
-  display: inline-block; /* 使 ::first-letter 生效 */
+  display: inline-block;
   font-family: var(--font-serif);
   font-size: 1.15rem;
   font-weight: 700;
@@ -75,7 +75,6 @@
   transition: color 0.25s ease;
 }
 .logo-text::first-letter { color: var(--accent-color); }
-/* 【新增】句点微交互 */
 .logo-text::after {
   content: '.';
   display: inline-block;
@@ -85,7 +84,7 @@
 .nav-logo:hover .logo-text { color: var(--accent-color); }
 .nav-logo:hover .logo-text::after { transform: translateY(-2px); }
 
-/* ---------- 导航菜单（状态增强版） ---------- */
+/* ---------- 导航菜单 ---------- */
 nav {
   flex: 1;
   display: flex;

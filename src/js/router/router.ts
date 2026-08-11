@@ -1,7 +1,7 @@
 // /js/router/router.ts
 // 无刷新导航
 
-import { CONFIG } from '/js/core/core.js';
+import { CONFIG, Utils } from '/js/core/core.js';
 import { getPageNameFromPath, isSameOrigin } from '/js/core/page-utils.js';
 import { ensureScrollReveal } from '/js/ui/ui-effects.js';
 import { initNavbar, refreshNavbarTitle } from '/js/ui/navbar-manager.js';
@@ -9,6 +9,7 @@ import { initHomePage } from '/js/pages/home-manager.js';
 import type { PageManager } from '/js/core/page-manager.js';
 import { LazyImageLoader } from '/js/ui/image-manager.js';
 import { friendLinkManager } from '/js/pages/friends-manager.js';
+import { showDetailDialog } from '/js/ui/detail-dialog.js';
 
 // ==================== 常量定义 ====================
 const ROUTER_VIEW_ID = 'router-view';
@@ -47,11 +48,11 @@ class RouterState {
   loadedScripts: Set<string> = new Set(); // 存储 src
   cache: Map<string, { content: ExtractedContent; timestamp: number }> = new Map();
   pendingRequests: Map<string, Promise<PageResponse>> = new Map();
-  
+
   isProcessing: boolean = false;
   navigationId: number = 0; // 单调递增，用于竞态取消
   lastRenderedUrl: string | null = null;
-  
+
   // 当前活跃的资源ID列表，用于卸载
   activeStyleIds: string[] = [];
   activeScriptIds: string[] = [];
@@ -75,7 +76,7 @@ class ScrollManager {
 
     // 监听滚动，持续更新当前历史记录的 scroll 数据
     window.addEventListener('scroll', () => this.debouncedSave(), { passive: true });
-    
+
     // 页面卸载前兜底保存
     window.addEventListener('pagehide', () => this.saveImmediately());
   }
@@ -88,7 +89,7 @@ class ScrollManager {
   /** 同步保存当前滚动位置到 history.state */
   saveImmediately(): void {
     if (this.timer) { clearTimeout(this.timer); this.timer = null; }
-    
+
     const prev = history.state as Partial<HistoryState> | null;
     try {
       history.replaceState(
@@ -114,7 +115,7 @@ class ScrollManager {
   restore(pos: { x: number; y: number } | null | undefined, smooth: boolean = false): void {
     const targetY = pos?.y ?? 0;
     const targetX = pos?.x ?? 0;
-    
+
     requestAnimationFrame(() => {
       window.scrollTo({
         top: targetY,
@@ -143,7 +144,7 @@ class ResourceManager {
       if (s.tagName === 'LINK') {
         const href = s.getAttribute('href') || (s as HTMLLinkElement).href;
         if (!href || state.loadedStyles.has(href)) return;
-        
+
         // 检查 DOM 中是否已存在
         if (document.querySelector(`link[href="${CSS.escape(href)}"]`)) {
           state.loadedStyles.add(href);
@@ -155,16 +156,16 @@ class ResourceManager {
         link.href = href;
         const id = `dyn-style-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
         link.dataset.routerId = id;
-        
+
         document.head.appendChild(link);
         state.loadedStyles.add(href);
         ids.push(id);
-      } 
+      }
       // 处理内联样式
       else {
         const text = (s.textContent || '').trim();
         if (!text) return;
-        
+
         const id = `dyn-inline-style-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
         if (document.getElementById(id)) return;
 
@@ -187,13 +188,13 @@ class ResourceManager {
    */
   async loadScripts(scripts: HTMLScriptElement[]): Promise<string[]> {
     const ids: string[] = [];
-    
+
     for (const script of scripts) {
       // 处理外部脚本
       if (script.src) {
         const src = script.getAttribute('src') || script.src;
         if (!src || state.loadedScripts.has(src)) continue;
-        
+
         // 避免重复加载
         if (document.querySelector(`script[src="${CSS.escape(src)}"]`)) {
           state.loadedScripts.add(src);
@@ -204,31 +205,31 @@ class ResourceManager {
         if (script.type) el.type = script.type;
         el.src = src;
         el.async = true; // 异步加载不阻塞渲染
-        
+
         const id = `dyn-script-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
         el.dataset.routerId = id;
         el.onerror = () => console.warn('[Router] 脚本加载失败:', src);
-        
+
         document.head.appendChild(el);
         ids.push(id);
         state.loadedScripts.add(src);
-      } 
+      }
       // 处理内联脚本
       else {
         try {
           const inline = document.createElement('script');
           if (script.type) inline.type = script.type;
           inline.textContent = script.textContent || '';
-          
+
           const id = `dyn-inline-script-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
           inline.dataset.routerId = id;
-          
+
           // 使用临时容器执行，确保上下文正确
           const tmp = document.createElement('div');
           tmp.appendChild(inline);
           document.head.appendChild(tmp);
           tmp.remove(); // 执行后移除节点，但代码已执行
-          
+
           ids.push(id);
         } catch (e) {
           console.error('[Router] 内联脚本执行异常:', e);
@@ -304,47 +305,47 @@ export function registerPageManager(name: string, factory: PageManagerFactory): 
 // ==================== 默认页面注册 ====================
 function registerDefaultPages(): void {
   PageManagerRegistry.register('index', async () => initHomePage() as any);
-  
+
   PageManagerRegistry.register('articles', async (fn) => {
     const { initSearchPage } = await import('/js/pages/search-render.js');
     return initSearchPage('articles', fn) as any;
   });
-  
+
   PageManagerRegistry.register('works', async (fn) => {
     const { initSearchPage } = await import('/js/pages/search-render.js');
     return initSearchPage('works', fn) as any;
   });
-  
+
   PageManagerRegistry.register('archive', async (fn) => {
     const { initArchivePage } = await import('/js/pages/archive.js');
     return initArchivePage(fn) as any;
   });
-  
+
   PageManagerRegistry.register('stats', async () => {
     const { initStatsPage } = await import('/js/pages/stats-init.js');
     return initStatsPage() as any;
   });
-  
+
   PageManagerRegistry.register('friends', async () => {
     if ((friendLinkManager as any)._initialized) friendLinkManager.destroy();
     await friendLinkManager.init();
     return friendLinkManager;
   });
-  
+
   PageManagerRegistry.register('about', async () => {
     const { initAboutPage } = await import('/js/pages/about.js');
-    const mgr: PageManager = { init: initAboutPage, destroy: () => {} };
+    const mgr: PageManager = { init: initAboutPage, destroy: () => { } };
     await mgr.init();
     return mgr;
   });
-  
+
   PageManagerRegistry.register('contact', async () => {
     const { initTwikoo } = await import('/js/core/twikoo-manager.js');
     const c = document.querySelector('#twikoo-comments');
     if (c) await initTwikoo(c);
-    
+
     return {
-      init: () => {},
+      init: () => { },
       destroy: () => {
         import('/js/core/twikoo-manager.js').then(({ resetTwikooContainer }) => {
           const el = document.querySelector('#twikoo-comments');
@@ -365,7 +366,7 @@ function extractPageContent(html: string, url: string): ExtractedContent {
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
   const routerView = doc.querySelector(`#${ROUTER_VIEW_ID}`);
-  
+
   return {
     title: doc.querySelector('title')?.textContent || document.title,
     mainHtml: routerView?.outerHTML || '',
@@ -402,7 +403,7 @@ function replaceContentWithTransition(mainHtml: string): Promise<boolean> {
 
     const performSwap = () => {
       if (!currentView.parentNode) { finish(false); return; }
-      
+
       // 替换 DOM
       currentView.replaceWith(newView);
       newView.classList.add('page-transition-enter');
@@ -438,54 +439,6 @@ function replaceContentWithTransition(mainHtml: string): Promise<boolean> {
         performSwap();
       }
     }, TRANSITION_DURATION + 50);
-  });
-}
-
-/**
- * 显示错误覆盖层
- */
-function showErrorOverlay(msg: string, retryFn: () => void, fallbackUrl?: string): void {
-  // 移除旧的
-  document.querySelector('.router-error-overlay')?.remove();
-
-  const overlay = document.createElement('div');
-  overlay.className = 'router-error-overlay';
-  overlay.style.cssText = `
-    position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(8px);
-    z-index: 99999; display: flex; align-items: center; justify-content: center;
-    color: #fff; font-size: 1.2rem; transition: opacity 0.3s;
-  `;
-  
-  overlay.innerHTML = `
-    <div style="background: var(--surface-color, #1e1e1e); padding: 2rem 3rem; border-radius: 16px; max-width: 420px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-      <h2 style="margin-bottom: 1rem;">加载失败</h2>
-      <p style="color: #ccc; margin-bottom: 1.5rem;">${msg}</p>
-      <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-        <button id="router-retry-btn" style="padding: 0.6rem 2rem; border: none; border-radius: 30px; background: var(--accent-color, #a55860); color: #fff; font-weight: bold; cursor: pointer; transition: transform 0.1s;">重试</button>
-        ${fallbackUrl ? `<button id="router-reload-btn" style="padding: 0.6rem 2rem; border: none; border-radius: 30px; background: #666; color: #fff; font-weight: bold; cursor: pointer;">刷新页面</button>` : ''}
-      </div>
-    </div>
-  `;
-
-  document.body.appendChild(overlay);
-
-  document.getElementById('router-retry-btn')?.addEventListener('click', () => {
-    overlay.remove();
-    retryFn();
-  });
-
-  if (fallbackUrl) {
-    document.getElementById('router-reload-btn')?.addEventListener('click', () => {
-      location.href = fallbackUrl;
-    });
-  }
-
-  // 点击背景关闭并重试
-  overlay.addEventListener('click', (e) => {
-    if (e.target === overlay) {
-      overlay.remove();
-      retryFn();
-    }
   });
 }
 
@@ -541,7 +494,7 @@ async function processContent(
   isPopState: boolean,
   navId: number
 ): Promise<boolean> {
-  
+
   // 竞态检查辅助函数
   const isStale = () => ac.signal.aborted || navId !== state.navigationId;
 
@@ -609,7 +562,7 @@ async function processContent(
   // 8. 初始化新页面管理器
   const mgr = await initPageManager(content.pageName, refreshUIEffects);
   if (isStale()) {
-    if (mgr?.destroy) try { await mgr.destroy(); } catch {}
+    if (mgr?.destroy) try { await mgr.destroy(); } catch { }
     return false;
   }
 
@@ -622,8 +575,8 @@ async function processContent(
   refreshUIEffects();
 
   // 10. 派发事件
-  window.dispatchEvent(new CustomEvent('ajax:navigation', { 
-    detail: { url, page: content.pageName } 
+  window.dispatchEvent(new CustomEvent('ajax:navigation', {
+    detail: { url, page: content.pageName }
   }));
 
   state.lastRenderedUrl = url;
@@ -640,9 +593,9 @@ export async function fetchAndReplaceContent(
   retryCount: number = 0,
   isPopState: boolean = false
 ): Promise<boolean> {
-  
+
   const navId = ++state.navigationId;
-  
+
   // 取消之前的请求
   if (currentAbortController) currentAbortController.abort();
   const ac = new AbortController();
@@ -658,7 +611,7 @@ export async function fetchAndReplaceContent(
 
     if (!content) {
       let resp: PageResponse;
-      
+
       // 防止重复请求
       if (state.pendingRequests.has(cacheKey)) {
         resp = await state.pendingRequests.get(cacheKey)!;
@@ -673,9 +626,9 @@ export async function fetchAndReplaceContent(
       }
 
       if (signal.aborted || navId !== state.navigationId) return false;
-      
+
       content = extractPageContent(resp.html, url);
-      
+
       // 写入缓存
       state.cache.set(cacheKey, { content, timestamp: Date.now() });
       // 清理过期缓存
@@ -709,20 +662,44 @@ export async function fetchAndReplaceContent(
 
   } catch (e: any) {
     if (e.name === 'AbortError' || navId !== state.navigationId) return false;
-    
+
     console.error('[Router] 导航异常:', e);
-    
-    // 错误重试机制
+
     if (retryCount < 2) {
       console.log(`[Router] 正在重试 (${retryCount + 1}/2)...`);
       return fetchAndReplaceContent(url, pushState, scrollData, retryCount + 1, isPopState);
     }
 
-    showErrorOverlay(
-      `加载失败: ${e.message || '未知网络错误'}`,
-      () => fetchAndReplaceContent(url, pushState, scrollData, 0, isPopState),
-      url
-    );
+    // 使用 detail-dialog 显示错误
+    const { close } = showDetailDialog({
+      title: '呜呜，好像出了点小问题…',
+      htmlContent: `
+      <p style="color: var(--text-secondary, #ccc); margin-bottom: 1.5rem;">
+        ${Utils.escapeHtml(e.message || '未知网络错误')}
+      </p>
+      <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <button id="router-retry-btn" style="padding: 0.6rem 2rem; border: none; border-radius: 30px; background: var(--accent-color, #a55860); color: #fff; font-weight: bold; cursor: pointer;">重试</button>
+        <button id="router-reload-btn" style="padding: 0.6rem 2rem; border: none; border-radius: 30px; background: #666; color: #fff; font-weight: bold; cursor: pointer;">刷新页面</button>
+      </div>
+    `,
+      source: 'router',
+    });
+
+    // 绑定按钮事件（立即查询，DOM 已存在）
+    const retryBtn = document.querySelector('#router-retry-btn');
+    const reloadBtn = document.querySelector('#router-reload-btn');
+    if (retryBtn) {
+      retryBtn.addEventListener('click', () => {
+        close();
+        fetchAndReplaceContent(url, pushState, scrollData, 0, isPopState);
+      });
+    }
+    if (reloadBtn) {
+      reloadBtn.addEventListener('click', () => {
+        location.href = url;
+      });
+    }
+
     return false;
   } finally {
     if (currentAbortController === ac) currentAbortController = null;
@@ -760,7 +737,7 @@ async function initPageManager(pageName: string, refreshFn: () => void): Promise
     }
     return mgr;
   }
-  
+
   return PageManagerRegistry.create(pageName, refreshFn);
 }
 
@@ -794,7 +771,7 @@ export function enableAjaxNavigation(): void {
 
     e.preventDefault();
     const fullUrl = new URL(href, location.href).href;
-    
+
     // 如果是当前页面，不做处理
     if (fullUrl === location.href) return;
 
@@ -875,8 +852,8 @@ export function initPopstate(): void {
 
 // ==================== 辅助功能 ====================
 
-export async function loadNavbar(): Promise<any> { 
-  return initNavbar(); 
+export async function loadNavbar(): Promise<any> {
+  return initNavbar();
 }
 
 export async function loadFooter(): Promise<void> {
@@ -886,8 +863,8 @@ export async function loadFooter(): Promise<void> {
     const html = await res.text();
     const ph = document.getElementById('footer-placeholder');
     if (ph) ph.innerHTML = html;
-  } catch (e) { 
-    console.error('[Router] 页脚加载失败:', e); 
+  } catch (e) {
+    console.error('[Router] 页脚加载失败:', e);
   }
 }
 
@@ -898,7 +875,7 @@ export function initMobileMenuToggle(): void {
 
   const toggle = document.querySelector('.mobile-toggle');
   const nav = document.getElementById('navbarNav');
-  
+
   const closeMenu = () => {
     nav?.classList.remove('active');
     toggle?.classList.remove('active');
@@ -906,7 +883,7 @@ export function initMobileMenuToggle(): void {
 
   document.addEventListener('click', (e) => {
     const t = e.target as Element;
-    
+
     // 点击开关
     if (t.closest('.mobile-toggle')) {
       e.preventDefault();
@@ -914,13 +891,13 @@ export function initMobileMenuToggle(): void {
       toggle?.classList.toggle('active');
       return;
     }
-    
+
     // 点击菜单项关闭
     if (t.closest('.nav-item') && nav?.classList.contains('active')) {
       closeMenu();
       return;
     }
-    
+
     // 点击遮罩或外部关闭
     if (nav?.classList.contains('active') && !t.closest('.nav-items')) {
       closeMenu();
@@ -930,7 +907,7 @@ export function initMobileMenuToggle(): void {
   window.addEventListener('resize', () => {
     if (innerWidth > 768) closeMenu();
   });
-  
+
   window.addEventListener('ajax:navigation', closeMenu);
 }
 
