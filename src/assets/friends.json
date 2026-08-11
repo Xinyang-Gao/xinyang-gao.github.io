@@ -83,6 +83,12 @@
       "link": "https://siyiyun.cn",
       "desc": "免费部署你的第一个网站 ，为全球创作者助力",
       "avatar": "https://siyiyun.cn/favicon.ico"
+    },
+    {
+      "name": "Brandon’s Blog",
+      "link": "https://blog.oopss.top",
+      "desc": "知行合一",
+      "avatar": "https://cdn.oopss.top/icon.jpg"
     }
   ],
   "external": [
