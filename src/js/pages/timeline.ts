@@ -409,72 +409,85 @@ export class TimelineManager extends PageManager {
         const escapedDesc = Utils.escapeHtml(item.description);
         const tags = item.tags || [];
 
-        // 类型徽章
+        // 1. 构建徽章
         let badge = '';
         if (item.type === 'article') {
             badge = '<span class="timeline-item-badge article-badge">文章</span>';
         } else if (item.type === 'work') {
             badge = '<span class="timeline-item-badge work-badge">作品</span>';
         } else if (item.type === 'version') {
-            badge = `<span class="timeline-item-badge version-badge">版本</span>`;
+            const versionNum = item.versionNumber || '未知版本';
+            badge = `<span class="timeline-item-badge version-badge">版本 ${versionNum}</span>`;
         }
 
-        // 标题链接（版本除外）
+        // 2. 标题（版本类型不显示标题）
         let titleHtml = '';
         if (item.type === 'version') {
-            titleHtml = `<span class="timeline-item-title version-title">${escapedTitle}</span>`;
+            titleHtml = '';
         } else {
             const url = item.url || '#';
             titleHtml = `<a href="${Utils.escapeHtml(url)}" class="timeline-item-title">${escapedTitle}</a>`;
         }
 
-        // 标签
+        // 3. 描述（版本类型不显示描述）
+        let descHtml = '';
+        if (item.type !== 'version') {
+            descHtml = `<p class="timeline-item-description">${escapedDesc}</p>`;
+        }
+
+        // 4. 标签（所有类型都保留）
         const tagsHtml = tags.length
             ? `<div class="timeline-item-tags">${tags.map(t => `<span class="tag">${Utils.escapeHtml(t)}</span>`).join('')}</div>`
             : '';
 
-        // 版本特有：变更详情（折叠）
-        let versionExtra = '';
+        // 5. 版本特有：变更详情（按钮 + 详情内容）
+        let versionButtonHtml = '';
+        let versionContentHtml = '';
         if (item.type === 'version' && item.changes && item.changes.length) {
             const contentId = `version-detail-${item.id}`;
             // 解析变更描述中的 Markdown
             const changesHtml = item.changes.map(chg => {
                 const typeColor = this.getTypeColor(chg.type);
-                let descHtml = '';
+                let descHtml2 = '';
                 try {
-                    descHtml = marked.parse(chg.description);
+                    descHtml2 = marked.parse(chg.description);
                 } catch {
-                    descHtml = chg.description.replace(/\n/g, '<br>');
+                    descHtml2 = chg.description.replace(/\n/g, '<br>');
                 }
                 return `<div class="change-item">
                     <span class="change-type" style="background:${typeColor}20; color:${typeColor}; border-color:${typeColor}40;">${chg.type}</span>
-                    <div class="change-desc">${descHtml}</div>
+                    <div class="change-desc">${descHtml2}</div>
                 </div>`;
             }).join('');
 
-            versionExtra = `
-                <div class="version-detail-wrapper">
-                    <button class="version-capsule" data-content-id="${contentId}">
-                        <span class="version-toggle-icon">▶</span> 查看变更详情
-                    </button>
-                    <div id="${contentId}" class="version-detail-content" style="display:none;">
-                        ${changesHtml}
-                    </div>
+            // 按钮（放在 meta 区域）
+            versionButtonHtml = `
+                <button class="version-capsule" data-content-id="${contentId}">
+                    <span class="version-toggle-icon">▶</span> 查看 ${item.changes.length}项变更详情
+                </button>
+            `;
+
+            // 详情内容（放在 body 区域，初始隐藏）
+            versionContentHtml = `
+                <div id="${contentId}" class="version-detail-content" style="display:none;">
+                    ${changesHtml}
                 </div>
             `;
         }
 
+        // 组装 HTML
         return `
             <div class="timeline-item" data-type="${item.type}" data-date="${dateLabel}">
                 <div class="timeline-item-meta">
                     <span class="timeline-item-date"><i class="far fa-calendar-alt"></i> ${dateLabel}</span>
                     ${badge}
+                    ${versionButtonHtml}
                 </div>
                 <div class="timeline-item-body">
                     ${titleHtml}
-                    <p class="timeline-item-description">${escapedDesc}</p>
+                    ${descHtml}
                     ${tagsHtml}
-                    ${versionExtra}
+                    ${versionContentHtml}
                 </div>
             </div>
         `;
