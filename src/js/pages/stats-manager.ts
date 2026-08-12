@@ -621,19 +621,4 @@ class FullStatsManager {
   }
 }
 
-// ==================== 导出 ====================
-let manager: FullStatsManager | null = null;
-
-export async function initFullStats(): Promise<void> {
-  if (manager) manager.destroy();
-  manager = new FullStatsManager();
-  await manager.init();
-}
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initFullStats);
-} else {
-  void initFullStats();
-}
-
 export { FullStatsManager, FullStatsManager as StatsManager };

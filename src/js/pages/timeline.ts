@@ -399,7 +399,7 @@ export class TimelineManager extends PageManager {
 
         // 4. 渲染内容
         if (!filtered.length) {
-            this.container.innerHTML = '<div class="timeline-empty">📭 没有找到匹配的内容，试试其他筛选条件～</div>';
+            this.container.innerHTML = '<div class="timeline-empty">啊？似乎没有符合条件的条目呀，换个条件试试？</div>';
             return;
         }
 

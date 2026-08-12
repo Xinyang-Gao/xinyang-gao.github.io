@@ -322,8 +322,10 @@ function registerDefaultPages(): void {
   });
 
   PageManagerRegistry.register('stats', async () => {
-    const { initStatsPage } = await import('/js/pages/stats-init.js');
-    return initStatsPage() as any;
+    const { FullStatsManager } = await import('/js/pages/stats-manager.js');
+    const mgr = new FullStatsManager();
+    await mgr.init();
+    return mgr;
   });
 
   PageManagerRegistry.register('friends', async () => {
