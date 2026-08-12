@@ -1,5 +1,6 @@
 // /js/pages/timeline.ts
 // 时间线页面：合并文章、作品与版本更新，按时间线展示
+// 支持：年份筛选、类型筛选（文章/作品/更新日志）、搜索、版本按ID降序（新版本在前）
 
 import { DataManager, UIRenderer } from '/js/pages/search-render.js';
 import { Utils, storageController, perf } from '/js/core/core.js';
@@ -52,13 +53,15 @@ interface TimelineItem {
     type: 'article' | 'work' | 'version';
     title: string;
     description: string;
-    date: string;               // YYYY-MM-DD 或 YYYY-MM-DDTHH:mm:ss
+    date: string;               // YYYY-MM-DD
     dateObj: Date;             // 用于排序
     url?: string;              // 文章或作品链接
     tags?: string[];
     // 版本特有
     versionNumber?: string;
     changes?: Change[];
+    versionId?: number;        // 版本在 version.json 中的 id（用于排序）
+    originalOrder?: number;    // 保留原始索引（备用）
 }
 
 /** 按年份/月份分组后的结构 */
@@ -105,16 +108,25 @@ export class TimelineManager extends PageManager {
     private resetButton: HTMLElement | null = null;
     private yearCapsulesContainer: HTMLElement | null = null;
 
+    // 类型复选框和搜索
+    private typeCheckboxes: NodeListOf<HTMLInputElement> | null = null;
+    private searchInput: HTMLInputElement | null = null;
+
     private allItems: TimelineItem[] = [];
     private currentYear = 'all';
+    private selectedTypes: Set<string> = new Set(['article', 'work', 'version']);
+    private searchQuery = '';
 
     // 事件处理器引用
     private boundHandlers: {
         yearChange: ((this: HTMLSelectElement, ev: Event) => any) | null;
         reset: ((this: HTMLElement, ev: Event) => any) | null;
-    } = { yearChange: null, reset: null };
+        typeChange: ((this: HTMLInputElement, ev: Event) => any) | null;
+        searchInput: ((this: HTMLInputElement, ev: Event) => any) | null;
+    } = { yearChange: null, reset: null, typeChange: null, searchInput: null };
 
     private refreshCallback: (() => void) | null = null;
+    private searchDebounceTimer: number | null = null;
 
     async init(): Promise<void> {
         this.container = document.getElementById('timeline-container');
@@ -122,6 +134,9 @@ export class TimelineManager extends PageManager {
         this.yearFilter = document.getElementById('timeline-year-filter') as HTMLSelectElement | null;
         this.resetButton = document.getElementById('timeline-reset');
         this.yearCapsulesContainer = document.getElementById('year-capsules-container');
+
+        this.typeCheckboxes = document.querySelectorAll('.type-filter');
+        this.searchInput = document.getElementById('timeline-search') as HTMLInputElement | null;
 
         if (!this.container) return;
 
@@ -137,7 +152,6 @@ export class TimelineManager extends PageManager {
                 this.fetchVersions(),
             ]);
 
-            // 提取数据
             const articles = (articlesResult.status === 'fulfilled' && articlesResult.value.articles)
                 ? articlesResult.value.articles.filter((a: any) => !a.hidden)
                 : [];
@@ -148,17 +162,11 @@ export class TimelineManager extends PageManager {
                 ? versionsResult.value
                 : [];
 
-            // 构建统一时间线条目
             this.allItems = this.buildTimelineItems(articles, works, versions);
 
-            // 初始化年份下拉和胶囊
             this.populateYearSelect();
             this.renderYearCapsules();
-
-            // 绑定事件
             this.attachEvents();
-
-            // 首次渲染
             this.renderTimeline();
         } catch (error) {
             console.error('[Timeline] 初始化失败:', error);
@@ -185,7 +193,7 @@ export class TimelineManager extends PageManager {
         for (const art of articles) {
             const dateStr = art.date || art.last_updated || '';
             const dateObj = parseDateString(dateStr);
-            if (!dateObj) continue; // 跳过无日期条目
+            if (!dateObj) continue;
             items.push({
                 id: `article-${art.title || Math.random()}`,
                 type: 'article',
@@ -215,7 +223,8 @@ export class TimelineManager extends PageManager {
             });
         }
 
-        // 版本
+        // 版本 —— 记录原始顺序和版本ID
+        let versionOrder = 0;
         for (const ver of versions) {
             const dateStr = ver.date || '';
             const dateObj = parseDateString(dateStr);
@@ -229,11 +238,11 @@ export class TimelineManager extends PageManager {
                 dateObj: dateObj,
                 versionNumber: ver.version,
                 changes: ver.changes || [],
+                versionId: ver.id,            // 保存版本ID
+                originalOrder: versionOrder++, // 原始索引（备用）
             });
         }
 
-        // 按日期降序排序（最新的在前）
-        items.sort((a, b) => b.dateObj.getTime() - a.dateObj.getTime());
         return items;
     }
 
@@ -264,7 +273,6 @@ export class TimelineManager extends PageManager {
         `).join('');
         this.yearCapsulesContainer.innerHTML = html;
 
-        // 绑定点击事件
         this.yearCapsulesContainer.querySelectorAll('.year-capsule').forEach(btn => {
             btn.addEventListener('click', () => {
                 const year = btn.getAttribute('data-year');
@@ -301,24 +309,81 @@ export class TimelineManager extends PageManager {
             this.boundHandlers.reset = () => {
                 this.currentYear = 'all';
                 if (this.yearFilter) this.yearFilter.value = 'all';
+                this.typeCheckboxes?.forEach(cb => cb.checked = true);
+                this.selectedTypes = new Set(['article', 'work', 'version']);
+                if (this.searchInput) {
+                    this.searchInput.value = '';
+                    this.searchQuery = '';
+                }
                 this.renderTimeline();
                 this.updateCapsulesActive();
             };
             this.resetButton.addEventListener('click', this.boundHandlers.reset);
         }
+
+        // 类型复选框
+        if (this.typeCheckboxes) {
+            this.boundHandlers.typeChange = () => {
+                this.updateTypeFilter();
+            };
+            this.typeCheckboxes.forEach(cb => {
+                cb.addEventListener('change', this.boundHandlers.typeChange!);
+            });
+        }
+
+        // 搜索输入（防抖）
+        if (this.searchInput) {
+            this.boundHandlers.searchInput = () => {
+                if (this.searchDebounceTimer) clearTimeout(this.searchDebounceTimer);
+                this.searchDebounceTimer = window.setTimeout(() => {
+                    this.searchQuery = this.searchInput!.value;
+                    this.renderTimeline();
+                }, 300);
+            };
+            this.searchInput.addEventListener('input', this.boundHandlers.searchInput);
+        }
+    }
+
+    private updateTypeFilter(): void {
+        this.selectedTypes.clear();
+        this.typeCheckboxes?.forEach(cb => {
+            if (cb.checked) this.selectedTypes.add(cb.value);
+        });
+        this.renderTimeline();
     }
 
     private renderTimeline(): void {
         if (!this.container) return;
 
-        // 筛选年份
-        let filtered = this.allItems;
-        if (this.currentYear !== 'all') {
-            const yearNum = parseInt(this.currentYear, 10);
-            filtered = filtered.filter(item => item.dateObj.getFullYear() === yearNum);
+        // 1. 过滤数据
+        let filtered = this.allItems.filter(item => {
+            if (!this.selectedTypes.has(item.type)) return false;
+            if (this.currentYear !== 'all') {
+                const yearNum = parseInt(this.currentYear, 10);
+                if (item.dateObj.getFullYear() !== yearNum) return false;
+            }
+            if (this.searchQuery.trim()) {
+                const q = this.searchQuery.trim().toLowerCase();
+                const title = (item.title || '').toLowerCase();
+                const desc = (item.description || '').toLowerCase();
+                const tags = (item.tags || []).join(' ').toLowerCase();
+                const versionNum = (item.versionNumber || '').toLowerCase();
+                return title.includes(q) || desc.includes(q) || tags.includes(q) || versionNum.includes(q);
+            }
+            return true;
+        });
+
+        // 2. 排序逻辑
+        const isVersionOnly = this.selectedTypes.size === 1 && this.selectedTypes.has('version');
+        if (isVersionOnly) {
+            // 版本专用模式：按版本ID降序（大号在前，即最新版本在前）
+            filtered.sort((a, b) => (b.versionId || 0) - (a.versionId || 0));
+        } else {
+            // 混合模式：按日期降序（最新在前）
+            filtered.sort((a, b) => b.dateObj.getTime() - a.dateObj.getTime());
         }
 
-        // 更新摘要
+        // 3. 更新摘要
         const articleCount = filtered.filter(i => i.type === 'article').length;
         const workCount = filtered.filter(i => i.type === 'work').length;
         const versionCount = filtered.filter(i => i.type === 'version').length;
@@ -327,62 +392,75 @@ export class TimelineManager extends PageManager {
                 <i class="fas fa-chart-line"></i>
                 当前筛选：<strong>${articleCount}</strong> 篇文章 ·
                 <strong>${workCount}</strong> 个作品 ·
-                <strong>${versionCount}</strong> 个版本 ·
+                <strong>${versionCount}</strong> 个更新日志 ·
                 共 <strong>${filtered.length}</strong> 条内容
             `;
         }
 
-        // 构建时间线 HTML
+        // 4. 渲染内容
         if (!filtered.length) {
-            this.container.innerHTML = '<div class="timeline-empty">📭 没有找到该年份的内容，试试其他筛选条件～</div>';
+            this.container.innerHTML = '<div class="timeline-empty">📭 没有找到匹配的内容，试试其他筛选条件～</div>';
             return;
         }
 
-        // 按年份-月份分组
-        const grouped: GroupedItems = new Map();
-        for (const item of filtered) {
-            const year = item.dateObj.getFullYear();
-            const month = item.dateObj.getMonth() + 1;
-            if (!grouped.has(year)) grouped.set(year, new Map());
-            const monthMap = grouped.get(year)!;
-            if (!monthMap.has(month)) monthMap.set(month, []);
-            monthMap.get(month)!.push(item);
+        let html = '';
+        if (isVersionOnly) {
+            // 版本专用模式：直接顺序列表，不分组
+            html = '<div class="timeline timeline-version-only">';
+            for (const item of filtered) {
+                html += this.renderTimelineItem(item);
+            }
+            html += '</div>';
+        } else {
+            // 普通模式：按年份-月份分组
+            const grouped: GroupedItems = new Map();
+            for (const item of filtered) {
+                const year = item.dateObj.getFullYear();
+                const month = item.dateObj.getMonth() + 1;
+                if (!grouped.has(year)) grouped.set(year, new Map());
+                const monthMap = grouped.get(year)!;
+                if (!monthMap.has(month)) monthMap.set(month, []);
+                monthMap.get(month)!.push(item);
+            }
+
+            html = '<div class="timeline">';
+            const sortedYears = Array.from(grouped.keys()).sort((a, b) => b - a);
+            for (const year of sortedYears) {
+                const monthMap = grouped.get(year)!;
+                const sortedMonths = Array.from(monthMap.keys()).sort((a, b) => b - a);
+                const yearTotal = Array.from(monthMap.values()).reduce((sum, arr) => sum + arr.length, 0);
+                html += `<div class="timeline-year">
+                    <h3 class="timeline-year-title">${year} <span class="year-count">${yearTotal}</span></h3>`;
+                for (const month of sortedMonths) {
+                    const items = monthMap.get(month)!;
+                    // 月份内排序：按日期降序，同日期内版本优先且版本按版本ID降序
+                    items.sort((a, b) => {
+                        if (a.dateObj.getTime() !== b.dateObj.getTime()) {
+                            return b.dateObj.getTime() - a.dateObj.getTime();
+                        }
+                        // 同日期：版本优先，版本之间按版本ID降序
+                        if (a.type === 'version' && b.type === 'version') {
+                            return (b.versionId || 0) - (a.versionId || 0);
+                        }
+                        const order = { version: 0, article: 1, work: 2 };
+                        return order[a.type] - order[b.type];
+                    });
+                    html += `<div class="timeline-month">
+                        <h4 class="timeline-month-title">${formatMonthLabel(month)}</h4>
+                        <div class="timeline-list">`;
+                    for (const item of items) {
+                        html += this.renderTimelineItem(item);
+                    }
+                    html += `</div></div>`;
+                }
+                html += `</div>`;
+            }
+            html += '</div>';
         }
 
-        // 生成 HTML
-        let html = '<div class="timeline">';
-        const sortedYears = Array.from(grouped.keys()).sort((a, b) => b - a);
-        for (const year of sortedYears) {
-            const monthMap = grouped.get(year)!;
-            const sortedMonths = Array.from(monthMap.keys()).sort((a, b) => b - a);
-            // 年份标题
-            const yearTotal = Array.from(monthMap.values()).reduce((sum, arr) => sum + arr.length, 0);
-            html += `<div class="timeline-year">
-                <h3 class="timeline-year-title">${year} <span class="year-count">${yearTotal}</span></h3>`;
-            for (const month of sortedMonths) {
-                const items = monthMap.get(month)!;
-                // 同月份内按日期从新到旧（同一天内按类型优先级：版本 > 文章 > 作品）
-                items.sort((a, b) => {
-                    if (a.dateObj.getTime() !== b.dateObj.getTime()) {
-                        return b.dateObj.getTime() - a.dateObj.getTime();
-                    }
-                    const order = { version: 0, article: 1, work: 2 };
-                    return order[a.type] - order[b.type];
-                });
-                html += `<div class="timeline-month">
-                    <h4 class="timeline-month-title">${formatMonthLabel(month)}</h4>
-                    <div class="timeline-list">`;
-                for (const item of items) {
-                    html += this.renderTimelineItem(item);
-                }
-                html += `</div></div>`;
-            }
-            html += `</div>`;
-        }
-        html += '</div>';
         this.container.innerHTML = html;
 
-        // 绑定版本展开/收起事件
+        // 5. 绑定版本展开/收起事件
         this.container.querySelectorAll<HTMLElement>('.version-capsule').forEach(el => {
             const contentId = el.getAttribute('data-content-id');
             if (!contentId) return;
@@ -392,7 +470,6 @@ export class TimelineManager extends PageManager {
                 const isOpen = content.style.display === 'block';
                 content.style.display = isOpen ? 'none' : 'block';
                 el.classList.toggle('expanded', !isOpen);
-                // 更新图标
                 const icon = el.querySelector('.version-toggle-icon');
                 if (icon) icon.textContent = isOpen ? '▶' : '▼';
             });
@@ -409,7 +486,7 @@ export class TimelineManager extends PageManager {
         const escapedDesc = Utils.escapeHtml(item.description);
         const tags = item.tags || [];
 
-        // 1. 构建徽章
+        // 徽章
         let badge = '';
         if (item.type === 'article') {
             badge = '<span class="timeline-item-badge article-badge">文章</span>';
@@ -420,32 +497,29 @@ export class TimelineManager extends PageManager {
             badge = `<span class="timeline-item-badge version-badge">版本 ${versionNum}</span>`;
         }
 
-        // 2. 标题（版本类型不显示标题）
+        // 标题（版本不显示标题）
         let titleHtml = '';
-        if (item.type === 'version') {
-            titleHtml = '';
-        } else {
+        if (item.type !== 'version') {
             const url = item.url || '#';
             titleHtml = `<a href="${Utils.escapeHtml(url)}" class="timeline-item-title">${escapedTitle}</a>`;
         }
 
-        // 3. 描述（版本类型不显示描述）
+        // 描述（版本不显示描述）
         let descHtml = '';
         if (item.type !== 'version') {
             descHtml = `<p class="timeline-item-description">${escapedDesc}</p>`;
         }
 
-        // 4. 标签（所有类型都保留）
+        // 标签
         const tagsHtml = tags.length
             ? `<div class="timeline-item-tags">${tags.map(t => `<span class="tag">${Utils.escapeHtml(t)}</span>`).join('')}</div>`
             : '';
 
-        // 5. 版本特有：变更详情（按钮 + 详情内容）
+        // 版本变更详情
         let versionButtonHtml = '';
         let versionContentHtml = '';
         if (item.type === 'version' && item.changes && item.changes.length) {
             const contentId = `version-detail-${item.id}`;
-            // 解析变更描述中的 Markdown
             const changesHtml = item.changes.map(chg => {
                 const typeColor = this.getTypeColor(chg.type);
                 let descHtml2 = '';
@@ -460,14 +534,11 @@ export class TimelineManager extends PageManager {
                 </div>`;
             }).join('');
 
-            // 按钮（放在 meta 区域）
             versionButtonHtml = `
                 <button class="version-capsule" data-content-id="${contentId}">
                     <span class="version-toggle-icon">▶</span> 展开${item.changes.length}项变更
                 </button>
             `;
-
-            // 详情内容（放在 body 区域，初始隐藏）
             versionContentHtml = `
                 <div id="${contentId}" class="version-detail-content" style="display:none;">
                     ${changesHtml}
@@ -475,7 +546,6 @@ export class TimelineManager extends PageManager {
             `;
         }
 
-        // 组装 HTML
         return `
             <div class="timeline-item" data-type="${item.type}" data-date="${dateLabel}">
                 <div class="timeline-item-meta">
@@ -515,11 +585,26 @@ export class TimelineManager extends PageManager {
         if (this.resetButton && this.boundHandlers.reset) {
             this.resetButton.removeEventListener('click', this.boundHandlers.reset);
         }
+        if (this.typeCheckboxes && this.boundHandlers.typeChange) {
+            this.typeCheckboxes.forEach(cb => {
+                cb.removeEventListener('change', this.boundHandlers.typeChange!);
+            });
+        }
+        if (this.searchInput && this.boundHandlers.searchInput) {
+            this.searchInput.removeEventListener('input', this.boundHandlers.searchInput);
+        }
+        if (this.searchDebounceTimer) {
+            clearTimeout(this.searchDebounceTimer);
+            this.searchDebounceTimer = null;
+        }
+
         this.container = null;
         this.summary = null;
         this.yearFilter = null;
         this.resetButton = null;
         this.yearCapsulesContainer = null;
+        this.typeCheckboxes = null;
+        this.searchInput = null;
         this.allItems = [];
         this.refreshCallback = null;
     }
@@ -534,7 +619,7 @@ export async function initTimelinePage(scrollRevealRefreshCallback?: () => void)
     return manager;
 }
 
-// 自动初始化（如果页面存在）
+// 自动初始化
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         const container = document.getElementById('timeline-container');

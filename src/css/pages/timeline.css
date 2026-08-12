@@ -588,3 +588,51 @@
     flex: 1 1 auto;
     min-width: 0;
 }
+
+/* 工具栏内部分隔 */
+.filter-separator {
+    color: var(--border-color, #e8e2db);
+    margin: 0 6px;
+}
+.type-filter-group {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    font-size: 0.9rem;
+}
+.type-filter-group label {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    color: var(--text-secondary, #6b6b6b);
+}
+.type-filter-group input[type="checkbox"] {
+    accent-color: var(--accent-color, #b45b63);
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.timeline-toolbar-right {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+#timeline-search {
+    padding: 8px 16px;
+    border: 1px solid var(--border-color, #e8e2db);
+    border-radius: var(--radius-full, 30px);
+    font-family: var(--font-family, inherit);
+    font-size: 0.9rem;
+    background: var(--surface-color, #fff);
+    color: var(--text-color, #2c2c2c);
+    min-width: 180px;
+    transition: all 0.2s;
+}
+#timeline-search:focus {
+    outline: none;
+    border-color: var(--accent-color, #b45b63);
+    box-shadow: 0 0 0 3px rgba(180, 91, 99, 0.15);
+}

@@ -44,9 +44,11 @@ export function initBackToTop() {
   btn.className = 'floating-btn hidden';
   btn.id = 'backToTopBtn';
   btn.setAttribute('aria-label', '返回顶部');
-  btn.innerHTML = '↑';
+  btn.textContent = '↑';               // 初始占位
   c.appendChild(btn);
   backToTopBtn = btn;
+
+  let isHovered = false;               // 悬停状态
 
   // 动态阈值：至少 150px，且不低于视口高度的 20%（最大 300px）
   const threshold = Math.min(300, Math.max(150, window.innerHeight * 0.2));
@@ -55,6 +57,14 @@ export function initBackToTop() {
     const scrollY = getScrollTop();
     const show = scrollY > threshold;
     btn.classList.toggle('hidden', !show);
+
+    if (isHovered) {
+      btn.textContent = '↑';
+    } else {
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const percent = docHeight > 0 ? Math.round((scrollY / docHeight) * 100) : 0;
+      btn.textContent = percent;
+    }
   };
   updateVisibilityFn = updateVisibility;
 
@@ -67,6 +77,16 @@ export function initBackToTop() {
   // 点击返回顶部
   btn.addEventListener('click', () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  // 悬停事件
+  btn.addEventListener('mouseenter', () => {
+    isHovered = true;
+    updateVisibility();
+  });
+  btn.addEventListener('mouseleave', () => {
+    isHovered = false;
+    updateVisibility();
   });
 
   // 立即执行一次（应对页面加载时已经滚动的情况）
