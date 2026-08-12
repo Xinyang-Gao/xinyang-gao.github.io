@@ -6,37 +6,30 @@
     <title>时间线 - 高新炀的小站</title>
     <link rel="stylesheet" href="/css/main.css" />
     <link rel="stylesheet" href="/css/pages/timeline.css" />
-    <!-- marked 用于解析版本变更中的 Markdown -->
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js">
     </script>
 </head>
 
 <body>
-    <!-- 加载遮罩 -->
     <div id="loading-overlay" role="status" aria-label="页面加载中">
         <div class="loading-log"><div>[START] 正在等待 JavaScript，这可能需要几秒</div></div>
         <div class="loading-glow"></div>
         <div id="loading-content"><span class="loading-title">GaoXinYang</span></div>
     </div>
 
-    <!-- 导航栏占位 -->
     <div id="navbar-placeholder"></div>
 
-    <!-- 主视图 -->
     <div id="router-view">
         <div class="two-column-layout">
-            <!-- 侧边栏个人卡片 -->
             <aside class="sidebar-profile">
                 <div id="personal-card-container"></div>
             </aside>
 
-            <!-- 主要内容 -->
             <main class="main-content-area">
                 <div class="container">
                     <h2>时间线</h2>
                     <p>按时间顺序浏览本站发布的文章、作品与版本更新。</p>
 
-                    <!-- 工具栏 -->
                     <div class="timeline-toolbar">
                         <div class="timeline-toolbar-left">
                             <label for="timeline-year-filter">按年份筛选：</label>
@@ -47,31 +40,24 @@
                         <button id="timeline-reset" type="button" class="btn-secondary">重置</button>
                     </div>
 
-                    <!-- 年份胶囊导航（JS 动态生成） -->
                     <div id="year-capsules-container" class="year-capsules-wrapper"></div>
 
-                    <!-- 统计摘要 -->
                     <div id="timeline-summary" class="timeline-summary"></div>
 
-                    <!-- 时间线容器 -->
                     <div id="timeline-container" class="timeline-container"></div>
                 </div>
             </main>
         </div>
     </div>
 
-    <!-- 页面过渡遮罩 -->
     <div id="pageTransition" class="page-transition"></div>
 
-    <!-- 页脚占位 -->
     <div id="footer-placeholder"></div>
 
-    <!-- 三方库 -->
     <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous">
     </script>
     <script src="/js/vendor/vercount.min.js" defer></script>
 
-    <!-- 主入口 & 时间线模块 -->
     <script src="/js/entry/main.js" type="module"></script>
     <script type="module" src="/js/pages/timeline.js"></script>
 </body>

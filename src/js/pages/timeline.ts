@@ -463,7 +463,7 @@ export class TimelineManager extends PageManager {
             // 按钮（放在 meta 区域）
             versionButtonHtml = `
                 <button class="version-capsule" data-content-id="${contentId}">
-                    <span class="version-toggle-icon">▶</span> 查看 ${item.changes.length}项变更详情
+                    <span class="version-toggle-icon">▶</span> 展开${item.changes.length}项变更
                 </button>
             `;
 

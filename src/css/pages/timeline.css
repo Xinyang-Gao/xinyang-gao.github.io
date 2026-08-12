@@ -571,3 +571,20 @@
 [data-theme="dark"] .change-desc {
     color: var(--text-color, #eceef2);
 }
+.timeline-item[data-type="version"] .timeline-item-meta {
+    flex-wrap: wrap;
+    gap: 6px 12px;
+    min-width: auto;
+    flex: 0 0 auto;
+}
+
+.timeline-item[data-type="version"] .version-capsule {
+    flex: 1 0 100%;
+    max-width: fit-content;
+    margin-top: 2px;
+}
+
+.timeline-item[data-type="version"] .timeline-item-body {
+    flex: 1 1 auto;
+    min-width: 0;
+}
