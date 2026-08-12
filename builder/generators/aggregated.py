@@ -52,6 +52,9 @@ class AggregatedGenerator(OutputGenerator):
     outputs = [
         RSS_OUTPUT, SITEMAP_OUTPUT, ARTICLES_LIST_HTML, WORKS_LIST_HTML, NOJS_HTML, STATISTICS_JSON,
         JSON_OUTPUT_DIR / "code_analysis.json",
+        JSON_OUTPUT_DIR / "works.json",
+        JSON_OUTPUT_DIR / "friends.json",
+        JSON_OUTPUT_DIR / "friend_colors.json",
     ] + [DIST_ROOT / f"{key}" / "index.html" for key in PAGE_TEMPLATES.values()] \
         + [DIST_ROOT / "friends" / "index.html"]
 
@@ -108,6 +111,7 @@ class AggregatedGenerator(OutputGenerator):
             self._generate_friends_page(context)
             self._generate_subdir_pages(context)
             self._generate_code_analysis()
+            self._generate_works_json(context)
             log_info("聚合生成完成")
             return True
         except Exception as e:
@@ -115,6 +119,21 @@ class AggregatedGenerator(OutputGenerator):
             import traceback
             traceback.print_exc()
             return False
+
+    def _generate_works_json(self, context: BuildContext) -> None:
+        """生成 /dist/json/works.json"""
+        works_data = []
+        for work in context.works:
+            works_data.append({
+                "title": work.title,
+                "description": work.description,
+                "link": work.link,
+                "date": format_date_iso(work.date),   # 强制转为 YYYY-MM-DD
+                "tags": work.tag
+            })
+        output = {"works": works_data}
+        save_json(output, JSON_OUTPUT_DIR / "works.json")
+        log_info(f"生成 works.json，共 {len(works_data)} 个作品")
 
     # ---------- 统计 ----------
     def _build_statistics(self, context: BuildContext) -> None:
@@ -676,6 +695,21 @@ class AggregatedGenerator(OutputGenerator):
             log_info("复制 works 目录（排除 metadata.json）")
         else:
             log_warning(f"works 源目录不存在: {works_src}")
+
+        # 6. 复制 friends.json 和 friend_colors.json
+        friends_src = ASSETS_DIR / "friends.json"
+        if friends_src.exists():
+            shutil.copy(friends_src, JSON_OUTPUT_DIR / "friends.json")
+            log_info("复制 friends.json 到 dist/json/")
+        else:
+            log_warning(f"friends.json 不存在: {friends_src}")
+
+        colors_src = ASSETS_DIR / "friend_colors.json"
+        if colors_src.exists():
+            shutil.copy(colors_src, JSON_OUTPUT_DIR / "friend_colors.json")
+            log_info("复制 friend_colors.json 到 dist/json/")
+        else:
+            log_warning(f"friend_colors.json 不存在: {colors_src}")
 
     # ---------- 生成子目录页面 ----------
     def _generate_subdir_pages(self, context: BuildContext):

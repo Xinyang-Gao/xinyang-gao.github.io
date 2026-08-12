@@ -69,7 +69,7 @@ flowchart TD
         Q --> R[生成作品列表页 /works/index.html]
         R --> S[生成友链页面 /friends/index.html]
         S --> T[生成无 JS 索引页 nojs.html]
-        T --> U[生成各子目录页面<br>（about, archive, stats, ...）]
+        T --> U[生成各子目录页面<br>（about, timeline, stats, ...）]
         U --> V[调用 Vite 构建 TypeScript → JavaScript]
         V --> W[压缩并复制 CSS]
         W --> X[复制 assets 素材（排除 source）]
@@ -155,7 +155,7 @@ flowchart TD
         P1{页面类型判断} --> P2[index 首页<br>initHomePage]
         P1 --> P3[articles 列表<br>initSearchPage]
         P1 --> P4[works 列表<br>initSearchPage]
-        P1 --> P5[archive 归档<br>initArchivePage]
+        P1 --> P5[timeline 归档<br>initArchivePage]
         P1 --> P6[stats 统计<br>initStatsPage]
         P1 --> P7[friends 友链<br>initFriendsPage]
         P1 --> P8[about 关于<br>initAboutPage]
@@ -245,7 +245,7 @@ flowchart TD
 │   ├── js/                      # JavaScript/TypeScript 源码
 │   │   ├── core/                # 核心工具（配置、存储、页面管理器基类）
 │   │   ├── router/              # 无刷新路由与导航
-│   │   ├── pages/               # 各页面管理器（home, article, archive, stats, friends, about）
+│   │   ├── pages/               # 各页面管理器（home, article, timeline, stats, friends, about）
 │   │   ├── ui/                  # UI 组件（光标、图片查看器、主题切换、跳转弹窗、按钮管理）
 │   │   ├── data/                # 数据处理（Worker、设置、Service Worker）
 │   │   ├── vendor/              # 第三方库（音乐播放器）
@@ -255,7 +255,7 @@ flowchart TD
 │   ├── articles/                # 文章详情页 (HTML)
 │   ├── json/                    # 所有 JSON 数据（articles.json, works.json, statistics.json 等）
 │   ├── css/, js/, assets/       # 静态资源（压缩/合并后）
-│   ├── index.html, 404.html, about/, contact/, stats/, archive/, friends/, settings/
+│   ├── index.html, 404.html, about/, contact/, stats/, timeline/, friends/, settings/
 │   └── ...
 ├── package.json, vite.config.ts # 前端构建配置
 └── README.md
@@ -319,7 +319,7 @@ flowchart TD
   - 复制 `assets/`（排除 `source/`, `avatars/`, `js/`, `css/` 等）。
   - 复制 `favicon.ico`、`robots.txt`、`CNAME` 等。
   - 复制 `works/` 目录（排除 `metadata.json`）到 `dist/works/` 供作品子页面使用。
-- **子目录页面**：将 `templates/` 中的 `about.html`, `archive.html`, `stats.html` 等复制到 `dist/` 对应子目录作为 `index.html`，保持干净 URL。
+- **子目录页面**：将 `templates/` 中的 `about.html`, `timeline.html`, `stats.html` 等复制到 `dist/` 对应子目录作为 `index.html`，保持干净 URL。
 
 ---
 
@@ -332,7 +332,7 @@ flowchart TD
 3. **主题初始化**：读取存储的主题偏好，若无则根据时段自动选择（6:00-18:00 浅色，其余深色）。
 4. **加载导航栏与页脚**：通过 `navbar-manager.ts` 和 `loadFooter()` 动态加载 HTML 片段。
 5. **启动路由**：启用 `enableAjaxNavigation`，拦截内部链接点击，使用 `fetchAndReplaceContent` 无刷新切换页面。
-6. **页面管理器调度**：根据当前路径，动态导入对应页面管理器（`home-manager`, `article`, `archive`, `stats`, `friends`, `about` 等）。
+6. **页面管理器调度**：根据当前路径，动态导入对应页面管理器（`home-manager`, `article`, `timeline`, `stats`, `friends`, `about` 等）。
 7. **初始化全局 UI**：自定义光标、外链拦截（基于 `jump-dialog` 通用弹窗）、滚动揭示、图片查看器、音乐播放器（空闲时加载）。
 8. **注册 Service Worker**（生产环境）。
 

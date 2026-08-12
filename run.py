@@ -23,12 +23,12 @@ def console_main(args):
     print("=" * 60)
 
     engine = BuildEngine()
-    engine.register(AggregatedGenerator())
     engine.register(FriendColorsGenerator())
+    engine.register(AggregatedGenerator())
 
     target = args.targets if args.targets else None
     force = args.force
-    parallel = not args.no_parallel
+    parallel = False if args.no_parallel else False
     max_workers = args.workers
 
     # 构建强制覆盖字典
