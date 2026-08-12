@@ -6,210 +6,184 @@
     <meta name="description" content="高新炀的小站 · 隐私政策 — 透明、安全、最小化的数据保护承诺。" />
     <title>隐私政策 · 高新炀的小站</title>
     <link rel="stylesheet" href="/css/main.css" />
-
     <style>
         .privacy-header {
-            margin-bottom: 2.5rem;
             text-align: center;
+            margin-bottom: 1.2rem;
         }
         .privacy-header h1 {
-            margin-bottom: 0.5rem;
+            margin-bottom: 0.2rem;
             border: none;
         }
         .last-updated {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            font-size: var(--font-size-small);
+            display: inline-block;
+            font-size: var(--font-size-xs);
             color: var(--text-secondary);
             background: var(--surface-color-secondary);
-            padding: 4px 12px;
+            padding: 2px 14px;
             border-radius: var(--radius-full);
-            margin-bottom: 1rem;
+            border: 1px solid var(--border-color);
         }
-        .quick-nav {
-            display: flex;
-            justify-content: center;
-            flex-wrap: wrap;
-            gap: 8px 16px;
-            font-size: 0.9rem;
-            margin-top: 1rem;
-        }
-        .quick-nav a {
-            color: var(--text-secondary);
-            transition: color var(--transition-fast);
-            position: relative;
-        }
-        .quick-nav a:hover {
-            color: var(--accent-color);
-        }
-        .quick-nav a::after {
-            display: none;
-        }
-
-        .privacy-section {
+        .privacy-card {
             background: var(--surface-color);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-lg);
-            padding: 2rem;
-            margin-bottom: 1.5rem;
+            padding: 1rem 1.2rem;
+            margin-bottom: 0.8rem;
             box-shadow: var(--shadow-sm);
-            transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+            transition: background var(--transition-normal),
+                border-color var(--transition-normal),
+                box-shadow var(--transition-normal);
         }
-        .privacy-section:hover {
-            box-shadow: var(--shadow-md);
-            transform: translateY(-2px);
+        .privacy-card h2 {
+            font-size: 1rem;
+            margin: 0 0 0.4rem 0;
+            border: none;
+            color: var(--text-primary);
+            display: inline-block;
+            padding-bottom: 0;
         }
-
-        .privacy-section h2 {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-top: 0;
-            margin-bottom: 1.2rem;
-            font-size: var(--font-size-h3);
-            border-bottom: none;
-        }
-        .privacy-section h2::after {
+        .privacy-card h2::after {
             display: none;
         }
-        .privacy-section h2 i {
-            color: var(--accent-color);
-            font-size: 1.2em;
-        }
-
-        .privacy-section p, 
-        .privacy-section li {
+        .privacy-card p,
+        .privacy-card li,
+        .privacy-card dd {
+            font-size: 0.88rem;
+            line-height: 1.6;
             color: var(--text-secondary);
-            line-height: 1.7;
-            margin-bottom: 0.8rem;
+            margin: 0;
         }
-        .privacy-section ul {
-            padding-left: 1.2em;
+        .privacy-card ul {
+            padding-left: 1.2rem;
+            margin: 0.2rem 0;
         }
-        .privacy-section code {
-            background: var(--code-bg);
-            color: var(--code-color);
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 0.85em;
-            font-family: var(--font-mono);
-        }
-
-        .info-grid {
+        .data-dl {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-            margin-top: 1rem;
+            gap: 0.4rem;
+            margin-top: 0.3rem;
         }
-        .info-item {
-            background: var(--surface-color-secondary);
-            padding: 1.2rem;
+        .data-dl dt {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .data-dl dd {
+            margin: 0;
+            padding-left: 0;
+            font-size: 0.82rem;
+        }
+        .pledge {
+            background: rgba(var(--accent-rgb), 0.06);
+            border: 1px solid rgba(var(--accent-rgb), 0.12);
             border-radius: var(--radius-md);
-            border: 1px solid var(--border-light);
-        }
-
-        .info-item h3 {
-            margin-top: 0;
-            font-size: 1rem;
-            color: var(--text-color);
+            padding: 0.4rem 0.8rem;
+            font-size: 0.88rem;
+            margin-bottom: 0.6rem;
             display: flex;
             align-items: center;
             gap: 8px;
+            flex-wrap: wrap;
         }
-        .info-item p {
-            font-size: 0.9rem;
-            margin-bottom: 0;
-        }
-
-        .badge-notice {
-            background: rgba(var(--accent-rgb), 0.08);
-            border: 1px solid rgba(var(--accent-rgb), 0.15);
-            color: var(--text-color);
-            padding: 1rem 1.5rem;
-            border-radius: var(--radius-md);
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            margin-bottom: 1rem;
-        }
-        .badge-notice i {
+        .pledge strong {
             color: var(--accent-color);
-            font-size: 1.2rem;
-            margin-top: 2px;
+            white-space: nowrap;
         }
-        .badge-notice strong {
-            color: var(--accent-color);
-            display: block;
-            margin-bottom: 4px;
-        }
-
-        .service-list {
-            list-style: none;
-            padding: 0;
+        .service-tags {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 6px;
+            margin: 0.3rem 0;
         }
-        .service-item {
-            display: inline-flex;
-            align-items: center;
-            background: var(--surface-color-secondary);
-            border: 1px solid var(--border-color);
-            padding: 6px 14px;
-            border-radius: var(--radius-full);
-            font-size: 0.85rem;
-            color: var(--text-secondary);
-            transition: all var(--transition-fast);
-        }
-        .service-item:hover {
-            border-color: var(--accent-color);
-            color: var(--accent-color);
-            background: rgba(var(--accent-rgb), 0.05);
-            transform: translateY(-2px);
-        }
-        .service-badge {
+        .service-tags .tag b {
             background: var(--accent-color);
             color: #fff;
-            font-size: 0.7rem;
-            font-weight: 600;
-            padding: 2px 8px;
-            border-radius: 4px;
-            margin-right: 8px;
+            font-size: 0.55rem;
+            padding: 1px 6px;
+            border-radius: 3px;
             text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            margin-right: 2px;
         }
-        [data-theme="dark"] .service-badge {
+        [data-theme="dark"] .service-tags .tag b {
             color: #14141a;
         }
-
-        .privacy-footer-note {
-            margin-top: 3rem;
-            padding-top: 1.5rem;
+        .meta-line {
+            font-size: 0.78rem;
+            color: var(--text-secondary);
+            opacity: 0.8;
+            margin-top: 0.3rem;
+        }
+        .privacy-footer {
+            margin-top: 0.6rem;
+            padding-top: 0.6rem;
             border-top: 1px solid var(--border-light);
             text-align: center;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             color: var(--text-secondary);
         }
-        .privacy-footer-note a {
+        .privacy-footer a {
             color: var(--accent-color);
+            text-decoration: none;
         }
-
-        @media (max-width: 768px) {
-            .privacy-section {
-                padding: 1.5rem;
+        .privacy-footer a:hover {
+            color: var(--accent-light);
+        }
+        @media (max-width: 480px) {
+            .privacy-card {
+                padding: 0.8rem;
             }
-            .info-grid {
-                grid-template-columns: 1fr;
+            .pledge {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
             }
-            .quick-nav {
-                font-size: 0.8rem;
+            .pledge strong {
+                white-space: normal;
+            }
+        }
+        @media (min-width: 481px) {
+            .privacy-card {
+                padding: 1.2rem 1.6rem;
+            }
+            .service-tags {
+                gap: 8px;
+            }
+            .service-tags .tag {
+                padding: 4px 14px;
+            }
+        }
+        @media (min-width: 768px) {
+            .privacy-card {
+                padding: 1.4rem 2rem;
+                margin-bottom: 1rem;
+            }
+            .privacy-card p,
+            .privacy-card li,
+            .privacy-card dd {
+                font-size: 0.92rem;
+            }
+            .data-dl {
+                gap: 0.6rem;
+            }
+            .data-dl dt {
+                font-size: 0.9rem;
+            }
+            .data-dl dd {
+                font-size: 0.85rem;
+            }
+            .pledge {
+                padding: 0.5rem 1rem;
+                font-size: 0.92rem;
             }
         }
     </style>
 </head>
-
 <body>
-
     <div id="loading-overlay" role="status" aria-label="页面加载中">
         <div class="loading-log"><div>[START] 正在等待 JavaScript，这可能需要几秒</div></div>
         <div class="loading-glow"></div>
@@ -219,128 +193,60 @@
     <div id="navbar-placeholder"></div>
 
     <div id="router-view">
-        <main class="container" style="animation: fadeIn 0.5s ease forwards;">
-            
+        <main class="container" style="animation: fadeIn 0.4s ease forwards;">
+
             <header class="privacy-header">
                 <h1>隐私政策</h1>
-                <div class="last-updated">
-                    <i class="far fa-calendar-alt"></i> 
-                    <span>最后更新：<strong>2026年6月18日</strong></span>
-                </div>
-                <nav class="quick-nav">
-                    <a href="#commitment">核心承诺</a>
-                    <a href="#collection">信息收集</a>
-                    <a href="#cookies">Cookie 控制</a>
-                    <a href="#thirdparty">第三方服务</a>
-                    <a href="#security">数据安全</a>
-                    <a href="#rights">用户权利</a>
-                </nav>
+                <div class="last-updated">更新于 2026年6月18日</div>
             </header>
 
-            <section id="commitment" class="privacy-section">
-                <h2><i class="fas fa-shield-alt"></i> 核心承诺</h2>
-                <div class="badge-notice">
-                    <i class="fas fa-check-circle"></i>
+            <section class="privacy-card">
+                <div class="pledge">
+                    <strong>不出售、不交易、不泄露用户数据，</strong>
+                    <span>仅用于改善体验与安全。</span>
+                </div>
+                <dl class="data-dl">
                     <div>
-                        <strong>我们不会出售、交易或非法披露您的个人信息。</strong>
-                        所有数据处理均以提升浏览体验、保障网站安全为目的。
+                        <dt>匿名统计</dt>
+                        <dd>vercount (PV/UV) 无个人标识；Clarity 热图经同意后加载。</dd>
                     </div>
+                    <div>
+                        <dt>评论内容</dt>
+                        <dd>Twikoo 存储昵称、邮箱（选填）及正文，永久保存直至删除。</dd>
+                    </div>
+                    <div>
+                        <dt>本地存储</dt>
+                        <dd>经同意后使用 localStorage 保存主题/缓存，仅存于您的设备。</dd>
+                    </div>
+                </dl>
+            </section>
+
+            <section class="privacy-card">
+                <h2>存储、第三方与您的权利</h2>
+                <p><strong>不设跨页 Cookie</strong>。拒绝同意将禁用 localStorage 并阻止 Clarity 加载；您可随时通过浏览器清除本地数据。</p>
+
+                <div class="service-tags">
+                    <span class="tag"><b>vercount</b>计数</span>
+                    <span class="tag"><b>Clarity</b>分析</span>
+                    <span class="tag"><b>Twikoo</b>评论</span>
+                    <span class="tag"><b>APlayer</b>音乐</span>
                 </div>
-                <p>本站采取「最小必要」原则收集数据。您可以随时通过浏览器设置清除本地数据，这不会影响您阅读文章或浏览作品。</p>
-            </section>
+                <p class="meta-line">以上服务均无跨站追踪与广告联盟。Clarity 数据由 Microsoft 保留约12个月。</p>
 
-            <section id="collection" class="privacy-section">
-                <h2><i class="fas fa-database"></i> 一、我们收集的信息</h2>
-                <div class="info-grid">
-                    <div class="info-item">
-                        <h3><i class="fas fa-chart-bar"></i> 匿名访问数据</h3>
-                        <p><strong>vercount</strong>：聚合统计页面浏览量 (PV) 和独立访客 (UV)，<em>不包含个人身份标识</em>。</p>
-                        <p><strong>Microsoft Clarity</strong>：仅在您<strong>同意</strong>后加载，收集匿名行为数据（点击、滚动热图），帮助改进网站。</p>
-                    </div>
-                    <div class="info-item">
-                        <h3><i class="fas fa-comments"></i> 评论互动</h3>
-                        <p>使用 Twikoo 系统。您填写的昵称、邮箱（选填）及评论内容会被存储。</p>
-                    </div>
-                    <div class="info-item">
-                        <h3><i class="fas fa-save"></i> 本地存储</h3>
-                        <p>在您<strong>同意</strong>后，使用 <code>localStorage</code> 存储主题偏好、文章缓存、搜索条件等。数据完全存于您的设备本地。</p>
-                    </div>
-                </div>
-            </section>
-
-            <section id="cookies" class="privacy-section">
-                <h2><i class="fas fa-cookie-bite"></i> 二、Cookie 与本地存储的控制</h2>
-                <p>本站<strong>不主动设置传统跨页追踪 Cookie</strong>，所有持久化数据均使用 <code>localStorage</code>，且必须经您明确同意。</p>
-                <ul>
-                    <li><strong>同意</strong>：启用本地存储，保存个性化设置，加载 Clarity 优化体验。</li>
-                    <li><strong>拒绝</strong>：禁用本地存储，清除已有数据，Clarity 不加载，不影响核心阅读功能。</li>
-                </ul>
-                <p>您可随时通过浏览器清除 <code>localStorage</code> 重置同意状态。</p>
-            </section>
-
-            <section id="thirdparty" class="privacy-section">
-                <h2><i class="fas fa-plug"></i> 三、我们集成的第三方服务</h2>
-                <p>以下服务有助于提升网站性能与体验：</p>
-                <ul class="service-list">
-                    <li class="service-item"><span class="service-badge">vercount</span> 匿名计数器</li>
-                    <li class="service-item"><span class="service-badge">Clarity</span> 行为分析</li>
-                    <li class="service-item"><span class="service-badge">Twikoo</span> 评论系统</li>
-                    <li class="service-item"><span class="service-badge">APlayer（改版）</span> 音乐播放器</li>
-                    <li class="service-item"><span class="service-badge">SW</span> 静态缓存</li>
-                </ul>
-                <p style="margin-top: 1rem; font-size: 0.9rem; color: var(--text-secondary);">
-                    <i class="fas fa-info-circle"></i> 本站未使用任何跨站追踪分析工具（如 Google Analytics），不参与广告联盟。
-                </p>
-            </section>
-
-            <section id="security" class="privacy-section">
-                <h2><i class="fas fa-lock"></i> 四、数据安全与保留期限</h2>
-                <ul>
-                    <li><strong>本地存储</strong>：完全存于设备，可随时清除。</li>
-                    <li><strong>评论数据</strong>：永久保存于 Twikoo 数据库，可自行或联系站长删除。</li>
-                    <li><strong>vercount统计</strong>：聚合数据，无法关联个人。</li>
-                    <li><strong>Clarity 数据</strong>：Microsoft 保留约 12 个月，您可自行退出。</li>
-                    <li><strong>传输安全</strong>：全站 HTTPS，请勿在评论中发送敏感信息。</li>
+                <ul style="margin-top:0.4rem;">
+                    <li><strong>知情与删除</strong>：本政策公开透明；评论可随时自行或联系删除。</li>
+                    <li><strong>拒绝跟踪</strong>：全站尊重 DNT (Do Not Track) 信号。</li>
+                    <li><strong>传输安全</strong>：全站 HTTPS，请勿提交敏感个人信息。</li>
                 </ul>
             </section>
 
-            <section id="rights" class="privacy-section">
-                <h2><i class="fas fa-user-check"></i> 五、您享有的权利</h2>
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
-                    <div>
-                        <h3>知情权</h3>
-                        <p>本政策透明公开，您可随时查阅。</p>
-                    </div>
-                    <div>
-                        <h3>删除评论</h3>
-                        <p>可随时删除。</p>
-                    </div>
-                    <div>
-                        <h3>拒绝跟踪</h3>
-                        <p>开启浏览器 DNT 信号，Clarity 会遵循。</p>
-                    </div>
-                </div>
-                <div class="badge-notice" style="margin-top: 1.5rem; background: var(--surface-color-secondary); border-color: var(--border-color);">
-                    <i class="fas fa-envelope-open-text"></i>
-                    <div>
-                        行使权利或有疑问，请发送邮件至 <strong>gao_xinyang@foxmail.com</strong>，我们会在合理时间内回复。
-                    </div>
-                </div>
-            </section>
-
-            <section class="privacy-section">
-                <h2><i class="fas fa-child"></i> 六、未成年人保护</h2>
-                <p>若您未满 14 周岁，请在父母指导下合理使用评论功能。我们不会故意收集未成年人个人信息，如发现可联系删除。</p>
-            </section>
-
-            <section class="privacy-section">
-                <h2><i class="fas fa-sync-alt"></i> 七、隐私政策的更新</h2>
-                <p>本政策可能因功能迭代或法律法规变化而修订。重大变更会通过网站公告或 Cookie 横幅通知。修订后自发布之日起生效。</p>
-                <p><strong>历史版本：</strong> 2026年5月4日（初版），2026年5月10日（第二版），2026年6月18日（第三版），2026年7月28日（当前）</p>
-                
-                <div class="privacy-footer-note">
-                    <i class="far fa-comment-dots"></i> 反馈或建议，欢迎通过 <a href="/contact/">留言板</a> 或邮箱沟通。<br />
-                    <span style="display: block; margin-top: 8px; opacity: 0.7;">© 2026 高新炀的小站</span>
+            <section class="privacy-card">
+                <h2>更新与联系</h2>
+                <p>修订自发布之日起生效，重大变更将公告通知。</p>
+                <p class="meta-line">历史版本：2026.5.4 · 2026.5.10 · 2026.6.18 · 2026.7.28</p>
+                <div class="privacy-footer">
+                    <a href="/contact/">留言</a> | gao_xinyang@foxmail.com <br />
+                    <span style="display:block; margin-top:4px; opacity:0.6;">© 2026 高新炀的小站</span>
                 </div>
             </section>
 
@@ -348,9 +254,9 @@
     </div>
 
     <div id="pageTransition" class="page-transition"></div>
+
     <div id="footer-placeholder"></div>
 
-    <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>
     <script src="/js/vendor/vercount.min.js" defer></script>
     <script src="/js/entry/main.js" type="module"></script>
 
