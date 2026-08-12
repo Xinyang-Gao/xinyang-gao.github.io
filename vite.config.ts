@@ -17,7 +17,6 @@ export default defineConfig({
     rollupOptions: {
       input: {
         'js/entry/main': resolve(__dirname, 'src/js/entry/main.ts'),
-        'js/standalone/changelog': resolve(__dirname, 'src/js/standalone/changelog.ts'),
         'js/standalone/404': resolve(__dirname, 'src/js/standalone/404.ts'),
         'js/data/sw': resolve(__dirname, 'src/js/data/sw.js'),
         'js/data/settings': resolve(__dirname, 'src/js/data/settings.ts'),

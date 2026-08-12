@@ -498,15 +498,6 @@
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.archive-empty {
-  text-align: center;
-  padding: 36px 20px;
-  background: var(--surface-color-secondary);
-  border-radius: var(--radius-lg);
-  border: 1px dashed var(--border-color);
-  color: var(--text-secondary);
-}
-
 /* ---------- 工具类 ---------- */
 .text-center { text-align: center; }
 .mt-0 { margin-top: 0; }

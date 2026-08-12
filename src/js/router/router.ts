@@ -316,9 +316,9 @@ function registerDefaultPages(): void {
     return initSearchPage('works', fn) as any;
   });
 
-  PageManagerRegistry.register('archive', async (fn) => {
-    const { initArchivePage } = await import('/js/pages/archive.js');
-    return initArchivePage(fn) as any;
+  PageManagerRegistry.register('timeline', async (fn) => {
+    const { initTimelinePage } = await import('/js/pages/timeline.js');
+    return initTimelinePage(fn) as any;
   });
 
   PageManagerRegistry.register('stats', async () => {

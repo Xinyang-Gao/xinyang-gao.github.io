@@ -13,10 +13,10 @@ const NAV_LINKS: ReadonlyArray<{ href: string; page: string; text: string }> = [
   { href: '/', page: 'index', text: '首页' },
   { href: '/about/', page: 'about', text: '关于' },
   { href: '/articles/', page: 'articles', text: '文章' },
-  { href: '/archive/', page: 'archive', text: '归档' },
   { href: '/works/', page: 'works', text: '作品' },
   { href: '/friends/', page: 'friends', text: '友链' },
   { href: '/contact/', page: 'contact', text: '留言板' },
+  { href: '/timeline/', page: 'timeline', text: '时间线' },
 ];
 
 interface NavbarElements {

@@ -40,10 +40,9 @@ STATISTICS_JSON = JSON_OUTPUT_DIR / "statistics.json"
 # 需要从模板生成到子目录的页面
 PAGE_TEMPLATES = {
     "about.html": "about",
-    "archive.html": "archive",
+    "timeline.html": "timeline",
     "stats.html": "stats",
     "contact.html": "contact",
-    "changelog.html": "changelog",
     "privacy.html": "privacy",
 }
 
@@ -325,7 +324,7 @@ class AggregatedGenerator(OutputGenerator):
             "/about/": {"changefreq": "weekly", "priority": "0.8"},
             "/articles/": {"changefreq": "daily", "priority": "0.9"},
             "/works/": {"changefreq": "weekly", "priority": "0.8"},
-            "/archive/": {"changefreq": "weekly", "priority": "0.7"},
+            "/timeline/": {"changefreq": "weekly", "priority": "0.7"},
             "/stats/": {"changefreq": "weekly", "priority": "0.6"},
             "/settings/": {"changefreq": "monthly", "priority": "0.5"},
             "/contact/": {"changefreq": "monthly", "priority": "0.5"},
