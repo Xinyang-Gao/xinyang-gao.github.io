@@ -1,36 +1,31 @@
-/* ========== /css/pages/stats.css ========== */
-/* 统计页面专用样式，兼容明暗主题 */
+/* /css/pages/stats.css */
+/* 现代统计仪表板样式，遵循主站设计令牌 */
 
-.stats-main-area {
+.stats-root {
     max-width: 1400px;
     margin: calc(var(--nav-height) + 30px) auto 60px;
     padding: 0 24px;
-}
-
-.stats-container {
-    background: transparent;
-    box-shadow: none;
-    padding: 0;
-    animation: fadeIn 0.4s ease;
+    animation: fadeIn 0.5s ease;
 }
 
 .stats-hero {
     text-align: center;
-    margin-bottom: 2.5rem;
+    margin-bottom: 2.8rem;
 }
 
 .stats-eyebrow {
-    font-size: 0.85rem;
-    letter-spacing: 2px;
+    font-size: 0.8rem;
+    letter-spacing: 3px;
     text-transform: uppercase;
     color: var(--accent-color);
-    font-weight: 500;
-    margin-bottom: 0.5rem;
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+    display: block;
 }
 
 .stats-hero h1 {
-    font-size: 2.6rem;
-    margin: 0.2rem 0 0.5rem;
+    font-size: 2.8rem;
+    margin: 0.2rem 0 0.4rem;
     background: linear-gradient(135deg, var(--accent-color), var(--accent-light));
     background-clip: text;
     -webkit-background-clip: text;
@@ -44,39 +39,39 @@
     margin: 0 auto;
 }
 
-/* 指标卡片网格 */
+/* KPI 卡片网格 */
 .stats-cards-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: 1.2rem;
-    margin-bottom: 2.4rem;
+    margin-bottom: 2.8rem;
 }
 
-.stat-card-item {
+.stat-card {
     background: var(--surface-color);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-xl);
-    padding: 1.2rem 0.8rem;
+    padding: 1.4rem 0.8rem;
     text-align: center;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
     box-shadow: var(--shadow-sm);
     backdrop-filter: blur(2px);
+    cursor: default;
 }
 
-.stat-card-item:hover {
-    transform: translateY(-4px);
+.stat-card:hover {
+    transform: translateY(-6px);
     border-color: var(--accent-light);
     box-shadow: var(--shadow-md);
 }
 
 .stat-card-icon {
     font-size: 2rem;
-    color: var(--accent-color);
-    margin-bottom: 0.6rem;
+    margin-bottom: 0.4rem;
 }
 
 .stat-card-number {
-    font-size: 2rem;
+    font-size: 2.2rem;
     font-weight: 800;
     line-height: 1.2;
     color: var(--accent-color);
@@ -86,32 +81,30 @@
 .stat-card-label {
     font-size: 0.85rem;
     color: var(--text-secondary);
-    letter-spacing: 0.3px;
-    margin-top: 0.3rem;
+    margin-top: 0.2rem;
 }
 
 .stat-card-sub {
     font-size: 0.7rem;
     color: var(--text-secondary);
-    opacity: 0.75;
+    opacity: 0.7;
 }
 
-/* 图表网格 2列布局 */
+/* 图表网格 */
 .charts-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
     gap: 1.8rem;
-    margin-bottom: 2.5rem;
+    margin-bottom: 2.8rem;
 }
 
 .chart-card {
     background: var(--surface-color);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-xl);
-    padding: 1.2rem 1rem 1rem 1rem;
-    transition: all 0.2s;
+    padding: 1.2rem 1rem 0.8rem;
     box-shadow: var(--shadow-sm);
-    backdrop-filter: blur(2px);
+    transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .chart-card:hover {
@@ -121,22 +114,20 @@
 
 .chart-header {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: 0.6rem;
-    flex-wrap: wrap;
-    margin-bottom: 1rem;
+    margin-bottom: 0.8rem;
     border-left: 3px solid var(--accent-color);
     padding-left: 0.8rem;
 }
 
-.chart-header i {
-    color: var(--accent-color);
+.chart-icon {
     font-size: 1.2rem;
 }
 
 .chart-header h3 {
     margin: 0;
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     font-weight: 600;
     color: var(--text-color);
 }
@@ -145,132 +136,292 @@
     font-size: 0.7rem;
     color: var(--text-secondary);
     margin-left: auto;
+    background: var(--surface-color-secondary);
+    padding: 0.2rem 0.8rem;
+    border-radius: 40px;
 }
 
 .chart-container {
     position: relative;
     width: 100%;
-    min-height: 260px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    min-height: 240px;
 }
 
-canvas {
-    max-height: 260px;
+.chart-container canvas {
+    max-height: 240px;
     width: 100%;
 }
 
-/* 洞见卡片 */
-.insight-card .insight-content {
+/* 洞察卡片网格 */
+.insights-grid {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 0.8rem 1rem;
-    padding: 0.8rem 0.2rem;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.8rem;
+    margin-bottom: 2.8rem;
+}
+
+.insight-card {
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    padding: 1.2rem 1.4rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.insight-card h4 {
+    margin: 0 0 0.8rem 0;
+    font-size: 1rem;
+    color: var(--accent-color);
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 0.4rem;
+}
+
+.ranking-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.ranking-list li {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px dashed var(--border-light);
+    padding: 0.5rem 0;
+    font-size: 0.9rem;
+}
+
+.ranking-list li:last-child {
+    border-bottom: none;
 }
 
 .insight-item {
     display: flex;
     justify-content: space-between;
-    align-items: baseline;
-    border-bottom: 1px dashed var(--border-color);
-    padding-bottom: 0.4rem;
+    padding: 0.3rem 0;
+    font-size: 0.9rem;
+    border-bottom: 1px dashed var(--border-light);
+}
+
+.insight-item:last-child {
+    border-bottom: none;
 }
 
 .insight-label {
-    font-size: 0.8rem;
     color: var(--text-secondary);
 }
 
 .insight-item strong {
-    font-size: 1rem;
-    font-weight: 700;
     color: var(--accent-color);
-    font-family: monospace;
+    font-weight: 700;
 }
 
-/* 底部附加面板 */
-.bottom-stats-panel {
+.badge {
+    background: var(--tag-bg);
+    padding: 0.1rem 0.6rem;
+    border-radius: 40px;
+    font-size: 0.7rem;
+    color: var(--text-color);
+}
+
+/* 页脚信息 */
+.stats-footer {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: 1.2rem;
-    margin-top: 1rem;
-    padding: 0.8rem 1rem;
+    gap: 1.5rem;
+    padding: 1rem 1.5rem;
     background: var(--surface-color-secondary);
     border-radius: 60px;
     border: 1px solid var(--border-light);
-}
-
-.info-pill {
-    background: var(--surface-color);
-    padding: 0.4rem 1.2rem;
-    border-radius: 40px;
     font-size: 0.85rem;
-    color: var(--text-color);
-    box-shadow: var(--shadow-sm);
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.info-pill i {
-    color: var(--accent-color);
-}
-
-/* 骨架 / 加载状态 */
-.stat-card-skeleton {
-    background: var(--surface-color);
-    border-radius: var(--radius-lg);
-    padding: 1.5rem;
-    text-align: center;
     color: var(--text-secondary);
 }
 
 /* 响应式 */
-@media (max-width: 880px) {
+@media (max-width: 900px) {
     .charts-grid {
         grid-template-columns: 1fr;
-        gap: 1.5rem;
     }
-    .stats-cards-grid {
-        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    }
-    .stats-hero h1 {
-        font-size: 2rem;
+
+    .insights-grid {
+        grid-template-columns: 1fr 1fr;
     }
 }
 
-@media (max-width: 560px) {
-    .stats-main-area {
+@media (max-width: 600px) {
+    .stats-root {
         padding: 0 16px;
     }
-    .bottom-stats-panel {
+
+    .stats-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .insights-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .stats-footer {
         flex-direction: column;
         align-items: center;
         border-radius: 28px;
     }
-    .insight-card .insight-content {
-        grid-template-columns: 1fr;
+
+    .stat-card-number {
+        font-size: 1.8rem;
     }
 }
-/* ========== 全屏统计页面增强样式 (与上述 style 标签互补, 也可独立) ========== */
-/* 确保卡片内部canvas响应式 */
-.chart-container canvas {
-    max-height: 260px;
+
+.stats-main-area {
+    max-width: 100% !important;
+    margin: var(--nav-height) 0 0 0 !important;
+    padding: 0 !important;
     width: 100%;
 }
-.extra-card .ranking-list li span:first-child {
-    white-space: normal;
-    word-break: break-word;
+
+.stats-container {
+    max-width: 100% !important;
+    padding: 0 20px;
+    margin: 0 auto;
+    background: transparent;
+    box-shadow: none;
 }
-[data-theme="dark"] .extra-card {
+
+@media (min-width: 1600px) {
+    .stats-container {
+        padding: 0 40px;
+    }
+}
+
+.stats-cards-grid {
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.8rem;
+}
+
+.stat-card-item {
+    padding: 1.8rem 0.8rem;
+}
+
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+    gap: 2rem;
+}
+
+.extra-stats-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 1.8rem;
+    margin: 2rem 0;
+}
+
+.extra-card {
+    flex: 1;
+    min-width: 280px;
     background: var(--surface-color);
-    border-color: var(--border-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    padding: 1.4rem 1.6rem;
+    transition: all 0.2s;
+    box-shadow: var(--shadow-sm);
 }
+
+.extra-card:hover {
+    border-color: var(--accent-light);
+    transform: translateY(-3px);
+}
+
+.extra-card h4 {
+    margin: 0 0 0.75rem 0;
+    font-size: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--accent-color);
+    border-left: 3px solid var(--accent-color);
+    padding-left: 12px;
+}
+
+.ranking-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.ranking-list li {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px dashed var(--border-light);
+    padding: 0.6rem 0;
+    font-size: 0.95rem;
+}
+
+.badge-stat {
+    background: var(--tag-bg);
+    padding: 0.2rem 0.6rem;
+    border-radius: 40px;
+    font-size: 0.75rem;
+}
+
+.insight-highlight {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent-color);
+    line-height: 1;
+}
+
+hr {
+    margin: 0.5rem 0;
+}
+
+@media (max-width: 860px) {
+    .charts-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .extra-stats-row {
+        flex-direction: column;
+    }
+
+    .stats-container {
+        padding: 0 16px;
+    }
+}
+
+.stats-hero {
+    text-align: center;
+    margin: 2rem 0 2.5rem 0;
+}
+
 .stats-hero h1 {
-    background: linear-gradient(135deg, var(--accent-color), var(--accent-light));
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
+    font-size: 3rem;
+}
+.stat-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card-icon {
+    position: absolute;
+    right: -5px;
+    bottom: -5px;
+    font-size: 5.5rem;
+    opacity: 0.16;
+    color: var(--accent-color);
+    pointer-events: none;
+    z-index: 0;
+    transform: rotate(3deg) scale(1.1);
+    transition: opacity 0.3s ease;
+}
+
+.stat-card-number,
+.stat-card-label,
+.stat-card-sub {
+    position: relative;
+    z-index: 1;
+}
+
+.stat-card:hover .stat-card-icon {
+    opacity: 0.3;
 }

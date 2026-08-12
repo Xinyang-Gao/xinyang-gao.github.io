@@ -322,8 +322,8 @@ function registerDefaultPages(): void {
   });
 
   PageManagerRegistry.register('stats', async () => {
-    const { FullStatsManager } = await import('/js/pages/stats-manager.js');
-    const mgr = new FullStatsManager();
+    const { StatsManager } = await import('/js/pages/stats-manager.js');
+    const mgr = new StatsManager();
     await mgr.init();
     return mgr;
   });

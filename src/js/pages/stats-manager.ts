@@ -1,5 +1,6 @@
 // /js/pages/stats-manager.ts
-// 全域统计管理器（安全 DOM 操作版）
+// 现代化的统计仪表板管理器
+// 采用数据驱动、组件化设计，支持主题切换与动态加载
 
 import { CONFIG } from '/js/core/core.js';
 import { DataService } from '/js/core/data-service.js';
@@ -26,7 +27,6 @@ interface ArticleItem {
   description?: string;
   category?: string;
   tags?: string[];
-  tag?: string[];
   date?: string;
   last_updated?: string;
   word_count?: number;
@@ -40,7 +40,6 @@ interface WorkItem {
   title?: string;
   description?: string;
   tags?: string[];
-  tag?: string[];
   date?: string;
   [key: string]: unknown;
 }
@@ -63,14 +62,20 @@ interface CodeAnalysisData {
 }
 
 declare const Chart: any;
+declare const window: any;
 
 // ==================== 主类 ====================
-class FullStatsManager {
+export class StatsManager {
   private data: {
     statistics: StatisticsData | null;
     articles: { articles: ArticleItem[] } | null;
     works: { works: WorkItem[] } | null;
     codeAnalysis: CodeAnalysisData | null;
+  } = {
+    statistics: null,
+    articles: null,
+    works: null,
+    codeAnalysis: null,
   };
 
   private articlesList: ArticleItem[] = [];
@@ -79,39 +84,42 @@ class FullStatsManager {
   private initialized = false;
   private themeHandler: ((this: Window, ev: Event) => any) | null = null;
   private uptimeInterval: number | null = null;
+  private container: HTMLElement | null = null;
 
-  constructor() {
-    this.data = {
-      statistics: null,
-      articles: null,
-      works: null,
-      codeAnalysis: null,
-    };
-  }
+  // ---------- 初始化入口 ----------
+  async init(container?: HTMLElement | string): Promise<void> {
+    this.container = typeof container === 'string'
+      ? document.querySelector(container)
+      : container || document.getElementById('stats-root');
 
-  async init(): Promise<void> {
+    if (!this.container) {
+      console.warn('[StatsManager] 容器不存在');
+      return;
+    }
+
+    // 加载 Chart.js（如果未加载）
     await this.loadChartJS();
+
+    // 获取数据
     await this.fetchAllData();
-    this.renderCoreCards();
-    this.renderExtraDetails();
-    this.renderSiteUptime();
-    this.renderAllCharts();
+
+    // 渲染
+    this.renderHero();
+    this.renderKpiCards();
+    this.renderCharts();
+    this.renderInsights();
+    this.renderFooter();
+
+    // 启动运行时间更新
+    this.startUptimeUpdater();
+
+    // 监听主题变化
     this.setupThemeListener();
+
     this.initialized = true;
   }
 
-  // ---- 安全的 DOM 辅助方法 ----
-  private setText(id: string, value: any): void {
-    const el = document.getElementById(id);
-    if (el) el.innerText = value ?? '—';
-  }
-
-  private setHtml(id: string, html: string): void {
-    const el = document.getElementById(id);
-    if (el) el.innerHTML = html;
-  }
-
-  // ---- 加载 Chart.js ----
+  // ---------- 加载 Chart.js ----------
   private loadChartJS(): Promise<void> {
     if (window.Chart) return Promise.resolve();
     return new Promise((resolve, reject) => {
@@ -123,7 +131,7 @@ class FullStatsManager {
     });
   }
 
-  // ---- 数据获取 ----
+  // ---------- 数据获取 ----------
   private async fetchAllData(): Promise<void> {
     const service = DataService.getInstance();
     try {
@@ -138,63 +146,57 @@ class FullStatsManager {
       this.data.works = works;
       this.data.codeAnalysis = codeAnalysis;
     } catch (err) {
-      console.warn('[FullStats] 加载数据失败', err);
-      // 保持已有数据为空对象，防止后续报错
+      console.warn('[StatsManager] 加载数据失败', err);
     }
-
     this.articlesList = this.data.articles?.articles?.filter(a => !a.hidden) || [];
     this.worksList = this.data.works?.works || [];
   }
 
-  // ---- 核心卡片渲染 ----
-  private renderCoreCards(): void {
-    const container = document.getElementById('statsCardsGrid');
-    if (!container) return;
+  // ---------- 安全 DOM 辅助 ----------
+  private setText(selector: string, value: any): void {
+    const el = this.container?.querySelector(selector);
+    if (el) el.textContent = value ?? '—';
+  }
+
+  private setHtml(selector: string, html: string): void {
+    const el = this.container?.querySelector(selector);
+    if (el) el.innerHTML = html;
+  }
+
+  // ---------- 渲染：英雄区 ----------
+  private renderHero(): void {
+    const hero = this.container?.querySelector('.stats-hero');
+    if (!hero) return;
+    const stats = this.data.statistics || {};
+    hero.innerHTML = `
+      <h1>统计</h1>
+      <p class="stats-subhead">
+        基于 ${this.articlesList.length} 篇文章 · ${this.worksList.length} 个作品
+        ${stats.last_updated ? `· 更新于 ${stats.last_updated}` : ''}
+      </p>
+    `;
+  }
+
+  // ---------- 渲染：KPI 卡片 ----------
+  private renderKpiCards(): void {
+    const grid = this.container?.querySelector('.stats-cards-grid');
+    if (!grid) return;
 
     const stats = this.data.statistics || {};
     const code = this.data.codeAnalysis || {};
 
     const totalArticles = stats.total_articles ?? this.articlesList.length;
     const totalWorks = stats.total_works ?? this.worksList.length;
-    const totalWords = stats.total_word_count ?? this.articlesList.reduce((sum, a) => sum + (a.word_count || 0), 0);
+    const totalWords = stats.total_word_count ?? this.articlesList.reduce((s, a) => s + (a.word_count || 0), 0);
     const articleTags = stats.total_article_tags ?? (stats.article_tags?.length ?? 0);
     const workTags = stats.total_work_tags ?? (stats.work_tags?.length ?? 0);
     const totalFiles = code.total_files ?? '—';
     const totalLines = code.non_empty_lines ?? code.total_lines ?? '—';
     const avgWord = totalArticles ? Math.round(totalWords / totalArticles) : 0;
-    const avgTagPerArticle =
-      totalArticles
-        ? (this.articlesList.reduce((sum, a) => sum + (a.tags?.length || 0), 0) / totalArticles).toFixed(1)
-        : '—';
-    const codeDensity = totalFiles !== '—' && totalLines !== '—' && totalFiles > 0 ? Math.round(totalLines / totalFiles) : '—';
 
-    container.innerHTML = `
-      <div class="stat-card-item"><div class="stat-card-icon"><i class="fas fa-newspaper"></i></div><div class="stat-card-number">${totalArticles}</div><div class="stat-card-label">文章总数</div><div class="stat-card-sub">篇</div></div>
-      <div class="stat-card-item"><div class="stat-card-icon"><i class="fas fa-cubes"></i></div><div class="stat-card-number">${totalWorks}</div><div class="stat-card-label">作品总数</div><div class="stat-card-sub">个</div></div>
-      <div class="stat-card-item"><div class="stat-card-icon"><i class="fas fa-feather-alt"></i></div><div class="stat-card-number">${totalWords.toLocaleString()}</div><div class="stat-card-label">总字数</div><div class="stat-card-sub">字</div></div>
-      <div class="stat-card-item"><div class="stat-card-icon"><i class="fas fa-tags"></i></div><div class="stat-card-number">${articleTags}</div><div class="stat-card-label">文章标签</div><div class="stat-card-sub">种</div></div>
-      <div class="stat-card-item"><div class="stat-card-icon"><i class="fas fa-palette"></i></div><div class="stat-card-number">${workTags}</div><div class="stat-card-label">作品标签</div><div class="stat-card-sub">类</div></div>
-      <div class="stat-card-item"><div class="stat-card-icon"><i class="fas fa-folder-tree"></i></div><div class="stat-card-number">${typeof totalFiles === 'number' ? totalFiles.toLocaleString() : totalFiles}</div><div class="stat-card-label">源文件总数</div><div class="stat-card-sub">个</div></div>
-      <div class="stat-card-item"><div class="stat-card-icon"><i class="fas fa-code"></i></div><div class="stat-card-number">${typeof totalLines === 'number' ? totalLines.toLocaleString() : totalLines}</div><div class="stat-card-label">代码行数</div><div class="stat-card-sub">非空行</div></div>
-      <div class="stat-card-item"><div class="stat-card-icon"><i class="fas fa-chart-line"></i></div><div class="stat-card-number">${avgWord.toLocaleString()}</div><div class="stat-card-label">篇均字数</div><div class="stat-card-sub">深度</div></div>
-      <div class="stat-card-item"><div class="stat-card-icon"><i class="fas fa-layer-group"></i></div><div class="stat-card-number">${avgTagPerArticle}</div><div class="stat-card-label">篇均标签数</div><div class="stat-card-sub">维度</div></div>
-      <div class="stat-card-item"><div class="stat-card-icon"><i class="fas fa-microchip"></i></div><div class="stat-card-number">${codeDensity}</div><div class="stat-card-label">代码密度</div><div class="stat-card-sub">行/文件</div></div>
-    `;
-
-    this.setText('extraTotalWords', totalWords.toLocaleString());
-  }
-
-  // ---- 额外详情 ----
-  private renderExtraDetails(): void {
-    const sortedByWords = [...this.articlesList]
-      .sort((a, b) => (b.word_count || 0) - (a.word_count || 0))
-      .slice(0, 5);
-    const listContainer = document.getElementById('longestArticlesList');
-    if (listContainer) {
-      listContainer.innerHTML = sortedByWords.length
-        ? sortedByWords.map(art => `<li><span>${art.title || '无题'}</span><span>${(art.word_count || 0).toLocaleString()}字</span></li>`).join('')
-        : '<li>暂无数据</li>';
-    }
+    // 计算平均标签数
+    const totalTagCount = this.articlesList.reduce((s, a) => s + (a.tags?.length || 0), 0);
+    const avgTag = totalArticles ? (totalTagCount / totalArticles).toFixed(1) : '—';
 
     // 阅读总时长
     let totalReadMins = 0;
@@ -207,109 +209,119 @@ class FullStatsManager {
         totalReadMins += Math.ceil(art.word_count / 300);
       }
     }
-    this.setText('totalReadTime', totalReadMins > 0 ? `${totalReadMins} 分钟 (≈${(totalReadMins / 60).toFixed(1)}h)` : '—');
 
-    // 代码规模
-    const code = this.data.codeAnalysis || {};
-    this.setText('codeTotalFiles', code.total_files);
-    this.setText('codeNonEmptyLines', code.non_empty_lines ?? code.total_lines);
-    this.setText('codeTotalSize', code.total_size_bytes ? (code.total_size_bytes / 1024).toFixed(1) : '—');
-
-    const extensions = code.by_extension || [];
-    const topExt = extensions.length ? extensions.sort((a, b) => b.count - a.count)[0].extension : '—';
-    this.setText('codeTopExt', topExt === 'no_extension' ? '无后缀' : topExt);
-
-    const extAvg = extensions
-      .map((ext) => ({
-        name: ext.extension === 'no_extension' ? '无后缀' : ext.extension,
-        avg: ext.total_lines ? Math.round(ext.total_lines / ext.count) : 0,
-      }))
-      .sort((a, b) => b.avg - a.avg)
-      .slice(0, 3);
-    const avgHtml = extAvg.map(e => `<span class="badge-stat">${e.name}</span> ${e.avg}行/文件`).join(' &nbsp; ');
-    this.setHtml('extAvgLinesList', avgHtml || '—');
-
-    // 作者数量
-    const authors = new Set(this.articlesList.map(a => a.author).filter(Boolean));
-    this.setText('authorCount', authors.size);
-
-    // 最近更新月份
-    const dates = this.articlesList
-      .map(a => (a.date ? new Date(a.date) : null))
-      .filter((d): d is Date => d !== null && !isNaN(d.getTime()));
-    const lastActive = dates.length ? `${dates.reduce((max, d) => d > max ? d : max).getFullYear()}-${dates.reduce((max, d) => d > max ? d : max).getMonth() + 1}` : '—';
-    this.setText('lastActiveMonth', lastActive);
-
-    const stats = this.data.statistics || {};
-    this.setText('totalUpdateDays', stats.total_update_days);
-    this.setText('statsUpdatedDate', stats.last_updated ? `· 版本 ${stats.version || '—'}  · ${stats.last_updated}` : '');
-    this.setText('snapshotTime', stats.last_updated_full ? new Date(stats.last_updated_full).toLocaleString() : '未知');
-    this.setText('totalArticlesStat', this.articlesList.length);
-    this.setText('totalWorksStat', this.worksList.length);
-  }
-
-  // ---- 站点运行时间 ----
-  private renderSiteUptime(): void {
-    const container = document.getElementById('siteUptimeDisplay');
-    if (!container) return;
-
-    const birth = CONFIG.SITE_BIRTH;
-    const update = () => {
-      const diff = Date.now() - birth.getTime();
-      if (diff <= 0) {
-        container.innerText = '刚刚诞生';
-        return;
-      }
-      const seconds = Math.floor(diff / 1000);
-      const days = Math.floor(seconds / 86400);
-      const hours = Math.floor((seconds % 86400) / 3600);
-      const minutes = Math.floor((seconds % 3600) / 60);
-      const secs = seconds % 60;
-      container.innerText = `${days}天 ${hours}小时 ${minutes}分 ${secs}秒`;
-    };
-
-    update();
-    if (this.uptimeInterval) clearInterval(this.uptimeInterval);
-    this.uptimeInterval = window.setInterval(update, 1000);
-  }
-
-  // ---- 图表渲染 ----
-  private getChartColors() {
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    return {
-      textColor: isDark ? '#eceef2' : '#2c2c2c',
-      gridColor: isDark ? '#3f3f4b' : '#e8e2db',
-      accent: '#b45b63',
-    };
-  }
-
-  private destroyCharts(): void {
-    this.charts.forEach(ch => ch?.destroy());
-    this.charts = [];
-  }
-
-  private renderAllCharts(): void {
-    this.destroyCharts();
-    const configs: Array<[string, (ctx: CanvasRenderingContext2D) => void]> = [
-      ['trendChart', this.renderTrendChart.bind(this)],
-      ['categoryChart', this.renderCategoryChart.bind(this)],
-      ['articleTagsChart', this.renderArticleTagsChart.bind(this)],
-      ['workTagsChart', this.renderWorkTagsChart.bind(this)],
-      ['codeExtensionChart', this.renderCodeExtensionChart.bind(this)],
-      ['wordHistogramChart', this.renderWordHistogram.bind(this)],
-      ['worksYearChart', this.renderWorksYearChart.bind(this)],
-      ['codeLineChart', this.renderCodeLineShareChart.bind(this)],
+    const kpis = [
+      { icon: 'fas fa-file-lines', number: totalArticles, label: '文章总数', sub: '篇' },
+      { icon: 'fas fa-box', number: totalWorks, label: '作品总数', sub: '个' },
+      { icon: 'fas fa-pen-to-square', number: totalWords.toLocaleString(), label: '总字数', sub: '字' },
+      { icon: 'fas fa-tags', number: articleTags, label: '文章标签', sub: '种' },
+      { icon: 'fas fa-palette', number: workTags, label: '作品标签', sub: '类' },
+      { icon: 'fas fa-folder-open', number: typeof totalFiles === 'number' ? totalFiles.toLocaleString() : totalFiles, label: '源文件', sub: '个' },
+      { icon: 'fas fa-code', number: typeof totalLines === 'number' ? totalLines.toLocaleString() : totalLines, label: '代码行数', sub: '非空' },
+      { icon: 'fas fa-chart-line', number: avgWord.toLocaleString(), label: '篇均字数', sub: '深度' },
+      { icon: 'fas fa-bookmark', number: avgTag, label: '篇均标签', sub: '维度' },
+      { icon: 'fas fa-clock', number: totalReadMins > 0 ? `${totalReadMins}min` : '—', label: '阅读总时长', sub: '≈' + (totalReadMins / 60).toFixed(1) + 'h' },
     ];
 
-    for (const [id, renderFn] of configs) {
-      const canvas = document.getElementById(id) as HTMLCanvasElement;
+    grid.innerHTML = kpis.map(k => `
+      <div class="stat-card">
+        <div class="stat-card-icon"><i class="${k.icon}"></i></div>
+        <div class="stat-card-number">${k.number}</div>
+        <div class="stat-card-label">${k.label}</div>
+        <div class="stat-card-sub">${k.sub}</div>
+      </div>
+    `).join('');
+  }
+
+  // ---------- 渲染：图表网格 ----------
+  private renderCharts(): void {
+    const grid = this.container?.querySelector('.charts-grid');
+    if (!grid) return;
+
+    // 定义图表配置
+    const chartDefs: Array<{ id: string; title: string; icon: string; subtitle: string; render: (ctx: CanvasRenderingContext2D) => void }> = [
+      {
+        id: 'trendChart',
+        title: '文章发布趋势',
+        icon: '',
+        subtitle: '月度波动',
+        render: this.renderTrendChart.bind(this),
+      },
+      {
+        id: 'categoryChart',
+        title: '文章分类',
+        icon: '',
+        subtitle: '占比',
+        render: this.renderCategoryChart.bind(this),
+      },
+      {
+        id: 'articleTagsChart',
+        title: '热门文章标签',
+        icon: '',
+        subtitle: 'TOP 10',
+        render: this.renderArticleTagsChart.bind(this),
+      },
+      {
+        id: 'workTagsChart',
+        title: '作品标签云',
+        icon: '',
+        subtitle: '分类',
+        render: this.renderWorkTagsChart.bind(this),
+      },
+      {
+        id: 'codeExtensionChart',
+        title: '代码文件分布',
+        icon: '',
+        subtitle: '按扩展名',
+        render: this.renderCodeExtensionChart.bind(this),
+      },
+      {
+        id: 'wordHistogramChart',
+        title: '文章字数分布',
+        icon: '',
+        subtitle: '区间密度',
+        render: this.renderWordHistogram.bind(this),
+      },
+      {
+        id: 'codeLineChart',
+        title: '代码行数占比',
+        icon: '',
+        subtitle: '非空行',
+        render: this.renderCodeLineShareChart.bind(this),
+      },
+      {
+        id: 'worksYearChart',
+        title: '作品年份分布',
+        icon: '',
+        subtitle: '按年份',
+        render: this.renderWorksYearChart.bind(this),
+      },
+    ];
+
+    // 构建图表容器
+    grid.innerHTML = chartDefs.map(def => `
+      <div class="chart-card">
+        <div class="chart-header">
+          <span class="chart-icon">${def.icon}</span>
+          <h3>${def.title}</h3>
+          <span class="chart-subtitle">${def.subtitle}</span>
+        </div>
+        <div class="chart-container">
+          <canvas id="${def.id}" width="500" height="280"></canvas>
+        </div>
+      </div>
+    `).join('');
+
+    // 渲染图表
+    for (const def of chartDefs) {
+      const canvas = document.getElementById(def.id) as HTMLCanvasElement;
       if (!canvas) continue;
       const ctx = canvas.getContext('2d');
-      if (ctx) renderFn(ctx);
+      if (ctx) def.render(ctx);
     }
   }
 
-  // ---- 各图表渲染函数 ----
+  // ---------- 各图表渲染函数 ----------
   private renderTrendChart(ctx: CanvasRenderingContext2D): void {
     const monthMap = new Map<string, number>();
     for (const art of this.articlesList) {
@@ -329,7 +341,7 @@ class FullStatsManager {
       data: {
         labels,
         datasets: [{
-          label: '发布文章数',
+          label: '发布数',
           data,
           borderColor: accent,
           backgroundColor: 'rgba(180,91,99,0.1)',
@@ -354,13 +366,6 @@ class FullStatsManager {
       },
     });
     this.charts.push(chart);
-
-    if (data.length) {
-      const maxIdx = data.indexOf(Math.max(...data));
-      if (maxIdx !== -1) {
-        document.getElementById('peakMonthLabel')!.innerText = labels[maxIdx] + ` (${data[maxIdx]}篇)`;
-      }
-    }
   }
 
   private renderCategoryChart(ctx: CanvasRenderingContext2D): void {
@@ -372,7 +377,6 @@ class FullStatsManager {
       }
       categories = Array.from(catMap.entries()).map(([name, count]) => ({ name, count }));
     }
-
     const { textColor } = this.getChartColors();
     const chart = new Chart(ctx, {
       type: 'pie',
@@ -413,7 +417,6 @@ class FullStatsManager {
     tags.sort((a, b) => b.count - a.count);
     const top10 = tags.slice(0, 10);
     const { textColor, gridColor, accent } = this.getChartColors();
-
     const chart = new Chart(ctx, {
       type: 'bar',
       data: {
@@ -443,7 +446,6 @@ class FullStatsManager {
       }
       workTags = Array.from(tagMap.entries()).map(([name, count]) => ({ name, count }));
     }
-
     const { textColor } = this.getChartColors();
     const chart = new Chart(ctx, {
       type: 'doughnut',
@@ -471,12 +473,10 @@ class FullStatsManager {
       this.charts.push(new Chart(ctx, { type: 'pie', data: { labels: ['暂无数据'], datasets: [{ data: [1] }] } }));
       return;
     }
-
     let top = exts.sort((a, b) => b.count - a.count).slice(0, 6);
     const others = exts.slice(6).reduce((s, e) => s + e.count, 0);
     if (others) top.push({ extension: '其他', count: others });
     const { textColor } = this.getChartColors();
-
     const chart = new Chart(ctx, {
       type: 'pie',
       data: {
@@ -507,7 +507,6 @@ class FullStatsManager {
       else counts[5]++;
     }
     const { textColor, gridColor, accent } = this.getChartColors();
-
     const chart = new Chart(ctx, {
       type: 'bar',
       data: {
@@ -539,7 +538,6 @@ class FullStatsManager {
     const years = Array.from(yearMap.keys()).sort((a, b) => a - b);
     const counts = years.map(y => yearMap.get(y)!);
     const { textColor, gridColor, accent } = this.getChartColors();
-
     const chart = new Chart(ctx, {
       type: 'bar',
       data: {
@@ -565,14 +563,11 @@ class FullStatsManager {
       this.charts.push(new Chart(ctx, { type: 'doughnut', data: { labels: ['暂无数据'], datasets: [{ data: [1] }] } }));
       return;
     }
-
     let valid = exts.filter(e => (e.non_empty_lines || e.total_lines || 0) > 0);
     if (valid.length === 0) valid = exts;
-
     let top = valid.sort((a, b) => (b.non_empty_lines || 0) - (a.non_empty_lines || 0)).slice(0, 6);
     const others = valid.slice(6).reduce((s, e) => s + (e.non_empty_lines || 0), 0);
     if (others > 0) top.push({ extension: '其他', non_empty_lines: others });
-
     const { textColor } = this.getChartColors();
     const chart = new Chart(ctx, {
       type: 'doughnut',
@@ -601,24 +596,129 @@ class FullStatsManager {
     this.charts.push(chart);
   }
 
-  // ---- 主题监听 ----
+  // ---------- 渲染：洞察卡片 ----------
+  private renderInsights(): void {
+    const container = this.container?.querySelector('.insights-grid');
+    if (!container) return;
+
+    const stats = this.data.statistics || {};
+    const code = this.data.codeAnalysis || {};
+
+    // 最长文章
+    const sortedByWords = [...this.articlesList].sort((a, b) => (b.word_count || 0) - (a.word_count || 0)).slice(0, 5);
+    const topArticlesHtml = sortedByWords.length
+      ? sortedByWords.map(art => `<li><span>${art.title || '无题'}</span><span>${(art.word_count || 0).toLocaleString()}字</span></li>`).join('')
+      : '<li>暂无数据</li>';
+
+    // 代码深度
+    const extensions = code.by_extension || [];
+    const topExt = extensions.length ? extensions.sort((a, b) => b.count - a.count)[0].extension : '—';
+    const extAvg = extensions
+      .map((ext) => ({
+        name: ext.extension === 'no_extension' ? '无后缀' : ext.extension,
+        avg: ext.total_lines ? Math.round(ext.total_lines / ext.count) : 0,
+      }))
+      .sort((a, b) => b.avg - a.avg)
+      .slice(0, 3);
+    const avgHtml = extAvg.map(e => `<span class="badge">${e.name}</span> ${e.avg}行/文件`).join(' &nbsp; ');
+
+    // 作者数量
+    const authors = new Set(this.articlesList.map(a => a.author).filter(Boolean));
+
+    // 最近更新月份
+    const dates = this.articlesList
+      .map(a => (a.date ? new Date(a.date) : null))
+      .filter((d): d is Date => d !== null && !isNaN(d.getTime()));
+    const lastActive = dates.length ? `${dates.reduce((max, d) => d > max ? d : max).getFullYear()}-${dates.reduce((max, d) => d > max ? d : max).getMonth() + 1}` : '—';
+
+    container.innerHTML = `
+      <div class="insight-card">
+        <h4>最长文章 TOP5</h4>
+        <ul class="ranking-list">${topArticlesHtml}</ul>
+      </div>
+      <div class="insight-card">
+        <h4>代码深度</h4>
+        <div class="insight-item"><span class="insight-label">总文件</span><strong>${code.total_files ?? '—'}</strong></div>
+        <div class="insight-item"><span class="insight-label">非空行</span><strong>${(code.non_empty_lines ?? code.total_lines ?? '—').toLocaleString()}</strong></div>
+        <div class="insight-item"><span class="insight-label">总大小</span><strong>${code.total_size_bytes ? (code.total_size_bytes / 1024).toFixed(1) : '—'} KB</strong></div>
+        <div class="insight-item"><span class="insight-label">最多扩展名</span><strong>${topExt === 'no_extension' ? '无后缀' : topExt}</strong></div>
+        <div class="insight-item" style="flex-wrap:wrap;">${avgHtml}</div>
+      </div>
+      <div class="insight-card">
+        <h4>创作活跃度</h4>
+        <div class="insight-item"><span class="insight-label">文章作者</span><strong>${authors.size}</strong></div>
+        <div class="insight-item"><span class="insight-label">最近更新月份</span><strong>${lastActive}</strong></div>
+        <div class="insight-item"><span class="insight-label">总更新天数</span><strong>${stats.total_update_days ?? '—'}</strong></div>
+        <div class="insight-item"><span class="insight-label">站点版本</span><strong>${stats.version ?? '—'}</strong></div>
+        <div class="insight-item"><span class="insight-label">数据快照</span><strong>${stats.last_updated_full ? new Date(stats.last_updated_full).toLocaleString() : '—'}</strong></div>
+      </div>
+    `;
+  }
+
+  // ---------- 渲染：页脚 ----------
+  private renderFooter(): void {
+    const footer = this.container?.querySelector('.stats-footer');
+    if (!footer) return;
+    const birth = CONFIG.SITE_BIRTH;
+    const diff = Date.now() - birth.getTime();
+    const days = Math.floor(diff / 86400000);
+    const hours = Math.floor((diff % 86400000) / 3600000);
+    const mins = Math.floor((diff % 3600000) / 60000);
+    footer.innerHTML = `
+      <span>站点已运行 ${days}天${hours}小时${mins}分</span>
+    `;
+  }
+
+  // ---------- 运行时间更新 ----------
+  private startUptimeUpdater(): void {
+    const footer = this.container?.querySelector('.stats-footer');
+    if (!footer) return;
+    const birth = CONFIG.SITE_BIRTH;
+    const update = () => {
+      const diff = Date.now() - birth.getTime();
+      const days = Math.floor(diff / 86400000);
+      const hours = Math.floor((diff % 86400000) / 3600000);
+      const mins = Math.floor((diff % 3600000) / 60000);
+      const span = footer.querySelector('span:first-child');
+      if (span) span.textContent = `站点运行 ${days}天${hours}小时${mins}分`;
+    };
+    update();
+    if (this.uptimeInterval) clearInterval(this.uptimeInterval);
+    this.uptimeInterval = window.setInterval(update, 60000); // 每分钟更新
+  }
+
+  // ---------- 主题颜色 ----------
+  private getChartColors() {
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    return {
+      textColor: isDark ? '#eceef2' : '#2c2c2c',
+      gridColor: isDark ? '#3f3f4b' : '#e8e2db',
+      accent: '#b45b63',
+    };
+  }
+
+  // ---------- 主题监听 ----------
   private setupThemeListener(): void {
     const handler = () => {
       if (this.initialized) {
         this.destroyCharts();
-        this.renderAllCharts();
+        this.renderCharts();
       }
     };
     window.addEventListener('themeChanged', handler);
     this.themeHandler = handler;
   }
 
-  // ---- 销毁 ----
+  // ---------- 销毁图表 ----------
+  private destroyCharts(): void {
+    this.charts.forEach(ch => ch?.destroy());
+    this.charts = [];
+  }
+
+  // ---------- 销毁管理器 ----------
   destroy(): void {
     this.destroyCharts();
     if (this.themeHandler) window.removeEventListener('themeChanged', this.themeHandler);
     if (this.uptimeInterval) clearInterval(this.uptimeInterval);
   }
 }
-
-export { FullStatsManager, FullStatsManager as StatsManager };
