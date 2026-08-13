@@ -1,424 +1,525 @@
-> 部分文本使用 AIGC 润色
-
-## 1. 项目概述
-
-本项目是一个**静态网站生成器 + 单页应用（SPA）** 的混合体，用于构建个人博客、作品集、友链、留言板、统计看板等功能的现代化网站。  
-核心特点：
-
-- **全自动化构建**：Python 脚本将 Markdown 文章、作品元数据、友链等转换为静态 HTML 和 JSON 数据。
-- **前端 SPA 架构**：基于原生 JavaScript（TypeScript）模块，实现无刷新页面切换、按需加载、本地缓存与 Service Worker 离线支持。
-- **丰富的交互体验**：暗黑模式、自定义光标、全局图片查看器、音乐播放器、动态图表、搜索与标签筛选、阅读进度、通用跳转弹窗等。
-- **开发者友好**：模块化设计，易于扩展新页面、新生成器，支持并行构建和增量更新。
+## 1. 概述
+我的个人网站。
 
 ---
 
-## 2. 技术栈总览
+## 2. 技术栈
 
-| 层级 | 技术选型 |
-|------|----------|
-| **构建系统** | Python 3.9+，依赖 `markdown`、`PyYAML`、`python-dateutil`、`rcssmin` |
-| **前端语言** | TypeScript（主要）、JavaScript（部分传统模块） |
-| **构建工具** | Vite（用于 TypeScript 编译与打包） |
-| **样式** | 原生 CSS，CSS 变量，模块化设计（core / components / pages） |
-| **数据格式** | JSON（文章、作品、统计、友链、版本日志） |
-| **路由与导航** | 自定义 History API 路由，无刷新 AJAX 内容替换 |
-| **状态管理** | 单例模式 + `localStorage`（主题、缓存、设置） |
-| **图表** | Chart.js 4.4（动态加载） |
-| **评论** | [Twikoo](https://twikoo.js.org) |
-| **统计** | [vercount](https://www.vercount.one) |
-| **图片查看器** | 自定义 Canvas 实现，支持缩放/旋转/拖拽 |
-| **鼠标特效** | Canvas 2D 实时渲染（点击涟漪、长按爆发、拖拽连线） |
-| **Service Worker** | 自定义缓存策略（stale-while-revalidate、网络优先） |
-| **音乐播放器** | [APlayer 分支](https://github.com/DIYgod/APlayer/pull/802) |
-| **通用跳转弹窗** | 自定义 `jump-dialog`，复用友链卡片样式，支持锚点放大动画、倒计时、自动跳转 |
+项目为前后端分离静态站点生成架构。
+
+| 层级 | 技术 | 说明 |
+|------|----------|-----------|
+| **构建系统** | Python 3.10+ | 运行构建脚本（`run.py`），处理 Markdown 解析、数据聚合、静态资源生成 |
+| **Markdown 解析** | `markdown` + `pymdown-extensions` | 支持 Frontmatter、Admonition、任务列表、选项卡、代码高亮、数学公式（KaTeX 前端渲染） |
+| **数据序列化** | `PyYAML`、`json` | 解析文章 Frontmatter、作品元数据、友链 JSON |
+| **颜色提取** | `requests` + `Pillow` | 为友链头像提取主色调，生成 `friend_colors.json` |
+| **CSS 压缩** | `rcssmin` | 构建时压缩 CSS 文件 |
+| **日期处理** | `python-dateutil`、`packaging` | 解析多种日期格式，版本号排序 |
+| **前端语言** | TypeScript 6.0.3 | 所有交互逻辑、页面管理器、路由、UI 组件均使用 TypeScript 编写，部分传统模块为 JavaScript |
+| **前端构建工具** | Vite 8.1.1 | 编译 TypeScript、打包模块、复制 vendor 库，支持 HMR 开发服务器 |
+| **路由与 SPA** | 原生 History API + 自定义 Router | 无刷新页面切换，支持 `popstate`、滚动位置恢复、页面缓存（LRU）、资源动态加载/卸载 |
+| **状态管理** | 单例模式 + `localStorage` | `DataService` 管理数据缓存，`storageController` 统一存储读写（含 LZ 压缩），`Settings` 管理用户偏好 |
+| **样式系统** | 原生 CSS + CSS 变量 | 模块化设计：`core/`（变量、布局、基础）、`components/`（导航、评论、页脚等）、`pages/`（各页面独有样式），支持明暗主题自动切换 |
+| **图表渲染** | Chart.js 4.4.0 | 统计仪表板动态加载，绘制文章趋势、分类占比、标签排行、代码分布等图表，主题自适应 |
+| **评论系统** | Twikoo 1.7.15 | 无后端评论，部署于 Netlify Functions，支持 Markdown、邮件通知 |
+| **访问统计** | vercount | 基于 `vercount.one` 服务，统计站点/页面 PV、UV，兼容不蒜子数据属性 |
+| **图片查看器** | 自定义 Canvas 实现 | 支持缩放（滚轮/双指）、旋转、拖拽、键盘快捷键、全屏、画廊模式，无第三方依赖 |
+| **鼠标特效** | Canvas 2D 渲染 | 自定义光标（圆点+圆环）、长按连线拖拽、释放爆发粒子，帧率自适应、空闲暂停 |
+| **音乐播放器** | APlayer | 悬浮播放器，自动加载网易云歌单，支持歌词显示、音量控制、播放列表 |
+| **通用弹窗** | `jump-dialog` + `detail-dialog` | 基于原生 DOM 构建，复用友链卡片样式，支持锚点放大动画、倒计时自动跳转、键盘操作 |
+| **Service Worker** | 自定义 `sw.js` | 精细化缓存策略：静态资源（Cache First）、JSON 数据（Stale-While-Revalidate）、HTML 文档（Network First），启用 Navigation Preload |
+| **数据格式** | JSON（API 数据）、YAML（文章 Frontmatter） | 所有内容数据（文章、作品、统计、友链、版本日志）均以 JSON 形式提供给前端，构建时生成 |
+| **部署** | GitHub Actions + GitHub Pages | 自动化构建部署，详见 `.github/workflows/static.yml` |
 
 ---
 
-## 3. 项目架构
+### 依赖版本详情
 
-### 3.1 整体流程
+#### Python 依赖（`requirements.txt`）
+```
+markdown               # 核心 Markdown 解析
+pyyaml                 # Frontmatter 解析
+requests               # 友链头像下载
+pillow                 # 图像主色提取
+rcssmin                # CSS 压缩
+python-dateutil        # 日期解析
+packaging              # 版本号排序
+pymdown-extensions     # 扩展 Markdown 语法
+```
 
-#### 整体数据流（构建 → 部署）
-
-```mermaid
-flowchart TD
-    A[开发者推送代码到 main 分支] --> B[触发 GitHub Actions 工作流 static.yml]
-    B --> C[检出代码（含子模块）]
-    C --> D[设置 Python 3.10 并安装依赖<br>（pip install -r requirements.txt）]
-    D --> E[设置 Node.js 22.12 并安装依赖<br>（npm ci）]
-    E --> F[执行构建命令：python run.py --force]
-
-    subgraph 构建引擎 [Build Engine - run.py]
-        F --> G[注册生成器<br>AggregatedGenerator + FriendColorsGenerator]
-        G --> H[加载所有输入数据<br>（文章、作品、友链、版本）]
-        H --> I[遍历生成器（顺序或并行）]
-        I --> J{生成器是否需要执行？<br>（增量检查，force 强制）}
-        J -->|跳过| K[标记为最新，继续]
-        J -->|执行| L[执行生成器]
-    end
-
-    subgraph FriendColorsGenerator [FriendColorsGenerator]
-        L --> M[从友链头像提取主题色]
-        M --> N[生成 dist/assets/friend_colors.json]
-    end
-
-    subgraph AggregatedGenerator [AggregatedGenerator]
-        L --> O[生成统计信息 statistics.json]
-        O --> P[生成 RSS 和 站点地图]
-        P --> Q[生成文章列表页 /articles/index.html]
-        Q --> R[生成作品列表页 /works/index.html]
-        R --> S[生成友链页面 /friends/index.html]
-        S --> T[生成无 JS 索引页 nojs.html]
-        T --> U[生成各子目录页面<br>（about, timeline, stats, ...）]
-        U --> V[调用 Vite 构建 TypeScript → JavaScript]
-        V --> W[压缩并复制 CSS]
-        W --> X[复制 assets 素材（排除 source）]
-        X --> Y[复制 /src/copy/ 下根目录文件]
-        Y --> Z[复制 works 目录（排除 metadata.json）]
-    end
-
-    K --> AA[更新构建状态 .build_state.json]
-    N --> AA
-    Z --> AA
-
-    AA --> AB[构建完成，dist 目录就绪]
-    AB --> AC[使用 actions/upload-pages-artifact<br>上传 dist 为 artifact]
-    AC --> AD[使用 actions/deploy-pages<br>部署到 GitHub Pages]
-    AD --> AE[网站发布成功]
+#### Node.js 依赖（`package.json`）
+```json
+{
+  "devDependencies": {
+    "typescript": "^6.0.3",
+    "vite": "^8.1.1",
+    "rollup-plugin-copy": "^3.5.0"
+  }
+}
 ```
 
 ---
 
-#### 前端初始化流程
-
-```mermaid
-flowchart TD
-    A[用户访问页面] --> B[加载 HTML 文档]
-    B --> C[加载 main.ts 入口]
-    C --> D[DOMContentLoaded 事件触发]
-    D --> E[AppInitializer.start 启动]
-
-    subgraph AppInitializer[AppInitializer 应用启动编排器]
-        direction TB
-        E --> E1[添加优化标签<br>preconnect / preload]
-        E1 --> E2[同步主题<br>getTimeBasedTheme]
-        E2 --> E3[调度空闲任务<br>背景图加载]
-        E3 --> E4[等待 loadNavbar<br>导航栏加载与渲染]
-        E4 --> E5[非阻塞加载页脚<br>loadFooter]
-        E5 --> E6[渲染个人卡片<br>renderPersonalCard]
-        E6 --> E7[启动站点年龄更新器<br>startSiteAgeUpdater]
-        E7 --> E8[初始化浮动按钮<br>initButtons]
-        E8 --> E9[调度空闲任务<br>无刷新导航 + 列表点击]
-        E9 --> E10[调度空闲任务<br>当前页面特性初始化]
-        E10 --> E11[调度空闲任务<br>UI特效 / 数据预加载 / 图片]
-        E11 --> E12[初始化 Clarity 分析<br>initClarityOnConsent]
-        E12 --> E13[调度空闲任务<br>加载音乐播放器]
-        E13 --> E14[初始化浏览器历史<br>initPopstate]
-        E14 --> E15[显示加载覆盖层<br>LoadingOverlayManager.show]
-        E15 --> E16[等待用户交互<br>点击继续]
-        E16 --> E17[延迟 500ms 播放导航栏入场动画]
-        E17 --> E18[标记加载完成<br>data-loaded="true"]
-        E18 --> E19[初始化友链管理器<br>friendLinkManager.init]
-        E19 --> E20[注册 Service Worker<br>registerServiceWorker]
-    end
-
-    subgraph IdleTasks[空闲任务调度 requestIdleCallback]
-        direction LR
-        I1[背景图加载<br>applyRandomBackgroundImage] --> I2[无刷新导航启用<br>enableAjaxNavigation]
-        I2 --> I3[列表点击事件<br>handleListItemClick]
-        I3 --> I4[页面特性初始化<br>initPageFeatures]
-        I4 --> I5[UI特效初始化<br>initUIEffects]
-        I5 --> I6[数据服务预加载<br>DataService 预热]
-        I6 --> I7[图片懒加载<br>LazyImageLoader.init]
-        I7 --> I8[全局图片查看器<br>GlobalImageManager.init]
-        I8 --> I9[页脚更新时间<br>updateFooterUpdateTime]
-        I9 --> I10[页脚统计信息<br>initFooterStats]
-        I10 --> I11[音乐播放器<br>global-music-player]
-    end
-
-    subgraph Navbar[导航栏加载流程]
-        direction TB
-        N1[initNavbar] --> N2[NavbarManager.initNavbar]
-        N2 --> N3[生成导航 DOM<br>createNavbarDOM]
-        N3 --> N4[注入 CSS<br>navbar.css]
-        N4 --> N5[挂载到 placeholder]
-        N5 --> N6[绑定滚动事件]
-        N6 --> N7[初始化主题切换<br>initThemeToggle]
-        N7 --> N8[初始化导航高亮<br>initNavigation]
-        N8 --> N9[初始化移动菜单<br>initMobileMenuToggle]
-        N9 --> N10[创建标题占位<br>createTitlePlaceholder]
-        N10 --> N11[播放入场动画<br>playEntranceAnimation]
-    end
-
-    subgraph PageInit[页面特性初始化]
-        direction TB
-        P1{页面类型判断} --> P2[index 首页<br>initHomePage]
-        P1 --> P3[articles 列表<br>initSearchPage]
-        P1 --> P4[works 列表<br>initSearchPage]
-        P1 --> P5[timeline 归档<br>initArchivePage]
-        P1 --> P6[stats 统计<br>initStatsPage]
-        P1 --> P7[friends 友链<br>initFriendsPage]
-        P1 --> P8[about 关于<br>initAboutPage]
-        P1 --> P9[contact 留言板<br>initTwikoo]
-        P1 --> P10[article-detail 详情<br>initArticlePage]
-    end
-
-    subgraph HomePage[首页初始化 home-manager]
-        H1[加载统计与标签<br>loadStatisticsAndTags] --> H2[绑定导航事件<br>bindGlobalNavigateEvents]
-        H2 --> H3[启动问候更新器<br>startGreetingUpdater]
-        H3 --> H4[启动实时时钟<br>startLiveClock]
-        H4 --> H5[设置滚动揭示<br>setupReveal]
-        H5 --> H6[绑定名言刷新<br>bindQuoteRefresh]
-        H6 --> H7[加载名言<br>loadQuote]
-    end
-
-    subgraph ArticlePage[文章详情初始化 article]
-        A1[确保 TOC 结构<br>ensureTOCStructure] --> A2[初始化目录<br>initTOC]
-        A2 --> A3[图片懒加载<br>initImageLazyLoad]
-        A3 --> A4[阅读进度条<br>initReadingProgress]
-        A4 --> A5[代码块复制<br>initCodeBlocks]
-        A5 --> A6[移动端侧边栏<br>initMobileSidebar]
-        A6 --> A7[滚动位置保存<br>initScrollSave]
-        A7 --> A8[数学公式渲染<br>renderMath]
-        A8 --> A9[初始化评论<br>initTwikoo]
-        A9 --> A10[刷新访问统计<br>refreshvercount]
-    end
-
-    subgraph LoadingOverlay[加载覆盖层 loading-overlay-manager]
-        L1[显示覆盖层] --> L2[添加系统日志]
-        L2 --> L3[并行请求关键数据<br>statistics / articles / works<br>code / friends / version]
-        L3 --> L4[解析统计数据]
-        L4 --> L5[解析文章列表]
-        L5 --> L6[解析作品列表]
-        L6 --> L7[解析代码分析]
-        L7 --> L8[解析友链]
-        L8 --> L9[版本检测与比对]
-        L9 --> L10{需要更新?}
-        L10 -->|是| L11[渲染更新提示界面]
-        L10 -->|否| L12[隐藏覆盖层]
-        L11 --> L13[等待用户点击]
-        L13 --> L12
-    end
-
-    subgraph CoreModules[核心模块依赖]
-        C1[core.ts<br>配置 / 工具 / 存储] --> C2[data-service.ts<br>数据服务]
-        C1 --> C3[page-utils.ts<br>页面工具]
-        C1 --> C4[twikoo-manager.ts<br>评论管理]
-        C2 --> C5[site-state.ts<br>SW注册 / 统计]
-        C3 --> C6[theme.ts<br>主题切换]
-        C6 --> C7[ui-effects.ts<br>滚动揭示 / 鼠标特效]
-        C7 --> C8[router.ts<br>无刷新导航]
-        C8 --> C9[页面管理器]
-    end
-
-    AppInitializer --> Navbar
-    AppInitializer --> IdleTasks
-    AppInitializer --> LoadingOverlay
-    IdleTasks --> PageInit
-    PageInit --> HomePage
-    PageInit --> ArticlePage
-    AppInitializer --> CoreModules
-
-    E18 --> F[页面可交互]
-```
-
-### 3.2 目录结构（关键部分）
+## 3. 目录结构
 
 ```
-/
-├── builder/                     # Python 构建系统
-│   ├── build_context.py         # 数据类 (Article, Work, Friend, BuildContext)
-│   ├── common.py                # 公共工具（日志、哈希、日期、文件IO）
-│   ├── input_loader.py          # 加载所有源数据（解析 Markdown、frontmatter、作品元数据）
-│   ├── engine.py                # 构建引擎（依赖解析、并行执行生成器）
-│   ├── generators/
-│   │   ├── base.py              # 生成器抽象基类
-│   │   ├── friend_colors.py     # 友链卡片底色生成
-│   │   └── aggregated.py        # 聚合生成器（统计、RSS、站点地图、列表页、静态资源复制）
-│   └── run.py                   # CLI 入口
-├── src/                         # 前端源码（TypeScript/JS/CSS）
-│   ├── assets/                  # 静态资源（头像、源 Markdown 文章、作品文件）
-│   │   ├── source/              # 文章分类子目录（内含 .md）
-│   │   ├── works/               # 作品文件夹（每个子目录含 metadata.json 及资源）
-│   │   └── avatar.webp
-│   ├── css/                     # 样式（按 core / components / pages 分层）
-│   ├── js/                      # JavaScript/TypeScript 源码
-│   │   ├── core/                # 核心工具（配置、存储、页面管理器基类）
-│   │   ├── router/              # 无刷新路由与导航
-│   │   ├── pages/               # 各页面管理器（home, article, timeline, stats, friends, about）
-│   │   ├── ui/                  # UI 组件（光标、图片查看器、主题切换、跳转弹窗、按钮管理）
-│   │   ├── data/                # 数据处理（Worker、设置、Service Worker）
-│   │   ├── vendor/              # 第三方库（音乐播放器）
-│   │   └── entry/               # 入口文件 (main.ts)
-│   └── templates/               # HTML 模板（用于构建生成静态页）
-├── dist/                        # 构建输出目录（部署内容）
-│   ├── articles/                # 文章详情页 (HTML)
-│   ├── json/                    # 所有 JSON 数据（articles.json, works.json, statistics.json 等）
-│   ├── css/, js/, assets/       # 静态资源（压缩/合并后）
-│   ├── index.html, 404.html, about/, contact/, stats/, timeline/, friends/, settings/
-│   └── ...
-├── package.json, vite.config.ts # 前端构建配置
-└── README.md
+Website
+├─ .github
+│  └─ workflows
+│     └─ static.yml
+├─ builder
+│  ├─ generators
+│  │  ├─ aggregated.py
+│  │  ├─ base.py
+│  │  └─ friend_colors.py
+│  ├─ build_context.py
+│  ├─ common.py
+│  ├─ engine.py
+│  ├─ input_loader.py
+│  └─ __init__.py
+├─ dist
+├─ node_modules
+├─ src
+│  ├─ assets
+│  │  ├─ source
+│  │  │  ├─ 分类一
+│  │  │  │  └─ 马生复宋濂书.md
+│  │  │  └─ 分类二
+│  │  │     └─ 网站的起源.md
+│  │  ├─ avatar.webp
+│  │  ├─ friends.json
+│  │  ├─ friend_colors.json
+│  │  └─ 网站更新日志.md
+│  ├─ copy
+│  │  ├─ .well-known
+│  │  │  └─ vercount-verify-pof0sq1cg39g4rpkl66s6rtf.txt
+│  │  ├─ BingSiteAuth.xml
+│  │  ├─ favicon.ico
+│  │  └─ robots.txt
+│  ├─ css
+│  │  ├─ components
+│  │  │  ├─ comments.css
+│  │  │  ├─ footer.css
+│  │  │  ├─ github-contrib-graph.css
+│  │  │  ├─ image-viewer.css
+│  │  │  └─ navbar.css
+│  │  ├─ core
+│  │  │  ├─ base.css
+│  │  │  ├─ components.css
+│  │  │  ├─ layout.css
+│  │  │  └─ variables.css
+│  │  ├─ pages
+│  │  │  ├─ 404.css
+│  │  │  ├─ about.css
+│  │  │  ├─ article.css
+│  │  │  ├─ friends.css
+│  │  │  ├─ home.css
+│  │  │  ├─ stats.css
+│  │  │  └─ timeline.css
+│  │  └─ main.css
+│  ├─ js
+│  │  ├─ core
+│  │  │  ├─ app-initializer.ts
+│  │  │  ├─ clarity.ts
+│  │  │  ├─ core.ts
+│  │  │  ├─ data-service.ts
+│  │  │  ├─ page-manager.ts
+│  │  │  ├─ page-utils.ts
+│  │  │  └─ twikoo-manager.ts
+│  │  ├─ data
+│  │  │  ├─ searchWorker.ts
+│  │  │  ├─ settings.ts
+│  │  │  ├─ site-state.ts
+│  │  │  └─ sw.js
+│  │  ├─ entry
+│  │  │  └─ main.ts
+│  │  ├─ pages
+│  │  │  ├─ about.ts
+│  │  │  ├─ article.ts
+│  │  │  ├─ friends-manager.ts
+│  │  │  ├─ home-manager.ts
+│  │  │  ├─ search-render.ts
+│  │  │  ├─ stats-manager.ts
+│  │  │  └─ timeline.ts
+│  │  ├─ router
+│  │  │  └─ router.ts
+│  │  ├─ standalone
+│  │  │  └─ 404.ts
+│  │  ├─ ui
+│  │  │  ├─ button-manager.ts
+│  │  │  ├─ detail-dialog.ts
+│  │  │  ├─ image-manager.ts
+│  │  │  ├─ image-viewer.ts
+│  │  │  ├─ jump-dialog.ts
+│  │  │  ├─ list-events.ts
+│  │  │  ├─ loading-overlay-manager.ts
+│  │  │  ├─ mouse-effects.ts
+│  │  │  ├─ navbar-manager.ts
+│  │  │  ├─ personal-card.ts
+│  │  │  ├─ theme.ts
+│  │  │  └─ ui-effects.ts
+│  │  └─ vendor
+│  │     ├─ APlayer.min.js
+│  │     ├─ browser.global.min.js
+│  │     ├─ global-music-player.ts
+│  │     └─ vercount.min.js
+│  ├─ templates
+│  │  ├─ 404.html
+│  │  ├─ about.html
+│  │  ├─ contact.html
+│  │  ├─ footer.html
+│  │  ├─ index.html
+│  │  ├─ privacy.html
+│  │  ├─ stats.html
+│  │  └─ timeline.html
+│  └─ works
+│     ├─ 作品一
+│     │  └─ metadata.json
+│     └─ 作品二
+│        ├─ index.html
+│        └─ metadata.json
+├─ .gitignore
+├─ .gitmodules
+├─ CNAME
+├─ LICENSE
+├─ package-lock.json
+├─ package.json
+├─ README.md
+├─ requirements.txt
+├─ run.py
+└─ vite.config.ts
 ```
 
 ---
 
 ## 4. 构建系统详解
 
-### 4.1 数据加载（`input_loader.py`）
+将源码（Markdown、元数据、前端资源）转换为可部署的静态网站。整个系统由 Python 编写，模块化设计，支持增量构建、并行执行和扩展。
 
-#### 文章加载
-- 扫描 `src/assets/source/` 下所有子目录，每个子目录作为 `category`。
-- 对每个 `.md` 文件：
-  - 解析 YAML frontmatter（支持 `title`, `date`, `description`, `author`, `tag`, `category`）。
-  - 若无 frontmatter，使用简易解析。
-  - 计算内容哈希，与 `json/articles.json` 中存储的哈希比对，决定是否重新生成 HTML。
-  - 使用 `markdown` 库转换为 HTML，并注入：
-    - 标题 `id` 自动生成（用于 TOC 锚点）。
-    - 图片懒加载：`src` 替换为 `data-src`，添加占位 SVG。
-    - 代码块语法高亮（`codehilite`）。
-    - KaTeX 公式支持（通过页面 JS 的 `renderMathInElement`）。
-  - 生成完整文章 HTML 页面（包含元数据、TOC、评论占位、统计脚本）。
-  - 输出到 `dist/articles/`（隐藏文章进入 `.hidden/` 子目录）。
-- 构建 `Article` 对象列表，并序列化到 `articles.json`。
+### 4.1 核心组件
 
-#### 作品加载
-- 遍历 `src/works/` 下每个子目录。
-- 读取 `metadata.json`（格式见下文）。
-- 若 `tag` 包含“隐藏”则排除。
-- 生成 `Work` 对象列表，写入 `works.json`。
+| 组件 | 文件 | 职责 |
+|------|------|------|
+| **数据模型** | `build_context.py` | 定义 `Article`、`Work`、`Friend`、`BuildContext` 等数据结构，作为构建上下文在各模块间传递。 |
+| **公共工具** | `common.py` | 提供日志、JSON 读写、哈希计算、日期格式化、路径处理等通用函数。 |
+| **输入加载器** | `input_loader.py` | 扫描 `src/assets/source/` 下的 Markdown 文件、`src/works/` 下的作品元数据、`src/assets/friends.json` 友链以及 `src/assets/网站更新日志.md`，解析后填充 `BuildContext`。 |
+| **构建引擎** | `engine.py` | 管理所有生成器（`OutputGenerator`），协调执行顺序，支持串行/并行运行，并依据 `.build_state.json` 进行增量判断。 |
+| **生成器基类** | `generators/base.py` | 定义生成器抽象接口，包含 `name`、`inputs`、`outputs`、`generate()` 等方法，以及输入哈希计算和状态更新逻辑。 |
+| **聚合生成器** | `generators/aggregated.py` | 核心生成器，负责生成绝大部分输出：统计 JSON、RSS、站点地图、文章/作品/友链列表页、无 JS 回退页、复制静态资源（CSS、JS、素材）等。 |
+| **友链颜色生成器** | `generators/friend_colors.py` | 独立生成器，通过下载友链头像并提取主色调，生成 `friend_colors.json` 用于前端卡片背景色。 |
+| **入口脚本** | `run.py` | 命令行入口，解析参数，注册生成器，启动构建引擎。 |
 
-#### 友链加载
-- 从 `dist/json/friends.json` 读取（手动维护）。
-- 生成 `Friend` 对象列表。
+### 4.2 构建流程
 
-#### 版本日志加载
-- 解析 `src/assets/网站更新日志.md`，识别版本标题（`## vX.Y.Z (YYYY-MM-DD)`）和变更条目（`- **类型**: 描述`）。
-- 生成 `version.json`，包含版本列表和哈希，用于前端版本检测。
+1. **加载输入**：`InputLoader` 读取所有源文件，生成 `BuildContext` 对象。
+2. **生成器注册**：在 `run.py` 中注册 `FriendColorsGenerator` 和 `AggregatedGenerator`。
+3. **增量判断**：引擎检查每个生成器的输出文件是否都存在，并比对输入数据的哈希值（以及前端资源的哈希），若未变化则跳过。
+4. **执行生成**：依次（或并行）调用各生成器的 `generate()` 方法，将结果写入 `dist/` 目录。
+5. **更新状态**：成功生成后，将当前输入哈希及时间戳保存到 `.build_state.json`，供下次增量判断使用。
 
-### 4.2 生成器引擎（`engine.py`）
+### 4.3 增量构建机制
 
-- `BuildEngine` 注册多个 `OutputGenerator`（目前仅 `AggregatedGenerator`）。
-- **依赖检查**：每个生成器声明 `inputs`（需要的上下文属性）和 `outputs`（生成的文件路径）。
-- **增量判断**：通过 `is_up_to_date` 比较上下文的组合哈希与上次构建存储的哈希，决定是否跳过。
-- **执行方式**：
-  - 串行（`--no-parallel`）或并行（默认，使用 `ThreadPoolExecutor`）。
-  - 可指定 `--targets` 只运行特定生成器。
-- `AggregatedGenerator` 一次性生成所有静态输出，避免重复加载数据。
+- **状态文件**：`.build_state.json` 存储每个生成器上次运行的“输入哈希”和“前端哈希”。
+- **输入哈希**：由生成器声明的依赖（如 `articles`、`works`）的序列化内容计算而得，任一源文件改动都会导致哈希变化。
+- **前端哈希**：`AggregatedGenerator` 额外监控 `src/css/`、`src/js/`、`src/templates/`、`src/assets/`（除 `source/` 外）以及根目录下的 `favicon.ico`、`robots.txt` 等文件，确保前端资源变动时重新编译。
+- **强制重建**：通过 `--force` 参数可忽略所有增量判断，强制全量构建；`--force-colors` 可单独强制更新友链颜色。
 
-### 4.3 聚合生成器（`aggregated.py`）功能
+### 4.4 生成器详解
 
-- **统计 JSON**：计算文章/作品总数、总字数、标签/分类计数、作者统计、更新时间等，写入 `statistics.json`。
-- **RSS 2.0**：根据 `rss_config.json` 配置，生成包含文章和/或作品的 RSS Feed。
-- **站点地图**：生成 `sitemap.xml`，包含所有公开文章和主要页面 URL。
-- **文章/作品列表页**：生成 `articles/index.html` 和 `works/index.html`，内嵌完整数据（`window.__STATIC_ARTICLES_DATA` 等），加速首屏加载。
-- **无JS回退页**：`nojs.html` 在禁用 JavaScript 时展示静态内容。
+#### AggregatedGenerator（聚合生成器）
+
+这是最主要的生成器，其 `generate()` 方法依次执行以下任务：
+
+- **统计生成**：统计文章数、总字数、标签/分类频次、作者数、更新天数等，写入 `dist/json/statistics.json`。
+- **RSS 生成**：从文章和作品中提取条目，按时间排序生成 `dist/rss.xml`。
+- **站点地图**：生成 `dist/sitemap.xml`，包含所有文章及固定页面。
+- **文章列表页**：渲染 `dist/articles/index.html`，包含标签筛选、搜索框、排序功能，数据通过 `window.__STATIC_ARTICLES_DATA` 注入。
+- **作品列表页**：渲染 `dist/works/index.html`，类似文章列表，数据通过 `window.__STATIC_WORKS_DATA` 注入。
+- **友链页面**：渲染 `dist/friends/index.html`，包含友链卡片（带主题色）和申请要求说明。
+- **无 JS 回退页**：生成 `dist/nojs.html`，提供完全静态的内容列表，方便搜索引擎或禁用 JavaScript 的用户访问。
+- **子目录页面**：将 `src/templates/` 下的 `about.html`、`timeline.html`、`stats.html`、`contact.html`、`privacy.html` 复制到对应的 `dist/about/`、`dist/timeline/` 等目录。
+- **前端构建**：调用 Vite 编译 TypeScript（`npm run build`），并将结果输出到 `dist/js/`。
 - **静态资源复制**：
-  - 调用 Vite 构建 TypeScript → JavaScript。
-  - 压缩并复制 CSS（使用 `rcssmin`）。
-  - 复制 `assets/`（排除 `source/`, `avatars/`, `js/`, `css/` 等）。
-  - 复制 `favicon.ico`、`robots.txt`、`CNAME` 等。
-  - 复制 `works/` 目录（排除 `metadata.json`）到 `dist/works/` 供作品子页面使用。
-- **子目录页面**：将 `templates/` 中的 `about.html`, `timeline.html`, `stats.html` 等复制到 `dist/` 对应子目录作为 `index.html`，保持干净 URL。
+  - 压缩 CSS（使用 `rcssmin`）并复制到 `dist/css/`。
+  - 复制 `src/assets/`（排除 `source/`）到 `dist/assets/`。
+  - 复制 `src/copy/` 下的所有文件（如 `favicon.ico`、`robots.txt`、`BingSiteAuth.xml` 等）到 `dist/` 根目录。
+  - 复制 `src/works/`（排除 `metadata.json`）到 `dist/works/`，以便作品子页面资源可访问。
+  - 复制 `friends.json` 和 `friend_colors.json` 到 `dist/json/` 供前端使用。
+- **代码分析**：生成 `dist/json/code_analysis.json`，记录 `dist/` 目录下各文件类型的数量、大小和行数统计，便于监控构建产物规模。
 
----
+#### FriendColorsGenerator（友链颜色生成器）
+
+- **功能**：为每个友链的头像图片提取主色调，生成 `src/assets/friend_colors.json`（映射：网站链接 → [R, G, B]）。
+- **缓存**：头像图片会被缓存到临时目录，避免重复下载。
+- **依赖**：需 `requests` 和 `Pillow` 库，若未安装则生成器跳过（但构建不会失败，只会使用默认灰色）。
+- **增量**：默认只处理新增或缺失颜色的友链，使用 `--force-colors` 可强制刷新所有。
+
+### 4.5 命令行用法
+
+```bash
+# 全量构建（忽略增量）
+python run.py --force
+
+# 仅强制更新友链颜色（其他生成器仍按增量判断）
+python run.py --force-colors
+
+# 只运行指定生成器（如只生成友链颜色）
+python run.py --targets friend_colors
+
+# 禁用并行执行（串行运行所有生成器）
+python run.py --no-parallel
+
+# 调整并行线程数（默认 4）
+python run.py --workers 6
+```
+
+### 4.6 依赖与环境
+
+- **Python 依赖**：见 `requirements.txt`，主要包括 `markdown`、`pyyaml`、`requests`、`pillow`、`rcssmin`、`python-dateutil`、`packaging`、`pymdown-extensions`。
+- **Node.js 依赖**：用于前端 TypeScript 编译，见 `package.json`，使用 Vite 作为构建工具。
+- **安装命令**：
+  ```bash
+  pip install -r requirements.txt
+  npm install
+  ```
+
+### 4.7 扩展新生成器
+
+若需增加自定义输出（如生成 JSON 摘要、额外页面），可继承 `OutputGenerator` 基类并实现抽象方法，然后在 `run.py` 中注册。例如：
+
+```python
+from builder.generators.base import OutputGenerator
+from builder.build_context import BuildContext
+
+class MyGenerator(OutputGenerator):
+    name = "mygen"
+    inputs = {"articles"}          # 依赖 articles
+    outputs = [Path("dist/my.json")]
+
+    def generate(self, context: BuildContext, force: bool) -> bool:
+        # 使用 context.articles 生成 my.json
+        return True
+```
+
+注册：
+
+```python
+engine.register(MyGenerator())
+```
 
 ## 5. 前端架构
 
-### 5.1 入口与启动流程（`entry/main.ts`）
-
-1. **加载覆盖层**：显示加载日志，并行获取 `statistics.json`, `articles.json`, `works.json`, `code_analysis.json`, `friends.json`, `version.json`。
-2. **版本检测**：对比本地存储的 `siteVersion` 与远程 `version.json`，若有更新则展示更新日志。
-3. **主题初始化**：读取存储的主题偏好，若无则根据时段自动选择（6:00-18:00 浅色，其余深色）。
-4. **加载导航栏与页脚**：通过 `navbar-manager.ts` 和 `loadFooter()` 动态加载 HTML 片段。
-5. **启动路由**：启用 `enableAjaxNavigation`，拦截内部链接点击，使用 `fetchAndReplaceContent` 无刷新切换页面。
-6. **页面管理器调度**：根据当前路径，动态导入对应页面管理器（`home-manager`, `article`, `timeline`, `stats`, `friends`, `about` 等）。
-7. **初始化全局 UI**：自定义光标、外链拦截（基于 `jump-dialog` 通用弹窗）、滚动揭示、图片查看器、音乐播放器（空闲时加载）。
-8. **注册 Service Worker**（生产环境）。
-
-### 5.2 路由系统（`router/router.ts`）
-
-- **核心函数**：`fetchAndReplaceContent(url, pushState, scrollData)`
-  1. 获取新页面 HTML（`fetch`）。
-  2. 提取 `#router-view` 内容、标题、样式、脚本、导航栏/页脚片段。
-  3. 执行退出动画，替换 `#router-view`，注入新样式，执行新脚本。
-  4. 更新浏览器历史记录（`pushState` 或 `replaceState`），恢复滚动位置。
-  5. 销毁当前页面管理器，初始化新页面管理器。
-  6. 触发 `ajax:navigation` 自定义事件，供其他模块监听。
-- **回退/前进支持**：监听 `popstate`，调用 `fetchAndReplaceContent` 并传递保存的滚动数据。
-- **预加载**：在空闲时预加载 JSON 数据（`preloadCriticalJSON`）。
-
-### 5.3 页面管理器基类（`core/page-manager.ts`）
-
-- 所有页面管理器继承自 `PageManager`，必须实现 `init()` 和 `destroy()` 方法。
-- `init()` 负责该页面的特定初始化和事件绑定。
-- `destroy()` 负责清理事件监听、定时器、观察者，防止内存泄漏。
-
-**已实现的管理器**：
-- `HomePageManager`：加载统计数据、标签云、动态问候语，绑定统计卡片和标签点击跳转。
-- `ArticlePageManager`：构建 TOC、阅读进度、代码复制、图片懒加载、移动端侧边栏、滚动保存。
-- `ArchiveManager`：年份胶囊筛选、类型筛选、时间线渲染。
-- `StatsManager`：加载 Chart.js，渲染多张图表（趋势、分类、标签、代码占比等），秒级更新运行时间。
-- `FriendsPageManager`：Twikoo 初始化、JSON 示例复制、友链随机排序（每 10 秒洗牌），同时使用 `bindJumpTriggers` 为友链卡片绑定跳转弹窗（复用 `friends.css` 样式）。
-- `AboutPageManager`：年龄经验值进度条、翻转卡片、GitHub 贡献图、Twikoo。
-- `SearchController`（用于 articles/works 列表页）：Web Worker 驱动的过滤/排序。
-
-### 5.4 数据管理与搜索（`pages/search-render.ts`）
-
-- **DataManager**：负责从 `/json/` 获取数据，缓存到 `localStorage`（带时间戳，5 分钟过期），支持强制刷新。
-- **SearchController**：
-  - 绑定搜索输入框、字段选择器、排序下拉、标签按钮。
-  - 使用 **Web Worker** (`searchWorker.js`) 进行过滤和排序，避免阻塞主线程。
-  - 支持 URL 参数同步（`q`, `field`, `tags`, `sort`），便于分享和书签。
-  - 标签按钮动态从数据中提取所有标签及其计数，点击筛选。
-- **UIRenderer**：生成列表项 HTML，区分文章和作品（作品点击弹窗展示详情）。
-
-### 5.5 UI 组件详解
-
-#### 通用跳转弹窗（`ui/jump-dialog.ts`）
-- 提供 `showJumpDialog` 命令式 API 和 `bindJumpTriggers` 声明式绑定。
-- 完全复用 `friends.css` 中的 `.friend-link-overlay`、`.friend-link-content` 等样式，统一视觉风格。
-- 支持从指定锚点元素放大展开（卡片放大动画）、倒计时自动跳转、ESC/点击背景关闭、自定义头像/描述/跳转目标。
-- 被 `ExternalLinkManager` 和 `FriendsPageManager` 共同使用，替代了原有的独立外链确认弹窗。
-
-#### 自定义光标（`ui/ui-effects.ts` - `CustomCursor`）
-- 使用 Canvas 与 CSS 结合，绘制钢笔尖形状（SVG 路径）。
-- 根据鼠标移动速度动态旋转（方向跟随），悬停在可点击元素上吸附到右下角。
-- 集成鼠标特效（点击涟漪、长按爆发、拖拽连线）作为子模块。
-
-#### 鼠标特效引擎（`MouseEffectManager`）
-- 基于 Canvas 渲染，使用对象池管理粒子与连线。
-- **点击**：产生 1-3 个同心圆环，向外扩散并淡出。
-- **长按**（>100ms）：产生多个粒子向随机方向飞散，形成爆发效果。
-- **拖拽**：在长按后移动鼠标，显示虚线连线和端点圆点，松开时形成收束线条。
-
-#### 图片查看器（`ui/image-viewer.ts`）
-- 点击任何图片（排除某些类）自动打开全屏查看器。
-- 支持触控（指针事件）和键盘：缩放（+/-）、旋转（R）、方向键切换、ESC 关闭。
-- 拖拽平移（缩放≥1 时），双击重置。
-- 支持画廊模式：自动收集当前容器内所有图片，按点击顺序展示。
-- 错误处理：图片加载失败时显示详细错误信息和重载按钮。
-
-#### 主题切换（`ui/theme.ts`）
-- 切换 `html` 元素的 `data-theme` 属性（`light`/`dark`）。
-- 切换时播放淡入淡出遮罩过渡动画。
-- 用户手动切换时保存到 `localStorage`，否则自动根据时段或系统偏好（无保存时）。
-
-#### 导航栏管理器（`ui/navbar-manager.ts`）
-- 完全由 JS 生成导航栏 DOM，无需 HTML 片段。
-- **标题替换模式**：在桌面端且没有激活的导航项时，将导航项替换为当前页面标题，鼠标悬停恢复导航项，鼠标移出恢复标题。
-- 标题过长时自动滚动（使用 CSS 动画）。
-- 入场动画：首次加载后延迟执行淡入（由 `main.ts` 调用）。
-
-#### 服务工作者（`data/sw.js`）
-- 缓存策略：
-  - JSON/API 请求：`stale-while-revalidate`，优先返回缓存，后台更新。
-  - 静态资源（CSS/JS/图片）：`stale-while-revalidate`，缓存优先，定期更新。
-  - HTML 页面：`network-first`，离线时回退缓存。
-- 开发环境自动跳过 SW，生产环境自动注册。
-- 提供 `clearAllServiceWorkerCache` 全局函数，用于设置页面清除缓存。
+前端采用 **单页应用 (SPA)** 模式，基于原生 TypeScript 构建，无第三方框架依赖。核心设计遵循 **模块化**、**可维护性** 和 **性能优先** 原则，通过自定义路由、页面管理器、数据服务层和 UI 组件库，实现流畅的页面切换、高效的数据缓存和丰富的交互体验。
 
 ---
+
+### 5.1 整体架构图
+
+```mermaid
+flowchart TB
+    subgraph 入口与初始化
+        A[main.ts] --> B[AppInitializer]
+        B --> C[加载导航栏/页脚/主题/背景]
+        B --> D[LoadingOverlayManager]
+        D --> E[版本检测 & 数据预加载]
+        E --> F[初始化完成]
+    end
+
+    subgraph 路由系统
+        F --> G[enableAjaxNavigation]
+        G --> H[router.ts]
+        H --> I[拦截点击事件]
+        I --> J[fetchAndReplaceContent]
+        J --> K[提取页面内容 #router-view]
+        K --> L[替换 DOM + 执行新页面脚本]
+        L --> M[更新历史记录 & 滚动位置]
+    end
+
+    subgraph 页面管理
+        M --> N[initPageManager]
+        N --> O{页面类型}
+        O -->|首页| P[HomePageManager]
+        O -->|文章列表/作品列表| Q[SearchController]
+        O -->|文章详情| R[ArticlePageManager]
+        O -->|时间线| S[TimelineManager]
+        O -->|统计| T[StatsManager]
+        O -->|友链| U[FriendsPageManager]
+        O -->|关于| V[AboutPageManager]
+        O -->|其他| W[通用页面]
+        P & Q & R & S & T & U & V & W --> X[执行 init / 销毁 destroy]
+    end
+
+    subgraph 数据与缓存
+        E --> Y[DataService]
+        Y --> Z[内存缓存 + localStorage]
+        Z --> AA[并发去重 & 过期策略]
+        Y --> AB[API 请求 /json/*]
+    end
+
+    subgraph UI组件与交互
+        C --> AC[主题切换 theme.ts]
+        C --> AD[导航栏 navbar-manager]
+        C --> AE[个人卡片 personal-card]
+        C --> AF[浮动按钮 button-manager]
+        C --> AG[鼠标特效 mouse-effects]
+        C --> AH[图片查看器 image-viewer]
+        C --> AI[跳转弹窗 jump-dialog]
+        C --> AJ[滚动揭示 ui-effects]
+    end
+
+    subgraph 第三方集成
+        K --> AK[Twikoo 评论]
+        K --> AL[vercount 统计]
+        K --> AM[Chart.js 图表]
+        K --> AN[APlayer 音乐播放器]
+        K --> AO[GitHub 贡献图]
+    end
+
+    subgraph 性能与工具
+        B --> AP[requestIdleCallback 调度]
+        J --> AQ[页面缓存 & 预加载]
+        H --> AR[滚动位置恢复]
+        AA --> AS[Service Worker 离线缓存]
+    end
+```
+
+---
+
+### 5.2 模块划分与职责
+
+| 模块路径 | 职责 |
+|---------|------|
+| **`/js/entry/main.ts`** | 应用入口，启动 `AppInitializer`，暴露全局 API（如 `fetchAndReplaceContent`） |
+| **`/js/core/app-initializer.ts`** | 启动编排器，按优先级执行：主题同步、导航/页脚加载、数据预取、UI 组件初始化、Service Worker 注册等 |
+| **`/js/router/router.ts`** | 核心路由引擎：拦截同源链接，基于 `History API` 实现无刷新导航，支持 `popstate`、锚点跳转、滚动位置管理、页面缓存（LRU）和资源动态加载/卸载 |
+| **`/js/core/page-manager.ts`** | 页面管理器基类，定义 `init` / `destroy` 契约，所有页面管理器均继承或实现该接口 |
+| **`/js/pages/`** | 各页面管理器实现：<br> • `home-manager.ts` – 首页统计、标签云、名言轮播、实时时钟<br> • `search-render.ts` – 文章/作品列表的搜索、筛选、排序（基于 Web Worker）<br> • `article.ts` – 文章详情：TOC 高亮、阅读进度、代码复制、图片懒加载、数学公式渲染<br> • `timeline.ts` – 时间线聚合（文章、作品、版本日志），支持年份/类型/搜索过滤<br> • `stats-manager.ts` – 统计仪表板，动态加载 Chart.js 绘制图表<br> • `friends-manager.ts` – 友链卡片随机排序、复制 JSON、跳转弹窗绑定<br> • `about.ts` – 关于页面：年龄升级系统、翻转卡片、GitHub 贡献图 |
+| **`/js/core/data-service.ts`** | 数据服务单例：统一管理 API 请求，内存缓存 + localStorage 持久化（带过期策略），并发请求去重，支持强制刷新 |
+| **`/js/data/`** | 数据辅助模块：<br> • `searchWorker.ts` – Web Worker，负责列表数据的过滤和排序，避免阻塞主线程<br> • `settings.ts` – 用户设置管理（光标、外链拦截）<br> • `site-state.ts` – 统计记录同步、Service Worker 注册、页脚信息填充 |
+| **`/js/ui/`** | UI 组件集合：<br> • `theme.ts` – 主题切换（自动时段 + 手动）<br> • `navbar-manager.ts` – 导航栏 DOM 生成、移动端适配、标题替换模式<br> • `personal-card.ts` – 个人信息卡片渲染<br> • `button-manager.ts` – 返回顶部、目录（移动端）、设置按钮<br> • `mouse-effects.ts` – 自定义光标（圆点+圆环）、长按连线、爆发粒子<br> • `image-manager.ts` – 全局图片懒加载与点击查看器绑定<br> • `image-viewer.ts` – 图片查看器（缩放、旋转、拖拽、键盘控制）<br> • `jump-dialog.ts` – 通用跳转确认弹窗，支持锚点放大动画<br> • `detail-dialog.ts` – 通用详情弹窗（作品信息、设置面板）<br> • `list-events.ts` – 列表项点击处理（作品弹窗、文章导航）<br> • `loading-overlay-manager.ts` – 加载遮罩层，展示版本更新日志<br> • `ui-effects.ts` – 滚动揭示（IntersectionObserver）、外链拦截管理 |
+| **`/js/core/core.ts`** | 核心工具库：配置常量、存储控制器（含 LZ 压缩）、Cookie 同意管理器、性能监控器、通用工具函数（防抖、节流、转义、日期解析等） |
+| **`/js/core/page-utils.ts`** | 页面相关工具：时间主题判断、路径解析、背景图加载、站点年龄更新、页脚更新时间 |
+| **`/js/vendor/`** | 第三方库封装：<br> • `global-music-player.ts` – 动态加载 APlayer，创建悬浮播放器<br> • `APlayer.min.js` – 音乐播放器核心（含网易云歌单）<br> • `vercount.min.js` – 访问统计（不蒜子风格） |
+| **`/js/standalone/404.ts`** | 404 页面独立逻辑，包含智能路径分析和自定义错误消息 |
+
+---
+
+### 5.3 核心流程
+
+#### 5.3.1 应用启动流程
+
+1. **入口**：`main.ts` 监听 `DOMContentLoaded`，调用 `AppInitializer.start()`。
+2. **编排器**执行顺序：
+   - 添加预连接、预加载标签（优化性能）。
+   - 同步主题（从 localStorage 或时段计算）。
+   - 空闲时加载背景图。
+   - **同步加载导航栏**（确保 DOM 就绪）。
+   - 异步加载页脚、个人卡片、浮动按钮。
+   - 启动站点年龄更新器。
+   - 启用无刷新导航（`enableAjaxNavigation`）。
+   - 注册 `popstate` 监听。
+   - 初始化当前页面的 `PageManager`（通过 `initPageFeatures`）。
+   - 加载数据服务、图片懒加载、全局图片查看器。
+   - 初始化 Clarity 分析、音乐播放器（空闲时）。
+   - **显示加载覆盖层**（`LoadingOverlayManager`），等待用户点击后关闭。
+   - 播放导航栏入场动画。
+   - 注册 Service Worker（生产环境）。
+
+#### 5.3.2 路由与页面切换
+
+- 用户点击同源链接 → `router.ts` 拦截（`enableAjaxNavigation`）。
+- 调用 `fetchAndReplaceContent(url)`：
+  1. 检查缓存（内存 + localStorage），若命中且未过期则直接使用。
+  2. 否则发起 `fetch` 请求（带 `t` 时间戳防止缓存）。
+  3. 解析 HTML，提取 `#router-view` 内容、样式表、脚本。
+  4. 执行 DOM 替换（带淡入淡出动画）。
+  5. 卸载旧页面的资源（样式/脚本）。
+  6. 加载新页面的资源，并初始化对应的 `PageManager`。
+  7. 恢复滚动位置（从 `history.state` 或锚点）。
+  8. 触发 `ajax:navigation` 事件，供其他模块监听。
+
+#### 5.3.3 数据流
+
+- 所有 API 请求通过 `DataService` 单例发出。
+- 策略：
+  1. **内存缓存**（5 分钟 TTL）。
+  2. **localStorage 持久化**（压缩存储大对象）。
+  3. **并发去重**（同一请求多个调用共享同一个 Promise）。
+  4. 网络失败时返回过期缓存（降级）。
+- 页面管理器在 `init` 中调用 `DataService` 获取数据，并渲染 UI。
+
+#### 5.3.4 搜索与筛选（文章/作品列表）
+
+- 使用 `SearchController`（位于 `search-render.ts`）管理列表页。
+- 核心逻辑在 **Web Worker**（`searchWorker.ts`）中执行，避免主线程卡顿。
+- 支持标签筛选、关键词搜索（标题/标签/日期）、多种排序（更新时间、字数、发布日期）。
+- 搜索结果分批次渲染（每批 20 项），提升首屏速度。
+- URL 参数与搜索状态双向同步（`pushState` 更新）。
+
+#### 5.3.5 页面管理器生命周期
+
+- 每个页面管理器实现 `init` 和 `destroy` 方法。
+- `init`：绑定事件、加载数据、渲染 DOM、初始化第三方组件（如 Twikoo）。
+- `destroy`：清理事件监听、定时器、观察者，重置 DOM（防止内存泄漏）。
+- 路由切换时自动调用旧页面的 `destroy` 和新页面的 `init`。
+
+---
+
+### 5.4 性能优化策略
+
+| 优化点 | 实现方式 |
+|-------|---------|
+| **懒加载** | 图片懒加载（`IntersectionObserver`）、组件异步加载（动态 `import()`） |
+| **缓存** | 内存缓存 + localStorage 持久化，SW 离线缓存（`stale-while-revalidate`） |
+| **并发控制** | `DataService` 去重，避免重复请求；`requestIdleCallback` 调度非关键任务 |
+| **渲染优化** | 列表分批次渲染、使用 `DocumentFragment`、减少回流 |
+| **代码分割** | Vite 构建，按入口分割（`main`、`404`、`settings`、`searchWorker`） |
+| **资源预加载** | 预连接第三方域、预加载首屏图片、`<link rel="preload">` |
+| **滚动性能** | 滚动事件防抖/节流，`passive` 监听器，`will-change` 提示 |
+| **动画性能** | 使用 CSS `transform`/`opacity` 触发 GPU 加速，避免 JS 动画阻塞主线程 |
+
+---
+
+### 5.5 技术选型说明
+
+| 技术 | 用途 | 理由 |
+|------|------|------|
+| **TypeScript** | 前端语言 | 提供类型安全、更好的 IDE 支持和代码可维护性 |
+| **Vite** | 构建工具 | 极速冷启动、按需编译、原生 ESM，适合现代浏览器 |
+| **原生 History API** | 路由 | 轻量、无依赖，与 SPA 无缝集成 |
+| **Web Worker** | 搜索/筛选 | 将计算密集型任务移至后台线程，保证 UI 流畅 |
+| **IntersectionObserver** | 懒加载、滚动揭示 | 高性能，减少滚动事件监听 |
+| **localStorage + LZString** | 数据缓存 | 支持大对象压缩，减少网络请求 |
+| **Service Worker** | 离线缓存 | 提升二次访问速度，支持弱网环境 |
+| **Chart.js** | 统计图表 | 轻量、易用、主题自适应 |
+| **Twikoo** | 评论系统 | 无后端、部署简单，支持 Markdown |
+| **vercount** | 访问统计 | 轻量、隐私友好 |
+| **APlayer** | 音乐播放器 | 支持歌单、歌词显示，界面美观 |
+
+---
+
+### 5.6 扩展指南
+
+#### 添加新页面
+
+1. 在 `src/templates/` 创建 HTML 模板（含 `#router-view` 等占位）。
+2. 在 `builder/generators/aggregated.py` 的 `PAGE_TEMPLATES` 中注册。
+3. 在 `src/js/pages/` 下创建对应的 `XxxManager.ts`，继承 `PageManager` 并实现 `init`/`destroy`。
+4. 在 `src/js/router/router.ts` 的 `registerDefaultPages` 中注册页面管理器（动态导入）。
+5. 在导航栏（`navbar-manager.ts`）添加链接项。
+6. （可选）在 `src/js/core/app-initializer.ts` 中调整初始化逻辑（若需特殊处理）。
+
+#### 自定义 UI 组件
+
+- 新建文件于 `src/js/ui/`，导出核心函数。
+- 遵循“事件绑定与销毁”模式，确保在页面切换时能清理资源。
+- 若需全局弹窗，可使用 `detail-dialog.ts` 或 `jump-dialog.ts` 作为基础。
+
+#### 修改主题或样式
+
+- CSS 变量定义在 `src/css/core/variables.css`。
+- 主题切换逻辑在 `src/js/ui/theme.ts`。
+- 图表颜色随主题变化（`stats-manager.ts` 中监听 `themeChanged` 事件）。
 
 ## 6. 关键数据流
 
@@ -598,4 +699,4 @@ engine.register(MyGenerator())
 
 *本文档持续更新，以项目最新代码为准。*  
 *维护者：高新炀*  
-*最后更新：2026-07-12*
+*最后更新：2026-08-13*
