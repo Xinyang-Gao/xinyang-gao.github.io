@@ -779,55 +779,56 @@ class AggregatedGenerator(OutputGenerator):
                 </aside>
                 <main class="main-content-area">
                     <div class="container">
-                        <h2>我的朋友们</h2>
-                        <p style="margin-bottom: 8px;">「 志合者，不以山海为远 」欢迎互访交流</p>
+                        <h2>我的朋友们</h2><br>
                         <div id="friends-stats-area" class="friends-stats">{count_text}</div>
                         <div class="friends-grid" id="friends-list-container-inner">
                             {cards_html}
                         </div>
                         <div class="external-links-section">
-                            <h3 class="external-section-title">🔗 站点工具 & 服务</h3>
+                            <h3 class="section-subtitle">本站用到的工具和服务</h3>
                             <div class="external-links-grid">
                                 {ext_html}
                             </div>
                         </div>
                         <div class="info-card">
-                            <div class="info-title">友情提示</div>
-                            <div class="requirements-section">
-                                <div class="section-subtitle">申请要求</div>
-                                <div class="requirements-grid">
-                                    <div class="requirement-item">
-                                        <div class="requirement-title">友链互换</div>
-                                        <p class="requirement-desc">请先添加本站友链，并确保您的站点可以被正常访问，双向奔赴才更有意义。</p>
-                                    </div>
-                                    <div class="requirement-item">
-                                        <div class="requirement-title">信息完整</div>
-                                        <p class="requirement-desc">请确保您的站点有清晰的名称、描述和头像，便于朋友们互相了解。</p>
-                                    </div>
-                                    <div class="requirement-item">
-                                        <div class="requirement-title">内容合规</div>
-                                        <p class="requirement-desc">拥有原创内容，符合中华人民共和国法律法规，共同维护纯净网络空间。</p>
-                                    </div>
-                                    <div class="requirement-item">
-                                        <div class="requirement-title">持续更新</div>
-                                        <p class="requirement-desc">建议保持一定的更新频率，热爱分享与交流。不限内容类型，期待多元碰撞。</p>
+                            <div class="info-card-toggle" role="button" tabindex="0" aria-expanded="false">
+                                <span class="toggle-text">互换友链</span>
+                                <span class="toggle-icon">▸</span>
+                            </div>
+                            <div class="info-card-content" style="display: none;">
+                                <div class="requirements-section">
+                                    <div class="section-subtitle">申请要求</div>
+                                    <div class="requirements-grid">
+                                        <div class="requirement-item">
+                                            <div class="requirement-title">友链互换</div>
+                                            <p class="requirement-desc">请先添加本站友链，并确保您的站点可以被正常访问，双向奔赴才更有意义。</p>
+                                        </div>
+                                        <div class="requirement-item">
+                                            <div class="requirement-title">信息完整</div>
+                                            <p class="requirement-desc">请确保您的站点有清晰的名称、描述和头像，便于朋友们互相了解。</p>
+                                        </div>
+                                        <div class="requirement-item">
+                                            <div class="requirement-title">内容合规</div>
+                                            <p class="requirement-desc">拥有原创内容，若有违法、侵权、恶意广告等违规内容将会撤下链接。</p>
+                                        </div>
+                                        <div class="requirement-item">
+                                            <div class="requirement-title">持续更新</div>
+                                            <p class="requirement-desc">建议保持一定的更新频率，热爱分享与交流。不限内容类型，期待多元碰撞。</p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div class="contact-note"><p>注意如果有<strong>违法、侵权、恶意广告</strong>等违规内容将会被撤下链接哟</p></div>
-                            <div class="myinfo-section">
-                                <div class="myinfo-header">我的信息</div>
-                                <div class="info-hint">如果您希望交换友链，可以按照下面的 JSON 提供您的站点信息</div>
-                                <div class="code-block-wrapper">
-                                    <div class="code-header">
-                                        <button class="copy-btn" id="copyJsonBtn">复制</button>
+                                <div class="provide-info-section">
+                                    <div class="section-subtitle">提供您的站点信息</div>
+                                    <div class="provide-info-text" id="provideInfoText">
+                                        <div><span class="info-label">名称: </span><span class="info-value">站点名称</span></div>
+                                        <div><span class="info-label">地址: </span><span class="info-value">可以正常访问的网址</span></div>
+                                        <div><span class="info-label">简介: </span><span class="info-value">一句简短的介绍</span></div>
+                                        <div><span class="info-label">头像: </span><span class="info-value">PNG/JPG/WebP/GIF/AVIF等格式都可以</span></div>
                                     </div>
-                                    <pre><code id="friendJsonExample">{{
-        "name": "高新炀的小站",
-        "link": "https://xinyang-gao.github.io",
-        "desc": "一个装着些稀奇古怪东西的个人小站，欢迎来逛逛~",
-        "avatar": "https://xinyang-gao.github.io/assets/avatar.webp"
-    }}</code></pre>
+                                    <div class="info-actions">
+                                        <button class="info-btn" id="switchInfoBtn">我的信息</button>
+                                        <button class="info-btn" id="copyInfoBtn">复制</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
