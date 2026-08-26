@@ -330,15 +330,27 @@ export class SearchController {
     const tagMap = new Map<string, number>();
     items.forEach((item: Item) => getTags(item).forEach(t => tagMap.set(t, (tagMap.get(t) || 0) + 1)));
     const tags = Array.from(tagMap.entries()).map(([name, count]) => ({ name, count }))
-      .sort((a, b) => a.name.localeCompare(b.name, 'zh'));
+      .sort((a, b) => a.name.localeCompare(b.name, 'zh'));  // 按名称排序
 
     this.tagsContainer.innerHTML = `<span class="filter-label">按标签筛选:</span>`;
+
+    const maxCount = Math.max(...tags.map(t => t.count), 1);
     tags.forEach(({ name, count }) => {
+      const ratio = count / maxCount;
+      let sizeClass = 'tag--sm';
+      if (ratio >= 0.66) sizeClass = 'tag--lg';
+      else if (ratio >= 0.33) sizeClass = 'tag--md';
+
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'tag-button';
-      btn.textContent = `${name} (${count})`;
+      btn.className = `tag-button ${sizeClass}`;
+      btn.textContent = name;
+      const badge = document.createElement('span');
+      badge.className = 'tag-count';
+      badge.textContent = String(count);
+      btn.appendChild(badge);
       btn.dataset.tag = name;
+
       btn.addEventListener('click', () => {
         const idx = this.selectedTags.indexOf(name);
         idx > -1 ? this.selectedTags.splice(idx, 1) : this.selectedTags.push(name);
@@ -348,6 +360,7 @@ export class SearchController {
       this.tagsContainer!.appendChild(btn);
     });
 
+    // 清除筛选按钮（不添加大小类，保持原样）
     const clear = document.createElement('button');
     clear.type = 'button';
     clear.className = 'tag-button';

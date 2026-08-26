@@ -78,6 +78,39 @@
   border-color: var(--accent-color);
   box-shadow: 0 3px 10px rgba(var(--accent-rgb), 0.3);
 }
+/* ---------- 标签大小变体 ---------- */
+.tag--lg, .tag-button.tag--lg {
+  font-size: 0.92rem;
+  padding: 8px 20px;
+  font-weight: 600;
+}
+.tag--md, .tag-button.tag--md {
+  font-size: 0.8rem;
+}
+.tag--sm, .tag-button.tag--sm {
+  font-size: 0.72rem;
+  padding: 4px 12px;
+}
+
+/* ---------- 计数徽章（全局） ---------- */
+.tag-count {
+  font-family: var(--font-mono);
+  font-size: 0.72em;
+  line-height: 1.5;
+  margin-left: 7px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent-color) 12%, transparent);
+  color: var(--accent-color);
+  transition: inherit;
+}
+
+/* 悬停时徽章跟随主题色变化 */
+.tag-button:hover .tag-count,
+.tag:hover .tag-count {
+  background: color-mix(in srgb, currentColor 22%, transparent);
+  color: inherit;
+}
 
 /* ---------- 搜索 ---------- */
 #search-container {
