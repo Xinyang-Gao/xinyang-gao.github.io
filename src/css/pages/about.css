@@ -67,7 +67,6 @@
     border-color: var(--accent-light);
     box-shadow: var(--shadow-md);
 }
-/* 手柄水印：保留一点点玩家气质 */
 .player-header-card::before {
     content: "\f11b";
     font-family: "Font Awesome 6 Free";
@@ -99,7 +98,6 @@
     letter-spacing: -0.5px;
     color: var(--text-color);
 }
-/* 在线徽章 */
 .player-status-badge {
     display: inline-flex;
     align-items: center;
@@ -132,14 +130,20 @@
 }
 
 .player-meta-grid {
+    list-style: none;
+    padding: 0;
+    margin: 8px 0 14px;
     display: flex;
     flex-wrap: wrap;
     gap: 6px 24px;
-    margin: 8px 0 14px;
     font-size: 0.88rem;
     color: var(--text-secondary);
 }
-.player-meta-grid span i {
+.player-meta-grid li {
+    display: inline-flex;
+    align-items: center;
+}
+.player-meta-grid li i {
     width: 18px;
     margin-right: 5px;
     text-align: center;
@@ -190,10 +194,9 @@
     overflow: hidden;
 }
 [data-theme="dark"] .exp-track { background: rgba(255, 255, 255, 0.08); }
-/* 填充条：width 交给 JS，只保留过渡 */
 .exp-fill {
     height: 100%;
-    width: 0%;
+    width: var(--w, 0%);
     border-radius: var(--radius-full);
     background: var(--accent-color);
     transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -228,8 +231,7 @@
     opacity: 0.6;
 }
 
-/* ---------- 5. 任务日志：一本日志，两条任务 ---------- */
-
+/* ---------- 任务日志 ---------- */
 .instance-grid {
     position: relative;
     display: grid;
@@ -242,8 +244,6 @@
     box-shadow: var(--shadow-sm);
     overflow: hidden;
 }
-
-/* 日志顶栏与计数：CSS 生成内容，无需改 HTML */
 .instance-grid::before {
     content: "◆ 任务日志 · QUEST LOG";
     padding: 9px 1.6rem;
@@ -276,15 +276,12 @@
     transition: background-color var(--transition-fast),
                 padding-left var(--transition-fast);
 }
-/* 条目之间用虚线分隔，像日志翻页线 */
 .instance-card + .instance-card {
     border-top: 1px dashed var(--border-color);
 }
-
 .instance-card.mission-main { --quest-color: var(--quest-main); --quest-tint: var(--quest-main-tint); }
 .instance-card.mission-side { --quest-color: var(--quest-side); --quest-tint: var(--quest-side-tint); }
 
-/* 悬停 = 游戏菜单选中态：内容右移让位，左侧浮出指针 */
 .instance-card::before {
     content: "▸";
     position: absolute;
@@ -306,13 +303,9 @@
     opacity: 1;
     transform: translateX(0);
 }
-
-/* ---- 主线任务：高权重条目 ---- */
-/* 左侧渐晕洗色，代替原来的整卡染色 */
 .mission-main {
     background-image: linear-gradient(90deg, var(--quest-main-tint), transparent 55%);
 }
-/* 底部流动条纹：视觉上永远"进行中" */
 .mission-main::after {
     content: "";
     position: absolute;
@@ -327,17 +320,16 @@
     animation: quest-stripes 1.1s linear infinite;
 }
 @keyframes quest-stripes {
-    to { background-position: 22.63px 0; } /* 22.63 = 16 / sin45°，无缝循环 */
+    to { background-position: 22.63px 0; }
 }
 .mission-main:hover::after { opacity: 0.85; }
 
-/* ---- 状态标签：方角 HUD 标签 + 状态点 ---- */
 .instance-label {
     display: inline-flex;
     align-items: center;
     gap: 8px;
     padding: 3px 10px 3px 8px;
-    border-radius: 2px; /* 方角，HUD 感；药丸圆角是 AI 指纹 */
+    border-radius: 2px;
     font-family: var(--font-mono);
     font-size: 0.6rem;
     font-weight: 700;
@@ -346,27 +338,24 @@
     color: var(--quest-color);
     background: var(--quest-tint);
 }
-/* 主线：呼吸实心点；支线：空心静默点——用状态点讲清主次 */
 .instance-label::before {
     content: "";
     width: 6px;
     height: 6px;
     border-radius: 50%;
     background: currentColor;
-    animation: pulse-dot 1.8s ease-in-out infinite; /* 复用在线徽章的关键帧 */
+    animation: pulse-dot 1.8s ease-in-out infinite;
 }
 .mission-side .instance-label::before {
     animation: none;
     background: transparent;
     box-shadow: inset 0 0 0 1.5px currentColor;
 }
-/* 标签里原有的 FA 小图标与状态点重复，交给状态点代言 */
 .instance-label i { display: none; }
 
-/* ---- 任务名与描述 ---- */
 .instance-name {
     margin: 12px 0 4px;
-    font-family: var(--font-serif); /* 衬线大字：主线的分量感 */
+    font-family: var(--font-serif);
     font-size: 1.5rem;
     font-weight: 700;
     letter-spacing: -0.3px;
@@ -390,15 +379,13 @@
     line-height: 1.7;
     color: var(--text-secondary);
 }
-
-/* ---- 支线任务：压缩为次级条目 ---- */
 .mission-side {
     padding-top: 1.05rem;
     padding-bottom: 1.15rem;
 }
 .mission-side .instance-name {
     margin: 8px 0 2px;
-    font-family: var(--font-sans); /* 无衬线正文字号，与主线拉开层级 */
+    font-family: var(--font-sans);
     font-size: 1.05rem;
     letter-spacing: 0;
 }
@@ -408,18 +395,17 @@
 }
 .mission-side .instance-desc { font-size: 0.82rem; }
 
-/* 动效可关闭 */
 @media (prefers-reduced-motion: reduce) {
     .instance-label::before,
     .mission-main::after { animation: none; }
 }
 
-/* ---------- 区块标题：中文衬线 英文小字 渐隐细线 ---------- */
-.about-section-title,
+/* ---------- 区块标题 ---------- */
 .section-title,
+.about-section-title,
 .achievement-section-title {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     gap: 12px;
     margin: 2.2rem 0 1rem;
     padding: 0;
@@ -429,14 +415,14 @@
     font-weight: 700;
     color: var(--text-color);
 }
-.about-section-title i,
 .section-title i,
+.about-section-title i,
 .achievement-section-title i {
     font-size: 1rem;
     color: var(--accent-color);
 }
-.about-section-title .sub,
 .section-title .sub,
+.about-section-title .sub,
 .achievement-section-title .sub {
     font-family: var(--font-mono);
     font-size: 0.66rem;
@@ -446,8 +432,8 @@
     color: var(--text-secondary);
     opacity: 0.8;
 }
-.about-section-title::after,
 .section-title::after,
+.about-section-title::after,
 .achievement-section-title::after {
     content: '';
     flex: 1;
@@ -511,7 +497,7 @@
 [data-theme="dark"] .skill-bar { background: rgba(255, 255, 255, 0.08); }
 .skill-bar-fill {
     height: 100%;
-    width: 0%;
+    width: var(--w, 0%);
     border-radius: var(--radius-full);
     background: var(--accent-color);
     transition: width 0.8s ease;
@@ -531,7 +517,7 @@
     border: 1px solid var(--border-light);
 }
 
-/* ----------成就：中性卡片，难度只染徽章与图标 ---------- */
+/* ---------- 成就 ---------- */
 .achievement-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -550,7 +536,6 @@
     transition: transform var(--transition-fast),
                 border-color var(--transition-fast),
                 box-shadow var(--transition-fast);
-    /* backwards：延迟期间显示 from 状态，结束后交还 hover 控制权 */
     animation: achievementFadeInUp 0.5s var(--transition-bounce) backwards;
 }
 .achievement-card:nth-child(1) { animation-delay: 0.03s; }
@@ -570,7 +555,6 @@
     box-shadow: var(--shadow-md);
 }
 
-/* 难度色板：仅作用于徽章与图标底色 */
 .difficulty-easy   { --diff-color: #2f9e63; --diff-tint: rgba(47, 158, 99, 0.10); }
 .difficulty-medium { --diff-color: #c2801d; --diff-tint: rgba(194, 128, 29, 0.10); }
 .difficulty-hard   { --diff-color: #c2564a; --diff-tint: rgba(194, 86, 74, 0.10); }
@@ -680,7 +664,7 @@
 }
 .flip-card {
     width: 100%;
-    min-height: 200px; /* 初始占位，JS 会动态覆盖 */
+    min-height: 200px;
     transition: min-height 0.5s ease;
 }
 .flip-card-inner {
@@ -711,11 +695,115 @@
 }
 .flip-card-back { transform: rotateY(180deg); }
 
-.back-content-wrapper { max-width: 100%; }
-.back-content-wrapper h2 { margin-top: 0; }
-.back-content-wrapper p { max-width: 100%; }
+/* ---------- 反面内容样式 ---------- */
+.back-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    margin-top: 1.2rem;
+    max-width: 100%;
+}
+.back-title {
+    margin-top: 0;
+    border-bottom: 2px solid var(--accent-color);
+    padding-bottom: 0.5rem;
+    display: inline-block;
+    font-size: 1.6rem;
+}
+.bio-text p {
+    margin: 0;
+    line-height: 1.8;
+    font-size: 1.05rem;
+}
 
-/* 翻转按钮：安静的描边按钮 */
+/* 引用卡片 */
+.quote-card {
+    padding: 1.2rem 1.6rem;
+    border-radius: var(--radius-xl);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.06), inset 0 1px 0 rgba(255,255,255,0.1);
+    transition: all 0.4s ease;
+    border: 2px solid transparent;
+}
+.quote-card.quote-blue {
+    background: linear-gradient(145deg, rgba(52,152,219,0.10), rgba(88,51,200,0.05));
+    border-color: rgba(52,152,219,0.30);
+}
+.quote-card.quote-gold {
+    background: linear-gradient(145deg, rgba(255,215,0,0.08), rgba(255,160,0,0.04));
+    border-color: rgba(255,215,0,0.25);
+}
+.quote-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+}
+.quote-header strong {
+    font-size: 1.1rem;
+}
+.quote-blue .quote-header strong {
+    background: linear-gradient(135deg, #3498db, #5b8def);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+.quote-gold .quote-header strong {
+    background: linear-gradient(135deg, #f5a623, #f7c948);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+.badge {
+    font-size: 0.55rem;
+    padding: 2px 12px;
+    border-radius: 40px;
+    border: 1px solid rgba(0,0,0,0.1);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 600;
+}
+.badge-fav {
+    background: rgba(52,152,219,0.12);
+    color: #2471a3;
+    border-color: rgba(52,152,219,0.18);
+}
+.badge-wip {
+    background: rgba(255,215,0,0.15);
+    color: #b8860b;
+    border-color: rgba(255,215,0,0.20);
+}
+.quote-card p {
+    margin: 0 0 8px 0;
+    line-height: 1.8;
+    font-size: 0.98rem;
+    color: var(--text-color);
+}
+.tag-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 8px;
+}
+.tag-group .tag {
+    font-size: 0.7rem;
+    background: rgba(0,0,0,0.04);
+    border-color: var(--border-light);
+}
+[data-theme="dark"] .tag-group .tag {
+    background: rgba(255,255,255,0.05);
+}
+.back-footer {
+    line-height: 1.8;
+    color: var(--text-secondary);
+    font-style: italic;
+    border-top: 1px dashed var(--border-color);
+    padding-top: 0.8rem;
+    margin-bottom: 0;
+    text-align: center;
+}
+
+/* ---------- 翻转控制 ---------- */
 .flip-controls {
     margin-top: 26px;
     padding-bottom: 4px;
@@ -752,7 +840,7 @@
 }
 .flip-card.flipped .flip-btn i { transform: rotate(180deg); }
 
-/* ---------- 日常爱好：中性底 + 小色点图标 ---------- */
+/* ---------- 日常爱好 ---------- */
 .daily-hobby-card {
     padding: 1.2rem 1.4rem 1.3rem;
     background: var(--surface-color-secondary);
@@ -797,7 +885,6 @@
     background: var(--tag-bg);
     border: 1px solid var(--border-light);
 }
-
 .daily-hobby-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -831,7 +918,6 @@
     font-size: 0.65rem;
     color: var(--text-secondary);
 }
-/* 小色点图标：页面里仅存的几处彩色，充当类目标记 */
 .hobby-icon-minecraft,
 .hobby-icon-music,
 .hobby-icon-paint,
@@ -854,7 +940,7 @@
 [data-theme="dark"] .hobby-icon-paint     { color: #e07163; background: rgba(224, 113, 99, 0.13); }
 [data-theme="dark"] .hobby-icon-piano     { color: #7aa5ec; background: rgba(122, 165, 236, 0.13); }
 
-/* ---------- 评论区卡片 ---------- */
+/* ---------- 评论区 ---------- */
 .comment-card {
     margin-top: 2rem;
     padding: 1.6rem 1.8rem 1.3rem;
@@ -870,7 +956,7 @@
     box-shadow: var(--shadow-md);
 }
 
-/* MBTI */
+/* ---------- MBTI ---------- */
 .mbti-profile-card {
     padding: 1.2rem 1.4rem 1.1rem;
     background: var(--surface-color-secondary);
@@ -883,8 +969,6 @@
     border-color: var(--accent-light);
     box-shadow: var(--shadow-sm);
 }
-
-/* 头部 */
 .mbti-header {
     display: flex;
     flex-wrap: wrap;
@@ -948,8 +1032,6 @@
     border-radius: var(--radius-full);
     border: 1px solid var(--border-light);
 }
-
-/* 维度列表 */
 .mbti-dimensions {
     display: flex;
     flex-direction: column;
@@ -959,30 +1041,30 @@
 .mbti-dimension {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px;
 }
 .dimension-labels {
     display: flex;
     align-items: center;
-    gap: 2px;
+    gap: 6px;
     flex-shrink: 0;
-    min-width: 44px;
+    min-width: 48px;
 }
 .dimension-left,
 .dimension-right {
     font-family: var(--font-mono);
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     font-weight: 700;
-    color: var(--text-secondary);
-    width: 14px;
+    width: 20px;
     text-align: center;
+    transition: color 0.25s ease, opacity 0.25s ease;
 }
 .dimension-left { opacity: 0.6; }
 .dimension-right { color: var(--accent-color); }
 
 .dimension-track {
     flex: 1;
-    height: 4px;
+    height: 5px;
     border-radius: var(--radius-full);
     background: var(--border-light);
     overflow: hidden;
@@ -992,21 +1074,48 @@
 }
 .dimension-fill {
     height: 100%;
+    width: var(--w, 0%);
     border-radius: var(--radius-full);
     background: var(--accent-color);
     transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .dimension-percent {
     flex-shrink: 0;
-    min-width: 40px;
+    min-width: 44px;
     font-family: var(--font-mono);
-    font-size: 0.72rem;
+    font-size: 0.78rem;
     font-weight: 700;
     color: var(--text-color);
     text-align: right;
 }
 
-/* 特质标签 */
+.mbti-dimension.highlight-left .dimension-left {
+    color: var(--accent-color) !important;
+    opacity: 1 !important;
+}
+.mbti-dimension.highlight-left .dimension-right {
+    color: var(--text-secondary) !important;
+    opacity: 0.5 !important;
+}
+.mbti-dimension.highlight-right .dimension-left {
+    color: var(--text-secondary) !important;
+    opacity: 0.5 !important;
+}
+.mbti-dimension.highlight-right .dimension-right {
+    color: var(--accent-color) !important;
+    opacity: 1 !important;
+}
+[data-theme="dark"] .mbti-dimension.highlight-left .dimension-left,
+[data-theme="dark"] .mbti-dimension.highlight-right .dimension-right {
+    color: var(--accent-color) !important;
+    opacity: 1 !important;
+}
+[data-theme="dark"] .mbti-dimension.highlight-left .dimension-right,
+[data-theme="dark"] .mbti-dimension.highlight-right .dimension-left {
+    color: var(--text-secondary) !important;
+    opacity: 0.5 !important;
+}
+
 .mbti-traits {
     display: flex;
     flex-wrap: wrap;
@@ -1030,87 +1139,7 @@
     transform: translateY(-1px);
 }
 
-/* ---------- 高亮控制：哪边占比高，哪边高亮 ---------- */
-.mbti-dimension.highlight-left .dimension-left {
-    color: var(--accent-color) !important;
-    opacity: 1 !important;
-}
-.mbti-dimension.highlight-left .dimension-right {
-    color: var(--text-secondary) !important;
-    opacity: 0.5 !important;
-}
-
-.mbti-dimension.highlight-right .dimension-left {
-    color: var(--text-secondary) !important;
-    opacity: 0.5 !important;
-}
-.mbti-dimension.highlight-right .dimension-right {
-    color: var(--accent-color) !important;
-    opacity: 1 !important;
-}
-
-/* ---------- 增加字母宽度与间距，解决“挤在一起” ---------- */
-.dimension-left,
-.dimension-right {
-    width: 20px !important;      /* 原 14px → 20px */
-    font-size: 0.85rem !important; /* 原 0.75rem → 0.85rem */
-    font-weight: 700;
-    text-align: center;
-    transition: color 0.25s ease, opacity 0.25s ease;
-}
-
-.dimension-labels {
-    display: flex;
-    align-items: center;
-    gap: 6px !important;          /* 新增字母间距 */
-    flex-shrink: 0;
-    min-width: 48px;              /* 固定最小宽度，防止抖动 */
-}
-
-/* ---------- 填充条与百分比对齐微调 ---------- */
-.mbti-dimension {
-    display: flex;
-    align-items: center;
-    gap: 14px;                    /* 增大整体间距 */
-}
-
-.dimension-track {
-    flex: 1;
-    height: 5px;                  /* 略微加粗，更醒目 */
-    border-radius: var(--radius-full);
-    background: var(--border-light);
-    overflow: hidden;
-}
-
-.dimension-fill {
-    height: 100%;
-    border-radius: var(--radius-full);
-    background: var(--accent-color);
-    transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-.dimension-percent {
-    flex-shrink: 0;
-    min-width: 44px;
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    font-weight: 700;
-    color: var(--text-color);
-    text-align: right;
-}
-
-[data-theme="dark"] .mbti-dimension.highlight-left .dimension-left,
-[data-theme="dark"] .mbti-dimension.highlight-right .dimension-right {
-    color: var(--accent-color) !important;
-    opacity: 1 !important;
-}
-[data-theme="dark"] .mbti-dimension.highlight-left .dimension-right,
-[data-theme="dark"] .mbti-dimension.highlight-right .dimension-left {
-    color: var(--text-secondary) !important;
-    opacity: 0.5 !important;
-}
-
-/* 响应式 */
+/* ---------- 响应式 ---------- */
 @media (max-width: 480px) {
     .mbti-profile-card {
         padding: 1rem 1.1rem 0.9rem;
@@ -1170,6 +1199,7 @@
     .flip-card-back { padding: 26px 20px; }
     .flip-btn { padding: 11px 24px; font-size: 0.88rem; }
     .comment-card { padding: 1.2rem 1.2rem 1rem; }
+    .quote-card { padding: 1rem 1.2rem; }
 }
 
 @media (max-width: 480px) {
