@@ -200,39 +200,44 @@ nav {
 .theme-switch input:focus-visible + .slider {
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent-color) 25%, transparent);
 }
-/* 太阳（浅色 / 未选中）：圆点 + 八向光芒 */
+/* 太阳 */
 .slider::before {
   content: '';
   position: absolute;
-  top: 50%; left: 50%;
-  width: 9px; height: 9px;
-  margin: -4.5px 0 0 -4.5px;
-  border-radius: 50%;
-  background: var(--accent-color);
-  box-shadow:
-    0 -8px 0 -2.5px var(--accent-color),
-    0  8px 0 -2.5px var(--accent-color),
-    -8px 0 0 -2.5px var(--accent-color),
-     8px 0 0 -2.5px var(--accent-color),
-    -5.7px -5.7px 0 -2.5px var(--accent-color),
-     5.7px  5.7px 0 -2.5px var(--accent-color),
-    -5.7px  5.7px 0 -2.5px var(--accent-color),
-     5.7px -5.7px 0 -2.5px var(--accent-color);
-  transition: opacity 0.25s ease, transform 0.45s var(--transition-bounce);
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  background-color: var(--accent-color);
+  -webkit-mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='4.5' fill='black'/%3E%3Cline x1='12' y1='2' x2='12' y2='5' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3Cline x1='12' y1='19' x2='12' y2='22' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3Cline x1='2' y1='12' x2='5' y2='12' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3Cline x1='19' y1='12' x2='22' y2='12' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3Cline x1='4.5' y1='4.5' x2='6.5' y2='6.5' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3Cline x1='17.5' y1='17.5' x2='19.5' y2='19.5' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3Cline x1='4.5' y1='19.5' x2='6.5' y2='17.5' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3Cline x1='19.5' y1='4.5' x2='17.5' y2='6.5' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+  mask-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='4.5' fill='black'/%3E%3Cline x1='12' y1='2' x2='12' y2='5' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3Cline x1='12' y1='19' x2='12' y2='22' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3Cline x1='2' y1='12' x2='5' y2='12' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3Cline x1='19' y1='12' x2='22' y2='12' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3Cline x1='4.5' y1='4.5' x2='6.5' y2='6.5' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3Cline x1='17.5' y1='17.5' x2='19.5' y2='19.5' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3Cline x1='4.5' y1='19.5' x2='6.5' y2='17.5' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3Cline x1='19.5' y1='4.5' x2='17.5' y2='6.5' stroke='black' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  transition: opacity 0.35s cubic-bezier(0.34, 1.2, 0.64, 1),
+              transform 0.35s cubic-bezier(0.34, 1.2, 0.64, 1);
 }
-/* 月亮（深色 / 选中）：内阴影月牙 */
+/* 月亮（月牙） */
 .slider::after {
   content: '';
   position: absolute;
-  top: 50%; left: 50%;
-  width: 15px; height: 15px;
-  margin: -7.5px 0 0 -7.5px;
+  top: 50%;
+  left: 50%;
+  width: 18px;
+  height: 18px;
+  margin: -9px 0 0 -9px;
   border-radius: 50%;
   box-shadow: inset -5px 4px 0 0 var(--accent-color);
   opacity: 0;
   transform: rotate(-120deg) scale(0.3);
-  transition: opacity 0.25s ease, transform 0.45s var(--transition-bounce);
+  transition: opacity 0.35s cubic-bezier(0.34, 1.2, 0.64, 1),
+              transform 0.35s cubic-bezier(0.34, 1.2, 0.64, 1);
 }
+/* 切换状态  */
 .theme-switch input:checked + .slider::before {
   opacity: 0;
   transform: rotate(120deg) scale(0.3);
@@ -240,10 +245,6 @@ nav {
 .theme-switch input:checked + .slider::after {
   opacity: 1;
   transform: rotate(0deg) scale(1);
-}
-.theme-switch input:checked + .slider {
-  border-color: color-mix(in srgb, var(--accent-color) 55%, transparent);
-  background: color-mix(in srgb, var(--accent-color) 10%, var(--surface-color));
 }
 
 /* ---------- 移动端菜单按钮 ---------- */
