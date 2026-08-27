@@ -819,7 +819,7 @@ class AggregatedGenerator(OutputGenerator):
                                 </div>
                                 <div class="provide-info-section">
                                     <div class="section-subtitle">本站信息</div>
-                                    <div class="provide-info-text" id="provideInfoText">
+                                    <div class="provide-info-text" id="provideInfoText" data-tooltip="交换你的友链信息时记得前面四个必填项 <3">
                                         <!-- 主要信息 -->
                                         <div><span class="info-label">名称：</span><span class="info-value">高新炀的小站</span></div>
                                         <div><span class="info-label">地址：</span><span class="info-value">https://xinyang-gao.github.io</span></div>

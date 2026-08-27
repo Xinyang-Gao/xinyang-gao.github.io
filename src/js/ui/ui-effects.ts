@@ -5,6 +5,7 @@ import { CONFIG, storageController } from '/js/core/core.js';
 import { getTimeBasedTheme } from '/js/core/page-utils.js';
 import { showJumpDialog } from '/js/ui/jump-dialog.js';
 import { MouseEffectManager, CustomCursor } from './mouse-effects.js';
+import { initTooltips } from './tooltip.js';
 
 // 设置键名（与 settings.js 保持一致）
 const SETTINGS_KEYS = {
@@ -220,6 +221,7 @@ export function initUIEffects(): void {
 
   const initFn = () => {
     refreshUIEffects();
+    initTooltips();
   };
 
   if ('requestIdleCallback' in window) {

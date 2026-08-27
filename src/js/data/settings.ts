@@ -119,13 +119,11 @@ export function bindSettingsControls(container: HTMLElement): void {
 }
 
 export function showSettingsPanel(): void {
-  // 构建设置内容的 HTML（不包含关闭按钮和外部遮罩）
   const settingsHTML = `
       <div class="settings-group">
-        <div class="setting-item">
+        <div class="setting-item" data-tooltip="启用独特的鼠标跟随动画效果（仅桌面端）">
           <div class="setting-info">
             <span class="setting-label"><i class="fas fa-arrow-pointer"></i> 自定义光标</span>
-            <span class="setting-desc">启用独特的鼠标跟随动画效果 (仅桌面端)</span>
           </div>
           <label class="toggle-switch">
             <input type="checkbox" id="cursorToggleCheckbox">
@@ -133,10 +131,9 @@ export function showSettingsPanel(): void {
           </label>
         </div>
 
-        <div class="setting-item">
+        <div class="setting-item" data-tooltip="击外部链接时显示确认弹窗">
           <div class="setting-info">
-            <span class="setting-label"><i class="fas fa-shield-alt"></i> 外链安全拦截</span>
-            <span class="setting-desc">点击外部链接时显示确认弹窗，防止误触</span>
+            <span class="setting-label"><i class="fas fa-shield-alt"></i> 外链拦截</span>
           </div>
           <label class="toggle-switch">
             <input type="checkbox" id="linkWarningCheckbox">
@@ -152,13 +149,12 @@ export function showSettingsPanel(): void {
         
         <div class="action-buttons">
           <button id="clearSWCacheBtn" class="btn-outline">
-            <i class="fas fa-broom"></i> 清除缓存
+            清除缓存
           </button>
-          <button id="clearCookiesBtn" class="btn-danger">
+          <button id="clearCookiesBtn" class="btn-danger" data-tooltip="清除所有本地偏好设置并恢复初始状态">
             <i class="fas fa-trash-can"></i> 重置所有数据
           </button>
         </div>
-        <p class="danger-hint">重置后将清除所有本地偏好设置并恢复初始状态。</p>
       </div>
   `;
 
