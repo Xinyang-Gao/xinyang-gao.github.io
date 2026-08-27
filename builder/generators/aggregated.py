@@ -800,34 +800,38 @@ class AggregatedGenerator(OutputGenerator):
                                     <div class="section-subtitle">申请要求</div>
                                     <div class="requirements-grid">
                                         <div class="requirement-item">
-                                            <div class="requirement-title">友链互换</div>
-                                            <p class="requirement-desc">请先添加本站友链，并确保您的站点可以被正常访问，双向奔赴才更有意义。</p>
+                                            <div class="requirement-title">双向奔赴</div>
+                                            <p class="requirement-desc">先加上我的链接，再告诉我你的，这样我们就是朋友啦！</p>
                                         </div>
                                         <div class="requirement-item">
-                                            <div class="requirement-title">信息完整</div>
-                                            <p class="requirement-desc">请确保您的站点有清晰的名称、描述和头像，便于朋友们互相了解。</p>
+                                            <div class="requirement-title">让我认识你</div>
+                                            <p class="requirement-desc">名字、简介、头像，缺一不可哦，不然我怎么记住你呢？</p>
                                         </div>
                                         <div class="requirement-item">
-                                            <div class="requirement-title">内容合规</div>
-                                            <p class="requirement-desc">拥有原创内容，若有违法、侵权、恶意广告等违规内容将会撤下链接。</p>
+                                            <div class="requirement-title">做个好邻居</div>
+                                            <p class="requirement-desc">原创为主，不搞违规，和谐相处，友谊长存。</p>
                                         </div>
                                         <div class="requirement-item">
-                                            <div class="requirement-title">持续更新</div>
-                                            <p class="requirement-desc">建议保持一定的更新频率，热爱分享与交流。不限内容类型，期待多元碰撞。</p>
+                                            <div class="requirement-title">常来常往</div>
+                                            <p class="requirement-desc">偶尔更新一下，让我们知道你还在，内容不限，期待你的独特分享！</p>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="provide-info-section">
-                                    <div class="section-subtitle">提供您的站点信息</div>
+                                    <div class="section-subtitle">本站信息</div>
                                     <div class="provide-info-text" id="provideInfoText">
-                                        <div><span class="info-label">名称: </span><span class="info-value">站点名称</span></div>
-                                        <div><span class="info-label">地址: </span><span class="info-value">可以正常访问的网址</span></div>
-                                        <div><span class="info-label">简介: </span><span class="info-value">一句简短的介绍</span></div>
-                                        <div><span class="info-label">头像: </span><span class="info-value">PNG/JPG/WebP/GIF/AVIF等格式都可以</span></div>
+                                        <!-- 主要信息 -->
+                                        <div><span class="info-label">名称：</span><span class="info-value">高新炀的小站</span></div>
+                                        <div><span class="info-label">地址：</span><span class="info-value">https://xinyang-gao.github.io</span></div>
+                                        <div><span class="info-label">简介：</span><span class="info-value">一个装着些稀奇古怪东西的个人小站，欢迎来逛逛~</span></div>
+                                        <div><span class="info-label">头像：</span><span class="info-value">https://xinyang-gao.github.io/assets/avatar.webp</span></div>
+                                        <!-- 次要信息 -->
+                                        <div class="info-secondary"><span class="info-label">RSS：</span><span class="info-value">https://xinyang-gao.github.io/rss.xml</span></div>
+                                        <div class="info-secondary"><span class="info-label">站点地图：</span><span class="info-value">https://xinyang-gao.github.io/sitemap.xml</span></div>
+                                        <div class="info-secondary"><span class="info-label">开源地址：</span><span class="info-value">https://github.com/Xinyang-Gao/xinyang-gao.github.io</span></div>
                                     </div>
                                     <div class="info-actions">
-                                        <button class="info-btn" id="switchInfoBtn">我的信息</button>
-                                        <button class="info-btn" id="copyInfoBtn">复制</button>
+                                        <button class="info-btn" id="copyInfoBtn">复制信息</button>
                                     </div>
                                 </div>
                             </div>

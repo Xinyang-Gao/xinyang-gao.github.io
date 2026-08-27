@@ -457,6 +457,16 @@ code {
 @keyframes spin {
     to { transform: rotate(360deg); }
 }
+/* 次要信息（浅色小字） */
+.info-secondary {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    opacity: 0.7;
+}
+.info-secondary .info-label {
+    font-weight: 500;
+    color: var(--text-secondary);
+}
 
 /* --- 平板及以下 (≤ 1024px) --- */
 @media (max-width: 1024px) {

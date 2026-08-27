@@ -89,6 +89,12 @@
       "link": "https://blog.oopss.top",
       "desc": "知行合一",
       "avatar": "https://cdn.oopss.top/icon.jpg"
+    },
+    {
+      "name": "JerryLife",
+      "link": "https://www.jerrynis.com",
+      "desc": "Enjoy life",
+      "avatar": "https://img.jerry-nis.top/d8703c5c-4c4a-49cc-bd94-3363c9eda2d8.png"
     }
   ],
   "external": [
@@ -100,7 +106,7 @@
     {
       "name": "APlayer_Glassmorphism-UI",
       "link": "https://github.com/BB0813/APlayer_Glassmorphism-UI/",
-      "desc": "现在使用的音乐播放器，APlayer分支（基于Vue3的新UI/UX）"
+      "desc": "APlayer分支（基于Vue3的新UI/UX）"
     },
     {
       "name": "Vercount",
@@ -115,7 +121,7 @@
     {
       "name": "github-contrib-graph",
       "link": "https://www.npmjs.com/package/github-contrib-graph?activeTab=readme",
-      "desc": "一个轻量级、可自定义的 GitHub 贡献图小部件"
+      "desc": "轻量、可自定义的 GitHub 贡献图小部件"
     },
     {
       "name": "Github Pages",
