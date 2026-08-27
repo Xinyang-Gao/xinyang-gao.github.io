@@ -895,9 +895,8 @@ class AggregatedGenerator(OutputGenerator):
         items = []
         for ext in external_list:
             items.append(f'''
-                <a href="{escape(ext.get('link', '#'))}" class="external-link-card" target="_blank" rel="noopener noreferrer">
+                <a href="{escape(ext.get('link', '#'))}" class="external-link-card" target="_blank" rel="noopener noreferrer"  data-tooltip="{escape(ext.get('desc', ''))}">
                     <span class="external-link-name">{escape(ext.get('name', ''))}</span>
-                    <span class="external-link-desc">{escape(ext.get('desc', ''))}</span>
                 </a>
             ''')
         return ''.join(items)

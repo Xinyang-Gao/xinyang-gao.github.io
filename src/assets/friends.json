@@ -99,19 +99,34 @@
   ],
   "external": [
     {
-      "name": "开往 / Travelling",
+      "name": "Travelling",
       "link": "https://www.travellings.cn/",
       "desc": "开往 – 友链接力"
     },
     {
+      "name": "路过图床",
+      "link": "https://imgchr.com/",
+      "desc": "图床服务"
+    },
+    {
+      "name": "Bing",
+      "link": "https://cn.bing.com/",
+      "desc": "网站壁纸来源"
+    },
+    {
+      "name": "Font Awesome",
+      "link": "https://fontawesome.com/",
+      "desc": "提供大量风格一致的小图标"
+    },
+    {
       "name": "APlayer_Glassmorphism-UI",
       "link": "https://github.com/BB0813/APlayer_Glassmorphism-UI/",
-      "desc": "APlayer分支（基于Vue3的新UI/UX）"
+      "desc": "APlayer 音乐播放器分支（基于 Vue3 的新UI/UX）"
     },
     {
       "name": "Vercount",
       "link": "https://www.busuanzi.cc/",
-      "desc": "网站流量计数器，简单、快速、可靠"
+      "desc": "网站流量计数器 - 简单、快速、可靠"
     },
     {
       "name": "Twikoo",
@@ -121,7 +136,7 @@
     {
       "name": "github-contrib-graph",
       "link": "https://www.npmjs.com/package/github-contrib-graph?activeTab=readme",
-      "desc": "轻量、可自定义的 GitHub 贡献图小部件"
+      "desc": "GitHub 贡献图小部件 - 轻量、可自定义"
     },
     {
       "name": "Github Pages",
@@ -129,14 +144,29 @@
       "desc": "网站部署"
     },
     {
+      "name": "Netlify",
+      "link": "https://app.netlify.com/",
+      "desc": "Twikoo 云函数部署"
+    },
+    {
+      "name": "MongoDB",
+      "link": "https://www.mongodb.com/",
+      "desc": "Twikoo 数据存储"
+    },
+    {
+      "name": "萌ICP",
+      "link": "https://icp.gov.moe/",
+      "desc": "萌国 ICP 备案"
+    },
+    {
       "name": "NeteaseMiniPlayerV2",
       "link": "https://github.com/numakkiyu/NeteaseMiniPlayer/",
-      "desc": "（曾经使用）网易云音乐迷你播放器，现已停止维护（新项目V3）"
+      "desc": "（曾使用）网易云音乐迷你播放器，因开发新版本现已停止维护"
     },
     {
       "name": "Busuanzi",
       "link": "https://www.busuanzi.cc/",
-      "desc": "（曾经使用）极简网站流量计数器"
+      "desc": "（曾使用）极简网站流量计数器"
     }
   ]
 }

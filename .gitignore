@@ -1,6 +1,7 @@
 todo.md
 builder/__pycache__/
 builder/generators/__pycache__/
+builder/friend_link_reply_building.py
 node_modules/
 tsconfig.json
 .build_state.json

@@ -30,6 +30,7 @@ export class TooltipManager {
       left: '0',
       top: '0',
     });
+
     const bg = document.createElement('div');
     bg.className = 'tooltip-bg';
     Object.assign(bg.style, {
@@ -41,10 +42,12 @@ export class TooltipManager {
       backgroundColor: 'rgba(var(--accent-rgb), 0.85)',
       borderRadius: '6px',
       boxShadow: '0 0 0 0 rgba(0,0,0,0)',
-      transition: 'width 0.4s cubic-bezier(0.34, 1.2, 0.64, 1), height 0.4s cubic-bezier(0.34, 1.2, 0.64, 1), box-shadow 0.15s ease, opacity 0.15s ease',
+      transition:
+        'width 0.4s cubic-bezier(0.34, 1.2, 0.64, 1), height 0.4s cubic-bezier(0.34, 1.2, 0.64, 1), box-shadow 0.15s ease, opacity 0.15s ease',
       opacity: '1',
       overflow: 'visible',
     });
+
     const textEl = document.createElement('div');
     textEl.className = 'tooltip-text';
     Object.assign(textEl.style, {
@@ -63,6 +66,7 @@ export class TooltipManager {
       maxWidth: '300px',
       overflow: 'visible',
     });
+
     container.appendChild(bg);
     container.appendChild(textEl);
     document.body.appendChild(container);
@@ -124,7 +128,7 @@ export class TooltipManager {
 
     const text = rawText.replace(/\\n/g, '\n');
 
-    // 测量尺寸
+    // 测量尺寸（增加 2px 冗余以防止末尾字符换行溢出）
     const measure = document.createElement('div');
     const style = getComputedStyle(target);
     Object.assign(measure.style, {
@@ -141,9 +145,13 @@ export class TooltipManager {
     measure.textContent = text;
     document.body.appendChild(measure);
     const rect = measure.getBoundingClientRect();
-    const width = Math.min(Math.ceil(rect.width), 300);
-    const height = Math.ceil(rect.height);
+    const measuredWidth = Math.ceil(rect.width);
+    const measuredHeight = Math.ceil(rect.height);
     document.body.removeChild(measure);
+
+    // 最终尺寸：宽度 + 2px 冗余，但不超过最大宽度
+    const finalWidth = Math.min(measuredWidth + 2, 300);
+    const finalHeight = measuredHeight;
 
     // 构建字符行（保留换行）
     const lines = text.split('\n');
@@ -165,8 +173,8 @@ export class TooltipManager {
 
     if (this.textEl) {
       this.textEl.innerHTML = '';
-      this.textEl.style.width = width + 'px';
-      this.textEl.style.height = height + 'px';
+      this.textEl.style.width = finalWidth + 'px';
+      this.textEl.style.height = finalHeight + 'px';
       this.textEl.appendChild(fragment);
       this.textEl.style.opacity = '1';
     }
@@ -174,10 +182,11 @@ export class TooltipManager {
     // 定位（基于鼠标坐标，带弹性跟随）
     let left = clientX + this.offsetX;
     let top = clientY + this.offsetY;
-    const vw = window.innerWidth, vh = window.innerHeight;
-    if (left + width > vw) left = clientX - width - this.offsetX;
+    const vw = window.innerWidth,
+      vh = window.innerHeight;
+    if (left + finalWidth > vw) left = clientX - finalWidth - this.offsetX;
     if (left < 0) left = 10;
-    if (top + height > vh) top = clientY - height - this.offsetY;
+    if (top + finalHeight > vh) top = clientY - finalHeight - this.offsetY;
     if (top < 0) top = 10;
 
     if (this.container) {
@@ -186,20 +195,29 @@ export class TooltipManager {
       this.container.style.opacity = '1';
     }
 
-    // 背景扩展（从0到完整尺寸，无透明度变化）
+    // 获取所有字符，计算总显示时间
+    const chars = this.textEl?.querySelectorAll('.tooltip-char') || [];
+    const totalChars = chars.length;
+    // 每个字符显示间隔 30ms，背景过渡与总时间同步
+    const duration = Math.max(totalChars * 30, 300); // 至少 300ms 避免闪烁
+
+    // 背景扩展：从 0 到最终尺寸，过渡时长与字符浮现总时间一致
     if (this.bg) {
-      // 重置为0，强制重排，然后过渡到目标
+      // 重置为 0，强制重排
       this.bg.style.width = '0px';
       this.bg.style.height = '0px';
       this.bg.style.boxShadow = '0 0 0 0 rgba(0,0,0,0)';
       void this.bg.offsetHeight;
-      this.bg.style.width = width + 'px';
-      this.bg.style.height = height + 'px';
-      // 边框会在文字完全显示后添加
+
+      // 设置动态过渡时长（仅宽度和高度使用长过渡，边框和透明度保持短过渡）
+      this.bg.style.transition = `width ${duration}ms cubic-bezier(0.34, 1.2, 0.64, 1), height ${duration}ms cubic-bezier(0.34, 1.2, 0.64, 1), box-shadow 0.15s ease, opacity 0.15s ease`;
+
+      // 扩展到最终尺寸
+      this.bg.style.width = finalWidth + 'px';
+      this.bg.style.height = finalHeight + 'px';
     }
 
     // 逐字浮现
-    const chars = this.textEl?.querySelectorAll('.tooltip-char') || [];
     let index = 0;
     this.typeTimer = window.setInterval(() => {
       if (index < chars.length) {
@@ -238,7 +256,8 @@ export class TooltipManager {
     const height = parseFloat(this.bg?.style.height || '0');
     let left = this.mouseX + this.offsetX;
     let top = this.mouseY + this.offsetY;
-    const vw = window.innerWidth, vh = window.innerHeight;
+    const vw = window.innerWidth,
+      vh = window.innerHeight;
     if (left + width > vw) left = this.mouseX - width - this.offsetX;
     if (left < 0) left = 10;
     if (top + height > vh) top = this.mouseY - height - this.offsetY;
@@ -272,16 +291,17 @@ export class TooltipManager {
     // 1. 边框淡出（0.15s）
     bg.style.boxShadow = '0 0 0 0 rgba(0,0,0,0)';
 
-    // 2. 等待边框消失后，背景收缩成线（高度→2px，底部保持不变）
+    // 2. 等待边框消失后，背景收缩成线（高度→2px，底部固定）
     setTimeout(() => {
       if (!this.isHiding) return;
       const rect = bg.getBoundingClientRect();
       const oldTop = parseFloat(bg.style.top) || 0;
       const oldHeight = parseFloat(bg.style.height) || 0;
-      const newTop = oldTop + oldHeight - 2; // 使底部固定
+      const newTop = oldTop + oldHeight - 2; // 底部固定
       bg.style.top = newTop + 'px';
       bg.style.height = '2px';
-      bg.style.transition = 'height 0.2s cubic-bezier(0.34, 1.2, 0.64, 1), top 0.2s cubic-bezier(0.34, 1.2, 0.64, 1)';
+      bg.style.transition =
+        'height 0.2s cubic-bezier(0.34, 1.2, 0.64, 1), top 0.2s cubic-bezier(0.34, 1.2, 0.64, 1)';
 
       // 3. 等待线形成后，缩成点（宽度→2px，水平居中）
       setTimeout(() => {
@@ -292,7 +312,8 @@ export class TooltipManager {
         const newLeft = oldLeft + oldWidth / 2 - 1;
         bg.style.left = newLeft + 'px';
         bg.style.width = '2px';
-        bg.style.transition = 'width 0.2s cubic-bezier(0.34, 1.2, 0.64, 1), left 0.2s cubic-bezier(0.34, 1.2, 0.64, 1)';
+        bg.style.transition =
+          'width 0.2s cubic-bezier(0.34, 1.2, 0.64, 1), left 0.2s cubic-bezier(0.34, 1.2, 0.64, 1)';
 
         // 4. 淡出背景和容器（0.15s）
         setTimeout(() => {
@@ -321,22 +342,14 @@ export class TooltipManager {
         const duration = 300 + Math.random() * 300;
         const distance = 30 + Math.random() * 50;
         char.style.transition = `transform ${duration}ms cubic-bezier(0.2, 0.9, 0.4, 1) ${delay}ms, opacity ${duration}ms ease ${delay}ms`;
-        char.style.transform = `translateY(${distance}px)`; // 仅竖直，无旋转
+        char.style.transform = `translateY(${distance}px)`;
         char.style.opacity = '0';
         const onFinish = () => {
           completed++;
-          if (completed === total) {
-            // 文字清理在最后reset时统一处理
-          }
+          // 全部完成时不需要额外操作，resetElements 会清空
         };
         char.addEventListener('transitionend', onFinish, { once: true });
       });
-      // 超时保护（避免残留）
-      setTimeout(() => {
-        if (this.isHiding && this.textEl) {
-          // 清空字符以防未完成
-        }
-      }, 900);
     }
   }
 
@@ -375,7 +388,9 @@ export class TooltipManager {
       this.bg.style.boxShadow = '0 0 0 0 rgba(0,0,0,0)';
       this.bg.style.top = '0';
       this.bg.style.left = '0';
-      this.bg.style.transition = 'width 0.4s cubic-bezier(0.34, 1.2, 0.64, 1), height 0.4s cubic-bezier(0.34, 1.2, 0.64, 1), box-shadow 0.15s ease, opacity 0.15s ease';
+      // 恢复默认过渡（与创建时一致）
+      this.bg.style.transition =
+        'width 0.4s cubic-bezier(0.34, 1.2, 0.64, 1), height 0.4s cubic-bezier(0.34, 1.2, 0.64, 1), box-shadow 0.15s ease, opacity 0.15s ease';
     }
     if (this.container) {
       this.container.style.opacity = '0';
