@@ -818,17 +818,18 @@ class AggregatedGenerator(OutputGenerator):
                                     </div>
                                 </div>
                                 <div class="provide-info-section">
-                                    <div class="section-subtitle">本站信息</div>
-                                    <div class="provide-info-text" id="provideInfoText" data-tooltip="交换你的友链信息时记得前面四个必填项 <3">
+                                    <div class="section-subtitle" data-tooltip="交换你的友链信息时记得前面四个必填项 <3">本站信息</div>
+                                    <div class="provide-info-text" id="provideInfoText">
                                         <!-- 主要信息 -->
                                         <div><span class="info-label">名称：</span><span class="info-value">高新炀的小站</span></div>
                                         <div><span class="info-label">地址：</span><span class="info-value">https://xinyang-gao.github.io</span></div>
-                                        <div><span class="info-label">简介：</span><span class="info-value">一个装着些稀奇古怪东西的个人小站，欢迎来逛逛~</span></div>
+                                        <div><span class="info-label">描述：</span><span class="info-value">一个装着些稀奇古怪东西的个人小站，欢迎来逛逛~</span></div>
                                         <div><span class="info-label">头像：</span><span class="info-value">https://xinyang-gao.github.io/assets/avatar.webp</span></div>
                                         <!-- 次要信息 -->
-                                        <div class="info-secondary"><span class="info-label">RSS：</span><span class="info-value">https://xinyang-gao.github.io/rss.xml</span></div>
-                                        <div class="info-secondary"><span class="info-label">站点地图：</span><span class="info-value">https://xinyang-gao.github.io/sitemap.xml</span></div>
-                                        <div class="info-secondary"><span class="info-label">开源地址：</span><span class="info-value">https://github.com/Xinyang-Gao/xinyang-gao.github.io</span></div>
+                                        <div class="info-secondary" data-tooltip="本站的小图标\n若有相应需求可以使用此文件"><span class="info-label">Icon：</span><span class="info-value">http://xinyang-gao.github.io/favicon.ico</span></div>
+                                        <div class="info-secondary" data-tooltip="一种内容订阅协议，让你在阅读器里自动聚合接收网站的最新更新，无需逐个访问网页\n一些网站的“朋友圈”可能会用到此文件"><span class="info-label">RSS：</span><span class="info-value">https://xinyang-gao.github.io/rss.xml</span></div>
+                                        <div class="info-secondary" data-tooltip="一个列出网站所有重要网址及其最后更新时间等信息的文件，旨在向搜索引擎爬虫清晰展示网站结构\n若有相应需求可以使用此文件"><span class="info-label">SiteMap：</span><span class="info-value">https://xinyang-gao.github.io/sitemap.xml</span></div>
+                                        <div class="info-secondary" data-tooltip="网站的未构建源代码开源\n如果你想看某个功能是如何实现的话\n可能有些屎山（划掉）"><span class="info-label">开源：</span><span class="info-value">https://github.com/Xinyang-Gao/xinyang-gao.github.io</span></div>
                                     </div>
                                     <div class="info-actions">
                                         <button class="info-btn" id="copyInfoBtn">复制信息</button>

@@ -12,6 +12,8 @@ export class TooltipManager {
   private moveListener: ((e: MouseEvent) => void) | null = null;
   private readonly offsetX = 16;
   private readonly offsetY = 16;
+  private finalWidth = 0;
+  private finalHeight = 0;
 
   constructor() {
     this.createElements();
@@ -63,8 +65,9 @@ export class TooltipManager {
       opacity: '0',
       transition: 'opacity 0.2s',
       pointerEvents: 'none',
-      maxWidth: '300px',
       overflow: 'visible',
+      width: 'auto',
+      maxWidth: 'none',
     });
 
     container.appendChild(bg);
@@ -115,8 +118,44 @@ export class TooltipManager {
     this.hideTimer = window.setTimeout(() => this.hide(), 100);
   }
 
+  // ----- 独立的精确测量函数（使用 inline-block）-----
+  private measureText(text: string, maxWidth?: number): { width: number; height: number; needWrap: boolean } {
+    const measure = document.createElement('div');
+    measure.className = 'tooltip-measure';
+    Object.assign(measure.style, {
+      position: 'fixed',
+      visibility: 'hidden',
+      pointerEvents: 'none',
+      padding: '8px 14px',
+      fontSize: '0.9rem',
+      lineHeight: '1.5',
+      whiteSpace: 'pre-wrap',
+      wordBreak: 'break-word',
+      fontFamily: 'inherit',
+      display: 'inline-block',
+      width: 'auto',
+      maxWidth: maxWidth !== undefined ? maxWidth + 'px' : 'none',
+      height: 'auto',
+      boxSizing: 'border-box',
+    });
+    measure.textContent = text;
+    document.body.appendChild(measure);
+    void measure.offsetHeight;
+    const rect = measure.getBoundingClientRect();
+    const width = Math.ceil(rect.width);
+    const height = Math.ceil(rect.height);
+    document.body.removeChild(measure);
+
+    const vw = window.innerWidth;
+    const margin = 10;
+    // needWrap 判断基于原始宽度（不加冗余）
+    const estimatedLeft = this.mouseX + this.offsetX;
+    const needWrap = maxWidth === undefined && (estimatedLeft + width > vw && this.mouseX - width - this.offsetX < 0);
+
+    return { width, height, needWrap };
+  }
+
   private show(target: HTMLElement, rawText: string, clientX: number, clientY: number) {
-    // 强制清理残留
     if (this.isHiding || this.isVisible) {
       this.hideImmediate();
     }
@@ -127,33 +166,56 @@ export class TooltipManager {
     }
 
     const text = rawText.replace(/\\n/g, '\n');
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const margin = 10;
 
-    // 测量尺寸（增加 2px 冗余以防止末尾字符换行溢出）
-    const measure = document.createElement('div');
-    const style = getComputedStyle(target);
-    Object.assign(measure.style, {
-      position: 'fixed',
-      visibility: 'hidden',
-      whiteSpace: 'pre-wrap',
-      wordBreak: 'break-word',
-      fontSize: '0.9rem',
-      lineHeight: '1.5',
-      padding: '8px 14px',
-      maxWidth: '300px',
-      fontFamily: style.fontFamily || 'inherit',
-    });
-    measure.textContent = text;
-    document.body.appendChild(measure);
-    const rect = measure.getBoundingClientRect();
-    const measuredWidth = Math.ceil(rect.width);
-    const measuredHeight = Math.ceil(rect.height);
-    document.body.removeChild(measure);
+    // ---------- 1. 测量自然宽度 ----------
+    const natural = this.measureText(text);
+    let finalWidth = natural.width;
+    let finalHeight = natural.height;
+    let needWrap = natural.needWrap;
 
-    // 最终尺寸：宽度 + 2px 冗余，但不超过最大宽度
-    const finalWidth = Math.min(measuredWidth + 2, 300);
-    const finalHeight = measuredHeight;
+    // ---------- 2. 强制换行 ----------
+    if (needWrap) {
+      const maxWidth = Math.max(100, vw - margin * 2);
+      const wrapped = this.measureText(text, maxWidth);
+      finalWidth = wrapped.width;
+      finalHeight = wrapped.height;
+    }
 
-    // 构建字符行（保留换行）
+    // ---------- 3. 添加 2px 安全冗余（防止亚像素换行） ----------
+    finalWidth += 2;
+    // 如果换行模式下，宽度不能超过最大宽度（允许 +2px）
+    if (needWrap) {
+      const maxWidth = Math.max(100, vw - margin * 2);
+      if (finalWidth > maxWidth + 2) finalWidth = maxWidth + 2;
+    }
+
+    // ---------- 4. 计算位置 ----------
+    let left = clientX + this.offsetX;
+    if (left + finalWidth > vw) {
+      left = clientX - finalWidth - this.offsetX;
+    }
+    if (left < 0) left = margin;
+
+    let top = clientY + this.offsetY;
+    if (top + finalHeight > vh) {
+      top = clientY - finalHeight - this.offsetY;
+    }
+    if (top < 0) top = margin;
+
+    // ---------- 5. 缓存尺寸 ----------
+    this.finalWidth = finalWidth;
+    this.finalHeight = finalHeight;
+
+    // ---------- 6. 构建内容 ----------
+    const textEl = this.textEl!;
+    textEl.innerHTML = '';
+    textEl.style.width = finalWidth + 'px';
+    textEl.style.maxWidth = needWrap ? (vw - margin * 2) + 'px' : 'none';
+    textEl.style.opacity = '0';
+
     const lines = text.split('\n');
     const fragment = document.createDocumentFragment();
     lines.forEach((line) => {
@@ -170,54 +232,29 @@ export class TooltipManager {
       }
       fragment.appendChild(lineDiv);
     });
+    textEl.appendChild(fragment);
 
-    if (this.textEl) {
-      this.textEl.innerHTML = '';
-      this.textEl.style.width = finalWidth + 'px';
-      this.textEl.style.height = finalHeight + 'px';
-      this.textEl.appendChild(fragment);
-      this.textEl.style.opacity = '1';
-    }
-
-    // 定位（基于鼠标坐标，带弹性跟随）
-    let left = clientX + this.offsetX;
-    let top = clientY + this.offsetY;
-    const vw = window.innerWidth,
-      vh = window.innerHeight;
-    if (left + finalWidth > vw) left = clientX - finalWidth - this.offsetX;
-    if (left < 0) left = 10;
-    if (top + finalHeight > vh) top = clientY - finalHeight - this.offsetY;
-    if (top < 0) top = 10;
-
+    // ---------- 7. 定位容器 ----------
     if (this.container) {
       this.container.style.left = left + 'px';
       this.container.style.top = top + 'px';
       this.container.style.opacity = '1';
     }
 
-    // 获取所有字符，计算总显示时间
-    const chars = this.textEl?.querySelectorAll('.tooltip-char') || [];
-    const totalChars = chars.length;
-    // 每个字符显示间隔 30ms，背景过渡与总时间同步
-    const duration = Math.max(totalChars * 30, 300); // 至少 300ms 避免闪烁
+    // ---------- 8. 背景动画 ----------
+    const bg = this.bg!;
+    bg.style.width = '0px';
+    bg.style.height = '0px';
+    bg.style.boxShadow = '0 0 0 0 rgba(0,0,0,0)';
+    void bg.offsetHeight;
+    const totalChars = textEl.querySelectorAll('.tooltip-char').length;
+    const duration = Math.max(totalChars * 30, 300);
+    bg.style.transition = `width ${duration}ms cubic-bezier(0.34, 1.2, 0.64, 1), height ${duration}ms cubic-bezier(0.34, 1.2, 0.64, 1), box-shadow 0.15s ease, opacity 0.15s ease`;
+    bg.style.width = finalWidth + 'px';
+    bg.style.height = finalHeight + 'px';
 
-    // 背景扩展：从 0 到最终尺寸，过渡时长与字符浮现总时间一致
-    if (this.bg) {
-      // 重置为 0，强制重排
-      this.bg.style.width = '0px';
-      this.bg.style.height = '0px';
-      this.bg.style.boxShadow = '0 0 0 0 rgba(0,0,0,0)';
-      void this.bg.offsetHeight;
-
-      // 设置动态过渡时长（仅宽度和高度使用长过渡，边框和透明度保持短过渡）
-      this.bg.style.transition = `width ${duration}ms cubic-bezier(0.34, 1.2, 0.64, 1), height ${duration}ms cubic-bezier(0.34, 1.2, 0.64, 1), box-shadow 0.15s ease, opacity 0.15s ease`;
-
-      // 扩展到最终尺寸
-      this.bg.style.width = finalWidth + 'px';
-      this.bg.style.height = finalHeight + 'px';
-    }
-
-    // 逐字浮现
+    // ---------- 9. 逐字浮现 ----------
+    const chars = textEl.querySelectorAll('.tooltip-char');
     let index = 0;
     this.typeTimer = window.setInterval(() => {
       if (index < chars.length) {
@@ -226,16 +263,15 @@ export class TooltipManager {
       } else {
         clearInterval(this.typeTimer!);
         this.typeTimer = null;
-        // 全部显示后，添加边框
-        if (this.bg) {
-          const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-          const borderColor = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)';
-          this.bg.style.boxShadow = `0 0 0 2px ${borderColor}`;
-        }
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const borderColor = isDark ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)';
+        bg.style.boxShadow = `0 0 0 2px ${borderColor}`;
       }
     }, 30);
 
-    // 鼠标跟随
+    textEl.style.opacity = '1';
+
+    // ---------- 10. 鼠标跟随 ----------
     if (!this.moveListener) {
       this.moveListener = (e: MouseEvent) => {
         this.mouseX = e.clientX;
@@ -252,8 +288,8 @@ export class TooltipManager {
 
   private updatePosition() {
     if (!this.isVisible || !this.container) return;
-    const width = parseFloat(this.bg?.style.width || '0');
-    const height = parseFloat(this.bg?.style.height || '0');
+    const width = this.finalWidth;
+    const height = this.finalHeight;
     let left = this.mouseX + this.offsetX;
     let top = this.mouseY + this.offsetY;
     const vw = window.innerWidth,
@@ -288,22 +324,19 @@ export class TooltipManager {
       return;
     }
 
-    // 1. 边框淡出（0.15s）
     bg.style.boxShadow = '0 0 0 0 rgba(0,0,0,0)';
 
-    // 2. 等待边框消失后，背景收缩成线（高度→2px，底部固定）
     setTimeout(() => {
       if (!this.isHiding) return;
       const rect = bg.getBoundingClientRect();
       const oldTop = parseFloat(bg.style.top) || 0;
       const oldHeight = parseFloat(bg.style.height) || 0;
-      const newTop = oldTop + oldHeight - 2; // 底部固定
+      const newTop = oldTop + oldHeight - 2;
       bg.style.top = newTop + 'px';
       bg.style.height = '2px';
       bg.style.transition =
         'height 0.2s cubic-bezier(0.34, 1.2, 0.64, 1), top 0.2s cubic-bezier(0.34, 1.2, 0.64, 1)';
 
-      // 3. 等待线形成后，缩成点（宽度→2px，水平居中）
       setTimeout(() => {
         if (!this.isHiding) return;
         const rect2 = bg.getBoundingClientRect();
@@ -315,7 +348,6 @@ export class TooltipManager {
         bg.style.transition =
           'width 0.2s cubic-bezier(0.34, 1.2, 0.64, 1), left 0.2s cubic-bezier(0.34, 1.2, 0.64, 1)';
 
-        // 4. 淡出背景和容器（0.15s）
         setTimeout(() => {
           if (!this.isHiding) return;
           bg.style.opacity = '0';
@@ -332,11 +364,8 @@ export class TooltipManager {
       }, 200);
     }, 150);
 
-    // 文字竖直下落（与背景收缩并行）
     const chars = this.textEl?.querySelectorAll('.tooltip-char') || [];
     if (chars.length > 0) {
-      let completed = 0;
-      const total = chars.length;
       chars.forEach((char: HTMLElement) => {
         const delay = Math.random() * 200;
         const duration = 300 + Math.random() * 300;
@@ -344,11 +373,6 @@ export class TooltipManager {
         char.style.transition = `transform ${duration}ms cubic-bezier(0.2, 0.9, 0.4, 1) ${delay}ms, opacity ${duration}ms ease ${delay}ms`;
         char.style.transform = `translateY(${distance}px)`;
         char.style.opacity = '0';
-        const onFinish = () => {
-          completed++;
-          // 全部完成时不需要额外操作，resetElements 会清空
-        };
-        char.addEventListener('transitionend', onFinish, { once: true });
       });
     }
   }
@@ -378,8 +402,8 @@ export class TooltipManager {
       this.textEl.style.transform = '';
       this.textEl.style.opacity = '0';
       this.textEl.style.transition = '';
-      this.textEl.style.width = '';
-      this.textEl.style.height = '';
+      this.textEl.style.width = 'auto';
+      this.textEl.style.maxWidth = 'none';
     }
     if (this.bg) {
       this.bg.style.width = '0';
@@ -388,13 +412,14 @@ export class TooltipManager {
       this.bg.style.boxShadow = '0 0 0 0 rgba(0,0,0,0)';
       this.bg.style.top = '0';
       this.bg.style.left = '0';
-      // 恢复默认过渡（与创建时一致）
       this.bg.style.transition =
         'width 0.4s cubic-bezier(0.34, 1.2, 0.64, 1), height 0.4s cubic-bezier(0.34, 1.2, 0.64, 1), box-shadow 0.15s ease, opacity 0.15s ease';
     }
     if (this.container) {
       this.container.style.opacity = '0';
     }
+    this.finalWidth = 0;
+    this.finalHeight = 0;
   }
 
   destroy() {
