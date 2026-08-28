@@ -12,7 +12,6 @@ import { initClarityOnConsent, updateClarityPage } from '/js/core/clarity.js';
 import { registerServiceWorker, initFooterStats } from '/js/data/site-state.js';
 import { handleListItemClick } from '/js/ui/list-events.js';
 import { LoadingOverlayManager } from '/js/ui/loading-overlay-manager.js';
-import { friendLinkManager } from '/js/pages/friends-manager.js';
 import { DataService } from '/js/core/data-service.js';
 
 export class AppInitializer {
@@ -108,10 +107,7 @@ export class AppInitializer {
     document.body.setAttribute('data-loaded', 'true');
     console.log('[AppInitializer] 初始化完成');
 
-    // 19. 友链跳转管理器
-    friendLinkManager.init();
-
-    // 20. Service Worker 注册（生产环境）
+    // 19. Service Worker 注册（生产环境）
     const isDev = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
     if (!isDev) {
       registerServiceWorker();
