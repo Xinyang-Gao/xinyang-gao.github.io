@@ -163,7 +163,7 @@ export class FriendsPageManager extends PageManager {
             toggle.addEventListener('click', this.toggleHandler);
         }
 
-        // 2. 复制信息按钮（复制整个 provideInfoText 的纯文本）
+        // 2. 复制信息按钮（只复制主要信息）
         const copyInfoBtn = document.getElementById('copyInfoBtn') as HTMLButtonElement | null;
         if (copyInfoBtn) {
             if (this.copyInfoHandler) {
@@ -172,7 +172,19 @@ export class FriendsPageManager extends PageManager {
             this.copyInfoHandler = async () => {
                 const infoText = document.getElementById('provideInfoText');
                 if (!infoText) return;
-                const text = infoText.textContent?.trim() || '';
+                const mainItems = infoText.querySelectorAll(':scope > div:not(.info-secondary)');
+                const lines: string[] = [];
+                for (const item of mainItems) {
+                    const text = item.textContent?.trim();
+                    if (text) {
+                        lines.push(text);
+                    }
+                }
+                const text = lines.join('\n');
+                if (!text) {
+                    console.warn('[FriendsPageManager] 没有可复制的主要信息');
+                    return;
+                }
                 try {
                     await navigator.clipboard.writeText(text);
                     const original = copyInfoBtn.textContent;
