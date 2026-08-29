@@ -815,30 +815,27 @@ body.custom-cursor-enabled .list-item { cursor: none; }
   background: var(--border-color);
   border-radius: 10px;
 }
-
-/* 头部 */
-.settings-header {
-  margin-bottom: 28px;
-  text-align: center;
-}
-.settings-header h2 {
-  margin: 0 0 8px 0;
-  font-size: 1.5rem;
-  font-weight: 700;
+/* 设置面板 - 下拉选择 */
+.setting-select {
+  padding: 6px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--surface-color);
   color: var(--text-color);
-  border: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-}
-.settings-header h2::after { display: none; }
-.settings-header h2 i { color: var(--accent-color); font-size: 1.2rem; }
-
-.settings-subtitle {
-  color: var(--text-secondary);
+  font-family: var(--font-sans);
   font-size: 0.9rem;
-  margin: 0;
-  line-height: 1.5;
+  cursor: pointer;
+  min-width: 120px;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+.setting-select:focus {
+  outline: none;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.14);
+}
+/* 调整设置项内 select 的位置 */
+.setting-item .setting-select {
+  flex-shrink: 0;
 }
 
 /* 设置组 */
