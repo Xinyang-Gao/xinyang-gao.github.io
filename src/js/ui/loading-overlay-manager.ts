@@ -232,21 +232,24 @@ export class LoadingOverlayManager {
           startIdx = Math.max(0, allVersions.length - 3);
         }
         const relevantVersions = allVersions.slice(startIdx);
+        // 降序排列（新→旧）
+        const sortedVersions = relevantVersions.slice().reverse();
 
+        // 生成版本摘要信息
         let versionMsg = '';
-        if (storedVersion && relevantVersions.length > 0) {
-          const firstVer = relevantVersions[0].version;
-          const lastVer = relevantVersions[relevantVersions.length - 1].version;
-          if (relevantVersions.length === 1) {
-            versionMsg = `网站已从版本 ${storedVersion} 更新到 ${lastVer}`;
+        if (storedVersion && sortedVersions.length > 0) {
+          const firstVer = sortedVersions[0].version;      // 最新
+          const lastVer = sortedVersions[sortedVersions.length - 1].version; // 最旧（即起始版本）
+          if (sortedVersions.length === 1) {
+            versionMsg = `网站已更新到版本 ${firstVer}`;
           } else {
-            versionMsg = `网站已从版本 ${storedVersion} 更新到 ${lastVer}，共 ${relevantVersions.length} 个版本更新`;
+            versionMsg = `网站已从版本 ${storedVersion} 更新到 ${firstVer}，共 ${sortedVersions.length} 个版本更新`;
           }
-        } else if (relevantVersions.length > 0) {
-          const lastVer = relevantVersions[relevantVersions.length - 1].version;
-          versionMsg = `当前版本：${lastVer}（最近 ${relevantVersions.length} 个版本）`;
+        } else if (sortedVersions.length > 0) {
+          const latest = sortedVersions[0].version;
+          versionMsg = `当前版本 ${latest}（最近 ${sortedVersions.length} 个版本）`;
         } else {
-          versionMsg = '版本信息暂未获取，欢迎访问';
+          versionMsg = '版本信息已就绪';
         }
 
         if (storageController.isAllowed() && latestWebVersion) {
@@ -277,23 +280,37 @@ export class LoadingOverlayManager {
         this.addLog('Version', `版本摘要: ${versionMsg}`);
         this.flushLogs();
 
-        // 7. 渲染更新界面
+        // 7. 构建更新日志 HTML
         let changesHTML = '';
-        if (relevantVersions.length > 0) {
-          const items = relevantVersions.map(v => {
+        if (sortedVersions.length > 0) {
+          const items = sortedVersions.map(v => {
             const versionLabel = v.version || `v${v.id}`;
-            const changeItems = (v.changes || []).slice(0, 5).map((c: any) => {
+            const changeItems = (v.changes || []).slice(0, 8).map((c: any) => {
               const type = Utils.escapeHtml(c.type || '');
               const desc = Utils.escapeHtml(c.description || '');
               return `<li><span class="change-type">[${type}]</span> ${desc}</li>`;
             }).join('');
             if (changeItems) {
-              return `<li class="version-header">${versionLabel}</li><ul class="changes-list">${changeItems}</ul>`;
+              return `
+                <div class="version-item" style="border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:16px; margin-bottom:16px;">
+                  <div style="font-weight:bold; font-size:0.95rem; color:var(--accent-color); margin-bottom:8px;">版本 ${versionLabel}</div>
+                  <ul class="changes-list" style="margin:0; padding-left:0; list-style:none; max-height:200px; overflow-y:auto;">
+                    ${changeItems}
+                  </ul>
+                </div>
+              `;
             }
             return '';
           }).filter(s => s).join('');
           if (items) {
-            changesHTML = `<div class="changes-container"><h4>📋 更新内容</h4><ul class="changes-list">${items}</ul></div>`;
+            changesHTML = `
+              <div class="changes-container" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; margin-top:12px; max-width:100%;">
+                <div style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.1em; color:rgba(255,255,255,0.4); font-weight:600; margin-bottom:8px;">更新内容</div>
+                <div class="version-list" style="display:flex; flex-direction:column;">
+                  ${items}
+                </div>
+              </div>
+            `;
           }
         }
 
