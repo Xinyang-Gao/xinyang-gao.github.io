@@ -140,7 +140,6 @@ export class GlobalImageManager {
       link.onload = onLoad;
       link.onerror = onError;
       document.head.appendChild(link);
-      console.log('[GlobalImageManager] 正在加载外部 CSS:', link.href);
     });
 
     return this.#cssLoadPromise;
