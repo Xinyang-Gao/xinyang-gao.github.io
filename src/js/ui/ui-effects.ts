@@ -14,10 +14,8 @@ const SETTINGS_KEYS = {
 };
 
 function isFeatureEnabled(key: string, defaultValue: boolean = true): boolean {
-  try {
-    const stored = localStorage.getItem(key);
-    if (stored !== null) return stored === 'true';
-  } catch (e) { /* ignore */ }
+  const stored = storageController.getItem(key);
+  if (stored !== null) return stored === 'true';
   return defaultValue;
 }
 

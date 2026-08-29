@@ -216,22 +216,21 @@ export class Utils {
   }
 }
 
-// ==================== 存储控制器（支持数据压缩） ====================
+// ==================== 存储控制器（支持数据压缩） =====================
+
 export class StorageController {
   private enabled: boolean;
+  // 可压缩的键集合
+  private compressKeys: Set<StorageKey> = new Set([
+    CONFIG.STORAGE_KEYS.WORKS_DATA,
+    CONFIG.STORAGE_KEYS.ARTICLES_DATA,
+  ]);
 
   constructor() {
-    this.enabled = this.checkInitialStatus();
+    // 默认启用存储（网站设计默认同意）
+    this.enabled = true;
+    // 监听外部同意事件（如有需要，可切换状态）
     this.listenForConsent();
-  }
-
-  private checkInitialStatus(): boolean {
-    const consentGiven = this.getItem(CONFIG.STORAGE_KEYS.COOKIE_CONSENT) === 'true';
-    if (!consentGiven) {
-      this.clearAllData();
-      return false;
-    }
-    return true;
   }
 
   private listenForConsent(): void {
@@ -275,8 +274,8 @@ export class StorageController {
     });
   }
 
-  private shouldCompress(key: string): key is typeof CONFIG.STORAGE_KEYS.WORKS_DATA | typeof CONFIG.STORAGE_KEYS.ARTICLES_DATA {
-    return key === CONFIG.STORAGE_KEYS.WORKS_DATA || key === CONFIG.STORAGE_KEYS.ARTICLES_DATA;
+  private shouldCompress(key: string): key is StorageKey {
+    return this.compressKeys.has(key as StorageKey);
   }
 
   private compressData(raw: string): string {
@@ -303,7 +302,7 @@ export class StorageController {
   }
 
   getItem(key: StorageKey): string | null {
-    // Cookie 同意状态不受存储启用限制
+    // Cookie 同意状态始终允许读取（用于判断）
     if (key === CONFIG.STORAGE_KEYS.COOKIE_CONSENT) {
       try {
         return localStorage.getItem(key);
@@ -311,6 +310,7 @@ export class StorageController {
         return null;
       }
     }
+
     if (!this.isAllowed()) return null;
 
     try {
@@ -348,17 +348,7 @@ export class StorageController {
   }
 
   removeItem(key: StorageKey): void {
-    if (key === CONFIG.STORAGE_KEYS.COOKIE_CONSENT) {
-      try {
-        localStorage.removeItem(key);
-        return;
-      } catch (e) {
-        console.warn('[WARN] 删除cookie同意状态失败:', e);
-        return;
-      }
-    }
-
-    if (!this.isAllowed()) return;
+    // 允许删除，无论是否启用（用于清理）
     try {
       localStorage.removeItem(key);
     } catch (e) {

@@ -83,6 +83,7 @@ export class DataService {
   /**
    * 核心请求方法，自动处理缓存、去重、持久化
    */
+  // 仅 fetchWithCache 方法
   private async fetchWithCache(
     key: DataKey,
     options: FetchOptions = {}
@@ -98,7 +99,7 @@ export class DataService {
       }
     }
 
-    // 2) localStorage 缓存（仅当启用且未强制刷新）
+    // 2) localStorage 缓存
     if (!forceRefresh && useStorage && storageController.isAllowed()) {
       const storageKey = this.getStorageKey(key);
       const raw = storageController.getItem(storageKey);
@@ -108,12 +109,15 @@ export class DataService {
           const ts = parsed._timestamp || 0;
           if (Date.now() - ts < this.TTL) {
             delete parsed._timestamp;
-            // 同时存入内存
             this.memoryCache.set(key, { data: parsed, timestamp: ts });
             return parsed;
           }
         } catch {
-          // 解析失败则忽略，继续网络请求
+          // 解析失败：删除损坏的缓存条目
+          try {
+            storageController.removeItem(storageKey);
+          } catch {}
+          // 继续网络请求
         }
       }
     }
@@ -126,20 +130,15 @@ export class DataService {
     // 4) 发起网络请求
     const promise = this.doFetch(url)
       .then((data) => {
-        // 更新内存
         this.memoryCache.set(key, { data, timestamp: Date.now() });
-
-        // 更新 localStorage（如果启用）
         if (useStorage && storageController.isAllowed()) {
           const storageKey = this.getStorageKey(key);
           const toStore = { ...data, _timestamp: Date.now() };
           storageController.setItem(storageKey, JSON.stringify(toStore));
         }
-
         return data;
       })
       .catch((err) => {
-        // 如果网络失败，但内存中有旧缓存（即使过期），仍然返回，避免白屏
         const mem = this.memoryCache.get(key);
         if (mem) {
           console.warn(`[DataService] 网络请求失败，返回过期缓存 (${key})`, err);

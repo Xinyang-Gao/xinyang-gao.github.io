@@ -17,32 +17,16 @@ const SETTINGS_KEYS = {
 type SettingKey = typeof SETTINGS_KEYS[keyof typeof SETTINGS_KEYS];
 
 export function getSetting(key: SettingKey, defaultValue = true): boolean | string {
-  if (storageController.isAllowed()) {
-    const stored = storageController.getItem(key);
-    if (stored !== null) {
-      if (stored === 'true' || stored === 'false') return stored === 'true';
-      return stored;
-    }
+  const stored = storageController.getItem(key);
+  if (stored !== null) {
+    if (stored === 'true' || stored === 'false') return stored === 'true';
+    return stored;
   }
-  try {
-    const raw = localStorage.getItem(key);
-    if (raw !== null) {
-      if (raw === 'true' || raw === 'false') return raw === 'true';
-      return raw;
-    }
-  } catch { /* ignore */ }
   return defaultValue;
 }
 
 export function setSetting(key: SettingKey, value: boolean | string | number): void {
-  const strVal = String(value);
-  if (storageController.isAllowed()) {
-    storageController.setItem(key, strVal);
-  } else {
-    try {
-      localStorage.setItem(key, strVal);
-    } catch { /* ignore */ }
-  }
+  storageController.setItem(key, String(value));
 }
 
 export async function clearSWCacheAndReload(): Promise<void> {

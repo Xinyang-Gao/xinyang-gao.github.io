@@ -190,7 +190,7 @@ export class LoadingOverlayManager {
         this.addLog('Chart', '统计图表渲染完成');
         this.flushLogs();
 
-        // 5. 版本检测
+        // 5. 版本检测（统一从访客记录读取本地版本）
         const versionData = dataMap.version || null;
         let allVersions: any[] = [];
         let latestWebVersion: string | null = null;
@@ -199,19 +199,60 @@ export class LoadingOverlayManager {
           if (allVersions.length) latestWebVersion = allVersions[allVersions.length - 1].version;
         }
 
-        this.addLog('Version', '读取本地存储的网站版本...');
+        this.addLog('Version', '读取本地存储的访客记录...');
         let storedVersion: string | null = null;
+        let lastVisit: number | null = null;
         if (storageController.isAllowed()) {
-          storedVersion = storageController.getItem('siteVersion');
+          const recordRaw = storageController.getItem(CONFIG.STORAGE_KEYS.VISIT_RECORD);
+          if (recordRaw) {
+            try {
+              const record = JSON.parse(recordRaw);
+              storedVersion = record.version || null;
+              lastVisit = record.lastVisit || null;
+            } catch { /* ignore */ }
+          }
         }
         this.addLog('Version', `本地版本: ${storedVersion || '无'}`);
+        this.addLog('Version', `上次访问: ${lastVisit ? new Date(lastVisit).toLocaleString() : '首次'}`);
         this.addLog('Version', `远程最新版本: ${latestWebVersion || '无'}`);
 
         const needUpdate = !storedVersion || (latestWebVersion && storedVersion !== latestWebVersion);
         this.addLog('Version', `版本比对结果: ${needUpdate ? '需要更新' : '版本一致'}`);
 
+        // 计算离开时间（用于显示）
+        let awayText = '';
+        if (lastVisit) {
+          const diff = Date.now() - lastVisit;
+          const seconds = Math.floor(diff / 1000);
+          if (seconds < 60) awayText = `你刚刚离开 ${seconds} 秒`;
+          else if (seconds < 3600) awayText = `你已经离开 ${Math.floor(seconds / 60)} 分钟`;
+          else if (seconds < 86400) awayText = `你已经离开 ${Math.floor(seconds / 3600)} 小时`;
+          else awayText = `你已经离开 ${Math.floor(seconds / 86400)} 天`;
+        } else {
+          awayText = '欢迎首次访问本站';
+        }
+        this.addLog('Version', `离开时长: ${awayText}`);
+
         if (!needUpdate) {
           this.addLog('Version', '版本一致，加载完成，即将进入页面');
+          // 更新访客记录（保留原有 version 如果未获取到新版本）
+          try {
+            let record: any = {};
+            if (storageController.isAllowed()) {
+              const raw = storageController.getItem(CONFIG.STORAGE_KEYS.VISIT_RECORD);
+              if (raw) {
+                try { record = JSON.parse(raw); } catch { /* ignore */ }
+              }
+            }
+            record.lastVisit = Date.now();
+            // 仅在获取到远程版本时更新 version
+            if (latestWebVersion) {
+              record.version = latestWebVersion;
+            }
+            storageController.setItem(CONFIG.STORAGE_KEYS.VISIT_RECORD, JSON.stringify(record));
+          } catch (e) {
+            console.warn('[LoadingOverlay] 更新访客记录失败', e);
+          }
           this.flushLogs();
           this.overlay!.classList.add('hidden');
           this.restoreScroll();
@@ -232,17 +273,15 @@ export class LoadingOverlayManager {
           startIdx = Math.max(0, allVersions.length - 3);
         }
         const relevantVersions = allVersions.slice(startIdx);
-        // 降序排列（新→旧）
-        const sortedVersions = relevantVersions.slice().reverse();
+        const sortedVersions = relevantVersions.slice().reverse(); // 新→旧
 
-        // 生成版本摘要信息
         let versionMsg = '';
         if (storedVersion && sortedVersions.length > 0) {
-          const firstVer = sortedVersions[0].version;      // 最新
-          const lastVer = sortedVersions[sortedVersions.length - 1].version; // 最旧（即起始版本）
+          const firstVer = sortedVersions[0].version;
           if (sortedVersions.length === 1) {
             versionMsg = `网站已更新到版本 ${firstVer}`;
           } else {
+            const lastVer = sortedVersions[sortedVersions.length - 1].version;
             versionMsg = `网站已从版本 ${storedVersion} 更新到 ${firstVer}，共 ${sortedVersions.length} 个版本更新`;
           }
         } else if (sortedVersions.length > 0) {
@@ -251,32 +290,6 @@ export class LoadingOverlayManager {
         } else {
           versionMsg = '版本信息已就绪';
         }
-
-        if (storageController.isAllowed() && latestWebVersion) {
-          storageController.setItem('siteVersion', latestWebVersion);
-          this.addLog('Version', `已存储最新版本: ${latestWebVersion}`);
-        }
-
-        let awayText = '';
-        let record: any = {};
-        if (storageController.isAllowed()) {
-          const raw = storageController.getItem(CONFIG.STORAGE_KEYS.VISIT_RECORD);
-          if (raw) {
-            try { record = JSON.parse(raw); } catch { /* ignore */ }
-          }
-        }
-        const lastVisit = record.lastVisit ? Number(record.lastVisit) : null;
-        if (lastVisit) {
-          const diff = Date.now() - lastVisit;
-          const seconds = Math.floor(diff / 1000);
-          if (seconds < 60) awayText = `你刚刚离开 ${seconds} 秒`;
-          else if (seconds < 3600) awayText = `你已经离开 ${Math.floor(seconds / 60)} 分钟`;
-          else if (seconds < 86400) awayText = `你已经离开 ${Math.floor(seconds / 3600)} 小时`;
-          else awayText = `你已经离开 ${Math.floor(seconds / 86400)} 天`;
-        } else {
-          awayText = '欢迎首次访问本站';
-        }
-        this.addLog('Version', `离开时长: ${awayText}`);
         this.addLog('Version', `版本摘要: ${versionMsg}`);
         this.flushLogs();
 
@@ -336,8 +349,26 @@ export class LoadingOverlayManager {
         this.addLog('UI', '更新界面已渲染，等待用户交互');
         this.flushLogs();
 
-        // 8. 点击关闭
+        // 8. 点击关闭（并更新访客记录）
         const handler = () => {
+          // 更新访客记录（保留原有 version 如果未获取到新版本）
+          try {
+            let record: any = {};
+            if (storageController.isAllowed()) {
+              const raw = storageController.getItem(CONFIG.STORAGE_KEYS.VISIT_RECORD);
+              if (raw) {
+                try { record = JSON.parse(raw); } catch { /* ignore */ }
+              }
+            }
+            record.lastVisit = Date.now();
+            if (latestWebVersion) {
+              record.version = latestWebVersion;
+            }
+            storageController.setItem(CONFIG.STORAGE_KEYS.VISIT_RECORD, JSON.stringify(record));
+          } catch (e) {
+            console.warn('[LoadingOverlay] 更新访客记录失败', e);
+          }
+
           this.overlay!.classList.add('hidden');
           this.restoreScroll();
           window.dispatchEvent(new CustomEvent('welcomeOverlayDismissed'));
