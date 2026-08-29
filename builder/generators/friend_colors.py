@@ -5,9 +5,14 @@
 友链主题色生成器，作为独立构建单元。
 """
 
+"""
+友链主题色生成器，作为独立构建单元。
+"""
+
 import json
 import hashlib
 import tempfile
+import colorsys              # 新增：用于 HSV 转换
 from pathlib import Path
 from io import BytesIO
 from typing import List, Dict, Tuple, Optional
@@ -29,6 +34,48 @@ TIMEOUT = 10
 IMAGE_SIZE = (64, 64)
 QUANTIZE_COLORS = 16
 
+def _is_valid_color(rgb: Tuple[int, int, int]) -> bool:
+    """检查颜色是否过于极端（黑、白、灰）"""
+    r, g, b = rgb
+    h, s, v = colorsys.rgb_to_hsv(r / 255.0, g / 255.0, b / 255.0)
+    # 亮度太低或太高，或饱和度太低 -> 视为无效
+    if v < 0.15 or v > 0.85 or s < 0.20:
+        return False
+    return True
+
+def _select_best_color(color_counts: List[Tuple[Tuple[int, int, int], int]]) -> Optional[Tuple[int, int, int]]:
+    """
+    从量化后的颜色及计数中，选择最合适的颜色。
+    优先选择饱和度适中且频次较高的颜色。
+    """
+    if not color_counts:
+        return None
+
+    # 第一轮：过滤掉极端颜色，然后按 (频次 * 饱和度系数) 评分
+    candidates = []
+    for (r, g, b), count in color_counts:
+        h, s, v = colorsys.rgb_to_hsv(r / 255.0, g / 255.0, b / 255.0)
+        if _is_valid_color((r, g, b)):
+            score = count * (s * 0.8 + 0.2)   # 兼顾频次与饱和度
+            candidates.append((score, (r, g, b)))
+    if candidates:
+        candidates.sort(key=lambda x: x[0], reverse=True)
+        return candidates[0][1]
+
+    # 第二轮：没有符合条件的，则选择亮度适中的颜色（容忍低饱和度）
+    candidates2 = []
+    for (r, g, b), count in color_counts:
+        h, s, v = colorsys.rgb_to_hsv(r / 255.0, g / 255.0, b / 255.0)
+        if 0.15 < v < 0.85:   # 只要亮度不极端，不管饱和度
+            candidates2.append((count, (r, g, b)))
+    if candidates2:
+        candidates2.sort(key=lambda x: x[0], reverse=True)
+        return candidates2[0][1]
+
+    # 第三轮：直接选频次最高的（即使极端）
+    color_counts.sort(key=lambda x: x[1], reverse=True)
+    return color_counts[0][0] if color_counts else None
+
 def get_dominant_color_from_image(image_data: bytes) -> Optional[Tuple[int, int, int]]:
     try:
         img = Image.open(BytesIO(image_data))
@@ -38,8 +85,12 @@ def get_dominant_color_from_image(image_data: bytes) -> Optional[Tuple[int, int,
         img = img.quantize(colors=QUANTIZE_COLORS).convert('RGB')
         pixels = list(img.getdata())
         counter = Counter(pixels)
-        dominant = counter.most_common(1)[0][0]
-        return dominant
+        # 转换为列表以便处理
+        color_counts = list(counter.items())   # [( (r,g,b), count ), ...]
+        best = _select_best_color(color_counts)
+        if best is None:
+            log_warning("无法从图片中提取有效颜色，将使用默认灰色")
+        return best
     except Exception as e:
         log_warning(f"图片处理失败: {e}")
         return None

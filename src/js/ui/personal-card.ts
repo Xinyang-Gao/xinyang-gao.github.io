@@ -22,7 +22,7 @@ export function generatePersonalCardHTML() {
 
       <div class="profile-body">
         <div class="profile-info-item">
-          <span>网站重构ing，即将完成</span>
+          <span>小站的大部分组件都是自己写的，所以有的会有BUG，有的还不完善……<br>不过没关系，我还在持续打磨，也许过一周就会有什么新东西呢？</span>
         </div>
       </div>
 
