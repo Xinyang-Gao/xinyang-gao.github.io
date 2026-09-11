@@ -1,6 +1,9 @@
 // /js/pages/timeline.ts
 // 时间线页面：合并文章、作品与版本更新，按时间线展示
-// 支持：年份筛选、类型筛选（文章/作品/更新日志）、搜索、版本按ID降序（新版本在前）
+// 展示结构：年 → 月 → 日期卡片
+//   · 日期卡片内：文章 / 作品为子卡片
+//   · 日期卡片底部：版本胶囊（按版本号倒序，新版本在前）
+//   · 点击版本胶囊在该日期卡片底部展开详情（同一卡片同时只展开一个）
 
 import { DataManager, UIRenderer } from '/js/pages/search-render.js';
 import { Utils, storageController, perf } from '/js/core/core.js';
@@ -54,18 +57,15 @@ interface TimelineItem {
     title: string;
     description: string;
     date: string;               // YYYY-MM-DD
-    dateObj: Date;             // 用于排序
-    url?: string;              // 文章或作品链接
+    dateObj: Date;              // 用于排序
+    url?: string;               // 文章或作品链接
     tags?: string[];
     // 版本特有
     versionNumber?: string;
     changes?: Change[];
-    versionId?: number;        // 版本在 version.json 中的 id（用于排序）
-    originalOrder?: number;    // 保留原始索引（备用）
+    versionId?: number;
+    originalOrder?: number;
 }
-
-/** 按年份/月份分组后的结构 */
-type GroupedItems = Map<number, Map<number, TimelineItem[]>>;
 
 // ==================== 工具函数 ====================
 
@@ -77,7 +77,6 @@ function getTags(item: BaseItem): string[] {
 
 function parseDateString(dateStr: string): Date | null {
     if (!dateStr) return null;
-    // 尝试解析中文日期 "2026年08月12日"
     const chineseMatch = dateStr.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
     if (chineseMatch) {
         const [, y, m, d] = chineseMatch.map(Number);
@@ -99,6 +98,35 @@ function formatMonthLabel(month: number): string {
     return `${month}月`;
 }
 
+/** 把版本号拆成数字段，便于比较（"1.10.2" → [1, 10, 2]） */
+function parseVersionSegments(version: string): number[] {
+    return version
+        .split(/[^0-9]+/)
+        .filter(Boolean)
+        .map(Number)
+        .filter(n => !isNaN(n));
+}
+
+/** 版本比较：新版本在前（倒序） */
+function compareVersionDesc(a: TimelineItem, b: TimelineItem): number {
+    const pa = parseVersionSegments(a.versionNumber || '');
+    const pb = parseVersionSegments(b.versionNumber || '');
+    const len = Math.max(pa.length, pb.length);
+    for (let i = 0; i < len; i++) {
+        const na = pa[i] ?? 0;
+        const nb = pb[i] ?? 0;
+        if (na !== nb) return nb - na;
+    }
+    return (b.versionId ?? 0) - (a.versionId ?? 0);
+}
+
+/** 版本号显示：避免 "vv1.2.0" 这种重复前缀 */
+function formatVersionLabel(version?: string): string {
+    const v = (version || '').trim();
+    if (!v) return '未知版本';
+    return /^v/i.test(v) ? v : `v${v}`;
+}
+
 // ==================== 核心管理类 ====================
 
 export class TimelineManager extends PageManager {
@@ -108,7 +136,6 @@ export class TimelineManager extends PageManager {
     private resetButton: HTMLElement | null = null;
     private yearCapsulesContainer: HTMLElement | null = null;
 
-    // 类型复选框和搜索
     private typeCheckboxes: NodeListOf<HTMLInputElement> | null = null;
     private searchInput: HTMLInputElement | null = null;
 
@@ -117,7 +144,6 @@ export class TimelineManager extends PageManager {
     private selectedTypes: Set<string> = new Set(['article', 'work', 'version']);
     private searchQuery = '';
 
-    // 事件处理器引用
     private boundHandlers: {
         yearChange: ((this: HTMLSelectElement, ev: Event) => any) | null;
         reset: ((this: HTMLElement, ev: Event) => any) | null;
@@ -140,12 +166,10 @@ export class TimelineManager extends PageManager {
 
         if (!this.container) return;
 
-        // 显示加载状态
         this.container.innerHTML = '<div class="loading-spinner"><div class="spinner"></div><p>加载时间线数据...</p></div>';
         if (this.summary) this.summary.textContent = '';
 
         try {
-            // 并行获取三类数据
             const [articlesResult, worksResult, versionsResult] = await Promise.allSettled([
                 DataManager.fetchData('articles', true),
                 DataManager.fetchData('works', true),
@@ -189,7 +213,6 @@ export class TimelineManager extends PageManager {
     private buildTimelineItems(articles: Article[], works: Work[], versions: Version[]): TimelineItem[] {
         const items: TimelineItem[] = [];
 
-        // 文章
         for (const art of articles) {
             const dateStr = art.date || art.last_updated || '';
             const dateObj = parseDateString(dateStr);
@@ -200,13 +223,12 @@ export class TimelineManager extends PageManager {
                 title: art.title || '无标题文章',
                 description: art.description || '',
                 date: formatDateLabel(dateObj),
-                dateObj: dateObj,
+                dateObj,
                 url: art.url || art.link || '#',
                 tags: getTags(art),
             });
         }
 
-        // 作品
         for (const work of works) {
             const dateStr = work.date || '';
             const dateObj = parseDateString(dateStr);
@@ -217,13 +239,12 @@ export class TimelineManager extends PageManager {
                 title: work.title || '无题作品',
                 description: work.description || '',
                 date: formatDateLabel(dateObj),
-                dateObj: dateObj,
+                dateObj,
                 url: work.link || work.url || '#',
                 tags: getTags(work),
             });
         }
 
-        // 版本 —— 记录原始顺序和版本ID
         let versionOrder = 0;
         for (const ver of versions) {
             const dateStr = ver.date || '';
@@ -235,11 +256,11 @@ export class TimelineManager extends PageManager {
                 title: `版本 ${ver.version}`,
                 description: `${ver.changes?.length || 0} 项变更`,
                 date: formatDateLabel(dateObj),
-                dateObj: dateObj,
+                dateObj,
                 versionNumber: ver.version,
                 changes: ver.changes || [],
-                versionId: ver.id,            // 保存版本ID
-                originalOrder: versionOrder++, // 原始索引（备用）
+                versionId: ver.id,
+                originalOrder: versionOrder++,
             });
         }
 
@@ -294,7 +315,6 @@ export class TimelineManager extends PageManager {
     }
 
     private attachEvents(): void {
-        // 年份下拉
         if (this.yearFilter) {
             this.boundHandlers.yearChange = () => {
                 this.currentYear = this.yearFilter!.value;
@@ -304,7 +324,6 @@ export class TimelineManager extends PageManager {
             this.yearFilter.addEventListener('change', this.boundHandlers.yearChange);
         }
 
-        // 重置按钮
         if (this.resetButton) {
             this.boundHandlers.reset = () => {
                 this.currentYear = 'all';
@@ -321,7 +340,6 @@ export class TimelineManager extends PageManager {
             this.resetButton.addEventListener('click', this.boundHandlers.reset);
         }
 
-        // 类型复选框
         if (this.typeCheckboxes) {
             this.boundHandlers.typeChange = () => {
                 this.updateTypeFilter();
@@ -331,7 +349,6 @@ export class TimelineManager extends PageManager {
             });
         }
 
-        // 搜索输入（防抖）
         if (this.searchInput) {
             this.boundHandlers.searchInput = () => {
                 if (this.searchDebounceTimer) clearTimeout(this.searchDebounceTimer);
@@ -352,11 +369,13 @@ export class TimelineManager extends PageManager {
         this.renderTimeline();
     }
 
+    // ==================== 渲染主流程 ====================
+
     private renderTimeline(): void {
         if (!this.container) return;
 
-        // 1. 过滤数据
-        let filtered = this.allItems.filter(item => {
+        // 1. 过滤
+        const filtered = this.allItems.filter(item => {
             if (!this.selectedTypes.has(item.type)) return false;
             if (this.currentYear !== 'all') {
                 const yearNum = parseInt(this.currentYear, 10);
@@ -373,194 +392,242 @@ export class TimelineManager extends PageManager {
             return true;
         });
 
-        // 2. 排序逻辑
-        const isVersionOnly = this.selectedTypes.size === 1 && this.selectedTypes.has('version');
-        if (isVersionOnly) {
-            // 版本专用模式：按版本ID降序（大号在前，即最新版本在前）
-            filtered.sort((a, b) => (b.versionId || 0) - (a.versionId || 0));
-        } else {
-            // 混合模式：按日期降序（最新在前）
-            filtered.sort((a, b) => b.dateObj.getTime() - a.dateObj.getTime());
-        }
+        // 2. 全局按日期降序
+        filtered.sort((a, b) => b.dateObj.getTime() - a.dateObj.getTime());
 
-        // 3. 更新摘要
+        // 3. 摘要
         const articleCount = filtered.filter(i => i.type === 'article').length;
         const workCount = filtered.filter(i => i.type === 'work').length;
         const versionCount = filtered.filter(i => i.type === 'version').length;
+        const dayCount = new Set(filtered.map(i => i.date)).size;
         if (this.summary) {
             this.summary.innerHTML = `
                 <i class="fas fa-chart-line"></i>
                 当前筛选：<strong>${articleCount}</strong> 篇文章 ·
                 <strong>${workCount}</strong> 个作品 ·
                 <strong>${versionCount}</strong> 个更新日志 ·
-                共 <strong>${filtered.length}</strong> 条内容
+                共 <strong>${filtered.length}</strong> 条内容 ·
+                <strong>${dayCount}</strong> 天
             `;
         }
 
-        // 4. 渲染内容
+        // 4. 空状态
         if (!filtered.length) {
             this.container.innerHTML = '<div class="timeline-empty">啊？似乎没有符合条件的条目呀，换个条件试试？</div>';
             return;
         }
 
-        let html = '';
-        if (isVersionOnly) {
-            // 版本专用模式：直接顺序列表，不分组
-            html = '<div class="timeline timeline-version-only">';
-            for (const item of filtered) {
-                html += this.renderTimelineItem(item);
-            }
-            html += '</div>';
-        } else {
-            // 普通模式：按年份-月份分组
-            const grouped: GroupedItems = new Map();
-            for (const item of filtered) {
-                const year = item.dateObj.getFullYear();
-                const month = item.dateObj.getMonth() + 1;
-                if (!grouped.has(year)) grouped.set(year, new Map());
-                const monthMap = grouped.get(year)!;
-                if (!monthMap.has(month)) monthMap.set(month, []);
-                monthMap.get(month)!.push(item);
+        // 5. 分组：年 → 月 → 日
+        const yearMap = new Map<number, Map<number, Map<string, TimelineItem[]>>>();
+        for (const item of filtered) {
+            const year = item.dateObj.getFullYear();
+            const month = item.dateObj.getMonth() + 1;
+            const dayKey = formatDateLabel(item.dateObj);
+
+            if (!yearMap.has(year)) yearMap.set(year, new Map());
+            const monthMap = yearMap.get(year)!;
+            if (!monthMap.has(month)) monthMap.set(month, new Map());
+            const dayMap = monthMap.get(month)!;
+            if (!dayMap.has(dayKey)) dayMap.set(dayKey, []);
+            dayMap.get(dayKey)!.push(item);
+        }
+
+        // 6. 生成 HTML
+        let html = '<div class="timeline">';
+        const sortedYears = Array.from(yearMap.keys()).sort((a, b) => b - a);
+
+        for (const year of sortedYears) {
+            const monthMap = yearMap.get(year)!;
+            const yearTotal = Array.from(monthMap.values())
+                .reduce((sum, dayMap) => sum + Array.from(dayMap.values()).reduce((s, arr) => s + arr.length, 0), 0);
+
+            html += `<div class="timeline-year">
+                <h3 class="timeline-year-title">${year} <span class="year-count">${yearTotal}</span></h3>`;
+
+            const sortedMonths = Array.from(monthMap.keys()).sort((a, b) => b - a);
+            for (const month of sortedMonths) {
+                const dayMap = monthMap.get(month)!;
+                html += `<div class="timeline-month">
+                    <h4 class="timeline-month-title">${formatMonthLabel(month)}</h4>
+                    <div class="timeline-list">`;
+
+                const sortedDays = Array.from(dayMap.keys()).sort((a, b) => b.localeCompare(a));
+                for (const day of sortedDays) {
+                    html += this.renderDayCard(dayMap.get(day)!);
+                }
+
+                html += `</div></div>`;
             }
 
-            html = '<div class="timeline">';
-            const sortedYears = Array.from(grouped.keys()).sort((a, b) => b - a);
-            for (const year of sortedYears) {
-                const monthMap = grouped.get(year)!;
-                const sortedMonths = Array.from(monthMap.keys()).sort((a, b) => b - a);
-                const yearTotal = Array.from(monthMap.values()).reduce((sum, arr) => sum + arr.length, 0);
-                html += `<div class="timeline-year">
-                    <h3 class="timeline-year-title">${year} <span class="year-count">${yearTotal}</span></h3>`;
-                for (const month of sortedMonths) {
-                    const items = monthMap.get(month)!;
-                    // 月份内排序：按日期降序，同日期内版本优先且版本按版本ID降序
-                    items.sort((a, b) => {
-                        if (a.dateObj.getTime() !== b.dateObj.getTime()) {
-                            return b.dateObj.getTime() - a.dateObj.getTime();
-                        }
-                        // 同日期：版本优先，版本之间按版本ID降序
-                        if (a.type === 'version' && b.type === 'version') {
-                            return (b.versionId || 0) - (a.versionId || 0);
-                        }
-                        const order = { version: 0, article: 1, work: 2 };
-                        return order[a.type] - order[b.type];
-                    });
-                    html += `<div class="timeline-month">
-                        <h4 class="timeline-month-title">${formatMonthLabel(month)}</h4>
-                        <div class="timeline-list">`;
-                    for (const item of items) {
-                        html += this.renderTimelineItem(item);
-                    }
-                    html += `</div></div>`;
-                }
-                html += `</div>`;
-            }
-            html += '</div>';
+            html += `</div>`;
         }
+        html += '</div>';
 
         this.container.innerHTML = html;
 
-        // 5. 绑定版本展开/收起事件
-        this.container.querySelectorAll<HTMLElement>('.version-capsule').forEach(el => {
-            const contentId = el.getAttribute('data-content-id');
-            if (!contentId) return;
-            el.addEventListener('click', () => {
-                const content = document.getElementById(contentId);
-                if (!content) return;
-                const isOpen = content.style.display === 'block';
-                content.style.display = isOpen ? 'none' : 'block';
-                el.classList.toggle('expanded', !isOpen);
-                const icon = el.querySelector('.version-toggle-icon');
-                if (icon) icon.textContent = isOpen ? '▶' : '▼';
-            });
-        });
+        // 7. 绑定版本胶囊
+        this.bindVersionCapsules();
 
-        // 触发滚动动画刷新
         if (this.refreshCallback) this.refreshCallback();
         else if (window.refreshScrollReveal) (window as any).refreshScrollReveal();
     }
 
-    private renderTimelineItem(item: TimelineItem): string {
-        const dateLabel = formatDateLabel(item.dateObj);
-        const escapedTitle = Utils.escapeHtml(item.title);
-        const escapedDesc = Utils.escapeHtml(item.description);
-        const tags = item.tags || [];
+    /** 渲染一张「日期卡片」：文章/作品子卡片 + 底部版本胶囊与详情 */
+    private renderDayCard(items: TimelineItem[]): string {
+        const dateLabel = formatDateLabel(items[0].dateObj);
 
-        // 徽章
-        let badge = '';
-        if (item.type === 'article') {
-            badge = '<span class="timeline-item-badge article-badge">文章</span>';
-        } else if (item.type === 'work') {
-            badge = '<span class="timeline-item-badge work-badge">作品</span>';
-        } else if (item.type === 'version') {
-            const versionNum = item.versionNumber || '未知版本';
-            badge = `<span class="timeline-item-badge version-badge">版本 ${versionNum}</span>`;
-        }
+        // 文章 / 作品：文章优先，其次作品，同类型按标题排序
+        const contentItems = items
+            .filter(i => i.type !== 'version')
+            .sort((a, b) => {
+                const order: Record<string, number> = { article: 0, work: 1 };
+                const diff = (order[a.type] ?? 9) - (order[b.type] ?? 9);
+                if (diff !== 0) return diff;
+                return (a.title || '').localeCompare(b.title || '', 'zh');
+            });
 
-        // 标题（版本不显示标题）
-        let titleHtml = '';
-        if (item.type !== 'version') {
-            const url = item.url || '#';
-            titleHtml = `<a href="${Utils.escapeHtml(url)}" class="timeline-item-title">${escapedTitle}</a>`;
-        }
+        // 版本：按版本号倒序（新版本在前）
+        const versionItems = items
+            .filter(i => i.type === 'version')
+            .sort(compareVersionDesc);
 
-        // 描述（版本不显示描述）
-        let descHtml = '';
-        if (item.type !== 'version') {
-            descHtml = `<p class="timeline-item-description">${escapedDesc}</p>`;
-        }
-
-        // 标签
-        const tagsHtml = tags.length
-            ? `<div class="timeline-item-tags">${tags.map(t => `<span class="tag">${Utils.escapeHtml(t)}</span>`).join('')}</div>`
+        // -------- 子卡片 --------
+        const itemsHtml = contentItems.length
+            ? `<div class="day-card-items">${contentItems.map(i => this.renderSubCard(i)).join('')}</div>`
             : '';
 
-        // 版本变更详情
-        let versionButtonHtml = '';
-        let versionContentHtml = '';
-        if (item.type === 'version' && item.changes && item.changes.length) {
-            const contentId = `version-detail-${item.id}`;
-            const changesHtml = item.changes.map(chg => {
-                const typeColor = this.getTypeColor(chg.type);
-                let descHtml2 = '';
-                try {
-                    descHtml2 = marked.parse(chg.description);
-                } catch {
-                    descHtml2 = chg.description.replace(/\n/g, '<br>');
-                }
-                return `<div class="change-item">
-                    <span class="change-type" style="background:${typeColor}20; color:${typeColor}; border-color:${typeColor}40;">${chg.type}</span>
-                    <div class="change-desc">${descHtml2}</div>
-                </div>`;
+        // -------- 版本胶囊 + 详情 --------
+        let versionsHtml = '';
+        if (versionItems.length) {
+            const capsules = versionItems.map(v => {
+                const detailId = this.getDetailId(v);
+                return `<button type="button"
+                            class="version-capsule"
+                            data-detail-id="${detailId}"
+                            aria-expanded="false"
+                            aria-controls="${detailId}">
+                            <span class="version-capsule-dot" aria-hidden="true"></span>
+                            <span class="version-capsule-num">${Utils.escapeHtml(formatVersionLabel(v.versionNumber))}</span>
+                            <span class="version-capsule-count">${v.changes?.length || 0}</span>
+                        </button>`;
             }).join('');
 
-            versionButtonHtml = `
-                <button class="version-capsule" data-content-id="${contentId}">
-                    <span class="version-toggle-icon">▶</span> 展开${item.changes.length}项变更
-                </button>
-            `;
-            versionContentHtml = `
-                <div id="${contentId}" class="version-detail-content" style="display:none;">
-                    ${changesHtml}
+            const details = versionItems.map(v => {
+                const detailId = this.getDetailId(v);
+                return `<div id="${detailId}" class="version-detail-content" hidden>
+                            ${this.renderChanges(v)}
+                        </div>`;
+            }).join('');
+
+            versionsHtml = `
+                <div class="day-card-versions">
+                    <div class="version-capsules-row">${capsules}</div>
+                    <div class="version-details-container">${details}</div>
                 </div>
             `;
         }
 
         return `
-            <div class="timeline-item" data-type="${item.type}" data-date="${dateLabel}">
-                <div class="timeline-item-meta">
-                    <span class="timeline-item-date"><i class="far fa-calendar-alt"></i> ${dateLabel}</span>
-                    ${badge}
-                    ${versionButtonHtml}
+            <div class="day-card" data-date="${dateLabel}">
+                <div class="day-card-header">
+                    <span class="day-card-date"><i class="far fa-calendar-alt"></i> ${dateLabel}</span>
+                    <span class="day-card-count">${items.length} 条</span>
                 </div>
-                <div class="timeline-item-body">
-                    ${titleHtml}
-                    ${descHtml}
-                    ${tagsHtml}
-                    ${versionContentHtml}
-                </div>
+                ${itemsHtml}
+                ${versionsHtml}
             </div>
         `;
+    }
+
+    private getDetailId(item: TimelineItem): string {
+        return `version-detail-${item.id}`;
+    }
+
+    /** 文章 / 作品子卡片 */
+    private renderSubCard(item: TimelineItem): string {
+        const isArticle = item.type === 'article';
+        const url = item.url || '#';
+        const tags = item.tags || [];
+
+        const tagsHtml = tags.length
+            ? `<div class="day-subcard-tags">${tags.map(t => `<span class="tag">${Utils.escapeHtml(t)}</span>`).join('')}</div>`
+            : '';
+
+        const descHtml = item.description
+            ? `<p class="day-subcard-desc">${Utils.escapeHtml(item.description)}</p>`
+            : '';
+
+        return `
+            <a class="day-subcard" href="${Utils.escapeHtml(url)}" data-type="${item.type}">
+                <span class="day-subcard-badge ${isArticle ? 'article-badge' : 'work-badge'}">
+                    ${isArticle ? '文章' : '作品'}
+                </span>
+                <div class="day-subcard-main">
+                    <h5 class="day-subcard-title">${Utils.escapeHtml(item.title)}</h5>
+                    ${descHtml}
+                    ${tagsHtml}
+                </div>
+                <i class="fas fa-chevron-right day-subcard-arrow" aria-hidden="true"></i>
+            </a>
+        `;
+    }
+
+    /** 版本变更详情 */
+    private renderChanges(item: TimelineItem): string {
+        if (!item.changes || !item.changes.length) {
+            return `<p class="change-empty">该版本暂无变更记录。</p>`;
+        }
+
+        return item.changes.map(chg => {
+            const typeColor = this.getTypeColor(chg.type);
+            let descHtml = '';
+            try {
+                descHtml = marked.parse(chg.description);
+            } catch {
+                descHtml = Utils.escapeHtml(chg.description).replace(/\n/g, '<br>');
+            }
+            return `<div class="change-item">
+                <span class="change-type" style="background:${typeColor}20; color:${typeColor}; border-color:${typeColor}40;">${Utils.escapeHtml(chg.type)}</span>
+                <div class="change-desc">${descHtml}</div>
+            </div>`;
+        }).join('');
+    }
+
+    /** 绑定版本胶囊的展开 / 收起（同一日期卡片内互斥） */
+    private bindVersionCapsules(): void {
+        if (!this.container) return;
+
+        this.container.querySelectorAll<HTMLElement>('.day-card').forEach(card => {
+            const capsules = Array.from(card.querySelectorAll<HTMLButtonElement>('.version-capsule'));
+            if (!capsules.length) return;
+
+            const details = Array.from(card.querySelectorAll<HTMLElement>('.version-detail-content'));
+
+            const closeAll = () => {
+                capsules.forEach(btn => {
+                    btn.classList.remove('expanded');
+                    btn.setAttribute('aria-expanded', 'false');
+                });
+                details.forEach(d => { d.hidden = true; });
+            };
+
+            capsules.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const detailId = btn.dataset.detailId;
+                    if (!detailId) return;
+
+                    const wasOpen = btn.classList.contains('expanded');
+                    closeAll();
+                    if (wasOpen) return;
+
+                    btn.classList.add('expanded');
+                    btn.setAttribute('aria-expanded', 'true');
+
+                    const detail = details.find(d => d.id === detailId);
+                    if (detail) detail.hidden = false;
+                });
+            });
+        });
     }
 
     private getTypeColor(type: string): string {
@@ -619,7 +686,6 @@ export async function initTimelinePage(scrollRevealRefreshCallback?: () => void)
     return manager;
 }
 
-// 自动初始化
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
         const container = document.getElementById('timeline-container');
