@@ -115,8 +115,8 @@
       "desc": "图床服务"
     },
     {
-      "name": "Bing",
-      "link": "https://cn.bing.com/",
+      "name": "Bing.wdbyte.com",
+      "link": "https://bing.wdbyte.com/zh-cn/",
       "desc": "网站壁纸来源"
     },
     {
@@ -127,7 +127,7 @@
     {
       "name": "APlayer_Glassmorphism-UI",
       "link": "https://github.com/BB0813/APlayer_Glassmorphism-UI/",
-      "desc": "APlayer 音乐播放器分支（基于 Vue3 的新UI/UX）"
+      "desc": "APlayer 音乐播放器分支（基于 Vue3 的新UI/UX）\n网站的音乐播放器基于此改版"
     },
     {
       "name": "Vercount",
@@ -160,9 +160,14 @@
       "desc": "Twikoo 数据存储"
     },
     {
-      "name": "萌ICP",
+      "name": "Moe ICP",
       "link": "https://icp.gov.moe/",
       "desc": "萌国 ICP 备案"
+    },
+    {
+      "name": "Fake ICP",
+      "link": "https://fakeicp.top/",
+      "desc": "假 ICP 备案"
     },
     {
       "name": "NeteaseMiniPlayerV2",
