@@ -1,14 +1,15 @@
 // /js/ui/navbar-manager.ts
 // 职责：DOM 生成、入场动画、标题替换、滚动状态、移动菜单无障碍、SPA 复用
+// 资源清理统一走 DisposableStack
 
 import { CONFIG } from '/js/core/core.js';
+import { DisposableStack } from '/js/core/disposable-stack.js';
 import { initThemeToggle } from '/js/ui/theme.js';
 import { initMobileMenuToggle, initNavigation } from '/js/router/router.js';
 
 const SITE_NAME = 'GaoXinYang';
 const CSS_PATH = '/css/components/navbar.css';
 const SCROLL_THRESHOLD = 24;
-// 移动端断点统一从全局 CONFIG 读取，避免各处硬编码 768
 const DESKTOP_BREAKPOINT = CONFIG.BREAKPOINTS.MOBILE;
 
 const NAV_LINKS: ReadonlyArray<{ href: string; page: string; text: string }> = [
@@ -33,18 +34,21 @@ interface NavbarElements {
 export class NavbarManager {
   private initialized = false;
   private entrancePlayed = false;
-  private shellBound = false;
   private titleMode = false;
   private scrollTicking = false;
-  private resizeObserver: ResizeObserver | null = null;
-  private menuObserver: MutationObserver | null = null;
-  private titleObserver: MutationObserver | null = null;
   private resizeTicking = false;
   private titleHoverTimer: number | undefined;
 
+  /** 统一资源清理栈 */
+  private stack = new DisposableStack();
+
   private elements: NavbarElements = {
-    navbar: null, nav: null, navItems: null,
-    placeholder: null, titlePlaceholder: null, titleScroll: null,
+    navbar: null,
+    nav: null,
+    navItems: null,
+    placeholder: null,
+    titlePlaceholder: null,
+    titleScroll: null,
   };
 
   /* ================= DOM 生成 ================= */
@@ -53,7 +57,6 @@ export class NavbarManager {
     const navbar = document.createElement('div');
     navbar.className = 'navbar initial';
 
-    // Logo（可点击回首页，走 SPA 导航）
     const logo = document.createElement('a');
     logo.href = '/';
     logo.className = 'nav-logo';
@@ -64,7 +67,6 @@ export class NavbarManager {
     logo.appendChild(logoText);
     navbar.appendChild(logo);
 
-    // 导航菜单
     const nav = document.createElement('nav');
     nav.setAttribute('aria-label', '主导航');
     const navItems = document.createElement('div');
@@ -81,7 +83,6 @@ export class NavbarManager {
     nav.appendChild(navItems);
     navbar.appendChild(nav);
 
-    // 右侧操作区：主题切换 + 移动菜单按钮
     const actions = document.createElement('div');
     actions.className = 'nav-actions';
 
@@ -118,6 +119,7 @@ export class NavbarManager {
   }
 
   /* ================= 入场与滚动状态 ================= */
+
   playEntranceAnimation(): void {
     if (this.entrancePlayed || !this.elements.navbar) return;
     this.elements.navbar.classList.remove('initial');
@@ -136,20 +138,20 @@ export class NavbarManager {
     });
   };
 
-  private bindShell(): void {
-    if (this.shellBound) return;
-    this.shellBound = true;
-    window.addEventListener('scroll', this.onScroll, { passive: true });
-    window.addEventListener('resize', this.onResize, { passive: true });
-    this.observeMenuToggle();
-    this.onScroll(); // 同步初始状态
-  }
+  private onResize = (): void => {
+    if (this.resizeTicking) return;
+    this.resizeTicking = true;
+    requestAnimationFrame(() => {
+      this.resizeTicking = false;
+      this.refreshNavbarTitle();
+    });
+  };
 
-  private unbindShell(): void {
-    window.removeEventListener('scroll', this.onScroll);
-    this.menuObserver?.disconnect();
-    this.menuObserver = null;
-    this.shellBound = false;
+  private bindShell(): void {
+    this.stack.addEventListener(window, 'scroll', this.onScroll, { passive: true });
+    this.stack.addEventListener(window, 'resize', this.onResize, { passive: true });
+    this.observeMenuToggle();
+    this.onScroll();
   }
 
   /** 移动菜单按钮：键盘可操作 + aria 状态同步 */
@@ -157,23 +159,24 @@ export class NavbarManager {
     const toggle = this.elements.navbar?.querySelector('.mobile-toggle');
     if (!toggle) return;
 
-    toggle.addEventListener('keydown', (event) => {
-      const { key } = event as KeyboardEvent;
+    this.stack.addEventListener(toggle, 'keydown', ((event: KeyboardEvent) => {
+      const { key } = event;
       if (key === 'Enter' || key === ' ') {
-        (event as KeyboardEvent).preventDefault();
-        (toggle as HTMLElement).click(); // 冒泡到 router 的委托处理器
+        event.preventDefault();
+        (toggle as HTMLElement).click();
       }
-    });
+    }) as EventListener);
 
-    this.menuObserver = new MutationObserver(() => {
+    const observer = new MutationObserver(() => {
       const open = toggle.classList.contains('active');
       toggle.setAttribute('aria-expanded', String(open));
       toggle.setAttribute('aria-label', open ? '关闭导航菜单' : '打开导航菜单');
     });
-    this.menuObserver.observe(toggle, { attributes: true, attributeFilter: ['class'] });
+    observer.observe(toggle, { attributes: true, attributeFilter: ['class'] });
+    this.stack.addObserver(observer);
   }
 
-  /* ================= 标题替换（桌面无激活项时，导航中央显示页面标题） ================= */
+  /* ================= 标题替换 ================= */
 
   private createTitlePlaceholder(): void {
     const nav = this.elements.nav;
@@ -191,13 +194,13 @@ export class NavbarManager {
     this.elements.titlePlaceholder = placeholder;
     this.elements.titleScroll = scroll;
 
-    // 容器宽度变化（窗口缩放 / 字体加载）→ 重算溢出与滚动时长
-    this.resizeObserver = new ResizeObserver(() => this.measureTitle());
-    this.resizeObserver.observe(placeholder);
+    // 容器宽度变化 → 重算溢出与滚动时长
+    const resizeObserver = new ResizeObserver(() => this.measureTitle());
+    resizeObserver.observe(placeholder);
+    this.stack.addObserver(resizeObserver);
     this.bindTitleHover();
   }
 
-  /** 读取当前页标题：优先页内 <h1>，其次 document.title（剥掉站点名后缀） */
   private resolvePageTitle(): string {
     const h1 = document.querySelector<HTMLElement>('main h1, article h1, h1');
     const fromH1 = h1?.textContent?.trim() ?? '';
@@ -223,7 +226,6 @@ export class NavbarManager {
       this.titleMode = true;
       navItems.classList.add('title-mode-hidden');
       titlePlaceholder.classList.add('active');
-      // SPA 跳转时鼠标可能仍停留在 nav 上 → 直接进入唤回态，避免闪一下标题
       if (nav?.matches(':hover')) nav.classList.add('title-hovered');
     }
     this.measureTitle();
@@ -235,18 +237,17 @@ export class NavbarManager {
     window.clearTimeout(this.titleHoverTimer);
     this.elements.nav?.classList.remove('title-hovered');
     this.elements.navItems?.classList.remove('title-mode-hidden');
-    const { titlePlaceholder } = this.elements;
-    titlePlaceholder?.classList.remove('active', 'scrolling');
+    this.elements.titlePlaceholder?.classList.remove('active', 'scrolling');
   }
 
-  /** 标题超出容器 → 开启匀速滚动（marquee），速度恒定 ≈45px/s，悬停暂停（CSS 已处理） */
+  /** 标题超出容器 → 开启匀速 marquee，速度恒 ≈45px/s */
   private measureTitle(): void {
     const { titlePlaceholder, titleScroll } = this.elements;
     if (!titlePlaceholder || !titleScroll || !this.titleMode) return;
 
     const overflow = titleScroll.scrollWidth - titlePlaceholder.clientWidth;
     if (overflow > 8) {
-      const distance = overflow + 48;                 // 首尾留 48px 呼吸
+      const distance = overflow + 48;
       const duration = Math.max(6, distance / 45);
       titlePlaceholder.style.setProperty('--scroll-distance', `-${distance}px`);
       titlePlaceholder.style.setProperty('--scroll-duration', `${duration.toFixed(1)}s`);
@@ -256,12 +257,11 @@ export class NavbarManager {
     }
   }
 
-  /** 路由切换后刷新激活态与标题模式（内置 observer 也会自动触发，通常无需手动调用） */
+  /** 路由切换后刷新激活态与标题模式 */
   refreshNavbarTitle(): void {
     const { navItems } = this.elements;
     if (!navItems || !this.initialized) return;
 
-    // 移动端不做标题替换，菜单入口必须始终可见
     if (window.innerWidth <= DESKTOP_BREAKPOINT) {
       this.exitTitleMode();
       return;
@@ -275,51 +275,40 @@ export class NavbarManager {
     else this.exitTitleMode();
   }
 
-  /** 监听 .active 与 <title> 变化 → router.ts 零改动也能自动联动 */
+  /** 监听 .active 与 <title> 变化 → 自动进出标题模式 */
   private observeNavState(): void {
-    this.titleObserver?.disconnect();
-    this.titleObserver = new MutationObserver(() => this.refreshNavbarTitle());
+    const observer = new MutationObserver(() => this.refreshNavbarTitle());
 
-    // router.initNavigation 切换 .active → 自动进出标题模式
     if (this.elements.navItems) {
-      this.titleObserver.observe(this.elements.navItems, {
+      observer.observe(this.elements.navItems, {
         subtree: true,
         attributes: true,
         attributeFilter: ['class'],
       });
     }
-    // SPA 更新 document.title → 同步占位标题文本
     const titleEl = document.querySelector('title');
     if (titleEl) {
-      this.titleObserver.observe(titleEl, {
+      observer.observe(titleEl, {
         childList: true,
         subtree: true,
         characterData: true,
       });
     }
+    this.stack.addObserver(observer);
   }
-
-  private onResize = (): void => {
-    if (this.resizeTicking) return;
-    this.resizeTicking = true;
-    requestAnimationFrame(() => {
-      this.resizeTicking = false;
-      this.refreshNavbarTitle();
-    });
-  };
 
   /** 标题模式下悬停 nav 中部 → 唤回菜单；离开 300ms 后恢复标题 */
   private bindTitleHover(): void {
     const nav = this.elements.nav;
     if (!nav) return;
 
-    nav.addEventListener('mouseenter', () => {
+    this.stack.addEventListener(nav, 'mouseenter', () => {
       if (!this.titleMode) return;
       window.clearTimeout(this.titleHoverTimer);
       nav.classList.add('title-hovered');
     });
 
-    nav.addEventListener('mouseleave', () => {
+    this.stack.addEventListener(nav, 'mouseleave', () => {
       if (!this.titleMode) return;
       this.titleHoverTimer = window.setTimeout(() => {
         nav.classList.remove('title-hovered');
@@ -338,7 +327,6 @@ export class NavbarManager {
 
     NavbarManager.ensureCSS();
 
-    // 挂载点：复用已有 placeholder，否则自动创建于 body 顶部
     let placeholder = document.getElementById(placeholderId);
     if (!placeholder) {
       placeholder = document.createElement('div');
@@ -346,7 +334,6 @@ export class NavbarManager {
       document.body.prepend(placeholder);
     }
 
-    // 若页面已有静态 navbar（渐进增强 / 首屏 SSR），直接复用
     let navbar = document.querySelector<HTMLElement>('.navbar');
     const fresh = !navbar;
     if (!navbar) {
@@ -367,14 +354,12 @@ export class NavbarManager {
     this.bindShell();
     this.observeNavState();
 
-    // theme.ts / router.ts 契约不变，均为幂等初始化
     initThemeToggle();
     initNavigation();
     initMobileMenuToggle();
 
     this.createTitlePlaceholder();
 
-    // 入场动画：双 rAF 确保 .initial 已提交渲染，移除后 CSS animation 必然触发
     if (fresh) {
       requestAnimationFrame(() =>
         requestAnimationFrame(() => this.playEntranceAnimation())
@@ -385,6 +370,16 @@ export class NavbarManager {
     }
 
     this.refreshNavbarTitle();
+  }
+
+  /** 释放所有资源（一般只在测试或极端场景调用） */
+  destroy(): void {
+    this.stack.dispose();
+    this.stack = new DisposableStack();
+    window.clearTimeout(this.titleHoverTimer);
+    this.initialized = false;
+    this.entrancePlayed = false;
+    this.titleMode = false;
   }
 }
 

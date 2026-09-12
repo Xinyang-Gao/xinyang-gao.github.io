@@ -8,7 +8,7 @@ export type Theme = 'light' | 'dark';
 export type ThemeMode = 'auto' | 'light' | 'dark';
 
 /** 新键：settings_theme_mode，值为 'auto' | 'light' | 'dark' */
-const THEME_MODE_KEY = 'settings_theme_mode';
+const THEME_MODE_KEY = CONFIG.STORAGE_KEYS.THEME_MODE;
 /** 旧键：'theme'，值只有 'light' | 'dark'，用于兼容迁移 */
 const LEGACY_THEME_KEY = CONFIG.STORAGE_KEYS.THEME;
 
@@ -69,6 +69,14 @@ class ThemeController {
   onChange(cb: ChangeListener): () => void {
     this.listeners.add(cb);
     return () => this.listeners.delete(cb);
+  }
+
+  /**
+   * 语义别名，明确表达"主题/模式变化"而非泛化的 change。
+   * 与 onChange 完全等价。
+   */
+  onThemeChange(cb: ChangeListener): () => void {
+    return this.onChange(cb);
   }
 
   /** 释放资源（一般只在测试或极端场景调用） */

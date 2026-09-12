@@ -1,9 +1,9 @@
 // /js/pages/article.ts
-import { PageManager } from '/js/core/page-manager.js';
+import { PageBase } from '/js/core/page-manager.js';
 import { initTwikoo, destroyTwikoo } from '/js/core/twikoo-manager.js';
 import { CONFIG } from '/js/core/core.js';
-import { DisposableStack } from '/js/core/disposable-stack.js';
 import { scrollDispatcher } from '/js/core/scroll-dispatcher.js';
+import { themeController } from '/js/core/theme-controller.js';
 
 interface Heading {
     id: string;
@@ -26,7 +26,7 @@ declare global {
     }
 }
 
-export class ArticlePageManager extends PageManager {
+export class ArticlePageManager extends PageBase {
     // TOC 状态
     private tocClickHandler: ((e: Event) => void) | null = null;
     private tocScrollWrapper: HTMLElement | null = null;
@@ -37,11 +37,10 @@ export class ArticlePageManager extends PageManager {
     // Twikoo 容器
     private twikooContainer: HTMLElement | null = null;
 
-    // 统一资源清理栈（监听器、定时器、Observer）
-    private stack = new DisposableStack();
+    // 注：资源清理栈由 PageBase 提供（protected stack），无需在此声明
 
-    // ---------- 初始化 ----------
-    init(): void {
+    // ---------- 初始化（原 init → mount） ----------
+    protected mount(): void {
         const articleBody = document.getElementById('articleBody');
         if (!articleBody) {
             console.warn('[Article] 缺少文章主体元素 #articleBody');
@@ -60,6 +59,25 @@ export class ArticlePageManager extends PageManager {
         this.renderMath();
         this.initTwikoo();
         this.refreshvercount();
+    }
+
+    // ---------- 销毁（原 destroy 中的自定义逻辑 → unmount） ----------
+    protected unmount(): void {
+        // 移除移动端遮罩
+        document.querySelector('.article-sidebar-overlay')?.remove();
+
+        // 销毁 Twikoo
+        if (this.twikooContainer) {
+            destroyTwikoo(this.twikooContainer);
+            this.twikooContainer = null;
+        }
+
+        // 重置 TOC 状态
+        this.tocScrollWrapper = null;
+        this.tocListContainer = null;
+        this.tocProgressPercent = null;
+        this.tocProgressFill = null;
+        this.tocClickHandler = null;
     }
 
     // ---------- 数学公式渲染 ----------
@@ -100,29 +118,6 @@ export class ArticlePageManager extends PageManager {
                 // ignore
             }
         }
-    }
-
-    // ---------- 销毁 ----------
-    destroy(): void {
-        // 一次性释放所有监听器、定时器、Observer
-        this.stack.dispose();
-        this.stack = new DisposableStack();
-
-        // 移除移动端遮罩
-        document.querySelector('.article-sidebar-overlay')?.remove();
-
-        // 销毁 Twikoo
-        if (this.twikooContainer) {
-            destroyTwikoo(this.twikooContainer);
-            this.twikooContainer = null;
-        }
-
-        // 重置 TOC 状态
-        this.tocScrollWrapper = null;
-        this.tocListContainer = null;
-        this.tocProgressPercent = null;
-        this.tocProgressFill = null;
-        this.tocClickHandler = null;
     }
 
     // ---------- TOC 结构（兼容后端预渲染） ----------
@@ -516,10 +511,10 @@ export class ArticlePageManager extends PageManager {
         }
     }
 
-    // ---------- 主题变化刷新进度 ----------
+    // ---------- 主题变化刷新进度（统一走 themeController.onChange） ----------
     private setupThemeListener(): void {
-        const handler = (): void => this.updateTocReadingProgress();
-        this.stack.addEventListener(window, 'themeChanged', handler);
+        const unsubscribe = themeController.onChange(() => this.updateTocReadingProgress());
+        this.stack.add(unsubscribe);
     }
 }
 

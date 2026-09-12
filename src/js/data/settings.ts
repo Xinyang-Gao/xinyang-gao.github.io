@@ -1,41 +1,53 @@
 // /js/data/settings.ts
+// 站点设置：读写本地存储 / 应用设置 / 绑定设置面板控件
+// 所有设置键统一来自 core.ts 的 CONFIG.STORAGE_KEYS，禁止在此处硬编码
 
 import { CONFIG, storageController } from '/js/core/core.js';
 import { themeController, type ThemeMode } from '/js/core/theme-controller.js';
 import { showDetailDialog } from '/js/ui/detail-dialog.js';
 import { applyRandomBackgroundImage } from '/js/core/page-utils.js';
 
-// ==================== 设置键 ====================
-const SETTINGS_KEYS = {
-  CURSOR_ENABLED: 'settings_cursor_enabled',
-  LINK_WARNING_ENABLED: 'settings_link_warning_enabled',
-  THEME_MODE: 'settings_theme_mode',       // 'auto' | 'light' | 'dark'（与 themeController 共享）
-  FONT_SCALE: 'settings_font_scale',       // 90, 100, 110, 120 (百分比)
-  REVEAL_ENABLED: 'settings_reveal_enabled',
-  BG_IMAGE_ENABLED: 'settings_bg_image_enabled',
-} as const;
+const K = CONFIG.STORAGE_KEYS;
 
-type SettingKey = typeof SETTINGS_KEYS[keyof typeof SETTINGS_KEYS];
+/** 允许被本模块读写/应用的设置键 */
+type SettingKey =
+  | typeof K.CURSOR_ENABLED
+  | typeof K.LINK_WARNING_ENABLED
+  | typeof K.THEME_MODE
+  | typeof K.FONT_SCALE
+  | typeof K.REVEAL_ENABLED
+  | typeof K.BG_IMAGE_ENABLED;
 
-// ==================== 通用读写 ====================
-export function getSetting(key: SettingKey, defaultValue = true): boolean | string {
+// ==================== 通用读写（唯一出口） ====================
+export function getSetting(
+  key: SettingKey,
+  defaultValue: boolean | string | number = true
+): boolean | string {
   const stored = storageController.getItem(key);
   if (stored !== null) {
     if (stored === 'true' || stored === 'false') return stored === 'true';
     return stored;
   }
-  return defaultValue;
+  return defaultValue as boolean | string;
 }
 
 export function setSetting(key: SettingKey, value: boolean | string | number): void {
   storageController.setItem(key, String(value));
 }
 
+/**
+ * 便捷布尔判断：语义等于 `getSetting(key, default) === true`，
+ * 但意图更清晰。供 UI 模块（如 ui-effects）判断功能开关。
+ */
+export function isEnabled(key: SettingKey, defaultValue = true): boolean {
+  return getSetting(key, defaultValue) as boolean;
+}
+
 // ==================== 清理工具 ====================
 export async function clearSWCacheAndReload(): Promise<void> {
   // 清空 DataService 内存缓存
-  const { DataService } = await import('/js/core/data-service.js');
-  DataService.getInstance().clearCache();
+  const { dataService } = await import('/js/core/data-service.js');
+  dataService.clearCache();
 
   if ('serviceWorker' in navigator) {
     const registrations = await navigator.serviceWorker.getRegistrations();
@@ -117,14 +129,13 @@ function applyBgImageEnabled(enabled: boolean, force = false): void {
 
   // 启用时：如果已有背景图且正在显示，则不重新加载（除非 force）
   if (overlay) {
-    const hasImage = overlay.style.backgroundImage && overlay.style.backgroundImage !== 'none';
-    const isActive = overlay.classList.contains('active') && overlay.style.opacity === '1';
-    if (hasImage && isActive && !force) {
-      return;
-    }
+    const hasImage =
+      overlay.style.backgroundImage && overlay.style.backgroundImage !== 'none';
+    const isActive =
+      overlay.classList.contains('active') && overlay.style.opacity === '1';
+    if (hasImage && isActive && !force) return;
   }
 
-  // 否则加载新背景图
   applyRandomBackgroundImage({ force: true });
 }
 
@@ -140,19 +151,21 @@ export function applyStoredSettings(): void {
   const themeSelect = document.getElementById('themeModeSelect') as HTMLSelectElement | null;
   if (themeSelect) themeSelect.value = themeController.getMode();
 
-  const themeCheckbox = document.getElementById('theme-toggle-checkbox') as HTMLInputElement | null;
+  const themeCheckbox = document.getElementById(
+    'theme-toggle-checkbox'
+  ) as HTMLInputElement | null;
   if (themeCheckbox) themeCheckbox.checked = themeController.getTheme() === 'dark';
 
   // 2. 字体大小
-  const scale = getSetting(SETTINGS_KEYS.FONT_SCALE, 100) as number;
+  const scale = getSetting(K.FONT_SCALE, 100) as number;
   applyFontScale(scale);
 
   // 3. 滚动揭示
-  const reveal = getSetting(SETTINGS_KEYS.REVEAL_ENABLED, true) as boolean;
+  const reveal = isEnabled(K.REVEAL_ENABLED, true);
   applyRevealEnabled(reveal);
 
   // 4. 背景图
-  const bg = getSetting(SETTINGS_KEYS.BG_IMAGE_ENABLED, true) as boolean;
+  const bg = isEnabled(K.BG_IMAGE_ENABLED, true);
   applyBgImageEnabled(bg, false); // 不强制重载
 }
 
@@ -169,40 +182,40 @@ export function bindSettingsControls(container: HTMLElement): void {
 
   // ---------- 初始化控件状态（仅设置值，不触发应用） ----------
   if (cursorCheckbox) {
-    cursorCheckbox.checked = getSetting(SETTINGS_KEYS.CURSOR_ENABLED, true) as boolean;
+    cursorCheckbox.checked = isEnabled(K.CURSOR_ENABLED, true);
   }
   if (linkCheckbox) {
-    linkCheckbox.checked = getSetting(SETTINGS_KEYS.LINK_WARNING_ENABLED, true) as boolean;
+    linkCheckbox.checked = isEnabled(K.LINK_WARNING_ENABLED, true);
   }
   if (themeSelect) {
     // 直接读 themeController；旧键 'theme' 的迁移已由控制器内部处理
     themeSelect.value = themeController.getMode();
   }
   if (fontScaleSelect) {
-    const fontScale = getSetting(SETTINGS_KEYS.FONT_SCALE, 100) as number;
+    const fontScale = getSetting(K.FONT_SCALE, 100) as number;
     fontScaleSelect.value = String(fontScale);
   }
   if (revealCheckbox) {
-    revealCheckbox.checked = getSetting(SETTINGS_KEYS.REVEAL_ENABLED, true) as boolean;
+    revealCheckbox.checked = isEnabled(K.REVEAL_ENABLED, true);
   }
   if (bgImageCheckbox) {
-    bgImageCheckbox.checked = getSetting(SETTINGS_KEYS.BG_IMAGE_ENABLED, true) as boolean;
+    bgImageCheckbox.checked = isEnabled(K.BG_IMAGE_ENABLED, true);
   }
 
   // ---------- 事件绑定 ----------
 
   cursorCheckbox?.addEventListener('change', (e) => {
     const enabled = (e.target as HTMLInputElement).checked;
-    setSetting(SETTINGS_KEYS.CURSOR_ENABLED, enabled);
-    import('/js/ui/ui-effects.js').then(module => {
+    setSetting(K.CURSOR_ENABLED, enabled);
+    import('/js/ui/ui-effects.js').then((module) => {
       if (module.refreshUIEffects) module.refreshUIEffects();
     });
   });
 
   linkCheckbox?.addEventListener('change', (e) => {
     const enabled = (e.target as HTMLInputElement).checked;
-    setSetting(SETTINGS_KEYS.LINK_WARNING_ENABLED, enabled);
-    import('/js/ui/ui-effects.js').then(module => {
+    setSetting(K.LINK_WARNING_ENABLED, enabled);
+    import('/js/ui/ui-effects.js').then((module) => {
       if (module.refreshUIEffects) module.refreshUIEffects();
     });
   });
@@ -214,19 +227,19 @@ export function bindSettingsControls(container: HTMLElement): void {
 
   fontScaleSelect?.addEventListener('change', (e) => {
     const scale = parseInt((e.target as HTMLSelectElement).value, 10);
-    setSetting(SETTINGS_KEYS.FONT_SCALE, scale);
+    setSetting(K.FONT_SCALE, scale);
     applyFontScale(scale);
   });
 
   revealCheckbox?.addEventListener('change', (e) => {
     const enabled = (e.target as HTMLInputElement).checked;
-    setSetting(SETTINGS_KEYS.REVEAL_ENABLED, enabled);
+    setSetting(K.REVEAL_ENABLED, enabled);
     applyRevealEnabled(enabled);
   });
 
   bgImageCheckbox?.addEventListener('change', (e) => {
     const enabled = (e.target as HTMLInputElement).checked;
-    setSetting(SETTINGS_KEYS.BG_IMAGE_ENABLED, enabled);
+    setSetting(K.BG_IMAGE_ENABLED, enabled);
     // 用户切换时，若启用则强制加载新图，若禁用则隐藏
     applyBgImageEnabled(enabled, true);
   });

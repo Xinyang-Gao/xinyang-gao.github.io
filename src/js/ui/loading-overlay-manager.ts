@@ -2,7 +2,7 @@
 // 加载覆盖层：版本检测、数据预加载、更新提示
 
 import { CONFIG, storageController, Utils } from '/js/core/core.js';
-import { DataService } from '/js/core/data-service.js';
+import { dataService } from '/js/core/data-service.js';
 
 export class LoadingOverlayManager {
   private overlay: HTMLElement | null = null;
@@ -12,18 +12,20 @@ export class LoadingOverlayManager {
   private logIndex = 0;
 
   private async fetchData(endpoints: Array<{ key: string; url: string }>) {
-    const service = DataService.getInstance();
     const fetchMap: Record<string, () => Promise<any>> = {
-      statistics: () => service.getStatistics(),
-      articles: () => service.getArticles(),
-      works: () => service.getWorks(),
-      code: () => service.getCodeAnalysis(),
-      friends: () => service.getFriends(),
-      version: () => service.getVersion(),
+      statistics: () => dataService.getStatistics(),
+      articles: () => dataService.getArticles(),
+      works: () => dataService.getWorks(),
+      code: () => dataService.getCodeAnalysis(),
+      friends: () => dataService.getFriends(),
+      version: () => dataService.getVersion(),
     };
 
     const results = await Promise.allSettled(
-      endpoints.map(({ key }) => fetchMap[key]?.() ?? Promise.reject(new Error(`Unknown key: ${key}`)))
+      endpoints.map(
+        ({ key }) =>
+          fetchMap[key]?.() ?? Promise.reject(new Error(`Unknown key: ${key}`))
+      )
     );
 
     const dataMap: Record<string, any> = {};
@@ -51,7 +53,7 @@ export class LoadingOverlayManager {
       line.className = `log-entry log-module-${module}`;
       const indentStr = '│ '.repeat(indent) + (indent > 0 ? '├── ' : '');
       line.innerHTML = `<span class="log-time">[${time}]</span><span class="log-module-name">[${module}]</span> ${indentStr}${msg}`;
-      line.style.animationDelay = (this.logIndex * 0.035) + 's';
+      line.style.animationDelay = this.logIndex * 0.035 + 's';
       fragment.appendChild(line);
       this.logIndex++;
     });
@@ -92,7 +94,10 @@ export class LoadingOverlayManager {
 
       // 1. 初始系统日志
       this.addLog('System', '加载覆盖层已启动');
-      this.addLog('System', `浏览器标识: ${navigator.userAgent.split(' ').slice(0, 3).join(' ')}`);
+      this.addLog(
+        'System',
+        `浏览器标识: ${navigator.userAgent.split(' ').slice(0, 3).join(' ')}`
+      );
       this.addLog('System', `当前页面: ${window.location.href}`);
       this.addLog('System', '主题偏好: 从本地存储读取或根据时段自动选择');
       this.addLog('System', '本地存储已授权 (默认同意)');
@@ -112,19 +117,26 @@ export class LoadingOverlayManager {
 
       this.addLog('Data', '检查网络连接状态...');
       this.addLog('Data', '网络连接正常，开始并行请求关键数据');
-      this.addLog('Data', '发起请求: 统计信息、文章列表、作品列表、代码分析、友链、版本信息');
+      this.addLog(
+        'Data',
+        '发起请求: 统计信息、文章列表、作品列表、代码分析、友链、版本信息'
+      );
       this.flushLogs();
 
       this.fetchData(endpoints).then((dataMap) => {
         // 3. 解析统计数据
         const stats = dataMap.statistics || null;
-        let currentVersion = stats?.version ? String(stats.version).trim() : null;
+        const currentVersion = stats?.version ? String(stats.version).trim() : null;
         if (stats) {
           this.addLog('Data', '解析统计信息...');
           this.addLog('Data', `  版本号: ${currentVersion || '未知'}`, 1);
           this.addLog('Data', `  文章总数: ${stats.total_articles || 0}`, 1);
           this.addLog('Data', `  作品总数: ${stats.total_works || 0}`, 1);
-          this.addLog('Data', `  总字数: ${(stats.total_word_count || 0).toLocaleString()}`, 1);
+          this.addLog(
+            'Data',
+            `  总字数: ${(stats.total_word_count || 0).toLocaleString()}`,
+            1
+          );
           this.addLog('Data', `  文章标签数: ${stats.total_article_tags || 0}`, 1);
           this.addLog('Data', `  作品标签数: ${stats.total_work_tags || 0}`, 1);
           this.addLog('Data', `  最后更新: ${stats.last_updated || '未知'}`, 1);
@@ -132,15 +144,19 @@ export class LoadingOverlayManager {
 
         const articlesData = dataMap.articles || null;
         if (articlesData) {
-          const count = articlesData.total_articles || articlesData.articles?.length || 0;
+          const count =
+            articlesData.total_articles || articlesData.articles?.length || 0;
           this.addLog('Data', `文章列表加载成功 (${count} 篇)`);
           if (articlesData.articles?.length) {
             const latest = articlesData.articles[0]?.title || '无';
-            const oldest = articlesData.articles[articlesData.articles.length - 1]?.title || '无';
+            const oldest =
+              articlesData.articles[articlesData.articles.length - 1]?.title || '无';
             this.addLog('Data', `  最近文章: ${latest}`, 1);
             this.addLog('Data', `  最早文章: ${oldest}`, 1);
-            const cats = new Set();
-            articlesData.articles.forEach(a => { if (a.category) cats.add(a.category); });
+            const cats = new Set<string>();
+            articlesData.articles.forEach((a: any) => {
+              if (a.category) cats.add(a.category);
+            });
             if (cats.size) this.addLog('Data', `  文章分类: ${Array.from(cats).join(', ')}`, 1);
           }
         }
@@ -150,10 +166,10 @@ export class LoadingOverlayManager {
           const count = worksData.works?.length || 0;
           this.addLog('Data', `作品列表加载成功 (${count} 个)`);
           if (worksData.works?.length) {
-            const tags = new Set();
-            worksData.works.forEach(w => {
+            const tags = new Set<string>();
+            worksData.works.forEach((w: any) => {
               const t = w.tag || w.tags || [];
-              (Array.isArray(t) ? t : []).forEach(tag => tags.add(tag));
+              (Array.isArray(t) ? t : []).forEach((tag) => tags.add(tag));
             });
             if (tags.size) this.addLog('Data', `  作品标签: ${Array.from(tags).join(', ')}`, 1);
           }
@@ -162,11 +178,25 @@ export class LoadingOverlayManager {
         const codeData = dataMap.code || null;
         if (codeData) {
           this.addLog('Data', `代码分析加载成功 (${codeData.total_files || 0} 个文件)`);
-          this.addLog('Data', `  总代码行数: ${(codeData.total_lines || 0).toLocaleString()}`, 1);
-          this.addLog('Data', `  非空行数: ${(codeData.non_empty_lines || 0).toLocaleString()}`, 1);
+          this.addLog(
+            'Data',
+            `  总代码行数: ${(codeData.total_lines || 0).toLocaleString()}`,
+            1
+          );
+          this.addLog(
+            'Data',
+            `  非空行数: ${(codeData.non_empty_lines || 0).toLocaleString()}`,
+            1
+          );
           if (codeData.by_extension?.length) {
-            const topExt = codeData.by_extension.sort((a, b) => b.count - a.count)[0];
-            this.addLog('Data', `  主要文件类型: ${topExt.extension} (${topExt.count} 个文件)`, 1);
+            const topExt = codeData.by_extension.sort(
+              (a: any, b: any) => b.count - a.count
+            )[0];
+            this.addLog(
+              'Data',
+              `  主要文件类型: ${topExt.extension} (${topExt.count} 个文件)`,
+              1
+            );
           }
         }
 
@@ -175,7 +205,10 @@ export class LoadingOverlayManager {
           const count = Array.isArray(friendsData) ? friendsData.length : 0;
           this.addLog('Data', `友链加载成功 (${count} 个好友)`);
           if (count) {
-            const names = friendsData.slice(0, 3).map(f => f.name).join('、');
+            const names = friendsData
+              .slice(0, 3)
+              .map((f: any) => f.name)
+              .join('、');
             this.addLog('Data', `  友链示例: ${names}${count > 3 ? ' 等' : ''}`, 1);
           }
         }
@@ -183,9 +216,14 @@ export class LoadingOverlayManager {
 
         // 4. UI 组件状态
         this.addLog('UI', '用户界面组件初始化完成');
-        const cursorEnabled = localStorage.getItem('settings_cursor_enabled') !== 'false';
+        const cursorEnabled =
+          localStorage.getItem('settings_cursor_enabled') !== 'false';
         this.addLog('UI', `  自定义光标: ${cursorEnabled ? '启用' : '已禁用'}`, 1);
-        this.addLog('UI', `  外链拦截: ${localStorage.getItem('settings_link_warning_enabled') !== 'false' ? '启用' : '已禁用'}`, 1);
+        this.addLog(
+          'UI',
+          `  外链拦截: ${localStorage.getItem('settings_link_warning_enabled') !== 'false' ? '启用' : '已禁用'}`,
+          1
+        );
         this.addLog('Player', '音乐播放器模块已就绪');
         this.addLog('Chart', '统计图表渲染完成');
         this.flushLogs();
@@ -195,7 +233,7 @@ export class LoadingOverlayManager {
         let allVersions: any[] = [];
         let latestWebVersion: string | null = null;
         if (versionData && Array.isArray(versionData.versions)) {
-          allVersions = versionData.versions.slice().sort((a, b) => a.id - b.id);
+          allVersions = versionData.versions.slice().sort((a: any, b: any) => a.id - b.id);
           if (allVersions.length) latestWebVersion = allVersions[allVersions.length - 1].version;
         }
 
@@ -209,17 +247,24 @@ export class LoadingOverlayManager {
               const record = JSON.parse(recordRaw);
               storedVersion = record.version || null;
               lastVisit = record.lastVisit || null;
-            } catch { /* ignore */ }
+            } catch {
+              /* ignore */
+            }
           }
         }
         this.addLog('Version', `本地版本: ${storedVersion || '无'}`);
-        this.addLog('Version', `上次访问: ${lastVisit ? new Date(lastVisit).toLocaleString() : '首次'}`);
+        this.addLog(
+          'Version',
+          `上次访问: ${lastVisit ? new Date(lastVisit).toLocaleString() : '首次'}`
+        );
         this.addLog('Version', `远程最新版本: ${latestWebVersion || '无'}`);
 
-        const needUpdate = !storedVersion || (latestWebVersion && storedVersion !== latestWebVersion);
+        const needUpdate =
+          !storedVersion ||
+          (latestWebVersion && storedVersion !== latestWebVersion);
         this.addLog('Version', `版本比对结果: ${needUpdate ? '需要更新' : '版本一致'}`);
 
-        // 计算离开时间（用于显示）
+        // 计算离开时间
         let awayText = '';
         if (lastVisit) {
           const diff = Date.now() - lastVisit;
@@ -235,21 +280,24 @@ export class LoadingOverlayManager {
 
         if (!needUpdate) {
           this.addLog('Version', '版本一致，加载完成，即将进入页面');
-          // 更新访客记录（保留原有 version 如果未获取到新版本）
           try {
             let record: any = {};
             if (storageController.isAllowed()) {
               const raw = storageController.getItem(CONFIG.STORAGE_KEYS.VISIT_RECORD);
               if (raw) {
-                try { record = JSON.parse(raw); } catch { /* ignore */ }
+                try {
+                  record = JSON.parse(raw);
+                } catch {
+                  /* ignore */
+                }
               }
             }
             record.lastVisit = Date.now();
-            // 仅在获取到远程版本时更新 version
-            if (latestWebVersion) {
-              record.version = latestWebVersion;
-            }
-            storageController.setItem(CONFIG.STORAGE_KEYS.VISIT_RECORD, JSON.stringify(record));
+            if (latestWebVersion) record.version = latestWebVersion;
+            storageController.setItem(
+              CONFIG.STORAGE_KEYS.VISIT_RECORD,
+              JSON.stringify(record)
+            );
           } catch (e) {
             console.warn('[LoadingOverlay] 更新访客记录失败', e);
           }
@@ -266,7 +314,9 @@ export class LoadingOverlayManager {
         this.addLog('Version', '检测到版本更新，准备生成更新提示');
         let startIdx = 0;
         if (storedVersion) {
-          const foundIdx = allVersions.findIndex(v => v.version === storedVersion);
+          const foundIdx = allVersions.findIndex(
+            (v: any) => v.version === storedVersion
+          );
           if (foundIdx !== -1) startIdx = foundIdx + 1;
           else startIdx = Math.max(0, allVersions.length - 3);
         } else {
@@ -296,25 +346,31 @@ export class LoadingOverlayManager {
         // 7. 构建更新日志 HTML
         let changesHTML = '';
         if (sortedVersions.length > 0) {
-          const items = sortedVersions.map(v => {
-            const versionLabel = v.version || `v${v.id}`;
-            const changeItems = (v.changes || []).slice(0, 8).map((c: any) => {
-              const type = Utils.escapeHtml(c.type || '');
-              const desc = Utils.escapeHtml(c.description || '');
-              return `<li><span class="change-type">[${type}]</span> ${desc}</li>`;
-            }).join('');
-            if (changeItems) {
-              return `
-                <div class="version-item" style="border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:16px; margin-bottom:16px;">
-                  <div style="font-weight:bold; font-size:0.95rem; color:var(--accent-color); margin-bottom:8px;">版本 ${versionLabel}</div>
-                  <ul class="changes-list" style="margin:0; padding-left:0; list-style:none; max-height:200px; overflow-y:auto;">
-                    ${changeItems}
-                  </ul>
-                </div>
-              `;
-            }
-            return '';
-          }).filter(s => s).join('');
+          const items = sortedVersions
+            .map((v: any) => {
+              const versionLabel = v.version || `v${v.id}`;
+              const changeItems = (v.changes || [])
+                .slice(0, 8)
+                .map((c: any) => {
+                  const type = Utils.escapeHtml(c.type || '');
+                  const desc = Utils.escapeHtml(c.description || '');
+                  return `<li><span class="change-type">[${type}]</span> ${desc}</li>`;
+                })
+                .join('');
+              if (changeItems) {
+                return `
+                  <div class="version-item" style="border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:16px; margin-bottom:16px;">
+                    <div style="font-weight:bold; font-size:0.95rem; color:var(--accent-color); margin-bottom:8px;">版本 ${versionLabel}</div>
+                    <ul class="changes-list" style="margin:0; padding-left:0; list-style:none; max-height:200px; overflow-y:auto;">
+                      ${changeItems}
+                    </ul>
+                  </div>
+                `;
+              }
+              return '';
+            })
+            .filter((s: string) => s)
+            .join('');
           if (items) {
             changesHTML = `
               <div class="changes-container" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; margin-top:12px; max-width:100%;">
@@ -351,20 +407,24 @@ export class LoadingOverlayManager {
 
         // 8. 点击关闭（并更新访客记录）
         const handler = () => {
-          // 更新访客记录（保留原有 version 如果未获取到新版本）
           try {
             let record: any = {};
             if (storageController.isAllowed()) {
               const raw = storageController.getItem(CONFIG.STORAGE_KEYS.VISIT_RECORD);
               if (raw) {
-                try { record = JSON.parse(raw); } catch { /* ignore */ }
+                try {
+                  record = JSON.parse(raw);
+                } catch {
+                  /* ignore */
+                }
               }
             }
             record.lastVisit = Date.now();
-            if (latestWebVersion) {
-              record.version = latestWebVersion;
-            }
-            storageController.setItem(CONFIG.STORAGE_KEYS.VISIT_RECORD, JSON.stringify(record));
+            if (latestWebVersion) record.version = latestWebVersion;
+            storageController.setItem(
+              CONFIG.STORAGE_KEYS.VISIT_RECORD,
+              JSON.stringify(record)
+            );
           } catch (e) {
             console.warn('[LoadingOverlay] 更新访客记录失败', e);
           }

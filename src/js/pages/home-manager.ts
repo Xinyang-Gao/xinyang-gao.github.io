@@ -1,39 +1,40 @@
 // /js/pages/home-manager.ts
-import { PageManager } from '/js/core/page-manager.js';
-import { DataService } from '/js/core/data-service.js';
+import { PageBase } from '/js/core/page-manager.js';
+import { dataService } from '/js/core/data-service.js';
 import { Utils } from '/js/core/core.js';
 
 /** UAPI 名言归一化结构 */
 interface Saying {
   text: string;
   author: string;
-  source: string;    // 出处作品
-  category: string;  // 分类
-  uuid: string;      // 用于去重
-  bio: string;       // 作者简介（悬停提示）
+  source: string;
+  category: string;
+  uuid: string;
+  bio: string;
 }
 
 /** 本地兜底池：与远程结构对齐 */
 const LOCAL_QUOTES: Saying[] = [
-  { text: '代码是写给人读的，只是顺便能在机器上运行。', author: 'Harold Abelson', source: 'SICP', category: '编程', uuid: '', bio: '' },
+  {
+    text: '代码是写给人读的，只是顺便能在机器上运行。',
+    author: 'Harold Abelson',
+    source: 'SICP',
+    category: '编程',
+    uuid: '',
+    bio: '',
+  },
 ];
 
-const UAPI_PAYLOAD = { category: '文学' }; // 请求参数，具体值按需调整
+const UAPI_PAYLOAD = { category: '文学' };
 
-export class HomePageManager extends PageManager {
-  private greetingInterval: ReturnType<typeof setInterval> | null = null;
-  private clockInterval: ReturnType<typeof setInterval> | null = null;
-  private clickHandler: ((e: MouseEvent) => void) | null = null;
-  private keyHandler: ((e: KeyboardEvent) => void) | null = null;
-  private quoteHandler: (() => void) | null = null;
-  private quoteTimer: ReturnType<typeof setTimeout> | null = null;
-  private revealObserver: IntersectionObserver | null = null;
-
+export class HomePageManager extends PageBase {
+  private isDestroyed = false;
   private lastQuoteUuid = '';
   private isQuoteLoading = false;
-  private isDestroyed = false;
 
-  init() {
+  /* ---------- 生命周期 ---------- */
+
+  protected mount(): void {
     this.loadStatisticsAndTags();
     this.bindGlobalNavigateEvents();
     this.startGreetingUpdater();
@@ -43,21 +44,26 @@ export class HomePageManager extends PageManager {
     this.loadQuote(); // 初始加载一条名言
   }
 
+  protected unmount(): void {
+    this.isDestroyed = true;
+  }
+
   /* ---------- 统计与标签 ---------- */
-  private loadStatisticsAndTags() {
+
+  private loadStatisticsAndTags(): void {
     const container = document.getElementById('statsContainer');
     if (!container) return;
 
-    DataService.getInstance()
+    dataService
       .getStatistics()
       .then((stat: any) => {
         const items = [
-          { value: stat.total_articles ?? 0,           label: '文章总数', type: 'articles' },
-          { value: stat.total_word_count ?? 0,         label: '累计字数', type: '', accent: true },
-          { value: stat.total_works ?? 0,              label: '作品数量', type: 'works' },
+          { value: stat.total_articles ?? 0, label: '文章总数', type: 'articles' },
+          { value: stat.total_word_count ?? 0, label: '累计字数', type: '', accent: true },
+          { value: stat.total_works ?? 0, label: '作品数量', type: 'works' },
           { value: stat.total_article_categories ?? 0, label: '文章分类', type: '' },
-          { value: stat.total_article_tags ?? 0,       label: '文章标签', type: '' },
-          { value: stat.total_work_tags ?? 0,          label: '作品标签', type: '' },
+          { value: stat.total_article_tags ?? 0, label: '文章标签', type: '' },
+          { value: stat.total_work_tags ?? 0, label: '作品标签', type: '' },
         ];
 
         container.innerHTML = items
@@ -87,14 +93,18 @@ export class HomePageManager extends PageManager {
   }
 
   /* 数字滚动（easeOutCubic，尊重减弱动画偏好） */
-  private animateCounters(root: HTMLElement) {
+  private animateCounters(root: HTMLElement): void {
     const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     root.querySelectorAll<HTMLElement>('.stat-number[data-target]').forEach((el) => {
       const target = Number(el.dataset.target) || 0;
-      if (reduce) { el.textContent = target.toLocaleString('zh-CN'); return; }
+      if (reduce) {
+        el.textContent = target.toLocaleString('zh-CN');
+        return;
+      }
       const duration = 1200;
       const start = performance.now();
       const tick = (now: number) => {
+        if (this.isDestroyed) return;
         const p = Math.min((now - start) / duration, 1);
         const eased = 1 - Math.pow(1 - p, 3);
         el.textContent = Math.round(target * eased).toLocaleString('zh-CN');
@@ -105,13 +115,15 @@ export class HomePageManager extends PageManager {
   }
 
   /* 标签云：按词频分三级字号，计数以徽章呈现 */
-  private updateTagsList(tags: any[], containerId: string) {
+  private updateTagsList(tags: any[], containerId: string): void {
     const container = document.querySelector(containerId);
     if (!container) return;
 
     const list = (tags || [])
       .map((t: any) =>
-        typeof t === 'string' ? { name: t, count: 0 } : { name: t.name || '', count: t.count || 0 }
+        typeof t === 'string'
+          ? { name: t, count: 0 }
+          : { name: t.name || '', count: t.count || 0 }
       )
       .filter((t: any) => t.name);
 
@@ -132,90 +144,104 @@ export class HomePageManager extends PageManager {
   }
 
   /* ---------- 事件委托（与原行为一致 + 键盘可达） ---------- */
-  private bindGlobalNavigateEvents() {
-    this.clickHandler = (e: MouseEvent) => {
+
+  private bindGlobalNavigateEvents(): void {
+    this.stack.addEventListener(document, 'click', ((e: MouseEvent) => {
       const target = e.target as HTMLElement;
 
       const statCell = target.closest<HTMLElement>('.stat-cell[data-stat-type]');
       if (statCell) {
         e.preventDefault();
-        this.navigate(statCell.dataset.statType === 'articles' ? '/articles/' : '/works/');
+        this.navigate(
+          statCell.dataset.statType === 'articles' ? '/articles/' : '/works/'
+        );
         return;
       }
 
       const tagEl = target.closest<HTMLElement>('.tags-list .tag');
       if (tagEl && tagEl.dataset.tagName) {
         const isArticleZone = !!tagEl.closest('#articleTagsList');
-        this.navigate(`${isArticleZone ? '/articles/' : '/works/'}?tags=${encodeURIComponent(tagEl.dataset.tagName)}`);
+        this.navigate(
+          `${isArticleZone ? '/articles/' : '/works/'}?tags=${encodeURIComponent(tagEl.dataset.tagName)}`
+        );
       }
-    };
-    document.addEventListener('click', this.clickHandler);
+    }) as EventListener);
 
-    this.keyHandler = (e: KeyboardEvent) => {
+    this.stack.addEventListener(document, 'keydown', ((e: KeyboardEvent) => {
       if (e.key !== 'Enter' && e.key !== ' ') return;
-      const cell = (e.target as HTMLElement).closest<HTMLElement>('.stat-cell[data-stat-type]');
-      if (cell) { e.preventDefault(); cell.click(); }
-    };
-    document.addEventListener('keydown', this.keyHandler);
+      const cell = (e.target as HTMLElement).closest<HTMLElement>(
+        '.stat-cell[data-stat-type]'
+      );
+      if (cell) {
+        e.preventDefault();
+        cell.click();
+      }
+    }) as EventListener);
   }
 
-  private navigate(href: string) {
+  private navigate(href: string): void {
     const w = window as any;
-    if (typeof w.fetchAndReplaceContent === 'function') w.fetchAndReplaceContent(href, true);
-    else window.location.href = href;
+    if (typeof w.fetchAndReplaceContent === 'function') {
+      w.fetchAndReplaceContent(href, true);
+    } else {
+      window.location.href = href;
+    }
   }
 
   /* ---------- 动态问候 ---------- */
-  private startGreetingUpdater() {
+  private startGreetingUpdater(): void {
     const update = () => {
       const el = document.getElementById('dynamic-greeting');
       const U = (window as any).Utils;
-      if (el && U && U.getGreetingMessage) el.textContent = U.getGreetingMessage();
+      if (el && U && U.getGreetingMessage) {
+        el.textContent = U.getGreetingMessage();
+      }
     };
     update();
-    this.greetingInterval = setInterval(update, 60000);
+    const timer = setInterval(update, 60000);
+    this.stack.addInterval(timer);
   }
 
   /* ---------- 实时时钟 ---------- */
-  private startLiveClock() {
+  private startLiveClock(): void {
     const el = document.getElementById('live-clock');
     if (!el) return;
     const render = () => {
       el.textContent = new Date().toLocaleTimeString('zh-CN', { hour12: false });
     };
     render();
-    this.clockInterval = setInterval(render, 1000);
+    const timer = setInterval(render, 1000);
+    this.stack.addInterval(timer);
   }
 
   /* ---------- 滚动渐显 ---------- */
-  private setupReveal() {
+  private setupReveal(): void {
     const els = document.querySelectorAll('.reveal');
     if (!('IntersectionObserver' in window)) {
       els.forEach((el) => el.classList.add('in'));
       return;
     }
-    this.revealObserver = new IntersectionObserver(
+    const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((en) => {
           if (en.isIntersecting) {
             en.target.classList.add('in');
-            this.revealObserver?.unobserve(en.target);
+            observer.unobserve(en.target);
           }
         });
       },
       { threshold: 0.12 }
     );
-    els.forEach((el) => this.revealObserver!.observe(el));
+    els.forEach((el) => observer.observe(el));
+    this.stack.addObserver(observer);
   }
 
   /* ---------- 名言相关 ---------- */
 
-  /** 获取 UAPI 客户端（假设全局已有） */
   private getUapiClient(): any {
     return (window as any).uapiClient || null;
   }
 
-  /** 按官方返回结构精确映射（保留一层 data 包装的兼容） */
   private normalizeQuote(raw: any): Saying | null {
     if (!raw) return null;
     const d = raw?.data && typeof raw.data === 'object' ? raw.data : raw;
@@ -223,15 +249,14 @@ export class HomePageManager extends PageManager {
     if (!text) return null;
     return {
       text,
-      author:   typeof d.author === 'string' ? d.author.trim() : '',
-      source:   typeof d.source === 'string' ? d.source.trim() : '',
+      author: typeof d.author === 'string' ? d.author.trim() : '',
+      source: typeof d.source === 'string' ? d.source.trim() : '',
       category: typeof d.category === 'string' ? d.category.trim() : '',
-      uuid:     typeof d.uuid === 'string' ? d.uuid : '',
-      bio:      d.authorinfo?.description || d.authorinfo?.bio || '',
+      uuid: typeof d.uuid === 'string' ? d.uuid : '',
+      bio: d.authorinfo?.description || d.authorinfo?.bio || '',
     };
   }
 
-  /** 请求一条远程名言：6s 超时 + uuid 去重（连抽同一条时重试一次） */
   private async fetchRemoteQuote(): Promise<Saying | null> {
     try {
       const client = this.getUapiClient();
@@ -240,12 +265,14 @@ export class HomePageManager extends PageManager {
       const call = () =>
         Promise.race([
           client.poem.getSayingRandom(UAPI_PAYLOAD),
-          new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 6000)),
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('timeout')), 6000)
+          ),
         ]);
 
       let q = this.normalizeQuote(await call());
       if (q?.uuid && q.uuid === this.lastQuoteUuid) {
-        q = this.normalizeQuote(await call()) ?? q; // 撞车就重抽，仍失败则保留原结果
+        q = this.normalizeQuote(await call()) ?? q;
       }
       if (q?.uuid) this.lastQuoteUuid = q.uuid;
       return q;
@@ -255,8 +282,7 @@ export class HomePageManager extends PageManager {
     }
   }
 
-  /** 加载并显示一条名言（带淡入淡出效果） */
-  private async loadQuote() {
+  private async loadQuote(): Promise<void> {
     if (this.isQuoteLoading || this.isDestroyed) return;
     this.isQuoteLoading = true;
 
@@ -270,81 +296,48 @@ export class HomePageManager extends PageManager {
       return;
     }
 
-    // 开始淡出
     quote.classList.add('is-swapping');
+    await new Promise((resolve) => setTimeout(resolve, 260));
 
-    // 等待淡出动画（约 260ms）
-    await new Promise(resolve => setTimeout(resolve, 260));
-
-    // 若已销毁则放弃更新
     if (this.isDestroyed) {
       quote.classList.remove('is-swapping');
       this.isQuoteLoading = false;
       return;
     }
 
-    // 获取名言
     let q = await this.fetchRemoteQuote();
     let isRemote = !!q;
     if (!q) {
-      // 本地随机取一条
       const local = LOCAL_QUOTES[Math.floor(Math.random() * LOCAL_QUOTES.length)];
       q = { ...local, uuid: '' };
       isRemote = false;
     }
 
-    // 更新 DOM
     textEl.textContent = q.text;
-    // 署名行：作者《来源》
     const who = [q.author, q.source ? `《${q.source}》` : ''].filter(Boolean).join(' ');
     authorEl.textContent = who || '佚名';
-    if (q.bio) {
-      authorEl.setAttribute('title', q.bio);
-    } else {
-      authorEl.removeAttribute('title');
-    }
+    if (q.bio) authorEl.setAttribute('title', q.bio);
+    else authorEl.removeAttribute('title');
 
     if (sourceEl) {
       sourceEl.textContent = isRemote ? `UAPI · ${q.category || '文学'}` : '本地收藏';
       sourceEl.classList.toggle('is-local', !isRemote);
     }
 
-    // 淡入
     quote.classList.remove('is-swapping');
     this.isQuoteLoading = false;
   }
 
-  /** 绑定“换一句”点击事件 */
-  private bindQuoteRefresh() {
+  private bindQuoteRefresh(): void {
     const btn = document.getElementById('quoteRefresh');
     if (!btn) return;
-
-    this.quoteHandler = () => {
+    this.stack.addEventListener(btn, 'click', () => {
       this.loadQuote();
-    };
-    btn.addEventListener('click', this.quoteHandler);
-  }
-
-  /* ---------- 清理 ---------- */
-  destroy() {
-    this.isDestroyed = true;
-    if (this.greetingInterval) clearInterval(this.greetingInterval);
-    if (this.clockInterval) clearInterval(this.clockInterval);
-    if (this.quoteTimer) clearTimeout(this.quoteTimer);
-    if (this.clickHandler) document.removeEventListener('click', this.clickHandler);
-    if (this.keyHandler) document.removeEventListener('keydown', this.keyHandler);
-    if (this.quoteHandler) {
-      document.getElementById('quoteRefresh')?.removeEventListener('click', this.quoteHandler);
-    }
-    this.revealObserver?.disconnect();
-    this.greetingInterval = this.clockInterval = null;
-    this.clickHandler = this.keyHandler = null;
-    this.quoteHandler = null;
-    this.revealObserver = null;
+    });
   }
 }
 
-export function initHomePage() {
+export function initHomePage(): HomePageManager {
   const manager = new HomePageManager();
   manager.init();
   return manager;

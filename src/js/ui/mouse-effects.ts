@@ -1,6 +1,10 @@
 // /js/ui/mouse-effects.ts
 // 鼠标特效引擎（长按连线 + 爆发粒子） + 自定义光标（圆点+圆环，仿 cursor-fx 用户脚本）
 // 性能优化：空闲自动暂停渲染循环，页面隐藏时暂停，减少 CPU 开销，优化 GC 和 Canvas 状态切换
+//
+// 主题订阅：统一走 themeController.onChange（不再依赖 window 'themeChanged' 事件）
+
+import { themeController } from '/js/core/theme-controller.js';
 
 // ===================================================================
 //  MouseEffectManager — Canvas 渲染引擎（长按连线 + 粒子爆发）
@@ -164,6 +168,9 @@ export class MouseEffectManager {
 
   #pageHidden = false;
 
+  // ---- 主题订阅取消函数（替代 window 'themeChanged' 监听） ----
+  #themeUnsubscribe: (() => void) | null = null;
+
   // ---- 事件处理器（箭头函数字段，add/remove 天然同引用） ----
   #onThemeChanged = (): void => this.#refreshAccentColor();
   #onResize = (): void => this.#resizeCanvas();
@@ -210,7 +217,9 @@ export class MouseEffectManager {
 
     this.#refreshAccentColor();
 
-    window.addEventListener('themeChanged', this.#onThemeChanged);
+    // 主题订阅统一走 themeController.onChange
+    this.#themeUnsubscribe = themeController.onChange(this.#onThemeChanged);
+
     window.addEventListener('resize', this.#onResize);
     document.addEventListener('visibilitychange', this.#onVisibility);
 
@@ -597,7 +606,10 @@ export class MouseEffectManager {
       this.#longPressTimer = null;
     }
 
-    window.removeEventListener('themeChanged', this.#onThemeChanged);
+    // 取消主题订阅（替代 window.removeEventListener('themeChanged', ...)）
+    this.#themeUnsubscribe?.();
+    this.#themeUnsubscribe = null;
+
     window.removeEventListener('resize', this.#onResize);
     document.removeEventListener('visibilitychange', this.#onVisibility);
 
@@ -718,7 +730,7 @@ export class CustomCursor {
     const probeTimeoutMs = 30;
     const probePromise = new Promise<boolean>((resolve) => {
       const requestId = `cursorfx-probe-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-      
+
       const onResponse = (e: Event) => {
         const detail = (e as CustomEvent).detail;
         if (detail?.requestId === requestId && detail?.result?.status === 'alive') {
@@ -726,11 +738,11 @@ export class CustomCursor {
           resolve(true);
         }
       };
-      
+
       const cleanup = () => {
         window.removeEventListener('CURSORFX_RESPONSE', onResponse);
       };
-      
+
       window.addEventListener('CURSORFX_RESPONSE', onResponse);
       window.dispatchEvent(new CustomEvent('CURSORFX_REQUEST', {
         detail: { action: 'ping', requestId }

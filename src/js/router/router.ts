@@ -40,6 +40,11 @@ interface PageResponse {
   url: string;
 }
 
+/**
+ * 页面管理器工厂。
+ * 约定：工厂内部需完成 init（无论同步或异步），返回值即为已初始化的 manager。
+ * 例如：`const m = new XxxManager(); await m.init(); return m;`
+ */
 type PageManagerFactory = (refreshFn: () => void) => Promise<PageManager>;
 
 // ==================== 全局状态单例 ====================
@@ -280,18 +285,17 @@ class PageManagerRegistry {
     this.factories.set(name, factory);
   }
 
+  /**
+   * 创建并返回页面管理器。
+   * 约定：factory 内部完成 init，create 不再额外调用 mgr.init()，
+   * 避免重复初始化（重复 init 会覆盖 DisposableStack 并造成监听器泄漏）。
+   */
   static async create(name: string, refreshFn: () => void): Promise<PageManager | null> {
     const factory = this.factories.get(name);
     if (!factory) return null;
 
     try {
-      const mgr = await factory(refreshFn);
-      // 自动初始化
-      if (mgr && typeof mgr.init === 'function' && !(mgr as any)._initialized) {
-        await mgr.init();
-        (mgr as any)._initialized = true;
-      }
-      return mgr;
+      return await factory(refreshFn);
     } catch (e) {
       console.error(`[Router] 页面管理器创建失败 [${name}]:`, e);
       return null;
@@ -304,6 +308,7 @@ export function registerPageManager(name: string, factory: PageManagerFactory): 
 }
 
 // ==================== 默认页面注册 ====================
+// 所有工厂函数内部均完成 init，遵循 PageManagerFactory 约定。
 function registerDefaultPages(): void {
   PageManagerRegistry.register('index', async () => initHomePage() as any);
 
@@ -728,17 +733,17 @@ function cleanupCache(): void {
 
 /**
  * 根据页面名称初始化对应的管理器
+ *
+ * 文章详情页是一条独立分支：路径形如 `/articles/xxx/` 时，
+ * 直接动态加载 article.js 并返回其 init 后的 manager。
+ * 其余页面走 PageManagerRegistry。
  */
 async function initPageManager(pageName: string, refreshFn: () => void): Promise<PageManager | null> {
   // 特殊处理文章详情页
   if (/^\/articles\/[^/]+$/.test(location.pathname)) {
     const { initArticlePage } = await import('/js/pages/article.js');
-    const mgr = initArticlePage() as any;
-    if (mgr && typeof mgr.init === 'function' && !mgr._initialized) {
-      await mgr.init();
-      mgr._initialized = true;
-    }
-    return mgr;
+    // 修复：initArticlePage 是 async，返回 Promise，需 await 拿到实例
+    return await initArticlePage();
   }
 
   return PageManagerRegistry.create(pageName, refreshFn);

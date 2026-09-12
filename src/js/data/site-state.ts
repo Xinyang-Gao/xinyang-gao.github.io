@@ -1,8 +1,8 @@
 // /js/data/site-state.ts
 // 统计管理与服务工作线程注册（全面接入 DataService）
 
-import { CONFIG, storageController, Utils } from '/js/core/core.js';
-import { DataService } from '/js/core/data-service.js';
+import { CONFIG, storageController, Utils, IS_DEV } from '/js/core/core.js';
+import { dataService } from '/js/core/data-service.js';
 
 // ==================== 类型定义 ====================
 interface VisitRecord {
@@ -31,30 +31,33 @@ interface CodeAnalysisData {
   total_lines?: number;
   non_empty_lines?: number;
   total_size_bytes?: number;
-  by_extension?: Array<{ extension: string; count: number; total_lines?: number; non_empty_lines?: number }>;
+  by_extension?: Array<{
+    extension: string;
+    count: number;
+    total_lines?: number;
+    non_empty_lines?: number;
+  }>;
   [key: string]: unknown;
 }
 
 // ==================== Service Worker 注册 ====================
 export function registerServiceWorker(): void {
-  const isDev =
-    window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-  if (isDev) {
+  if (IS_DEV) {
     console.log('[SW] 开发环境，跳过 Service Worker 注册');
     return;
   }
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker
-        .register('/js/data/sw.js')
-        .then((registration) => {
-          console.log('[SW] Service Worker 注册成功，作用域:', registration.scope);
-        })
-        .catch((error) => {
-          console.warn('[SW] Service Worker 注册失败:', error);
-        });
-    });
-  }
+  if (!('serviceWorker' in navigator)) return;
+
+  window.addEventListener('load', () => {
+    navigator.serviceWorker
+      .register('/js/data/sw.js')
+      .then((registration) => {
+        console.log('[SW] Service Worker 注册成功，作用域:', registration.scope);
+      })
+      .catch((error) => {
+        console.warn('[SW] Service Worker 注册失败:', error);
+      });
+  });
 }
 
 // ==================== 页脚统计信息填充 ====================
@@ -73,13 +76,11 @@ export async function initFooterStats(): Promise<void> {
   // 如果关键元素不存在，说明当前页脚未使用该网格，直接返回
   if (!elements.articles && !elements.version) return;
 
-  const service = DataService.getInstance();
-
   try {
     // 并行获取统计数据和代码分析
     const [stats, codeStats] = await Promise.all([
-      service.getStatistics(),
-      service.getCodeAnalysis(),
+      dataService.getStatistics(),
+      dataService.getCodeAnalysis(),
     ]);
 
     // 填充统计信息
@@ -88,7 +89,8 @@ export async function initFooterStats(): Promise<void> {
     }
     if (elements.words) {
       const words = stats.total_word_count ?? 0;
-      elements.words.innerText = typeof words === 'number' ? words.toLocaleString() : words;
+      elements.words.innerText =
+        typeof words === 'number' ? words.toLocaleString() : words;
     }
     if (elements.works) {
       elements.works.innerText = stats.total_works ?? '—';
@@ -101,7 +103,8 @@ export async function initFooterStats(): Promise<void> {
       elements.version.innerText = version;
     }
     if (elements.snapshot) {
-      const lastUpdated = stats.last_updated || stats.last_updated_full?.split('T')[0] || '未知';
+      const lastUpdated =
+        stats.last_updated || stats.last_updated_full?.split('T')[0] || '未知';
       elements.snapshot.innerText = `最后更新 · ${lastUpdated}`;
     }
 

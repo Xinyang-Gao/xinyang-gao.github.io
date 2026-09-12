@@ -1,5 +1,5 @@
 // /js/core/core.ts
-// 配置常量、工具类、存储控制器与 Cookie 同意管理器（TypeScript 严格模式）
+// 配置常量、工具类、存储控制器与性能监控（TypeScript 严格模式）
 
 // ==================== 全局类型声明 ====================
 declare global {
@@ -9,6 +9,11 @@ declare global {
       decompressFromUTF16(input: string): string;
     };
     clearAllServiceWorkerCache?: () => Promise<void>;
+    requestIdleCallback?: (
+      cb: IdleRequestCallback,
+      opts?: IdleRequestOptions
+    ) => number;
+    cancelIdleCallback?: (handle: number) => void;
   }
 }
 
@@ -43,14 +48,31 @@ export interface ArticlesData {
   articles: ArticleItem[];
 }
 
+// ==================== 运行环境 ====================
+/**
+ * 是否为开发环境（localhost / 127.0.0.1）。
+ * 用于 Service Worker 注册、缓存行为等环境相关分支，避免多处硬编码。
+ */
+export const IS_DEV: boolean =
+  location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+
 // ==================== 配置常量（强类型） ====================
 export const CONFIG = {
   STORAGE_KEYS: {
+    // 系统状态
     COOKIE_CONSENT: 'cookieConsentAccepted',
+    VISIT_RECORD: 'statisticsVisitRecord',
+    THEME: 'theme', // 旧键，保留兼容 theme-controller 迁移
+    // 数据缓存（压缩存储）
     WORKS_DATA: 'worksData',
     ARTICLES_DATA: 'articlesData',
-    VISIT_RECORD: 'statisticsVisitRecord',
-    THEME: 'theme',
+    // 用户设置（唯一来源，避免多处重复定义）
+    THEME_MODE: 'settings_theme_mode',
+    CURSOR_ENABLED: 'settings_cursor_enabled',
+    LINK_WARNING_ENABLED: 'settings_link_warning_enabled',
+    FONT_SCALE: 'settings_font_scale',
+    REVEAL_ENABLED: 'settings_reveal_enabled',
+    BG_IMAGE_ENABLED: 'settings_bg_image_enabled',
   } as const,
   API: {
     WORKS: '/json/works.json',
@@ -100,6 +122,23 @@ export const CONFIG = {
 
 export type StorageKey = typeof CONFIG.STORAGE_KEYS[keyof typeof CONFIG.STORAGE_KEYS];
 
+// ==================== 调度工具 ====================
+/**
+ * 统一的空闲调度器。
+ * 不支持 requestIdleCallback 时按 timeout 降级为 setTimeout。
+ * 全站所有"非关键延迟初始化"应统一走此函数，避免各处重复实现降级逻辑。
+ */
+export function scheduleIdle(
+  callback: () => void,
+  options?: { timeout?: number }
+): void {
+  if (typeof window.requestIdleCallback === 'function') {
+    window.requestIdleCallback(callback, options ?? {});
+  } else {
+    setTimeout(callback, options?.timeout ?? 50);
+  }
+}
+
 // ==================== 工具类 ====================
 export class Utils {
   static getUrlParam(name: string): string | null {
@@ -138,6 +177,10 @@ export class Utils {
     }
   }
 
+  /**
+   * 统一提取标签：兼容 tags / tag 两种字段。
+   * 全站应统一使用此方法，避免各处重复实现。
+   */
   static getTags(item: { tags?: string[]; tag?: string[] }): string[] {
     return item.tags?.length ? item.tags : item.tag?.length ? item.tag : [];
   }
@@ -205,12 +248,16 @@ export class Utils {
     });
   }
 
+  /**
+   * 统一日期解析：支持 "2026年05月24日" 与标准格式。
+   * 失败返回 null。避免各处重复实现正则匹配。
+   */
   static parseArticleDate(item: ArticleItem): Date | null {
     const value = item.date || item.last_updated || item.updated_date;
     if (!value) return null;
     const chineseMatch = String(value).match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
     if (chineseMatch) {
-      const [_, year, month, day] = chineseMatch.map(Number);
+      const [, year, month, day] = chineseMatch.map(Number);
       const date = new Date(year, month - 1, day);
       if (!isNaN(date.getTime())) return date;
     }

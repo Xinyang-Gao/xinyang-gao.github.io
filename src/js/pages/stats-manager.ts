@@ -3,7 +3,8 @@
 // 图表定义全部外置到 /js/pages/stats/charts.ts，通过注册表管理
 
 import { CONFIG } from '/js/core/core.js';
-import { DataService } from '/js/core/data-service.js';
+import { dataService } from '/js/core/data-service.js';
+import { themeController } from '/js/core/theme-controller.js';
 import {
   getChartDefinitions,
   type StatisticsData,
@@ -37,7 +38,10 @@ export class StatsManager {
   private worksList: WorkItem[] = [];
   private charts: any[] = [];
   private initialized = false;
-  private themeHandler: ((this: Window, ev: Event) => any) | null = null;
+
+  /** 主题订阅的取消函数（替代 window 'themeChanged' 监听） */
+  private themeUnsubscribe: (() => void) | null = null;
+
   private uptimeInterval: number | null = null;
   private container: HTMLElement | null = null;
 
@@ -70,7 +74,7 @@ export class StatsManager {
     // 启动运行时间更新
     this.startUptimeUpdater();
 
-    // 监听主题变化
+    // 监听主题变化（统一走 themeController.onChange）
     this.setupThemeListener();
 
     this.initialized = true;
@@ -92,13 +96,12 @@ export class StatsManager {
   // ==================== 数据获取 ====================
 
   private async fetchAllData(): Promise<void> {
-    const service = DataService.getInstance();
     try {
       const [statistics, articles, works, codeAnalysis] = await Promise.all([
-        service.getStatistics(),
-        service.getArticles(),
-        service.getWorks(),
-        service.getCodeAnalysis(),
+        dataService.getStatistics(),
+        dataService.getArticles(),
+        dataService.getWorks(),
+        dataService.getCodeAnalysis(),
       ]);
       this.data.statistics = statistics;
       this.data.articles = articles;
@@ -397,17 +400,21 @@ export class StatsManager {
     };
   }
 
-  // ==================== 主题监听 ====================
+  // ==================== 主题监听（统一走 themeController.onChange） ====================
 
   private setupThemeListener(): void {
-    const handler = (): void => {
+    // 先清理旧的订阅（重复 init 场景）
+    if (this.themeUnsubscribe) {
+      this.themeUnsubscribe();
+      this.themeUnsubscribe = null;
+    }
+
+    this.themeUnsubscribe = themeController.onChange(() => {
       if (this.initialized) {
         this.destroyCharts();
         this.renderCharts();
       }
-    };
-    window.addEventListener('themeChanged', handler);
-    this.themeHandler = handler;
+    });
   }
 
   // ==================== 销毁图表 ====================
@@ -421,14 +428,17 @@ export class StatsManager {
 
   destroy(): void {
     this.destroyCharts();
-    if (this.themeHandler) {
-      window.removeEventListener('themeChanged', this.themeHandler);
-      this.themeHandler = null;
+
+    if (this.themeUnsubscribe) {
+      this.themeUnsubscribe();
+      this.themeUnsubscribe = null;
     }
+
     if (this.uptimeInterval) {
       clearInterval(this.uptimeInterval);
       this.uptimeInterval = null;
     }
+
     this.initialized = false;
   }
 }

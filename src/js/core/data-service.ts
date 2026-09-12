@@ -26,10 +26,12 @@ interface FetchOptions {
 }
 
 // ==================== 核心服务类 ====================
+//
+// 本类不对外导出（模块末尾仅 `export type { DataService }`）。
+// 外部无法 `new DataService()`，也无法通过值导入拿到构造函数。
+// 唯一入口：`import { dataService } from '/js/core/data-service.js'`
 
-export class DataService {
-  private static instance: DataService;
-
+class DataService {
   /** 内存缓存 */
   private memoryCache = new Map<DataKey, CacheEntry>();
 
@@ -39,14 +41,8 @@ export class DataService {
   /** 内存缓存有效期：60 秒（持久化交给 SW） */
   private readonly TTL = 60 * 1000;
 
-  private constructor() {}
-
-  static getInstance(): DataService {
-    if (!DataService.instance) {
-      DataService.instance = new DataService();
-    }
-    return DataService.instance;
-  }
+  // 构造函数保持默认（public），但类不导出，外部无法访问
+  constructor() {}
 
   // ---------- 私有方法 ----------
 
@@ -167,5 +163,27 @@ export class DataService {
   }
 }
 
-export const dataService = DataService.getInstance();
+// ==================== 模块级单例（唯一入口） ====================
+
+let instance: DataService | null = null;
+
+/** 模块私有工厂：只在本文件内可见 */
+function getDataService(): DataService {
+  if (!instance) {
+    instance = new DataService();
+  }
+  return instance;
+}
+
+export const dataService: DataService = getDataService();
 export default dataService;
+
+// ==================== 类型导出 ====================
+//
+// 只导出类型，不导出类值本身。
+// 外部若要标注类型：
+//   import type { DataService } from '/js/core/data-service.js';
+//   const s: DataService = dataService;
+// 外部 `new DataService()` 会因为拿不到构造函数而编译失败。
+
+export type { DataService };

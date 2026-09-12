@@ -3,14 +3,14 @@
 
 import { CONFIG, Utils, perf } from '/js/core/core.js';
 import type { Item } from '/js/types/data.js';
-import { DataService } from '/js/core/data-service.js';
+import { dataService } from '/js/core/data-service.js';
+import { DisposableStack } from '/js/core/disposable-stack.js';
 
 // ==================== 工具函数 ====================
 
 const getTags = (item: Item): string[] =>
-  item.tags?.length ? item.tags : (item.tag?.length ? item.tag : []);
+  item.tags?.length ? item.tags : item.tag?.length ? item.tag : [];
 
-// 统一转义（保留本地别名，避免全文件大改）
 const escapeHtml = Utils.escapeHtml;
 
 /**
@@ -39,15 +39,17 @@ function sortByField(items: Item[], order: string): Item[] {
   const sorted = [...items];
   switch (order) {
     case 'updated_asc':
-      sorted.sort((a, b) =>
-        parseDateString((a as any).last_updated || a.date) -
-        parseDateString((b as any).last_updated || b.date)
+      sorted.sort(
+        (a, b) =>
+          parseDateString((a as any).last_updated || a.date) -
+          parseDateString((b as any).last_updated || b.date)
       );
       break;
     case 'updated_desc':
-      sorted.sort((a, b) =>
-        parseDateString((b as any).last_updated || b.date) -
-        parseDateString((a as any).last_updated || a.date)
+      sorted.sort(
+        (a, b) =>
+          parseDateString((b as any).last_updated || b.date) -
+          parseDateString((a as any).last_updated || a.date)
       );
       break;
     case 'wordcount_asc':
@@ -67,10 +69,6 @@ function sortByField(items: Item[], order: string): Item[] {
   return sorted;
 }
 
-/**
- * 过滤 + 排序（同步执行）。
- * 消除结构化克隆开销和双份工具函数。
- */
 function filterAndSort(
   items: Item[],
   query: string,
@@ -80,7 +78,6 @@ function filterAndSort(
 ): Item[] {
   let result = [...items];
 
-  // 1. 标签筛选
   if (selectedTags && selectedTags.length > 0) {
     result = result.filter((item) => {
       const tags = getTags(item);
@@ -88,7 +85,6 @@ function filterAndSort(
     });
   }
 
-  // 2. 搜索筛选
   if (query && query.trim() !== '') {
     const ql = query.toLowerCase().trim();
     result = result.filter((item) => {
@@ -102,7 +98,7 @@ function filterAndSort(
           return tags.some((t) => t.toLowerCase().includes(ql));
         case 'date':
           return (item.date || '').includes(query);
-        default: // 'all'
+        default:
           return (
             title.includes(ql) ||
             tags.some((t) => t.toLowerCase().includes(ql)) ||
@@ -112,7 +108,6 @@ function filterAndSort(
     });
   }
 
-  // 3. 排序
   return sortByField(result, sortOrder);
 }
 
@@ -131,13 +126,12 @@ export class DataManager {
       return { [type]: win[staticKey] };
     }
 
-    const service = DataService.getInstance();
     try {
-      // useCache=true 时使用缓存（默认），false 时强制刷新
       const options = useCache ? undefined : { forceRefresh: true };
-      const data = type === 'articles'
-        ? await service.getArticles(options)
-        : await service.getWorks(options);
+      const data =
+        type === 'articles'
+          ? await dataService.getArticles(options)
+          : await dataService.getWorks(options);
 
       // 字段标准化（文章）
       if (type === 'articles' && data.articles) {
@@ -163,7 +157,9 @@ export class UIRenderer {
   static generateTagsHTML(item: Item): string {
     const tags = getTags(item);
     return tags.length
-      ? `<div class="tags">${tags.map((t) => `<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>`
+      ? `<div class="tags">${tags
+          .map((t) => `<span class="tag">${escapeHtml(t)}</span>`)
+          .join('')}</div>`
       : '';
   }
 
@@ -177,12 +173,14 @@ export class UIRenderer {
       const dateInfo = item.date
         ? `<span class="publish-date">发布于 ${escapeHtml(item.date)}</span>`
         : '';
-      const updateInfo = item.last_updated && item.last_updated !== item.date
-        ? `<span class="update-date">更新: ${escapeHtml(item.last_updated)}</span>`
-        : '';
-      const metaDate = dateInfo || updateInfo
-        ? `<div class="article-dates-top-right">${dateInfo}${updateInfo ? '<br/>' + updateInfo : ''}</div>`
-        : '';
+      const updateInfo =
+        item.last_updated && item.last_updated !== item.date
+          ? `<span class="update-date">更新: ${escapeHtml(item.last_updated)}</span>`
+          : '';
+      const metaDate =
+        dateInfo || updateInfo
+          ? `<div class="article-dates-top-right">${dateInfo}${updateInfo ? '<br/>' + updateInfo : ''}</div>`
+          : '';
 
       return `
         <div class="list-item" data-url="${escapeHtml(url)}" data-type="article" data-index="${index}">
@@ -199,12 +197,14 @@ export class UIRenderer {
           ${tagsHtml}
         </div>`;
     } else {
-      const workInfo = encodeURIComponent(JSON.stringify({
-        title: item.title,
-        description: item.description || '',
-        link: item.link || '',
-        tags: getTags(item),
-      }));
+      const workInfo = encodeURIComponent(
+        JSON.stringify({
+          title: item.title,
+          description: item.description || '',
+          link: item.link || '',
+          tags: getTags(item),
+        })
+      );
 
       return `
         <div class="list-item" data-work-info="${workInfo}" data-type="work" data-index="${index}">
@@ -252,14 +252,8 @@ export class SearchController {
   private sortSelect: HTMLSelectElement | null = null;
   private tagsContainer: HTMLElement | null = null;
 
-  private boundHandlers: {
-    input: () => void;
-    field: () => void;
-    sort: () => void;
-    popstate: (e: PopStateEvent) => void;
-  } | null = null;
-
-  private initTimer: number | null = null;
+  /** 统一资源清理栈 */
+  private stack = new DisposableStack();
 
   private static readonly BATCH_SIZE = 20;
 
@@ -281,33 +275,36 @@ export class SearchController {
 
     if (!this.input || !this.field) {
       if (retry < 3) {
-        this.initTimer = window.setTimeout(() => this.init(retry + 1), 1000 * (retry + 1));
+        const t = window.setTimeout(() => this.init(retry + 1), 1000 * (retry + 1));
+        this.stack.addTimeout(t);
         return;
       }
-      console.error(`[SearchController] 搜索元素在 ${this.page} 页面中未找到，放弃初始化`);
+      console.error(
+        `[SearchController] 搜索元素在 ${this.page} 页面中未找到，放弃初始化`
+      );
       return;
     }
 
-    this.boundHandlers = {
-      input: Utils.debounce(() => this.handleSearch(), 300),
-      field: () => this.handleSearch(),
-      sort: () => {
-        this.sortOrder = this.sortSelect!.value;
-        this.handleSearch();
-        this.updateURL();
-      },
-      popstate: (e) => {
-        if (!e.state?.skip) {
-          this.restoreFromURL();
-          this.handleSearch(true);
-        }
-      },
+    const inputHandler = Utils.debounce(() => this.handleSearch(), 300);
+    const fieldHandler = () => this.handleSearch();
+    const sortHandler = () => {
+      this.sortOrder = this.sortSelect!.value;
+      this.handleSearch();
+      this.updateURL();
+    };
+    const popstateHandler = (e: PopStateEvent) => {
+      if (!e.state?.skip) {
+        this.restoreFromURL();
+        this.handleSearch(true);
+      }
     };
 
-    this.input.addEventListener('input', this.boundHandlers.input);
-    this.field.addEventListener('change', this.boundHandlers.field);
-    if (this.sortSelect) this.sortSelect.addEventListener('change', this.boundHandlers.sort);
-    window.addEventListener('popstate', this.boundHandlers.popstate);
+    this.stack.addEventListener(this.input, 'input', inputHandler as EventListener);
+    this.stack.addEventListener(this.field, 'change', fieldHandler as EventListener);
+    if (this.sortSelect) {
+      this.stack.addEventListener(this.sortSelect, 'change', sortHandler as EventListener);
+    }
+    this.stack.addEventListener(window, 'popstate', popstateHandler as EventListener);
 
     this.restoreFromURL();
     this.handleSearch(true);
@@ -319,17 +316,7 @@ export class SearchController {
   destroy(): void {
     if (this.isDestroyed) return;
     this.isDestroyed = true;
-
-    if (this.initTimer) clearTimeout(this.initTimer);
-
-    if (this.boundHandlers) {
-      this.input?.removeEventListener('input', this.boundHandlers.input);
-      this.field?.removeEventListener('change', this.boundHandlers.field);
-      this.sortSelect?.removeEventListener('change', this.boundHandlers.sort);
-      window.removeEventListener('popstate', this.boundHandlers.popstate);
-      this.boundHandlers = null;
-    }
-
+    this.stack.dispose();
     console.log(`[SearchController] 已销毁 (${this.page})`);
   }
 
@@ -357,7 +344,6 @@ export class SearchController {
 
     if (!skipUpdateURL) this.updateURL();
 
-    // 同步过滤排序（数据量小，无需 Worker）
     const result = filterAndSort(items, q, field, this.selectedTags, this.sortOrder);
 
     const container = document.getElementById(`${this.page}-list-container`);
@@ -368,7 +354,11 @@ export class SearchController {
 
   // ---------- 分批渲染 ----------
 
-  private renderItemsInBatches(items: Item[], container: HTMLElement, token: number): void {
+  private renderItemsInBatches(
+    items: Item[],
+    container: HTMLElement,
+    token: number
+  ): void {
     container.innerHTML = '';
 
     if (!items.length) {
@@ -386,7 +376,6 @@ export class SearchController {
     const type = this.page.slice(0, -1) as 'article' | 'work';
 
     const batch = (): void => {
-      // 竞态检查：若有新的渲染任务，放弃当前批次
       if (this.isDestroyed || token !== this.renderToken) return;
 
       const end = Math.min(index + SearchController.BATCH_SIZE, total);
@@ -535,7 +524,6 @@ export async function initSearchPage(
 ): Promise<SearchController> {
   const existing = (window as any)._currentSearchController as SearchController | undefined;
 
-  // 复用同页面已存在的控制器
   if (existing && !(existing as any).isDestroyed && (existing as any).page === page) {
     existing.scrollRevealRefresh = scrollRevealRefreshCallback;
     return existing;

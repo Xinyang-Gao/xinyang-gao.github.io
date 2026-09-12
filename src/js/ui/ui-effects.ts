@@ -1,23 +1,14 @@
 // /js/ui/ui-effects.ts
-// 滚动揭示效果
+// 顶层 UI 编排：外链管理、滚动揭示、鼠标特效、工具提示
+// 设置读取统一走 settings.ts 的 isEnabled，不再本地定义键与判断函数
 
-import { CONFIG, storageController } from '/js/core/core.js';
-import { getTimeBasedTheme } from '/js/core/page-utils.js';
+import { CONFIG, scheduleIdle } from '/js/core/core.js';
+import { isEnabled } from '/js/data/settings.js';
 import { showJumpDialog } from '/js/ui/jump-dialog.js';
 import { MouseEffectManager, CustomCursor } from './mouse-effects.js';
 import { initTooltips } from './tooltip.js';
 
-// 设置键名（与 settings.js 保持一致）
-const SETTINGS_KEYS = {
-  CURSOR_ENABLED: 'settings_cursor_enabled',
-  LINK_WARNING_ENABLED: 'settings_link_warning_enabled'
-};
-
-function isFeatureEnabled(key: string, defaultValue: boolean = true): boolean {
-  const stored = storageController.getItem(key);
-  if (stored !== null) return stored === 'true';
-  return defaultValue;
-}
+const K = CONFIG.STORAGE_KEYS;
 
 // ===================================================================
 //  ExternalLinkManager — 外链管理（基于 jump-dialog）
@@ -135,7 +126,9 @@ export class ScrollReveal {
     );
   }
 
-  public observe(targets: NodeListOf<Element> | Element[] = document.querySelectorAll(this.targetSelector)): void {
+  public observe(
+    targets: NodeListOf<Element> | Element[] = document.querySelectorAll(this.targetSelector)
+  ): void {
     if (!this.observer) return;
     targets.forEach(el => {
       if (!el.classList.contains('revealed')) {
@@ -179,14 +172,11 @@ export function refreshUIEffects(): void {
     externalLinkManagerInstance = null;
   }
 
-  // 根据当前设置重新创建
-  const cursorEnabled = isFeatureEnabled(SETTINGS_KEYS.CURSOR_ENABLED, true);
-  const linkWarningEnabled = isFeatureEnabled(SETTINGS_KEYS.LINK_WARNING_ENABLED, true);
-
-  if (cursorEnabled && !customCursorInstance) {
+  // 根据当前设置重新创建（统一从 settings.ts 读取）
+  if (isEnabled(K.CURSOR_ENABLED, true)) {
     customCursorInstance = new CustomCursor();
   }
-  if (linkWarningEnabled && !externalLinkManagerInstance) {
+  if (isEnabled(K.LINK_WARNING_ENABLED, true)) {
     externalLinkManagerInstance = new ExternalLinkManager();
   }
 }
@@ -217,16 +207,13 @@ export function initUIEffects(): void {
   if (uiEffectsInitialized) return;
   uiEffectsInitialized = true;
 
-  const initFn = () => {
-    refreshUIEffects();
-    initTooltips();
-  };
-
-  if ('requestIdleCallback' in window) {
-    requestIdleCallback(initFn, { timeout: 3000 });
-  } else {
-    setTimeout(initFn, 500);
-  }
+  scheduleIdle(
+    () => {
+      refreshUIEffects();
+      initTooltips();
+    },
+    { timeout: 3000 }
+  );
 }
 
 // 重新导出鼠标特效与光标类，保持对外兼容
