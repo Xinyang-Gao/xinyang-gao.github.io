@@ -23,7 +23,7 @@ export interface WorkItem {
   title?: string;
   description?: string;
   tags?: string[];
-  tag?: string[];
+  tag?: string[] | string;
   date?: string;
   [key: string]: unknown;
 }
@@ -37,7 +37,7 @@ export interface ArticleItem {
   title?: string;
   description?: string;
   tags?: string[];
-  tag?: string[];
+  tag?: string[] | string;
   date?: string;
   last_updated?: string;
   updated_date?: string;
@@ -52,6 +52,9 @@ export interface ArticlesData {
 /**
  * 是否为开发环境（localhost / 127.0.0.1）。
  * 用于 Service Worker 注册、缓存行为等环境相关分支，避免多处硬编码。
+ *
+ * 注意：Service Worker（sw.js）运行在独立环境无法 import，
+ * 其内部仍使用 `self.location.hostname` 独立判断，此为必要降级。
  */
 export const IS_DEV: boolean =
   location.hostname === 'localhost' || location.hostname === '127.0.0.1';
@@ -126,7 +129,7 @@ export type StorageKey = typeof CONFIG.STORAGE_KEYS[keyof typeof CONFIG.STORAGE_
 /**
  * 统一的空闲调度器。
  * 不支持 requestIdleCallback 时按 timeout 降级为 setTimeout。
- * 全站所有"非关键延迟初始化"应统一走此函数，避免各处重复实现降级逻辑。
+ * 全站所有“非关键延迟初始化”必须走此函数，禁止各处重复实现降级逻辑。
  */
 export function scheduleIdle(
   callback: () => void,
@@ -137,6 +140,66 @@ export function scheduleIdle(
   } else {
     setTimeout(callback, options?.timeout ?? 50);
   }
+}
+
+// ==================== 导航事件总线 ====================
+/**
+ * 导航事件的 detail 结构。与 router 派发的 CustomEvent 保持一致。
+ */
+export interface NavigationDetail {
+  url: string;
+  page: string;
+}
+
+const navigationCallbacks = new Set<(d: NavigationDetail) => void>();
+let navigationBound = false;
+
+function ensureNavigationBound(): void {
+  if (navigationBound) return;
+  navigationBound = true;
+
+  // 单一 addEventListener，替代散落各处的 N 个监听器
+  window.addEventListener('ajax:navigation', (e: Event) => {
+    const detail =
+      (e as CustomEvent<NavigationDetail>).detail ??
+      ({ url: location.href, page: '' } as NavigationDetail);
+    navigationCallbacks.forEach((cb) => {
+      try {
+        cb(detail);
+      } catch (err) {
+        console.warn('[Navigation] callback error:', err);
+      }
+    });
+  });
+}
+
+/**
+ * 订阅 `ajax:navigation` 事件，返回取消订阅函数。
+ * 内部用一个 Set 维护回调，把 N 个独立 addEventListener 收敛为 1 个。
+ *
+ * 与 DisposableStack 搭配：
+ *   const unsub = onNavigation(cb);
+ *   stack.add(unsub);
+ */
+export function onNavigation(
+  cb: (detail: NavigationDetail) => void
+): () => void {
+  ensureNavigationBound();
+  navigationCallbacks.add(cb);
+  return () => {
+    navigationCallbacks.delete(cb);
+  };
+}
+
+/**
+ * 派发导航事件（router 使用）。
+ * 与 `onNavigation` 配套，确保所有订阅者收到同一 detail。
+ */
+export function dispatchNavigation(detail: NavigationDetail): void {
+  ensureNavigationBound();
+  window.dispatchEvent(
+    new CustomEvent<NavigationDetail>('ajax:navigation', { detail })
+  );
 }
 
 // ==================== 工具类 ====================
@@ -178,11 +241,19 @@ export class Utils {
   }
 
   /**
-   * 统一提取标签：兼容 tags / tag 两种字段。
-   * 全站应统一使用此方法，避免各处重复实现。
+   * 统一提取标签：兼容 tags / tag 两种字段，tag 支持 string | string[]。
+   * 全站唯一实现，其他模块一律引用此方法。
    */
-  static getTags(item: { tags?: string[]; tag?: string[] }): string[] {
-    return item.tags?.length ? item.tags : item.tag?.length ? item.tag : [];
+  static getTags(item: {
+    tags?: string[];
+    tag?: string[] | string;
+  } | null | undefined): string[] {
+    if (!item) return [];
+    if (item.tags?.length) return item.tags;
+    const tag = item.tag;
+    if (!tag) return [];
+    if (Array.isArray(tag)) return tag.length ? tag : [];
+    return [tag];
   }
 
   static escapeHtml(str: unknown): string {
@@ -249,12 +320,19 @@ export class Utils {
   }
 
   /**
-   * 统一日期解析：支持 "2026年05月24日" 与标准格式。
-   * 失败返回 null。避免各处重复实现正则匹配。
+   * 统一日期解析：支持 ArticleItem / 字符串 / undefined / null。
+   * 兼容 "2026年05月24日" 与标准格式，失败返回 null。
    */
-  static parseArticleDate(item: ArticleItem): Date | null {
-    const value = item.date || item.last_updated || item.updated_date;
+  static parseArticleDate(
+    input: ArticleItem | string | undefined | null
+  ): Date | null {
+    if (!input) return null;
+    const value =
+      typeof input === 'string'
+        ? input
+        : input.date || input.last_updated || input.updated_date;
     if (!value) return null;
+
     const chineseMatch = String(value).match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
     if (chineseMatch) {
       const [, year, month, day] = chineseMatch.map(Number);
@@ -265,12 +343,68 @@ export class Utils {
     return isNaN(date.getTime()) ? null : date;
   }
 
+  /**
+   * 日期解析为时间戳（毫秒），失败返回 0。
+   * 排序场景专用，避免调用方重复判空。
+   */
+  static parseArticleTimestamp(
+    input: ArticleItem | string | undefined | null
+  ): number {
+    const d = Utils.parseArticleDate(input);
+    return d ? d.getTime() : 0;
+  }
+
+  /**
+   * 统一同源判定（基于 origin，包含协议与端口）。
+   * 替代 page-utils / router / ui-effects 中的多套实现。
+   */
+  static isSameOrigin(href: string | URL, base?: string): boolean {
+    try {
+      const url =
+        href instanceof URL
+          ? href
+          : new URL(href, base ?? window.location.href);
+      return url.origin === window.location.origin;
+    } catch {
+      return false;
+    }
+  }
+
+  /**
+   * 统一标签 HTML 渲染。
+   * @param tags 标签数组
+   * @param className 单个标签的类名（默认 'tag'）
+   * @param wrapperClass 外层包裹类名（默认 'tags'）
+   * @returns HTML 字符串；无标签时返回空串
+   */
+  static renderTags(
+    tags: string[] | undefined | null,
+    className = 'tag',
+    wrapperClass = 'tags'
+  ): string {
+    if (!tags || !tags.length) return '';
+    const inner = tags
+      .map((t) => `<span class="${className}">${Utils.escapeHtml(t)}</span>`)
+      .join('');
+    return `<div class="${wrapperClass}">${inner}</div>`;
+  }
+
   static formatMonthLabel(monthIndex: number): string {
     return `${monthIndex}月`;
   }
 }
 
-// ==================== 存储控制器（支持数据压缩） =====================
+// ==================== 顶层命名导出（便捷引用） ====================
+// 便于 `import { escapeHtml, getTags } from 'core'`。
+// Utils 上的静态方法保留作为兼容与显式命名空间入口。
+export const escapeHtml = Utils.escapeHtml.bind(Utils);
+export const getTags = Utils.getTags.bind(Utils);
+export const parseArticleDate = Utils.parseArticleDate.bind(Utils);
+export const parseArticleTimestamp = Utils.parseArticleTimestamp.bind(Utils);
+export const renderTags = Utils.renderTags.bind(Utils);
+export const isSameOrigin = Utils.isSameOrigin.bind(Utils);
+
+// ==================== 存储控制器（支持数据压缩） ====================
 
 export class StorageController {
   private compressKeys: Set<string> = new Set([

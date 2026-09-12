@@ -1,9 +1,11 @@
 // /js/ui/personal-card.js
 // 个人信息卡片渲染器
 
-let cachedHTML = null;
+import { onNavigation } from '/js/core/core.js';
 
-export function generatePersonalCardHTML() {
+let cachedHTML: string | null = null;
+
+export function generatePersonalCardHTML(): string {
   return `
     <div class="profile-card">
       <div class="profile-header">
@@ -27,74 +29,17 @@ export function generatePersonalCardHTML() {
       </div>
 
       <div class="profile-social">
-        <a
-          href="https://github.com/Xinyang-Gao"
-          target="_blank"
-          class="social-link"
-          aria-label="GitHub"
-          rel="noopener noreferrer"
-        >
-          <i class="fab fa-github"></i>
-        </a>
-        <a
-          href="https://space.bilibili.com/1064600697"
-          target="_blank"
-          class="social-link"
-          aria-label="Bilibili"
-          rel="noopener noreferrer"
-        >
-          <i class="fab fa-bilibili"></i>
-        </a>
-        <a
-          href="mailto:gao_xinyang@foxmail.com"
-          class="social-link"
-          aria-label="邮箱"
-        >
-          <i class="fas fa-envelope"></i>
-        </a>
-        <a
-          href="https://user.qzone.qq.com/2489083744/"
-          target="_blank"
-          class="social-link"
-          aria-label="QQ"
-          rel="noopener noreferrer"
-        >
-          <i class="fab fa-qq"></i>
-        </a>
-        <a
-          href="/rss.xml"
-          target="_blank"
-          class="social-link"
-          aria-label="RSS"
-          rel="noopener noreferrer"
-        >
-          <i class="fas fa-rss"></i>
-        </a>
+        <a href="https://github.com/Xinyang-Gao" target="_blank" class="social-link" aria-label="GitHub" rel="noopener noreferrer"><i class="fab fa-github"></i></a>
+        <a href="https://space.bilibili.com/1064600697" target="_blank" class="social-link" aria-label="Bilibili" rel="noopener noreferrer"><i class="fab fa-bilibili"></i></a>
+        <a href="mailto:gao_xinyang@foxmail.com" class="social-link" aria-label="邮箱"><i class="fas fa-envelope"></i></a>
+        <a href="https://user.qzone.qq.com/2489083744/" target="_blank" class="social-link" aria-label="QQ" rel="noopener noreferrer"><i class="fab fa-qq"></i></a>
+        <a href="/rss.xml" target="_blank" class="social-link" aria-label="RSS" rel="noopener noreferrer"><i class="fas fa-rss"></i></a>
       </div>
 
       <div class="profile-travelling">
-        <a
-          href="https://www.travellings.cn/go.html"
-          target="_blank"
-          rel="noopener"
-          title="开往-友链接力"
-        >
-          <img
-            class="travelling-img travelling-light"
-            data-viewer-exclude="true"
-            src="https://www.travellings.cn/assets/w.png"
-            alt="开往-友链接力（浅色）"
-            width="120"
-            loading="lazy"
-          >
-          <img
-            class="travelling-img travelling-dark"
-            data-viewer-exclude="true"
-            src="https://www.travellings.cn/assets/b.png"
-            alt="开往-友链接力（深色）"
-            width="120"
-            loading="lazy"
-          >
+        <a href="https://www.travellings.cn/go.html" target="_blank" rel="noopener" title="开往-友链接力">
+          <img class="travelling-img travelling-light" data-viewer-exclude="true" src="https://www.travellings.cn/assets/w.png" alt="开往-友链接力（浅色）" width="120" loading="lazy">
+          <img class="travelling-img travelling-dark" data-viewer-exclude="true" src="https://www.travellings.cn/assets/b.png" alt="开往-友链接力（深色）" width="120" loading="lazy">
         </a>
       </div>
 
@@ -112,7 +57,7 @@ export function generatePersonalCardHTML() {
   `;
 }
 
-export function renderPersonalCard() {
+export function renderPersonalCard(): void {
   const container = document.getElementById('personal-card-container');
   if (!container) return;
 
@@ -124,27 +69,28 @@ export function renderPersonalCard() {
     container.innerHTML = cachedHTML;
     const card = container.querySelector('.profile-card');
     if (card) {
-      requestAnimationFrame(() => {
-        card.classList.add('visible');
-      });
+      requestAnimationFrame(() => card.classList.add('visible'));
     }
   } else {
     const card = container.querySelector('.profile-card');
     if (card && !card.classList.contains('visible')) {
-      requestAnimationFrame(() => {
-        card.classList.add('visible');
-      });
+      requestAnimationFrame(() => card.classList.add('visible'));
     }
   }
 }
 
-// 自动初始化
+// ==================== 自动初始化 ====================
+// 页面初次挂载由 AppInitializer 编排；SPA 导航后统一走 onNavigation。
+
 if (typeof window !== 'undefined') {
+  // 首次加载：AppInitializer 已经会调，但为了独立加载的兼容性保留一次。
+  // 若完全交由编排器，可删除本段——以下为兼容独立引入场景。
   const init = () => renderPersonalCard();
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);
   } else {
     init();
   }
-  window.addEventListener('ajax:navigation', init);
+  // SPA 导航：使用统一导航总线，避免 N 个独立监听
+  onNavigation(init);
 }

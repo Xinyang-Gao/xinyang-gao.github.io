@@ -3,6 +3,7 @@
 // 主类 StatsManager 通过 import 触发本模块的副作用（自注册）
 
 import { registerChart } from './chart-registry.js';
+import { Utils } from '/js/core/core.js';
 
 // ==================== 调色板 ====================
 
@@ -19,12 +20,8 @@ function toMonthKey(dateStr: string): string | null {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 }
 
-/** 提取作品标签（兼容 tag 与 tags 字段） */
-function getWorkTags(work: { tag?: string[]; tags?: string[] }): string[] {
-  if (Array.isArray(work.tags) && work.tags.length) return work.tags;
-  if (Array.isArray(work.tag) && work.tag.length) return work.tag;
-  return [];
-}
+// 标签提取统一走 Utils.getTags（内部兼容 tag / tags 字段），
+// 原 getWorkTags 本地实现已删除。
 
 // ==================== 1. 文章发布趋势 ====================
 
@@ -190,7 +187,8 @@ registerChart({
     if (!workTags.length) {
       const tagMap = new Map<string, number>();
       for (const w of data.worksList) {
-        for (const t of getWorkTags(w)) {
+        // 统一走 Utils.getTags：内部兼容 tag / tags 两种字段
+        for (const t of Utils.getTags(w)) {
           tagMap.set(t, (tagMap.get(t) || 0) + 1);
         }
       }

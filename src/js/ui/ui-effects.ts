@@ -1,8 +1,9 @@
 // /js/ui/ui-effects.ts
 // 顶层 UI 编排：外链管理、滚动揭示、鼠标特效、工具提示
-// 设置读取统一走 settings.ts 的 isEnabled，不再本地定义键与判断函数
+// 设置读取统一走 settings.ts 的 isEnabled；
+// 同源判定统一走 Utils.isSameOrigin；调度统一走 core.scheduleIdle。
 
-import { CONFIG, scheduleIdle } from '/js/core/core.js';
+import { CONFIG, Utils, scheduleIdle } from '/js/core/core.js';
 import { isEnabled } from '/js/data/settings.js';
 import { showJumpDialog } from '/js/ui/jump-dialog.js';
 import { MouseEffectManager, CustomCursor } from './mouse-effects.js';
@@ -18,21 +19,22 @@ export class ExternalLinkManager {
     'github.com', 'google.com', 'wikipedia.org',
     'twitter.com', 'linkedin.com', 'amazon.com', 'microsoft.com', 'travellings.cn'
   ]);
-  private internalDomains: string[] = [
-    'localhost', '127.0.0.1', window.location.hostname
-  ];
   private _boundHandleClick: ((e: Event) => void) | null = null;
 
   constructor() {
     this.init();
   }
 
+  /**
+   * 是否站外链接。
+   * 同源判定收敛到 Utils.isSameOrigin；此处仅补充协议过滤。
+   */
   private isExternalLink(url: string): boolean {
     if (!url || url.startsWith('#') || url.startsWith('javascript:')) return false;
     try {
       const linkUrl = new URL(url, window.location.href);
       if (!['http:', 'https:'].includes(linkUrl.protocol)) return false;
-      return !this.internalDomains.includes(linkUrl.hostname);
+      return !Utils.isSameOrigin(linkUrl);
     } catch {
       return false;
     }
@@ -69,7 +71,9 @@ export class ExternalLinkManager {
       }
 
       // 使用 jump-dialog 弹窗确认
-      const name = anchor.textContent?.trim() || new URL(href, window.location.href).hostname;
+      const name =
+        anchor.textContent?.trim() ||
+        new URL(href, window.location.href).hostname;
       showJumpDialog({
         name: name || '外部链接',
         url: href,
@@ -78,7 +82,7 @@ export class ExternalLinkManager {
         redirectTarget: '_blank',
         onRedirect: (url) => {
           console.log('[ExternalLinkManager] 跳转至:', url);
-        }
+        },
       });
     }
   };
@@ -207,6 +211,7 @@ export function initUIEffects(): void {
   if (uiEffectsInitialized) return;
   uiEffectsInitialized = true;
 
+  // 统一走 core.scheduleIdle，禁止本地再写 idle 降级逻辑
   scheduleIdle(
     () => {
       refreshUIEffects();

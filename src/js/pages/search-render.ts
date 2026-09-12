@@ -7,32 +7,8 @@ import { dataService } from '/js/core/data-service.js';
 import { DisposableStack } from '/js/core/disposable-stack.js';
 
 // ==================== 工具函数 ====================
-
-const getTags = (item: Item): string[] =>
-  item.tags?.length ? item.tags : item.tag?.length ? item.tag : [];
-
-const escapeHtml = Utils.escapeHtml;
-
-/**
- * 解析日期字符串，支持 "2026年05月24日" 和标准格式，返回时间戳。
- * 无法解析时返回 0（用于稳定排序）。
- */
-function parseDateString(dateStr: string | undefined): number {
-  if (!dateStr) return 0;
-  const str = String(dateStr);
-
-  const chineseMatch = str.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
-  if (chineseMatch) {
-    const year = parseInt(chineseMatch[1], 10);
-    const month = parseInt(chineseMatch[2], 10) - 1;
-    const day = parseInt(chineseMatch[3], 10);
-    const d = new Date(year, month, day);
-    if (!isNaN(d.getTime())) return d.getTime();
-  }
-
-  const d = new Date(str);
-  return isNaN(d.getTime()) ? 0 : d.getTime();
-}
+// 标签提取、日期解析、HTML 转义、标签 HTML 渲染统一收敛至 Utils，
+// 本模块不再保留任何重复实现。
 
 /** 根据排序规则对项目数组进行排序（不修改原数组） */
 function sortByField(items: Item[], order: string): Item[] {
@@ -41,15 +17,15 @@ function sortByField(items: Item[], order: string): Item[] {
     case 'updated_asc':
       sorted.sort(
         (a, b) =>
-          parseDateString((a as any).last_updated || a.date) -
-          parseDateString((b as any).last_updated || b.date)
+          Utils.parseArticleTimestamp((a as any).last_updated || a.date) -
+          Utils.parseArticleTimestamp((b as any).last_updated || b.date)
       );
       break;
     case 'updated_desc':
       sorted.sort(
         (a, b) =>
-          parseDateString((b as any).last_updated || b.date) -
-          parseDateString((a as any).last_updated || a.date)
+          Utils.parseArticleTimestamp((b as any).last_updated || b.date) -
+          Utils.parseArticleTimestamp((a as any).last_updated || a.date)
       );
       break;
     case 'wordcount_asc':
@@ -59,11 +35,19 @@ function sortByField(items: Item[], order: string): Item[] {
       sorted.sort((a, b) => (b.word_count || 0) - (a.word_count || 0));
       break;
     case 'date_asc':
-      sorted.sort((a, b) => parseDateString(a.date) - parseDateString(b.date));
+      sorted.sort(
+        (a, b) =>
+          Utils.parseArticleTimestamp(a.date) -
+          Utils.parseArticleTimestamp(b.date)
+      );
       break;
     case 'date_desc':
     default:
-      sorted.sort((a, b) => parseDateString(b.date) - parseDateString(a.date));
+      sorted.sort(
+        (a, b) =>
+          Utils.parseArticleTimestamp(b.date) -
+          Utils.parseArticleTimestamp(a.date)
+      );
       break;
   }
   return sorted;
@@ -80,7 +64,7 @@ function filterAndSort(
 
   if (selectedTags && selectedTags.length > 0) {
     result = result.filter((item) => {
-      const tags = getTags(item);
+      const tags = Utils.getTags(item);
       return tags.some((t) => selectedTags.includes(t));
     });
   }
@@ -89,7 +73,7 @@ function filterAndSort(
     const ql = query.toLowerCase().trim();
     result = result.filter((item) => {
       const title = (item.title || '').toLowerCase();
-      const tags = getTags(item);
+      const tags = Utils.getTags(item);
 
       switch (field) {
         case 'title':
@@ -116,11 +100,15 @@ function filterAndSort(
 export class DataManager {
   static readonly TYPE_LABEL = { works: '作品', articles: '文章' } as const;
 
-  static async fetchData(type: 'works' | 'articles', useCache = true): Promise<any> {
+  static async fetchData(
+    type: 'works' | 'articles',
+    useCache = true
+  ): Promise<any> {
     const win = window as any;
 
     // 静态内嵌数据优先（构建时注入，跳过网络请求）
-    const staticKey = type === 'articles' ? '__STATIC_ARTICLES_DATA' : '__STATIC_WORKS_DATA';
+    const staticKey =
+      type === 'articles' ? '__STATIC_ARTICLES_DATA' : '__STATIC_WORKS_DATA';
     if (win[staticKey]) {
       console.log(`[DataManager] 使用静态内嵌${this.TYPE_LABEL[type]}数据`);
       return { [type]: win[staticKey] };
@@ -155,27 +143,26 @@ export class DataManager {
 
 export class UIRenderer {
   static generateTagsHTML(item: Item): string {
-    const tags = getTags(item);
-    return tags.length
-      ? `<div class="tags">${tags
-          .map((t) => `<span class="tag">${escapeHtml(t)}</span>`)
-          .join('')}</div>`
-      : '';
+    return Utils.renderTags(Utils.getTags(item));
   }
 
-  static generateListItem(item: Item, type: 'article' | 'work', index: number): string {
+  static generateListItem(
+    item: Item,
+    type: 'article' | 'work',
+    index: number
+  ): string {
     const tagsHtml = this.generateTagsHTML(item);
-    const desc = escapeHtml(item.description || '');
-    const title = escapeHtml(item.title);
+    const desc = Utils.escapeHtml(item.description || '');
+    const title = Utils.escapeHtml(item.title);
 
     if (type === 'article') {
       const url = item.url || '';
       const dateInfo = item.date
-        ? `<span class="publish-date">发布于 ${escapeHtml(item.date)}</span>`
+        ? `<span class="publish-date">发布于 ${Utils.escapeHtml(item.date)}</span>`
         : '';
       const updateInfo =
         item.last_updated && item.last_updated !== item.date
-          ? `<span class="update-date">更新: ${escapeHtml(item.last_updated)}</span>`
+          ? `<span class="update-date">更新: ${Utils.escapeHtml(item.last_updated)}</span>`
           : '';
       const metaDate =
         dateInfo || updateInfo
@@ -183,15 +170,15 @@ export class UIRenderer {
           : '';
 
       return `
-        <div class="list-item" data-url="${escapeHtml(url)}" data-type="article" data-index="${index}">
+        <div class="list-item" data-url="${Utils.escapeHtml(url)}" data-type="article" data-index="${index}">
           <div class="list-item-header">
             <h3 class="list-item-title">${title}</h3>
             ${metaDate}
           </div>
           <div class="article-meta-info">
-            <span class="article-author">${escapeHtml(item.author || '未知作者')}</span>
+            <span class="article-author">${Utils.escapeHtml(item.author || '未知作者')}</span>
             ${item.word_count ? `<span class="article-word-count">${item.word_count} 字</span>` : ''}
-            ${item.read_time ? `<span class="article-read-time"><i class="far fa-clock"></i> ${escapeHtml(item.read_time)}</span>` : ''}
+            ${item.read_time ? `<span class="article-read-time"><i class="far fa-clock"></i> ${Utils.escapeHtml(item.read_time)}</span>` : ''}
           </div>
           <p class="list-item-description">${desc}</p>
           ${tagsHtml}
@@ -202,7 +189,7 @@ export class UIRenderer {
           title: item.title,
           description: item.description || '',
           link: item.link || '',
-          tags: getTags(item),
+          tags: Utils.getTags(item),
         })
       );
 
@@ -210,7 +197,7 @@ export class UIRenderer {
         <div class="list-item" data-work-info="${workInfo}" data-type="work" data-index="${index}">
           <div class="list-item-header">
             <h3 class="list-item-title">${title}</h3>
-            <div class="list-item-meta"><span class="list-item-date">${escapeHtml(item.date)}</span></div>
+            <div class="list-item-meta"><span class="list-item-date">${Utils.escapeHtml(item.date)}</span></div>
           </div>
           <p class="list-item-description">${desc}</p>
           ${tagsHtml}
@@ -446,7 +433,10 @@ export class SearchController {
       .querySelectorAll<HTMLElement>('.tag-button:not(:last-child)')
       .forEach((btn) => {
         const tag = btn.dataset.tag;
-        btn.classList.toggle('active', tag !== undefined && this.selectedTags.includes(tag));
+        btn.classList.toggle(
+          'active',
+          tag !== undefined && this.selectedTags.includes(tag)
+        );
       });
   }
 
@@ -460,7 +450,7 @@ export class SearchController {
     const items = this.page === 'works' ? data.works : data.articles;
     const tagMap = new Map<string, number>();
     items.forEach((item: Item) =>
-      getTags(item).forEach((t) => tagMap.set(t, (tagMap.get(t) || 0) + 1))
+      Utils.getTags(item).forEach((t) => tagMap.set(t, (tagMap.get(t) || 0) + 1))
     );
 
     const tags = Array.from(tagMap.entries())
@@ -522,9 +512,15 @@ export async function initSearchPage(
   page: 'works' | 'articles',
   scrollRevealRefreshCallback?: () => void
 ): Promise<SearchController> {
-  const existing = (window as any)._currentSearchController as SearchController | undefined;
+  const existing = (window as any)._currentSearchController as
+    | SearchController
+    | undefined;
 
-  if (existing && !(existing as any).isDestroyed && (existing as any).page === page) {
+  if (
+    existing &&
+    !(existing as any).isDestroyed &&
+    (existing as any).page === page
+  ) {
     existing.scrollRevealRefresh = scrollRevealRefreshCallback;
     return existing;
   }

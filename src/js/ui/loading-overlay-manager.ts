@@ -168,10 +168,11 @@ export class LoadingOverlayManager {
           if (worksData.works?.length) {
             const tags = new Set<string>();
             worksData.works.forEach((w: any) => {
-              const t = w.tag || w.tags || [];
-              (Array.isArray(t) ? t : []).forEach((tag) => tags.add(tag));
+              Utils.getTags(w).forEach((tag) => tags.add(tag));
             });
-            if (tags.size) this.addLog('Data', `  作品标签: ${Array.from(tags).join(', ')}`, 1);
+            if (tags.size) {
+              this.addLog('Data', `  作品标签: ${Array.from(tags).join(', ')}`, 1);
+            }
           }
         }
 

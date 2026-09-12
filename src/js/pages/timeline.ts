@@ -54,24 +54,7 @@ interface TimelineItem {
 }
 
 // ==================== 工具函数 ====================
-
-function getTags(item: BaseItem): string[] {
-  if (item.tags?.length) return item.tags;
-  if (item.tag?.length) return Array.isArray(item.tag) ? item.tag : [item.tag];
-  return [];
-}
-
-function parseDateString(dateStr: string): Date | null {
-  if (!dateStr) return null;
-  const chineseMatch = dateStr.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
-  if (chineseMatch) {
-    const [, y, m, d] = chineseMatch.map(Number);
-    const dt = new Date(y, m - 1, d);
-    if (!isNaN(dt.getTime())) return dt;
-  }
-  const dt = new Date(dateStr);
-  return isNaN(dt.getTime()) ? null : dt;
-}
+// 标签提取与日期解析统一收敛到 Utils，禁止本地重复实现。
 
 function formatDateLabel(dateObj: Date): string {
   const y = dateObj.getFullYear();
@@ -216,8 +199,8 @@ export class TimelineManager extends PageBase {
     const items: TimelineItem[] = [];
 
     for (const art of articles) {
-      const dateStr = art.date || art.last_updated || '';
-      const dateObj = parseDateString(dateStr);
+      // 统一走 Utils.parseArticleDate（内部已兼容 date / last_updated / updated_date）
+      const dateObj = Utils.parseArticleDate(art);
       if (!dateObj) continue;
       items.push({
         id: `article-${art.title || Math.random()}`,
@@ -227,13 +210,12 @@ export class TimelineManager extends PageBase {
         date: formatDateLabel(dateObj),
         dateObj,
         url: art.url || art.link || '#',
-        tags: getTags(art),
+        tags: Utils.getTags(art),
       });
     }
 
     for (const work of works) {
-      const dateStr = work.date || '';
-      const dateObj = parseDateString(dateStr);
+      const dateObj = Utils.parseArticleDate(work);
       if (!dateObj) continue;
       items.push({
         id: `work-${work.title || Math.random()}`,
@@ -243,14 +225,13 @@ export class TimelineManager extends PageBase {
         date: formatDateLabel(dateObj),
         dateObj,
         url: work.link || work.url || '#',
-        tags: getTags(work),
+        tags: Utils.getTags(work),
       });
     }
 
     let versionOrder = 0;
     for (const ver of versions) {
-      const dateStr = ver.date || '';
-      const dateObj = parseDateString(dateStr);
+      const dateObj = Utils.parseArticleDate(ver.date);
       if (!dateObj) continue;
       items.push({
         id: `version-${ver.id}`,
