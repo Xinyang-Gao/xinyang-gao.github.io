@@ -83,7 +83,6 @@ export class DataService {
   /**
    * 核心请求方法，自动处理缓存、去重、持久化
    */
-  // 仅 fetchWithCache 方法
   private async fetchWithCache(
     key: DataKey,
     options: FetchOptions = {}
@@ -100,7 +99,7 @@ export class DataService {
     }
 
     // 2) localStorage 缓存
-    if (!forceRefresh && useStorage && storageController.isAllowed()) {
+    if (!forceRefresh && useStorage) {
       const storageKey = this.getStorageKey(key);
       const raw = storageController.getItem(storageKey);
       if (raw) {
@@ -116,7 +115,9 @@ export class DataService {
           // 解析失败：删除损坏的缓存条目
           try {
             storageController.removeItem(storageKey);
-          } catch {}
+          } catch {
+            // ignore
+          }
           // 继续网络请求
         }
       }
@@ -131,7 +132,7 @@ export class DataService {
     const promise = this.doFetch(url)
       .then((data) => {
         this.memoryCache.set(key, { data, timestamp: Date.now() });
-        if (useStorage && storageController.isAllowed()) {
+        if (useStorage) {
           const storageKey = this.getStorageKey(key);
           const toStore = { ...data, _timestamp: Date.now() };
           storageController.setItem(storageKey, JSON.stringify(toStore));
@@ -204,21 +205,19 @@ export class DataService {
     this.pending.clear();
 
     // 清空 localStorage（仅清除我们自己的键）
-    if (storageController.isAllowed()) {
-      const keys = [
-        CONFIG.STORAGE_KEYS.ARTICLES_DATA,
-        CONFIG.STORAGE_KEYS.WORKS_DATA,
-        'statistics_cache',
-        'code_analysis_cache',
-        'friends_cache',
-        'version_cache',
-      ];
-      for (const k of keys) {
-        try {
-          storageController.removeItem(k as any);
-        } catch {
-          // ignore
-        }
+    const keys: string[] = [
+      CONFIG.STORAGE_KEYS.ARTICLES_DATA,
+      CONFIG.STORAGE_KEYS.WORKS_DATA,
+      'statistics_cache',
+      'code_analysis_cache',
+      'friends_cache',
+      'version_cache',
+    ];
+    for (const k of keys) {
+      try {
+        storageController.removeItem(k);
+      } catch {
+        // ignore
       }
     }
   }
@@ -227,11 +226,9 @@ export class DataService {
    * 预热缓存（预加载常用数据，不阻塞）
    */
   warmup(): void {
-    const service = DataService.getInstance();
-    // 异步加载，不等待
-    service.getArticles().catch(() => {});
-    service.getWorks().catch(() => {});
-    service.getStatistics().catch(() => {});
+    this.getArticles().catch(() => {});
+    this.getWorks().catch(() => {});
+    this.getStatistics().catch(() => {});
   }
 }
 

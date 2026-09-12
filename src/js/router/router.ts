@@ -4,12 +4,13 @@
 import { CONFIG, Utils } from '/js/core/core.js';
 import { getPageNameFromPath, isSameOrigin } from '/js/core/page-utils.js';
 import { ensureScrollReveal } from '/js/ui/ui-effects.js';
-import { initNavbar, refreshNavbarTitle } from '/js/ui/navbar-manager.js';
 import { initHomePage } from '/js/pages/home-manager.js';
 import type { PageManager } from '/js/core/page-manager.js';
 import { LazyImageLoader } from '/js/ui/image-manager.js';
 import { friendLinkManager } from '/js/pages/friends-manager.js';
 import { showDetailDialog } from '/js/ui/detail-dialog.js';
+import { initNavbar, refreshNavbarTitle, navbarManager } from '/js/ui/navbar-manager.js';
+import type { NavbarManager } from '/js/ui/navbar-manager.js';
 
 // ==================== 常量定义 ====================
 const ROUTER_VIEW_ID = 'router-view';
@@ -854,7 +855,7 @@ export function initPopstate(): void {
 
 // ==================== 辅助功能 ====================
 
-export async function loadNavbar(): Promise<any> {
+export async function loadNavbar(): Promise<NavbarManager> {
   return initNavbar();
 }
 

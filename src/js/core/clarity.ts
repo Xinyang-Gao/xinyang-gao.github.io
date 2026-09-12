@@ -29,21 +29,12 @@ export function updateClarityPage() {
   }
 }
 
-// 供外部调用的同意初始化
-export function initClarityOnConsent() {
-  // 如果已经加载过，不再重复
+/**
+ * 初始化 Clarity。
+ * 由于站点默认同意存储/统计，直接加载即可。
+ * 保留此函数名以兼容现有调用点。
+ */
+export function initClarityOnConsent(): void {
   if (clarityLoaded) return;
-  
-  // 检查是否已同意 Cookie
-  const consent = localStorage.getItem("cookieConsentAccepted");
-  if (consent === "true") {
-    loadClarity();
-  } else {
-    // 监听同意事件（你的网站已定义）
-    const handleConsent = () => {
-      loadClarity();
-      window.removeEventListener("cookieConsentAccepted", handleConsent);
-    };
-    window.addEventListener("cookieConsentAccepted", handleConsent);
-  }
+  loadClarity();
 }

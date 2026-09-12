@@ -10,6 +10,8 @@
  * 生命周期：全部监听挂载在同一个 AbortController 上，destroy() 一次性中断，零残留
  */
 
+import { Utils } from '/js/core/core.js';
+
 export interface ImageItem {
   src: string;
   alt?: string;
@@ -38,7 +40,6 @@ const CLOSE_DELAY = 320;
 // Utilities
 const clamp = (v: number, min: number, max: number) => Math.min(max, Math.max(min, v));
 const pad2 = (n: number) => String(n).padStart(2, '0');
-const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
 
 const svg = (inner: string) =>
   `<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
@@ -661,7 +662,7 @@ export class ImageViewer {
       .map(
         (it, i) => `
           <button class="viewer-thumb" type="button" data-index="${i}" aria-label="第 ${i + 1} 张">
-            <img src="${esc(it.thumb || it.src)}" alt="" loading="lazy" decoding="async" draggable="false" />
+            <img src="${Utils.escapeHtml(it.thumb || it.src)}" alt="" loading="lazy" decoding="async" draggable="false" />
           </button>`
       )
       .join('');

@@ -1,6 +1,6 @@
 // /js/data/settings.ts
 
-import { CONFIG, storageController, CookieConsentManager } from '/js/core/core.js';
+import { CONFIG, storageController } from '/js/core/core.js';
 import { showDetailDialog } from '/js/ui/detail-dialog.js';
 import { getTimeBasedTheme, applyRandomBackgroundImage } from '/js/core/page-utils.js';
 

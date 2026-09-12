@@ -1,6 +1,8 @@
 // /js/ui/button-manager.js
 // 统一管理浮动按钮：返回顶部 + 文章目录（TOC）
 
+import { CONFIG } from '/js/core/core.js';
+
 let container = null;
 let backToTopBtn = null;
 let tocBtn = null;
@@ -107,7 +109,7 @@ function shouldShowTocButton() {
     document.getElementById('articleBody')
   );
   if (!isArticlePage) return false;
-  return window.innerWidth <= 768; // 仅移动端
+  return window.innerWidth <= CONFIG.BREAKPOINTS.MOBILE; // 仅移动端
 }
 
 /**

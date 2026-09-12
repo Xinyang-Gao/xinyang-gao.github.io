@@ -2,6 +2,8 @@
 // 通用跳转确认弹窗，完全复用 friends.css 样式
 // 提供 showJumpDialog 和 bindJumpTriggers 两种使用方式
 
+import { Utils } from '/js/core/core.js';
+
 export interface JumpDialogOptions {
   /** 目标名称（必填） */
   name: string;
@@ -38,13 +40,6 @@ let currentDialog: {
   content: HTMLElement;
   close: () => void;
 } | null = null;
-
-function escapeHtml(text: string): string {
-  if (!text) return '';
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
 
 function getElementRect(el: HTMLElement): DOMRect {
   return el.getBoundingClientRect();
@@ -114,9 +109,9 @@ export function showJumpDialog(options: JumpDialogOptions): { close: () => void 
   content.innerHTML = `
     ${closeBtnHtml}
     ${avatarHtmlContent}
-    <h2 class="friend-link-name">${escapeHtml(name)}</h2>
-    ${desc ? `<p class="friend-link-desc">${escapeHtml(desc)}</p>` : ''}
-    <p class="friend-link-url">${escapeHtml(url)}</p>
+    <h2 class="friend-link-name">${Utils.escapeHtml(name)}</h2>
+    ${desc ? `<p class="friend-link-desc">${Utils.escapeHtml(desc)}</p>` : ''}
+    <p class="friend-link-url">${Utils.escapeHtml(url)}</p>
     <p class="friend-link-hint">即将启程！坐稳扶好，欢迎下次再来玩！</p>
     <div class="friend-link-countdown">
       倒计时 <span class="countdown-number">${countdown}</span> 秒
@@ -340,12 +335,11 @@ export function bindJumpTriggers(
       if (avatarEl) {
         if (avatarEl.tagName === 'IMG') {
           const img = avatarEl as HTMLImageElement;
-          avatarHtml = `<img src="${img.src}" alt="${img.alt || name || '头像'}" style="width:100%;height:100%;object-fit:cover;display:block;">`;
+          avatarHtml = `<img src="${Utils.escapeHtml(img.src)}" alt="${Utils.escapeHtml(img.alt || name || '头像')}" style="width:100%;height:100%;object-fit:cover;display:block;">`;
         } else {
-          // 占位元素：取首字母 + 背景色
           const initial = name ? name.charAt(0).toUpperCase() : '?';
           const bg = window.getComputedStyle(avatarEl).backgroundColor || 'var(--accent-color, #b45b63)';
-          avatarHtml = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:${bg};color:#fff;font-size:32px;font-weight:600;">${initial}</div>`;
+          avatarHtml = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:${bg};color:#fff;font-size:32px;font-weight:600;">${Utils.escapeHtml(initial)}</div>`;
         }
       }
 

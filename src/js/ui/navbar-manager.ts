@@ -1,13 +1,15 @@
 // /js/ui/navbar-manager.ts
 // 职责：DOM 生成、入场动画、标题替换、滚动状态、移动菜单无障碍、SPA 复用
 
+import { CONFIG } from '/js/core/core.js';
 import { initThemeToggle } from '/js/ui/theme.js';
 import { initMobileMenuToggle, initNavigation } from '/js/router/router.js';
 
 const SITE_NAME = 'GaoXinYang';
 const CSS_PATH = '/css/components/navbar.css';
 const SCROLL_THRESHOLD = 24;
-const DESKTOP_BREAKPOINT = 768;
+// 移动端断点统一从全局 CONFIG 读取，避免各处硬编码 768
+const DESKTOP_BREAKPOINT = CONFIG.BREAKPOINTS.MOBILE;
 
 const NAV_LINKS: ReadonlyArray<{ href: string; page: string; text: string }> = [
   { href: '/', page: 'index', text: '首页' },
@@ -28,7 +30,7 @@ interface NavbarElements {
   titleScroll: HTMLElement | null;
 }
 
-class NavbarManager {
+export class NavbarManager {
   private initialized = false;
   private entrancePlayed = false;
   private shellBound = false;
@@ -260,7 +262,7 @@ class NavbarManager {
     if (!navItems || !this.initialized) return;
 
     // 移动端不做标题替换，菜单入口必须始终可见
-    if (window.innerWidth < DESKTOP_BREAKPOINT) {
+    if (window.innerWidth <= DESKTOP_BREAKPOINT) {
       this.exitTitleMode();
       return;
     }
@@ -390,9 +392,13 @@ class NavbarManager {
 
 export const navbarManager = new NavbarManager();
 
-/** 挂载导航栏（幂等，SPA 中可安全重复调用） */
-export function initNavbar(placeholderId?: string): Promise<void> {
-  return navbarManager.initNavbar(placeholderId);
+/**
+ * 挂载导航栏（幂等，SPA 中可安全重复调用）
+ * @returns 单例 NavbarManager，供调用方访问 playEntranceAnimation 等方法
+ */
+export async function initNavbar(placeholderId?: string): Promise<NavbarManager> {
+  await navbarManager.initNavbar(placeholderId);
+  return navbarManager;
 }
 
 /** 手动刷新标题替换状态（一般用不到，内置 observer 自动处理） */

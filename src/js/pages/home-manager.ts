@@ -1,6 +1,7 @@
 // /js/pages/home-manager.ts
 import { PageManager } from '/js/core/page-manager.js';
 import { DataService } from '/js/core/data-service.js';
+import { Utils } from '/js/core/core.js';
 
 /** UAPI 名言归一化结构 */
 interface Saying {
@@ -125,15 +126,9 @@ export class HomePageManager extends PageManager {
         const ratio = t.count / max;
         const size = ratio >= 0.66 ? 'tag--lg' : ratio >= 0.33 ? 'tag--md' : 'tag--sm';
         const count = t.count ? `<span class="tag-count">${t.count}</span>` : '';
-        return `<span class="tag ${size}" data-tag-name="${this.escapeHtml(t.name)}">${this.escapeHtml(t.name)}${count}</span>`;
+        return `<span class="tag ${size}" data-tag-name="${Utils.escapeHtml(t.name)}">${Utils.escapeHtml(t.name)}${count}</span>`;
       })
       .join('');
-  }
-
-  private escapeHtml(str: any): string {
-    if (!str) return '';
-    const map: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' };
-    return String(str).replace(/[&<>"]/g, (m) => map[m] ?? m);
   }
 
   /* ---------- 事件委托（与原行为一致 + 键盘可达） ---------- */

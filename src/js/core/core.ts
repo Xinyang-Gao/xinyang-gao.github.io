@@ -93,6 +93,9 @@ export const CONFIG = {
     'https://cn.bing.com/th?id=OHR.SplugenPass_ZH-CN8347591461_UHD.jpg&pid=hp&w=1920',
   ],
   SITE_BIRTH: new Date('2025-02-22T12:23:53Z'),
+  BREAKPOINTS: {
+    MOBILE: 768,
+  },
 } as const;
 
 export type StorageKey = typeof CONFIG.STORAGE_KEYS[keyof typeof CONFIG.STORAGE_KEYS];
@@ -140,12 +143,16 @@ export class Utils {
   }
 
   static escapeHtml(str: unknown): string {
-    if (!str) return '';
-    return String(str).replace(/[&<>]/g, (m) => {
-      if (m === '&') return '&amp;';
-      if (m === '<') return '&lt;';
-      if (m === '>') return '&gt;';
-      return m;
+    if (str === null || str === undefined || str === '') return '';
+    return String(str).replace(/[&<>"']/g, (m) => {
+      switch (m) {
+        case '&': return '&amp;';
+        case '<': return '&lt;';
+        case '>': return '&gt;';
+        case '"': return '&quot;';
+        case "'": return '&#39;';
+        default: return m;
+      }
     });
   }
 
@@ -219,49 +226,17 @@ export class Utils {
 // ==================== 存储控制器（支持数据压缩） =====================
 
 export class StorageController {
-  private enabled: boolean;
-  // 可压缩的键集合
-  private compressKeys: Set<StorageKey> = new Set([
+  private compressKeys: Set<string> = new Set([
     CONFIG.STORAGE_KEYS.WORKS_DATA,
     CONFIG.STORAGE_KEYS.ARTICLES_DATA,
   ]);
 
-  constructor() {
-    // 默认启用存储（网站设计默认同意）
-    this.enabled = true;
-    // 监听外部同意事件（如有需要，可切换状态）
-    this.listenForConsent();
-  }
-
-  private listenForConsent(): void {
-    window.addEventListener('cookieConsentAccepted', () => {
-      this.enableStorage();
-    });
-
-    window.addEventListener('cookieConsentChanged', (event: Event) => {
-      const detail = (event as CustomEvent<{ consent: boolean }>).detail;
-      if (detail.consent) {
-        this.enableStorage();
-      } else {
-        this.disableStorage();
-      }
-    });
-  }
-
-  enableStorage(): void {
-    this.enabled = true;
-    this.setItem(CONFIG.STORAGE_KEYS.COOKIE_CONSENT, 'true');
-    console.log('[StorageController] 存储功能已启用');
-  }
-
-  disableStorage(): void {
-    this.enabled = false;
-    this.clearAllData();
-    console.log('[StorageController] 存储功能已禁用');
-  }
-
+  /**
+   * @deprecated 保留仅为兼容旧调用点；始终返回 true。
+   * 将来要是需要恢复 GDPR 合规，在此基础上重新引入流程
+   */
   isAllowed(): boolean {
-    return this.enabled;
+    return true;
   }
 
   clearAllData(): void {
@@ -274,8 +249,8 @@ export class StorageController {
     });
   }
 
-  private shouldCompress(key: string): key is StorageKey {
-    return this.compressKeys.has(key as StorageKey);
+  private shouldCompress(key: string): boolean {
+    return this.compressKeys.has(key);
   }
 
   private compressData(raw: string): string {
@@ -301,18 +276,7 @@ export class StorageController {
     return compressed;
   }
 
-  getItem(key: StorageKey): string | null {
-    // Cookie 同意状态始终允许读取（用于判断）
-    if (key === CONFIG.STORAGE_KEYS.COOKIE_CONSENT) {
-      try {
-        return localStorage.getItem(key);
-      } catch {
-        return null;
-      }
-    }
-
-    if (!this.isAllowed()) return null;
-
+  getItem(key: string): string | null {
     try {
       const raw = localStorage.getItem(key);
       if (raw === null) return null;
@@ -326,19 +290,7 @@ export class StorageController {
     }
   }
 
-  setItem(key: StorageKey, value: string): void {
-    if (key === CONFIG.STORAGE_KEYS.COOKIE_CONSENT) {
-      try {
-        localStorage.setItem(key, value);
-        return;
-      } catch (e) {
-        console.warn('[WARN] 设置cookie同意状态失败:', e);
-        return;
-      }
-    }
-
-    if (!this.isAllowed()) return;
-
+  setItem(key: string, value: string): void {
     try {
       const storeValue = this.shouldCompress(key) ? this.compressData(value) : value;
       localStorage.setItem(key, storeValue);
@@ -347,69 +299,12 @@ export class StorageController {
     }
   }
 
-  removeItem(key: StorageKey): void {
-    // 允许删除，无论是否启用（用于清理）
+  removeItem(key: string): void {
     try {
       localStorage.removeItem(key);
     } catch (e) {
       console.warn(`[WARN] 删除存储项 "${key}" 失败:`, e);
     }
-  }
-}
-
-// ==================== Cookie 同意管理器 ====================
-export class CookieConsentManager {
-  private static readonly BANNER_ID = 'cookie-consent-banner';
-  private storageController: StorageController;
-  private banner: HTMLElement | null = null;
-
-  constructor(storageController: StorageController) {
-    this.storageController = storageController;
-    this.init();
-  }
-
-  // 直接同意，不创建横幅
-  private init(): void {
-    this.setConsented(true);
-  }
-
-  // 始终返回 true
-  hasConsented(): boolean {
-    return true;
-  }
-
-  // 始终返回 false
-  hasRejected(): boolean {
-    return false;
-  }
-
-  // 设置同意状态（触发事件）
-  setConsented(consented: boolean): void {
-    // 无论参数如何，都强制设为同意
-    this.storageController.setItem(CONFIG.STORAGE_KEYS.COOKIE_CONSENT, 'true');
-    this.storageController.enableStorage();
-    window.dispatchEvent(
-      new CustomEvent('cookieConsentChanged', {
-        detail: { consent: true },
-      })
-    );
-    window.dispatchEvent(new CustomEvent('cookieConsentAccepted'));
-  }
-
-  // 不再需要显示横幅
-  shouldShow(): boolean {
-    return false;
-  }
-
-  // 空方法
-  showBanner(): void {}
-
-  // 空方法
-  hideBanner(): void {}
-
-  // 重置时也直接同意
-  resetConsent(): void {
-    this.setConsented(true);
   }
 }
 

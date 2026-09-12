@@ -7,7 +7,7 @@ import { DataService } from '/js/core/data-service.js';
 
 // ==================== 工具函数 ====================
 const getTags = (item: Item): string[] => item.tags?.length ? item.tags : (item.tag?.length ? item.tag : []);
-const escapeHtml = (s: unknown) => s ? String(s).replace(/[&<>]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[m] || m)) : '';
+const escapeHtml = Utils.escapeHtml;
 const isDataValid = (data: any, type: 'works' | 'articles') => data && (type === 'works' ? data.works?.length : data.articles?.length);
 
 // ==================== 数据管理器 ====================

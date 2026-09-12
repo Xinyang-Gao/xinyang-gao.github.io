@@ -13,9 +13,10 @@ import { registerServiceWorker, initFooterStats } from '/js/data/site-state.js';
 import { handleListItemClick } from '/js/ui/list-events.js';
 import { LoadingOverlayManager } from '/js/ui/loading-overlay-manager.js';
 import { DataService } from '/js/core/data-service.js';
+import type { NavbarManager } from '/js/ui/navbar-manager.js';
 
 export class AppInitializer {
-  private static navbarInstance: any = null;
+  private static navbarInstance: NavbarManager | null = null;
 
   /**
    * 启动应用
@@ -70,18 +71,17 @@ export class AppInitializer {
     // 12. 其他非关键功能（空闲）
     this.scheduleIdle(() => {
       initUIEffects();
-      const service = DataService.getInstance();
-      service.getArticles().catch(() => { });
-      service.getWorks().catch(() => { });
-      service.getStatistics().catch(() => { });
+
+      // 预热常用数据（单例内部统一管理缓存与去重）
+      DataService.getInstance().warmup();
+
       LazyImageLoader.init();
       GlobalImageManager.init();
       updateFooterUpdateTime().catch(console.warn);
       initFooterStats().catch(console.warn);
     }, { timeout: 3000 });
 
-    // 13. Cookie 与 Clarity
-    // cookieConsentManager 已默认同意，直接初始化 Clarity
+    // 13. Clarity 初始化（站点默认同意存储与统计，无需等待用户交互）
     initClarityOnConsent();
     window.addEventListener('ajax:navigation', () => updateClarityPage());
 
@@ -98,7 +98,7 @@ export class AppInitializer {
     await overlayManager.show();
 
     // 17. 等待 500ms 后播放导航栏入场动画
-    await new Promise(resolve => setTimeout(resolve, 500));
+    await new Promise((resolve) => setTimeout(resolve, 500));
     if (this.navbarInstance && typeof this.navbarInstance.playEntranceAnimation === 'function') {
       this.navbarInstance.playEntranceAnimation();
     }
@@ -114,14 +114,19 @@ export class AppInitializer {
     } else {
       console.log('[Main] 开发环境，跳过 Service Worker 注册');
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(registrations => {
-          registrations.forEach(r => r.unregister());
+        navigator.serviceWorker.getRegistrations().then((registrations) => {
+          registrations.forEach((r) => r.unregister());
         });
       }
     }
   }
 
   // ---------- 内部辅助 ----------
+
+  /**
+   * 添加预连接、预加载等优化标签。
+   * 注意：若站点将来需要更细粒度的资源提示控制，可迁移到 HTML <head> 中硬编码。
+   */
   private static addOptimizationLinks(): void {
     const head = document.head;
 
@@ -143,12 +148,19 @@ export class AppInitializer {
     head.appendChild(preloadAvatar);
   }
 
+  /**
+   * 同步主题：优先使用用户保存的偏好，否则按时段自动选择。
+   * 与 theme.ts / settings.ts 中的逻辑保持一致，均以 CONFIG.STORAGE_KEYS.THEME 为唯一数据源。
+   */
   private static syncTheme(): void {
-    const savedTheme = storageController.isAllowed() ? storageController.getItem(CONFIG.STORAGE_KEYS.THEME) : null;
+    const savedTheme = storageController.getItem(CONFIG.STORAGE_KEYS.THEME);
     const initialTheme = savedTheme || getTimeBasedTheme();
     document.documentElement.setAttribute('data-theme', initialTheme);
   }
 
+  /**
+   * 在浏览器空闲时执行回调；不支持 requestIdleCallback 时降级为 setTimeout。
+   */
   private static scheduleIdle(callback: () => void, options?: { timeout?: number }): void {
     if ('requestIdleCallback' in window) {
       requestIdleCallback(callback, options || {});

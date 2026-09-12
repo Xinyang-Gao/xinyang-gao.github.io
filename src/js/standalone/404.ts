@@ -4,6 +4,8 @@
 // 类型定义
 // ============================================================
 
+import { Utils } from '/js/core/core.js';
+
 /** 路径分类结果 */
 interface PathClassification {
   type: 'article' | 'work' | 'tag' | 'about' | 'generic';
@@ -58,17 +60,6 @@ declare function loadFooter(): Promise<void>;
 // ============================================================
 // 工具函数
 // ============================================================
-
-function escapeHtml(str: unknown): string {
-  if (!str) return '';
-  const s = String(str);
-  return s.replace(/[&<>]/g, (m) => {
-    if (m === '&') return '&amp;';
-    if (m === '<') return '&lt;';
-    if (m === '>') return '&gt;';
-    return m;
-  });
-}
 
 function getDecodedPath(): string {
   try {
@@ -328,7 +319,7 @@ class UI404Manager {
     const icon = isCustom ? 'fa-star' : 'fa-info-circle';
     this.msgContainer.innerHTML = `
       <i class="fas ${icon}" aria-hidden="true" style="margin-right: 0.5rem; color: var(--accent-color);"></i>
-      ${escapeHtml(message)}
+      ${Utils.escapeHtml(message)}
     `;
   }
 
@@ -347,8 +338,8 @@ class UI404Manager {
         const targetAttr = sugg.url.startsWith('http')
           ? 'target="_blank" rel="noopener noreferrer"'
           : '';
-        return `<a href="${escapeHtml(sugg.url)}" class="suggestion-link" ${targetAttr}>
-                ${iconHtml} ${escapeHtml(sugg.text)}
+        return `<a href="${Utils.escapeHtml(sugg.url)}" class="suggestion-link" ${targetAttr}>
+                ${iconHtml} ${Utils.escapeHtml(sugg.text)}
               </a>`;
       })
       .join('');

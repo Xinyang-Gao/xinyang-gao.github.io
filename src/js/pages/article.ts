@@ -1,6 +1,7 @@
 // /js/pages/article.ts
 import { PageManager } from '/js/core/page-manager.js';
 import { initTwikoo, destroyTwikoo } from '/js/core/twikoo-manager.js';
+import { CONFIG } from '/js/core/core.js';
 
 interface Heading {
     id: string;
@@ -439,42 +440,42 @@ export class ArticlePageManager extends PageManager {
 
     // ---------- 移动端侧边栏 ----------
     private initMobileSidebar(): void {
-        const checkMobile = () => {
-            const isMobile = window.innerWidth <= 768;
-            const floating = document.querySelector('.floating-buttons') as HTMLElement;
-            if (floating) floating.style.display = isMobile ? 'flex' : 'none';
-            if (this.tocScrollWrapper) {
-                this.tocScrollWrapper.style.maxHeight = isMobile ? 'calc(100vh - 160px)' : 'calc(100vh - 220px)';
-            }
-        };
-
-        this.toggleSidebarHandler = () => this.toggleMobileSidebar();
-        window.addEventListener('article:toggleSidebar', this.toggleSidebarHandler);
-        this.cleanupFns.push(() => {
-            if (this.toggleSidebarHandler) {
-                window.removeEventListener('article:toggleSidebar', this.toggleSidebarHandler);
-                this.toggleSidebarHandler = null;
-            }
-        });
-
-        // 创建遮罩（只创建一次）
-        let overlay = document.querySelector('.article-sidebar-overlay');
-        if (!overlay) {
-            overlay = document.createElement('div');
-            overlay.className = 'article-sidebar-overlay';
-            document.body.appendChild(overlay);
-            overlay.addEventListener('click', () => this.closeMobileSidebar());
+    const checkMobile = () => {
+        const isMobile = window.innerWidth <= CONFIG.BREAKPOINTS.MOBILE;
+        const floating = document.querySelector('.floating-buttons') as HTMLElement;
+        if (floating) floating.style.display = isMobile ? 'flex' : 'none';
+        if (this.tocScrollWrapper) {
+        this.tocScrollWrapper.style.maxHeight = isMobile ? 'calc(100vh - 160px)' : 'calc(100vh - 220px)';
         }
+    };
 
-        this.resizeHandler = checkMobile;
-        window.addEventListener('resize', this.resizeHandler);
-        this.cleanupFns.push(() => {
-            if (this.resizeHandler) {
-                window.removeEventListener('resize', this.resizeHandler);
-                this.resizeHandler = null;
-            }
-        });
-        checkMobile();
+    this.toggleSidebarHandler = () => this.toggleMobileSidebar();
+    window.addEventListener('article:toggleSidebar', this.toggleSidebarHandler);
+    this.cleanupFns.push(() => {
+        if (this.toggleSidebarHandler) {
+        window.removeEventListener('article:toggleSidebar', this.toggleSidebarHandler);
+        this.toggleSidebarHandler = null;
+        }
+    });
+
+    // 创建遮罩（只创建一次）
+    let overlay = document.querySelector('.article-sidebar-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.className = 'article-sidebar-overlay';
+        document.body.appendChild(overlay);
+        overlay.addEventListener('click', () => this.closeMobileSidebar());
+    }
+
+    this.resizeHandler = checkMobile;
+    window.addEventListener('resize', this.resizeHandler);
+    this.cleanupFns.push(() => {
+        if (this.resizeHandler) {
+        window.removeEventListener('resize', this.resizeHandler);
+        this.resizeHandler = null;
+        }
+    });
+    checkMobile();
     }
 
     private toggleMobileSidebar(): void {
@@ -555,13 +556,6 @@ export class ArticlePageManager extends PageManager {
         this.cleanupFns.push(() => {
             window.removeEventListener('themeChanged', handler);
         });
-    }
-
-    // ---------- 辅助方法 ----------
-    private escapeHtml(str: string): string {
-        if (!str) return '';
-        const map: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;' };
-        return str.replace(/[&<>]/g, m => map[m] || m);
     }
 }
 

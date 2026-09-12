@@ -1,6 +1,8 @@
 // /js/ui/detail-dialog.ts
 // 通用详情弹窗，支持标题、HTML内容、来源（右下角）
 
+import { Utils } from '/js/core/core.js';
+
 let currentCloseFn: (() => void) | null = null;
 
 export interface DetailDialogOptions {
@@ -33,15 +35,17 @@ export function showDetailDialog(options: DetailDialogOptions): { close: () => v
 
   // ---- 创建主容器 ----
   const envelope = document.createElement('div');
-  envelope.className = 'work-details-envelope'; // 复用原有样式
+  envelope.className = 'work-details-envelope';
 
   // ---- 构建内容 ----
-  const sourceHtml = source ? `<div class="dialog-source">source：${escapeHtml(source)} -> detail-dialog</div>` : '';
+  const sourceHtml = source
+    ? `<div class="dialog-source">source：${Utils.escapeHtml(source)} -> detail-dialog</div>`
+    : '';
 
   envelope.innerHTML = `
     <div class="work-details-close">✕</div>
     <div class="work-details-content">
-      <h2 class="work-details-title">${escapeHtml(title)}</h2>
+      <h2 class="work-details-title">${Utils.escapeHtml(title)}</h2>
       ${htmlContent}
     </div>
     ${sourceHtml}
@@ -78,7 +82,6 @@ export function showDetailDialog(options: DetailDialogOptions): { close: () => v
   const closeBtn = envelope.querySelector('.work-details-close');
   if (closeBtn) closeBtn.addEventListener('click', closeModal);
 
-  // 保存当前关闭函数，供下一个弹窗调用
   currentCloseFn = closeModal;
 
   // ---- 入场动画 ----
@@ -88,15 +91,4 @@ export function showDetailDialog(options: DetailDialogOptions): { close: () => v
   });
 
   return { close: closeModal };
-}
-
-// ---- 工具：转义 HTML（防止 XSS） ----
-function escapeHtml(str: string): string {
-  if (!str) return '';
-  return str.replace(/[&<>]/g, (m) => {
-    if (m === '&') return '&amp;';
-    if (m === '<') return '&lt;';
-    if (m === '>') return '&gt;';
-    return m;
-  });
 }

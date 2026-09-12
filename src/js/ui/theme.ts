@@ -18,7 +18,7 @@ export function initThemeToggle() {
     root.setAttribute('data-theme', theme);
 
     // 用户手动操作时保存偏好
-    if (isUserAction && storageController.isAllowed()) {
+    if (isUserAction) {
       storageController.setItem(CONFIG.STORAGE_KEYS.THEME, theme);
     }
 
