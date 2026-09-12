@@ -9,8 +9,23 @@ import type { PageManager } from '/js/core/page-manager.js';
 import { LazyImageLoader } from '/js/ui/image-manager.js';
 import { friendLinkManager } from '/js/pages/friends-manager.js';
 import { showDetailDialog } from '/js/ui/detail-dialog.js';
-import { initNavbar, refreshNavbarTitle, navbarManager } from '/js/ui/navbar-manager.js';
+import {
+  initNavbar,
+  refreshNavbarTitle,
+  initNavigation,
+} from '/js/ui/navbar-manager.js';
 import type { NavbarManager } from '/js/ui/navbar-manager.js';
+
+// 保持对外的兼容 API：导航栏相关工具函数实际定义在 navbar-manager。
+// 通过 re-export 保证旧引用路径继续可用，同时打破 router 与 navbar-manager 循环依赖。
+export { initNavigation, initMobileMenuToggle } from '/js/ui/navbar-manager.js';
+
+// ==================== 全局类型声明 ====================
+declare global {
+  interface Window {
+    __currentPageManager?: PageManager | null;
+  }
+}
 
 // ==================== 常量定义 ====================
 const ROUTER_VIEW_ID = 'router-view';
@@ -43,23 +58,21 @@ interface PageResponse {
 /**
  * 页面管理器工厂。
  * 约定：工厂内部需完成 init（无论同步或异步），返回值即为已初始化的 manager。
- * 例如：`const m = new XxxManager(); await m.init(); return m;`
  */
 type PageManagerFactory = (refreshFn: () => void) => Promise<PageManager>;
 
 // ==================== 全局状态单例 ====================
 class RouterState {
   currentManager: PageManager | null = null;
-  loadedStyles: Set<string> = new Set(); // 存储 href 或 style id
-  loadedScripts: Set<string> = new Set(); // 存储 src
+  loadedStyles: Set<string> = new Set();
+  loadedScripts: Set<string> = new Set();
   cache: Map<string, { content: ExtractedContent; timestamp: number }> = new Map();
   pendingRequests: Map<string, Promise<PageResponse>> = new Map();
 
-  isProcessing: boolean = false;
-  navigationId: number = 0; // 单调递增，用于竞态取消
+  isProcessing = false;
+  navigationId = 0;
   lastRenderedUrl: string | null = null;
 
-  // 当前活跃的资源ID列表，用于卸载
   activeStyleIds: string[] = [];
   activeScriptIds: string[] = [];
 }
@@ -68,22 +81,15 @@ const state = new RouterState();
 let currentAbortController: AbortController | null = null;
 
 // ==================== 滚动管理器 ====================
-/**
- * 负责处理浏览器原生滚动行为的手动接管
- */
 class ScrollManager {
   private timer: ReturnType<typeof setTimeout> | null = null;
 
   constructor() {
-    // 核心：禁止浏览器自动恢复滚动，完全由我们控制
     if ('scrollRestoration' in history) {
       history.scrollRestoration = 'manual';
     }
 
-    // 监听滚动，持续更新当前历史记录的 scroll 数据
     window.addEventListener('scroll', () => this.debouncedSave(), { passive: true });
-
-    // 页面卸载前兜底保存
     window.addEventListener('pagehide', () => this.saveImmediately());
   }
 
@@ -92,9 +98,11 @@ class ScrollManager {
     this.timer = setTimeout(() => this.saveImmediately(), SCROLL_DEBOUNCE_MS);
   }
 
-  /** 同步保存当前滚动位置到 history.state */
   saveImmediately(): void {
-    if (this.timer) { clearTimeout(this.timer); this.timer = null; }
+    if (this.timer) {
+      clearTimeout(this.timer);
+      this.timer = null;
+    }
 
     const prev = history.state as Partial<HistoryState> | null;
     try {
@@ -108,17 +116,12 @@ class ScrollManager {
         document.title,
         location.href
       );
-    } catch (e) {
+    } catch {
       // 忽略跨域或特殊页面的错误
     }
   }
 
-  /**
-   * 恢复滚动位置
-   * @param pos 目标位置
-   * @param smooth 是否平滑滚动（popstate通常不需要平滑，直接跳转体验更好）
-   */
-  restore(pos: { x: number; y: number } | null | undefined, smooth: boolean = false): void {
+  restore(pos: { x: number; y: number } | null | undefined, smooth = false): void {
     const targetY = pos?.y ?? 0;
     const targetX = pos?.x ?? 0;
 
@@ -126,7 +129,7 @@ class ScrollManager {
       window.scrollTo({
         top: targetY,
         left: targetX,
-        behavior: smooth ? 'smooth' : ('instant' as ScrollBehavior)
+        behavior: smooth ? 'smooth' : ('instant' as ScrollBehavior),
       });
     });
   }
@@ -135,23 +138,14 @@ class ScrollManager {
 const scrollManager = new ScrollManager();
 
 // ==================== 资源管理器 ====================
-/**
- * 负责动态加载和清理 CSS/JS 资源
- */
 class ResourceManager {
-  /**
-   * 加载样式表
-   * @returns 生成的唯一ID列表，用于后续卸载
-   */
   async loadStyles(styles: (HTMLLinkElement | HTMLStyleElement)[]): Promise<string[]> {
     const ids: string[] = [];
     const promises = styles.map(async (s) => {
-      // 处理外部链接样式
       if (s.tagName === 'LINK') {
         const href = s.getAttribute('href') || (s as HTMLLinkElement).href;
         if (!href || state.loadedStyles.has(href)) return;
 
-        // 检查 DOM 中是否已存在
         if (document.querySelector(`link[href="${CSS.escape(href)}"]`)) {
           state.loadedStyles.add(href);
           return;
@@ -166,9 +160,7 @@ class ResourceManager {
         document.head.appendChild(link);
         state.loadedStyles.add(href);
         ids.push(id);
-      }
-      // 处理内联样式
-      else {
+      } else {
         const text = (s.textContent || '').trim();
         if (!text) return;
 
@@ -188,20 +180,14 @@ class ResourceManager {
     return ids;
   }
 
-  /**
-   * 加载脚本
-   * @returns 生成的唯一ID列表，用于后续卸载
-   */
   async loadScripts(scripts: HTMLScriptElement[]): Promise<string[]> {
     const ids: string[] = [];
 
     for (const script of scripts) {
-      // 处理外部脚本
       if (script.src) {
         const src = script.getAttribute('src') || script.src;
         if (!src || state.loadedScripts.has(src)) continue;
 
-        // 避免重复加载
         if (document.querySelector(`script[src="${CSS.escape(src)}"]`)) {
           state.loadedScripts.add(src);
           continue;
@@ -210,7 +196,7 @@ class ResourceManager {
         const el = document.createElement('script');
         if (script.type) el.type = script.type;
         el.src = src;
-        el.async = true; // 异步加载不阻塞渲染
+        el.async = true;
 
         const id = `dyn-script-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
         el.dataset.routerId = id;
@@ -219,9 +205,7 @@ class ResourceManager {
         document.head.appendChild(el);
         ids.push(id);
         state.loadedScripts.add(src);
-      }
-      // 处理内联脚本
-      else {
+      } else {
         try {
           const inline = document.createElement('script');
           if (script.type) inline.type = script.type;
@@ -230,11 +214,10 @@ class ResourceManager {
           const id = `dyn-inline-script-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
           inline.dataset.routerId = id;
 
-          // 使用临时容器执行，确保上下文正确
           const tmp = document.createElement('div');
           tmp.appendChild(inline);
           document.head.appendChild(tmp);
-          tmp.remove(); // 执行后移除节点，但代码已执行
+          tmp.remove();
 
           ids.push(id);
         } catch (e) {
@@ -245,12 +228,8 @@ class ResourceManager {
     return ids;
   }
 
-  /**
-   * 卸载指定ID的资源
-   */
   unload(styleIds: string[], scriptIds: string[]): void {
-    // 卸载样式
-    styleIds.forEach(id => {
+    styleIds.forEach((id) => {
       const el = document.querySelector(`[data-router-id="${id}"]`) as HTMLElement;
       if (el) {
         if (el.tagName === 'LINK') {
@@ -261,8 +240,7 @@ class ResourceManager {
       }
     });
 
-    // 卸载脚本 (注意：已执行的JS无法真正"卸载"，只能移除DOM节点防止重复执行标记)
-    scriptIds.forEach(id => {
+    scriptIds.forEach((id) => {
       const el = document.querySelector(`[data-router-id="${id}"]`) as HTMLElement;
       if (el) {
         if (el.tagName === 'SCRIPT' && el.hasAttribute('src')) {
@@ -279,36 +257,50 @@ const resourceManager = new ResourceManager();
 
 // ==================== 页面管理器注册中心 ====================
 class PageManagerRegistry {
-  private static factories = new Map<string, PageManagerFactory>();
+  private static factories = new Map<string | RegExp, PageManagerFactory>();
 
-  static register(name: string, factory: PageManagerFactory): void {
-    this.factories.set(name, factory);
+  static register(pattern: string | RegExp, factory: PageManagerFactory): void {
+    this.factories.set(pattern, factory);
   }
 
   /**
-   * 创建并返回页面管理器。
-   * 约定：factory 内部完成 init，create 不再额外调用 mgr.init()，
-   * 避免重复初始化（重复 init 会覆盖 DisposableStack 并造成监听器泄漏）。
+   * 按 name（字符串模式）或 pathname（正则模式）匹配工厂。
+   * 字符串模式仅与 pageName 比较；正则模式与 location.pathname 匹配。
+   * 遍历顺序即优先级，靠前注册者优先命中。
+   *
+   * 约定：factory 内部完成 init，create 不再额外调用 mgr.init()。
    */
-  static async create(name: string, refreshFn: () => void): Promise<PageManager | null> {
-    const factory = this.factories.get(name);
-    if (!factory) return null;
+  static async create(
+    name: string,
+    path: string,
+    refreshFn: () => void
+  ): Promise<PageManager | null> {
+    for (const [pattern, factory] of this.factories) {
+      const matched =
+        typeof pattern === 'string' ? pattern === name : pattern.test(path);
+      if (!matched) continue;
 
-    try {
-      return await factory(refreshFn);
-    } catch (e) {
-      console.error(`[Router] 页面管理器创建失败 [${name}]:`, e);
-      return null;
+      try {
+        return await factory(refreshFn);
+      } catch (e) {
+        console.error(`[Router] 页面管理器创建失败 [${String(pattern)}]:`, e);
+        return null;
+      }
     }
+    return null;
   }
 }
 
-export function registerPageManager(name: string, factory: PageManagerFactory): void {
-  PageManagerRegistry.register(name, factory);
+export function registerPageManager(
+  pattern: string | RegExp,
+  factory: PageManagerFactory
+): void {
+  PageManagerRegistry.register(pattern, factory);
 }
 
 // ==================== 默认页面注册 ====================
-// 所有工厂函数内部均完成 init，遵循 PageManagerFactory 约定。
+// 全部工厂内部均完成 init，遵循 PageManagerFactory 约定。
+// 页面识别全部通过 pattern 完成，不再在 initPageManager 中硬编码路径分支。
 function registerDefaultPages(): void {
   PageManagerRegistry.register('index', async () => initHomePage() as any);
 
@@ -320,6 +312,13 @@ function registerDefaultPages(): void {
   PageManagerRegistry.register('works', async (fn) => {
     const { initSearchPage } = await import('/js/pages/search-render.js');
     return initSearchPage('works', fn) as any;
+  });
+
+  // 文章详情页：路径匹配 /articles/<slug>（允许可选尾斜杠）
+  // 取代原 initPageManager 中的 if (/^\/articles\/[^/]+$/...) 硬编码分支
+  PageManagerRegistry.register(/^\/articles\/[^/]+\/?$/, async () => {
+    const { initArticlePage } = await import('/js/pages/article.js');
+    return await initArticlePage();
   });
 
   PageManagerRegistry.register('timeline', async (fn) => {
@@ -342,7 +341,7 @@ function registerDefaultPages(): void {
 
   PageManagerRegistry.register('about', async () => {
     const { initAboutPage } = await import('/js/pages/about.js');
-    const mgr: PageManager = { init: initAboutPage, destroy: () => { } };
+    const mgr: PageManager = { init: initAboutPage, destroy: () => {} };
     await mgr.init();
     return mgr;
   });
@@ -353,7 +352,7 @@ function registerDefaultPages(): void {
     if (c) await initTwikoo(c);
 
     return {
-      init: () => { },
+      init: () => {},
       destroy: () => {
         import('/js/core/twikoo-manager.js').then(({ resetTwikooContainer }) => {
           const el = document.querySelector('#twikoo-comments');
@@ -367,9 +366,6 @@ registerDefaultPages();
 
 // ==================== 核心工具函数 ====================
 
-/**
- * 从HTML字符串中提取关键内容
- */
 function extractPageContent(html: string, url: string): ExtractedContent {
   const parser = new DOMParser();
   const doc = parser.parseFromString(html, 'text/html');
@@ -378,20 +374,20 @@ function extractPageContent(html: string, url: string): ExtractedContent {
   return {
     title: doc.querySelector('title')?.textContent || document.title,
     mainHtml: routerView?.outerHTML || '',
-    styles: Array.from(doc.querySelectorAll<HTMLLinkElement | HTMLStyleElement>('head link[rel="stylesheet"], head style')),
+    styles: Array.from(
+      doc.querySelectorAll<HTMLLinkElement | HTMLStyleElement>(
+        'head link[rel="stylesheet"], head style'
+      )
+    ),
     scripts: Array.from(doc.querySelectorAll<HTMLScriptElement>('body script')),
     pageName: getPageNameFromPath(new URL(url, location.href).pathname),
   };
 }
 
-/**
- * 带有过渡动画的内容替换
- */
 function replaceContentWithTransition(mainHtml: string): Promise<boolean> {
   const currentView = document.getElementById(ROUTER_VIEW_ID);
   if (!currentView || !mainHtml) return Promise.resolve(false);
 
-  // 解析新内容
   const tmpDiv = document.createElement('div');
   tmpDiv.innerHTML = mainHtml;
   const newView = tmpDiv.querySelector(`#${ROUTER_VIEW_ID}`);
@@ -406,17 +402,17 @@ function replaceContentWithTransition(mainHtml: string): Promise<boolean> {
       }
     };
 
-    // 1. 旧视图退出动画
     currentView.classList.add('page-transition-exit');
 
     const performSwap = () => {
-      if (!currentView.parentNode) { finish(false); return; }
+      if (!currentView.parentNode) {
+        finish(false);
+        return;
+      }
 
-      // 替换 DOM
       currentView.replaceWith(newView);
       newView.classList.add('page-transition-enter');
 
-      // 2. 新视图进入动画结束监听
       const onEnterEnd = () => {
         newView.removeEventListener('transitionend', onEnterEnd);
         newView.classList.remove('page-transition-enter');
@@ -424,7 +420,6 @@ function replaceContentWithTransition(mainHtml: string): Promise<boolean> {
       };
       newView.addEventListener('transitionend', onEnterEnd);
 
-      // 兜底：防止动画未触发
       setTimeout(() => {
         if (newView.classList.contains('page-transition-enter')) {
           newView.classList.remove('page-transition-enter');
@@ -433,14 +428,12 @@ function replaceContentWithTransition(mainHtml: string): Promise<boolean> {
       }, TRANSITION_DURATION * 1.5);
     };
 
-    // 监听旧视图退出结束
     const onExitEnd = () => {
       currentView.removeEventListener('transitionend', onExitEnd);
       performSwap();
     };
     currentView.addEventListener('transitionend', onExitEnd);
 
-    // 兜底：防止退出动画未触发
     setTimeout(() => {
       if (!settled) {
         currentView.removeEventListener('transitionend', onExitEnd);
@@ -450,18 +443,12 @@ function replaceContentWithTransition(mainHtml: string): Promise<boolean> {
   });
 }
 
-/**
- * 获取页面内容（带缓存和并发控制）
- */
 async function fetchPageContent(url: string, signal: AbortSignal): Promise<PageResponse> {
   const res = await fetch(url, { credentials: 'same-origin', signal });
   if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
   return { html: await res.text(), url };
 }
 
-/**
- * 销毁当前页面管理器
- */
 async function destroyCurrentManager(): Promise<void> {
   if (state.currentManager?.destroy) {
     try {
@@ -471,14 +458,10 @@ async function destroyCurrentManager(): Promise<void> {
     }
   }
   state.currentManager = null;
-  (window as any).__currentPageManager = null;
+  window.__currentPageManager = null;
 }
 
-/**
- * 刷新滚动揭示动画和懒加载图片
- */
 function refreshUIEffects(): void {
-  // 尝试获取现有的 ScrollReveal 实例
   const inst = (window as any).scrollRevealInstance;
   if (inst) {
     inst.refresh();
@@ -490,9 +473,6 @@ function refreshUIEffects(): void {
 
 // ==================== 核心导航逻辑 ====================
 
-/**
- * 处理页面内容的最终渲染流程
- */
 async function processContent(
   content: ExtractedContent,
   url: string,
@@ -502,8 +482,6 @@ async function processContent(
   isPopState: boolean,
   navId: number
 ): Promise<boolean> {
-
-  // 竞态检查辅助函数
   const isStale = () => ac.signal.aborted || navId !== state.navigationId;
 
   // 1. 清理旧资源
@@ -516,10 +494,8 @@ async function processContent(
   if (isStale()) return false;
 
   // 3. 历史记录处理
-  // 只有在用户主动点击链接时才 pushState
-  // popstate 时浏览器已经改变了 URL 和历史栈指针，我们只需要渲染内容
   if (pushState && !isPopState) {
-    scrollManager.saveImmediately(); // 保存离开前的滚动位置
+    scrollManager.saveImmediately();
     history.pushState(
       { url, scroll: { x: 0, y: 0 }, timestamp: Date.now(), navId } as HistoryState,
       content.title,
@@ -534,18 +510,15 @@ async function processContent(
   // 5. 更新元数据
   document.title = content.title;
   refreshNavbarTitle();
-  initNavigation(); // 更新导航栏高亮
+  initNavigation();
 
   // 6. 滚动位置恢复
   if (isPopState) {
-    // 浏览器前进/后退：使用保存的位置，瞬间恢复
     const savedPos = scrollData ?? (history.state as HistoryState)?.scroll;
     scrollManager.restore(savedPos, false);
   } else {
-    // 普通点击导航
     const targetUrl = new URL(url, location.href);
     if (targetUrl.hash) {
-      // 如果有锚点，滚动到锚点
       const el = document.getElementById(targetUrl.hash.slice(1));
       if (el) {
         requestAnimationFrame(() => el.scrollIntoView({ behavior: 'smooth' }));
@@ -553,47 +526,56 @@ async function processContent(
         scrollManager.restore({ x: 0, y: 0 });
       }
     } else {
-      // 否则回到顶部
       scrollManager.restore({ x: 0, y: 0 });
     }
   }
 
-  // 7. 异步加载新资源 (不阻塞渲染)
-  resourceManager.loadStyles(content.styles).then(ids => {
-    if (!isStale()) state.activeStyleIds = ids;
-  }).catch(e => console.error('[Router] 样式加载失败:', e));
+  // 7. 异步加载新资源
+  resourceManager
+    .loadStyles(content.styles)
+    .then((ids) => {
+      if (!isStale()) state.activeStyleIds = ids;
+    })
+    .catch((e) => console.error('[Router] 样式加载失败:', e));
 
-  resourceManager.loadScripts(content.scripts).then(ids => {
-    if (!isStale()) state.activeScriptIds = ids;
-  }).catch(e => console.error('[Router] 脚本加载失败:', e));
+  resourceManager
+    .loadScripts(content.scripts)
+    .then((ids) => {
+      if (!isStale()) state.activeScriptIds = ids;
+    })
+    .catch((e) => console.error('[Router] 脚本加载失败:', e));
 
   // 8. 初始化新页面管理器
   const mgr = await initPageManager(content.pageName, refreshUIEffects);
   if (isStale()) {
-    if (mgr?.destroy) try { await mgr.destroy(); } catch { }
+    if (mgr?.destroy)
+      try {
+        await mgr.destroy();
+      } catch {
+        /* ignore */
+      }
     return false;
   }
 
   if (mgr) {
     state.currentManager = mgr;
-    (window as any).__currentPageManager = mgr;
+    window.__currentPageManager = mgr;
   }
 
   // 9. 触发动画刷新
   refreshUIEffects();
 
   // 10. 派发事件
-  window.dispatchEvent(new CustomEvent('ajax:navigation', {
-    detail: { url, page: content.pageName }
-  }));
+  window.dispatchEvent(
+    new CustomEvent('ajax:navigation', {
+      detail: { url, page: content.pageName },
+    })
+  );
 
   state.lastRenderedUrl = url;
   return true;
 }
 
-/**
- * 主导航入口
- */
 export async function fetchAndReplaceContent(
   url: string,
   pushState: boolean = true,
@@ -601,10 +583,8 @@ export async function fetchAndReplaceContent(
   retryCount: number = 0,
   isPopState: boolean = false
 ): Promise<boolean> {
-
   const navId = ++state.navigationId;
 
-  // 取消之前的请求
   if (currentAbortController) currentAbortController.abort();
   const ac = new AbortController();
   currentAbortController = ac;
@@ -613,14 +593,12 @@ export async function fetchAndReplaceContent(
   state.isProcessing = true;
 
   try {
-    // 1. 获取内容 (缓存策略)
     const cacheKey = url.split('#')[0];
     let content = state.cache.get(cacheKey)?.content;
 
     if (!content) {
       let resp: PageResponse;
 
-      // 防止重复请求
       if (state.pendingRequests.has(cacheKey)) {
         resp = await state.pendingRequests.get(cacheKey)!;
       } else {
@@ -637,15 +615,12 @@ export async function fetchAndReplaceContent(
 
       content = extractPageContent(resp.html, url);
 
-      // 写入缓存
       state.cache.set(cacheKey, { content, timestamp: Date.now() });
-      // 清理过期缓存
       cleanupCache();
     }
 
     if (signal.aborted || navId !== state.navigationId) return false;
 
-    // 2. 同页锚点处理
     const target = new URL(url, location.href);
     const currentBase = location.href.split('#')[0];
     const targetBase = target.href.split('#')[0];
@@ -654,7 +629,12 @@ export async function fetchAndReplaceContent(
       if (pushState) {
         scrollManager.saveImmediately();
         history.pushState(
-          { url: target.href, scroll: { x: 0, y: 0 }, timestamp: Date.now(), navId } as HistoryState,
+          {
+            url: target.href,
+            scroll: { x: 0, y: 0 },
+            timestamp: Date.now(),
+            navId,
+          } as HistoryState,
           document.title,
           target.href
         );
@@ -665,25 +645,23 @@ export async function fetchAndReplaceContent(
       return true;
     }
 
-    // 3. 执行渲染
     return await processContent(content, url, pushState, scrollData, ac, isPopState, navId);
+  } catch (e) {
+    const err = e as Error;
+    if (err.name === 'AbortError' || navId !== state.navigationId) return false;
 
-  } catch (e: any) {
-    if (e.name === 'AbortError' || navId !== state.navigationId) return false;
-
-    console.error('[Router] 导航异常:', e);
+    console.error('[Router] 导航异常:', err);
 
     if (retryCount < 2) {
       console.log(`[Router] 正在重试 (${retryCount + 1}/2)...`);
       return fetchAndReplaceContent(url, pushState, scrollData, retryCount + 1, isPopState);
     }
 
-    // 使用 detail-dialog 显示错误
     const { close } = showDetailDialog({
       title: '呜呜，好像出了点小问题…',
       htmlContent: `
       <p style="color: var(--text-secondary, #ccc); margin-bottom: 1.5rem;">
-        ${Utils.escapeHtml(e.message || '未知网络错误')}
+        ${Utils.escapeHtml(err.message || '未知网络错误')}
       </p>
       <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
         <button id="router-retry-btn" style="padding: 0.6rem 2rem; border: none; border-radius: 30px; background: var(--accent-color, #a55860); color: #fff; font-weight: bold; cursor: pointer;">重试</button>
@@ -693,7 +671,6 @@ export async function fetchAndReplaceContent(
       source: 'router',
     });
 
-    // 绑定按钮事件（立即查询，DOM 已存在）
     const retryBtn = document.querySelector('#router-retry-btn');
     const reloadBtn = document.querySelector('#router-reload-btn');
     if (retryBtn) {
@@ -715,47 +692,31 @@ export async function fetchAndReplaceContent(
   }
 }
 
-/**
- * 缓存清理
- */
 function cleanupCache(): void {
   const now = Date.now();
-  // 删除过期条目
   for (const [k, v] of state.cache) {
     if (now - v.timestamp > CACHE_TTL) state.cache.delete(k);
   }
-  // 如果仍然过大，删除最旧的
   if (state.cache.size >= MAX_CACHE_SIZE) {
-    const oldest = [...state.cache.entries()].sort((a, b) => a[1].timestamp - b[1].timestamp)[0];
+    const oldest = [...state.cache.entries()].sort(
+      (a, b) => a[1].timestamp - b[1].timestamp
+    )[0];
     if (oldest) state.cache.delete(oldest[0]);
   }
 }
 
 /**
- * 根据页面名称初始化对应的管理器
- *
- * 文章详情页是一条独立分支：路径形如 `/articles/xxx/` 时，
- * 直接动态加载 article.js 并返回其 init 后的 manager。
- * 其余页面走 PageManagerRegistry。
+ * 按 pageName + 当前 pathname 匹配页面管理器。
+ * 页面识别（含文章详情路径）全部由注册表 pattern 完成。
  */
-async function initPageManager(pageName: string, refreshFn: () => void): Promise<PageManager | null> {
-  // 特殊处理文章详情页
-  if (/^\/articles\/[^/]+$/.test(location.pathname)) {
-    const { initArticlePage } = await import('/js/pages/article.js');
-    // 修复：initArticlePage 是 async，返回 Promise，需 await 拿到实例
-    return await initArticlePage();
-  }
-
-  return PageManagerRegistry.create(pageName, refreshFn);
+async function initPageManager(
+  pageName: string,
+  refreshFn: () => void
+): Promise<PageManager | null> {
+  return PageManagerRegistry.create(pageName, location.pathname, refreshFn);
 }
 
 // ==================== 导航栏与交互 ====================
-
-export function initNavigation(): void {
-  const items = document.querySelectorAll<HTMLAnchorElement>('.nav-item[data-page]');
-  const cur = getPageNameFromPath(location.pathname);
-  items.forEach(el => el.classList.toggle('active', el.dataset.page === cur));
-}
 
 export function enableAjaxNavigation(): void {
   document.addEventListener('click', (e) => {
@@ -765,7 +726,6 @@ export function enableAjaxNavigation(): void {
     const href = link.getAttribute('href');
     if (!href) return;
 
-    // 排除不需要 AJAX 处理的链接
     if (
       link.target === '_blank' ||
       link.hasAttribute('download') ||
@@ -780,14 +740,17 @@ export function enableAjaxNavigation(): void {
     e.preventDefault();
     const fullUrl = new URL(href, location.href).href;
 
-    // 如果是当前页面，不做处理
     if (fullUrl === location.href) return;
 
-    // 同页 Hash 跳转
     if (location.href.split('#')[0] === fullUrl.split('#')[0]) {
       scrollManager.saveImmediately();
       history.pushState(
-        { url: fullUrl, scroll: { x: 0, y: 0 }, timestamp: Date.now(), navId: state.navigationId } as HistoryState,
+        {
+          url: fullUrl,
+          scroll: { x: 0, y: 0 },
+          timestamp: Date.now(),
+          navId: state.navigationId,
+        } as HistoryState,
         document.title,
         fullUrl
       );
@@ -811,7 +774,6 @@ export function initPopstate(): void {
   if (popstateBound) return;
   popstateBound = true;
 
-  // 确保初始状态有数据
   if (!history.state || !(history.state as HistoryState).url) {
     history.replaceState(
       {
@@ -829,13 +791,11 @@ export function initPopstate(): void {
     const targetState = event.state as HistoryState | null;
     const currentUrl = location.href;
 
-    // 如果没有状态数据，说明是首次加载或非 SPA 入口，强制刷新
     if (!targetState?.url) {
       window.location.reload();
       return;
     }
 
-    // 同页 Hash 变化处理
     if (currentUrl.split('#')[0] === targetState.url.split('#')[0]) {
       const hash = new URL(currentUrl).hash;
       if (hash) {
@@ -847,13 +807,12 @@ export function initPopstate(): void {
       return;
     }
 
-    // 真正的页面切换
     fetchAndReplaceContent(
       currentUrl,
-      false,              // pushState = false (不新增历史)
-      targetState.scroll, // 使用保存的滚动位置
-      0,                  // retryCount
-      true                // isPopState = true
+      false,
+      targetState.scroll,
+      0,
+      true
     );
   });
 }
@@ -876,54 +835,11 @@ export async function loadFooter(): Promise<void> {
   }
 }
 
-let menuInit = false;
-export function initMobileMenuToggle(): void {
-  if (menuInit) return;
-  menuInit = true;
-
-  const toggle = document.querySelector('.mobile-toggle');
-  const nav = document.getElementById('navbarNav');
-
-  const closeMenu = () => {
-    nav?.classList.remove('active');
-    toggle?.classList.remove('active');
-  };
-
-  document.addEventListener('click', (e) => {
-    const t = e.target as Element;
-
-    // 点击开关
-    if (t.closest('.mobile-toggle')) {
-      e.preventDefault();
-      nav?.classList.toggle('active');
-      toggle?.classList.toggle('active');
-      return;
-    }
-
-    // 点击菜单项关闭
-    if (t.closest('.nav-item') && nav?.classList.contains('active')) {
-      closeMenu();
-      return;
-    }
-
-    // 点击遮罩或外部关闭
-    if (nav?.classList.contains('active') && !t.closest('.nav-items')) {
-      closeMenu();
-    }
-  });
-
-  window.addEventListener('resize', () => {
-    if (innerWidth > 768) closeMenu();
-  });
-
-  window.addEventListener('ajax:navigation', closeMenu);
-}
-
-export async function initPageFeatures(pageName: string): Promise<any> {
+export async function initPageFeatures(pageName: string): Promise<unknown> {
   return initPageManager(pageName, refreshUIEffects);
 }
 
-export function getRouterStats(): Record<string, any> {
+export function getRouterStats(): Record<string, unknown> {
   return {
     cacheSize: state.cache.size,
     loadedStyles: state.loadedStyles.size,

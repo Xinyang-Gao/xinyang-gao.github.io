@@ -58,7 +58,7 @@ export class ArticlePageManager extends PageBase {
         requestAnimationFrame(() => this.onScroll());
         this.renderMath();
         this.initTwikoo();
-        this.refreshvercount();
+        this.refreshVercount();
     }
 
     // ---------- 销毁（原 destroy 中的自定义逻辑 → unmount） ----------
@@ -109,7 +109,7 @@ export class ArticlePageManager extends PageBase {
         });
     }
 
-    refreshvercount(): void {
+    refreshVercount(): void {
         const global = window as Window & ArticleGlobals;
         if (global.vercount?.fetch) {
             try {

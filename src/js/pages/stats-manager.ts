@@ -18,8 +18,26 @@ import {
 // 触发 charts.ts 中的注册副作用（8 张图表在此处被加入注册表）
 import '/js/pages/stats/charts.js';
 
-// 全局声明：Chart.js 由外部脚本注入
-declare const window: any;
+// ==================== Chart.js 全局声明 ====================
+// Chart.js 通过 CDN 脚本注入到 window，通过下面的接口契约访问。
+// 不再使用 `declare const window: any;`，改为类型化声明。
+
+/** Chart 实例最小契约（本项目只用到 destroy） */
+interface ChartInstance {
+  destroy(): void;
+}
+
+/** Chart 构造函数签名（与 Chart.js v4 UMD 兼容） */
+type ChartConstructor = new (
+  ctx: CanvasRenderingContext2D,
+  config: Record<string, unknown>
+) => ChartInstance;
+
+declare global {
+  interface Window {
+    Chart?: ChartConstructor;
+  }
+}
 
 export class StatsManager {
   private data: {
@@ -36,7 +54,7 @@ export class StatsManager {
 
   private articlesList: ArticleItem[] = [];
   private worksList: WorkItem[] = [];
-  private charts: any[] = [];
+  private charts: ChartInstance[] = [];
   private initialized = false;
 
   /** 主题订阅的取消函数（替代 window 'themeChanged' 监听） */
@@ -116,9 +134,9 @@ export class StatsManager {
 
   // ==================== 安全 DOM 辅助 ====================
 
-  private setText(selector: string, value: any): void {
+  private setText(selector: string, value: unknown): void {
     const el = this.container?.querySelector(selector);
-    if (el) el.textContent = value ?? '—';
+    if (el) el.textContent = value == null ? '—' : String(value);
   }
 
   private setHtml(selector: string, html: string): void {
@@ -249,6 +267,11 @@ export class StatsManager {
     const colors = this.getChartColors();
     const ChartCtor = window.Chart;
 
+    if (!ChartCtor) {
+      console.warn('[StatsManager] Chart.js 未就绪，跳过图表渲染');
+      return;
+    }
+
     for (const def of defs) {
       const canvas = document.getElementById(def.id) as HTMLCanvasElement | null;
       if (!canvas) continue;
@@ -261,7 +284,7 @@ export class StatsManager {
           data: bundle,
           colors,
           Chart: ChartCtor,
-          register: (chart) => this.charts.push(chart),
+          register: (chart: ChartInstance) => this.charts.push(chart),
         });
       } catch (e) {
         console.warn(`[StatsManager] 图表 ${def.id} 渲染失败:`, e);
@@ -317,7 +340,9 @@ export class StatsManager {
       }))
       .sort((a, b) => b.avg - a.avg)
       .slice(0, 3);
-    const avgHtml = extAvg.map((e) => `<span class="badge">${e.name}</span> ${e.avg}行/文件`).join(' &nbsp; ');
+    const avgHtml = extAvg
+      .map((e) => `<span class="badge">${e.name}</span> ${e.avg}行/文件`)
+      .join(' &nbsp; ');
 
     // 作者数量
     const authors = new Set(this.articlesList.map((a) => a.author).filter(Boolean));

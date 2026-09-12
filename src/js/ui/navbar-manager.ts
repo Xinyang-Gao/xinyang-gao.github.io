@@ -1,11 +1,12 @@
 // /js/ui/navbar-manager.ts
 // 职责：DOM 生成、入场动画、标题替换、滚动状态、移动菜单无障碍、SPA 复用
+// 移动菜单与导航高亮逻辑
 // 资源清理统一走 DisposableStack
 
 import { CONFIG } from '/js/core/core.js';
 import { DisposableStack } from '/js/core/disposable-stack.js';
+import { getPageNameFromPath } from '/js/core/page-utils.js';
 import { initThemeToggle } from '/js/ui/theme.js';
-import { initMobileMenuToggle, initNavigation } from '/js/router/router.js';
 
 const SITE_NAME = 'GaoXinYang';
 const CSS_PATH = '/css/components/navbar.css';
@@ -194,7 +195,6 @@ export class NavbarManager {
     this.elements.titlePlaceholder = placeholder;
     this.elements.titleScroll = scroll;
 
-    // 容器宽度变化 → 重算溢出与滚动时长
     const resizeObserver = new ResizeObserver(() => this.measureTitle());
     resizeObserver.observe(placeholder);
     this.stack.addObserver(resizeObserver);
@@ -319,7 +319,6 @@ export class NavbarManager {
   /* ================= 初始化入口 ================= */
 
   async initNavbar(placeholderId = 'navbar-placeholder'): Promise<void> {
-    // SPA 中重复调用：幂等，仅刷新标题模式
     if (this.initialized) {
       this.refreshNavbarTitle();
       return;
@@ -387,10 +386,6 @@ export class NavbarManager {
 
 export const navbarManager = new NavbarManager();
 
-/**
- * 挂载导航栏（幂等，SPA 中可安全重复调用）
- * @returns 单例 NavbarManager，供调用方访问 playEntranceAnimation 等方法
- */
 export async function initNavbar(placeholderId?: string): Promise<NavbarManager> {
   await navbarManager.initNavbar(placeholderId);
   return navbarManager;
@@ -399,4 +394,58 @@ export async function initNavbar(placeholderId?: string): Promise<NavbarManager>
 /** 手动刷新标题替换状态（一般用不到，内置 observer 自动处理） */
 export function refreshNavbarTitle(): void {
   navbarManager.refreshNavbarTitle();
+}
+
+/* ================= 导航相关（自 router 迁入，消除循环依赖） ================= */
+
+/** 高亮当前激活导航项 */
+export function initNavigation(): void {
+  const items = document.querySelectorAll<HTMLAnchorElement>('.nav-item[data-page]');
+  const cur = getPageNameFromPath(location.pathname);
+  items.forEach((el) => el.classList.toggle('active', el.dataset.page === cur));
+}
+
+let menuInit = false;
+
+/** 移动端菜单开合（幂等） */
+export function initMobileMenuToggle(): void {
+  if (menuInit) return;
+  menuInit = true;
+
+  const toggle = document.querySelector('.mobile-toggle');
+  const nav = document.getElementById('navbarNav');
+
+  const closeMenu = (): void => {
+    nav?.classList.remove('active');
+    toggle?.classList.remove('active');
+  };
+
+  document.addEventListener('click', (e) => {
+    const t = e.target as Element;
+
+    // 点击开关
+    if (t.closest('.mobile-toggle')) {
+      e.preventDefault();
+      nav?.classList.toggle('active');
+      toggle?.classList.toggle('active');
+      return;
+    }
+
+    // 点击菜单项关闭
+    if (t.closest('.nav-item') && nav?.classList.contains('active')) {
+      closeMenu();
+      return;
+    }
+
+    // 点击遮罩或外部关闭
+    if (nav?.classList.contains('active') && !t.closest('.nav-items')) {
+      closeMenu();
+    }
+  });
+
+  window.addEventListener('resize', () => {
+    if (innerWidth > DESKTOP_BREAKPOINT) closeMenu();
+  });
+
+  window.addEventListener('ajax:navigation', closeMenu);
 }

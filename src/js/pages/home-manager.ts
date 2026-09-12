@@ -2,6 +2,7 @@
 import { PageBase } from '/js/core/page-manager.js';
 import { dataService } from '/js/core/data-service.js';
 import { Utils } from '/js/core/core.js';
+import { fetchAndReplaceContent } from '/js/router/router.js';
 
 /** UAPI 名言归一化结构 */
 interface Saying {
@@ -179,23 +180,19 @@ export class HomePageManager extends PageBase {
     }) as EventListener);
   }
 
+  /** 直接调用 router 导出的模块函数，不再依赖 window.fetchAndReplaceContent */
   private navigate(href: string): void {
-    const w = window as any;
-    if (typeof w.fetchAndReplaceContent === 'function') {
-      w.fetchAndReplaceContent(href, true);
-    } else {
+    fetchAndReplaceContent(href, true).catch((err) => {
+      console.warn('[HomePageManager] SPA 导航失败，回退整页跳转', err);
       window.location.href = href;
-    }
+    });
   }
 
   /* ---------- 动态问候 ---------- */
   private startGreetingUpdater(): void {
-    const update = () => {
+    const update = (): void => {
       const el = document.getElementById('dynamic-greeting');
-      const U = (window as any).Utils;
-      if (el && U && U.getGreetingMessage) {
-        el.textContent = U.getGreetingMessage();
-      }
+      if (el) el.textContent = Utils.getGreetingMessage();
     };
     update();
     const timer = setInterval(update, 60000);
@@ -206,7 +203,7 @@ export class HomePageManager extends PageBase {
   private startLiveClock(): void {
     const el = document.getElementById('live-clock');
     if (!el) return;
-    const render = () => {
+    const render = (): void => {
       el.textContent = new Date().toLocaleTimeString('zh-CN', { hour12: false });
     };
     render();
