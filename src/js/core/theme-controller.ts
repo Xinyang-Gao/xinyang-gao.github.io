@@ -2,7 +2,6 @@
 // 主题控制器：单一数据源，统一 auto/light/dark 模式、系统偏好、存储与事件分发
 
 import { CONFIG, storageController } from '/js/core/core.js';
-import { getTimeBasedTheme } from '/js/core/page-utils.js';
 
 export type Theme = 'light' | 'dark';
 export type ThemeMode = 'auto' | 'light' | 'dark';
@@ -116,7 +115,7 @@ class ThemeController {
   }
 
   private resolveTheme(mode: ThemeMode): Theme {
-    if (mode === 'auto') return getTimeBasedTheme();
+    if (mode === 'auto') return Utils.getTimeBasedTheme();
     return mode;
   }
 

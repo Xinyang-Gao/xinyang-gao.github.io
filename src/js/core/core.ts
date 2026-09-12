@@ -97,15 +97,6 @@ export const CONFIG = {
     'gaoxinyang.lanzouq.com',
     'icp.gov.moe',
   ]),
-  INTERNAL_DOMAINS: [
-    window.location.hostname,
-    'localhost',
-    '127.0.0.1',
-    'gxy.cn.mt',
-    'www.gxy.cn.mt',
-    'xinyang-gao.github.io',
-    'www.xinyang-gao.github.io',
-  ],
   BACKGROUND_IMAGES: [
     'https://cn.bing.com/th?id=OHR.MayLaborDayY26_ZH-CN7554485395_UHD.jpg&pid=hp',
     'https://cn.bing.com/th?id=OHR.OloupenaFalls_ZH-CN2980118660_UHD.jpg&pid=hp',
@@ -391,6 +382,28 @@ export class Utils {
 
   static formatMonthLabel(monthIndex: number): string {
     return `${monthIndex}月`;
+  }
+
+  /**
+   * 根据 pathname 提取页面名（不含扩展名）。
+   * 原 page-utils.ts 的实现，统一收敛至此。
+   */
+  static getPageNameFromPath(pathname: string): string {
+    const trimmed = pathname.replace(/^\/|\/$/g, '');
+    if (!trimmed) return 'index';
+    const parts = trimmed.split('/');
+    const last = parts[parts.length - 1];
+    const name = last.replace(/\.[^.]+$/, '');
+    return name || 'index';
+  }
+
+  /**
+   * 按时段返回主题（6:00–18:00 为 light，否则 dark）。
+   * 原 page-utils.ts 的实现，统一收敛至此。
+   */
+  static getTimeBasedTheme(): 'light' | 'dark' {
+    const hour = new Date().getHours();
+    return hour >= 6 && hour < 18 ? 'light' : 'dark';
   }
 }
 

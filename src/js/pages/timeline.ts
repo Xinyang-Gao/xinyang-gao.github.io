@@ -63,10 +63,6 @@ function formatDateLabel(dateObj: Date): string {
   return `${y}-${m}-${d}`;
 }
 
-function formatMonthLabel(month: number): string {
-  return `${month}月`;
-}
-
 function parseVersionSegments(version: string): number[] {
   return version
     .split(/[^0-9]+/)
@@ -429,7 +425,7 @@ export class TimelineManager extends PageBase {
       for (const month of sortedMonths) {
         const dayMap = monthMap.get(month)!;
         html += `<div class="timeline-month">
-            <h4 class="timeline-month-title">${formatMonthLabel(month)}</h4>
+            <h4 class="timeline-month-title">${Utils.formatMonthLabel(month)}</h4>
             <div class="timeline-list">`;
 
         const sortedDays = Array.from(dayMap.keys()).sort((a, b) => b.localeCompare(a));
@@ -643,14 +639,4 @@ export async function initTimelinePage(
   manager.setRefreshCallback(scrollRevealRefreshCallback || null);
   await manager.init();
   return manager;
-}
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => {
-    const container = document.getElementById('timeline-container');
-    if (container) void initTimelinePage();
-  });
-} else {
-  const container = document.getElementById('timeline-container');
-  if (container) void initTimelinePage();
 }

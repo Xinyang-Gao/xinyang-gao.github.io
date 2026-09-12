@@ -3,9 +3,8 @@
 // 移动菜单与导航高亮逻辑
 // 资源清理统一走 DisposableStack
 
-import { CONFIG } from '/js/core/core.js';
+import { CONFIG, Utils, onNavigation } from '/js/core/core.js';
 import { DisposableStack } from '/js/core/disposable-stack.js';
-import { getPageNameFromPath } from '/js/core/page-utils.js';
 import { initThemeToggle } from '/js/ui/theme.js';
 
 const SITE_NAME = 'GaoXinYang';
@@ -401,7 +400,7 @@ export function refreshNavbarTitle(): void {
 /** 高亮当前激活导航项 */
 export function initNavigation(): void {
   const items = document.querySelectorAll<HTMLAnchorElement>('.nav-item[data-page]');
-  const cur = getPageNameFromPath(location.pathname);
+  const cur = Utils.getPageNameFromPath(location.pathname);
   items.forEach((el) => el.classList.toggle('active', el.dataset.page === cur));
 }
 
@@ -447,5 +446,5 @@ export function initMobileMenuToggle(): void {
     if (innerWidth > DESKTOP_BREAKPOINT) closeMenu();
   });
 
-  window.addEventListener('ajax:navigation', closeMenu);
+  onNavigation(closeMenu);
 }

@@ -2,7 +2,7 @@
 // 统一管理浮动按钮：返回顶部 + 文章目录（TOC）+ 设置
 // 滚动监听统一走 ScrollDispatcher（全局单监听 + rAF 节流）
 
-import { CONFIG } from '/js/core/core.js';
+import { CONFIG, onNavigation } from '/js/core/core.js';
 import { scrollDispatcher } from '/js/core/scroll-dispatcher.js';
 
 // ---------- 模块级单例状态 ----------
@@ -208,10 +208,9 @@ export function initButtons(): void {
   initSettingsButton();
 }
 
-// ---------- SPA 导航后重新评估 ----------
-
-window.addEventListener('ajax:navigation', () => {
-  // TOC 按钮根据当前页面重新评估
+// ---------- 导出：导航后刷新（由 AppInitializer 调用） ----------
+export function refreshButtonsOnNavigation(): void {
+  // 重置 TOC 按钮（不同页面可能不再需要）
   if (resizeHandler) {
     window.removeEventListener('resize', resizeHandler);
     resizeHandler = null;
@@ -221,22 +220,12 @@ window.addEventListener('ajax:navigation', () => {
     tocBtn = null;
   }
   initTocFloatingButton();
-
-  // 设置按钮（单例保护，不会重复添加）
   initSettingsButton();
 
-  // 延迟更新返回按钮（等待新页面滚动位置稳定）
+  // 延迟更新返回顶部按钮（等待新页面滚动位置稳定）
   if (updateVisibilityFn) {
     setTimeout(() => {
       updateVisibilityFn?.(scrollDispatcher.getScrollY());
     }, 100);
   }
-});
-
-// ---------- DOM 就绪后自动初始化 ----------
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initButtons);
-} else {
-  initButtons();
 }

@@ -133,11 +133,3 @@ export async function initFooterStats(): Promise<void> {
     if (elements.lines) elements.lines.innerText = '?';
   }
 }
-
-// ==================== 自动监听无刷新导航 ====================
-if (typeof window !== 'undefined') {
-  window.addEventListener('ajax:navigation', () => {
-    // 延迟一小段时间确保新页脚 DOM 已插入
-    setTimeout(() => initFooterStats(), 100);
-  });
-}

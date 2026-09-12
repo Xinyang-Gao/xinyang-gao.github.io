@@ -2,12 +2,10 @@
 // 无刷新导航
 
 import { CONFIG, Utils } from '/js/core/core.js';
-import { getPageNameFromPath, isSameOrigin } from '/js/core/page-utils.js';
 import { ensureScrollReveal } from '/js/ui/ui-effects.js';
 import { initHomePage } from '/js/pages/home-manager.js';
 import type { PageManager } from '/js/core/page-manager.js';
 import { LazyImageLoader } from '/js/ui/image-manager.js';
-import { friendLinkManager } from '/js/pages/friends-manager.js';
 import { showDetailDialog } from '/js/ui/detail-dialog.js';
 import {
   initNavbar,
@@ -298,9 +296,7 @@ export function registerPageManager(
   PageManagerRegistry.register(pattern, factory);
 }
 
-// ==================== 默认页面注册 ====================
-// 全部工厂内部均完成 init，遵循 PageManagerFactory 约定。
-// 页面识别全部通过 pattern 完成，不再在 initPageManager 中硬编码路径分支。
+// 页面注册 
 function registerDefaultPages(): void {
   PageManagerRegistry.register('index', async () => initHomePage() as any);
 
@@ -314,8 +310,6 @@ function registerDefaultPages(): void {
     return initSearchPage('works', fn) as any;
   });
 
-  // 文章详情页：路径匹配 /articles/<slug>（允许可选尾斜杠）
-  // 取代原 initPageManager 中的 if (/^\/articles\/[^/]+$/...) 硬编码分支
   PageManagerRegistry.register(/^\/articles\/[^/]+\/?$/, async () => {
     const { initArticlePage } = await import('/js/pages/article.js');
     return await initArticlePage();
@@ -334,30 +328,29 @@ function registerDefaultPages(): void {
   });
 
   PageManagerRegistry.register('friends', async () => {
-    if ((friendLinkManager as any)._initialized) friendLinkManager.destroy();
-    await friendLinkManager.init();
-    return friendLinkManager;
+    const { FriendsPageManager } = await import('/js/pages/friends-manager.js');
+    const mgr = new FriendsPageManager();
+    await mgr.init();
+    return mgr;
   });
 
   PageManagerRegistry.register('about', async () => {
-    const { initAboutPage } = await import('/js/pages/about.js');
-    const mgr: PageManager = { init: initAboutPage, destroy: () => {} };
+    const { AboutPageManager } = await import('/js/pages/about.js');
+    const mgr = new AboutPageManager();
     await mgr.init();
     return mgr;
   });
 
   PageManagerRegistry.register('contact', async () => {
-    const { initTwikoo } = await import('/js/core/twikoo-manager.js');
+    const { initTwikoo, resetTwikooContainer } = await import('/js/core/twikoo-manager.js');
     const c = document.querySelector('#twikoo-comments');
     if (c) await initTwikoo(c);
 
     return {
       init: () => {},
       destroy: () => {
-        import('/js/core/twikoo-manager.js').then(({ resetTwikooContainer }) => {
-          const el = document.querySelector('#twikoo-comments');
-          if (el) resetTwikooContainer(el);
-        });
+        const el = document.querySelector('#twikoo-comments');
+        if (el) resetTwikooContainer(el);
       },
     } as PageManager;
   });
@@ -380,7 +373,7 @@ function extractPageContent(html: string, url: string): ExtractedContent {
       )
     ),
     scripts: Array.from(doc.querySelectorAll<HTMLScriptElement>('body script')),
-    pageName: getPageNameFromPath(new URL(url, location.href).pathname),
+    pageName: Utils.getPageNameFromPath(new URL(url, location.href).pathname),
   };
 }
 
@@ -731,7 +724,7 @@ export function enableAjaxNavigation(): void {
       link.hasAttribute('download') ||
       href.startsWith('#') ||
       link.hasAttribute('data-no-ajax') ||
-      !isSameOrigin(href) ||
+      !Utils.isSameOrigin(href) ||
       /^(mailto|tel|javascript|data):/i.test(href)
     ) {
       return;

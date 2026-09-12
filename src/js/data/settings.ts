@@ -5,7 +5,7 @@
 import { CONFIG, storageController } from '/js/core/core.js';
 import { themeController, type ThemeMode } from '/js/core/theme-controller.js';
 import { showDetailDialog } from '/js/ui/detail-dialog.js';
-import { applyRandomBackgroundImage } from '/js/core/page-utils.js';
+import { applyRandomBackgroundImage } from '/js/core/page-runtime.js';
 
 const K = CONFIG.STORAGE_KEYS;
 
@@ -119,21 +119,24 @@ function applyRevealEnabled(enabled: boolean): void {
  */
 function applyBgImageEnabled(enabled: boolean, force = false): void {
   const overlay = document.getElementById('bg-image-overlay') as HTMLElement | null;
+
   if (!enabled) {
     if (overlay) {
       overlay.style.backgroundImage = 'none';
       overlay.style.opacity = '0';
+      overlay.classList.remove('active');
     }
     return;
   }
 
-  // 启用时：如果已有背景图且正在显示，则不重新加载（除非 force）
-  if (overlay) {
+  // 未初始化 overlay 且非强制：交给 AppInitializer 的 scheduleIdle 处理
+  if (!overlay && !force) return;
+  if (overlay && !force) {
     const hasImage =
       overlay.style.backgroundImage && overlay.style.backgroundImage !== 'none';
     const isActive =
       overlay.classList.contains('active') && overlay.style.opacity === '1';
-    if (hasImage && isActive && !force) return;
+    if (hasImage && isActive) return;
   }
 
   applyRandomBackgroundImage({ force: true });
@@ -353,15 +356,3 @@ export function showSettingsPanel(): void {
     bindSettingsControls(contentEl as HTMLElement);
   }
 }
-
-// ==================== 自动初始化 ====================
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', applyStoredSettings);
-} else {
-  applyStoredSettings();
-}
-
-// SPA 导航后重新应用设置（确保主题等全局状态一致）
-window.addEventListener('ajax:navigation', () => {
-  applyStoredSettings();
-});

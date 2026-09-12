@@ -19,7 +19,7 @@ export default defineConfig({
         'js/entry/main': resolve(__dirname, 'src/js/entry/main.ts'),
         'js/standalone/404': resolve(__dirname, 'src/js/standalone/404.ts'),
         'js/data/sw': resolve(__dirname, 'src/js/data/sw.js'),
-        'js/data/settings': resolve(__dirname, 'src/js/data/settings.ts'),
+        'js/ui/personal-card': resolve(__dirname, 'src/js/ui/personal-card.ts'),
       },
       output: {
         preserveModules: true,

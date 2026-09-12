@@ -185,19 +185,3 @@ export class FriendsPageManager extends PageBase {
     }
   }
 }
-
-// ==================== 导出单例 ====================
-export const friendLinkManager = new FriendsPageManager();
-
-/**
- * 初始化友链页面（供 router 调用）
- * 注意：每次导航进入 friends 页面应 new 一个新实例；
- * 但历史代码曾用单例，这里保留单例语义（其 mount 内部会重新注册监听，
- * PageBase 会保证每次 init 前 stack 都是全新的）。
- */
-export async function initFriendsPage(): Promise<FriendsPageManager> {
-  // 如单例已初始化过，destroy 一次清掉旧资源，再重新 init
-  friendLinkManager.destroy();
-  await friendLinkManager.init();
-  return friendLinkManager;
-}

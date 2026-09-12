@@ -1,8 +1,6 @@
 // /js/ui/personal-card.js
 // 个人信息卡片渲染器
 
-import { onNavigation } from '/js/core/core.js';
-
 let cachedHTML: string | null = null;
 
 export function generatePersonalCardHTML(): string {
@@ -77,20 +75,4 @@ export function renderPersonalCard(): void {
       requestAnimationFrame(() => card.classList.add('visible'));
     }
   }
-}
-
-// ==================== 自动初始化 ====================
-// 页面初次挂载由 AppInitializer 编排；SPA 导航后统一走 onNavigation。
-
-if (typeof window !== 'undefined') {
-  // 首次加载：AppInitializer 已经会调，但为了独立加载的兼容性保留一次。
-  // 若完全交由编排器，可删除本段——以下为兼容独立引入场景。
-  const init = () => renderPersonalCard();
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
-  // SPA 导航：使用统一导航总线，避免 N 个独立监听
-  onNavigation(init);
 }
