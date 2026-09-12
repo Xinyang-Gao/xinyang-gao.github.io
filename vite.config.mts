@@ -6,9 +6,9 @@ export default defineConfig({
   root: './',
   resolve: {
     alias: {
-      '/js': resolve(__dirname, 'src/js'),          // 将 /js 映射到 src/js
-      '/css': resolve(__dirname, 'src/css'),        // 如果 CSS 在 JS 中被导入，同样处理
-      '/assets': resolve(__dirname, 'src/assets'),  // 图片等静态资源（如果有导入）
+      '/js': resolve(import.meta.dirname, 'src/js'),          // 将 /js 映射到 src/js
+      '/css': resolve(import.meta.dirname, 'src/css'),        // 如果 CSS 在 JS 中被导入，同样处理
+      '/assets': resolve(import.meta.dirname, 'src/assets'),  // 图片等静态资源（如果有导入）
     }
   },
   build: {
@@ -16,10 +16,10 @@ export default defineConfig({
     emptyOutDir: false,
     rollupOptions: {
       input: {
-        'js/entry/main': resolve(__dirname, 'src/js/entry/main.ts'),
-        'js/standalone/404': resolve(__dirname, 'src/js/standalone/404.ts'),
-        'js/data/sw': resolve(__dirname, 'src/js/data/sw.js'),
-        'js/ui/personal-card': resolve(__dirname, 'src/js/ui/personal-card.ts'),
+        'js/entry/main': resolve(import.meta.dirname, 'src/js/entry/main.ts'),
+        'js/standalone/404': resolve(import.meta.dirname, 'src/js/standalone/404.ts'),
+        'js/data/sw': resolve(import.meta.dirname, 'src/js/data/sw.js'),
+        'js/ui/personal-card': resolve(import.meta.dirname, 'src/js/ui/personal-card.ts'),
       },
       output: {
         preserveModules: true,
