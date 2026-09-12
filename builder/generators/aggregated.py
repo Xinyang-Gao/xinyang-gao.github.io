@@ -49,6 +49,7 @@ PAGE_TEMPLATES = {
 class AggregatedGenerator(OutputGenerator):
     name = "aggregated"
     inputs = {"articles", "works", "friends", "version"}
+    dependencies = frozenset({"friend_colors"})
     outputs = [
         RSS_OUTPUT, SITEMAP_OUTPUT, ARTICLES_LIST_HTML, WORKS_LIST_HTML, NOJS_HTML, STATISTICS_JSON,
         JSON_OUTPUT_DIR / "code_analysis.json",
@@ -616,7 +617,7 @@ class AggregatedGenerator(OutputGenerator):
 
     # ---------- 复制静态资源（含增量优化） ----------
     def _copy_static_assets(self, frontend_changed: bool):
-        # 1. 调用 Vite 构建 TypeScript
+        # 1. Vite 构建 TypeScript
         if frontend_changed:
             try:
                 result = subprocess.run(
@@ -632,13 +633,11 @@ class AggregatedGenerator(OutputGenerator):
                     log_error(f"PATH: {os.environ.get('PATH')}")
                     log_error(f"stdout: {result.stdout}")
                     log_error(f"stderr: {result.stderr}")
-                    raise RuntimeError("前端 TypeScript 编译失败")
-                log_info("Vite 构建完成 (TypeScript -> JavaScript)")
+                    log_error("已跳过前端 TypeScript 编译，dist/js 可能不是最新，继续构建其余部分。")
+                else:
+                    log_info("Vite 构建完成 (TypeScript -> JavaScript)")
             except FileNotFoundError:
-                log_warning("未找到 npm，请确保 Node.js 已安装。跳过 TypeScript 编译。")
-                if JS_SRC_DIR.exists():
-                    shutil.copytree(JS_SRC_DIR, JS_DIST_DIR, dirs_exist_ok=True)
-                    log_info("回退：直接复制 JS 文件")
+                log_error("未找到 npm，请确保 Node.js 已安装。跳过 TypeScript 编译。")
         else:
             log_info("前端源文件未变化，跳过 Vite 构建")
 
