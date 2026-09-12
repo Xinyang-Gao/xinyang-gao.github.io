@@ -33,6 +33,10 @@ export function setSetting(key: SettingKey, value: boolean | string | number): v
 
 // ==================== 清理工具 ====================
 export async function clearSWCacheAndReload(): Promise<void> {
+  // 清空 DataService 内存缓存
+  const { DataService } = await import('/js/core/data-service.js');
+  DataService.getInstance().clearCache();
+
   if ('serviceWorker' in navigator) {
     const registrations = await navigator.serviceWorker.getRegistrations();
     for (const reg of registrations) {
@@ -40,7 +44,7 @@ export async function clearSWCacheAndReload(): Promise<void> {
     }
   }
   const cacheNames = await caches.keys();
-  await Promise.all(cacheNames.map(name => caches.delete(name)));
+  await Promise.all(cacheNames.map((name) => caches.delete(name)));
   window.location.reload();
 }
 

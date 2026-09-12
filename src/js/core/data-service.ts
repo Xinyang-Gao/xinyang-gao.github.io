@@ -1,6 +1,9 @@
 // /js/core/data-service.ts
+// 数据服务：内存缓存 + 并发去重
+// 持久化缓存由 Service Worker 负责（见 /js/data/sw.js）
+// 移除 localStorage 层，避免与 SW 冲突
 
-import { CONFIG, storageController } from './core.js';
+import { CONFIG } from './core.js';
 
 // ==================== 类型定义 ====================
 
@@ -17,12 +20,9 @@ interface CacheEntry {
   timestamp: number;
 }
 
-// 请求配置
 interface FetchOptions {
-  /** 强制刷新，忽略所有缓存 */
+  /** 强制刷新，跳过内存缓存并让 SW 走网络 */
   forceRefresh?: boolean;
-  /** 是否使用 localStorage 持久化（默认 true） */
-  useStorage?: boolean;
 }
 
 // ==================== 核心服务类 ====================
@@ -30,14 +30,14 @@ interface FetchOptions {
 export class DataService {
   private static instance: DataService;
 
-  // 内存缓存
+  /** 内存缓存 */
   private memoryCache = new Map<DataKey, CacheEntry>();
 
-  // 并发去重（pending 请求）
+  /** 并发去重 */
   private pending = new Map<DataKey, Promise<any>>();
 
-  // 缓存有效期（5 分钟）
-  private readonly TTL = 5 * 60 * 1000;
+  /** 内存缓存有效期：60 秒（持久化交给 SW） */
+  private readonly TTL = 60 * 1000;
 
   private constructor() {}
 
@@ -50,24 +50,6 @@ export class DataService {
 
   // ---------- 私有方法 ----------
 
-  /**
-   * 获取 localStorage 键名
-   */
-  private getStorageKey(key: DataKey): string {
-    const map: Record<DataKey, string> = {
-      articles: CONFIG.STORAGE_KEYS.ARTICLES_DATA,
-      works: CONFIG.STORAGE_KEYS.WORKS_DATA,
-      statistics: 'statistics_cache',
-      codeAnalysis: 'code_analysis_cache',
-      friends: 'friends_cache',
-      version: 'version_cache',
-    };
-    return map[key];
-  }
-
-  /**
-   * 获取数据 URL
-   */
   private getUrl(key: DataKey): string {
     const map: Record<DataKey, string> = {
       articles: CONFIG.API.ARTICLES,
@@ -81,14 +63,13 @@ export class DataService {
   }
 
   /**
-   * 核心请求方法，自动处理缓存、去重、持久化
+   * 核心请求：
+   * 1. 内存缓存命中 → 直接返回
+   * 2. 进行中的请求 → 复用 Promise
+   * 3. 发起网络请求（SW 会处理持久化缓存）
    */
-  private async fetchWithCache(
-    key: DataKey,
-    options: FetchOptions = {}
-  ): Promise<any> {
-    const { forceRefresh = false, useStorage = true } = options;
-    const url = this.getUrl(key);
+  private async fetchWithCache(key: DataKey, options: FetchOptions = {}): Promise<any> {
+    const { forceRefresh = false } = options;
 
     // 1) 内存缓存
     if (!forceRefresh) {
@@ -98,48 +79,19 @@ export class DataService {
       }
     }
 
-    // 2) localStorage 缓存
-    if (!forceRefresh && useStorage) {
-      const storageKey = this.getStorageKey(key);
-      const raw = storageController.getItem(storageKey);
-      if (raw) {
-        try {
-          const parsed = JSON.parse(raw);
-          const ts = parsed._timestamp || 0;
-          if (Date.now() - ts < this.TTL) {
-            delete parsed._timestamp;
-            this.memoryCache.set(key, { data: parsed, timestamp: ts });
-            return parsed;
-          }
-        } catch {
-          // 解析失败：删除损坏的缓存条目
-          try {
-            storageController.removeItem(storageKey);
-          } catch {
-            // ignore
-          }
-          // 继续网络请求
-        }
-      }
-    }
-
-    // 3) 并发去重
+    // 2) 并发去重
     if (this.pending.has(key)) {
       return this.pending.get(key);
     }
 
-    // 4) 发起网络请求
-    const promise = this.doFetch(url)
+    // 3) 网络请求
+    const promise = this.doFetch(this.getUrl(key), forceRefresh)
       .then((data) => {
         this.memoryCache.set(key, { data, timestamp: Date.now() });
-        if (useStorage) {
-          const storageKey = this.getStorageKey(key);
-          const toStore = { ...data, _timestamp: Date.now() };
-          storageController.setItem(storageKey, JSON.stringify(toStore));
-        }
         return data;
       })
       .catch((err) => {
+        // 网络失败时回退到过期内存缓存
         const mem = this.memoryCache.get(key);
         if (mem) {
           console.warn(`[DataService] 网络请求失败，返回过期缓存 (${key})`, err);
@@ -156,13 +108,14 @@ export class DataService {
   }
 
   /**
-   * 实际网络请求（带时间戳破坏缓存）
+   * 实际网络请求。
+   * 关键：不再加 ?t= 时间戳（会污染 SW 缓存 key）；
+   * 强制刷新通过 cache: 'reload' 通知 SW 绕过缓存。
    */
-  private async doFetch(url: string): Promise<any> {
-    const finalUrl = url.includes('?') ? `${url}&t=${Date.now()}` : `${url}?t=${Date.now()}`;
-    const res = await fetch(finalUrl, {
-      cache: 'no-store',
-      headers: { 'Cache-Control': 'no-cache' },
+  private async doFetch(url: string, forceRefresh: boolean): Promise<any> {
+    const res = await fetch(url, {
+      cache: forceRefresh ? 'reload' : 'default',
+      credentials: 'same-origin',
     });
     if (!res.ok) {
       throw new Error(`HTTP ${res.status} (${res.statusText})`);
@@ -197,33 +150,15 @@ export class DataService {
   }
 
   /**
-   * 清空所有缓存（包括内存和 localStorage）
+   * 清空内存缓存，并让 SW 下次请求走网络
    */
   clearCache(): void {
-    // 清空内存
     this.memoryCache.clear();
     this.pending.clear();
-
-    // 清空 localStorage（仅清除我们自己的键）
-    const keys: string[] = [
-      CONFIG.STORAGE_KEYS.ARTICLES_DATA,
-      CONFIG.STORAGE_KEYS.WORKS_DATA,
-      'statistics_cache',
-      'code_analysis_cache',
-      'friends_cache',
-      'version_cache',
-    ];
-    for (const k of keys) {
-      try {
-        storageController.removeItem(k);
-      } catch {
-        // ignore
-      }
-    }
   }
 
   /**
-   * 预热缓存（预加载常用数据，不阻塞）
+   * 预热：并行加载常用数据
    */
   warmup(): void {
     this.getArticles().catch(() => {});
@@ -232,9 +167,5 @@ export class DataService {
   }
 }
 
-// ==================== 导出单例实例（方便直接导入） ====================
-
 export const dataService = DataService.getInstance();
-
-// 默认导出单例
 export default dataService;
