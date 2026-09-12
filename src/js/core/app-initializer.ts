@@ -2,6 +2,7 @@
 // 应用启动编排器
 
 import { CONFIG, storageController } from '/js/core/core.js';
+import { themeController } from '/js/core/theme-controller.js';
 import { getTimeBasedTheme, getPageNameFromPath, applyRandomBackgroundImage, startSiteAgeUpdater, updateFooterUpdateTime } from '/js/core/page-utils.js';
 import { loadNavbar, loadFooter, enableAjaxNavigation, initPageFeatures, initPopstate } from '/js/router/router.js';
 import { initUIEffects, refreshScrollReveal, ensureScrollReveal } from '/js/ui/ui-effects.js';
@@ -31,7 +32,7 @@ export class AppInitializer {
     ensureScrollReveal();
 
     // 3. 主题同步
-    this.syncTheme();
+    themeController.init();
 
     // 4. 背景图加载（空闲）
     this.scheduleIdle(() => {
@@ -146,16 +147,6 @@ export class AppInitializer {
     preloadAvatar.href = '/assets/avatar.webp';
     preloadAvatar.fetchPriority = 'high';
     head.appendChild(preloadAvatar);
-  }
-
-  /**
-   * 同步主题：优先使用用户保存的偏好，否则按时段自动选择。
-   * 与 theme.ts / settings.ts 中的逻辑保持一致，均以 CONFIG.STORAGE_KEYS.THEME 为唯一数据源。
-   */
-  private static syncTheme(): void {
-    const savedTheme = storageController.getItem(CONFIG.STORAGE_KEYS.THEME);
-    const initialTheme = savedTheme || getTimeBasedTheme();
-    document.documentElement.setAttribute('data-theme', initialTheme);
   }
 
   /**

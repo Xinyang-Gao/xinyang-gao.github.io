@@ -1,14 +1,15 @@
 // /js/data/settings.ts
 
 import { CONFIG, storageController } from '/js/core/core.js';
+import { themeController, type ThemeMode } from '/js/core/theme-controller.js';
 import { showDetailDialog } from '/js/ui/detail-dialog.js';
-import { getTimeBasedTheme, applyRandomBackgroundImage } from '/js/core/page-utils.js';
+import { applyRandomBackgroundImage } from '/js/core/page-utils.js';
 
-// 扩展设置键
+// ==================== 设置键 ====================
 const SETTINGS_KEYS = {
   CURSOR_ENABLED: 'settings_cursor_enabled',
   LINK_WARNING_ENABLED: 'settings_link_warning_enabled',
-  THEME_MODE: 'settings_theme_mode',       // 'auto' | 'light' | 'dark'
+  THEME_MODE: 'settings_theme_mode',       // 'auto' | 'light' | 'dark'（与 themeController 共享）
   FONT_SCALE: 'settings_font_scale',       // 90, 100, 110, 120 (百分比)
   REVEAL_ENABLED: 'settings_reveal_enabled',
   BG_IMAGE_ENABLED: 'settings_bg_image_enabled',
@@ -16,6 +17,7 @@ const SETTINGS_KEYS = {
 
 type SettingKey = typeof SETTINGS_KEYS[keyof typeof SETTINGS_KEYS];
 
+// ==================== 通用读写 ====================
 export function getSetting(key: SettingKey, defaultValue = true): boolean | string {
   const stored = storageController.getItem(key);
   if (stored !== null) {
@@ -29,6 +31,7 @@ export function setSetting(key: SettingKey, value: boolean | string | number): v
   storageController.setItem(key, String(value));
 }
 
+// ==================== 清理工具 ====================
 export async function clearSWCacheAndReload(): Promise<void> {
   if ('serviceWorker' in navigator) {
     const registrations = await navigator.serviceWorker.getRegistrations();
@@ -53,24 +56,22 @@ export async function clearAllStorageAndReload(): Promise<void> {
   window.location.reload();
 }
 
-// ---------- 应用函数 ----------
+// ==================== 应用函数 ====================
 
+/**
+ * 应用主题模式。
+ * 实际状态由 themeController 管理；本函数只负责转发并同步面板 UI。
+ */
 function applyThemeMode(mode: string): void {
-  const root = document.documentElement;
-  if (mode === 'auto') {
-    storageController.removeItem(CONFIG.STORAGE_KEYS.THEME);
-    const theme = getTimeBasedTheme();
-    root.setAttribute('data-theme', theme);
-    const checkbox = document.getElementById('theme-toggle-checkbox') as HTMLInputElement;
-    if (checkbox) checkbox.checked = (theme === 'dark');
-    window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme } }));
-  } else {
-    root.setAttribute('data-theme', mode);
-    storageController.setItem(CONFIG.STORAGE_KEYS.THEME, mode);
-    const checkbox = document.getElementById('theme-toggle-checkbox') as HTMLInputElement;
-    if (checkbox) checkbox.checked = (mode === 'dark');
-    window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme: mode } }));
-  }
+  const validMode: ThemeMode = mode === 'light' || mode === 'dark' ? mode : 'auto';
+  themeController.setMode(validMode);
+
+  // 同步面板控件
+  const themeSelect = document.getElementById('themeModeSelect') as HTMLSelectElement | null;
+  if (themeSelect) themeSelect.value = validMode;
+
+  const checkbox = document.getElementById('theme-toggle-checkbox') as HTMLInputElement | null;
+  if (checkbox) checkbox.checked = themeController.getTheme() === 'dark';
 }
 
 function applyFontScale(scale: number): void {
@@ -101,7 +102,7 @@ function applyRevealEnabled(enabled: boolean): void {
  * @param force 是否强制重新加载（仅在启用时生效）
  */
 function applyBgImageEnabled(enabled: boolean, force = false): void {
-  const overlay = document.getElementById('bg-image-overlay') as HTMLElement;
+  const overlay = document.getElementById('bg-image-overlay') as HTMLElement | null;
   if (!enabled) {
     if (overlay) {
       overlay.style.backgroundImage = 'none';
@@ -115,7 +116,6 @@ function applyBgImageEnabled(enabled: boolean, force = false): void {
     const hasImage = overlay.style.backgroundImage && overlay.style.backgroundImage !== 'none';
     const isActive = overlay.classList.contains('active') && overlay.style.opacity === '1';
     if (hasImage && isActive && !force) {
-      // 背景已存在且可见，无需操作
       return;
     }
   }
@@ -124,54 +124,70 @@ function applyBgImageEnabled(enabled: boolean, force = false): void {
   applyRandomBackgroundImage({ force: true });
 }
 
-// ---------- 应用存储的所有设置（页面加载/导航时调用） ----------
+// ==================== 应用所有存储的设置 ====================
+/**
+ * 页面加载 / SPA 导航时调用。
+ * 主题状态由 themeController 内部维护，此函数只负责同步 UI 与其它设置。
+ */
 export function applyStoredSettings(): void {
-  const themeMode = getSetting(SETTINGS_KEYS.THEME_MODE, 'auto') as string;
-  applyThemeMode(themeMode);
+  // 1. 主题：确保 controller 已初始化，并把当前模式同步到控件
+  themeController.init();
 
+  const themeSelect = document.getElementById('themeModeSelect') as HTMLSelectElement | null;
+  if (themeSelect) themeSelect.value = themeController.getMode();
+
+  const themeCheckbox = document.getElementById('theme-toggle-checkbox') as HTMLInputElement | null;
+  if (themeCheckbox) themeCheckbox.checked = themeController.getTheme() === 'dark';
+
+  // 2. 字体大小
   const scale = getSetting(SETTINGS_KEYS.FONT_SCALE, 100) as number;
   applyFontScale(scale);
 
+  // 3. 滚动揭示
   const reveal = getSetting(SETTINGS_KEYS.REVEAL_ENABLED, true) as boolean;
   applyRevealEnabled(reveal);
 
+  // 4. 背景图
   const bg = getSetting(SETTINGS_KEYS.BG_IMAGE_ENABLED, true) as boolean;
   applyBgImageEnabled(bg, false); // 不强制重载
 }
 
-// ---------- 绑定设置控件 ----------
+// ==================== 绑定设置控件 ====================
 export function bindSettingsControls(container: HTMLElement): void {
-  const cursorCheckbox = container.querySelector('#cursorToggleCheckbox') as HTMLInputElement;
-  const linkCheckbox = container.querySelector('#linkWarningCheckbox') as HTMLInputElement;
-  const themeSelect = container.querySelector('#themeModeSelect') as HTMLSelectElement;
-  const fontScaleSelect = container.querySelector('#fontScaleSelect') as HTMLSelectElement;
-  const revealCheckbox = container.querySelector('#revealCheckbox') as HTMLInputElement;
-  const bgImageCheckbox = container.querySelector('#bgImageCheckbox') as HTMLInputElement;
-  const clearSWBtn = container.querySelector('#clearSWCacheBtn') as HTMLButtonElement;
-  const clearCookiesBtn = container.querySelector('#clearCookiesBtn') as HTMLButtonElement;
+  const cursorCheckbox = container.querySelector('#cursorToggleCheckbox') as HTMLInputElement | null;
+  const linkCheckbox = container.querySelector('#linkWarningCheckbox') as HTMLInputElement | null;
+  const themeSelect = container.querySelector('#themeModeSelect') as HTMLSelectElement | null;
+  const fontScaleSelect = container.querySelector('#fontScaleSelect') as HTMLSelectElement | null;
+  const revealCheckbox = container.querySelector('#revealCheckbox') as HTMLInputElement | null;
+  const bgImageCheckbox = container.querySelector('#bgImageCheckbox') as HTMLInputElement | null;
+  const clearSWBtn = container.querySelector('#clearSWCacheBtn') as HTMLButtonElement | null;
+  const clearCookiesBtn = container.querySelector('#clearCookiesBtn') as HTMLButtonElement | null;
 
-  // ----- 初始化控件状态（仅设置值，不应用） -----
-  cursorCheckbox.checked = getSetting(SETTINGS_KEYS.CURSOR_ENABLED, true) as boolean;
-  linkCheckbox.checked = getSetting(SETTINGS_KEYS.LINK_WARNING_ENABLED, true) as boolean;
-
-  let themeMode = getSetting(SETTINGS_KEYS.THEME_MODE, 'auto') as string;
-  // 兼容旧存储：如果之前没有 theme_mode，但有 theme 存储，则根据该值推断
-  if (themeMode === 'auto') {
-    const storedTheme = storageController.getItem(CONFIG.STORAGE_KEYS.THEME);
-    if (storedTheme && (storedTheme === 'light' || storedTheme === 'dark')) {
-      themeMode = storedTheme;
-    }
+  // ---------- 初始化控件状态（仅设置值，不触发应用） ----------
+  if (cursorCheckbox) {
+    cursorCheckbox.checked = getSetting(SETTINGS_KEYS.CURSOR_ENABLED, true) as boolean;
   }
-  themeSelect.value = themeMode;
+  if (linkCheckbox) {
+    linkCheckbox.checked = getSetting(SETTINGS_KEYS.LINK_WARNING_ENABLED, true) as boolean;
+  }
+  if (themeSelect) {
+    // 直接读 themeController；旧键 'theme' 的迁移已由控制器内部处理
+    themeSelect.value = themeController.getMode();
+  }
+  if (fontScaleSelect) {
+    const fontScale = getSetting(SETTINGS_KEYS.FONT_SCALE, 100) as number;
+    fontScaleSelect.value = String(fontScale);
+  }
+  if (revealCheckbox) {
+    revealCheckbox.checked = getSetting(SETTINGS_KEYS.REVEAL_ENABLED, true) as boolean;
+  }
+  if (bgImageCheckbox) {
+    bgImageCheckbox.checked = getSetting(SETTINGS_KEYS.BG_IMAGE_ENABLED, true) as boolean;
+  }
 
-  const fontScale = getSetting(SETTINGS_KEYS.FONT_SCALE, 100) as number;
-  fontScaleSelect.value = String(fontScale);
+  // ---------- 事件绑定 ----------
 
-  revealCheckbox.checked = getSetting(SETTINGS_KEYS.REVEAL_ENABLED, true) as boolean;
-  bgImageCheckbox.checked = getSetting(SETTINGS_KEYS.BG_IMAGE_ENABLED, true) as boolean;
-
-  // ----- 事件绑定（用户操作时应用并保存） -----
-  cursorCheckbox.addEventListener('change', (e) => {
+  cursorCheckbox?.addEventListener('change', (e) => {
     const enabled = (e.target as HTMLInputElement).checked;
     setSetting(SETTINGS_KEYS.CURSOR_ENABLED, enabled);
     import('/js/ui/ui-effects.js').then(module => {
@@ -179,7 +195,7 @@ export function bindSettingsControls(container: HTMLElement): void {
     });
   });
 
-  linkCheckbox.addEventListener('change', (e) => {
+  linkCheckbox?.addEventListener('change', (e) => {
     const enabled = (e.target as HTMLInputElement).checked;
     setSetting(SETTINGS_KEYS.LINK_WARNING_ENABLED, enabled);
     import('/js/ui/ui-effects.js').then(module => {
@@ -187,25 +203,24 @@ export function bindSettingsControls(container: HTMLElement): void {
     });
   });
 
-  themeSelect.addEventListener('change', (e) => {
+  themeSelect?.addEventListener('change', (e) => {
     const mode = (e.target as HTMLSelectElement).value;
-    setSetting(SETTINGS_KEYS.THEME_MODE, mode);
     applyThemeMode(mode);
   });
 
-  fontScaleSelect.addEventListener('change', (e) => {
+  fontScaleSelect?.addEventListener('change', (e) => {
     const scale = parseInt((e.target as HTMLSelectElement).value, 10);
     setSetting(SETTINGS_KEYS.FONT_SCALE, scale);
     applyFontScale(scale);
   });
 
-  revealCheckbox.addEventListener('change', (e) => {
+  revealCheckbox?.addEventListener('change', (e) => {
     const enabled = (e.target as HTMLInputElement).checked;
     setSetting(SETTINGS_KEYS.REVEAL_ENABLED, enabled);
     applyRevealEnabled(enabled);
   });
 
-  bgImageCheckbox.addEventListener('change', (e) => {
+  bgImageCheckbox?.addEventListener('change', (e) => {
     const enabled = (e.target as HTMLInputElement).checked;
     setSetting(SETTINGS_KEYS.BG_IMAGE_ENABLED, enabled);
     // 用户切换时，若启用则强制加载新图，若禁用则隐藏
@@ -216,7 +231,7 @@ export function bindSettingsControls(container: HTMLElement): void {
   clearCookiesBtn?.addEventListener('click', clearAllStorageAndReload);
 }
 
-// ---------- 显示设置面板 ----------
+// ==================== 显示设置面板 ====================
 export function showSettingsPanel(): void {
   const settingsHTML = `
     <div class="settings-panel">
@@ -318,11 +333,11 @@ export function showSettingsPanel(): void {
 
   const contentEl = document.querySelector('.work-details-content');
   if (contentEl) {
-    bindSettingsControls(contentEl);
+    bindSettingsControls(contentEl as HTMLElement);
   }
 }
 
-// ---------- 自动初始化 ----------
+// ==================== 自动初始化 ====================
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', applyStoredSettings);
 } else {

@@ -5,6 +5,7 @@
 // ============================================================
 
 import { Utils } from '/js/core/core.js';
+import { themeController } from '/js/core/theme-controller.js';
 
 /** 路径分类结果 */
 interface PathClassification {
@@ -382,18 +383,10 @@ class UI404Manager {
   }
 
   syncTheme(): void {
-    const saved = localStorage.getItem('theme');
-    let theme: 'dark' | 'light' | null = null;
-    if (saved === 'dark' || saved === 'light') {
-      theme = saved;
-    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-      theme = 'dark';
-    }
-    if (theme) {
-      document.documentElement.setAttribute('data-theme', theme);
-      if (this.themeCheckbox) {
-        this.themeCheckbox.checked = theme === 'dark';
-      }
+    // 由 themeController 统一管理，直接同步复选框
+    themeController.init();
+    if (this.themeCheckbox) {
+      this.themeCheckbox.checked = themeController.getTheme() === 'dark';
     }
   }
 
@@ -436,14 +429,9 @@ function handlePageTransition(): void {
 }
 
 function listenThemeStorage(): void {
-  window.addEventListener('storage', (e) => {
-    if (e.key === 'theme' && e.newValue) {
-      document.documentElement.setAttribute('data-theme', e.newValue);
-      const checkbox = document.getElementById('theme-toggle-checkbox') as HTMLInputElement | null;
-      if (checkbox) {
-        checkbox.checked = e.newValue === 'dark';
-      }
-    }
+  themeController.onChange((theme) => {
+    const checkbox = document.getElementById('theme-toggle-checkbox') as HTMLInputElement | null;
+    if (checkbox) checkbox.checked = theme === 'dark';
   });
 }
 

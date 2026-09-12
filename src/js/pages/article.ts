@@ -2,6 +2,8 @@
 import { PageManager } from '/js/core/page-manager.js';
 import { initTwikoo, destroyTwikoo } from '/js/core/twikoo-manager.js';
 import { CONFIG } from '/js/core/core.js';
+import { DisposableStack } from '/js/core/disposable-stack.js';
+import { scrollDispatcher } from '/js/core/scroll-dispatcher.js';
 
 interface Heading {
     id: string;
@@ -25,19 +27,18 @@ declare global {
 }
 
 export class ArticlePageManager extends PageManager {
-    private imageObserver: IntersectionObserver | null = null;
-    private progressHandler: (() => void) | null = null;
-    private scrollHandler: (() => void) | null = null;
-    private resizeHandler: (() => void) | null = null;
-    private toggleSidebarHandler: (() => void) | null = null;
+    // TOC 状态
     private tocClickHandler: ((e: Event) => void) | null = null;
-    private cleanupFns: (() => void)[] = [];
-    private twikooContainer: HTMLElement | null = null;
     private tocScrollWrapper: HTMLElement | null = null;
     private tocListContainer: HTMLElement | null = null;
     private tocProgressPercent: HTMLElement | null = null;
     private tocProgressFill: HTMLElement | null = null;
-    private scrollTimer: number | null = null;
+
+    // Twikoo 容器
+    private twikooContainer: HTMLElement | null = null;
+
+    // 统一资源清理栈（监听器、定时器、Observer）
+    private stack = new DisposableStack();
 
     // ---------- 初始化 ----------
     init(): void {
@@ -71,8 +72,8 @@ export class ArticlePageManager extends PageManager {
                 global.renderMathInElement(articleBody, {
                     delimiters: [
                         { left: '$$', right: '$$', display: true },
-                        { left: '$', right: '$', display: false }
-                    ]
+                        { left: '$', right: '$', display: false },
+                    ],
                 });
             } catch (e) {
                 console.warn('[Article] 数学渲染失败:', e);
@@ -95,7 +96,7 @@ export class ArticlePageManager extends PageManager {
         if (global.vercount?.fetch) {
             try {
                 global.vercount.fetch();
-            } catch (e) {
+            } catch {
                 // ignore
             }
         }
@@ -103,35 +104,12 @@ export class ArticlePageManager extends PageManager {
 
     // ---------- 销毁 ----------
     destroy(): void {
-        // 移除事件监听
-        if (this.progressHandler) {
-            window.removeEventListener('scroll', this.progressHandler);
-            this.progressHandler = null;
-        }
-        if (this.scrollHandler) {
-            window.removeEventListener('scroll', this.scrollHandler);
-            this.scrollHandler = null;
-        }
-        if (this.resizeHandler) {
-            window.removeEventListener('resize', this.resizeHandler);
-            this.resizeHandler = null;
-        }
-        if (this.toggleSidebarHandler) {
-            window.removeEventListener('article:toggleSidebar', this.toggleSidebarHandler);
-            this.toggleSidebarHandler = null;
-        }
-        // 断开观察器
-        if (this.imageObserver) {
-            this.imageObserver.disconnect();
-            this.imageObserver = null;
-        }
-        // 清理自定义清理函数
-        this.cleanupFns.forEach(fn => fn());
-        this.cleanupFns = [];
+        // 一次性释放所有监听器、定时器、Observer
+        this.stack.dispose();
+        this.stack = new DisposableStack();
 
         // 移除移动端遮罩
-        const overlay = document.querySelector('.article-sidebar-overlay');
-        if (overlay) overlay.remove();
+        document.querySelector('.article-sidebar-overlay')?.remove();
 
         // 销毁 Twikoo
         if (this.twikooContainer) {
@@ -139,18 +117,15 @@ export class ArticlePageManager extends PageManager {
             this.twikooContainer = null;
         }
 
-        // 重置 TOC 相关状态
+        // 重置 TOC 状态
         this.tocScrollWrapper = null;
         this.tocListContainer = null;
         this.tocProgressPercent = null;
         this.tocProgressFill = null;
-        if (this.scrollTimer) {
-            clearTimeout(this.scrollTimer);
-            this.scrollTimer = null;
-        }
+        this.tocClickHandler = null;
     }
 
-    // ---------- TOC 交互（基于后端预渲染的 DOM） ----------
+    // ---------- TOC 结构（兼容后端预渲染） ----------
     private ensureTOCStructure(): void {
         const tocCard = document.querySelector('.sidebar-card.toc-card');
         if (!tocCard) return;
@@ -164,7 +139,7 @@ export class ArticlePageManager extends PageManager {
             tocCard.prepend(header);
         }
 
-        // 确保 wrapper 存在，但不要覆盖已有内容（后端已渲染）
+        // 确保 wrapper 存在，但不覆盖已有内容
         let wrapper = tocCard.querySelector('.toc-list-wrapper');
         if (!wrapper) {
             wrapper = document.createElement('div');
@@ -173,7 +148,6 @@ export class ArticlePageManager extends PageManager {
             if (existingNav) {
                 wrapper.appendChild(existingNav);
             } else {
-                // 如果没有 nav，创建一个（但后端渲染应该已包含）
                 const newNav = document.createElement('nav');
                 newNav.className = 'toc-nav';
                 newNav.id = 'toc-list-container';
@@ -200,45 +174,37 @@ export class ArticlePageManager extends PageManager {
         // 绑定链接点击事件
         this.bindTocLinkEvents();
 
-        // 初始化阅读进度条（如果尚未添加）
+        // 初始化阅读进度条
         this.initTocReadingProgress();
 
-        // 滚动监听更新高亮
-        if (this.scrollHandler) {
-            window.removeEventListener('scroll', this.scrollHandler);
-        }
-        this.scrollHandler = () => this.onScroll();
-        window.addEventListener('scroll', this.scrollHandler);
-        this.cleanupFns.push(() => {
-            if (this.scrollHandler) {
-                window.removeEventListener('scroll', this.scrollHandler);
-                this.scrollHandler = null;
-            }
-        });
+        // 滚动监听统一走 ScrollDispatcher（rAF 节流 + 单监听）
+        const unsubscribe = scrollDispatcher.subscribe(() => this.onScroll());
+        this.stack.add(unsubscribe);
 
         // 首次更新高亮
         this.onScroll();
     }
 
     private bindTocLinkEvents(): void {
-        // 移除旧的监听器（如果有）
+        // 清理旧的监听器（如重复 init）
         if (this.tocClickHandler) {
-            document.querySelectorAll('.toc-link').forEach(link => {
+            document.querySelectorAll('.toc-link').forEach((link) => {
                 link.removeEventListener('click', this.tocClickHandler!);
             });
         }
+
         this.tocClickHandler = this.handleTocClick.bind(this);
-        document.querySelectorAll('.toc-link').forEach(link => {
+        document.querySelectorAll('.toc-link').forEach((link) => {
             link.addEventListener('click', this.tocClickHandler!);
         });
-        // 清理时移除
-        this.cleanupFns.push(() => {
-            if (this.tocClickHandler) {
-                document.querySelectorAll('.toc-link').forEach(link => {
-                    link.removeEventListener('click', this.tocClickHandler!);
-                });
-                this.tocClickHandler = null;
-            }
+
+        // 登记到清理栈
+        this.stack.add(() => {
+            if (!this.tocClickHandler) return;
+            document.querySelectorAll('.toc-link').forEach((link) => {
+                link.removeEventListener('click', this.tocClickHandler!);
+            });
+            this.tocClickHandler = null;
         });
     }
 
@@ -251,7 +217,6 @@ export class ArticlePageManager extends PageManager {
         const target = document.getElementById(targetId);
         if (target) {
             this.smoothScrollTo(target, 90);
-            // 更新 URL hash 但不触发滚动
             history.pushState(null, '', href);
             this.updateActiveItem(targetId);
             this.scrollTocToItem(targetId);
@@ -264,7 +229,7 @@ export class ArticlePageManager extends PageManager {
     }
 
     private updateActiveItem(activeId: string): void {
-        document.querySelectorAll('.toc-list li').forEach(li => li.classList.remove('active'));
+        document.querySelectorAll('.toc-list li').forEach((li) => li.classList.remove('active'));
         const activeLi = document.querySelector(`.toc-list li[data-id="${activeId}"]`);
         if (activeLi) activeLi.classList.add('active');
     }
@@ -276,24 +241,26 @@ export class ArticlePageManager extends PageManager {
         }
     }
 
+    /**
+     * 滚动回调：由 ScrollDispatcher 以 rAF 频率触发，
+     * 内部不再做节流（Dispatcher 已保证）。
+     */
     private onScroll(): void {
-        if (this.scrollTimer) return;
-        this.scrollTimer = window.setTimeout(() => {
-            const activeId = this.getCurrentActiveHeading();
-            if (activeId) this.updateActiveItem(activeId);
-            this.updateTocReadingProgress();
-            this.scrollTimer = null;
-        }, 60);
+        const activeId = this.getCurrentActiveHeading();
+        if (activeId) this.updateActiveItem(activeId);
+        this.updateTocReadingProgress();
     }
 
     private getCurrentActiveHeading(): string | null {
         const headings = Array.from(
             document.querySelectorAll('#articleBody h1, #articleBody h2, #articleBody h3, #articleBody h4')
-        ).filter(h => h.id);
+        ).filter((h) => h.id);
         if (!headings.length) return null;
+
         const scrollTop = window.scrollY + 90;
         let active: string | null = null;
         let minDist = Infinity;
+
         for (const h of headings) {
             const offset = h.getBoundingClientRect().top + window.scrollY;
             if (offset <= scrollTop && scrollTop - offset < minDist) {
@@ -308,6 +275,7 @@ export class ArticlePageManager extends PageManager {
         const header = document.querySelector('.toc-header');
         if (!header) return;
         if (header.querySelector('.reading-progress-wrapper')) return;
+
         const wrapper = document.createElement('div');
         wrapper.className = 'reading-progress-wrapper';
         wrapper.innerHTML = `
@@ -315,6 +283,7 @@ export class ArticlePageManager extends PageManager {
             <div class="reading-progress-container"><div class="reading-progress-fill"></div></div>
         `;
         header.appendChild(wrapper);
+
         this.tocProgressPercent = wrapper.querySelector('.reading-percent');
         this.tocProgressFill = wrapper.querySelector('.reading-progress-fill');
         this.updateTocReadingProgress();
@@ -333,37 +302,35 @@ export class ArticlePageManager extends PageManager {
 
     // ---------- 图片懒加载 ----------
     private initImageLazyLoad(): void {
-        const images = document.querySelectorAll('#articleBody img[data-src]');
+        const images = document.querySelectorAll<HTMLImageElement>('#articleBody img[data-src]');
         if (!images.length) return;
-        if ('IntersectionObserver' in window) {
-            this.imageObserver = new IntersectionObserver(
-                (entries) => {
-                    for (const entry of entries) {
-                        if (entry.isIntersecting) {
-                            this.loadImage(entry.target as HTMLImageElement);
-                            this.imageObserver!.unobserve(entry.target);
-                        }
-                    }
-                },
-                { rootMargin: '100px 0px', threshold: 0.01 }
-            );
-            images.forEach(img => this.imageObserver!.observe(img));
-        } else {
+
+        if (!('IntersectionObserver' in window)) {
             // 降级：直接加载
-            images.forEach(img => this.loadImage(img as HTMLImageElement));
+            images.forEach((img) => this.loadImage(img));
+            return;
         }
-        // 清理观察器
-        this.cleanupFns.push(() => {
-            if (this.imageObserver) {
-                this.imageObserver.disconnect();
-                this.imageObserver = null;
-            }
-        });
+
+        const observer = new IntersectionObserver(
+            (entries) => {
+                for (const entry of entries) {
+                    if (entry.isIntersecting) {
+                        this.loadImage(entry.target as HTMLImageElement);
+                        observer.unobserve(entry.target);
+                    }
+                }
+            },
+            { rootMargin: '100px 0px', threshold: 0.01 }
+        );
+
+        images.forEach((img) => observer.observe(img));
+        this.stack.addObserver(observer);
     }
 
     private loadImage(img: HTMLImageElement): void {
         const src = img.dataset.src;
         if (!src) return;
+
         img.classList.add('lazy-loading');
         const temp = new Image();
         temp.onload = () => {
@@ -378,31 +345,26 @@ export class ArticlePageManager extends PageManager {
         temp.src = src;
     }
 
-    // ---------- 阅读进度条 ----------
+    // ---------- 阅读进度条（顶部） ----------
     private initReadingProgress(): void {
         const progressBar = document.getElementById('progress-bar');
         if (!progressBar) return;
-        this.progressHandler = () => {
+
+        const unsubscribe = scrollDispatcher.subscribe((scrollY) => {
             const total = document.documentElement.scrollHeight - window.innerHeight;
-            const percent = total > 0 ? (window.scrollY / total) * 100 : 0;
+            const percent = total > 0 ? (scrollY / total) * 100 : 0;
             progressBar.style.width = `${percent}%`;
-        };
-        window.addEventListener('scroll', this.progressHandler);
-        this.progressHandler(); // 初始更新
-        this.cleanupFns.push(() => {
-            if (this.progressHandler) {
-                window.removeEventListener('scroll', this.progressHandler);
-                this.progressHandler = null;
-            }
         });
+        this.stack.add(unsubscribe);
     }
 
     // ---------- 代码块复制 ----------
     private initCodeBlocks(): void {
-        document.querySelectorAll('#articleBody pre').forEach(pre => {
+        document.querySelectorAll('#articleBody pre').forEach((pre) => {
             if ((pre as HTMLElement).dataset.enhanced) return;
             const code = pre.querySelector('code');
             if (!code) return;
+
             const langMatch = code.className.match(/language-(\w+)/);
             const lang = langMatch ? langMatch[1] : '';
 
@@ -413,12 +375,14 @@ export class ArticlePageManager extends PageManager {
 
             const toolbar = document.createElement('div');
             toolbar.className = 'code-toolbar';
+
             if (lang) {
                 const span = document.createElement('span');
                 span.className = 'code-filetype';
                 span.textContent = lang.toUpperCase();
                 toolbar.appendChild(span);
             }
+
             const copyBtn = document.createElement('button');
             copyBtn.className = 'code-copy-btn';
             copyBtn.textContent = '复制';
@@ -426,56 +390,63 @@ export class ArticlePageManager extends PageManager {
                 try {
                     await navigator.clipboard.writeText(code.textContent!);
                     copyBtn.textContent = '已复制';
-                    setTimeout(() => copyBtn.textContent = '复制', 1500);
+                    setTimeout(() => (copyBtn.textContent = '复制'), 1500);
                 } catch {
                     copyBtn.textContent = '失败';
-                    setTimeout(() => copyBtn.textContent = '复制', 1500);
+                    setTimeout(() => (copyBtn.textContent = '复制'), 1500);
                 }
             });
             toolbar.appendChild(copyBtn);
             pre.prepend(toolbar);
+
             (pre as HTMLElement).dataset.enhanced = 'true';
         });
     }
 
     // ---------- 移动端侧边栏 ----------
     private initMobileSidebar(): void {
-    const checkMobile = () => {
-        const isMobile = window.innerWidth <= CONFIG.BREAKPOINTS.MOBILE;
-        const floating = document.querySelector('.floating-buttons') as HTMLElement;
-        if (floating) floating.style.display = isMobile ? 'flex' : 'none';
-        if (this.tocScrollWrapper) {
-        this.tocScrollWrapper.style.maxHeight = isMobile ? 'calc(100vh - 160px)' : 'calc(100vh - 220px)';
-        }
-    };
+        const checkMobile = (): void => {
+            const isMobile = window.innerWidth <= CONFIG.BREAKPOINTS.MOBILE;
+            const floating = document.querySelector<HTMLElement>('.floating-buttons');
+            if (floating) floating.style.display = isMobile ? 'flex' : 'none';
+            if (this.tocScrollWrapper) {
+                this.tocScrollWrapper.style.maxHeight = isMobile
+                    ? 'calc(100vh - 160px)'
+                    : 'calc(100vh - 220px)';
+            }
+        };
 
-    this.toggleSidebarHandler = () => this.toggleMobileSidebar();
-    window.addEventListener('article:toggleSidebar', this.toggleSidebarHandler);
-    this.cleanupFns.push(() => {
-        if (this.toggleSidebarHandler) {
-        window.removeEventListener('article:toggleSidebar', this.toggleSidebarHandler);
-        this.toggleSidebarHandler = null;
-        }
-    });
+        // 触发侧边栏切换
+        const toggleHandler = (): void => this.toggleMobileSidebar();
+        this.stack.addEventListener(window, 'article:toggleSidebar', toggleHandler);
 
-    // 创建遮罩（只创建一次）
-    let overlay = document.querySelector('.article-sidebar-overlay');
-    if (!overlay) {
-        overlay = document.createElement('div');
-        overlay.className = 'article-sidebar-overlay';
-        document.body.appendChild(overlay);
-        overlay.addEventListener('click', () => this.closeMobileSidebar());
-    }
-
-    this.resizeHandler = checkMobile;
-    window.addEventListener('resize', this.resizeHandler);
-    this.cleanupFns.push(() => {
-        if (this.resizeHandler) {
-        window.removeEventListener('resize', this.resizeHandler);
-        this.resizeHandler = null;
+        // 遮罩（单次创建）
+        let overlay = document.querySelector<HTMLElement>('.article-sidebar-overlay');
+        if (!overlay) {
+            overlay = document.createElement('div');
+            overlay.className = 'article-sidebar-overlay';
+            document.body.appendChild(overlay);
+            this.stack.addEventListener(overlay, 'click', () => this.closeMobileSidebar());
         }
-    });
-    checkMobile();
+
+        // resize 防抖
+        let resizeTimer: number | null = null;
+        const resizeHandler = (): void => {
+            if (resizeTimer !== null) clearTimeout(resizeTimer);
+            resizeTimer = window.setTimeout(() => {
+                checkMobile();
+                resizeTimer = null;
+            }, 150);
+        };
+        this.stack.addEventListener(window, 'resize', resizeHandler);
+        this.stack.add(() => {
+            if (resizeTimer !== null) {
+                clearTimeout(resizeTimer);
+                resizeTimer = null;
+            }
+        });
+
+        checkMobile();
     }
 
     private toggleMobileSidebar(): void {
@@ -501,7 +472,7 @@ export class ArticlePageManager extends PageManager {
         const hash = window.location.hash;
 
         if (hash) {
-            // 有 hash：滚动到锚点，并清除保存的滚动位置，避免覆盖
+            // 有 hash：滚动到锚点，并清除保存的滚动位置
             const targetId = hash.slice(1);
             setTimeout(() => {
                 const el = document.getElementById(targetId);
@@ -509,28 +480,26 @@ export class ArticlePageManager extends PageManager {
                     el.scrollIntoView({ behavior: 'smooth', block: 'start' });
                     sessionStorage.removeItem(key);
                 } else {
-                    // 元素不存在，尝试恢复保存的位置
                     this.restoreScrollPosition(key);
                 }
             }, 50);
         } else {
-            // 无 hash：恢复保存的位置
             this.restoreScrollPosition(key);
         }
 
-        // 滚动时保存位置（防抖）
+        // 滚动位置保存：Dispatcher 已节流，写入用 debounce
         let saveTimer: number | null = null;
-        const saveHandler = () => {
-            if (saveTimer) clearTimeout(saveTimer);
+        const unsubscribe = scrollDispatcher.subscribe((scrollY) => {
+            if (saveTimer !== null) clearTimeout(saveTimer);
             saveTimer = window.setTimeout(() => {
-                sessionStorage.setItem(key, String(window.scrollY));
+                sessionStorage.setItem(key, String(scrollY));
                 saveTimer = null;
             }, 200);
-        };
-        window.addEventListener('scroll', saveHandler);
-        this.cleanupFns.push(() => {
-            window.removeEventListener('scroll', saveHandler);
-            if (saveTimer) {
+        });
+
+        this.stack.add(unsubscribe);
+        this.stack.add(() => {
+            if (saveTimer !== null) {
                 clearTimeout(saveTimer);
                 saveTimer = null;
             }
@@ -549,13 +518,8 @@ export class ArticlePageManager extends PageManager {
 
     // ---------- 主题变化刷新进度 ----------
     private setupThemeListener(): void {
-        const handler = () => {
-            this.updateTocReadingProgress();
-        };
-        window.addEventListener('themeChanged', handler);
-        this.cleanupFns.push(() => {
-            window.removeEventListener('themeChanged', handler);
-        });
+        const handler = (): void => this.updateTocReadingProgress();
+        this.stack.addEventListener(window, 'themeChanged', handler);
     }
 }
 
