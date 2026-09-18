@@ -1,17 +1,217 @@
 // /js/ui/loading-overlay-manager.ts
 // 加载覆盖层：版本检测、数据预加载、更新提示
+//
+// 布局约定：
+//  - LOGO 居中；左侧 .loading-log 显示最近 5 行日志（新的在上）。
+//  - 右侧 .loading-done 显示最近 5 条已完成项（绿色）。
+//  - 溢出（第 6 条）时，触发与 tooltip 完全一致的淡出：
+//      每个字符独立随机 delay(0~200ms) / duration(300~600ms) / translateY(30~80px)
+//  - 进入更新态 / 关闭覆盖层前，两栏所有字符统一执行相同淡出。
 
 import { CONFIG, storageController, Utils } from '/js/core/core.js';
 import { dataService } from '/js/core/data-service.js';
+
+interface VersionEntry {
+  id: number;
+  version: string;
+  date?: string;
+  changes?: Array<{ type: string; description: string }>;
+}
+
+interface VersionInfo {
+  allVersions: VersionEntry[];
+  latestWebVersion: string | null;
+  storedVersion: string | null;
+  lastVisit: number | null;
+  needUpdate: boolean;
+}
+
+/** 更新内容入场后，等待其稳定多久才开始淡出（毫秒） */
+const LOG_FADE_DELAY_MS = 3000;
+
+/** 左栏最多显示行数 */
+const MAX_LOG_LINES = 5;
+/** 右栏最多显示条数 */
+const MAX_DONE_ITEMS = 5;
+
+/**
+ * 与 TooltipManager.hide() 完全一致的退出节奏：
+ *   延迟 0~200ms，时长 300~600ms，向下位移 30~80px。
+ * 每个字符独立采样一次随机参数 → 多个字符的动画自然重叠。
+ */
+const FADE_DELAY_MAX = 200;
+const FADE_DURATION_BASE = 300;
+const FADE_DURATION_RANGE = 300;
+const FADE_DISTANCE_BASE = 30;
+const FADE_DISTANCE_RANGE = 50;
+
+/** 逐字入场节拍（毫秒/字符），与 tooltip 的 typeTimer 对齐 */
+const CHAR_TYPE_INTERVAL = 18;
 
 export class LoadingOverlayManager {
   private overlay: HTMLElement | null = null;
   private content: HTMLElement | null = null;
   private logContainer: HTMLElement | null = null;
-  private logBuffer: { module: string; msg: string; indent: number; time: string }[] = [];
-  private logIndex = 0;
+  private doneContainer: HTMLElement | null = null;
 
-  private async fetchData(endpoints: Array<{ key: string; url: string }>) {
+  /* ==================== 字符构建 ==================== */
+
+  /**
+   * 构建一行带逐字 span 的条目。
+   * segments 允许传入多段文本（如时间/模块/消息），每段可指定 class 以继承配色。
+   */
+  private buildEntry(
+    className: string,
+    segments: Array<{ text: string; className?: string }>
+  ): HTMLElement {
+    const root = document.createElement('div');
+    root.className = className;
+
+    for (const seg of segments) {
+      const wrap = document.createElement('span');
+      if (seg.className) wrap.className = seg.className;
+      for (const ch of seg.text) {
+        const span = document.createElement('span');
+        span.className = 'char';
+        span.textContent = ch === ' ' ? '\u00A0' : ch;
+        span.style.opacity = '0';
+        wrap.appendChild(span);
+      }
+      root.appendChild(wrap);
+    }
+
+    return root;
+  }
+
+  /** 逐字入场：每个字符按索引 i * CHAR_TYPE_INTERVAL 依次淡入 */
+  private animateCharsIn(root: HTMLElement): void {
+    const chars = root.querySelectorAll<HTMLElement>('.char');
+    if (chars.length === 0) return;
+
+    chars.forEach((ch, i) => {
+      ch.style.transition = `opacity 0.15s ease ${i * CHAR_TYPE_INTERVAL}ms`;
+    });
+
+    // 强制一次 layout，确保 transition 被触发
+    void root.offsetWidth;
+
+    requestAnimationFrame(() => {
+      chars.forEach((ch) => {
+        ch.style.opacity = '1';
+      });
+    });
+  }
+
+  /**
+   * 逐字退场：每个字符独立随机 delay/duration/distance。
+   * 与 TooltipManager.hide() 的字符级淡出逻辑一致。
+   * @returns 该行所有字符退场所需的最长耗时（毫秒）
+   */
+  private applyCharOut(root: HTMLElement): number {
+    const chars = root.querySelectorAll<HTMLElement>('.char');
+    let maxEnd = 0;
+
+    chars.forEach((ch) => {
+      const delay = Math.random() * FADE_DELAY_MAX;
+      const duration = FADE_DURATION_BASE + Math.random() * FADE_DURATION_RANGE;
+      const distance = FADE_DISTANCE_BASE + Math.random() * FADE_DISTANCE_RANGE;
+      maxEnd = Math.max(maxEnd, delay + duration);
+
+      ch.style.transition =
+        `transform ${duration}ms cubic-bezier(0.2, 0.9, 0.4, 1) ${delay}ms, ` +
+        `opacity ${duration}ms ease ${delay}ms`;
+      ch.style.transform = `translateY(${distance}px)`;
+      ch.style.opacity = '0';
+    });
+
+    return maxEnd;
+  }
+
+  /* ==================== 日志 / 完成项 ==================== */
+
+  /** 追加一行日志（新的在上）；超出 MAX_LOG_LINES 的最旧行逐字退场。 */
+  private log(module: string, msg: string): void {
+    if (!this.logContainer) return;
+
+    const line = this.buildEntry(`log-entry log-module-${module}`, [
+      { text: `[${new Date().toLocaleTimeString()}]`, className: 'log-time' },
+      { text: `[${module}]`, className: 'log-module-name' },
+      { text: ' ' + msg },
+    ]);
+
+    this.logContainer.prepend(line);
+    this.animateCharsIn(line);
+    this.enforceLimit(this.logContainer, '.log-entry', MAX_LOG_LINES);
+  }
+
+  /** 追加一条已完成项（新的在上）；超出 MAX_DONE_ITEMS 的最旧项逐字退场。 */
+  private done(msg: string): void {
+    if (!this.doneContainer) return;
+
+    const item = this.buildEntry('done-entry', [
+      { text: '✓ ' },
+      { text: msg },
+    ]);
+
+    this.doneContainer.prepend(item);
+    this.animateCharsIn(item);
+    this.enforceLimit(this.doneContainer, '.done-entry', MAX_DONE_ITEMS);
+  }
+
+  /** 由于新项 prepend 到顶部，越靠后越旧；slice(max) 即为需要退场的项。 */
+  private enforceLimit(container: HTMLElement, selector: string, max: number): void {
+    const entries = Array.from(
+      container.querySelectorAll<HTMLElement>(`${selector}:not(.is-leaving)`)
+    );
+    if (entries.length <= max) return;
+    entries.slice(max).forEach((el) => this.removeEntry(el));
+  }
+
+  /** 单条退场：逐字下落 → 整行 DOM 移除。 */
+  private removeEntry(el: HTMLElement): void {
+    if (el.classList.contains('is-leaving')) return;
+    el.classList.add('is-leaving');
+
+    const maxEnd = this.applyCharOut(el);
+    window.setTimeout(() => el.remove(), maxEnd + 60);
+  }
+
+  /**
+   * 两栏所有活跃文字统一退场。
+   * 用于：进入更新态 / 关闭覆盖层之前。
+   */
+  private fadeOutAllPanels(): Promise<void> {
+    const targets: HTMLElement[] = [];
+
+    const collect = (root: HTMLElement | null, selector: string): void => {
+      if (!root) return;
+      root.querySelectorAll<HTMLElement>(selector).forEach((el) => {
+        if (!el.classList.contains('is-leaving')) targets.push(el);
+      });
+    };
+    collect(this.logContainer, '.log-entry');
+    collect(this.doneContainer, '.done-entry');
+
+    if (targets.length === 0) return Promise.resolve();
+
+    let maxEnd = 0;
+    targets.forEach((el) => {
+      el.classList.add('is-leaving');
+      maxEnd = Math.max(maxEnd, this.applyCharOut(el));
+    });
+
+    return new Promise((resolve) => {
+      window.setTimeout(() => {
+        this.logContainer?.replaceChildren();
+        this.doneContainer?.replaceChildren();
+        resolve();
+      }, maxEnd + 60);
+    });
+  }
+
+  /* ==================== 数据抓取 ==================== */
+
+  private async fetchData(keys: string[]): Promise<Record<string, any>> {
     const fetchMap: Record<string, () => Promise<any>> = {
       statistics: () => dataService.getStatistics(),
       articles: () => dataService.getArticles(),
@@ -22,17 +222,17 @@ export class LoadingOverlayManager {
     };
 
     const results = await Promise.allSettled(
-      endpoints.map(
-        ({ key }) =>
-          fetchMap[key]?.() ?? Promise.reject(new Error(`Unknown key: ${key}`))
+      keys.map(
+        (key) => fetchMap[key]?.() ?? Promise.reject(new Error(`Unknown key: ${key}`))
       )
     );
 
     const dataMap: Record<string, any> = {};
     results.forEach((result, idx) => {
-      const key = endpoints[idx].key;
-      if (result.status === 'fulfilled') dataMap[key] = result.value;
-      else {
+      const key = keys[idx];
+      if (result.status === 'fulfilled') {
+        dataMap[key] = result.value;
+      } else {
         console.warn(`[LoadingOverlay] ${key} 加载失败`, result.reason);
         dataMap[key] = null;
       }
@@ -40,36 +240,8 @@ export class LoadingOverlayManager {
     return dataMap;
   }
 
-  private addLog(module: string, msg: string, indent = 0) {
-    const time = new Date().toLocaleTimeString();
-    this.logBuffer.push({ module, msg, indent, time });
-  }
+  /* ==================== 公共 API ==================== */
 
-  private flushLogs() {
-    if (!this.logContainer || this.logBuffer.length === 0) return;
-    const fragment = document.createDocumentFragment();
-    this.logBuffer.forEach(({ module, msg, indent, time }) => {
-      const line = document.createElement('div');
-      line.className = `log-entry log-module-${module}`;
-      const indentStr = '│ '.repeat(indent) + (indent > 0 ? '├── ' : '');
-      line.innerHTML = `<span class="log-time">[${time}]</span><span class="log-module-name">[${module}]</span> ${indentStr}${msg}`;
-      line.style.animationDelay = this.logIndex * 0.035 + 's';
-      fragment.appendChild(line);
-      this.logIndex++;
-    });
-    this.logContainer.appendChild(fragment);
-    this.logContainer.scrollTop = this.logContainer.scrollHeight;
-    this.logBuffer = [];
-  }
-
-  private restoreScroll() {
-    document.body.classList.remove('loading');
-    document.body.style.overflow = '';
-  }
-
-  /**
-   * 显示加载覆盖层，返回 Promise，在用户点击后 resolve
-   */
   public show(): Promise<void> {
     return new Promise((resolve) => {
       this.overlay = document.getElementById('loading-overlay');
@@ -80,368 +252,265 @@ export class LoadingOverlayManager {
       }
 
       document.body.style.overflow = 'hidden';
-
-      this.logContainer = this.overlay.querySelector('.loading-log');
-      if (!this.logContainer) {
-        this.logContainer = document.createElement('div');
-        this.logContainer.className = 'loading-log';
-        this.overlay.appendChild(this.logContainer);
-      } else {
-        this.logContainer.innerHTML = '';
-      }
-
       this.content = document.getElementById('loading-content');
 
-      // 1. 初始系统日志
-      this.addLog('System', '加载覆盖层已启动');
-      this.addLog(
-        'System',
-        `浏览器标识: ${navigator.userAgent.split(' ').slice(0, 3).join(' ')}`
-      );
-      this.addLog('System', `当前页面: ${window.location.href}`);
-      this.addLog('System', '主题偏好: 从本地存储读取或根据时段自动选择');
-      this.addLog('System', '本地存储已授权 (默认同意)');
-      this.addLog('System', '加载核心配置参数...');
-      this.addLog('System', '配置加载完成 (API端点、白名单、背景图列表等)');
-      this.flushLogs();
+      // 左右两栏容器（不存在则创建并挂到 content 上；布局由 main.css 控制）
+      this.logContainer = this.ensurePanel('loading-log');
+      this.doneContainer = this.ensurePanel('loading-done');
 
-      // 2. 网络请求
-      const endpoints = [
-        { key: 'statistics', url: '' },
-        { key: 'articles', url: '' },
-        { key: 'works', url: '' },
-        { key: 'code', url: '' },
-        { key: 'friends', url: '' },
-        { key: 'version', url: '' },
-      ];
+      // ---- 精简日志：只保留能传达"当前在做什么"的关键节点 ----
+      this.log('System', '加载覆盖层已启动');
+      this.done('初始化完成');
 
-      this.addLog('Data', '检查网络连接状态...');
-      this.addLog('Data', '网络连接正常，开始并行请求关键数据');
-      this.addLog(
-        'Data',
-        '发起请求: 统计信息、文章列表、作品列表、代码分析、友链、版本信息'
-      );
-      this.flushLogs();
+      this.log('Data', '开始并行请求关键数据');
 
-      this.fetchData(endpoints).then((dataMap) => {
-        // 3. 解析统计数据
-        const stats = dataMap.statistics || null;
-        const currentVersion = stats?.version ? String(stats.version).trim() : null;
-        if (stats) {
-          this.addLog('Data', '解析统计信息...');
-          this.addLog('Data', `  版本号: ${currentVersion || '未知'}`, 1);
-          this.addLog('Data', `  文章总数: ${stats.total_articles || 0}`, 1);
-          this.addLog('Data', `  作品总数: ${stats.total_works || 0}`, 1);
-          this.addLog(
-            'Data',
-            `  总字数: ${(stats.total_word_count || 0).toLocaleString()}`,
-            1
-          );
-          this.addLog('Data', `  文章标签数: ${stats.total_article_tags || 0}`, 1);
-          this.addLog('Data', `  作品标签数: ${stats.total_work_tags || 0}`, 1);
-          this.addLog('Data', `  最后更新: ${stats.last_updated || '未知'}`, 1);
-        }
-
-        const articlesData = dataMap.articles || null;
-        if (articlesData) {
-          const count =
-            articlesData.total_articles || articlesData.articles?.length || 0;
-          this.addLog('Data', `文章列表加载成功 (${count} 篇)`);
-          if (articlesData.articles?.length) {
-            const latest = articlesData.articles[0]?.title || '无';
-            const oldest =
-              articlesData.articles[articlesData.articles.length - 1]?.title || '无';
-            this.addLog('Data', `  最近文章: ${latest}`, 1);
-            this.addLog('Data', `  最早文章: ${oldest}`, 1);
-            const cats = new Set<string>();
-            articlesData.articles.forEach((a: any) => {
-              if (a.category) cats.add(a.category);
-            });
-            if (cats.size) this.addLog('Data', `  文章分类: ${Array.from(cats).join(', ')}`, 1);
-          }
-        }
-
-        const worksData = dataMap.works || null;
-        if (worksData) {
-          const count = worksData.works?.length || 0;
-          this.addLog('Data', `作品列表加载成功 (${count} 个)`);
-          if (worksData.works?.length) {
-            const tags = new Set<string>();
-            worksData.works.forEach((w: any) => {
-              Utils.getTags(w).forEach((tag) => tags.add(tag));
-            });
-            if (tags.size) {
-              this.addLog('Data', `  作品标签: ${Array.from(tags).join(', ')}`, 1);
-            }
-          }
-        }
-
-        const codeData = dataMap.code || null;
-        if (codeData) {
-          this.addLog('Data', `代码分析加载成功 (${codeData.total_files || 0} 个文件)`);
-          this.addLog(
-            'Data',
-            `  总代码行数: ${(codeData.total_lines || 0).toLocaleString()}`,
-            1
-          );
-          this.addLog(
-            'Data',
-            `  非空行数: ${(codeData.non_empty_lines || 0).toLocaleString()}`,
-            1
-          );
-          if (codeData.by_extension?.length) {
-            const topExt = codeData.by_extension.sort(
-              (a: any, b: any) => b.count - a.count
-            )[0];
-            this.addLog(
-              'Data',
-              `  主要文件类型: ${topExt.extension} (${topExt.count} 个文件)`,
-              1
-            );
-          }
-        }
-
-        const friendsData = dataMap.friends || null;
-        if (friendsData) {
-          const count = Array.isArray(friendsData) ? friendsData.length : 0;
-          this.addLog('Data', `友链加载成功 (${count} 个好友)`);
-          if (count) {
-            const names = friendsData
-              .slice(0, 3)
-              .map((f: any) => f.name)
-              .join('、');
-            this.addLog('Data', `  友链示例: ${names}${count > 3 ? ' 等' : ''}`, 1);
-          }
-        }
-        this.flushLogs();
-
-        // 4. UI 组件状态
-        this.addLog('UI', '用户界面组件初始化完成');
-        const cursorEnabled =
-          localStorage.getItem('settings_cursor_enabled') !== 'false';
-        this.addLog('UI', `  自定义光标: ${cursorEnabled ? '启用' : '已禁用'}`, 1);
-        this.addLog(
-          'UI',
-          `  外链拦截: ${localStorage.getItem('settings_link_warning_enabled') !== 'false' ? '启用' : '已禁用'}`,
-          1
-        );
-        this.addLog('Player', '音乐播放器模块已就绪');
-        this.addLog('Chart', '统计图表渲染完成');
-        this.flushLogs();
-
-        // 5. 版本检测（统一从访客记录读取本地版本）
-        const versionData = dataMap.version || null;
-        let allVersions: any[] = [];
-        let latestWebVersion: string | null = null;
-        if (versionData && Array.isArray(versionData.versions)) {
-          allVersions = versionData.versions.slice().sort((a: any, b: any) => a.id - b.id);
-          if (allVersions.length) latestWebVersion = allVersions[allVersions.length - 1].version;
-        }
-
-        this.addLog('Version', '读取本地存储的访客记录...');
-        let storedVersion: string | null = null;
-        let lastVisit: number | null = null;
-        if (storageController.isAllowed()) {
-          const recordRaw = storageController.getItem(CONFIG.STORAGE_KEYS.VISIT_RECORD);
-          if (recordRaw) {
-            try {
-              const record = JSON.parse(recordRaw);
-              storedVersion = record.version || null;
-              lastVisit = record.lastVisit || null;
-            } catch {
-              /* ignore */
-            }
-          }
-        }
-        this.addLog('Version', `本地版本: ${storedVersion || '无'}`);
-        this.addLog(
-          'Version',
-          `上次访问: ${lastVisit ? new Date(lastVisit).toLocaleString() : '首次'}`
-        );
-        this.addLog('Version', `远程最新版本: ${latestWebVersion || '无'}`);
-
-        const needUpdate =
-          !storedVersion ||
-          (latestWebVersion && storedVersion !== latestWebVersion);
-        this.addLog('Version', `版本比对结果: ${needUpdate ? '需要更新' : '版本一致'}`);
-
-        // 计算离开时间
-        let awayText = '';
-        if (lastVisit) {
-          const diff = Date.now() - lastVisit;
-          const seconds = Math.floor(diff / 1000);
-          if (seconds < 60) awayText = `你刚刚离开 ${seconds} 秒`;
-          else if (seconds < 3600) awayText = `你已经离开 ${Math.floor(seconds / 60)} 分钟`;
-          else if (seconds < 86400) awayText = `你已经离开 ${Math.floor(seconds / 3600)} 小时`;
-          else awayText = `你已经离开 ${Math.floor(seconds / 86400)} 天`;
-        } else {
-          awayText = '欢迎首次访问本站';
-        }
-        this.addLog('Version', `离开时长: ${awayText}`);
-
-        if (!needUpdate) {
-          this.addLog('Version', '版本一致，加载完成，即将进入页面');
-          try {
-            let record: any = {};
-            if (storageController.isAllowed()) {
-              const raw = storageController.getItem(CONFIG.STORAGE_KEYS.VISIT_RECORD);
-              if (raw) {
-                try {
-                  record = JSON.parse(raw);
-                } catch {
-                  /* ignore */
-                }
-              }
-            }
-            record.lastVisit = Date.now();
-            if (latestWebVersion) record.version = latestWebVersion;
-            storageController.setItem(
-              CONFIG.STORAGE_KEYS.VISIT_RECORD,
-              JSON.stringify(record)
-            );
-          } catch (e) {
-            console.warn('[LoadingOverlay] 更新访客记录失败', e);
-          }
-          this.flushLogs();
-          this.overlay!.classList.add('hidden');
-          this.restoreScroll();
-          this.addLog('System', '覆盖层已关闭，页面可交互');
-          this.flushLogs();
-          resolve();
-          return;
-        }
-
-        // 6. 生成更新信息
-        this.addLog('Version', '检测到版本更新，准备生成更新提示');
-        let startIdx = 0;
-        if (storedVersion) {
-          const foundIdx = allVersions.findIndex(
-            (v: any) => v.version === storedVersion
-          );
-          if (foundIdx !== -1) startIdx = foundIdx + 1;
-          else startIdx = Math.max(0, allVersions.length - 3);
-        } else {
-          startIdx = Math.max(0, allVersions.length - 3);
-        }
-        const relevantVersions = allVersions.slice(startIdx);
-        const sortedVersions = relevantVersions.slice().reverse(); // 新→旧
-
-        let versionMsg = '';
-        if (storedVersion && sortedVersions.length > 0) {
-          const firstVer = sortedVersions[0].version;
-          if (sortedVersions.length === 1) {
-            versionMsg = `网站已更新到版本 ${firstVer}`;
-          } else {
-            const lastVer = sortedVersions[sortedVersions.length - 1].version;
-            versionMsg = `网站已从版本 ${storedVersion} 更新到 ${firstVer}，共 ${sortedVersions.length} 个版本更新`;
-          }
-        } else if (sortedVersions.length > 0) {
-          const latest = sortedVersions[0].version;
-          versionMsg = `当前版本 ${latest}（最近 ${sortedVersions.length} 个版本）`;
-        } else {
-          versionMsg = '版本信息已就绪';
-        }
-        this.addLog('Version', `版本摘要: ${versionMsg}`);
-        this.flushLogs();
-
-        // 7. 构建更新日志 HTML
-        let changesHTML = '';
-        if (sortedVersions.length > 0) {
-          const items = sortedVersions
-            .map((v: any) => {
-              const versionLabel = v.version || `v${v.id}`;
-              const changeItems = (v.changes || [])
-                .slice(0, 8)
-                .map((c: any) => {
-                  const type = Utils.escapeHtml(c.type || '');
-                  const desc = Utils.escapeHtml(c.description || '');
-                  return `<li><span class="change-type">[${type}]</span> ${desc}</li>`;
-                })
-                .join('');
-              if (changeItems) {
-                return `
-                  <div class="version-item" style="border-bottom:1px solid rgba(255,255,255,0.08); padding-bottom:16px; margin-bottom:16px;">
-                    <div style="font-weight:bold; font-size:0.95rem; color:var(--accent-color); margin-bottom:8px;">版本 ${versionLabel}</div>
-                    <ul class="changes-list" style="margin:0; padding-left:0; list-style:none; max-height:200px; overflow-y:auto;">
-                      ${changeItems}
-                    </ul>
-                  </div>
-                `;
-              }
-              return '';
-            })
-            .filter((s: string) => s)
-            .join('');
-          if (items) {
-            changesHTML = `
-              <div class="changes-container" style="background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.06); border-radius:12px; padding:16px; margin-top:12px; max-width:100%;">
-                <div style="font-size:0.7rem; text-transform:uppercase; letter-spacing:0.1em; color:rgba(255,255,255,0.4); font-weight:600; margin-bottom:8px;">更新内容</div>
-                <div class="version-list" style="display:flex; flex-direction:column;">
-                  ${items}
-                </div>
-              </div>
-            `;
-          }
-        }
-
-        this.addLog('UI', '正在渲染更新提示界面...');
-        this.flushLogs();
-
-        if (this.content) {
-          this.content.classList.add('updated');
-          const oldInfo = this.content.querySelector('.update-info');
-          if (oldInfo) oldInfo.remove();
-
-          const infoDiv = document.createElement('div');
-          infoDiv.className = 'update-info';
-          infoDiv.innerHTML = `
-            <div class="version-badge">${versionMsg}</div>
-            <div class="welcome-message">${awayText}</div>
-            ${changesHTML}
-            <div class="click-hint">点击任意位置继续</div>
-          `;
-          this.content.appendChild(infoDiv);
-        }
-
-        this.addLog('UI', '更新界面已渲染，等待用户交互');
-        this.flushLogs();
-
-        // 8. 点击关闭（并更新访客记录）
-        const handler = () => {
-          try {
-            let record: any = {};
-            if (storageController.isAllowed()) {
-              const raw = storageController.getItem(CONFIG.STORAGE_KEYS.VISIT_RECORD);
-              if (raw) {
-                try {
-                  record = JSON.parse(raw);
-                } catch {
-                  /* ignore */
-                }
-              }
-            }
-            record.lastVisit = Date.now();
-            if (latestWebVersion) record.version = latestWebVersion;
-            storageController.setItem(
-              CONFIG.STORAGE_KEYS.VISIT_RECORD,
-              JSON.stringify(record)
-            );
-          } catch (e) {
-            console.warn('[LoadingOverlay] 更新访客记录失败', e);
-          }
-
-          this.overlay!.classList.add('hidden');
-          this.restoreScroll();
-          window.dispatchEvent(new CustomEvent('welcomeOverlayDismissed'));
-          this.overlay!.removeEventListener('click', handler);
-          this.addLog('System', '覆盖层已关闭，页面可交互');
-          this.flushLogs();
-          resolve();
-        };
-        this.overlay!.addEventListener('click', handler);
-        this.addLog('System', '覆盖层就绪，等待用户操作');
-        this.flushLogs();
+      this.runFlow(resolve).catch((err) => {
+        console.error('[LoadingOverlay] 流程执行失败', err);
+        resolve();
       });
     });
+  }
+
+  /* ==================== 内部流程 ==================== */
+
+  private async runFlow(resolve: () => void): Promise<void> {
+    const dataMap = await this.fetchData([
+      'statistics', 'articles', 'works', 'code', 'friends', 'version',
+    ]);
+
+    this.logDataSummary(dataMap);
+    this.done('数据已就绪');
+
+    const versionInfo = this.resolveVersionInfo(dataMap.version);
+    const { allVersions, latestWebVersion, storedVersion, lastVisit, needUpdate } = versionInfo;
+
+    this.log(
+      'Version',
+      `本地 ${storedVersion || '无'} → 远程 ${latestWebVersion || '无'}`
+    );
+    this.done('版本比对完成');
+
+    const awayText = this.buildAwayText(lastVisit);
+
+    // ---- 版本一致：两栏淡出 → 直接进入页面 ----
+    if (!needUpdate) {
+      this.log('System', '准备就绪，即将进入页面');
+      this.done('准备就绪');
+      this.persistVisitRecord(latestWebVersion);
+
+      await this.fadeOutAllPanels();
+      this.overlay!.classList.add('hidden');
+      this.restoreScroll();
+      resolve();
+      return;
+    }
+
+    // ---- 需要更新：LOGO 先动，更新内容随后入场 ----
+    const { versionMsg, changesHTML } = this.buildUpdateContent(allVersions, storedVersion);
+    this.log('Version', '发现新版本，正在渲染更新提示');
+    this.done('更新内容已就绪');
+
+    // 触发 .updated：LOGO 立即开始非线性上移+缩小（1s 完成）
+    // .update-info 由 CSS 延迟 1s 后开始入场
+    this.showUpdateContent(versionMsg, awayText, changesHTML);
+
+    // 更新内容稳定 3s 后，两栏文字开始逐字下落淡出
+    window.setTimeout(() => {
+      void this.fadeOutAllPanels();
+    }, LOG_FADE_DELAY_MS);
+
+    const handler = (): void => {
+      this.persistVisitRecord(latestWebVersion);
+      this.overlay!.classList.add('hidden');
+      this.restoreScroll();
+      window.dispatchEvent(new CustomEvent('welcomeOverlayDismissed'));
+      this.overlay!.removeEventListener('click', handler);
+      resolve();
+    };
+    this.overlay.addEventListener('click', handler);
+  }
+
+  /* ==================== 数据摘要日志 ==================== */
+
+  private logDataSummary(dataMap: Record<string, any>): void {
+    const { statistics, articles, works, code, friends } = dataMap;
+
+    if (statistics) {
+      const articleCount = statistics.total_articles ?? (articles?.articles?.length ?? 0);
+      const workCount = statistics.total_works ?? (works?.works?.length ?? 0);
+      this.log(
+        'Data',
+        `统计: 版本 ${statistics.version ?? '—'} · 文章 ${articleCount} · 作品 ${workCount}`
+      );
+    }
+
+    if (code) {
+      this.log(
+        'Data',
+        `代码: ${code.total_files ?? 0} 文件 · ${(code.non_empty_lines ?? 0).toLocaleString()} 行`
+      );
+    }
+
+    if (friends) {
+      const count = Array.isArray(friends) ? friends.length : 0;
+      this.log('Data', `友链: ${count} 个`);
+    }
+  }
+
+  /* ==================== 更新内容渲染 ==================== */
+
+  private showUpdateContent(versionMsg: string, awayText: string, changesHTML: string): void {
+    if (!this.content) return;
+
+    this.content.querySelector('.update-info')?.remove();
+
+    const infoDiv = document.createElement('div');
+    infoDiv.className = 'update-info';
+    infoDiv.innerHTML = `
+      <div class="version-badge">${Utils.escapeHtml(versionMsg)}</div>
+      <div class="welcome-message">${Utils.escapeHtml(awayText)}</div>
+      ${changesHTML}
+      <div class="click-hint">点击任意位置继续</div>
+    `;
+    this.content.appendChild(infoDiv);
+
+    requestAnimationFrame(() => this.content!.classList.add('updated'));
+  }
+
+  /* ==================== 版本处理 ==================== */
+
+  private resolveVersionInfo(versionData: any): VersionInfo {
+    let allVersions: VersionEntry[] = [];
+    let latestWebVersion: string | null = null;
+
+    if (Array.isArray(versionData?.versions)) {
+      allVersions = versionData.versions.slice().sort((a: any, b: any) => a.id - b.id);
+      if (allVersions.length > 0) {
+        latestWebVersion = allVersions[allVersions.length - 1].version;
+      }
+    }
+
+    let storedVersion: string | null = null;
+    let lastVisit: number | null = null;
+    if (storageController.isAllowed()) {
+      const raw = storageController.getItem(CONFIG.STORAGE_KEYS.VISIT_RECORD);
+      if (raw) {
+        try {
+          const record = JSON.parse(raw);
+          storedVersion = record.version || null;
+          lastVisit = record.lastVisit || null;
+        } catch { /* ignore */ }
+      }
+    }
+
+    const needUpdate =
+      !storedVersion || (!!latestWebVersion && storedVersion !== latestWebVersion);
+
+    return { allVersions, latestWebVersion, storedVersion, lastVisit, needUpdate };
+  }
+
+  private buildAwayText(lastVisit: number | null): string {
+    if (!lastVisit) return '欢迎首次访问本站';
+
+    const seconds = Math.floor((Date.now() - lastVisit) / 1000);
+    if (seconds < 60) return `你刚刚离开 ${seconds} 秒`;
+    if (seconds < 3600) return `你已经离开 ${Math.floor(seconds / 60)} 分钟`;
+    if (seconds < 86400) return `你已经离开 ${Math.floor(seconds / 3600)} 小时`;
+    return `你已经离开 ${Math.floor(seconds / 86400)} 天`;
+  }
+
+  private buildUpdateContent(
+    allVersions: VersionEntry[],
+    storedVersion: string | null
+  ): { versionMsg: string; changesHTML: string } {
+    let startIdx: number;
+    if (storedVersion) {
+      const foundIdx = allVersions.findIndex((v) => v.version === storedVersion);
+      startIdx = foundIdx !== -1 ? foundIdx + 1 : Math.max(0, allVersions.length - 3);
+    } else {
+      startIdx = Math.max(0, allVersions.length - 1);
+    }
+
+    const sorted = allVersions.slice(startIdx).reverse();
+
+    let versionMsg: string;
+    if (!storedVersion) {
+      versionMsg = sorted.length
+        ? `当前是最新版本 ${sorted[0].version}`
+        : '版本信息已就绪';
+    } else if (sorted.length === 0) {
+      versionMsg = '版本信息已就绪';
+    } else if (sorted.length === 1) {
+      versionMsg = `网站已更新到版本 ${sorted[0].version}`;
+    } else {
+      versionMsg = `网站已从版本 ${storedVersion} 更新到 ${sorted[0].version}，共 ${sorted.length} 个版本更新`;
+    }
+
+    const showVersionHeader = sorted.length > 1;
+
+    const items = sorted
+      .map((v) => {
+        const label = v.version || `v${v.id}`;
+        const changeItems = (v.changes || [])
+          .slice(0, 8)
+          .map(
+            (c) =>
+              `<li><span class="change-type">[${Utils.escapeHtml(c.type || '')}]</span> ${Utils.escapeHtml(c.description || '')}</li>`
+          )
+          .join('');
+        if (!changeItems) return '';
+
+        const header = showVersionHeader
+          ? `<div class="version-item-label">版本 ${Utils.escapeHtml(label)}</div>`
+          : '';
+
+        return `<div class="version-item">${header}<ul class="changes-list">${changeItems}</ul></div>`;
+      })
+      .filter(Boolean)
+      .join('');
+
+    const changesHTML = items
+      ? `<div class="changes-container"><h4>更新内容</h4><div class="version-list">${items}</div></div>`
+      : '';
+
+    return { versionMsg, changesHTML };
+  }
+
+  /* ==================== 通用 ==================== */
+
+  /** 保证 content 内存在指定类名的面板容器，并清空后返回。 */
+  private ensurePanel(className: string): HTMLElement | null {
+    if (!this.content) return null;
+    let el = this.content.querySelector<HTMLElement>(`.${className}`);
+    if (!el) {
+      el = document.createElement('div');
+      el.className = className;
+      this.content.appendChild(el);
+    } else {
+      el.replaceChildren();
+    }
+    return el;
+  }
+
+  private persistVisitRecord(latestVersion: string | null): void {
+    try {
+      let record: any = {};
+      if (storageController.isAllowed()) {
+        const raw = storageController.getItem(CONFIG.STORAGE_KEYS.VISIT_RECORD);
+        if (raw) {
+          try { record = JSON.parse(raw); } catch { /* ignore */ }
+        }
+      }
+      record.lastVisit = Date.now();
+      if (latestVersion) record.version = latestVersion;
+      storageController.setItem(CONFIG.STORAGE_KEYS.VISIT_RECORD, JSON.stringify(record));
+    } catch (e) {
+      console.warn('[LoadingOverlay] 更新访客记录失败', e);
+    }
+  }
+
+  private restoreScroll(): void {
+    document.body.classList.remove('loading');
+    document.body.style.overflow = '';
   }
 }

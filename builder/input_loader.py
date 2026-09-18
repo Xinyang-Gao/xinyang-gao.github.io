@@ -441,7 +441,7 @@ def _create_html_page(title, date, content_html, headings_json, description, tag
     <link rel="stylesheet" href="/css/components/comments.css?v={cache_buster}">
 </head>
 <body>
-<div id="loading-overlay" role="status" aria-label="页面加载中"><div class="loading-log"><div>[START] 正在等待 JavaScript，这可能需要几秒</div></div><div class="loading-glow"></div><div id="loading-content"><span class="loading-title">GaoXinYang</span></div></div>
+<div id="loading-overlay" role="status" aria-label="页面加载中"><div class="loading-glow"></div><div id="loading-content"><span class="loading-title">GaoXinYang</span></div></div>
     <div id="navbar-placeholder"></div>
 
     <div id="router-view">
