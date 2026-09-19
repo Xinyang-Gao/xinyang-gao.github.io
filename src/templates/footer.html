@@ -36,7 +36,12 @@
         </div>
       </div>
 
-      <div class="footer-col stats-col flm-pv-widget" data-type="popover">
+      <!-- 数据区：作为 flm-pv-widget 容器，data-target 显式指定 -->
+      <div
+        id="footer-stats-widget"
+        class="footer-col stats-col flm-pv-widget"
+        data-type="popover"
+      >
         <h4 class="footer-col-title">数据</h4>
 
         <div class="stats-grid">
@@ -55,7 +60,11 @@
               <i class="fas fa-calendar-day stat-card-icon"></i>
             </div>
             <span class="stats-grid-label">今日访问</span>
-            <strong class="stats-grid-number" id="flm-pv-today">0</strong>
+            <strong
+              class="stats-grid-number"
+              id="flm-pv-today"
+              aria-live="polite"
+            >0</strong>
           </div>
 
           <!-- 累计访问（fakeicp）+ 趋势图 -->
@@ -64,10 +73,19 @@
               <i class="fas fa-chart-line stat-card-icon"></i>
             </div>
             <span class="stats-grid-label">累计访问</span>
-            <strong class="stats-grid-number" id="flm-pv-total">0</strong>
+            <strong
+              class="stats-grid-number"
+              id="flm-pv-total"
+              aria-live="polite"
+            >0</strong>
+
             <div class="stats-popover-chart">
               <div class="stats-popover-caption">// 30天访问趋势</div>
-              <div id="flm-pv-chart"></div>
+              <div
+                id="flm-pv-chart"
+                role="img"
+                aria-label="最近 30 天访问趋势折线图"
+              ></div>
             </div>
           </div>
 
@@ -140,9 +158,6 @@
             <strong id="footerSnapshotDate">—</strong>
           </span>
         </div>
-
-        <!-- fakeicp 访问统计脚本 -->
-        <script src="https://fakeicp.top/widget.js" data-site="fakeicp.top" async></script>
       </div>
     </div>
 
@@ -183,6 +198,13 @@
       </div>
     </div>
   </div>
+
+  <script
+    src="https://fakeicp.top/widget.js"
+    data-site="xinyang-gao.github.io"
+    data-target="footer-stats-widget"
+    async
+  ></script>
 </footer>
 
 <link rel="stylesheet" href="/css/components/footer.css">

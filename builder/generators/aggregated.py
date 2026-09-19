@@ -141,13 +141,23 @@ class AggregatedGenerator(OutputGenerator):
         articles = [a for a in context.articles if not a.hidden]
         works = context.works
 
+        # ---------- 收集所有来源的日期（文章 / 作品 / 版本日志） ----------
         all_dates = []
+
         for art in articles:
             if art.date and art.date != "未指定日期":
                 all_dates.append(art.date[:10])
+
         for w in works:
-            if w.date and w.date != "未指定日期":
-                all_dates.append(w.date[:10])
+            iso = format_date_iso(w.date)  # 统一归一化为 YYYY-MM-DD
+            if iso and iso != "未指定日期":
+                all_dates.append(iso[:10])
+
+        for v in context.version.get("versions", []):
+            vdate = v.get("date", "")
+            if vdate and vdate != "未指定日期":
+                all_dates.append(str(vdate)[:10])
+
         last_updated = max(all_dates) if all_dates else get_current_date_iso()
 
         total_articles = len(articles)
@@ -212,7 +222,8 @@ class AggregatedGenerator(OutputGenerator):
         }
         save_json(statistics, STATISTICS_JSON)
         context.statistics = statistics
-        log_info(f"统计完成: 文章 {total_articles} 篇, 总字数 {total_word_count}, 作品 {len(works)} 个")
+        log_info(f"统计完成: 文章 {total_articles} 篇, 总字数 {total_word_count}, "
+                f"作品 {len(works)} 个, 最后更新 {last_updated}")
 
     # ---------- RSS ----------
     def _generate_rss(self, context: BuildContext) -> None:
