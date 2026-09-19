@@ -254,24 +254,68 @@
 .footer-legal-panel {
   display: flex;
   flex-wrap: wrap;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
-  gap: 0.75rem 1.5rem;
+  gap: 1rem 1.5rem;
   margin-top: 2.1rem;
   padding-top: 1.35rem;
   border-top: 1px solid var(--footer-hairline);
 }
 
-.copyright-row { font-size: 0.78rem; }
+/* ---------- 版权与许可 ---------- */
+.copyright-row {
+  font-size: 0.78rem;
+  min-width: 0;
+}
+
 .copyright-area {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  color: var(--footer-muted);
+  font-weight: 400;
+}
+
+.copyright-head {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
   gap: 0.45rem;
-  color: var(--footer-muted);
-  font-weight: 400;
 }
+
 .separator-dot { font-size: 0.62rem; opacity: 0.5; }
+
+/* 许可说明：与页脚其他小字同一套语法 */
+.license-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  font-size: 0.74rem;
+  line-height: 1.7;
+  color: var(--footer-muted);
+  opacity: 0.9;
+}
+.license-lines p {
+  margin: 0;
+  max-width: none;
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+}
+
+/* 行内许可链接：常态虚线提示可点，悬停转为主题色 */
+.license-link {
+  color: var(--footer-muted);
+  text-decoration: underline dotted;
+  text-decoration-color: var(--border-color);
+  text-underline-offset: 3px;
+  transition: color 0.2s ease, text-decoration-color 0.2s ease;
+}
+.license-link::after { display: none; }
+.license-link:hover {
+  color: var(--accent-color);
+  text-decoration-color: var(--accent-color);
+}
 
 .legal-links-cluster {
   display: flex;
@@ -334,7 +378,8 @@
     text-align: center;
     gap: 0.7rem;
   }
-  .copyright-area, .legal-links-cluster { justify-content: center; }
+  .copyright-area { align-items: center; text-align: center; }
+  .legal-links-cluster { justify-content: center; }
 }
 
 @media (max-width: 480px) {
