@@ -36,85 +36,113 @@
         </div>
       </div>
 
-      <div class="footer-col stats-col">
+      <div class="footer-col stats-col flm-pv-widget" data-type="popover">
         <h4 class="footer-col-title">数据</h4>
+
         <div class="stats-grid">
           <!-- 运行时长 -->
           <div class="stats-grid-item">
-            <i class="fas fa-heartbeat"></i>
-            <div class="stats-grid-info">
-              <span class="stats-grid-label">已运行</span>
-              <strong class="stats-grid-number" id="site-age">加载中...</strong>
+            <div class="stats-grid-bg" aria-hidden="true">
+              <i class="fas fa-heartbeat stat-card-icon"></i>
             </div>
+            <span class="stats-grid-label">已运行</span>
+            <strong class="stats-grid-number" id="site-age">加载中…</strong>
           </div>
-          <!-- 总访问 / 访客 -->
+
+          <!-- 今日访问（fakeicp） -->
           <div class="stats-grid-item">
-            <i class="fas fa-chart-line"></i>
-            <div class="stats-grid-info">
-              <span class="stats-grid-label">总访问 · 访客</span>
-              <strong class="stats-grid-number">
-                <span id="vercount_value_site_pv">0</span> 次 · <span id="vercount_value_site_uv">0</span> 人
-              </strong>
+            <div class="stats-grid-bg" aria-hidden="true">
+              <i class="fas fa-calendar-day stat-card-icon"></i>
+            </div>
+            <span class="stats-grid-label">今日访问</span>
+            <strong class="stats-grid-number" id="flm-pv-today">0</strong>
+          </div>
+
+          <!-- 累计访问（fakeicp）+ 趋势图 -->
+          <div class="stats-grid-item stats-grid-item--popover">
+            <div class="stats-grid-bg" aria-hidden="true">
+              <i class="fas fa-chart-line stat-card-icon"></i>
+            </div>
+            <span class="stats-grid-label">累计访问</span>
+            <strong class="stats-grid-number" id="flm-pv-total">0</strong>
+            <div class="stats-popover-chart">
+              <div class="stats-popover-caption">// 30天访问趋势</div>
+              <div id="flm-pv-chart"></div>
             </div>
           </div>
+
           <!-- 文章总数 -->
           <div class="stats-grid-item">
-            <i class="fas fa-file-alt"></i>
-            <div class="stats-grid-info">
-              <span class="stats-grid-label">文章</span>
-              <strong class="stats-grid-number" id="footerTotalArticles">—</strong>
+            <div class="stats-grid-bg" aria-hidden="true">
+              <i class="fas fa-file-alt stat-card-icon"></i>
             </div>
+            <span class="stats-grid-label">文章</span>
+            <strong class="stats-grid-number" id="footerTotalArticles">—</strong>
           </div>
+
           <!-- 总字数 -->
           <div class="stats-grid-item">
-            <i class="fas fa-pen-fancy"></i>
-            <div class="stats-grid-info">
-              <span class="stats-grid-label">总字数</span>
-              <strong class="stats-grid-number" id="footerTotalWords">—</strong>
+            <div class="stats-grid-bg" aria-hidden="true">
+              <i class="fas fa-pen-fancy stat-card-icon"></i>
             </div>
+            <span class="stats-grid-label">总字数</span>
+            <strong class="stats-grid-number" id="footerTotalWords">—</strong>
           </div>
+
           <!-- 作品数量 -->
           <div class="stats-grid-item">
-            <i class="fas fa-cube"></i>
-            <div class="stats-grid-info">
-              <span class="stats-grid-label">作品</span>
-              <strong class="stats-grid-number" id="footerTotalWorks">—</strong>
+            <div class="stats-grid-bg" aria-hidden="true">
+              <i class="fas fa-cube stat-card-icon"></i>
             </div>
+            <span class="stats-grid-label">作品</span>
+            <strong class="stats-grid-number" id="footerTotalWorks">—</strong>
           </div>
+
           <!-- 文章分类 -->
           <div class="stats-grid-item">
-            <i class="fas fa-folder-open"></i>
-            <div class="stats-grid-info">
-              <span class="stats-grid-label">文章分类</span>
-              <strong class="stats-grid-number" id="footerTotalCategories">—</strong>
+            <div class="stats-grid-bg" aria-hidden="true">
+              <i class="fas fa-folder-open stat-card-icon"></i>
             </div>
+            <span class="stats-grid-label">文章分类</span>
+            <strong class="stats-grid-number" id="footerTotalCategories">—</strong>
           </div>
-          <!-- 版本 · 快照 -->
-          <div class="stats-grid-item">
-            <i class="fas fa-code-branch"></i>
-            <div class="stats-grid-info">
-              <span class="stats-grid-label">版本 · 快照</span>
-              <strong class="stats-grid-number" id="footerVersionNumber">—</strong>
-              <span class="stats-grid-sub" id="footerSnapshotDate">—</span>
-            </div>
-          </div>
+
           <!-- 源文件数 -->
           <div class="stats-grid-item">
-            <i class="fas fa-folder-tree"></i>
-            <div class="stats-grid-info">
-              <span class="stats-grid-label">源文件</span>
-              <strong class="stats-grid-number" id="footerTotalFiles">—</strong>
+            <div class="stats-grid-bg" aria-hidden="true">
+              <i class="fas fa-folder-tree stat-card-icon"></i>
             </div>
+            <span class="stats-grid-label">源文件</span>
+            <strong class="stats-grid-number" id="footerTotalFiles">—</strong>
           </div>
+
           <!-- 代码行数 -->
           <div class="stats-grid-item">
-            <i class="fas fa-code"></i>
-            <div class="stats-grid-info">
-              <span class="stats-grid-label">代码行数</span>
-              <strong class="stats-grid-number" id="footerTotalLines">—</strong>
+            <div class="stats-grid-bg" aria-hidden="true">
+              <i class="fas fa-code stat-card-icon"></i>
             </div>
+            <span class="stats-grid-label">代码行数</span>
+            <strong class="stats-grid-number" id="footerTotalLines">—</strong>
           </div>
         </div>
+
+        <!-- 版本 · 快照 元信息 -->
+        <div class="stats-meta">
+          <span class="stats-meta-item">
+            <i class="fas fa-code-branch"></i>
+            <span>版本</span>
+            <strong id="footerVersionNumber">—</strong>
+          </span>
+          <span class="stats-meta-sep">·</span>
+          <span class="stats-meta-item">
+            <i class="fas fa-clock-rotate-left"></i>
+            <span>快照</span>
+            <strong id="footerSnapshotDate">—</strong>
+          </span>
+        </div>
+
+        <!-- fakeicp 访问统计脚本 -->
+        <script src="https://fakeicp.top/widget.js" data-site="fakeicp.top" async></script>
       </div>
     </div>
 
