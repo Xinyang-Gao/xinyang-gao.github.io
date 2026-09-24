@@ -318,3 +318,83 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* 开/关动画 */
+.viewer-image.is-opening-anim {
+  transition: transform 0.45s cubic-bezier(0.34, 1.1, 0.64, 1);
+}
+.viewer-image.is-closing-anim {
+  transition: transform 0.45s cubic-bezier(0.5, 0, 0.75, 0.4);
+}
+.viewer-image.is-resetting {
+  transition: transform 0.15s ease-out;
+}
+.viewer-frame.is-static {
+  opacity: 1;
+}
+
+.viewer-top {
+  transition:
+    opacity 0.4s ease,
+    transform 0.5s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+.viewer-nav {
+  transition:
+    background 0.2s,
+    border-color 0.2s,
+    opacity 0.4s ease,
+    transform 0.5s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+.viewer-controls {
+  transition:
+    opacity 0.4s ease,
+    transform 0.5s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+.viewer-strip {
+  transition:
+    opacity 0.4s ease,
+    transform 0.5s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+.modern-image-viewer.is-opening .viewer-top,
+.modern-image-viewer.is-closing .viewer-top {
+  opacity: 0;
+  transform: translateY(-24px);
+}
+
+.modern-image-viewer.is-opening .viewer-prev,
+.modern-image-viewer.is-closing .viewer-prev {
+  opacity: 0;
+  transform: translateY(-50%) translateX(-56px);
+}
+.modern-image-viewer.is-opening .viewer-next,
+.modern-image-viewer.is-closing .viewer-next {
+  opacity: 0;
+  transform: translateY(-50%) translateX(56px);
+}
+
+.modern-image-viewer.is-opening .viewer-controls,
+.modern-image-viewer.is-closing .viewer-controls {
+  opacity: 0;
+  transform: translateY(24px) scale(0.92);
+}
+
+.modern-image-viewer.is-opening .viewer-strip,
+.modern-image-viewer.is-closing .viewer-strip {
+  opacity: 0;
+  transform: translateX(-50%) translateY(32px);
+}
+
+.modern-image-viewer.is-opening .viewer-nav,
+.modern-image-viewer.is-opening .viewer-controls button,
+.modern-image-viewer.is-opening .viewer-strip,
+.modern-image-viewer.is-opening .viewer-top > *,
+.modern-image-viewer.is-closing .viewer-nav,
+.modern-image-viewer.is-closing .viewer-controls button,
+.modern-image-viewer.is-closing .viewer-strip,
+.modern-image-viewer.is-closing .viewer-top > * {
+  pointer-events: none;
+}
