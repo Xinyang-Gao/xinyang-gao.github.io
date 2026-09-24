@@ -19,15 +19,15 @@ interface BurstParticle {
   active: boolean;
   x: number;
   y: number;
-  targetX: number;          // 扩散目标点
+  targetX: number;
   targetY: number;
-  radius: number;           // 初始半径
-  maxRadius: number;        // 扩散峰值半径
+  radius: number;
+  maxRadius: number;
   startAlpha: number;
   duration: number;
-  delay: number;            // 错峰出现延迟
+  delay: number;
   lineWidth: number;
-  color: string;            // 纯色 'rgb(r, g, b)'，透明度走 globalAlpha
+  color: string;
   startTime: number;
 }
 
@@ -72,61 +72,59 @@ class Pool<T extends { active: boolean }> {
 }
 
 export class MouseEffectManager {
-  // ---- 静态配置（只读，运行时不再被改写） ----
   private static readonly CONFIG = {
     longPressThreshold: 100,
     maxLines: 12,
     burst: {
-      countBase: 4,              // 最少粒子数
-      countTimeFactor: 20,       // 长按每 2000ms 额外增加的数量
+      countBase: 4,
+      countTimeFactor: 20,
       countMax: 30,
       radiusBase: 50,
-      radiusTimeFactor: 160,     // 扩散半径 = base + sec^0.8 * factor
+      radiusTimeFactor: 160,
       radiusCap: 320,
       durationBase: 900,
-      durationTimeFactor: 0.6,   // 粒子寿命 = base + min(按压时长 * factor, extraCap)
+      durationTimeFactor: 0.6,
       durationExtraCap: 700,
       alphaMin: 0.4,
       alphaMax: 0.7,
       lineWidthMin: 1.8,
       lineWidthMax: 3.0,
-      delayMax: 180,             // 随机出现延迟
-      batchSize: 6,              // 仅用于模拟旧实现"逐帧批量生成"的节奏
+      delayMax: 180,
+      batchSize: 6,
       batchFrameMs: 16.7,
       sizeStart: 1.5,
       sizeMaxBase: 8,
       sizeMaxRand: 10,
-      spreadMin: 0.3,            // 散布距离 = 扩散半径 * (0.3 ~ 1.0)
-      chaseRate: 13.39,          // 追逐趋近率：60fps 下每帧系数 ≈ 0.2，与旧实现一致
+      spreadMin: 0.3,
+      chaseRate: 13.39,
     },
     line: {
-      minDist: 5,                // 短于此距离不产生连线动画
+      minDist: 5,
       durationBase: 300,
       durationPerPixel: 0.5,
       durationMax: 700,
       alpha: 0.5,
       width: 1.5,
-      drag: {                    // 实时拖拽虚线
+      drag: {
         alpha: 0.3,
         dotAlpha: 0.4,
         width: 2,
         dotRadius: 3,
         dash: [6, 6],
-        dashSpeed: 50,           // lineDashOffset = -now / dashSpeed
+        dashSpeed: 50,
       },
     },
     fps: { interval: 1000, low: 30, shrink: 0.7, floor: 30 },
     particles: { highEnd: 120, lowEnd: 60 },
   };
 
-  // ---- 画布 ----
   #disabled = false;
+  #destroyed = false;
   #canvas: HTMLCanvasElement | null = null;
   #ctx: CanvasRenderingContext2D | null = null;
   #logicalWidth = 0;
   #logicalHeight = 0;
 
-  // ---- 对象池与活跃列表 ----
   #particles: BurstParticle[] = [];
   #trails: TrailLine[] = [];
   #particlePool = new Pool<BurstParticle>(() => ({
@@ -139,39 +137,33 @@ export class MouseEffectManager {
     duration: 1, width: 0, color: '', startTime: 0,
   }), MouseEffectManager.CONFIG.maxLines);
 
-  // ---- 长按状态 ----
   #pressStartX = 0;
   #pressStartY = 0;
   #pressStartTime = 0;
   #isLongPress = false;
   #longPressTimer: number | null = null;
 
-  // ---- 拖拽连线状态 ----
   #lineActive = false;
   #lineStartX = 0;
   #lineStartY = 0;
   #lineEndX = 0;
   #lineEndY = 0;
 
-  // ---- 主题色缓存（纯色字符串 + globalAlpha，避免每帧拼接 rgba） ----
   #accentRgb = 'rgb(165, 88, 96)';
 
-  // ---- 渲染循环控制 ----
   #renderLoopId: number | null = null;
   #isRendering = false;
   #lastFrameTs = 0;
 
-  // ---- 帧率自适应 ----
   #frameCount = 0;
   #lastFpsCheck = 0;
   #particleLimit = MouseEffectManager.CONFIG.particles.highEnd;
 
   #pageHidden = false;
 
-  // ---- 主题订阅取消函数（替代 window 'themeChanged' 监听） ----
   #themeUnsubscribe: (() => void) | null = null;
+  #abort: AbortController | null = null;
 
-  // ---- 事件处理器（箭头函数字段，add/remove 天然同引用） ----
   #onThemeChanged = (): void => this.#refreshAccentColor();
   #onResize = (): void => this.#resizeCanvas();
   #onVisibility = (): void => {
@@ -184,49 +176,43 @@ export class MouseEffectManager {
   };
 
   constructor() {
-    // 触摸设备禁用
     if (window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window) {
       this.#disabled = true;
       console.log('[MouseEffect] 触摸设备，禁用鼠标特效');
       return;
     }
 
-    // 性能自适应：低端设备降低粒子上限（只影响实例，不修改静态配置）
     const isLowEnd = window.devicePixelRatio < 2 ||
       !!(navigator.hardwareConcurrency && navigator.hardwareConcurrency < 4);
     this.#particleLimit = isLowEnd
       ? MouseEffectManager.CONFIG.particles.lowEnd
       : MouseEffectManager.CONFIG.particles.highEnd;
 
-    // 创建 Canvas
     const canvas = document.createElement('canvas');
     canvas.style.cssText = `
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 9997;
-      will-change: transform;
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      pointer-events: none; z-index: 9997; will-change: transform;
     `;
     this.#canvas = canvas;
     this.#ctx = canvas.getContext('2d', { alpha: true });
     this.#resizeCanvas();
     document.body.appendChild(canvas);
 
-    this.#refreshAccentColor();
+    // 记录初始可见性，避免隐藏标签页里首帧绘制
+    this.#pageHidden = document.hidden;
 
-    // 主题订阅统一走 themeController.onChange
+    this.#refreshAccentColor();
     this.#themeUnsubscribe = themeController.onChange(this.#onThemeChanged);
 
-    window.addEventListener('resize', this.#onResize);
-    document.addEventListener('visibilitychange', this.#onVisibility);
+    const ac = new AbortController();
+    this.#abort = ac;
+    const sig = ac.signal;
+    window.addEventListener('resize', this.#onResize, { signal: sig });
+    document.addEventListener('visibilitychange', this.#onVisibility, { signal: sig });
 
     console.log('[MouseEffect] 特效引擎初始化完成（长按连线 + 爆发粒子）');
   }
 
-  // ---- 主题色 ----
   #refreshAccentColor(): void {
     const hex = getComputedStyle(document.documentElement)
       .getPropertyValue('--accent-color').trim() || '#a55860';
@@ -235,9 +221,12 @@ export class MouseEffectManager {
     const g = m ? parseInt(m[2], 16) : 88;
     const b = m ? parseInt(m[3], 16) : 96;
     this.#accentRgb = `rgb(${r}, ${g}, ${b})`;
+
+    // 主题切换时同步更新活跃元素颜色，避免"新粒子换色、旧粒子留旧色"
+    for (const p of this.#particles) p.color = this.#accentRgb;
+    for (const l of this.#trails) l.color = this.#accentRgb;
   }
 
-  // ---- 尺寸 ----
   #resizeCanvas(): void {
     const canvas = this.#canvas, ctx = this.#ctx;
     if (!canvas || !ctx) return;
@@ -247,7 +236,6 @@ export class MouseEffectManager {
     const bufferW = Math.round(rect.width * dpr);
     const bufferH = Math.round(rect.height * dpr);
 
-    // 只有尺寸真正变化时才重设缓冲区，避免不必要的清空（旧实现因浮点比较永远不相等而失效）
     if (canvas.width === bufferW && canvas.height === bufferH) return;
 
     canvas.width = bufferW;
@@ -259,13 +247,12 @@ export class MouseEffectManager {
     this.#logicalHeight = rect.height;
   }
 
-  // ---- 渲染循环控制 ----
   #hasActiveWork(): boolean {
     return this.#particles.length > 0 || this.#trails.length > 0 || this.#lineActive;
   }
 
   #startRenderLoop(): void {
-    if (this.#disabled || this.#pageHidden || this.#isRendering) return;
+    if (this.#disabled || this.#destroyed || this.#pageHidden || this.#isRendering) return;
     this.#isRendering = true;
     this.#lastFrameTs = 0;
     this.#renderLoopId = requestAnimationFrame(this.#frame);
@@ -281,7 +268,7 @@ export class MouseEffectManager {
   }
 
   #frame = (now: number): void => {
-    if (this.#pageHidden) {
+    if (this.#pageHidden || this.#destroyed) {
       this.#isRendering = false;
       this.#renderLoopId = null;
       return;
@@ -297,7 +284,6 @@ export class MouseEffectManager {
     if (this.#hasActiveWork()) {
       this.#renderLoopId = requestAnimationFrame(this.#frame);
     } else {
-      // 所有动画结束：停止循环并清除最后一帧
       this.#isRendering = false;
       this.#renderLoopId = null;
       this.#clearCanvas();
@@ -308,7 +294,6 @@ export class MouseEffectManager {
     this.#ctx?.clearRect(0, 0, this.#logicalWidth, this.#logicalHeight);
   }
 
-  // ---- 核心渲染 ----
   #render(now: number, dt: number): void {
     const ctx = this.#ctx;
     if (!ctx) return;
@@ -327,32 +312,26 @@ export class MouseEffectManager {
 
   #renderBurst(ctx: CanvasRenderingContext2D, now: number, dt: number): void {
     const list = this.#particles;
-    // 帧率无关的追逐趋近：60fps 时单帧系数 ≈ 0.2，与旧实现逐帧 lerp 观感一致
     const chase = 1 - Math.exp(-MouseEffectManager.CONFIG.burst.chaseRate * dt);
     let strokedColor = '';
 
     for (let i = list.length - 1; i >= 0; i--) {
       const p = list[i];
       const t = (now - p.startTime - p.delay) / p.duration;
-      if (t < 0) continue;                          // 延迟未到，尚未出现
-      if (t >= 1) {                                 // 生命周期结束，回收
+      if (t < 0) continue;
+      if (t >= 1) {
         list.splice(i, 1);
         this.#particlePool.release(p);
         continue;
       }
 
-      // 从按压点向外追逐目标点
       p.x += (p.targetX - p.x) * chase;
       p.y += (p.targetY - p.y) * chase;
 
-      // 半径：前 60% 生命周期扩张到峰值，之后轻微回缩至 70%
       const sizeT = t < 0.6 ? t / 0.6 : 1 - ((t - 0.6) / 0.4) * 0.3;
       const radius = Math.max(0, p.radius + (p.maxRadius - p.radius) * sizeT);
-
-      // 透明度：前 20% 保持，随后线性淡出
       const alpha = t < 0.2 ? p.startAlpha : p.startAlpha * (1 - (t - 0.2) / 0.8);
 
-      // 同色合并 strokeStyle 切换；透明度走 globalAlpha，全程无字符串拼接
       if (p.color !== strokedColor) {
         strokedColor = p.color;
         ctx.strokeStyle = p.color;
@@ -382,7 +361,6 @@ export class MouseEffectManager {
         continue;
       }
 
-      // easeOutQuad：起点向终点"收拢"，同时整体淡出、线条变细
       const eased = t * (2 - t);
 
       if (line.color !== strokedColor) {
@@ -414,7 +392,6 @@ export class MouseEffectManager {
     ctx.lineWidth = drag.width;
     ctx.lineCap = 'round';
 
-    // 流动虚线
     ctx.globalAlpha = drag.alpha;
     ctx.setLineDash(drag.dash);
     ctx.lineDashOffset = -now / drag.dashSpeed;
@@ -423,7 +400,6 @@ export class MouseEffectManager {
     ctx.lineTo(this.#lineEndX, this.#lineEndY);
     ctx.stroke();
 
-    // 两端实心圆点
     ctx.setLineDash(EMPTY_DASH);
     ctx.globalAlpha = drag.dotAlpha;
     ctx.beginPath();
@@ -436,11 +412,10 @@ export class MouseEffectManager {
     ctx.globalAlpha = 1;
   }
 
-  // ---- 上限与帧率自适应 ----
   #enforceLimits(): void {
     const excessP = this.#particles.length - this.#particleLimit;
     if (excessP > 0) {
-      const removed = this.#particles.splice(0, excessP);  // 挤出最旧的
+      const removed = this.#particles.splice(0, excessP);
       for (const p of removed) this.#particlePool.release(p);
     }
     const excessL = this.#trails.length - MouseEffectManager.CONFIG.maxLines;
@@ -465,13 +440,11 @@ export class MouseEffectManager {
     }
   }
 
-  // ---- 公开 API ----
-
-  /** @deprecated 点击涟漪已移除，保留空操作以兼容外部调用 */
+  /** @deprecated 点击涟漪已移除 */
   public triggerClick(_x: number, _y: number): void { /* no-op */ }
 
   public triggerLongPress(x: number, y: number, duration: number): void {
-    if (this.#disabled) return;
+    if (this.#disabled || this.#destroyed) return;
 
     const b = MouseEffectManager.CONFIG.burst;
     const count = Math.min(
@@ -499,7 +472,6 @@ export class MouseEffectManager {
       p.maxRadius = b.sizeMaxBase + Math.random() * b.sizeMaxRand;
       p.startAlpha = b.alphaMin + Math.random() * alphaSpan;
       p.duration = lifetime;
-      // 随机延迟 + 模拟旧实现"每帧生成一批"的展开节奏；不需要时删掉后半项即可
       p.delay = Math.random() * b.delayMax + Math.floor(i / b.batchSize) * b.batchFrameMs;
       p.lineWidth = b.lineWidthMin + Math.random() * widthSpan;
       p.color = this.#accentRgb;
@@ -511,7 +483,7 @@ export class MouseEffectManager {
   }
 
   public startLine(x: number, y: number): void {
-    if (this.#disabled) return;
+    if (this.#disabled || this.#destroyed) return;
     this.#clearTrails();
     this.#lineActive = true;
     this.#lineStartX = this.#lineEndX = x;
@@ -520,14 +492,14 @@ export class MouseEffectManager {
   }
 
   public updateLine(x: number, y: number): void {
-    if (this.#disabled || !this.#lineActive) return;
+    if (this.#disabled || this.#destroyed || !this.#lineActive) return;
     this.#lineEndX = x;
     this.#lineEndY = y;
     this.#startRenderLoop();
   }
 
   public endLine(x: number, y: number): void {
-    if (this.#disabled || !this.#lineActive) return;
+    if (this.#disabled || this.#destroyed || !this.#lineActive) return;
     this.#lineActive = false;
     this.#lineEndX = x;
     this.#lineEndY = y;
@@ -536,7 +508,7 @@ export class MouseEffectManager {
     const dx = x - this.#lineStartX;
     const dy = y - this.#lineStartY;
     const distance = Math.hypot(dx, dy);
-    if (distance < cfg.minDist) return;   // 太短：不产生残留动画
+    if (distance < cfg.minDist) return;
 
     const line = this.#trailPool.acquire();
     line.startX = this.#lineStartX;
@@ -557,9 +529,8 @@ export class MouseEffectManager {
     this.#trails.length = 0;
   }
 
-  // ---- 指针事件集成 ----
   public onPointerDown(x: number, y: number): void {
-    if (this.#disabled) return;
+    if (this.#disabled || this.#destroyed) return;
 
     this.#pressStartX = x;
     this.#pressStartY = y;
@@ -578,18 +549,18 @@ export class MouseEffectManager {
   }
 
   public onPointerMove(x: number, y: number): void {
-    if (this.#disabled || !this.#isLongPress) return;
+    if (this.#disabled || this.#destroyed || !this.#isLongPress) return;
     this.updateLine(x, y);
   }
 
   public onPointerUp(x: number, y: number): void {
-    if (this.#disabled) return;
+    if (this.#disabled || this.#destroyed) return;
 
     if (this.#longPressTimer !== null) {
       clearTimeout(this.#longPressTimer);
       this.#longPressTimer = null;
     }
-    if (!this.#isLongPress) return;   // 短按：无任何特效
+    if (!this.#isLongPress) return;
 
     this.#isLongPress = false;
     const duration = performance.now() - this.#pressStartTime;
@@ -598,7 +569,8 @@ export class MouseEffectManager {
   }
 
   public destroy(): void {
-    this.#disabled = true;   // 阻断销毁后的任何新渲染（修复旧实现可能残留的空转 rAF）
+    this.#disabled = true;
+    this.#destroyed = true;
     this.#stopRenderLoop();
 
     if (this.#longPressTimer !== null) {
@@ -606,12 +578,10 @@ export class MouseEffectManager {
       this.#longPressTimer = null;
     }
 
-    // 取消主题订阅（替代 window.removeEventListener('themeChanged', ...)）
     this.#themeUnsubscribe?.();
     this.#themeUnsubscribe = null;
 
-    window.removeEventListener('resize', this.#onResize);
-    document.removeEventListener('visibilitychange', this.#onVisibility);
+    if (this.#abort) { this.#abort.abort(); this.#abort = null; }
 
     this.#canvas?.remove();
     this.#canvas = null;
@@ -627,16 +597,49 @@ export class MouseEffectManager {
 }
 
 // ===================================================================
-//  CustomCursor — 自定义光标（仿 cursor-fx-userscript）
-//  使用圆点 + 圆环，完全基于 DOM + transform，不再使用 SVG
-//  集成 MouseEffectManager 的长按功能
-//  特性：延迟跟随、悬停贴合、文本竖条模式、滚动拖尾、点击弹簧、空闲暂停
-//  自动检测 Cursor FX 用户脚本，若已存在则让出控制权
+//  CustomCursor — 自定义光标（对齐 cursor-fx-userscript 3.0.0）
+//  圆点 + 圆环，纯 DOM + transform，不使用 SVG/Canvas
+//  特性：延迟跟随、悬停贴合、文本竖条、滚动拖尾、点击弹簧、空闲暂停
+//  集成 MouseEffectManager 的长按连线 / 爆发粒子
+//  自动探测 Cursor FX 用户脚本，若存在则让出控制权
 // ===================================================================
 
+interface TransformCache { x: number; y: number; s: number }
+
+/** 与用户脚本一致的量化 transform 写入：x/y 保留 2 位、scale 保留 3 位 */
+function writeTransform(
+  el: HTMLElement, x: number, y: number, s: number, cache: TransformCache,
+): void {
+  const qx = Math.round(x * 100) / 100;
+  const qy = Math.round(y * 100) / 100;
+  const qs = Math.round(s * 1000) / 1000;
+  if (cache.x === qx && cache.y === qy && cache.s === qs) return;
+  cache.x = qx; cache.y = qy; cache.s = qs;
+  el.style.transform =
+    `translate3d(${qx}px,${qy}px,0) translate(-50%,-50%) scale(${qs})`;
+}
+
+/** 解析元素的最大 border-radius（支持 "8px"、"50%" 或四角简写） */
+function parseBorderRadius(el: Element, rect: DOMRect): number {
+  const br = getComputedStyle(el).borderRadius || '0px';
+  const parts = br.split(/\s+/);
+  const minSide = Math.min(rect.width, rect.height);
+  let max = 0;
+  for (const p of parts) {
+    const v = parseFloat(p);
+    if (!isFinite(v)) continue;
+    max = Math.max(max, p.endsWith('%') ? (v / 100) * minSide : v);
+  }
+  return max;
+}
+
 export class CustomCursor {
-  // ---- 配置（与用户脚本保持一致） ----
+  // ---- 配置（与用户脚本对齐，含 3 个开关） ----
   private static readonly DEFAULTS = {
+    ENABLE_DOT: true,
+    ENABLE_RING: true,
+    HIDE_CURSOR: true,
+
     DOT_SIZE: 8,
     RING_SIZE: 40,
     RING_BORDER: 1.5,
@@ -658,32 +661,38 @@ export class CustomCursor {
     IDLE_PAUSE_MS: 2500,
   };
 
-  // ---- 私有字段 ----
-  #config: typeof CustomCursor.DEFAULTS;
+  private static readonly SEL_INTERACTIVE =
+    'a, button, [role="button"], [tabindex]:not([tabindex="-1"]), [onclick]';
+
+  private static readonly SEL_TEXT =
+    'input:not([type="button"]):not([type="checkbox"]):not([type="radio"])' +
+    ':not([type="submit"]):not([type="reset"]):not([type="image"])' +
+    ':not([type="range"]):not([type="color"]):not([type="file"]),' +
+    'textarea,[contenteditable="true"],[contenteditable=""],' +
+    '[contenteditable="plaintext-only"],[role="textbox"]';
+
+  // ---- 内部状态 ----
+  #cfg: typeof CustomCursor.DEFAULTS;
+  #disabled = false;
+  #initialized = false;
+
+  #dot: HTMLDivElement | null = null;
+  #ring: HTMLDivElement | null = null;
+  #styleTag: HTMLStyleElement | null = null;
+  #abort: AbortController | null = null;
+  #guardian: MutationObserver | null = null;
+
   #effectManager: MouseEffectManager | null = null;
 
-  // DOM 元素
-  #dot: HTMLDivElement;
-  #ring: HTMLDivElement;
-  #styleTag: HTMLStyleElement | null = null;
+  // ---- 运动状态 ----
+  #mx = 0; #my = 0;
+  #rx = 0; #ry = 0;
+  #rw = 0; #rh = 0; #rr = 0;
+  #tw = 0; #th = 0; #tr = 0;
+  #sX = 0; #sY = 0;
+  #dotS = 1; #ringS = 1;
+  #dotV = 0; #ringV = 0;
 
-  // 状态变量（仿用户脚本）
-  #mx = window.innerWidth / 2;
-  #my = window.innerHeight / 2;
-  #rx = this.#mx;
-  #ry = this.#my;
-  #rw = 0;
-  #rh = 0;
-  #rr = 0;
-  #tw = 0;
-  #th = 0;
-  #tr = 0;
-  #sX = 0;
-  #sY = 0;
-  #dotS = 1;
-  #ringS = 1;
-  #dotV = 0;
-  #ringV = 0;
   #pressed = false;
   #hoverEl: Element | null = null;
   #hoverRad = 0;
@@ -694,176 +703,324 @@ export class CustomCursor {
   #ringDim = false;
   #shown = false;
   #inside = true;
+
   #lastInput = 0;
   #lastT = 0;
   #rafId = 0;
-  #dotCache = { v: '' };
-  #ringCache = { v: '' };
-  #lastW = -1;
-  #lastH = -1;
-  #lastR = -1;
 
-  // 选择器
-  private static readonly SEL_INTERACTIVE =
-    'a, button, [role="button"], [tabindex]:not([tabindex="-1"]), [onclick]';
-  private static readonly SEL_TEXT =
-    'input:not([type="button"]):not([type="checkbox"]):not([type="radio"]):not([type="submit"]):not([type="reset"]):not([type="image"]):not([type="range"]):not([type="color"]):not([type="file"]),' +
-    'textarea,[contenteditable="true"],[contenteditable=""],[contenteditable="plaintext-only"],[role="textbox"]';
+  // ---- 写入缓存 ----
+  #dotCache: TransformCache = { x: NaN, y: NaN, s: NaN };
+  #ringCache: TransformCache = { x: NaN, y: NaN, s: NaN };
+  #lastW = -1; #lastH = -1; #lastR = -1;
 
-  // ================================================================
-  //  构造函数：检测触摸设备、探测用户脚本，决定是否初始化
-  // ================================================================
+  // ---- 空闲检测 ----
+  #ringSettled = false;
+  #dotSettled = false;
+
+  #tickBound = (t: number): void => this.#tick(t);
+
   constructor(options: Partial<typeof CustomCursor.DEFAULTS> = {}) {
-    // 触摸设备直接禁用
+    // 触摸设备直接跳过
     if (window.matchMedia('(pointer: coarse)').matches || 'ontouchstart' in window) {
+      this.#disabled = true;
+      this.#cfg = { ...CustomCursor.DEFAULTS };
       console.log('[CustomCursor] 触摸设备，跳过自定义光标');
-      this.#effectManager = null;
-      this.#dot = document.createElement('div');
-      this.#ring = document.createElement('div');
       return;
     }
 
-    this.#config = { ...CustomCursor.DEFAULTS, ...options };
+    this.#cfg = { ...CustomCursor.DEFAULTS, ...options };
 
-    // 异步探测 Cursor FX 用户脚本是否已加载
-    // 使用 Promise.race 实现超时降级，避免阻塞主线程
-    const probeTimeoutMs = 30;
-    const probePromise = new Promise<boolean>((resolve) => {
-      const requestId = `cursorfx-probe-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    // 减少动态效果：直接覆盖（与脚本一次性生效方式一致）
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      Object.assign(this.#cfg, {
+        FOLLOW_SPEED: 1e4, FIT_SPEED: 1e4, SHAPE_SPEED: 1e4,
+        SCROLL_MAX: 0, SCROLL_DECAY: 1e4,
+        SPRING_K: 1e4, SPRING_DAMP: 1e4,
+      });
+    }
 
-      const onResponse = (e: Event) => {
-        const detail = (e as CustomEvent).detail;
-        if (detail?.requestId === requestId && detail?.result?.status === 'alive') {
-          cleanup();
-          resolve(true);
-        }
-      };
-
-      const cleanup = () => {
-        window.removeEventListener('CURSORFX_RESPONSE', onResponse);
-      };
-
-      window.addEventListener('CURSORFX_RESPONSE', onResponse);
-      window.dispatchEvent(new CustomEvent('CURSORFX_REQUEST', {
-        detail: { action: 'ping', requestId }
-      }));
-    });
-
-    const timeoutPromise = new Promise<boolean>((resolve) => {
-      setTimeout(() => resolve(false), probeTimeoutMs);
-    });
-
-    // 不阻塞构造函数，异步完成初始化
-    Promise.race([probePromise, timeoutPromise]).then((scriptExists) => {
-      if (scriptExists) {
-        console.log('[CustomCursor] 检测到 Cursor FX 用户脚本已激活，让出控制权');
-        // 创建占位元素防止后续方法报错，但不注入样式/不启动循环
-        this.#dot = document.createElement('div');
-        this.#ring = document.createElement('div');
-        this.#effectManager = null;
+    // 异步探测 Cursor FX 用户脚本
+    this.#probeUserscript().then((exists) => {
+      if (this.#disabled) return;
+      if (exists) {
+        console.log('[CustomCursor] 检测到 Cursor FX 用户脚本，让出控制权');
+        this.#disabled = true;
         return;
       }
-
-      // 用户脚本不存在，正常初始化
-      this.#init(options);
+      this.#mount();
     });
   }
 
   // ================================================================
-  //  真正的初始化（仅在确认无用户脚本时调用）
+  //  用户脚本探测（Promise.race 超时降级）
   // ================================================================
-  #init(_options: Partial<typeof CustomCursor.DEFAULTS>): void {
-    // 创建 EffectManager（长按特效）
+  #probeUserscript(timeoutMs = 30): Promise<boolean> {
+    return new Promise<boolean>((resolve) => {
+      const requestId = `cursorfx-probe-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+      let settled = false;
+
+      const finish = (v: boolean): void => {
+        if (settled) return;
+        settled = true;
+        window.removeEventListener('CURSORFX_RESPONSE', onResponse);
+        resolve(v);
+      };
+
+      const onResponse = (e: Event): void => {
+        const detail = (e as CustomEvent).detail;
+        if (detail?.requestId === requestId && detail?.result?.status === 'alive') {
+          finish(true);
+        }
+      };
+
+      window.addEventListener('CURSORFX_RESPONSE', onResponse);
+      window.dispatchEvent(new CustomEvent('CURSORFX_REQUEST', {
+        detail: { action: 'ping', requestId },
+      }));
+      setTimeout(() => finish(false), timeoutMs);
+    });
+  }
+
+  // ================================================================
+  //  初始化（仅一次）
+  // ================================================================
+  #mount(): void {
+    if (this.#disabled || this.#initialized) return;
+
+    if (!document.body) {
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => this.#mount(), { once: true });
+      }
+      return;
+    }
+
+    this.#initialized = true;
+
+    // 事件绑定用同一 AbortController
+    const ac = new AbortController();
+    this.#abort = ac;
+
+    this.#injectStyles();
+    this.#createElements();
+    this.#bindEvents(ac.signal);
+    this.#installGuardian();
+
+    // 长按 / 粒子引擎
     this.#effectManager = new MouseEffectManager();
 
-    // 注入样式
-    this.#injectStyles();
+    // 初始运动状态：从屏幕中心开始
+    const cx = window.innerWidth / 2;
+    const cy = window.innerHeight / 2;
+    this.#mx = cx; this.#my = cy;
+    this.#rx = cx; this.#ry = cy;
+    this.#rw = this.#cfg.RING_SIZE;
+    this.#rh = this.#cfg.RING_SIZE;
+    this.#rr = this.#cfg.RING_SIZE / 2;
+    this.#tw = this.#rw; this.#th = this.#rh; this.#tr = this.#rr;
 
-    // 创建 DOM
-    this.#dot = document.createElement('div');
-    this.#ring = document.createElement('div');
-    this.#dot.className = 'cc-dot';
-    this.#ring.className = 'cc-ring';
-    document.body.append(this.#ring, this.#dot); // ring 在前，dot 在上层
-
-    // 初始化大小
-    this.#applyInitialStyles();
-
-    // 启动主循环
     this.#lastInput = performance.now();
     this.#lastT = this.#lastInput;
-    this.#rafId = requestAnimationFrame((t) => this.#tick(t));
-
-    // 绑定事件
-    this.#bindEvents();
-
-    // 处理系统减少动态效果
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      Object.assign(this.#config, {
-        FOLLOW_SPEED: 1e4,
-        FIT_SPEED: 1e4,
-        SHAPE_SPEED: 1e4,
-        SCROLL_MAX: 0,
-        SPRING_K: 1e4,
-        SPRING_DAMP: 1e4,
-      });
-    }
+    this.#rafId = requestAnimationFrame(this.#tickBound);
 
     console.log('[CustomCursor] 自定义光标初始化完成（仿 cursor-fx）');
   }
 
   // ================================================================
-  //  样式注入
+  //  样式 & DOM
   // ================================================================
   #injectStyles(): void {
-    const cfg = this.#config;
+    const cfg = this.#cfg;
     const style = document.createElement('style');
     style.id = 'custom-cursor-styles';
+
+    const cursorRule = cfg.HIDE_CURSOR
+      ? '*,*::before,*::after{cursor:none !important}'
+      : '';
+    const dotDisplay = cfg.ENABLE_DOT ? '' : '.cc-dot{display:none !important}';
+    const ringDisplay = cfg.ENABLE_RING ? '' : '.cc-ring{display:none !important}';
+
     style.textContent = `
-      .cc-dot, .cc-ring {
-        position: fixed;
-        left: 0;
-        top: 0;
-        pointer-events: none;
-        z-index: 2147483647;
-        mix-blend-mode: difference;
-        will-change: transform;
-        opacity: 0;
-        transition: opacity .3s ease;
+      ${cursorRule}
+      .cc-dot,.cc-ring{
+        position:fixed;left:0;top:0;
+        pointer-events:none;
+        z-index:2147483647;
+        mix-blend-mode:difference;
+        will-change:transform;
+        opacity:0;
       }
-      .cc-dot {
-        width: ${cfg.DOT_SIZE}px;
-        height: ${cfg.DOT_SIZE}px;
-        background: #fff;
-        border-radius: 50%;
-        transition: opacity .3s ease, width .22s ease, height .22s ease, border-radius .22s ease;
+      .cc-dot{
+        width:${cfg.DOT_SIZE}px;height:${cfg.DOT_SIZE}px;
+        background:#fff;border-radius:50%;
+        transition:opacity .3s ease,width .22s ease,height .22s ease,border-radius .22s ease;
       }
-      .cc-ring {
-        width: ${cfg.RING_SIZE}px;
-        height: ${cfg.RING_SIZE}px;
-        border: ${cfg.RING_BORDER}px solid rgba(255,255,255,${cfg.RING_ALPHA});
-        border-radius: 50%;
-        transition: opacity .3s ease;
+      .cc-ring{
+        width:${cfg.RING_SIZE}px;height:${cfg.RING_SIZE}px;
+        border:${cfg.RING_BORDER}px solid rgb(255 255 255 / var(--ccA,${cfg.RING_ALPHA}));
+        border-radius:50%;
+        transition:opacity .3s ease,border-color .25s ease;
       }
-      .cc-live { opacity: 1; }
+      .cc-live{opacity:1}
+      ${dotDisplay}
+      ${ringDisplay}
     `;
     document.head.appendChild(style);
     this.#styleTag = style;
   }
 
-  #applyInitialStyles(): void {
-    const cfg = this.#config;
-    this.#dot.style.width = cfg.DOT_SIZE + 'px';
-    this.#dot.style.height = cfg.DOT_SIZE + 'px';
-    this.#dot.style.borderRadius = '50%';
+  #createElements(): void {
+    // 幂等：重建前先移除旧元素
+    this.#dot?.remove();
+    this.#ring?.remove();
 
-    this.#rw = cfg.RING_SIZE;
-    this.#rh = cfg.RING_SIZE;
-    this.#rr = cfg.RING_SIZE / 2;
-    this.#ring.style.width = this.#rw + 'px';
-    this.#ring.style.height = this.#rh + 'px';
-    this.#ring.style.borderRadius = this.#rr + 'px';
-    // 初始透明度由样式中的 rgba 决定，后续通过 #setRingAlpha 动态修改 borderColor
+    const dot = document.createElement('div');
+    const ring = document.createElement('div');
+    dot.className = 'cc-dot';
+    ring.className = 'cc-ring';
+    // ring 在 dot 之下
+    (document.body || document.documentElement).append(ring, dot);
+
+    this.#dot = dot;
+    this.#ring = ring;
+
+    // 重置形状 / 透明度状态
+    this.#dotIsBar = false;
+    this.#ringDim = false;
+    dot.style.width = this.#cfg.DOT_SIZE + 'px';
+    dot.style.height = this.#cfg.DOT_SIZE + 'px';
+    dot.style.borderRadius = '50%';
+
+    // 重置写入缓存，保证下一帧一定会写入
+    this.#dotCache.x = this.#dotCache.y = this.#dotCache.s = NaN;
+    this.#ringCache.x = this.#ringCache.y = this.#ringCache.s = NaN;
+    this.#lastW = this.#lastH = this.#lastR = -1;
+
+    // 立即落位，避免闪一下
+    writeTransform(dot, this.#mx, this.#my, 1, this.#dotCache);
+    writeTransform(ring, this.#rx, this.#ry, 1, this.#ringCache);
+
+    // 若此前已显示，则新元素直接带上 live 状态
+    if (this.#shown) {
+      dot.classList.add('cc-live');
+      ring.classList.add('cc-live');
+    }
+  }
+
+  #isMounted(): boolean {
+    return !!(this.#dot?.isConnected && this.#ring?.isConnected);
+  }
+
+  #installGuardian(): void {
+    this.#guardian = new MutationObserver(() => {
+      if (!this.#isMounted()) {
+        this.#createElements();
+        this.#wake();
+      }
+    });
+    this.#guardian.observe(document.documentElement, { childList: true, subtree: true });
+  }
+
+  // ================================================================
+  //  事件绑定（统一 AbortController 管理生命周期）
+  // ================================================================
+  #bindEvents(sig: AbortSignal): void {
+    window.addEventListener('pointermove', (e) => {
+      if (e.pointerType === 'touch') return;
+      this.#mx = e.clientX;
+      this.#my = e.clientY;
+      if (this.#focusEl) { this.#focusEl = null; this.#focusRad = 0; }
+      this.#effectManager?.onPointerMove(e.clientX, e.clientY);
+      this.#wake();
+    }, { passive: true, signal: sig });
+
+    window.addEventListener('pointerdown', (e) => {
+      if (e.pointerType === 'touch') return;
+      this.#pressed = true;
+      this.#effectManager?.onPointerDown(e.clientX, e.clientY);
+      this.#wake();
+    }, { passive: true, signal: sig });
+
+    window.addEventListener('pointerup', (e) => {
+      if (e.pointerType === 'touch') return;
+      this.#pressed = false;
+      this.#effectManager?.onPointerUp(e.clientX, e.clientY);
+      this.#wake();
+    }, { passive: true, signal: sig });
+
+    window.addEventListener('pointercancel', () => {
+      this.#pressed = false;
+      this.#wake();
+    }, { passive: true, signal: sig });
+
+    // 滚动拖尾：与脚本一致的 16 / 120 系数
+    window.addEventListener('wheel', (e) => {
+      if (this.#hoverEl || this.#focusEl || this.#textEl) return;
+      let dx = e.deltaX, dy = e.deltaY;
+      if (e.deltaMode === 1) { dx *= 16; dy *= 16; }
+      else if (e.deltaMode === 2) { dx *= 120; dy *= 120; }
+      const max = this.#cfg.SCROLL_MAX;
+      this.#sX = this.#clamp(this.#sX - this.#clamp(dx, -80, 80), -max, max);
+      this.#sY = this.#clamp(this.#sY - this.#clamp(dy, -80, 80), -max, max);
+      this.#wake();
+    }, { passive: true, signal: sig });
+
+    document.addEventListener('mouseover', (e) => this.#onMouseOver(e), { signal: sig });
+
+    document.addEventListener('focusin', (e) => this.#onFocusIn(e), { signal: sig });
+
+    document.addEventListener('focusout', (e) => {
+      if (this.#focusEl === e.target) { this.#focusEl = null; this.#wake(); }
+    }, { signal: sig });
+
+    const docEl = document.documentElement;
+    docEl.addEventListener('mouseenter', () => { this.#inside = true; this.#wake(); }, { signal: sig });
+    docEl.addEventListener('mouseleave', () => { this.#inside = false; this.#hide(); }, { signal: sig });
+    window.addEventListener('blur', () => this.#hide(), { signal: sig });
+    window.addEventListener('focus', () => { if (this.#inside) this.#wake(); }, { signal: sig });
+  }
+
+  #onMouseOver(e: MouseEvent): void {
+    const tgt = e.target as Element | null;
+    if (!tgt || tgt.nodeType !== 1) return;
+
+    // 文本模式
+    const txt = tgt.closest(CustomCursor.SEL_TEXT);
+    if (txt !== this.#textEl) {
+      this.#textEl = txt;
+      this.#setDotShape(!!txt);
+      this.#setRingAlpha(!!txt);
+    }
+
+    // hoverEl 掉线则清空
+    if (this.#hoverEl && !this.#hoverEl.isConnected) {
+      this.#hoverEl = null;
+      this.#hoverRad = 0;
+    }
+
+    // 悬停贴合目标
+    const inter = tgt.closest(CustomCursor.SEL_INTERACTIVE);
+    if (inter !== this.#hoverEl) {
+      let next: Element | null = null;
+      let rad = 0;
+      if (inter && !inter.matches(CustomCursor.SEL_TEXT)) {
+        const m = this.#measure(inter);
+        if (m !== null) { next = inter; rad = m; }
+      }
+      this.#hoverEl = next;
+      this.#hoverRad = rad;
+    }
+  }
+
+  #onFocusIn(e: FocusEvent): void {
+    const tgt = e.target as Element | null;
+    if (!tgt || tgt.nodeType !== 1) return;
+    if (tgt.matches(CustomCursor.SEL_TEXT) || !tgt.matches(CustomCursor.SEL_INTERACTIVE)) return;
+    const m = this.#measure(tgt);
+    if (m !== null) {
+      this.#focusEl = tgt;
+      this.#focusRad = m;
+      this.#wake();
+    }
   }
 
   // ================================================================
@@ -873,129 +1030,35 @@ export class CustomCursor {
     return v < a ? a : (v > b ? b : v);
   }
 
-  #measureElement(el: Element): { rad: number } | null {
+  /** 元素是否符合贴合条件；返回 border-radius 或 null */
+  #measure(el: Element): number | null {
     const r = el.getBoundingClientRect();
-    if (r.width > this.#config.MAX_FIT_SIZE && r.height > this.#config.MAX_FIT_SIZE) return null;
-    const br = getComputedStyle(el).borderRadius || '0px';
-    let rad = 0;
-    if (br.indexOf('%') > -1) {
-      rad = parseFloat(br) / 100 * Math.min(r.width, r.height);
-    } else {
-      rad = parseFloat(br) || 0;
-    }
-    return { rad };
+    if (r.width === 0 && r.height === 0) return null;
+    if (r.width > this.#cfg.MAX_FIT_SIZE || r.height > this.#cfg.MAX_FIT_SIZE) return null;
+    return parseBorderRadius(el, r);
   }
 
   #show(): void {
     if (this.#shown) return;
     this.#shown = true;
-    this.#dot.classList.add('cc-live');
-    this.#ring.classList.add('cc-live');
+    this.#dot?.classList.add('cc-live');
+    this.#ring?.classList.add('cc-live');
   }
 
   #hide(): void {
     if (!this.#shown) return;
     this.#shown = false;
-    this.#dot.classList.remove('cc-live');
-    this.#ring.classList.remove('cc-live');
+    this.#dot?.classList.remove('cc-live');
+    this.#ring?.classList.remove('cc-live');
   }
 
   #wake(): void {
     this.#lastInput = performance.now();
     this.#show();
-    if (!this.#rafId) {
+    if (!this.#rafId && !this.#disabled) {
       this.#lastT = this.#lastInput;
-      this.#rafId = requestAnimationFrame((t) => this.#tick(t));
+      this.#rafId = requestAnimationFrame(this.#tickBound);
     }
-  }
-
-  // ================================================================
-  //  事件绑定
-  // ================================================================
-  #bindEvents(): void {
-    // 指针移动
-    window.addEventListener('pointermove', (e) => {
-      if (e.pointerType === 'touch') return;
-      this.#mx = e.clientX;
-      this.#my = e.clientY;
-      if (this.#focusEl) this.#focusEl = null;
-      this.#effectManager?.onPointerMove(e.clientX, e.clientY);
-      this.#wake();
-    }, { passive: true });
-
-    // 指针按下
-    window.addEventListener('pointerdown', (e) => {
-      if (e.pointerType === 'touch') return;
-      this.#pressed = true;
-      this.#effectManager?.onPointerDown(e.clientX, e.clientY);
-      this.#wake();
-    }, { passive: true });
-
-    // 指针抬起
-    window.addEventListener('pointerup', (e) => {
-      if (e.pointerType === 'touch') return;
-      this.#pressed = false;
-      this.#effectManager?.onPointerUp(e.clientX, e.clientY);
-      this.#wake();
-    }, { passive: true });
-
-    window.addEventListener('pointercancel', () => {
-      this.#pressed = false;
-      this.#wake();
-    }, { passive: true });
-
-    // 滚动拖尾
-    window.addEventListener('wheel', (e) => {
-      if (this.#hoverEl || this.#focusEl) return;
-      const unit = e.deltaMode === 1 ? 16 : (e.deltaMode === 2 ? window.innerHeight : 1);
-      this.#sX = this.#clamp(this.#sX - this.#clamp(e.deltaX * unit, -80, 80), -this.#config.SCROLL_MAX, this.#config.SCROLL_MAX);
-      this.#sY = this.#clamp(this.#sY - this.#clamp(e.deltaY * unit, -80, 80), -this.#config.SCROLL_MAX, this.#config.SCROLL_MAX);
-      this.#wake();
-    }, { passive: true });
-
-    // 悬停检测（鼠标覆盖）
-    document.addEventListener('mouseover', (e) => {
-      const target = e.target as Element;
-      if (!target || target.nodeType !== 1) return;
-
-      const text = target.closest(CustomCursor.SEL_TEXT);
-      if (text !== this.#textEl) {
-        this.#textEl = text;
-        this.#setDotShape(!!text);
-        this.#setRingAlpha(!!text);
-      }
-
-      const inter = target.closest(CustomCursor.SEL_INTERACTIVE);
-      if (inter !== this.#hoverEl) {
-        let next: Element | null = null, rad = 0;
-        if (inter && !inter.matches(CustomCursor.SEL_TEXT)) {
-          const m = this.#measureElement(inter);
-          if (m) { next = inter; rad = m.rad; }
-        }
-        this.#hoverEl = next;
-        this.#hoverRad = rad;
-      }
-    }, { passive: true });
-
-    // 键盘聚焦
-    document.addEventListener('focusin', (e) => {
-      const target = e.target as Element;
-      if (!target || target.nodeType !== 1) return;
-      if (target.matches(CustomCursor.SEL_TEXT) || !target.matches(CustomCursor.SEL_INTERACTIVE)) return;
-      const m = this.#measureElement(target);
-      if (m) { this.#focusEl = target; this.#focusRad = m.rad; this.#wake(); }
-    }, { passive: true });
-
-    document.addEventListener('focusout', (e) => {
-      if (this.#focusEl === e.target) { this.#focusEl = null; this.#wake(); }
-    }, { passive: true });
-
-    // 窗口进出
-    const docEl = document.documentElement;
-    docEl.addEventListener('mouseenter', () => { this.#inside = true; this.#wake(); }, { passive: true });
-    docEl.addEventListener('mouseleave', () => { this.#inside = false; this.#hide(); }, { passive: true });
-    window.addEventListener('blur', () => this.#hide(), { passive: true });
-    window.addEventListener('focus', () => { if (this.#inside) this.#wake(); }, { passive: true });
   }
 
   // ================================================================
@@ -1004,38 +1067,61 @@ export class CustomCursor {
   #setDotShape(bar: boolean): void {
     if (this.#dotIsBar === bar) return;
     this.#dotIsBar = bar;
-    const cfg = this.#config;
-    this.#dot.style.width = (bar ? cfg.TEXT_BAR_W : cfg.DOT_SIZE) + 'px';
-    this.#dot.style.height = (bar ? cfg.TEXT_BAR_H : cfg.DOT_SIZE) + 'px';
-    this.#dot.style.borderRadius = bar ? '2px' : '50%';
+    const d = this.#dot;
+    if (!d) return;
+    d.style.width = (bar ? this.#cfg.TEXT_BAR_W : this.#cfg.DOT_SIZE) + 'px';
+    d.style.height = (bar ? this.#cfg.TEXT_BAR_H : this.#cfg.DOT_SIZE) + 'px';
+    d.style.borderRadius = bar ? '2px' : '50%';
   }
 
   #setRingAlpha(dim: boolean): void {
     if (this.#ringDim === dim) return;
     this.#ringDim = dim;
-    const cfg = this.#config;
-    const alpha = dim ? cfg.TEXT_RING_ALPHA : cfg.RING_ALPHA;
-    // 直接修改 border-color 的 alpha 值（覆盖内联样式）
-    this.#ring.style.borderColor = `rgba(255,255,255,${alpha})`;
+    this.#ring?.style.setProperty(
+      '--ccA', dim ? String(this.#cfg.TEXT_RING_ALPHA) : String(this.#cfg.RING_ALPHA),
+    );
   }
 
-  // ---- 写入 transform（缓存跳过） ----
-  #setT(el: HTMLElement, x: number, y: number, s: number, cache: { v: string }): void {
-    const v = `translate3d(${x.toFixed(2)}px,${y.toFixed(2)}px,0) translate(-50%,-50%) scale(${s.toFixed(3)})`;
-    if (cache.v !== v) {
-      cache.v = v;
-      el.style.transform = v;
-    }
+  // ================================================================
+  //  公开：参数变更后刷新（保留与脚本 refresh() 一致的语义）
+  // ================================================================
+  public refresh(): void {
+    const { dot, ring } = this;
+    if (!dot || !ring) return;
+
+    const dotTrans = dot.style.transition;
+    const ringTrans = ring.style.transition;
+    dot.style.transition = 'none';
+    ring.style.transition = 'none';
+
+    // 强制形状/透明度各重绘一次
+    const b = this.#dotIsBar; this.#dotIsBar = !b; this.#setDotShape(b);
+    const d = this.#ringDim; this.#ringDim = !d; this.#setRingAlpha(d);
+
+    this.#lastW = this.#lastH = this.#lastR = -1;
+    this.#dotCache.x = this.#dotCache.y = this.#dotCache.s = NaN;
+    this.#ringCache.x = this.#ringCache.y = this.#ringCache.s = NaN;
+
+    requestAnimationFrame(() => {
+      if (this.#dot) this.#dot.style.transition = dotTrans || '';
+      if (this.#ring) this.#ring.style.transition = ringTrans || '';
+    });
+
+    this.#wake();
   }
 
-  // ---- 主循环 ----
-  #tick(t: number): void {
+  // ================================================================
+  //  主循环
+  // ================================================================
+  #tick = (t: number): void => {
+    if (this.#disabled) return;
     this.#rafId = 0;
+
     const dt = this.#clamp((t - this.#lastT) / 1000, 0, 0.05) || 0.016;
     this.#lastT = t;
 
-    // 确定当前贴合元素
-    let el = this.#hoverEl || this.#focusEl;
+    // 解析当前贴合元素
+    let el: Element | null = this.#hoverEl || this.#focusEl;
     const elRad = this.#hoverEl ? this.#hoverRad : this.#focusRad;
     if (el && !el.isConnected) {
       if (this.#hoverEl === el) this.#hoverEl = null;
@@ -1045,100 +1131,126 @@ export class CustomCursor {
 
     // 1) 滚动拖尾衰减
     if (this.#sX !== 0 || this.#sY !== 0) {
-      const d = Math.exp(-this.#config.SCROLL_DECAY * dt);
-      this.#sX *= d;
-      this.#sY *= d;
+      const d = Math.exp(-this.#cfg.SCROLL_DECAY * dt);
+      this.#sX *= d; this.#sY *= d;
       if (Math.abs(this.#sX) < 0.05) this.#sX = 0;
       if (Math.abs(this.#sY) < 0.05) this.#sY = 0;
     }
 
-    // 2) 计算目标位置和尺寸
+    // 2) 目标位置/尺寸
     let tx = this.#mx + this.#sX, ty = this.#my + this.#sY;
-    let speed = this.#config.FOLLOW_SPEED;
-    let tw = this.#textEl ? this.#config.TEXT_RING_SIZE : this.#config.RING_SIZE;
-    let th = tw;
-    let tr = tw / 2;
+    let speed = this.#cfg.FOLLOW_SPEED;
+
+    const baseSize = this.#textEl ? this.#cfg.TEXT_RING_SIZE : this.#cfg.RING_SIZE;
+    let tw = baseSize, th = baseSize, tr = baseSize / 2;
 
     if (el) {
       const r = el.getBoundingClientRect();
-      if (r.width > this.#config.MAX_FIT_SIZE && r.height > this.#config.MAX_FIT_SIZE) {
-        if (this.#hoverEl === el) this.#hoverEl = null;
-        if (this.#focusEl === el) this.#focusEl = null;
+      if ((r.width === 0 && r.height === 0) ||
+          r.width > this.#cfg.MAX_FIT_SIZE || r.height > this.#cfg.MAX_FIT_SIZE) {
+        if (this.#hoverEl === el) { this.#hoverEl = null; this.#hoverRad = 0; }
+        if (this.#focusEl === el) { this.#focusEl = null; this.#focusRad = 0; }
       } else {
         tx = r.left + r.width / 2;
         ty = r.top + r.height / 2;
-        tw = r.width + this.#config.FIT_PADDING * 2;
-        th = r.height + this.#config.FIT_PADDING * 2;
-        tr = Math.min(elRad + this.#config.FIT_PADDING, Math.min(tw, th) / 2);
-        speed = this.#config.FIT_SPEED;
+        tw = r.width + this.#cfg.FIT_PADDING * 2;
+        th = r.height + this.#cfg.FIT_PADDING * 2;
+        tr = Math.min(elRad + this.#cfg.FIT_PADDING, Math.min(tw, th) / 2);
+        speed = this.#cfg.FIT_SPEED;
       }
     }
 
-    // 3) 平滑跟随（帧率无关）
-    const k = 1 - Math.exp(-speed * dt);
-    this.#rx += (tx - this.#rx) * k;
-    this.#ry += (ty - this.#ry) * k;
-    if (Math.abs(tx - this.#rx) < 0.05) this.#rx = tx;
-    if (Math.abs(ty - this.#ry) < 0.05) this.#ry = ty;
+    const pressedTarget = this.#pressed ? this.#cfg.CLICK_SCALE : 1;
 
-    const ks = 1 - Math.exp(-this.#config.SHAPE_SPEED * dt);
-    this.#rw += (tw - this.#rw) * ks;
-    this.#rh += (th - this.#rh) * ks;
-    this.#rr += (tr - this.#rr) * ks;
-    if (Math.abs(tw - this.#rw) < 0.1) this.#rw = tw;
-    if (Math.abs(th - this.#rh) < 0.1) this.#rh = th;
-    if (Math.abs(tr - this.#rr) < 0.1) this.#rr = tr;
+    // 3) 圆环
+    if (this.#cfg.ENABLE_RING) {
+      const k = 1 - Math.exp(-speed * dt);
+      this.#rx += (tx - this.#rx) * k;
+      this.#ry += (ty - this.#ry) * k;
+      if (Math.abs(tx - this.#rx) < 0.05) this.#rx = tx;
+      if (Math.abs(ty - this.#ry) < 0.05) this.#ry = ty;
 
-    // 4) 点击弹簧
-    const sT = this.#pressed ? this.#config.CLICK_SCALE : 1;
-    this.#dotV = (this.#dotV + (sT - this.#dotS) * this.#config.SPRING_K * dt) * Math.exp(-this.#config.SPRING_DAMP * dt);
-    this.#dotS = Math.max(0.2, this.#dotS + this.#dotV * dt);
-    this.#ringV = (this.#ringV + (sT - this.#ringS) * this.#config.SPRING_K * dt) * Math.exp(-this.#config.SPRING_DAMP * dt);
-    this.#ringS = Math.max(0.2, this.#ringS + this.#ringV * dt);
+      const ks = 1 - Math.exp(-this.#cfg.SHAPE_SPEED * dt);
+      this.#rw += (tw - this.#rw) * ks;
+      this.#rh += (th - this.#rh) * ks;
+      this.#rr += (tr - this.#rr) * ks;
+      if (Math.abs(tw - this.#rw) < 0.1) this.#rw = tw;
+      if (Math.abs(th - this.#rh) < 0.1) this.#rh = th;
+      if (Math.abs(tr - this.#rr) < 0.1) this.#rr = tr;
 
-    // 5) 写入 DOM（跳过缓存）
-    this.#setT(this.#dot, this.#mx, this.#my, this.#dotS, this.#dotCache);
-    this.#setT(this.#ring, this.#rx, this.#ry, this.#ringS, this.#ringCache);
+      this.#ringV = (this.#ringV + (pressedTarget - this.#ringS) * this.#cfg.SPRING_K * dt)
+        * Math.exp(-this.#cfg.SPRING_DAMP * dt);
+      this.#ringS = Math.max(0.2, this.#ringS + this.#ringV * dt);
 
-    if (this.#rw !== this.#lastW) {
-      this.#ring.style.width = this.#rw + 'px';
-      this.#lastW = this.#rw;
-    }
-    if (this.#rh !== this.#lastH) {
-      this.#ring.style.height = this.#rh + 'px';
-      this.#lastH = this.#rh;
-    }
-    if (this.#rr !== this.#lastR) {
-      this.#ring.style.borderRadius = this.#rr + 'px';
-      this.#lastR = this.#rr;
-    }
+      const ring = this.#ring;
+      if (ring) {
+        writeTransform(ring, this.#rx, this.#ry, this.#ringS, this.#ringCache);
 
-    // 6) 空闲暂停检查
-    const settled =
-      this.#rw === tw && this.#rh === th && this.#rr === tr &&
-      !el && this.#sX === 0 && this.#sY === 0 &&
-      Math.abs(this.#dotS - sT) < 0.002 && Math.abs(this.#dotV) < 0.01 &&
-      Math.abs(this.#ringS - sT) < 0.002 && Math.abs(this.#ringV) < 0.01;
+        const qrw = Math.round(this.#rw * 10) / 10;
+        const qrh = Math.round(this.#rh * 10) / 10;
+        const qrr = Math.round(this.#rr * 10) / 10;
+        if (qrw !== this.#lastW) { ring.style.width = qrw + 'px'; this.#lastW = qrw; }
+        if (qrh !== this.#lastH) { ring.style.height = qrh + 'px'; this.#lastH = qrh; }
+        if (qrr !== this.#lastR) { ring.style.borderRadius = qrr + 'px'; this.#lastR = qrr; }
 
-    if (settled && t - this.#lastInput > this.#config.IDLE_PAUSE_MS) {
-      // 停止循环
-      return;
+        // 与脚本一致：用尺寸量化后的值判定稳定
+        this.#ringSettled =
+          qrw === Math.round(tw * 10) / 10 &&
+          qrh === Math.round(th * 10) / 10 &&
+          qrr === Math.round(tr * 10) / 10 &&
+          Math.abs(this.#ringS - pressedTarget) < 0.002 &&
+          Math.abs(this.#ringV) < 0.01;
+      } else {
+        this.#ringSettled = true;
+      }
+    } else {
+      this.#ringSettled = true;
     }
 
-    this.#rafId = requestAnimationFrame((t) => this.#tick(t));
-  }
+    // 4) 圆点
+    if (this.#cfg.ENABLE_DOT) {
+      this.#dotV = (this.#dotV + (pressedTarget - this.#dotS) * this.#cfg.SPRING_K * dt)
+        * Math.exp(-this.#cfg.SPRING_DAMP * dt);
+      this.#dotS = Math.max(0.2, this.#dotS + this.#dotV * dt);
 
-  // ---- 公开方法 ----
+      const dot = this.#dot;
+      if (dot) writeTransform(dot, this.#mx, this.#my, this.#dotS, this.#dotCache);
+
+      this.#dotSettled =
+        Math.abs(this.#dotS - pressedTarget) < 0.002 &&
+        Math.abs(this.#dotV) < 0.01;
+    } else {
+      this.#dotSettled = true;
+    }
+
+    // 5) 空闲判定
+    const idle = this.#ringSettled && this.#dotSettled &&
+      !el && this.#sX === 0 && this.#sY === 0;
+    if (idle && t - this.#lastInput > this.#cfg.IDLE_PAUSE_MS) return;
+
+    this.#rafId = requestAnimationFrame(this.#tickBound);
+  };
+
+  // ================================================================
+  //  销毁
+  // ================================================================
   public destroy(): void {
-    if (this.#rafId) {
-      cancelAnimationFrame(this.#rafId);
-      this.#rafId = 0;
-    }
-    this.#dot?.remove();
-    this.#ring?.remove();
-    this.#styleTag?.remove();
+    this.#disabled = true;
+    this.#initialized = false;
+
+    if (this.#abort) { this.#abort.abort(); this.#abort = null; }
+    if (this.#rafId) { cancelAnimationFrame(this.#rafId); this.#rafId = 0; }
+
+    this.#guardian?.disconnect();
+    this.#guardian = null;
+
+    this.#dot?.remove(); this.#dot = null;
+    this.#ring?.remove(); this.#ring = null;
+    this.#styleTag?.remove(); this.#styleTag = null;
+
     this.#effectManager?.destroy();
     this.#effectManager = null;
+
     console.log('[CustomCursor] 已销毁');
   }
 }
