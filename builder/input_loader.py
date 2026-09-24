@@ -56,74 +56,135 @@ except ImportError:
 LAZY_PLACEHOLDER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E"
 
 # ---------- 版本日志解析 ----------
-VERSION_PATTERN = re.compile(r'^(#{2,4})\s+(v[\d.]+(?:\d+)?)\s*\((\d{4}-\d{2}-\d{2})\)')
-CHANGE_PATTERN = re.compile(r'^-\s+\*\*([^*]+)\*\*:\s*(.*)$')
+# 标题格式（仅两种）：
+#   1. `## v8.37.4 (2026-09-24)` —— 带版本号 + 日期
+#   2. `## 2025-12-06`           —— 仅有日期（旧日志，is_old=True）
+VERSION_PATTERN = re.compile(
+    r'^(#{2,4})\s+(?:'
+    r'v([\w.]+(?:-[\w.]+)?)\s*\((\d{4}-\d{2}-\d{2})\)'   # vX.Y.Z[-devN] (YYYY-MM-DD)
+    r'|'
+    r'(\d{4}-\d{2}-\d{2})'                                # YYYY-MM-DD
+    r')\s*$'
+)
+
+# 变更条目：`- type: description`；无冒号时整行作为 description
+# 缩进行（以空格开头）会被识别为上一个 change 的续行，而非新条目
+CHANGE_PATTERN = re.compile(r'^-\s+(?:([^:]+?):\s*)?(.*)$')
+
 
 def parse_changelog(md_text: str) -> Dict:
-    lines = md_text.splitlines()
-    version_map = {}
-    current_version = None
-    current_date = None
-    changes = []
-    current_change = None
-    description_lines = []
+    """解析更新日志 Markdown。
 
-    def flush_change():
+    返回结构：
+        {
+          "v8.37.4":   {"date": "2026-09-24", "changes": [...], "is_old": False},
+          "2025-12-06":{"date": "2025-12-06", "changes": [...], "is_old": True},
+          ...
+        }
+    每个 change 形如 {"type": "refactor", "description": "..."}。
+    旧日志与正式版本共用同一套解析逻辑，仅用 is_old 区分。
+    """
+    version_map: Dict[str, Dict] = {}
+    current_version: Optional[str] = None
+    current_date: Optional[str] = None
+    current_is_old: bool = False
+    changes: List[Dict] = []
+    current_change: Optional[Dict] = None
+    description_lines: List[str] = []
+
+    def flush_change() -> None:
         nonlocal current_change, description_lines
         if current_change is not None:
-            desc = '\n'.join(description_lines).strip()
-            current_change['description'] = desc
+            current_change['description'] = '\n'.join(description_lines).strip()
             changes.append(current_change)
             current_change = None
             description_lines = []
 
-    def flush_version():
-        nonlocal current_version, current_date, changes
+    def flush_version() -> None:
+        nonlocal current_version, current_date, current_is_old, changes
+        nonlocal current_change, description_lines
         if current_version is not None:
             flush_change()
             if current_version not in version_map:
                 version_map[current_version] = {
                     'date': current_date,
-                    'changes': changes.copy()
+                    'changes': changes.copy(),
+                    'is_old': current_is_old,
                 }
-            current_version = None
-            current_date = None
-            changes = []
-            current_change = None
-            description_lines = []
+        # 状态复位，准备接收下一个版本块
+        current_version = None
+        current_date = None
+        current_is_old = False
+        changes = []
+        current_change = None
+        description_lines = []
 
-    for line in lines:
-        stripped = line.strip()
+    for line in md_text.splitlines():
+        # 1) 版本标题
         m = VERSION_PATTERN.match(line)
         if m:
             flush_version()
-            current_version = m.group(2)
-            current_date = m.group(3)
+            if m.group(2):
+                # 带版本号：## v8.37.4 (2026-09-24)
+                current_version = f"v{m.group(2)}"
+                current_date = m.group(3)
+                current_is_old = False
+            else:
+                # 旧日志：## 2025-12-06
+                current_version = m.group(4)
+                current_date = m.group(4)
+                current_is_old = True
             continue
 
+        # 2) 版本块之前的内容忽略
+        if current_version is None:
+            continue
+
+        # 3) 新的变更条目
         m = CHANGE_PATTERN.match(line)
         if m:
             flush_change()
-            change_type = m.group(1).strip()
+            change_type = (m.group(1) or '').strip()
             initial_desc = m.group(2).strip()
             current_change = {'type': change_type, 'description': ''}
             if initial_desc:
                 description_lines.append(initial_desc)
             continue
 
+        # 4) 缩进的续行
         if current_change is not None:
             description_lines.append(line.rstrip())
 
     flush_version()
     return version_map
 
-def sort_versions(version_strings: list) -> list:
+
+def sort_versions(version_strings: List[str]) -> List[str]:
+    """排序版本号列表。
+
+    规则：
+      - 旧日志（纯日期，例如 "2025-12-06"）按日期升序排列，整体排在版本号之前；
+      - 带版本号的条目（"v8.37.4"）按语义化版本升序排列。
+    """
+    old_ones = sorted(v for v in version_strings if not v.startswith('v'))
+    new_ones = [v for v in version_strings if v.startswith('v')]
+
     try:
-        from packaging import version
-        return sorted(version_strings, key=lambda v: version.parse(v.lstrip('v')))
+        from packaging import version as _pkg_version
+
+        def _key(v: str):
+            try:
+                return _pkg_version.parse(v.lstrip('v'))
+            except Exception:
+                return _pkg_version.parse('0')
+
+        new_ones.sort(key=_key)
     except ImportError:
-        log_warning("packaging.version 未安装，使用字符串排序")
-        return sorted(version_strings)
+        log_warning("packaging.version 未安装，版本号排序可能不准确")
+        new_ones.sort()
+
+    return old_ones + new_ones
+
 
 def load_version(force: bool = False) -> Dict:
     changelog_path = ASSETS_DIR / "网站更新日志.md"
@@ -136,8 +197,7 @@ def load_version(force: bool = False) -> Dict:
         if stored_hash == current_hash:
             log_info("更新日志未变化，直接加载已有 version.json")
             return old_data
-        else:
-            log_info("更新日志已变化，重新生成 version.json")
+        log_info("更新日志已变化，重新生成 version.json")
 
     if not changelog_path.exists():
         log_error(f"更新日志文件不存在: {changelog_path}")
@@ -151,8 +211,12 @@ def load_version(force: bool = False) -> Dict:
         log_error("未解析到任何版本")
         return {}
 
-    sorted_versions = sort_versions(version_map.keys())
-    log_info(f"共解析到 {len(sorted_versions)} 个唯一版本")
+    sorted_versions = sort_versions(list(version_map.keys()))
+    old_count = sum(1 for v in version_map.values() if v.get('is_old'))
+    log_info(
+        f"共解析到 {len(sorted_versions)} 个版本"
+        f"（其中旧日志 {old_count} 个，均已分配 id）"
+    )
 
     version_list = []
     for idx, ver_str in enumerate(sorted_versions, start=1):
@@ -161,14 +225,15 @@ def load_version(force: bool = False) -> Dict:
             'id': idx,
             'version': ver_str,
             'date': data['date'],
-            'changes': data['changes']
+            'changes': data['changes'],
+            'is_old': data.get('is_old', False),
         })
 
     output_data = {
         "generated_at": get_current_datetime_iso(),
         "total_versions": len(version_list),
         "versions": version_list,
-        "changelog_hash": compute_file_hash(changelog_path)
+        "changelog_hash": compute_file_hash(changelog_path),
     }
 
     save_json(output_data, version_json_path)
