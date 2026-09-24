@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
@@ -7,178 +8,261 @@
     <title>隐私政策 · 高新炀的小站</title>
     <link rel="stylesheet" href="/css/main.css" />
     <style>
-        .privacy-header {
-            text-align: center;
-            margin-bottom: 1.2rem;
+        .privacy-page {
+            max-width: 880px;
         }
-        .privacy-header h1 {
-            margin-bottom: 0.2rem;
-            border: none;
+        .privacy-hero {
+            text-align: center;
+            margin-bottom: 1.4rem;
+        }
+        .privacy-hero h1 {
+            margin-bottom: 0.4rem;
+        }
+        .privacy-badges {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 0.9rem;
+        }
+        .privacy-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 5px 14px;
+            border-radius: var(--radius-full);
+            background: var(--tag-bg);
+            color: var(--tag-color);
+            border: 1px solid var(--border-color);
+            font-size: 0.78rem;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+        .privacy-badge i {
+            color: var(--accent-color);
+            font-size: 0.75rem;
         }
         .last-updated {
             display: inline-block;
             font-size: var(--font-size-xs);
             color: var(--text-secondary);
             background: var(--surface-color-secondary);
-            padding: 2px 14px;
+            padding: 3px 14px;
             border-radius: var(--radius-full);
             border: 1px solid var(--border-color);
         }
-        .privacy-card {
-            background: var(--surface-color);
+        .privacy-section {
+            background: var(--surface-color-secondary);
             border: 1px solid var(--border-color);
             border-radius: var(--radius-lg);
-            padding: 1rem 1.2rem;
-            margin-bottom: 0.8rem;
-            box-shadow: var(--shadow-sm);
-            transition: background var(--transition-normal),
-                border-color var(--transition-normal),
-                box-shadow var(--transition-normal);
+            padding: 1.1rem 1.3rem;
+            margin-bottom: 0.9rem;
         }
-        .privacy-card h2 {
+        .privacy-section h2 {
+            display: block;
             font-size: 1rem;
-            margin: 0 0 0.4rem 0;
-            border: none;
-            color: var(--text-primary);
-            display: inline-block;
-            padding-bottom: 0;
+            margin: 0 0 0.9rem 0;
+            padding-bottom: 0.4rem;
+            border-bottom: 1px solid var(--border-light);
+            color: var(--text-color);
+            font-weight: 650;
         }
-        .privacy-card h2::after {
-            display: none;
+        .privacy-section h2::after {
+            width: 2rem;
         }
-        .privacy-card p,
-        .privacy-card li,
-        .privacy-card dd {
-            font-size: 0.88rem;
-            line-height: 1.6;
+        .privacy-note {
+            font-size: 0.83rem;
             color: var(--text-secondary);
-            margin: 0;
+            margin: 0.8rem 0 0;
+            line-height: 1.5;
         }
-        .privacy-card ul {
-            padding-left: 1.2rem;
-            margin: 0.2rem 0;
-        }
-        .data-dl {
-            display: grid;
-            gap: 0.4rem;
-            margin-top: 0.3rem;
-        }
-        .data-dl dt {
-            font-weight: 600;
-            font-size: 0.85rem;
-            color: var(--text-primary);
+        .data-flow {
             display: flex;
             align-items: center;
-            gap: 6px;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
         }
-        .data-dl dd {
-            margin: 0;
-            padding-left: 0;
-            font-size: 0.82rem;
-        }
-        .pledge {
-            background: rgba(var(--accent-rgb), 0.06);
-            border: 1px solid rgba(var(--accent-rgb), 0.12);
+        .flow-node {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 10px 14px;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
             border-radius: var(--radius-md);
-            padding: 0.4rem 0.8rem;
-            font-size: 0.88rem;
-            margin-bottom: 0.6rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        .pledge strong {
-            color: var(--accent-color);
-            white-space: nowrap;
-        }
-        .service-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 6px;
-            margin: 0.3rem 0;
-        }
-        .service-tags .tag b {
-            background: var(--accent-color);
-            color: #fff;
-            font-size: 0.55rem;
-            padding: 1px 6px;
-            border-radius: 3px;
-            text-transform: uppercase;
-            font-weight: 700;
-            letter-spacing: 0.02em;
-            margin-right: 2px;
-        }
-        [data-theme="dark"] .service-tags .tag b {
-            color: #14141a;
-        }
-        .meta-line {
+            min-width: 72px;
             font-size: 0.78rem;
             color: var(--text-secondary);
-            opacity: 0.8;
-            margin-top: 0.3rem;
+            transition: transform var(--transition-fast), border-color var(--transition-fast);
+        }
+        .flow-node i {
+            font-size: 1rem;
+            color: var(--text-secondary);
+        }
+        .flow-node-accent {
+            border-color: var(--accent-color);
+            box-shadow: 0 4px 14px rgba(var(--accent-rgb), 0.15);
+        }
+        .flow-node-accent i,
+        .flow-node-accent span {
+            color: var(--accent-color);
+        }
+        .flow-node-accent span {
+            font-weight: 600;
+        }
+        .flow-arrow {
+            color: var(--text-secondary);
+            opacity: 0.5;
+            font-size: 1rem;
+        }
+        .storage-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 8px;
+        }
+        .storage-item {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            padding: 9px 12px;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: 0.82rem;
+            color: var(--text-color);
+            line-height: 1.35;
+            transition: all var(--transition-fast);
+        }
+        .storage-item:hover {
+            border-color: var(--accent-color);
+            transform: translateY(-1px);
+        }
+        .storage-item i {
+            color: var(--accent-color);
+            font-size: 0.85rem;
+            width: 16px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .service-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 8px;
+        }
+        .service-card {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 9px 12px;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            transition: all var(--transition-fast);
+        }
+        .service-card:hover {
+            border-color: var(--accent-color);
+            box-shadow: var(--shadow-sm);
+        }
+        .service-icon {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(var(--accent-rgb), 0.1);
+            color: var(--accent-color);
+            border-radius: var(--radius-md);
+            flex-shrink: 0;
+            font-size: 0.9rem;
+        }
+        .service-body {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+        }
+        .service-name {
+            font-weight: 600;
+            font-size: 0.84rem;
+            color: var(--text-color);
+        }
+        .service-desc {
+            font-size: 0.72rem;
+            color: var(--text-secondary);
+            line-height: 1.35;
+        }
+        .control-list {
+            display: grid;
+            gap: 6px;
+        }
+        .control-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 9px 14px;
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            transition: all var(--transition-fast);
+        }
+        .control-item:hover {
+            border-color: var(--accent-color);
+        }
+        .control-item>i {
+            width: 22px;
+            text-align: center;
+            color: var(--accent-color);
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+        .control-body {
+            display: flex;
+            flex-direction: column;
+            gap: 1px;
+            min-width: 0;
+        }
+        .control-body strong {
+            color: var(--text-color);
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        .control-body span {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            line-height: 1.35;
         }
         .privacy-footer {
-            margin-top: 0.6rem;
-            padding-top: 0.6rem;
+            margin-top: 1.2rem;
+            padding-top: 0.9rem;
             border-top: 1px solid var(--border-light);
             text-align: center;
-            font-size: 0.8rem;
+            font-size: 0.83rem;
             color: var(--text-secondary);
         }
         .privacy-footer a {
             color: var(--accent-color);
-            text-decoration: none;
         }
         .privacy-footer a:hover {
             color: var(--accent-light);
         }
         @media (max-width: 480px) {
-            .privacy-card {
-                padding: 0.8rem;
+            .privacy-section {
+                padding: 0.9rem 1rem;
             }
-            .pledge {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 4px;
+            .storage-grid,
+            .service-grid {
+                grid-template-columns: 1fr;
             }
-            .pledge strong {
-                white-space: normal;
+            .flow-node {
+                padding: 8px 10px;
+                min-width: 60px;
+                font-size: 0.72rem;
             }
-        }
-        @media (min-width: 481px) {
-            .privacy-card {
-                padding: 1.2rem 1.6rem;
-            }
-            .service-tags {
-                gap: 8px;
-            }
-            .service-tags .tag {
-                padding: 4px 14px;
-            }
-        }
-        @media (min-width: 768px) {
-            .privacy-card {
-                padding: 1.4rem 2rem;
-                margin-bottom: 1rem;
-            }
-            .privacy-card p,
-            .privacy-card li,
-            .privacy-card dd {
-                font-size: 0.92rem;
-            }
-            .data-dl {
-                gap: 0.6rem;
-            }
-            .data-dl dt {
+            .flow-node i {
                 font-size: 0.9rem;
-            }
-            .data-dl dd {
-                font-size: 0.85rem;
-            }
-            .pledge {
-                padding: 0.5rem 1rem;
-                font-size: 0.92rem;
             }
         }
     </style>
@@ -192,64 +276,137 @@
     <div id="navbar-placeholder"></div>
 
     <div id="router-view">
-        <main class="container" style="animation: fadeIn 0.4s ease forwards;">
+        <div id="router-view">
+            <main class="container privacy-page">
 
-            <header class="privacy-header">
-                <h1>隐私政策</h1>
-                <div class="last-updated">更新于 2026年6月18日</div>
-            </header>
-
-            <section class="privacy-card">
-                <div class="pledge">
-                    <strong>不出售、不交易、不泄露用户数据，</strong>
-                    <span>仅用于改善体验与安全。</span>
-                </div>
-                <dl class="data-dl">
-                    <div>
-                        <dt>匿名统计</dt>
-                        <dd>vercount (PV/UV) 无个人标识；Clarity 热图经同意后加载。</dd>
+                <header class="privacy-hero">
+                    <h1>隐私政策</h1>
+                    <div class="privacy-badges">
+                        <span class="privacy-badge">不出售数据</span>
+                        <span class="privacy-badge">本地存储</span>
+                        <span class="privacy-badge">可随时清除</span>
                     </div>
-                    <div>
-                        <dt>评论内容</dt>
-                        <dd>Twikoo 存储昵称、邮箱（选填）及正文，永久保存直至删除。</dd>
+                    <span class="last-updated">更新于 2026年09月25日</span>
+                </header>
+
+                <section class="privacy-section">
+                    <h2>数据流向</h2>
+                    <div class="data-flow">
+                        <div class="flow-node">
+                            <i class="fas fa-user"></i><span>你</span>
+                        </div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-node flow-node-accent">
+                            <i class="fas fa-laptop"></i><span>本站</span>
+                        </div>
+                        <span class="flow-arrow">→</span>
+                        <div class="flow-node">
+                            <i class="fas fa-cloud"></i><span>第三方</span>
+                        </div>
                     </div>
-                    <div>
-                        <dt>本地存储</dt>
-                        <dd>经同意后使用 localStorage 保存主题/缓存，仅存于您的设备。</dd>
+                    <p class="privacy-note">偏好与缓存只留在本地；仅必要请求才会到达第三方。</p>
+                </section>
+
+                <section class="privacy-section">
+                    <h2>本地存了什么</h2>
+                    <div class="storage-grid">
+                        <div class="storage-item"><i class="fas fa-palette"></i><span>主题 / 字体</span></div>
+                        <div class="storage-item"><i class="fas fa-arrow-pointer"></i><span>光标 / 揭示动画</span></div>
+                        <div class="storage-item"><i class="fas fa-image"></i><span>背景图开关</span></div>
+                        <div class="storage-item"><i class="fas fa-database"></i><span>文章 / 作品缓存</span></div>
+                        <div class="storage-item"><i class="fas fa-music"></i><span>播放器状态</span></div>
+                        <div class="storage-item"><i class="fas fa-clock-rotate-left"></i><span>版本访问记录</span></div>
                     </div>
-                </dl>
-            </section>
+                </section>
 
-            <section class="privacy-card">
-                <h2>存储、第三方与您的权利</h2>
-                <p><strong>不设跨页 Cookie</strong>。拒绝同意将禁用 localStorage 并阻止 Clarity 加载；您可随时通过浏览器清除本地数据。</p>
+                <section class="privacy-section">
+                    <h2>第三方服务</h2>
+                    <div class="service-grid">
+                        <div class="service-card">
+                            <div class="service-icon"><i class="fas fa-eye"></i></div>
+                            <div class="service-body">
+                                <span class="service-name">vercount</span>
+                                <span class="service-desc">访问计数 · PV / UV</span>
+                            </div>
+                        </div>
+                        <div class="service-card">
+                            <div class="service-icon"><i class="fas fa-chart-line"></i></div>
+                            <div class="service-body">
+                                <span class="service-name">Clarity</span>
+                                <span class="service-desc">行为热图 · 保留 12 个月</span>
+                            </div>
+                        </div>
+                        <div class="service-card">
+                            <div class="service-icon"><i class="fas fa-comments"></i></div>
+                            <div class="service-body">
+                                <span class="service-name">Twikoo</span>
+                                <span class="service-desc">评论 · 昵称 / 邮箱 / 正文</span>
+                            </div>
+                        </div>
+                        <div class="service-card">
+                            <div class="service-icon"><i class="fas fa-music"></i></div>
+                            <div class="service-body">
+                                <span class="service-name">APlayer</span>
+                                <span class="service-desc">音乐 · 外部歌单接口</span>
+                            </div>
+                        </div>
+                        <div class="service-card">
+                            <div class="service-icon"><i class="fas fa-quote-left"></i></div>
+                            <div class="service-body">
+                                <span class="service-name">UAPI</span>
+                                <span class="service-desc">首页随机名言</span>
+                            </div>
+                        </div>
+                        <div class="service-card">
+                            <div class="service-icon"><i class="fas fa-image"></i></div>
+                            <div class="service-body">
+                                <span class="service-name">Bing</span>
+                                <span class="service-desc">每日壁纸</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
 
-                <div class="service-tags">
-                    <span class="tag"><b>vercount</b>计数</span>
-                    <span class="tag"><b>Clarity</b>分析</span>
-                    <span class="tag"><b>Twikoo</b>评论</span>
-                    <span class="tag"><b>APlayer</b>音乐</span>
-                </div>
-                <p class="meta-line">以上服务均无跨站追踪与广告联盟。Clarity 数据由 Microsoft 保留约12个月。</p>
+                <section class="privacy-section">
+                    <h2>你的控制权</h2>
+                    <div class="control-list">
+                        <div class="control-item">
+                            <i class="fas fa-eraser"></i>
+                            <div class="control-body">
+                                <strong>清除缓存</strong>
+                                <span>设置面板 → 清除缓存</span>
+                            </div>
+                        </div>
+                        <div class="control-item">
+                            <i class="fas fa-trash-can"></i>
+                            <div class="control-body">
+                                <strong>重置所有数据</strong>
+                                <span>设置面板 → 重置所有数据</span>
+                            </div>
+                        </div>
+                        <div class="control-item">
+                            <i class="fas fa-shield-halved"></i>
+                            <div class="control-body">
+                                <strong>屏蔽第三方</strong>
+                                <span>使用 uBlock Origin 等扩展拦截</span>
+                            </div>
+                        </div>
+                        <div class="control-item">
+                            <i class="fas fa-comment-slash"></i>
+                            <div class="control-body">
+                                <strong>删除评论</strong>
+                                <span>评论区自助删除，或邮件联系我</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
 
-                <ul style="margin-top:0.4rem;">
-                    <li><strong>知情与删除</strong>：本政策公开透明；评论可随时自行或联系删除。</li>
-                    <li><strong>拒绝跟踪</strong>：全站尊重 DNT (Do Not Track) 信号。</li>
-                    <li><strong>传输安全</strong>：全站 HTTPS，请勿提交敏感个人信息。</li>
-                </ul>
-            </section>
+                <footer class="privacy-footer">
+                    <p>有疑问？<a href="/contact/">留言</a> 或 <a href="mailto:gao_xinyang@foxmail.com">发邮件</a></p>
+                </footer>
 
-            <section class="privacy-card">
-                <h2>更新与联系</h2>
-                <p>修订自发布之日起生效，重大变更将公告通知。</p>
-                <p class="meta-line">历史版本：2026.5.4 · 2026.5.10 · 2026.6.18 · 2026.7.28</p>
-                <div class="privacy-footer">
-                    <a href="/contact/">留言</a> | gao_xinyang@foxmail.com <br />
-                    <span style="display:block; margin-top:4px; opacity:0.6;">© 2026 高新炀的小站</span>
-                </div>
-            </section>
-
-        </main>
+            </main>
+        </div>
     </div>
 
     <div id="pageTransition" class="page-transition"></div>

@@ -17,7 +17,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         'js/entry/main': resolve(import.meta.dirname, 'src/js/entry/main.ts'),
-        'js/standalone/404': resolve(import.meta.dirname, 'src/js/standalone/404.ts'),
+        'js/standalone/404': resolve(import.meta.dirname, 'src/js/pages/404.ts'),
         'js/data/sw': resolve(import.meta.dirname, 'src/js/data/sw.js'),
         'js/ui/personal-card': resolve(import.meta.dirname, 'src/js/ui/personal-card.ts'),
       },

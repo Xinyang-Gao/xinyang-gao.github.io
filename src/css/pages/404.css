@@ -1,3 +1,7 @@
+/* ============================================
+   pages/404.css
+   ============================================ */
+
 .error-container {
   position: relative;
   overflow: hidden;
@@ -5,9 +9,9 @@
 
 .error-content {
   position: relative;
-  max-width: 720px;
+  max-width: 600px;
   margin: 0 auto;
-  padding: 2rem 1.5rem;
+  padding: 3rem 1.5rem;
   text-align: center;
 }
 
@@ -17,197 +21,105 @@
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 18rem;
+  font-family: var(--font-serif);
+  font-size: 16rem;
   font-weight: 800;
   line-height: 1;
   color: var(--accent-color);
-  opacity: 0.08;
+  opacity: 0.07;
   pointer-events: none;
   user-select: none;
   white-space: nowrap;
   z-index: 0;
-  font-family: var(--font-serif);
 }
 
-/* 前景内容置于上方 */
 .error-main {
   position: relative;
   z-index: 1;
 }
 
+/* ------ 标题 / 描述（均动态注入） ------ */
 .error-headline {
-  font-size: 2.2rem;
-  font-weight: 600;
-  margin: 0 0 0.25rem;
-  border-bottom: none;
+  font-size: 1.8rem;
+  font-weight: 650;
+  margin: 0 0 0.6rem;
   color: var(--text-color);
 }
 
 .error-subtext {
-  font-size: 1rem;
+  font-size: 0.98rem;
+  line-height: 1.6;
   color: var(--text-secondary);
-  margin: 0 0 1.5rem;
+  margin: 0 auto 1.5rem;
+  max-width: 32rem;
 }
 
-/* ------ 消息框（信息卡片） ------ */
-.error-message-box {
-  background: var(--surface-color-secondary);
-  border-radius: var(--radius-md);
-  padding: 1.5rem 2rem;
-  margin: 1.5rem 0;
-  box-shadow: var(--shadow-sm);
-  text-align: left;
-  border: 1px solid var(--border-color);
-  transition: border-color var(--transition-fast);
-}
-
-.error-message-box:hover {
-  border-color: var(--accent-color);
-}
-
+/* ------ 路径徽章 ------ */
 .error-path-row {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 0.6rem;
-  margin-bottom: 0.75rem;
-  font-size: 0.9rem;
+  gap: 0.5rem;
+  max-width: 100%;
+  padding: 0.35rem 1rem;
+  margin-bottom: 1.8rem;
+  background: var(--surface-color-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-full);
+  font-size: 0.82rem;
   color: var(--text-secondary);
 }
 
 .error-path-row i {
   color: var(--accent-color);
-  width: 1.2rem;
-  text-align: center;
+  font-size: 0.75rem;
+  flex-shrink: 0;
 }
 
 .error-path-badge {
   font-family: var(--font-mono);
-  background: var(--code-bg);
-  padding: 0.2rem 0.8rem;
-  border-radius: var(--radius-full);
-  font-size: 0.85rem;
-  word-break: break-all;
-  border: 1px solid var(--border-color);
   color: var(--text-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.error-message-text {
-  font-size: 1rem;
-  line-height: 1.6;
-  color: var(--text-color);
-  margin-bottom: 0.5rem;
-}
-
-.error-message-text i {
-  color: var(--accent-color);
-  margin-right: 0.5rem;
-}
-
-/* ------ 建议链接（复用 tag 风格） ------ */
-.suggestion-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem;
-  justify-content: flex-start;
-  margin-top: 1rem;
-}
-
-.suggestion-link {
-  background: var(--tag-bg);
-  color: var(--tag-color);
-  padding: 0.3rem 1rem;
-  border-radius: var(--radius-full);
-  font-size: 0.85rem;
-  border: 1px solid var(--border-color);
-  transition: all var(--transition-fast);
-  text-decoration: none;
-}
-
-.suggestion-link:hover {
-  background: var(--accent-color);
-  color: #fff;
-  border-color: var(--accent-color);
-  transform: translateY(-2px);
-}
-
-/* ------ 搜索框 ------ */
-.quick-search {
-  display: flex;
-  gap: 0.75rem;
-  justify-content: center;
-  flex-wrap: wrap;
-  margin: 1.5rem 0;
-}
-
-.quick-search-input {
-  flex: 1;
-  min-width: 200px;
-  padding: 0.6rem 1.2rem;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-full);
-  background: var(--surface-color);
-  color: var(--text-color);
-  font-size: 0.95rem;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
-}
-
-.quick-search-input:focus {
-  border-color: var(--accent-color);
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(var(--accent-rgb, 180, 91, 99), 0.15);
-}
-
-/* ------ 操作按钮 ------ */
+/* ------ 按钮组 ------ */
 .error-buttons-group {
   display: flex;
-  gap: 1rem;
   justify-content: center;
   flex-wrap: wrap;
-  margin-top: 0.5rem;
+  gap: 0.8rem;
 }
 
-/* 按钮样式已在 layout.css 定义，微调 */
-.button {
-  padding: 0.6rem 1.6rem;
-  font-size: 0.95rem;
+.error-buttons-group .button i {
+  margin-right: 6px;
 }
 
 /* ------ 响应式 ------ */
 @media (max-width: 640px) {
   .error-content {
-    padding: 1.5rem 1rem;
+    padding: 2rem 1rem;
   }
-
   .error-background-code {
-    font-size: 12rem;
+    font-size: 10rem;
     opacity: 0.06;
   }
-
   .error-headline {
-    font-size: 1.6rem;
+    font-size: 1.4rem;
   }
-
-  .error-message-box {
-    padding: 1rem 1.2rem;
+  .error-subtext {
+    font-size: 0.9rem;
   }
-
-  .error-path-badge {
+  .error-path-row {
     font-size: 0.75rem;
-    padding: 0.15rem 0.6rem;
-  }
-
-  .quick-search {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .quick-search-input {
-    min-width: auto;
   }
 }
 
 @media (min-width: 768px) {
   .error-background-code {
-    font-size: 22rem;
+    font-size: 20rem;
+  }
+  .error-content {
+    padding: 4rem 2rem;
   }
 }

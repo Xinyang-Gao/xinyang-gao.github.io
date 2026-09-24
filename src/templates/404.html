@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <meta name="description" content="404个性化错误页面 - 根据访问链接提供定制化提示和智能建议，帮助您快速找到想要的内容。">
+  <meta name="description" content="页面未找到 - 高新炀的小站">
   <title>404 · 高新炀的小站</title>
   <link rel="stylesheet" href="/css/main.css">
   <link rel="stylesheet" href="/css/pages/404.css">
@@ -18,40 +18,31 @@
 
   <div id="navbar-placeholder"></div>
 
-  <div class="container error-container">
-    <div class="error-content">
-      <div class="error-background-code" aria-hidden="true">404</div>
+  <div id="router-view">
+    <main class="container error-container">
+      <div class="error-content">
+        <div class="error-background-code" aria-hidden="true">404</div>
 
-      <div class="error-main">
-        <h1 class="error-headline">页面未找到</h1>
-        <p class="error-subtext">您访问的地址可能已变更或不存在</p>
+        <div class="error-main">
+          <h1 class="error-headline" id="errorTitle">页面未找到</h1>
+          <p class="error-subtext" id="errorMessage">您访问的地址可能已变更或不存在</p>
 
-        <div id="dynamicErrorBox" class="error-message-box">
           <div class="error-path-row">
             <i class="fas fa-link" aria-hidden="true"></i>
             <span id="errorPathDisplay" class="error-path-badge">—</span>
           </div>
-          <div id="personalizedMessage" class="error-message-text">
-            <i class="fas fa-spinner fa-pulse"></i> 让我看看可能是什么问题...
+
+          <div class="error-buttons-group">
+            <button id="goBackBtn" class="button button-secondary" type="button">
+              <i class="fas fa-arrow-left" aria-hidden="true"></i>返回上一页
+            </button>
+            <a href="/" class="button button-primary">
+              <i class="fas fa-home" aria-hidden="true"></i>返回首页
+            </a>
           </div>
-          <div id="smartSuggestions" class="suggestion-links"></div>
-        </div>
-
-        <div class="quick-search">
-          <input type="text" id="quickSearchInput" class="quick-search-input" placeholder="站内搜索文章、作品..." aria-label="站内搜索">
-          <button id="quickSearchBtn" class="button button-primary" style="padding: 10px 24px;">搜索</button>
-        </div>
-
-        <div class="error-buttons-group">
-          <button id="goBackBtn" class="button button-secondary">
-            <i class="fas fa-arrow-left"></i> 返回上一页
-          </button>
-          <a href="/" class="button button-primary">
-            <i class="fas fa-home"></i> 返回首页
-          </a>
         </div>
       </div>
-    </div>
+    </main>
   </div>
 
   <div id="pageTransition" class="page-transition"></div>
@@ -60,6 +51,6 @@
   <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>
   <script src="/js/vendor/vercount.min.js" defer></script>
   <script src="/js/entry/main.js" type="module"></script>
-  <script src="/js/standalone/404.js" type="module"></script>
+  <script src="/js/pages/404.js" type="module"></script>
 </body>
 </html>
