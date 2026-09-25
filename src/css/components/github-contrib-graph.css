@@ -1,63 +1,67 @@
+/* ============================================
+   github-contrib-graph.css
+   ============================================ */
+
 :root {
-    --gh-bg-color: #0d1117;
-    --gh-base-size-4: 0.25rem;
-    --gh-base-size-8: 0.5rem;
-    --gh-base-size-12: 0.75rem;
-    --gh-base-size-16: 1rem;
-    --gh-base-size-32: 2rem;
-    --gh-cell-size: 10px;
+    --gh-cell-size: 11px;
     --gh-cell-gap: 3px;
-    --gh-cell-radius: 2px;
-    --gh-cell-level0-color: #21262d;
-    --gh-cell-level1-color: #0e4429;
-    --gh-cell-level2-color: #006d32;
-    --gh-cell-level3-color: #26a641;
-    --gh-cell-level4-color: #39d353;
-    --gh-cell-info-bg-color: #6e7681;
-    --gh-tooltip-text-color: var(--gh-text-default-color);
-    --gh-tooltip-padding: 10px;
-    --gh-tooltip-radius: 6px;
-    --gh-tooltip-font-size: 12px;
-    --gh-cell-outline-color: #ffffff0d;
-    --gh-cell-border-color: rgba(255, 255, 255, 0.03);
-    --gh-border-card-color: #30363d;
-    --gh-border-card-width: max(1px, 0.0625rem);
-    --gh-card-padding: var(--gh-base-size-16);
-    --gh-card-padding-block: 0.5rem;
-    --gh-card-radius: 6px;
-    --gh-canvas-padding-top: var(--gh-base-size-8);
-    --gh-canvas-margin-inline: var(--gh-base-size-8);
-    --gh-header-height: 20px;
-    --gh-header-margin-bottom: var(--gh-base-size-4);
-    --gh-header-font-size: inherit;
-    --gh-avatar-size: 20px;
-    --gh-footer-padding: var(--gh-base-size-4) var(--gh-base-size-32);
-    --gh-footer-font-size: var(--gh-base-size-12);
-    --gh-text-default-color: #e6edf3;
-    --gh-text-inactive-color: #848D97;
-    --gh-link-hover-color: #2f81f7;
-    --gh-font-default-family: -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+    --gh-cell-radius: 3px;
+
+    --gh-bg-color: var(--surface-color);
+    --gh-text-default-color: var(--text-color);
+    --gh-text-inactive-color: var(--text-secondary);
+    --gh-border-card-color: var(--border-color);
+    --gh-font-default-family: var(--font-sans);
+
+    --gh-cell-level0-color: var(--border-light);
+    --gh-cell-level1-color: color-mix(in srgb, var(--accent-color) 22%, var(--surface-color-secondary));
+    --gh-cell-level2-color: color-mix(in srgb, var(--accent-color) 45%, var(--surface-color-secondary));
+    --gh-cell-level3-color: color-mix(in srgb, var(--accent-color) 72%, var(--surface-color-secondary));
+    --gh-cell-level4-color: var(--accent-color);
+
+    --gh-card-padding: 20px;
+    --gh-card-padding-block: 16px;
+    --gh-card-radius: var(--radius-lg);
+    --gh-border-card-width: 1px;
+
+    --gh-canvas-padding-top: 4px;
+    --gh-canvas-margin-inline: 4px;
+
+    --gh-header-margin-bottom: 12px;
+    --gh-header-font-size: var(--font-size-small);
+    --gh-avatar-size: 24px;
+    --gh-footer-padding: 8px 0 4px;
+    --gh-footer-font-size: var(--font-size-xs);
 }
 
-/* Main block */
+/* ---------- 主容器 ---------- */
 :where(#gh, .ghContributionGraph) {
     color: var(--gh-text-default-color);
     width: fit-content;
     font-family: var(--gh-font-default-family);
-}
-:where(#gh, .ghContributionGraph) a {
-    text-decoration: none;
-    color: var(--gh-text-inactive-color)
-}
-:where(#gh, .ghContributionGraph) a:hover {
-    color: var(--gh-link-hover-color);
+    font-size: var(--font-size-small);
+    line-height: var(--line-height-base);
 }
 
-/* Table */
+:where(#gh, .ghContributionGraph) a {
+    text-decoration: none;
+    color: var(--text-secondary);
+    position: relative;
+    transition: color var(--transition-fast);
+}
+/* 覆盖站点全局 a::after 下划线动画 */
+:where(#gh, .ghContributionGraph) a::after {
+    display: none;
+}
+:where(#gh, .ghContributionGraph) a:hover {
+    color: var(--accent-color);
+}
+
+/* ---------- 表格 ---------- */
 .ghCalendarTable {
     color: var(--gh-text-default-color);
     border-spacing: var(--gh-cell-gap);
-    border-collapse: separate;  
+    border-collapse: separate;
 }
 .ghCalendarTable tr {
     height: var(--gh-cell-size);
@@ -66,21 +70,18 @@
     text-align: left;
     box-sizing: border-box;
     position: relative;
+    padding: 0;
 }
 
-/* DayCell */
+/* ---------- 日单元格 ---------- */
 .ghCalendarDayCell {
     width: var(--gh-cell-size);
     height: var(--gh-cell-size);
     border-radius: var(--gh-cell-radius);
-    border: 1px solid var(--gh-cell-border-color);
-    outline: 1px solid var(--gh-cell-outline-color);
-    outline-offset: -2px;
+    transition: box-shadow var(--transition-fast), transform var(--transition-fast);
 }
 .ghCalendarDayCell[data-level="NONE"] {
     background-color: var(--gh-cell-level0-color);
-    border: none;
-    outline: none;
 }
 .ghCalendarDayCell[data-level="FIRST_QUARTILE"] {
     background-color: var(--gh-cell-level1-color);
@@ -94,108 +95,133 @@
 .ghCalendarDayCell[data-level="FOURTH_QUARTILE"] {
     background-color: var(--gh-cell-level4-color);
 }
-.ghCalendarDayCell .ghCalendarTooltip {
-    visibility: hidden;
-    position: absolute;
-    transform: translate(-50%, -130%);
-    word-wrap: normal;
-    text-wrap: nowrap;
-    pointer-events: none;
-    background-color: var(--gh-cell-info-bg-color);
-    color: var(--gh-tooltip-text-color);
-    padding: var(--gh-tooltip-padding);
-    font-size: var(--gh-tooltip-font-size);
-    border-radius: var(--gh-tooltip-radius);
-    font-family: var(--gh-font-default-family);
+
+/* 悬停高亮，与站点卡片 hover 风格一致 */
+.ghCalendarDayCell:hover {
+    box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.35);
+    z-index: 2;
 }
-.ghCalendarDayCell .ghCalendarTooltip::after {
-    content: "";
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    border-width: 5px;
-    border-style: solid;
-    border-color: var(--gh-cell-info-bg-color) transparent transparent transparent;
-}
-.ghCalendarDayCell:hover .ghCalendarTooltip {
-    visibility: visible;
-}
+
+/* ---------- 星期 / 月份标签 ---------- */
 .ghCalendarLabel {
-    font-size: 12px;
+    font-size: var(--font-size-xs);
+    font-weight: 400;
     position: absolute;
     bottom: -3px;
-    font-weight: 400;
+    color: var(--text-secondary);
     font-family: var(--gh-font-default-family);
 }
 
-/* Containers */
+/* ---------- 卡片 ---------- */
 .ghCalendarCard {
     background-color: var(--gh-bg-color);
     padding: var(--gh-card-padding);
     padding-top: var(--gh-card-padding-block);
     padding-bottom: var(--gh-card-padding-block);
     border-radius: var(--gh-card-radius);
-    border: var(--gh-border-card-width, 1px) solid var(--gh-border-card-color);
+    border: var(--gh-border-card-width) solid var(--gh-border-card-color);
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow var(--transition-normal),
+                border-color var(--transition-normal);
 }
+.ghCalendarCard:hover {
+    box-shadow: var(--shadow-md), var(--shadow-offset);
+    border-color: var(--card-border-hover);
+}
+
 .ghCalendarCanvas {
-    display: flex !important;
+    display: flex;
     flex-direction: column;
-    padding-top: var(--gh-canvas-padding-top, 4px) !important;
-    text-align: center !important;
-    margin-right: var(--gh-canvas-margin-inline, 8px) !important;
-    margin-left: var(--gh-canvas-margin-inline, 8px) !important;
+    padding-top: var(--gh-canvas-padding-top);
+    text-align: center;
+    margin-inline: var(--gh-canvas-margin-inline);
     overflow: visible;
 }
 
-/* Header */
+/* ---------- 头部 ---------- */
 .ghCalendarHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
     margin-bottom: var(--gh-header-margin-bottom);
-    height: var(--gh-header-height);
     font-size: var(--gh-header-font-size);
+    color: var(--text-color);
 }
-.ghCalendarHeader span {
-    float: left;
+.ghCalendarHeader > span {
+    font-weight: 500;
+    color: var(--text-color);
 }
-.ghCalendarHeader div {
+.ghCalendarHeader > div {
     display: flex;
     flex-direction: row;
-    float: right;
+    align-items: center;
+    gap: 8px;
 }
-.ghCalendarHeader div img {
+.ghCalendarHeader > div img {
     width: var(--gh-avatar-size);
     height: var(--gh-avatar-size);
-    border-radius: calc(var(--gh-avatar-size) / 2);
-    margin-left: var(--gh-base-size-4);
+    border-radius: 50%;
+    border: 1px solid var(--border-color);
+    object-fit: cover;
+    transition: transform var(--transition-fast), border-color var(--transition-fast);
+}
+.ghCalendarHeader > div img:hover {
+    transform: scale(1.06);
+    border-color: var(--accent-color);
 }
 
-/* Footer */
+/* ---------- 底部图例 ---------- */
 .ghCalendarCardFooter {
-    display: block;
-    padding: var(--gh-footer-padding) !important;
-    text-align: center !important;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: var(--gh-footer-padding);
     font-size: var(--gh-footer-font-size);
     font-family: var(--gh-font-default-family);
-    color: var(--gh-text-inactive-color);
-}
-.ghCalendarCardFooterLink {
-    display: block;
-    float: left;
+    color: var(--text-secondary);
 }
 .ghCalendarCardFooterColors {
     display: flex;
     flex-direction: row;
-    float: right;
     align-items: center;
+    gap: 4px;
 }
-.ghCalendarCardFooterColors * {
-    margin-right: var(--gh-base-size-4);
+.ghCalendarCardFooterColors span {
+    padding: 0 4px;
 }
 .ghCalendarCardFooterColors div {
     width: var(--gh-cell-size);
     height: var(--gh-cell-size);
+    border-radius: var(--gh-cell-radius);
 }
 
-/* Loading State */
+/* ---------- GitHub 缩略图链接 ---------- */
+.ghThumbNail {
+    display: flex;
+    justify-content: center;
+    margin-top: 12px;
+}
+.ghThumbNail a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    opacity: 0.5;
+    transition: opacity var(--transition-fast),
+                background-color var(--transition-fast),
+                transform var(--transition-fast);
+}
+.ghThumbNail a:hover {
+    opacity: 1;
+    background-color: rgba(var(--accent-rgb), 0.08);
+    transform: translateY(-2px);
+}
+
+/* ---------- 加载态 ---------- */
 .ghCalendarLoading,
 [data-loading="true"] {
     position: relative;
@@ -208,13 +234,12 @@
     font-size: 0;
     user-select: none;
     overflow: hidden;
-    background-color: var(--gh-bg-color, #0d1117);
-    border: var(--gh-border-card-width, 1px) solid var(--gh-border-card-color, #30363d);
-    border-radius: 6px;
-    padding: 16px;
+    background-color: var(--gh-bg-color);
+    border: var(--gh-border-card-width) solid var(--gh-border-card-color);
+    border-radius: var(--gh-card-radius);
+    padding: var(--gh-card-padding);
     box-sizing: border-box;
 }
-
 .ghCalendarLoading::after,
 [data-loading="true"]::after {
     content: '';
@@ -223,26 +248,39 @@
     max-width: 720px;
     height: 94px;
     flex-shrink: 0;
-    background-color: var(--gh-cell-level0-color, #21262d);
-    background-image: 
+    background-color: var(--gh-cell-level0-color);
+    background-image:
         repeating-linear-gradient(
-            var(--gh-bg-color, #0d1117) 0px, 
-            var(--gh-bg-color, #0d1117) 4px, 
-            transparent 4px, 
+            var(--gh-bg-color) 0px,
+            var(--gh-bg-color) 4px,
+            transparent 4px,
             transparent 14px
         ),
         repeating-linear-gradient(
-            90deg, 
-            var(--gh-bg-color, #0d1117) 0px, 
-            var(--gh-bg-color, #0d1117) 4px, 
-            transparent 4px, 
+            90deg,
+            var(--gh-bg-color) 0px,
+            var(--gh-bg-color) 4px,
+            transparent 4px,
             transparent 14px
         );
     animation: ghLoadingPulse 1.2s ease-in-out infinite alternate;
-    border-radius: 2px;
+    border-radius: var(--gh-cell-radius);
 }
 
 @keyframes ghLoadingPulse {
-    0% { opacity: 0.4; }
+    0%   { opacity: 0.4; }
     100% { opacity: 1; }
+}
+
+/* ---------- 小屏适配 ---------- */
+@media (max-width: 480px) {
+    :root {
+        --gh-cell-size: 9px;
+        --gh-cell-gap: 2px;
+        --gh-card-padding: 16px;
+    }
+    .ghCalendarHeader {
+        font-size: var(--font-size-xs);
+        gap: 8px;
+    }
 }
