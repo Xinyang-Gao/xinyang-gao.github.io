@@ -322,6 +322,84 @@
   user-select: none;
 }
 
+/* ==========================================
+   开源致谢
+   ========================================== */
+.footer-acknowledgements {
+  margin-top: 2.1rem;
+  padding-top: 1.35rem;
+  border-top: 1px solid var(--footer-hairline);
+}
+
+.acknowledgement-list {
+  list-style: none;
+  margin: 0.65rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.acknowledgement-list li {
+  position: relative;
+  padding-left: 1.1rem;
+  margin: 0;
+  max-width: none;
+  font-size: 0.74rem;
+  line-height: 1.7;
+  color: var(--footer-muted);
+}
+
+.acknowledgement-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.7em;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--accent-color);
+  opacity: 0.55;
+}
+
+.acknowledgement-list a {
+  color: var(--text-color);
+  text-decoration: underline dotted;
+  text-decoration-color: var(--border-color);
+  text-underline-offset: 3px;
+  transition: color 0.2s ease, text-decoration-color 0.2s ease;
+}
+.acknowledgement-list a::after { display: none; }
+.acknowledgement-list a:hover {
+  color: var(--accent-color);
+  text-decoration-color: var(--accent-color);
+}
+
+/* 版权声明规范化细节 */
+.copyright-main .copyright-symbol {
+  font-family: var(--font-mono);
+  font-size: 0.95em;
+  margin: 0 0.1em;
+  opacity: 0.85;
+}
+.copyright-main .copyright-holder {
+  color: var(--text-color);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+.copyright-reserved {
+  color: var(--footer-muted);
+  opacity: 0.9;
+}
+
+/* 移动端：致谢列表缩进稍减 */
+@media (max-width: 640px) {
+  .acknowledgement-list li {
+    padding-left: 1rem;
+    font-size: 0.72rem;
+  }
+}
+
 /* ---------- 底栏 ---------- */
 .footer-legal-panel {
   display: flex;

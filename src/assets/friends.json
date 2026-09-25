@@ -51,7 +51,7 @@
     {
       "name": "启明曙光科技",
       "link": "https://www.orientdawn.com",
-      "desc": "东方曙光，星火燎原，专注人工智能技术普惠落地",
+      "desc": "东方曙光，星火燎原",
       "avatar": "https://orientdawn.com/image/logo.png"
     },
     {
@@ -101,6 +101,12 @@
       "link": "https://pinpe.top",
       "desc": "一片属于自己的云朵",
       "avatar": "https://pinpe.top/head.jpg"
+    },
+    {
+      "name": "WenBlog",
+      "link": "https:/wenlei.top/",
+      "desc": "Debug The World.",
+      "avatar": "https://wenlei.top/wp-content/uploads/2026/07/cropped-wenblog-iOS-Default-1024@1x.webp"
     }
   ],
   "external": [
