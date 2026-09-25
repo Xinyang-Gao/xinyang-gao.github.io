@@ -527,7 +527,7 @@ def _create_html_page(title, date, content_html, headings_json, description, tag
                 </div>
 
                 <div class="comments-card">
-                    <h3>💬 评论</h3>
+                    <h3>评论</h3>
                     <div id="twikoo-comments"></div>
                 </div>
             </article>
