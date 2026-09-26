@@ -13,6 +13,7 @@ import {
   initNavigation,
 } from '/js/ui/navbar-manager.js';
 import type { NavbarManager } from '/js/ui/navbar-manager.js';
+import { initBrandLogos } from '/js/ui/brand-logo.js';
 
 // 保持对外的兼容 API：导航栏相关工具函数实际定义在 navbar-manager。
 // 通过 re-export 保证旧引用路径继续可用，同时打破 router 与 navbar-manager 循环依赖。
@@ -822,7 +823,10 @@ export async function loadFooter(): Promise<void> {
     if (!res.ok) throw new Error('Footer load failed');
     const html = await res.text();
     const ph = document.getElementById('footer-placeholder');
-    if (ph) ph.innerHTML = html;
+    if (!ph) return;
+    ph.innerHTML = html;
+    // 页脚品牌 LOGO：滚动进入视口后勾边并显示
+    initBrandLogos(ph);
   } catch (e) {
     console.error('[Router] 页脚加载失败:', e);
   }

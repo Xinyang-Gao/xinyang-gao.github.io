@@ -1196,3 +1196,31 @@ body.custom-cursor-enabled .list-item { cursor: none; }
   opacity: 1;
   overflow: visible;
 }
+
+/* ============================================================
+   品牌 LOGO（gaoxinyang.svg）
+   默认隐藏并占位，落笔时由 JS 追加 .is-revealed 显形
+   勾边动画本体由 /js/ui/svg-draw-animation.ts 负责
+   ============================================================ */
+.brand-logo {
+  display: block;
+  aspect-ratio: var(--brand-ratio, 3355 / 1050);
+  color: inherit;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.45s ease, color 0.3s ease;
+}
+.brand-logo.is-revealed { opacity: 1; }
+
+.brand-logo svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  overflow: visible;
+}
+.brand-logo svg path {
+  fill: currentColor;
+  /* 组件会把 fill 的解析色写入内联 stroke，这里用 !important 让描边继续跟随 currentColor */
+  stroke: currentColor !important;
+  stroke-width: var(--brand-stroke-width, 26) !important;
+}

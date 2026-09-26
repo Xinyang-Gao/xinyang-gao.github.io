@@ -84,6 +84,28 @@
 .nav-logo:hover .logo-text { color: var(--accent-color); }
 .nav-logo:hover .logo-text::after { transform: translateY(-2px); }
 
+/* ---------- Logo：品牌 SVG（覆盖层消失后勾边登场） ---------- */
+/* 容器默认隐藏，样式见 components.css 的 .brand-logo */
+.nav-logo-mark {
+  --brand-stroke-width: 30;
+  width: 112px;
+  flex-shrink: 0;
+  color: var(--text-color);
+}
+/* SVG 就绪后隐藏文字降级层，仅保留给读屏器 */
+.navbar.logo-ready .logo-text {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.nav-logo:hover .nav-logo-mark { color: var(--accent-color); }
+
 /* ---------- 导航菜单 ---------- */
 nav {
   flex: 1;
@@ -372,6 +394,7 @@ nav.title-hovered .nav-title-placeholder.active {
   }
   .navbar.scrolled { top: 10px; }
   .logo-text { font-size: 1.3rem; }
+  .nav-logo-mark { width: 124px; }
   .nav-item { font-size: 0.85rem; padding: 9px 12px; }
   .nav-item::after { left: 12px; right: 12px; }
   .slider { width: 34px; height: 34px; }
@@ -392,6 +415,7 @@ nav.title-hovered .nav-title-placeholder.active {
   .navbar { top: 20px; padding: 6px 18px; }
   .navbar.scrolled { top: 12px; }
   .logo-text { font-size: 1.4rem; }
+  .nav-logo-mark { width: 138px; }
   .nav-items { gap: 4px; padding: 0 10px; }
   .nav-item { font-size: 0.92rem; padding: 10px 16px; }
   .nav-item::after { left: 16px; right: 16px; bottom: 4px; }
@@ -481,6 +505,7 @@ nav.title-hovered .nav-title-placeholder.active {
   .navbar { width: calc(100% - 16px); top: 8px; padding: 4px 8px; }
   .navbar.scrolled { top: 6px; }
   .logo-text { font-size: 1.05rem; }
+  .nav-logo-mark { width: 96px; }
   .nav-actions { gap: 6px; padding-left: 10px; }
 }
 

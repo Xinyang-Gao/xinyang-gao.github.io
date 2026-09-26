@@ -144,14 +144,19 @@ export class AppInitializer {
     const overlayManager = new LoadingOverlayManager();
     await overlayManager.show();
 
-    // 等待 500ms 后播放导航栏入场动画
-    await new Promise((resolve) => setTimeout(resolve, 500));
+    // 覆盖层有 0.8s 淡出：等它彻底不可见，再让导航栏入场并勾边 LOGO
+    await this.waitOverlayFullyHidden();
     if (
       this.navbarInstance &&
       typeof this.navbarInstance.playEntranceAnimation === 'function'
     ) {
       this.navbarInstance.playEntranceAnimation();
     }
+
+    // 导航栏入场过半后开始勾边（2s），避免两个动画抢视觉焦点
+    window.setTimeout(() => {
+      this.navbarInstance?.playLogoDraw();
+    }, 260);
 
     document.body.setAttribute('data-loaded', 'true');
     console.log('[AppInitializer] 初始化完成');
@@ -183,6 +188,34 @@ export class AppInitializer {
   }
 
   // ---------- 内部辅助 ----------
+
+  /**
+   * 等待加载覆盖层淡出完成（opacity → 0 且 visibility → hidden）。
+   * 用 transitionend 精确收尾，超时兜底避免动画事件丢失时卡住后续流程。
+   */
+  private static waitOverlayFullyHidden(timeout = 1000): Promise<void> {
+    const overlay = document.getElementById('loading-overlay');
+    if (!overlay) return Promise.resolve();
+
+    return new Promise((resolve) => {
+      let settled = false;
+      const done = (): void => {
+        if (settled) return;
+        settled = true;
+        window.clearTimeout(timer);
+        overlay.removeEventListener('transitionend', onEnd);
+        resolve();
+      };
+      const onEnd = (event: TransitionEvent): void => {
+        if (event.target === overlay && event.propertyName === 'opacity') done();
+      };
+      const timer = window.setTimeout(done, timeout);
+
+      overlay.addEventListener('transitionend', onEnd);
+      // 覆盖层可能早已可见/不存在过渡（例如被直接移除）
+      if (getComputedStyle(overlay).opacity === '0') done();
+    });
+  }
 
   private static isBgImageEnabled(): boolean {
     const stored = localStorage.getItem(CONFIG.STORAGE_KEYS.BG_IMAGE_ENABLED);

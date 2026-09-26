@@ -6,6 +6,8 @@
 import { CONFIG, Utils, onNavigation } from '/js/core/core.js';
 import { DisposableStack } from '/js/core/disposable-stack.js';
 import { initThemeToggle } from '/js/ui/theme.js';
+import { mountBrandLogo } from '/js/ui/brand-logo.js';
+import type { BrandLogoHandle } from '/js/ui/brand-logo.js';
 
 const SITE_NAME = 'GaoXinYang';
 const CSS_PATH = '/css/components/navbar.css';
@@ -42,6 +44,9 @@ export class NavbarManager {
   /** 统一资源清理栈 */
   private stack = new DisposableStack();
 
+  /** 品牌 LOGO 勾边动画句柄 */
+  private logoDraw: BrandLogoHandle | null = null;
+
   private elements: NavbarElements = {
     navbar: null,
     nav: null,
@@ -61,10 +66,17 @@ export class NavbarManager {
     logo.href = '/';
     logo.className = 'nav-logo';
     logo.setAttribute('aria-label', '返回首页');
+
+    // 品牌 SVG：默认隐藏，加载覆盖层消失后由 AppInitializer 触发勾边
+    const logoMark = document.createElement('span');
+    logoMark.className = 'nav-logo-mark';
+    logoMark.setAttribute('aria-hidden', 'true');
+
+    // SVG 未就绪时的降级文案（就绪后被视觉隐藏，仅供读屏器）
     const logoText = document.createElement('span');
     logoText.className = 'logo-text';
     logoText.textContent = SITE_NAME;
-    logo.appendChild(logoText);
+    logo.append(logoMark, logoText);
     navbar.appendChild(logo);
 
     const nav = document.createElement('nav');
@@ -124,6 +136,38 @@ export class NavbarManager {
     if (this.entrancePlayed || !this.elements.navbar) return;
     this.elements.navbar.classList.remove('initial');
     this.entrancePlayed = true;
+  }
+
+  /* ================= 品牌 LOGO ================= */
+
+  /**
+   * 挂载品牌 SVG（异步加载，挂载后保持隐藏）。
+   * 幂等：多次调用只会触发一次挂载。
+   */
+  private mountLogo(): void {
+    if (this.logoDraw) return;
+    const mark = this.elements.navbar?.querySelector<HTMLElement>('.nav-logo-mark');
+    if (!mark) return;
+
+    const handle = mountBrandLogo(mark, { mode: 'manual' });
+    this.logoDraw = handle;
+
+    // SVG 就绪后再切到「LOGO 模式」（隐藏文字降级层）
+    void handle.ready
+      .then(() => this.elements.navbar?.classList.add('logo-ready'))
+      .catch(() => {});
+
+    this.stack.add(() => {
+      this.logoDraw?.destroy();
+      this.logoDraw = null;
+      this.elements.navbar?.classList.remove('logo-ready');
+    });
+  }
+
+  /** 加载覆盖层完全隐藏后：勾边（2s）→ 填充淡入 → 完整显示 */
+  public playLogoDraw(): void {
+    this.mountLogo();
+    this.logoDraw?.play();
   }
 
   private onScroll = (): void => {
@@ -357,6 +401,7 @@ export class NavbarManager {
     initMobileMenuToggle();
 
     this.createTitlePlaceholder();
+    this.mountLogo();
 
     if (fresh) {
       requestAnimationFrame(() =>
