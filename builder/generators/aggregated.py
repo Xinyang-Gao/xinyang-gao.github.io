@@ -20,18 +20,19 @@ from rcssmin import cssmin
 
 # 使用相对导入
 from ..common import (
-    PROJECT_ROOT, SRC_ROOT, TEMPLATES_DIR, CSS_SRC_DIR, JS_SRC_DIR, ASSETS_DIR,
-    DIST_ROOT, ARTICLES_OUTPUT_DIR, JSON_OUTPUT_DIR, CSS_DIST_DIR, JS_DIST_DIR, ASSETS_DIST_DIR,
+    PROJECT_ROOT, CSS_SRC_DIR, JS_SRC_DIR, ASSETS_DIR,
+    DIST_ROOT, ARTICLES_OUTPUT_DIR, JSON_OUTPUT_DIR, CSS_DIST_DIR, JS_DIST_DIR,
     RSS_OUTPUT, SITEMAP_OUTPUT,
     ensure_dir, env_int, iter_files,
     log_info, log_warning, log_error,
     load_json, save_json, format_date, format_date_iso,
     get_current_date_iso, get_current_datetime_iso,
-    compute_dir_hash, compute_file_hash, compute_object_hash,
+    compute_dir_hash, compute_object_hash,
     load_build_state
 )
 from ..build_context import BuildContext
 from ..config import BuildConfig
+from ..static_assets import PAGE_TEMPLATES, static_sources_hash, sync_static_assets
 from .base import OutputGenerator
 
 # 前端编译（Vite）相关
@@ -42,15 +43,6 @@ ARTICLES_LIST_HTML = DIST_ROOT / "articles" / "index.html"
 WORKS_LIST_HTML = DIST_ROOT / "works" / "index.html"
 NOJS_HTML = DIST_ROOT / "nojs.html"
 STATISTICS_JSON = JSON_OUTPUT_DIR / "statistics.json"
-
-# 需要从模板生成到子目录的页面
-PAGE_TEMPLATES = {
-    "about.html": "about",
-    "timeline.html": "timeline",
-    "stats.html": "stats",
-    "contact.html": "contact",
-    "privacy.html": "privacy",
-}
 
 class AggregatedGenerator(OutputGenerator):
     name = "aggregated"
@@ -67,20 +59,17 @@ class AggregatedGenerator(OutputGenerator):
 
     # ---------- 增量判断增强 ----------
     def _compute_frontend_hash(self) -> str:
-        """计算所有前端源文件（CSS、JS、模板、素材）的组合哈希"""
+        """计算所有前端源文件（CSS、JS、模板、静态素材）的组合哈希。
+
+        静态资源部分直接由 :data:`STATIC_ASSET_RULES` 派生，新增规则自动纳入
+        增量判断，无需在此处维护一份平行清单。
+        """
         hashes = []
         if CSS_SRC_DIR.exists():
             hashes.append(compute_dir_hash(CSS_SRC_DIR, patterns=["*.css"]))
         if JS_SRC_DIR.exists():
             hashes.append(compute_dir_hash(JS_SRC_DIR, patterns=["*.ts", "*.js"]))
-        if TEMPLATES_DIR.exists():
-            hashes.append(compute_dir_hash(TEMPLATES_DIR, patterns=["*.html"]))
-        if ASSETS_DIR.exists():
-            hashes.append(compute_dir_hash(ASSETS_DIR, ignore_patterns=["source"]))
-        for filename in ["favicon.ico", "BingSiteAuth.xml", "robots.txt"]:
-            file_path = SRC_ROOT / filename
-            if file_path.exists():
-                hashes.append(compute_file_hash(file_path))
+        hashes.append(static_sources_hash())
         return compute_object_hash("".join(hashes))
 
     def is_up_to_date(self, context: BuildContext, state: dict) -> bool:
@@ -117,7 +106,7 @@ class AggregatedGenerator(OutputGenerator):
             frontend_changed = (force or (old_frontend != frontend_hash)) and not cfg.skip_frontend
 
             if cfg.skip_frontend:
-                log_info("已启用 --no-frontend：跳过 Vite 编译与前端资源复制")
+                log_info("已启用 --no-frontend：跳过 Vite 编译与 CSS 压缩")
 
             self._build_statistics(context)
             self._generate_rss(context)
@@ -125,9 +114,8 @@ class AggregatedGenerator(OutputGenerator):
             self._generate_articles_page(context)
             self._generate_works_page(context)
             self._generate_nojs_index(context)
-            self._copy_static_assets(frontend_changed, cfg)
+            self._sync_static_assets(frontend_changed, cfg)
             self._generate_friends_page(context)
-            self._generate_subdir_pages(context)
             self._generate_code_analysis()
             self._generate_works_json(context)
             log_info("聚合生成完成")
@@ -758,13 +746,13 @@ class AggregatedGenerator(OutputGenerator):
             return
         log_info(f"Vite 构建完成 (TypeScript -> JavaScript, {elapsed:.1f}s)")
 
-    # ---------- 复制静态资源（含增量优化） ----------
-    def _copy_static_assets(self, frontend_changed: bool, cfg=None):
+    # ---------- 前端编译 + 静态资源同步 ----------
+    def _sync_static_assets(self, frontend_changed: bool, cfg=None):
         cfg = cfg or BuildConfig()
         # 1. Vite 构建 TypeScript
         if frontend_changed:
             self._run_vite(cfg)
-        elif cfg and cfg.skip_frontend:
+        elif cfg.skip_frontend:
             log_info("跳过 Vite 构建（--no-frontend）")
         else:
             log_info("前端源文件未变化，跳过 Vite 构建")
@@ -778,82 +766,11 @@ class AggregatedGenerator(OutputGenerator):
         else:
             log_warning(f"CSS 源目录不存在: {CSS_SRC_DIR}")
 
-        # 3. 复制 assets 素材
-        if ASSETS_DIR.exists():
-            shutil.copytree(
-                ASSETS_DIR,
-                ASSETS_DIST_DIR,
-                dirs_exist_ok=True,
-                ignore=shutil.ignore_patterns('source')
-            )
-            log_info("复制 assets 素材完成（排除 source，但包含 avatars）")
-        else:
-            log_warning(f"assets 源目录不存在: {ASSETS_DIR}")
-
-        # 4. 复制 /src/copy/
-        copy_src = SRC_ROOT / "copy"
-        if copy_src.exists():
-            shutil.copytree(copy_src, DIST_ROOT, dirs_exist_ok=True)
-            log_info(f"复制 {copy_src} 全部内容到 {DIST_ROOT}")
-        else:
-            log_warning(f"目录 {copy_src} 不存在，跳过复制根目录文件")
-
-        # 5. 复制 works 目录
-        works_src = SRC_ROOT / "works"
-        works_dst = DIST_ROOT / "works"
-        if works_src.exists():
-            def ignore_metadata(dirname, filenames):
-                return ['metadata.json'] if 'metadata.json' in filenames else []
-            shutil.copytree(works_src, works_dst, dirs_exist_ok=True, ignore=ignore_metadata)
-            log_info("复制 works 目录（排除 metadata.json）")
-        else:
-            log_warning(f"works 源目录不存在: {works_src}")
-
-        # 6. 复制 friends.json 和 friend_colors.json
-        friends_src = ASSETS_DIR / "friends.json"
-        if friends_src.exists():
-            shutil.copy(friends_src, JSON_OUTPUT_DIR / "friends.json")
-            log_info("复制 friends.json 到 dist/json/")
-        else:
-            log_warning(f"friends.json 不存在: {friends_src}")
-
-        colors_src = ASSETS_DIR / "friend_colors.json"
-        if colors_src.exists():
-            shutil.copy(colors_src, JSON_OUTPUT_DIR / "friend_colors.json")
-            log_info("复制 friend_colors.json 到 dist/json/")
-        else:
-            log_warning(f"friend_colors.json 不存在: {colors_src}")
-
-    # ---------- 生成子目录页面 ----------
-    def _generate_subdir_pages(self, context: BuildContext):
-        index_template = TEMPLATES_DIR / "index.html"
-        if index_template.exists():
-            shutil.copy(index_template, DIST_ROOT / "index.html")
-            log_info("复制 index.html 到 dist/")
-        else:
-            log_error("index.html 模板缺失")
-
-        for template_name, subdir in PAGE_TEMPLATES.items():
-            template_path = TEMPLATES_DIR / template_name
-            if not template_path.exists():
-                log_warning(f"模板 {template_name} 不存在，跳过")
-                continue
-            target_dir = DIST_ROOT / subdir
-            target_dir.mkdir(parents=True, exist_ok=True)
-            target_file = target_dir / "index.html"
-            shutil.copy(template_path, target_file)
-            log_info(f"生成 {subdir}/index.html 从 {template_name}")
-
-        src_404 = TEMPLATES_DIR / "404.html"
-        if src_404.exists():
-            shutil.copy(src_404, DIST_ROOT / "404.html")
-            log_info("复制 404.html 到 dist/")
-
-        for fragment in ["navbar.html", "footer.html"]:
-            src = TEMPLATES_DIR / fragment
-            if src.exists():
-                shutil.copy(src, DIST_ROOT / fragment)
-                log_info(f"复制 {fragment} 到 dist/")
+        # 3. 同步非构建资源（public / assets / works / 模板页 / 友链 JSON）
+        #    规则集中在 builder/static_assets.py，新增资源无需改动生成器
+        stats = sync_static_assets(parallel=cfg.parallel)
+        if not stats.ok and cfg.strict:
+            raise RuntimeError(f"静态资源缺失: {stats.failed}")
 
     def _generate_friends_page(self, context: BuildContext) -> None:
         """全量生成友链页面"""

@@ -53,12 +53,37 @@ jobs:
       - name: Install Node dependencies
         run: npm ci
 
+      # ---------- 友链主题色缓存 ----------
+      # src/assets/friend_colors.json 是随仓库提交的持久化缓存：只要能读到，
+      # CI 就只给新增友链抓头像，既避免重复网络请求，也不会因个别站点访问
+      # 不稳定而抖动（抓取失败时会保留历史颜色）。缺失即快速失败，避免静默
+      # 退化成“每次全量抓取”。
+      - name: 校验友链主题色缓存
+        run: |
+          test -s src/assets/friend_colors.json || {
+            echo "::error::src/assets/friend_colors.json 缺失或为空，构建将重新抓取全部友链头像"
+            exit 1
+          }
+          python -c "import json;d=json.load(open('src/assets/friend_colors.json',encoding='utf-8'));print(f'友链主题色缓存可用：{len(d)} 条（仅新增友链需要联网）')"
+
+      # 头像字节缓存：与主题色缓存互补，跨运行复用已下载的头像
+      - name: Restore avatar cache
+        uses: actions/cache@v4
+        with:
+          path: .cache/friend-avatars
+          key: friend-avatars-${{ hashFiles('src/assets/friends.json') }}
+          restore-keys: |
+            friend-avatars-
+
       # ---------- 构建 ----------
       # 说明：CI 每次都是全新检出，不存在 .build_state.json，天然等价于全量构建，
       #       因此不需要 --force（它会强制重新抓取全部友链头像，拖慢且增加失败率）。
       #       --ci 开启严格模式：前端编译失败即让工作流失败，避免部署半成品。
       - name: Build site
         run: python run.py --ci
+        env:
+          # 与上面的 actions/cache 步骤配套：复用已下载的头像字节
+          FRIEND_AVATAR_CACHE_DIR: ${{ github.workspace }}/.cache/friend-avatars
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3

@@ -75,6 +75,11 @@ def env_int(name: str, default: int) -> int:
     except ValueError:
         return default
 
+def env_str(name: str, default: str = "") -> str:
+    """读取字符串环境变量（空值回落默认值）。"""
+    raw = os.environ.get(name)
+    return raw.strip() if raw and raw.strip() else default
+
 #: 是否运行在 CI（GitHub Actions / GitLab CI / Jenkins 等通用检测）
 IS_CI = any(env_flag(v) for v in ("CI", "GITHUB_ACTIONS", "GITLAB_CI", "TF_BUILD"))
 

@@ -44,7 +44,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("--clean", action="store_true",
                         help="构建前清空 dist 目录（推荐发布前使用）")
     parser.add_argument("--no-frontend", action="store_true",
-                        help="跳过 Vite 前端编译与资源复制，仅生成内容侧产物")
+                        help="跳过 Vite 前端编译与 CSS 压缩（静态资源仍会同步），仅生成内容侧产物")
     parser.add_argument("--offline", action="store_true",
                         help="离线模式：跳过所有网络请求（如友链头像抓取）")
     parser.add_argument("--no-strict", action="store_true",

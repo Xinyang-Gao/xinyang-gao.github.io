@@ -109,6 +109,7 @@ Website
 │  ├─ config.py
 │  ├─ engine.py
 │  ├─ input_loader.py
+│  ├─ static_assets.py
 │  └─ __init__.py
 ├─ dist
 ├─ node_modules
@@ -123,7 +124,7 @@ Website
 │  │  ├─ friends.json
 │  │  ├─ friend_colors.json
 │  │  └─ 网站更新日志.md
-│  ├─ copy
+│  ├─ public                      # 原样发布到 dist 根目录（约定式，加文件即可）
 │  │  ├─ .well-known
 │  │  │  └─ vercount-verify-pof0sq1cg39g4rpkl66s6rtf.txt
 │  │  ├─ BingSiteAuth.xml
@@ -249,6 +250,7 @@ Website
 | **构建配置** | `config.py` | 定义 `BuildConfig`（force / clean / skip_frontend / offline / strict / parallel / max_workers / dry_run / ci），一次构建的所有开关集中在此，经 `BuildContext.options` 下发给各生成器。 |
 | **构建引擎** | `engine.py` | 管理所有生成器（`OutputGenerator`），协调执行顺序，支持串行/并行运行，并依据 `.build_state.json` 进行增量判断；返回 `BuildReport` 汇总耗时与结果。 |
 | **生成器基类** | `generators/base.py` | 定义生成器抽象接口，包含 `name`、`inputs`、`outputs`、`generate()` 等方法，以及输入哈希计算和状态更新逻辑。 |
+| **静态资源同步** | `static_assets.py` | 声明式管理所有“非构建资源”（`AssetRule`）：统一负责 `src/public/`、`src/assets/`、`src/works/`、模板页与友链 JSON 的发布，并基于内容哈希做增量复制。 |
 | **聚合生成器** | `generators/aggregated.py` | 核心生成器，负责生成绝大部分输出：统计 JSON、RSS、站点地图、文章/作品/友链列表页、无 JS 回退页、复制静态资源（CSS、JS、素材）等。 |
 | **友链颜色生成器** | `generators/friend_colors.py` | 独立生成器，通过下载友链头像并提取主色调，生成 `friend_colors.json` 用于前端卡片背景色。 |
 | **入口脚本** | `run.py` | 命令行入口，解析参数，注册生成器，启动构建引擎。 |
@@ -266,7 +268,7 @@ Website
 
 - **状态文件**：`.build_state.json` 存储每个生成器上次运行的“输入哈希”和“前端哈希”，并带 `_version` 字段；格式或哈希算法升级时旧状态自动失效，退化为一次全量构建。
 - **输入哈希**：由生成器声明的依赖（如 `articles`、`works`）的序列化内容计算而得，任一源文件改动都会导致哈希变化。
-- **前端哈希**：`AggregatedGenerator` 额外监控 `src/css/`、`src/js/`、`src/templates/`、`src/assets/`（排除 `source/` 子目录）以及 `src/` 下的 `favicon.ico`、`robots.txt` 等文件，确保前端资源变动时重新编译；该哈希通过重写 `build_state_entry()` 写入，否则前端未变化也会每次触发 Vite 编译。
+- **前端哈希**：`AggregatedGenerator` 额外监控 `src/css/`、`src/js/`，再加上 `static_assets.static_sources_hash()`——它由静态资源规则自动派生（覆盖 `src/public/`、`src/assets/`、`src/works/`、模板页与友链 JSON），新增规则无需同步维护哈希清单；该哈希通过重写 `build_state_entry()` 写入，否则前端未变化也会每次触发 Vite 编译。
 - **哈希算法**：统一使用 BLAKE2b(128bit)。相比 MD5 更快，且在启用 FIPS 的运行环境中不会报错。
 - **产物一致性**：所有由构建系统写出的文本/JSON 统一使用 LF 换行，避免 Windows 本地构建与 CI（Linux）产物出现换行差异。
 - **强制重建**：通过 `--force` 参数可忽略所有增量判断，强制全量构建；`--force-colors` 可单独强制更新友链颜色。
@@ -286,12 +288,8 @@ Website
 - **无 JS 回退页**：生成 `dist/nojs.html`，提供完全静态的内容列表，方便搜索引擎或禁用 JavaScript 的用户访问。
 - **子目录页面**：将 `src/templates/` 下的 `about.html`、`timeline.html`、`stats.html`、`contact.html`、`privacy.html` 复制到对应的 `dist/about/`、`dist/timeline/` 等目录。
 - **前端构建**：跨平台调用 `npm run build`（Windows 自动使用 `npm.cmd` 并做引号转义）编译 TypeScript，实时流式输出 Vite 日志；**默认失败即中止整个构建**（`--no-strict` 可恢复旧的宽容行为）。可用 `--no-frontend` 跳过。
-- **静态资源复制**：
-  - 压缩 CSS（使用 `rcssmin`）并复制到 `dist/css/`。
-  - 复制 `src/assets/`（排除 `source/`）到 `dist/assets/`。
-  - 复制 `src/copy/` 下的所有文件（如 `favicon.ico`、`robots.txt`、`BingSiteAuth.xml` 等）到 `dist/` 根目录。
-  - 复制 `src/works/`（排除 `metadata.json`）到 `dist/works/`，以便作品子页面资源可访问。
-  - 复制 `friends.json` 和 `friend_colors.json` 到 `dist/json/` 供前端使用。
+- **CSS 压缩**：使用 `rcssmin` 压缩 `src/css/` 并输出到 `dist/css/`。
+- **静态资源同步**：调用 `static_assets.sync_static_assets()`，一次同步所有非构建资源，见下节。
 - **代码分析**：生成 `dist/json/code_analysis.json`，记录 `dist/` 目录下各文件类型的数量、大小和行数统计，便于监控构建产物规模。
 
 #### FriendColorsGenerator（友链颜色生成器）
@@ -300,7 +298,35 @@ Website
 - **缓存**：头像图片会被缓存到临时目录，避免重复下载。
 - **依赖**：需 `requests` 和 `Pillow` 库，若未安装则生成器跳过（但构建不会失败，只会使用默认灰色）。
 - **增量**：默认只处理新增或缺失颜色的友链，使用 `--force-colors` 可强制刷新所有；已删除的友链颜色会被自动清理。
-- **并发与容错**：头像下载使用带重试的连接池 + 线程池并发（默认 8 并发，`FRIEND_COLOR_WORKERS` 可调），结果缓存到系统临时目录；单个站点失败降级为默认灰色，不会中断构建。`--offline` / `SKIP_NETWORK=1` 可完全跳过网络请求。
+- **并发与容错**：头像下载使用带重试的连接池 + 线程池并发（默认 8 并发，`FRIEND_COLOR_WORKERS` 可调），结果缓存到 `FRIEND_AVATAR_CACHE_DIR`（默认系统临时目录，CI 中挂在 `actions/cache`）；单个站点失败时**保留已有颜色**，只有从未取到颜色的友链才会落到默认灰色，不会因网络抖动让已缓存的颜色来回变化。`--offline` / `SKIP_NETWORK=1` 可完全跳过网络请求。
+- **持久化缓存**：`src/assets/friend_colors.json` 随仓库提交，本地与 GitHub Actions 共用同一份历史颜色，只为新增友链发起请求；该文件缺失时日志会明确告警（CI 中另有校验步骤直接失败，避免静默退化为全量抓取）。
+
+#### 静态资源规则（`builder/static_assets.py`）
+
+所有“非构建资源”（原样复制的文件）都在 `STATIC_ASSET_RULES` 中声明，构建流程里不再散落 `shutil.copy` / `copytree` 调用：
+
+| 源 | 目标 | 说明 |
+|------|------|------|
+| `src/public/**` | `dist/**` | 站点根文件：`favicon.ico`、`robots.txt`、`BingSiteAuth.xml`、`.well-known/` 验证文件。**新增根文件放进该目录即可发布，无需改代码** |
+| `src/assets/**` | `dist/assets/**` | 全局素材（头像、图片、更新日志），排除 `source/`（Markdown 源） |
+| `src/works/**` | `dist/works/**` | 作品子页面资源，排除 `metadata.json`（仅构建期使用） |
+| `src/assets/*.json` | `dist/json/*.json` | 友链数据与主题色，直接作为 `/json` 接口发布 |
+| `src/templates/*.html` | `dist/` 或 `dist/<子目录>/index.html` | 首页 / 404 / 页脚片段，以及 `PAGE_TEMPLATES` 定义的子目录页 |
+
+规则语义：
+
+- `source` 为**目录**：递归复制，按 `include` / `exclude` 过滤并保持相对结构；
+- `source` 为 **glob**（如 `src/assets/*.json`）：复制所有匹配文件，保持相对“通配根”的结构；
+- `source` 为**单文件**：复制到 `destination`，可顺便重命名（如 `about.html` → `about/index.html`）。
+
+同步行为：
+
+- **增量**：目标与源一致（size + mtime 相同，或内容哈希相同）即跳过写入，避免无意义写盘与 mtime 抖动；复制用 `copy2` 保留 mtime，跨平台表现一致；
+- **并行**：文件复制走线程池（`MAX_SYNC_WORKERS`，可用 `cfg.parallel=False` 关闭）；
+- **安全**：默认排除 `.git` / `.github` / `__pycache__` / `.DS_Store` 等元数据（不影响需要发布的 `.well-known/`）；标记 `required=True` 的源缺失会记为错误，并在严格模式（CI 默认）下中止构建；
+- **增量联动**：`static_sources_hash()` 由规则自动派生并计入前端哈希，新增规则无需再维护一份哈希清单。
+
+扩展方式：新增一类资源只需追加一条 `AssetRule`，生成器代码保持不变。
 
 ### 4.5 命令行用法
 
@@ -352,6 +378,7 @@ python run.py --list
 | `LOG_LEVEL` | 日志级别（默认 `INFO`，排错可设 `DEBUG`） |
 | `BUILD_WORKERS` | 默认并行线程数 |
 | `FRIEND_COLOR_WORKERS` | 友链头像并发数 |
+| `FRIEND_AVATAR_CACHE_DIR` | 头像字节缓存目录（默认系统临时目录；CI 中指向 `.cache/friend-avatars` 并配合 `actions/cache`） |
 | `SKIP_NETWORK` | 等价于 `--offline` |
 | `VITE_BUILD_TIMEOUT` | 前端编译超时秒数（默认 900） |
 
@@ -612,7 +639,7 @@ flowchart TB
 #### 添加新页面
 
 1. 在 `src/templates/` 创建 HTML 模板（含 `#router-view` 等占位）。
-2. 在 `builder/generators/aggregated.py` 的 `PAGE_TEMPLATES` 中注册。
+2. 在 `builder/static_assets.py` 的 `PAGE_TEMPLATES` 中注册（模板名 → 子目录），构建时自动复制到 `dist/<子目录>/index.html`。
 3. 在 `src/js/pages/` 下创建对应的 `XxxManager.ts`，推荐继承 `PageBase`，实现 `mount()` / `unmount()`。
 4. 在 `src/js/router/router.ts` 的 `registerDefaultPages()` 中使用 `PageManagerRegistry.register(pattern, factory)` 注册页面管理器。
 5. 在导航栏（`navbar-manager.ts` 的 `NAV_LINKS`）添加链接项。
@@ -748,7 +775,7 @@ category: 随笔   # 可选，默认使用所在子目录名
 ### 8.1 添加新页面
 
 1. 在 `src/templates/` 下创建新的 HTML 模板，包含 `#navbar-placeholder`、`#personal-card-container`、`#footer-placeholder`、`#router-view` 等占位。
-2. 在 `builder/generators/aggregated.py` 的 `PAGE_TEMPLATES` 字典中添加映射（模板名 → 子目录），以在构建时复制到 `dist/`。
+2. 在 `builder/static_assets.py` 的 `PAGE_TEMPLATES` 字典中添加映射（模板名 → 子目录），构建时自动复制到 `dist/<子目录>/index.html`。
 3. 若页面需要动态初始化，在 `src/js/pages/` 下创建对应的页面管理器，推荐继承 `PageBase`。
 4. 在 `src/js/router/router.ts` 的 `registerDefaultPages()` 中使用 `PageManagerRegistry.register(pattern, factory)` 注册该页面管理器。
 5. 在导航栏（`navbar-manager.ts` 的 `NAV_LINKS`）中添加链接项。
@@ -804,12 +831,13 @@ engine.register(MyGenerator())
 
 | 作业 | 职责 |
 |------|------|
-| `build` | 检出（含子模块）→ 安装 Python / Node 依赖 → `python run.py --ci` → 上传 `dist` 为 Pages artifact |
+| `build` | 检出（含子模块）→ 安装 Python / Node 依赖 → 校验友链主题色缓存 → 恢复头像缓存 → `python run.py --ci` → 上传 `dist` 为 Pages artifact |
 | `deploy` | `actions/deploy-pages` 发布 artifact 到 GitHub Pages 环境 |
 
 要点：
 
 - **不使用 `--force`**：CI 每次都是全新检出，不存在 `.build_state.json`，本来就等价于全量构建；`--force` 只会额外触发全部友链头像重抓，拖慢构建并增加网络失败概率。
+- **友链主题色缓存**：`src/assets/friend_colors.json` 已提交，构建前会先校验其存在且非空——读得到就只给新增友链抓头像，既省网络又不会因个别站点不稳定而抖动；读取不到则直接失败，避免静默退化成“每次全量抓取”。头像字节另由 `actions/cache` 跨运行复用（`FRIEND_AVATAR_CACHE_DIR`）。
 - **使用 `--ci`**：开启严格模式，前端编译失败直接让工作流失败，避免部署半成品（旧行为会“报错但继续”，容易把缺 JS 的站点发布上线）。
 - 版本统一由 `.python-version` / `.nvmrc` 提供，依赖分别由 `pip` 与 `npm` 官方缓存加速；构建作业设有 `timeout-minutes`，异常任务不会长期占用 runner。
 

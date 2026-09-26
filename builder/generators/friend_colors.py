@@ -6,7 +6,14 @@
 改进点：
   * 头像下载使用带重试的连接池 + 并发抓取，替代逐条串行请求；
   * 网络不可用 / 依赖缺失时降级为默认灰色，不再中断整个构建（CI 更稳）；
+  * 抓取失败时保留已有颜色，绝不把已知颜色“降级”为灰色（缓存可信赖）；
   * 内容无变化时跳过写入，避免产生无意义的 diff。
+
+缓存说明：
+  ``src/assets/friend_colors.json`` 是本生成器的**持久化缓存**，已随仓库提交，
+  因此本地与 GitHub Actions 都能直接复用历史颜色，只为新增友链发起网络请求。
+  头像字节缓存默认位于系统临时目录，可用 ``FRIEND_AVATAR_CACHE_DIR`` 覆盖
+  （CI 中可配合 actions/cache 持久化，进一步减少重复下载）。
 """
 
 import colorsys
@@ -19,7 +26,7 @@ from typing import Dict, List, Optional, Tuple
 
 from ..common import (
     FRIEND_COLORS_JSON,
-    compute_bytes_hash, ensure_dir, env_int,
+    compute_bytes_hash, ensure_dir, env_int, env_str,
     log_info, log_warning, log_error,
     load_json, save_json,
 )
@@ -29,7 +36,8 @@ from .base import OutputGenerator
 # ---------- 抓取参数 ----------
 TIMEOUT = (5, 15)          # (连接, 读取) 秒
 MAX_RETRIES = 2
-CACHE_DIR = Path(tempfile.gettempdir()) / "friend_avatar_cache"
+#: 头像字节缓存目录；可用 FRIEND_AVATAR_CACHE_DIR 覆盖（CI 可挂到 actions/cache）
+CACHE_DIR = Path(env_str("FRIEND_AVATAR_CACHE_DIR") or (Path(tempfile.gettempdir()) / "friend_avatar_cache"))
 DEFAULT_WORKERS = 8
 
 # ---------- 图片处理参数 ----------
@@ -174,6 +182,10 @@ class FriendColorsGenerator(OutputGenerator):
         if FRIEND_COLORS_JSON.exists():
             raw = load_json(FRIEND_COLORS_JSON, {}) or {}
             existing = raw if isinstance(raw, dict) else {}
+            log_info(f"复用已提交的主题色缓存 {FRIEND_COLORS_JSON}（{len(existing)} 条），仅补充缺失项")
+        else:
+            log_warning(f"主题色缓存不存在: {FRIEND_COLORS_JSON}，将为全部友链发起头像请求"
+                        f"（CI 中该文件随仓库提交，缺失通常由误删除/误忽略导致）")
 
         # 计算需要处理的友链
         pending = []
@@ -200,10 +212,11 @@ class FriendColorsGenerator(OutputGenerator):
                 log_info("离线模式：跳过头像抓取，沿用已有/默认主题色")
             new_colors = {k: v for k, v in existing.items() if k in seen}
             for key, _ in pending:
-                new_colors.setdefault(key, list(FALLBACK_COLOR))
+                # 离线/无待处理项时绝不覆盖已有颜色，缺失项才用兜底灰
+                new_colors.setdefault(key, existing.get(key) or list(FALLBACK_COLOR))
         else:
             new_colors = dict(existing)
-            fetched = self._fetch_colors(pending, cfg)
+            fetched = self._fetch_colors(pending, cfg, existing)
             new_colors.update(fetched)
 
         new_colors = {k: new_colors[k] for k in sorted(new_colors) if k in seen}
@@ -213,6 +226,9 @@ class FriendColorsGenerator(OutputGenerator):
 
         save_json(new_colors, FRIEND_COLORS_JSON)
         log_info(f"友链主题色已更新至 {FRIEND_COLORS_JSON}（{len(new_colors)} 条）")
+        if cfg.ci:
+            log_info("CI 提示：主题色缓存已变更，建议随本次改动一起提交 "
+                     "src/assets/friend_colors.json，后续构建即可直接复用、无需再抓头像")
         return True
 
     # ---------- 内部实现 ----------
@@ -226,18 +242,19 @@ class FriendColorsGenerator(OutputGenerator):
             return False
         return True
 
-    def _fetch_colors(self, pending, cfg) -> Dict[str, list]:
+    def _fetch_colors(self, pending, cfg, existing: Optional[Dict[str, list]] = None) -> Dict[str, list]:
+        existing = existing or {}
         workers = env_int("FRIEND_COLOR_WORKERS", 0) or min(DEFAULT_WORKERS, max(1, len(pending)))
         session = _build_session()
         results: Dict[str, list] = {}
         try:
             if workers <= 1:
                 for key, friend in pending:
-                    results[key] = self._color_or_fallback(friend, session)
+                    results[key] = self._color_or_fallback(friend, session, existing.get(key))
             else:
                 with ThreadPoolExecutor(max_workers=workers) as pool:
                     futures = {
-                        pool.submit(self._color_or_fallback, friend, session): key
+                        pool.submit(self._color_or_fallback, friend, session, existing.get(key)): key
                         for key, friend in pending
                     }
                     for future, key in futures.items():
@@ -245,7 +262,7 @@ class FriendColorsGenerator(OutputGenerator):
                             results[key] = future.result()
                         except Exception as e:
                             log_warning(f"友链颜色处理异常: {e}")
-                            results.setdefault(key, list(FALLBACK_COLOR))
+                            results.setdefault(key, existing.get(key) or list(FALLBACK_COLOR))
         finally:
             try:
                 session.close()
@@ -254,7 +271,13 @@ class FriendColorsGenerator(OutputGenerator):
         return results
 
     @staticmethod
-    def _color_or_fallback(friend, session) -> list:
+    def _color_or_fallback(friend, session, fallback: Optional[list] = None) -> list:
+        """提取头像主色；失败时优先沿用历史颜色，其次才用兜底灰。"""
         log_info(f"处理友链颜色: {friend.name}")
         color = fetch_avatar_color(friend.avatar, session)
-        return list(color) if color else list(FALLBACK_COLOR)
+        if color:
+            return list(color)
+        if fallback:
+            log_warning(f"{friend.name} 头像抓取失败，保留已有主题色 {fallback}")
+            return list(fallback)
+        return list(FALLBACK_COLOR)
