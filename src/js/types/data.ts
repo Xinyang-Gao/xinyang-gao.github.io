@@ -116,8 +116,52 @@ export interface VersionEntry {
   version: string;
   date: string;
   changes: VersionChange[];
+  /** 旧式日志（仅有日期、无版本号）为 true */
+  is_old?: boolean;
 }
 
+/**
+ * 单个版本分片的元信息（不含变更正文）。
+ * 由 version.json 提供，前端据此按需拉取具体分片。
+ */
+export interface VersionShardMeta {
+  index: number;
+  url: string;
+  count: number;
+  start_id: number;
+  end_id: number;
+  first_version: string;
+  last_version: string;
+  start_date: string;
+  end_date: string;
+  hash?: string;
+}
+
+/** version.json：仅索引，体积远小于全量数据 */
+export interface VersionIndexPayload {
+  generated_at?: string;
+  total_versions: number;
+  changelog_hash?: string;
+  shard_size: number;
+  shard_count: number;
+  latest_version?: string;
+  latest_date?: string;
+  shards: VersionShardMeta[];
+}
+
+/** 单个分片文件（/json/version/version-N.json）的内容 */
+export interface VersionShardPayload {
+  index: number;
+  count: number;
+  start_id: number;
+  end_id: number;
+  hash?: string;
+  versions: VersionEntry[];
+}
+
+/** 合并后的完整版本数据（分片全部加载后组装） */
 export interface VersionPayload {
+  generated_at?: string;
+  total_versions?: number;
   versions: VersionEntry[];
 }

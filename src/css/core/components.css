@@ -1224,3 +1224,33 @@ body.custom-cursor-enabled .list-item { cursor: none; }
   stroke: currentColor !important;
   stroke-width: var(--brand-stroke-width, 26) !important;
 }
+
+/* ============================================================
+   Font Awesome 图标：占位防跳版 + 淡入
+   Kit 脚本已改为 <head> + defer，<i> → <svg> 的替换发生在
+   DOMContentLoaded 之前、main.js 之前。这里给尚未被替换的 <i>
+   预留 1em 方框，避免图标出现时把周围文字顶歪（CLS）；替换完成
+   后用 opacity/transform 淡入（走合成器，不占主线程）。
+   ============================================================ */
+i[class*="fa-"] {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  line-height: 1;
+  text-align: center;
+  vertical-align: -0.125em;
+}
+
+@keyframes fa-pop-in {
+  from { opacity: 0; transform: scale(0.86); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* 排除 FA 自带动画类，否则会覆盖 fa-spin / fa-beat 等的 animation */
+.svg-inline--fa:not(.fa-spin):not(.fa-pulse):not(.fa-beat):not(.fa-bounce):not(.fa-fade):not(.fa-flip):not(.fa-shake) {
+  animation: fa-pop-in 0.18s ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .svg-inline--fa { animation: none; }
+}

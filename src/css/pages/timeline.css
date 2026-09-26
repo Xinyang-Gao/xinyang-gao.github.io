@@ -554,6 +554,39 @@
 }
 
 /* ============================================
+   加载更早的更新日志（分片按需加载）
+   ============================================ */
+.timeline-load-more {
+    display: flex;
+    justify-content: center;
+    margin-top: 28px;
+}
+.timeline-load-more-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 22px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    color: var(--text-secondary, #6b6b6b);
+    background: var(--surface-color-secondary, #f5f2ef);
+    border: 1px solid var(--border-color, #e8e2db);
+    border-radius: var(--radius-full, 30px);
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease,
+        transform 0.2s ease;
+}
+.timeline-load-more-btn:hover:not(:disabled) {
+    color: var(--accent-color, #b45b63);
+    border-color: var(--accent-color, #b45b63);
+    transform: translateY(-1px);
+}
+.timeline-load-more-btn:disabled {
+    opacity: 0.6;
+    cursor: progress;
+}
+
+/* ============================================
    空状态 / 加载
    ============================================ */
 .timeline-empty {
@@ -764,4 +797,14 @@
 }
 [data-theme="dark"] .change-desc {
     color: var(--text-color, #eceef2);
+}
+
+[data-theme="dark"] .timeline-load-more-btn {
+    color: var(--text-secondary, #a0a0ad);
+    background: var(--surface-color-secondary, #22222c);
+    border-color: var(--border-color, #3f3f4b);
+}
+[data-theme="dark"] .timeline-load-more-btn:hover:not(:disabled) {
+    color: var(--accent-color, #ffb74d);
+    border-color: var(--accent-color, #b45b63);
 }

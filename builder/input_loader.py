@@ -21,7 +21,8 @@ from .common import (
     PROJECT_ROOT, SRC_ROOT, ASSETS_SOURCE_DIR, ASSETS_DIR,
     ARTICLES_OUTPUT_DIR, JSON_OUTPUT_DIR, WORKS_SRC_DIR,
     log_info, log_warning, log_error,
-    load_json, save_json, compute_content_hash, compute_file_hash,
+    load_json, save_json, compute_content_hash, compute_file_hash, compute_object_hash,
+    ensure_dir, env_int,
     get_relative_path, format_date, format_date_iso,
     get_current_date_iso, get_current_datetime_iso,
     count_words, calculate_read_time, slugify,
@@ -70,6 +71,14 @@ VERSION_PATTERN = re.compile(
 # 变更条目：`- type: description`；无冒号时整行作为 description
 # 缩进行（以空格开头）会被识别为上一个 change 的续行，而非新条目
 CHANGE_PATTERN = re.compile(r'^-\s+(?:([^:]+?):\s*)?(.*)$')
+
+# ---------- 版本日志分片配置 ----------
+# 更新日志只会越积越多，全部塞进单个 version.json 会拖慢首屏下载。
+# 这里按固定条数切片：version.json 退化为「索引」，正文落在 version/version-N.json。
+VERSION_SHARD_SIZE = 40                    # 单个分片最多包含的版本数
+VERSION_SHARD_DIRNAME = "version"          # JSON_OUTPUT_DIR 下的分片目录名
+VERSION_SHARD_URL_PREFIX = "/json/version/"  # 前端访问前缀（需与目录名对应）
+VERSION_SHARD_FILE_PATTERN = re.compile(r'^version-(\d+)\.json$')
 
 
 def parse_changelog(md_text: str) -> Dict:
@@ -186,18 +195,121 @@ def sort_versions(version_strings: List[str]) -> List[str]:
     return old_ones + new_ones
 
 
+def _version_shard_size() -> int:
+    """分片大小（可用环境变量 VERSION_SHARD_SIZE 覆盖，最小 1）。"""
+    return max(1, env_int("VERSION_SHARD_SIZE", VERSION_SHARD_SIZE))
+
+
+def _shard_path(shard_dir: Path, index: int) -> Path:
+    return shard_dir / f"version-{index}.json"
+
+
+def _shard_url(index: int) -> str:
+    return f"{VERSION_SHARD_URL_PREFIX}version-{index}.json"
+
+
+def _build_shard_payload(index: int, entries: List[Dict]) -> Dict:
+    """构造单个分片的数据（含内容哈希，供增量跳过写入）。"""
+    payload = {
+        "index": index,
+        "count": len(entries),
+        "start_id": entries[0]["id"],
+        "end_id": entries[-1]["id"],
+        "versions": entries,
+    }
+    payload["hash"] = compute_object_hash({"index": index, "versions": entries})
+    return payload
+
+
+def write_version_shards(version_list: List[Dict], shard_dir: Path) -> List[Dict]:
+    """把版本列表切成多个分片写入磁盘，返回分片索引元信息。
+
+    - 分片内容未变化时跳过写入（哈希比对），避免无谓的磁盘 IO；
+    - 版本数减少导致分片变少时，清理残留的旧分片文件。
+    """
+    ensure_dir(shard_dir)
+    size = _version_shard_size()
+    metas: List[Dict] = []
+
+    for start in range(0, len(version_list), size):
+        entries = version_list[start:start + size]
+        idx = start // size + 1
+        payload = _build_shard_payload(idx, entries)
+        path = _shard_path(shard_dir, idx)
+
+        old = load_json(path, None)
+        if not isinstance(old, dict) or old.get("hash") != payload["hash"]:
+            save_json(payload, path)
+
+        dates = [str(e.get("date", "")) for e in entries if e.get("date")]
+        metas.append({
+            "index": idx,
+            "url": _shard_url(idx),
+            "count": len(entries),
+            "start_id": payload["start_id"],
+            "end_id": payload["end_id"],
+            "first_version": entries[0].get("version", ""),
+            "last_version": entries[-1].get("version", ""),
+            "start_date": min(dates) if dates else "",
+            "end_date": max(dates) if dates else "",
+            "hash": payload["hash"],
+        })
+
+    keep = {m["index"] for m in metas}
+    for path in sorted(shard_dir.glob("version-*.json")):
+        m = VERSION_SHARD_FILE_PATTERN.match(path.name)
+        if not m or int(m.group(1)) not in keep:
+            try:
+                path.unlink()
+            except OSError as e:
+                log_warning(f"删除残留版本分片失败 {path}: {e}")
+
+    return metas
+
+
+def read_version_shards(shard_dir: Path, index_data: Dict) -> Optional[List[Dict]]:
+    """按索引从磁盘读回全部分片，重建完整版本列表。
+
+    任一分片缺失/损坏/哈希不匹配时返回 None，由调用方重新生成。
+    """
+    versions: List[Dict] = []
+    for meta in index_data.get("shards", []):
+        try:
+            idx = int(meta.get("index"))
+        except (TypeError, ValueError):
+            return None
+        data = load_json(_shard_path(shard_dir, idx), None)
+        if not isinstance(data, dict):
+            return None
+        entries = data.get("versions")
+        if not isinstance(entries, list):
+            return None
+        if meta.get("hash") and data.get("hash") != meta.get("hash"):
+            return None
+        versions.extend(entries)
+    return versions
+
+
 def load_version(force: bool = False) -> Dict:
     changelog_path = ASSETS_DIR / "网站更新日志.md"
     version_json_path = JSON_OUTPUT_DIR / "version.json"
+    shard_dir = JSON_OUTPUT_DIR / VERSION_SHARD_DIRNAME
 
     if not force and version_json_path.exists():
         old_data = load_json(version_json_path, {})
         stored_hash = old_data.get("changelog_hash", "")
         current_hash = compute_file_hash(changelog_path)
-        if stored_hash == current_hash:
-            log_info("更新日志未变化，直接加载已有 version.json")
-            return old_data
-        log_info("更新日志已变化，重新生成 version.json")
+        if stored_hash == current_hash and isinstance(old_data, dict):
+            # 索引命中：仍需把分片内容读回内存（统计生成器需要完整 versions）
+            cached_versions = read_version_shards(shard_dir, old_data)
+            if cached_versions is not None:
+                log_info(
+                    f"更新日志未变化，复用已有分片（{len(old_data.get('shards', []))} 个）"
+                )
+                result = dict(old_data)
+                result["versions"] = cached_versions
+                return result
+        log_info("更新日志已变化，重新生成版本分片")
 
     if not changelog_path.exists():
         log_error(f"更新日志文件不存在: {changelog_path}")
@@ -229,15 +341,30 @@ def load_version(force: bool = False) -> Dict:
             'is_old': data.get('is_old', False),
         })
 
+    shards_meta = write_version_shards(version_list, shard_dir)
+
+    # version.json 只做索引，正文在各分片中，首屏无需下载全量
     output_data = {
         "generated_at": get_current_datetime_iso(),
         "total_versions": len(version_list),
-        "versions": version_list,
         "changelog_hash": compute_file_hash(changelog_path),
+        "shard_size": _version_shard_size(),
+        "shard_count": len(shards_meta),
+        "latest_version": version_list[-1].get("version", "") if version_list else "",
+        "latest_date": version_list[-1].get("date", "") if version_list else "",
+        "shards": shards_meta,
     }
 
     save_json(output_data, version_json_path)
-    return output_data
+    log_info(
+        f"版本索引已写入 {version_json_path.name}（{len(shards_meta)} 个分片，"
+        f"每片最多 {_version_shard_size()} 个版本）"
+    )
+
+    # 内存中的上下文仍携带完整列表，供统计等生成器使用
+    result = dict(output_data)
+    result["versions"] = version_list
+    return result
 
 # ---------- 文章加载（包含 Markdown 处理及 HTML 生成） ----------
 def _extract_headings(content: str) -> List[Dict]:
@@ -504,6 +631,7 @@ def _create_html_page(title, date, content_html, headings_json, description, tag
     <link rel="stylesheet" href="/css/main.css?v={cache_buster}">
     <link rel="stylesheet" href="/css/pages/article.css?v={cache_buster}">
     <link rel="stylesheet" href="/css/components/comments.css?v={cache_buster}">
+    <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous" defer></script>
 </head>
 <body>
 <div id="loading-overlay" role="status" aria-label="页面加载中"><div class="loading-glow"></div><div id="loading-content"><span class="loading-title">GaoXinYang</span></div></div>
@@ -572,7 +700,6 @@ def _create_html_page(title, date, content_html, headings_json, description, tag
     <div id="footer-placeholder"></div>
 
     <script>window.ARTICLE_HEADINGS = {headings_json};</script>
-    <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>
     <script src="https://vercount.one/js" defer></script>
     <script src="/js/entry/main.js?v={cache_buster}" type="module"></script>
     <script src="/js/pages/article.js?v={cache_buster}" type="module"></script>

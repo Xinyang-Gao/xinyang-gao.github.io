@@ -10,6 +10,9 @@ import type {
   CodeAnalysisData,
   FriendItem,
   VersionPayload,
+  VersionIndexPayload,
+  VersionShardPayload,
+  VersionEntry,
 } from '/js/types/data.js';
 
 // ==================== 类型定义 ====================
@@ -21,7 +24,8 @@ export interface DataKeyMap {
   statistics: StatisticsPayload;
   codeAnalysis: CodeAnalysisData;
   friends: FriendItem[];
-  version: VersionPayload;
+  /** 更新日志索引（正文在分片里，见 getVersionShard） */
+  versionIndex: VersionIndexPayload;
 }
 
 export type DataKey = keyof DataKeyMap;
@@ -44,17 +48,20 @@ const URL_MAP: Record<DataKey, string> = {
   statistics: CONFIG.API.STATISTICS,
   codeAnalysis: '/json/code_analysis.json',
   friends: '/json/friends.json',
-  version: '/json/version.json',
+  versionIndex: '/json/version.json',
 };
 
 // ==================== 核心服务类 ====================
 
 class DataService {
-  /** 内存缓存。每个 key 的载荷类型不同，统一以 unknown 存储，对外返回时由泛型断言。 */
-  private memoryCache = new Map<DataKey, CacheEntry<unknown>>();
+  /**
+   * 内存缓存。key 为 DataKey 或具体 URL（版本分片等动态地址），
+   * 载荷类型各异，统一以 unknown 存储，对外返回时由泛型断言。
+   */
+  private memoryCache = new Map<string, CacheEntry<unknown>>();
 
   /** 并发去重 */
-  private pending = new Map<DataKey, Promise<unknown>>();
+  private pending = new Map<string, Promise<unknown>>();
 
   /** 内存缓存有效期：60 秒（持久化交给 SW） */
   private readonly TTL = 60 * 1000;
@@ -65,45 +72,58 @@ class DataService {
    *  2. 进行中的请求 → 复用 Promise
    *  3. 发起网络请求（SW 会处理持久化缓存）
    */
-  private async fetchWithCache<K extends DataKey>(
-    key: K,
-    options: FetchOptions = {}
-  ): Promise<DataKeyMap[K]> {
+  private async fetchByCacheKey<T>(
+    cacheKey: string,
+    url: string,
+    options: FetchOptions
+  ): Promise<T> {
     const { forceRefresh = false } = options;
 
     // 1) 内存缓存
     if (!forceRefresh) {
-      const mem = this.memoryCache.get(key);
+      const mem = this.memoryCache.get(cacheKey);
       if (mem && Date.now() - mem.timestamp < this.TTL) {
-        return mem.data as DataKeyMap[K];
+        return mem.data as T;
       }
     }
 
     // 2) 并发去重
-    const inflight = this.pending.get(key);
-    if (inflight) return inflight as Promise<DataKeyMap[K]>;
+    const inflight = this.pending.get(cacheKey);
+    if (inflight) return inflight as Promise<T>;
 
     // 3) 网络请求
-    const promise = this.doFetch<DataKeyMap[K]>(URL_MAP[key], forceRefresh)
+    const promise = this.doFetch<T>(url, forceRefresh)
       .then((data) => {
-        this.memoryCache.set(key, { data, timestamp: Date.now() });
+        this.memoryCache.set(cacheKey, { data, timestamp: Date.now() });
         return data;
       })
       .catch((err) => {
         // 网络失败时回退到过期内存缓存
-        const mem = this.memoryCache.get(key);
+        const mem = this.memoryCache.get(cacheKey);
         if (mem) {
-          console.warn(`[DataService] 网络请求失败，返回过期缓存 (${key})`, err);
-          return mem.data as DataKeyMap[K];
+          console.warn(`[DataService] 网络请求失败，返回过期缓存 (${cacheKey})`, err);
+          return mem.data as T;
         }
         throw err;
       })
       .finally(() => {
-        this.pending.delete(key);
+        this.pending.delete(cacheKey);
       });
 
-    this.pending.set(key, promise);
+    this.pending.set(cacheKey, promise);
     return promise;
+  }
+
+  private async fetchWithCache<K extends DataKey>(
+    key: K,
+    options: FetchOptions = {}
+  ): Promise<DataKeyMap[K]> {
+    return this.fetchByCacheKey<DataKeyMap[K]>(key, URL_MAP[key], options);
+  }
+
+  /** 按 URL 缓存的通用 JSON 请求（分片等动态地址） */
+  fetchJson<T>(url: string, options: FetchOptions = {}): Promise<T> {
+    return this.fetchByCacheKey<T>(url, url, options);
   }
 
   /**
@@ -144,8 +164,78 @@ class DataService {
     return this.fetchWithCache('friends', options);
   }
 
-  getVersion(options?: FetchOptions): Promise<VersionPayload> {
-    return this.fetchWithCache('version', options);
+  /** 更新日志索引（体积小，可安全优先加载） */
+  getVersionIndex(options?: FetchOptions): Promise<VersionIndexPayload> {
+    return this.fetchWithCache('versionIndex', options);
+  }
+
+  /** 拉取单个版本分片（url 取自索引的 VersionShardMeta.url） */
+  getVersionShard(url: string, options?: FetchOptions): Promise<VersionShardPayload> {
+    return this.fetchJson<VersionShardPayload>(url, options);
+  }
+
+  /**
+   * 只加载最近若干个版本（用于更新提示等场景），避免拉取全部分片。
+   * 由新到旧累加分片，直到覆盖 limit 个版本为止。
+   */
+  async getRecentVersions(limit: number, options?: FetchOptions): Promise<VersionPayload> {
+    const index = await this.getVersionIndex(options);
+    const shards = [...(index.shards || [])].sort((a, b) => a.index - b.index);
+
+    // 兼容尚未分片的旧 version.json（如 Service Worker 里的旧缓存）
+    if (!shards.length) {
+      const legacy = (index as unknown as { versions?: VersionEntry[] }).versions || [];
+      const sorted = [...legacy].sort((a, b) => a.id - b.id);
+      return {
+        generated_at: index.generated_at,
+        total_versions: index.total_versions,
+        versions: sorted.slice(-limit),
+      };
+    }
+
+    const targets: string[] = [];
+    let count = 0;
+    for (let i = shards.length - 1; i >= 0; i--) {
+      targets.push(shards[i].url);
+      count += shards[i].count || 0;
+      if (count >= limit) break;
+    }
+
+    const payloads = await Promise.all(
+      targets.map((url) => this.getVersionShard(url, options))
+    );
+    const versions: VersionEntry[] = [];
+    for (const p of payloads) {
+      versions.push(...(p.versions || []));
+    }
+    versions.sort((a, b) => a.id - b.id);
+
+    return {
+      generated_at: index.generated_at,
+      total_versions: index.total_versions,
+      versions,
+    };
+  }
+
+  /** 合并所有分片的完整版本数据（确需全量时使用） */
+  async getVersion(options?: FetchOptions): Promise<VersionPayload> {
+    const index = await this.getVersionIndex(options);
+    const shards = [...(index.shards || [])].sort((a, b) => a.index - b.index);
+    const payloads = await Promise.all(
+      shards.map((s) => this.getVersionShard(s.url, options))
+    );
+
+    const versions: VersionEntry[] = [];
+    for (const p of payloads) {
+      versions.push(...(p.versions || []));
+    }
+    versions.sort((a, b) => a.id - b.id);
+
+    return {
+      generated_at: index.generated_at,
+      total_versions: index.total_versions,
+      versions,
+    };
   }
 
   clearCache(): void {

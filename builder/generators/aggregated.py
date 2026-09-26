@@ -490,7 +490,8 @@ class AggregatedGenerator(OutputGenerator):
         return f'''<!DOCTYPE html>
 <html lang="zh-CN">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><title>{title} - 高新炀的小站</title>
-<link rel="stylesheet" href="/css/main.css"><link rel="stylesheet" href="/css/pages/friends.css"><link rel="stylesheet" href="/css/components/comments.css"></head>
+<link rel="stylesheet" href="/css/main.css"><link rel="stylesheet" href="/css/pages/friends.css"><link rel="stylesheet" href="/css/components/comments.css">
+<script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous" defer></script></head>
 <body>
 <div id="loading-overlay" role="status" aria-label="页面加载中"><div class="loading-glow"></div><div id="loading-content"><span class="loading-title">GaoXinYang</span></div></div>
 <div id="navbar-placeholder"></div>
@@ -513,7 +514,6 @@ class AggregatedGenerator(OutputGenerator):
 </div>
 <div id="footer-placeholder"></div>
 <script>window.{json_key} = {json_str};</script>
-<script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>
 <script src="/js/vendor/vercount.min.js" defer></script>
 <script src="/js/entry/main.js" type="module"></script>
 </body></html>'''
@@ -798,6 +798,7 @@ class AggregatedGenerator(OutputGenerator):
         <link rel="stylesheet" href="/css/main.css">
         <link rel="stylesheet" href="/css/pages/friends.css">
         <link rel="stylesheet" href="/css/components/comments.css">
+        <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous" defer></script>
     </head>
     <body>
     <div id="loading-overlay" role="status" aria-label="页面加载中"><div class="loading-glow"></div><div id="loading-content"><span class="loading-title">GaoXinYang</span></div></div>
@@ -875,7 +876,6 @@ class AggregatedGenerator(OutputGenerator):
         </div>
         <div id="footer-placeholder"></div>
         <script>window.__STATIC_FRIENDS_DATA = {json.dumps(friends_list, ensure_ascii=False)};</script>
-        <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous"></script>
         <script src="/js/entry/main.js" type="module"></script>
         <script src="/js/vendor/vercount.min.js"></script>
     </body>

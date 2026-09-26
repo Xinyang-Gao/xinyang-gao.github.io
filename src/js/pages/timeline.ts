@@ -5,8 +5,12 @@ import { DataManager, UIRenderer } from '/js/pages/search-render.js';
 import { Utils, perf } from '/js/core/core.js';
 import { PageBase } from '/js/core/page-manager.js';
 import { dataService } from '/js/core/data-service.js';
+import type { VersionIndexPayload, VersionShardMeta } from '/js/types/data.js';
 
 declare const marked: { parse(src: string): string };
+
+/** 首屏加载的版本数（更新日志已分片，按需再拉更早的分片） */
+const INITIAL_VERSION_COUNT = 30;
 
 // ==================== 类型定义 ====================
 
@@ -102,6 +106,17 @@ export class TimelineManager extends PageBase {
   private searchInput: HTMLInputElement | null = null;
 
   private allItems: TimelineItem[] = [];
+  private articles: Article[] = [];
+  private works: Work[] = [];
+
+  /** 更新日志索引（只有元信息，无变更正文） */
+  private versionIndex: VersionIndexPayload | null = null;
+  /** 已加载的版本（按 id 去重） */
+  private versionMap = new Map<number, Version>();
+  private allVersions: Version[] = [];
+  private loadedShards = new Set<number>();
+  private loadingShards = false;
+
   private currentYear = 'all';
   private selectedTypes: Set<string> = new Set(['article', 'work', 'version']);
   private searchQuery = '';
@@ -128,11 +143,12 @@ export class TimelineManager extends PageBase {
     if (this.summary) this.summary.textContent = '';
 
     try {
-      const [articlesResult, worksResult, versionsResult] = await Promise.allSettled([
+      const results = await Promise.allSettled([
         DataManager.fetchData('articles', true),
         DataManager.fetchData('works', true),
-        this.fetchVersions(),
+        this.loadInitialVersions(),
       ]);
+      const [articlesResult, worksResult] = results;
 
       const articles =
         articlesResult.status === 'fulfilled' && articlesResult.value.articles
@@ -142,9 +158,10 @@ export class TimelineManager extends PageBase {
         worksResult.status === 'fulfilled' && worksResult.value.works
           ? worksResult.value.works
           : [];
-      const versions = versionsResult.status === 'fulfilled' ? versionsResult.value : [];
 
-      this.allItems = this.buildTimelineItems(articles, works, versions);
+      this.articles = articles;
+      this.works = works;
+      this.rebuildItems();
 
       this.populateYearSelect();
       this.renderYearCapsules();
@@ -169,6 +186,13 @@ export class TimelineManager extends PageBase {
     this.typeCheckboxes = null;
     this.searchInput = null;
     this.allItems = [];
+    this.articles = [];
+    this.works = [];
+    this.versionIndex = null;
+    this.versionMap.clear();
+    this.allVersions = [];
+    this.loadedShards.clear();
+    this.loadingShards = false;
     this.refreshCallback = null;
   }
 
@@ -177,14 +201,118 @@ export class TimelineManager extends PageBase {
     this.refreshCallback = cb;
   }
 
-  private async fetchVersions(): Promise<Version[]> {
+  /* ================= 版本分片加载 ================= */
+
+  /** 首屏：先取索引，再只拉取覆盖最近 INITIAL_VERSION_COUNT 个版本所需的分片 */
+  private async loadInitialVersions(): Promise<Version[]> {
     try {
-      const data = await dataService.getVersion();
-      return data.versions || [];
+      this.versionIndex = await dataService.getVersionIndex();
     } catch (e) {
-      console.warn('[Timeline] 版本数据加载失败，将忽略版本条目', e);
+      console.warn('[Timeline] 版本索引加载失败，将忽略版本条目', e);
+      this.versionIndex = null;
       return [];
     }
+
+    const shards = [...(this.versionIndex?.shards || [])].sort((a, b) => a.index - b.index);
+
+    // 兼容尚未分片的旧 version.json（如 Service Worker 里的旧缓存）
+    if (!shards.length) {
+      const legacy = (this.versionIndex as unknown as { versions?: Version[] } | null)?.versions;
+      if (Array.isArray(legacy)) {
+        for (const ver of legacy) this.versionMap.set(ver.id, ver);
+        this.allVersions = Array.from(this.versionMap.values()).sort((a, b) => a.id - b.id);
+      }
+      return this.allVersions;
+    }
+
+    const targets: number[] = [];
+    let count = 0;
+    for (let i = shards.length - 1; i >= 0; i--) {
+      targets.push(shards[i].index);
+      count += shards[i].count || 0;
+      if (count >= INITIAL_VERSION_COUNT) break;
+    }
+
+    await this.loadShards(targets);
+    return this.allVersions;
+  }
+
+  /** 按分片序号加载（已加载的自动跳过），返回是否有新数据 */
+  private async loadShards(indexes: number[]): Promise<boolean> {
+    if (!this.versionIndex || this.loadingShards) return false;
+
+    const metas = indexes
+      .filter((i) => !this.loadedShards.has(i))
+      .map((i) => this.versionIndex!.shards.find((s) => s.index === i))
+      .filter((s): s is VersionShardMeta => !!s);
+    if (!metas.length) return false;
+
+    this.loadingShards = true;
+    try {
+      const results = await Promise.allSettled(
+        metas.map((meta) => dataService.getVersionShard(meta.url))
+      );
+
+      let changed = false;
+      results.forEach((res, i) => {
+        if (res.status !== 'fulfilled') {
+          console.warn('[Timeline] 版本分片加载失败:', metas[i].url, res.reason);
+          return;
+        }
+        this.loadedShards.add(metas[i].index);
+        for (const ver of res.value.versions || []) {
+          if (!this.versionMap.has(ver.id)) changed = true;
+          this.versionMap.set(ver.id, ver);
+        }
+      });
+
+      if (changed) {
+        this.allVersions = Array.from(this.versionMap.values()).sort((a, b) => a.id - b.id);
+      }
+      return changed;
+    } finally {
+      this.loadingShards = false;
+    }
+  }
+
+  /** 加载紧邻已加载部分的更早一个分片 */
+  private async loadOlderShard(): Promise<boolean> {
+    const pending = (this.versionIndex?.shards || [])
+      .map((s) => s.index)
+      .filter((i) => !this.loadedShards.has(i))
+      .sort((a, b) => b - a);
+    if (!pending.length) return false;
+    return this.loadShards([pending[0]]);
+  }
+
+  /** 尚未加载的版本数（用于“加载更早”按钮文案） */
+  private getUnloadedVersionCount(): number {
+    return (this.versionIndex?.shards || [])
+      .filter((s) => !this.loadedShards.has(s.index))
+      .reduce((sum, s) => sum + (s.count || 0), 0);
+  }
+
+  /** 覆盖指定年份所需的分片序号 */
+  private getShardIndexesForYear(year: number): number[] {
+    return (this.versionIndex?.shards || [])
+      .filter((s) => {
+        const startYear = Number((s.start_date || '').slice(0, 4));
+        const endYear = Number((s.end_date || '').slice(0, 4));
+        if (!startYear || !endYear) return false;
+        return year >= startYear && year <= endYear;
+      })
+      .map((s) => s.index);
+  }
+
+  /** 选中某个年份时，补齐该年份对应的分片 */
+  private async ensureShardsForYear(year: number): Promise<boolean> {
+    const indexes = this.getShardIndexesForYear(year);
+    if (!indexes.length) return false;
+    return this.loadShards(indexes);
+  }
+
+  private rebuildItems(): void {
+    this.allItems = this.buildTimelineItems(this.articles, this.works, this.allVersions);
   }
 
   private buildTimelineItems(
@@ -249,7 +377,26 @@ export class TimelineManager extends PageBase {
   private getAvailableYears(): number[] {
     const years = new Set<number>();
     for (const item of this.allItems) years.add(item.dateObj.getFullYear());
+    // 未加载的分片也要出现在年份列表里，选中时再按需拉取
+    for (const shard of this.versionIndex?.shards || []) {
+      const startYear = Number((shard.start_date || '').slice(0, 4));
+      const endYear = Number((shard.end_date || '').slice(0, 4));
+      if (startYear) years.add(startYear);
+      if (endYear) years.add(endYear);
+    }
     return Array.from(years).sort((a, b) => b - a);
+  }
+
+  /** 切换年份：必要时先补齐分片，再重渲染 */
+  private async applyYearChange(): Promise<void> {
+    if (this.currentYear !== 'all') {
+      const year = parseInt(this.currentYear, 10);
+      if (!isNaN(year) && (await this.ensureShardsForYear(year))) {
+        this.rebuildItems();
+      }
+    }
+    this.renderTimeline();
+    this.updateCapsulesActive();
   }
 
   private populateYearSelect(): void {
@@ -283,8 +430,7 @@ export class TimelineManager extends PageBase {
         if (year) {
           this.currentYear = year;
           if (this.yearFilter) this.yearFilter.value = year;
-          this.renderTimeline();
-          this.updateCapsulesActive();
+          void this.applyYearChange();
         }
       });
     });
@@ -301,8 +447,7 @@ export class TimelineManager extends PageBase {
     if (this.yearFilter) {
       this.stack.addEventListener(this.yearFilter, 'change', () => {
         this.currentYear = this.yearFilter!.value;
-        this.renderTimeline();
-        this.updateCapsulesActive();
+        void this.applyYearChange();
       });
     }
 
@@ -439,13 +584,50 @@ export class TimelineManager extends PageBase {
       html += `</div>`;
     }
     html += '</div>';
+    html += this.renderLoadMore();
 
     this.container.innerHTML = html;
 
     this.bindVersionCapsules();
+    this.bindLoadMore();
 
     if (this.refreshCallback) this.refreshCallback();
     else if ((window as any).refreshScrollReveal) (window as any).refreshScrollReveal();
+  }
+
+  /** 时间线末尾的“加载更早”入口（仅当还有未加载的分片时出现） */
+  private renderLoadMore(): string {
+    const remaining = this.getUnloadedVersionCount();
+    if (!remaining) return '';
+
+    const label = this.loadingShards
+      ? '正在加载更早的更新日志...'
+      : `加载更早的更新日志（还有 ${remaining} 个版本）`;
+
+    return `
+        <div class="timeline-load-more">
+            <button type="button" class="timeline-load-more-btn" ${this.loadingShards ? 'disabled' : ''}>
+                <i class="fas fa-history" aria-hidden="true"></i>
+                <span>${label}</span>
+            </button>
+        </div>
+    `;
+  }
+
+  private bindLoadMore(): void {
+    const btn = this.container?.querySelector<HTMLButtonElement>('.timeline-load-more-btn');
+    if (!btn) return;
+    this.stack.addEventListener(btn, 'click', () => {
+      void this.handleLoadMore();
+    });
+  }
+
+  private async handleLoadMore(): Promise<void> {
+    if (this.loadingShards) return;
+    const changed = await this.loadOlderShard();
+    if (!changed) return;
+    this.rebuildItems();
+    this.renderTimeline();
   }
 
   private renderDayCard(items: TimelineItem[]): string {

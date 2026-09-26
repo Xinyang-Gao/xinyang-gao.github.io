@@ -29,6 +29,12 @@ interface VersionInfo {
 /** 更新内容入场后，等待其稳定多久才开始淡出（毫秒） */
 const LOG_FADE_DELAY_MS = 3000;
 
+/**
+ * 更新提示最多回溯的版本数。
+ * 更新日志已分片存储，这里只取最近的若干条，避免每次进入都下载全量。
+ */
+const UPDATE_NOTICE_VERSION_LIMIT = 10;
+
 /** 左栏最多显示行数 */
 const MAX_LOG_LINES = 5;
 /** 右栏最多显示条数 */
@@ -223,7 +229,7 @@ export class LoadingOverlayManager {
       works: () => dataService.getWorks(),
       code: () => dataService.getCodeAnalysis(),
       friends: () => dataService.getFriends(),
-      version: () => dataService.getVersion(),
+      version: () => dataService.getRecentVersions(UPDATE_NOTICE_VERSION_LIMIT),
     };
 
     const results = await Promise.allSettled(
