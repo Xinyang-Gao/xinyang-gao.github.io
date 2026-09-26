@@ -16,6 +16,8 @@ export interface Article {
   read_time?: string;
   author?: string;
   hidden?: boolean;
+  /** 封面图片地址（可选，列表项会作为背景显示） */
+  cover?: string;
 }
 
 export interface Work {
@@ -27,6 +29,10 @@ export interface Work {
   date?: string;
   tags?: string[];
   tag?: string[] | string;
+  /** 封面图片地址（可选，列表项会作为背景显示） */
+  cover?: string;
+  /** 是否已归档（不再维护） */
+  archived?: boolean;
 }
 
 /**
@@ -50,6 +56,10 @@ export interface Item {
   read_time?: string;
   author?: string;
   hidden?: boolean;
+  /** 封面图片地址（可选，列表项会作为背景显示） */
+  cover?: string;
+  /** 是否已归档（不再维护），目前仅作品有此项 */
+  archived?: boolean;
   [key: string]: unknown;
 }
 

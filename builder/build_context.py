@@ -22,6 +22,7 @@ class Article:
     url: str
     word_count: int
     read_time: str
+    cover: str = ""        # 封面图 URL/路径，可为空
 
 @dataclass
 class Work:
@@ -31,6 +32,8 @@ class Work:
     date: str
     tag: List[str]
     link: str
+    cover: str = ""        # 封面图 URL/路径，可为空
+    archived: bool = False  # 已归档且不再维护
 
 @dataclass
 class Friend:

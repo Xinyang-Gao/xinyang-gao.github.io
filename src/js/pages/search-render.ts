@@ -156,6 +156,30 @@ export class UIRenderer {
     return Utils.renderTags(Utils.getTags(item));
   }
 
+  /**
+   * 判断日期是否可用。
+   * 后端在日期缺失时会写入“未指定日期”占位值，这里同样视为不可用，
+   * 避免列表项渲染出“发布于 未指定日期”。
+   */
+  static hasDate(value: unknown): boolean {
+    const d = typeof value === 'string' ? value.trim() : String(value ?? '').trim();
+    return !!d && d !== '未指定日期' && d !== '未指定';
+  }
+
+  /** 封面背景层（无封面时为空串） */
+  static generateCoverHTML(cover: unknown): string {
+    const url = typeof cover === 'string' ? cover.trim() : '';
+    if (!url) return '';
+    return `<div class="list-item-cover" aria-hidden="true" style="background-image: url('${Utils.escapeHtml(url)}')"></div>`;
+  }
+
+  /** 作品归档标记（右上角） */
+  static generateArchivedBadgeHTML(archived: unknown): string {
+    if (!archived) return '';
+    return '<div class="work-archived-badge" title="该作品已归档，不再维护">' +
+      '<i class="fa-solid fa-box-archive" aria-hidden="true"></i> 已归档 · 不再维护</div>';
+  }
+
   static generateListItem(
     item: Item,
     type: 'article' | 'work',
@@ -167,28 +191,31 @@ export class UIRenderer {
 
     if (type === 'article') {
       const url = item.url || '';
-      const dateInfo = item.date
-        ? `<span class="publish-date">发布于 ${Utils.escapeHtml(item.date)}</span>`
+      const coverHtml = UIRenderer.generateCoverHTML(item.cover);
+      const coverClass = coverHtml ? ' has-cover' : '';
+
+      // 发布日期：无效或占位值时不展示
+      const dateInfo = UIRenderer.hasDate(item.date)
+        ? `<span class="publish-date"><i class="far fa-calendar-plus" aria-hidden="true"></i> 发布于 ${Utils.escapeHtml(String(item.date).slice(0, 10))}</span>`
         : '';
+      // 更新日期：仅在存在且与发布日期不同时展示
       const updateInfo =
-        item.last_updated && item.last_updated !== item.date
-          ? `<span class="update-date">更新: ${Utils.escapeHtml(item.last_updated)}</span>`
-          : '';
-      const metaDate =
-        dateInfo || updateInfo
-          ? `<div class="article-dates-top-right">${dateInfo}${updateInfo ? '<br/>' + updateInfo : ''}</div>`
+        UIRenderer.hasDate(item.last_updated) &&
+        String(item.last_updated).slice(0, 10) !== String(item.date || '').slice(0, 10)
+          ? `<span class="update-date"><i class="far fa-pen-to-square" aria-hidden="true"></i> 更新于 ${Utils.escapeHtml(String(item.last_updated).slice(0, 10))}</span>`
           : '';
 
       return `
-        <div class="list-item" data-url="${Utils.escapeHtml(url)}" data-type="article" data-index="${index}">
+        <div class="list-item${coverClass}" data-url="${Utils.escapeHtml(url)}" data-type="article" data-index="${index}">
+          ${coverHtml}
           <div class="list-item-header">
             <h3 class="list-item-title">${title}</h3>
-            ${metaDate}
           </div>
           <div class="article-meta-info">
             <span class="article-author">${Utils.escapeHtml(item.author || '未知作者')}</span>
             ${item.word_count ? `<span class="article-word-count">${item.word_count} 字</span>` : ''}
-            ${item.read_time ? `<span class="article-read-time"><i class="far fa-clock"></i> ${Utils.escapeHtml(item.read_time)}</span>` : ''}
+            ${item.read_time ? `<span class="article-read-time"><i class="far fa-clock" aria-hidden="true"></i> ${Utils.escapeHtml(item.read_time)}</span>` : ''}
+            ${dateInfo}${updateInfo}
           </div>
           <p class="list-item-description">${desc}</p>
           ${tagsHtml}
@@ -200,14 +227,23 @@ export class UIRenderer {
           description: item.description || '',
           link: item.link || '',
           tags: Utils.getTags(item),
+          archived: !!item.archived,
         })
       );
+      const coverHtml = UIRenderer.generateCoverHTML(item.cover);
+      const coverClass = coverHtml ? ' has-cover' : '';
+      const archivedClass = item.archived ? ' has-archived' : '';
+      const dateHtml = UIRenderer.hasDate(item.date)
+        ? `<div class="list-item-meta"><span class="list-item-date">${Utils.escapeHtml(String(item.date).slice(0, 10))}</span></div>`
+        : '';
 
       return `
-        <div class="list-item" data-work-info="${workInfo}" data-type="work" data-index="${index}">
+        <div class="list-item${coverClass}${archivedClass}" data-work-info="${workInfo}" data-type="work" data-index="${index}">
+          ${coverHtml}
+          ${UIRenderer.generateArchivedBadgeHTML(item.archived)}
           <div class="list-item-header">
             <h3 class="list-item-title">${title}</h3>
-            <div class="list-item-meta"><span class="list-item-date">${Utils.escapeHtml(item.date)}</span></div>
+            ${dateHtml}
           </div>
           <p class="list-item-description">${desc}</p>
           ${tagsHtml}

@@ -722,12 +722,17 @@ description: 简介
 author: 高新炀
 tag: [随笔, 生活]
 category: 随笔   # 可选，默认使用所在子目录名
+last_updated: 2026-06-01   # 可选，缺省时按内容哈希自动维护
+cover: /assets/cover.webp  # 可选，文章列表项的封面/背景图
 ---
 ```
 
 - `date` 支持 `YYYY-MM-DD` 或 `YYYY年MM月DD日`。
 - `tag` 可为数组或逗号分隔字符串。
+- `cover` 可选，填写图片 URL 或站内路径（如 `/assets/xxx.webp`）；未填写时不显示背景图。
 - 包含 `隐藏` 标签的文章将不出现在列表/RSS/统计中，但仍生成 HTML 到 `.hidden/`。
+- 文章列表项按「作者 · 字数 · 阅读时长 · 发布于 xx · 更新于 xx」一行展示；
+  缺失的日期会被整体省略，不会显示占位文案。
 
 ### 7.2 作品元数据（`works/作品名/metadata.json`）
 
@@ -738,9 +743,14 @@ category: 随笔   # 可选，默认使用所在子目录名
   "description": "描述",
   "author": "高新炀",
   "tag": ["工具", "游戏"],
-  "link": "https://example.com"   // 可留空，默认指向 /works/作品名/
+  "link": "https://example.com",   // 可留空，默认指向 /works/作品名/
+  "cover": "/assets/work.webp",    // 可选，作品卡片的封面/背景图
+  "archived": false                // 可选，true 时卡片右上角标记“已归档 · 不再维护”
 }
 ```
+
+- `cover` 与 `archived` 均为可选字段，缺省分别等价于「无封面」与「未归档」。
+- `archived` 支持 `true` / `"true"` / `1` / `"yes"` 等写法。
 
 ### 7.3 友链（`dist/json/friends.json`）
 

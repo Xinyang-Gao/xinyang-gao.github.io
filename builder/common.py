@@ -48,6 +48,11 @@ ASSETS_DIST_DIR = DIST_ROOT / "assets"                # 复制后的静态素材
 RSS_OUTPUT = DIST_ROOT / "rss.xml"
 SITEMAP_OUTPUT = DIST_ROOT / "sitemap.xml"
 
+# ---------- 日期占位值 ----------
+# 文章/作品缺失日期时的统一占位文本，各处渲染前应先用 is_known_date 过滤，
+# 避免把“未指定日期”当作真实日期展示给用户。
+UNKNOWN_DATE_TEXT = "未指定日期"
+
 # 需要保证存在的输出目录（按需创建，不在导入时创建）
 _OUTPUT_DIRS = (
     DIST_ROOT,
@@ -198,12 +203,15 @@ def log_error(msg: str) -> None:
 # 日期处理
 # ------------------------------------------------------------------
 def format_date(date_str: str, default: Optional[str] = None) -> str:
-    if not date_str or date_str == "未指定":
-        return default if default is not None else "未指定日期"
+    if not date_str or str(date_str) == UNKNOWN_DATE_TEXT:
+        return default if default is not None else UNKNOWN_DATE_TEXT
+    date_str = str(date_str)
     try:
+        # 注意：必须保留“月”字，否则 format_date_iso 无法反向解析，
+        # 会导致所有文章日期被降级为“未指定日期”。
         if re.match(r'\d{4}-\d{1,2}-\d{1,2}', date_str):
             dt = datetime.strptime(date_str, '%Y-%m-%d')
-            return dt.strftime("%Y年%m%d日")
+            return dt.strftime("%Y年%m月%d日")
     except ValueError:
         pass
     try:
@@ -214,15 +222,20 @@ def format_date(date_str: str, default: Optional[str] = None) -> str:
     return date_str
 
 def format_date_iso(date_str: str) -> str:
-    if not date_str or date_str == "未指定":
-        return "未指定日期"
+    if not date_str or str(date_str) == UNKNOWN_DATE_TEXT:
+        return UNKNOWN_DATE_TEXT
+    date_str = str(date_str)
     try:
         if re.match(r'\d{4}-\d{1,2}-\d{1,2}', date_str):
-            return date_str[:10]
-        dt = datetime.strptime(date_str, "%Y年%m月%d日")
-        return dt.strftime("%Y-%m-%d")
+            # strptime 兼容非补零写法（如 2026-3-18），strftime 统一补零输出
+            return datetime.strptime(date_str, '%Y-%m-%d').strftime('%Y-%m-%d')
+        return datetime.strptime(date_str, "%Y年%m月%d日").strftime("%Y-%m-%d")
     except ValueError:
-        return "未指定日期"
+        return UNKNOWN_DATE_TEXT
+
+def is_known_date(date_str: Optional[str]) -> bool:
+    """日期是否可用（既非空也不是“未指定日期”占位值）。"""
+    return bool(date_str) and str(date_str) != UNKNOWN_DATE_TEXT
 
 def get_current_date_iso() -> str:
     return datetime.now().strftime("%Y-%m-%d")

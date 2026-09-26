@@ -25,7 +25,7 @@ from ..common import (
     RSS_OUTPUT, SITEMAP_OUTPUT,
     ensure_dir, env_int, iter_files,
     log_info, log_warning, log_error,
-    load_json, save_json, format_date, format_date_iso,
+    load_json, save_json, format_date, format_date_iso, is_known_date,
     get_current_date_iso, get_current_datetime_iso,
     compute_dir_hash, compute_object_hash,
     load_build_state
@@ -135,7 +135,9 @@ class AggregatedGenerator(OutputGenerator):
                 "description": work.description,
                 "link": work.link,
                 "date": format_date_iso(work.date),   # 强制转为 YYYY-MM-DD
-                "tags": work.tag
+                "tags": work.tag,
+                "cover": work.cover,                  # 可选封面
+                "archived": work.archived             # 已归档 / 不再维护
             })
         output = {"works": works_data}
         save_json(output, JSON_OUTPUT_DIR / "works.json")
@@ -395,7 +397,8 @@ class AggregatedGenerator(OutputGenerator):
     def _generate_works_page(self, context: BuildContext) -> None:
         works = context.works
         work_dicts = [{"title": w.title, "description": w.description, "date": w.date,
-                      "tags": w.tag, "link": w.link, "author": w.author} for w in works]
+                      "tags": w.tag, "link": w.link, "author": w.author,
+                      "cover": w.cover, "archived": w.archived} for w in works]
         html_content = self._render_list_page(
             items=work_dicts,
             title="作品",
@@ -408,6 +411,40 @@ class AggregatedGenerator(OutputGenerator):
         with open(WORKS_LIST_HTML, 'w', encoding='utf-8', newline='\n') as f:
             f.write(html_content)
         log_info(f"作品列表页生成: {WORKS_LIST_HTML}")
+
+    # ---------- 列表项片段（构建期 SSR 与前端 JS 渲染共用同一套结构） ----------
+    @staticmethod
+    def _cover_html(cover: str) -> str:
+        """封面背景层，未配置封面时返回空串。"""
+        cover = str(cover or "").strip()
+        if not cover:
+            return ''
+        return (f'<div class="list-item-cover" aria-hidden="true" '
+                f'style="background-image: url(\'{escape(cover, quote=True)}\')"></div>')
+
+    @staticmethod
+    def _archived_badge_html(archived: bool) -> str:
+        """归档标记（仅作品使用）。"""
+        if not archived:
+            return ''
+        return ('<div class="work-archived-badge" title="该作品已归档，不再维护">'
+                '<i class="fa-solid fa-box-archive" aria-hidden="true"></i> 已归档 · 不再维护</div>')
+
+    @staticmethod
+    def _dates_html(date: str, last_updated: str) -> str:
+        """发布日期 / 更新日期。日期不可用时不渲染，避免出现“未指定日期”。"""
+        parts = []
+        if is_known_date(date):
+            parts.append(f'<span class="publish-date"><i class="far fa-calendar-plus" aria-hidden="true"></i>'
+                         f' 发布于 {escape(str(date))}</span>')
+        if is_known_date(last_updated) and str(last_updated)[:10] != str(date)[:10]:
+            parts.append(f'<span class="update-date"><i class="far fa-pen-to-square" aria-hidden="true"></i>'
+                         f' 更新于 {escape(str(last_updated)[:10])}</span>')
+        return ''.join(parts)
+
+    @staticmethod
+    def _date_text(date: str) -> str:
+        return escape(str(date)) if is_known_date(date) else ''
 
     def _render_list_page(self, items, title, desc, type_name, json_key, is_work=False):
         tag_counter = Counter()
@@ -440,44 +477,60 @@ class AggregatedGenerator(OutputGenerator):
                     url = item.get("url", "#")
                     desc_text = item.get("description", "暂无描述")
                     date = format_date_iso(item.get("date", ""))
+                    last_updated = item.get("last_updated", "")
                     tags = item.get("tags", [])
                     author = item.get("author", "")
                     word_count = item.get("word_count", 0)
                     read_time = item.get("read_time", "")
+                    cover = item.get("cover", "") or ""
+                    archived = bool(item.get("archived", False))
                 else:
                     t = item.title
                     url = item.url
                     desc_text = item.description
                     date = format_date_iso(item.date)
+                    last_updated = getattr(item, "last_updated", "")
                     tags = item.tags
                     author = item.author
                     word_count = item.word_count
                     read_time = item.read_time
+                    cover = getattr(item, "cover", "") or ""
+                    archived = bool(getattr(item, "archived", False))
+
+                cover_html = self._cover_html(cover)
+                cover_class = " has-cover" if cover_html else ""
+                archived_class = " has-archived" if archived else ""
 
                 if is_work:
-                    work_info = {"title": t, "description": desc_text, "link": item.get("link", "#"), "tags": tags}
+                    work_info = {"title": t, "description": desc_text, "link": item.get("link", "#"),
+                                 "tags": tags, "archived": archived}
                     work_info_str = json.dumps(work_info, ensure_ascii=False)
+                    date_html = f'<div class="list-item-meta"><span class="list-item-date">{self._date_text(date)}</span></div>' \
+                        if self._date_text(date) else ''
                     list_items.append(f'''
-                    <div class="list-item" data-work-info="{escape(work_info_str)}" data-type="{type_name}" data-index="{idx}">
-                        <div class="list-item-header"><h3 class="list-item-title">{escape(t)}</h3><div class="list-item-meta"><span class="list-item-date">{date}</span></div></div>
+                    <div class="list-item{cover_class}{archived_class}" data-work-info="{escape(work_info_str)}" data-type="{type_name}" data-index="{idx}">
+                        {cover_html}
+                        {self._archived_badge_html(archived)}
+                        <div class="list-item-header"><h3 class="list-item-title">{escape(t)}</h3>{date_html}</div>
                         <p class="list-item-description">{escape(desc_text)}</p>
                         <div class="tags">{"".join(f'<span class="tag">{escape(tag)}</span>' for tag in tags)}</div>
                     </div>
                     ''')
                 else:
-                    publish_html = f'<span class="publish-date">发布于 {date}</span>' if date else ''
+                    dates_html = self._dates_html(date, last_updated)
                     meta_html = f'''
                     <div class="article-meta-info">
-                        <span class="article-author">{escape(author)}</span>
+                        {f'<span class="article-author">{escape(author)}</span>' if author else ''}
                         {f'<span class="article-word-count">{word_count} 字</span>' if word_count else ''}
-                        {f'<span class="article-read-time"><i class="far fa-clock"></i> {escape(read_time)}</span>' if read_time else ''}
+                        {f'<span class="article-read-time"><i class="far fa-clock" aria-hidden="true"></i> {escape(read_time)}</span>' if read_time else ''}
+                        {dates_html}
                     </div>
                     '''
                     list_items.append(f'''
-                    <div class="list-item" data-url="{url}" data-type="{type_name}" data-index="{idx}">
+                    <div class="list-item{cover_class}" data-url="{url}" data-type="{type_name}" data-index="{idx}">
+                        {cover_html}
                         <div class="list-item-header">
                             <h3 class="list-item-title"><a href="{url}">{escape(t)}</a></h3>
-                            <div class="article-dates-top-right">{publish_html}</div>
                         </div>
                         {meta_html}
                         <p class="list-item-description">{escape(desc_text)}</p>

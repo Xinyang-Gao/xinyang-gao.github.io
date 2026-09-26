@@ -23,7 +23,8 @@ from .common import (
     log_info, log_warning, log_error,
     load_json, save_json, compute_content_hash, compute_file_hash, compute_object_hash,
     ensure_dir, env_int,
-    get_relative_path, format_date, format_date_iso,
+    get_relative_path, format_date, format_date_iso, is_known_date,
+    UNKNOWN_DATE_TEXT,
     get_current_date_iso, get_current_datetime_iso,
     count_words, calculate_read_time, slugify,
 )
@@ -714,6 +715,22 @@ def _create_html_page(title, date, content_html, headings_json, description, tag
 </body>
 </html>'''
 
+def _clean_text(value: Any) -> str:
+    """frontmatter / JSON 里的标量字段统一转成去空白的字符串（None -> ''）。"""
+    if value is None:
+        return ''
+    return str(value).strip()
+
+
+def _parse_bool(value: Any) -> bool:
+    """把 True / "true" / "1" / "yes" 等写法统一转成布尔值。"""
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, (int, float)):
+        return bool(value)
+    return str(value).strip().lower() in ('true', '1', 'yes', 'y', 'on')
+
+
 def _process_markdown_file(md_file_path: Path, old_article: Optional[Dict] = None, category: str = None) -> Article:
     with open(md_file_path, 'r', encoding='utf-8') as f:
         md_content = f.read()
@@ -777,24 +794,20 @@ def _process_markdown_file(md_file_path: Path, old_article: Optional[Dict] = Non
 
     # ---------- 标题、日期等基本信息 ----------
     title = metadata.get('title', '未命名文章')
-    date_raw = metadata.get('date', '')
-    if hasattr(date_raw, 'isoformat'):
-        date_raw = date_raw.isoformat()
-    if not date_raw:
-        date = '未指定日期'
-    else:
-        date = format_date(date_raw, '')
+    date_iso = format_date_iso(_clean_text(metadata.get('date', '')))
+    date_updated_iso = format_date_iso(_clean_text(metadata.get('last_updated', '')))
+    # date 为 HTML 展示用格式（xxxx年xx月xx日），date_iso 为列表/排序使用的 ISO 格式
+    date = format_date(date_iso) if is_known_date(date_iso) else UNKNOWN_DATE_TEXT
 
     description = metadata.get('description', '')
     author = metadata.get('author', '高新炀')
     tags = metadata.get('tag', [])
     if isinstance(tags, str):
         tags = [t.strip() for t in tags.split(',') if t.strip()]
+    cover = _clean_text(metadata.get('cover', ''))
 
     # ---------- 核心：last_updated 优先使用 frontmatter，否则自动 ----------
-    manual_last_updated = metadata.get('last_updated', '')
-    if hasattr(manual_last_updated, 'isoformat'):
-        manual_last_updated = manual_last_updated.isoformat()
+    manual_last_updated = date_updated_iso if is_known_date(date_updated_iso) else ''
     if old_article:
         last_updated = old_article.get('last_updated', '')
         modify_count = old_article.get('modify_count', 0)
@@ -849,15 +862,17 @@ def _process_markdown_file(md_file_path: Path, old_article: Optional[Dict] = Non
         modify_count=modify_count,
         hidden=hidden,
         title=title,
-        date=format_date_iso(date),
+        date=date_iso,
         description=description,
         author=author,
         tags=tags,
         category=final_category,
         url=f'/articles/{output_filename}' if not hidden else f'/articles/.hidden/{output_filename}',
         word_count=word_count,
-        read_time=read_time
+        read_time=read_time,
+        cover=cover
     )
+
 
 def load_articles(force_refresh: bool = False) -> List[Article]:
     old_articles = load_json(JSON_OUTPUT_DIR / "articles.json", {})
@@ -875,7 +890,9 @@ def load_articles(force_refresh: bool = False) -> List[Article]:
                 old = old_dict.get(rel)
                 with open(md_file, 'r', encoding='utf-8') as f:
                     current_hash = compute_content_hash(f.read())
-                if not force_refresh and old and old.get('hash') == current_hash:
+                if not force_refresh and old and old.get('hash') == current_hash \
+                        and is_known_date(old.get('date')):
+                    # 缓存可用才走快捷分支：旧 JSON 里被降级成“未指定日期”的记录会重新解析，实现自愈
                     article = Article(
                         relative_path=rel,
                         hash=old['hash'],
@@ -890,7 +907,8 @@ def load_articles(force_refresh: bool = False) -> List[Article]:
                         category=old.get('category', cat_name),
                         url=old['url'],
                         word_count=old.get('word_count', 0),
-                        read_time=old.get('read_time', '')
+                        read_time=old.get('read_time', ''),
+                        cover=old.get('cover', '')
                     )
                     new_articles.append(article)
                     continue
@@ -912,7 +930,8 @@ def load_articles(force_refresh: bool = False) -> List[Article]:
         old = old_dict.get(rel)
         with open(readme_path, 'r', encoding='utf-8') as f:
             current_hash = compute_content_hash(f.read())
-        if not force_refresh and old and old.get('hash') == current_hash:
+        if not force_refresh and old and old.get('hash') == current_hash \
+                and is_known_date(old.get('date')):
             article = Article(
                 relative_path=rel,
                 hash=old['hash'],
@@ -927,7 +946,8 @@ def load_articles(force_refresh: bool = False) -> List[Article]:
                 category=old.get('category', 'README文档自动构建'),
                 url=old['url'],
                 word_count=old.get('word_count', 0),
-                read_time=old.get('read_time', '')
+                read_time=old.get('read_time', ''),
+                cover=old.get('cover', '')
             )
             new_articles.append(article)
         else:
@@ -963,7 +983,8 @@ def load_articles(force_refresh: bool = False) -> List[Article]:
             'category': a.category,
             'url': a.url,
             'word_count': a.word_count,
-            'read_time': a.read_time
+            'read_time': a.read_time,
+            'cover': a.cover
         } for a in new_articles]
     }
     save_json(articles_data, JSON_OUTPUT_DIR / "articles.json")
@@ -989,19 +1010,23 @@ def load_works() -> List[Work]:
         date = ""
         tag = []
         link = ""
+        cover = ""
+        archived = False
         if metadata_path.exists():
             meta = load_json(metadata_path, {})
-            description = meta.get("description", "")
-            author = meta.get("author", "")
-            date = meta.get("date", "")
+            description = meta.get("description", "") or ""
+            author = meta.get("author", "") or ""
+            date = meta.get("date", "") or ""
             tag = meta.get("tag", [])
-            link = meta.get("link", "")
+            link = meta.get("link", "") or ""
+            cover = meta.get("cover", "") or ""
+            archived = _parse_bool(meta.get("archived", False))
         if isinstance(tag, str):
             tag = [t.strip() for t in re.split(r'[,\s，、]+', tag) if t.strip()]
         elif not isinstance(tag, list):
             tag = [str(tag)] if tag else []
-        if not date:
-            date = "未指定日期"
+        date = format_date_iso(str(date))
+        cover = str(cover).strip()
         if not link.strip():
             link = f"/works/{title}/"
         if "隐藏" in tag:
@@ -1013,7 +1038,9 @@ def load_works() -> List[Work]:
             author=author,
             date=date,
             tag=tag,
-            link=link
+            link=link,
+            cover=cover,
+            archived=archived
         ))
 
     works_list.sort(key=lambda x: x.date, reverse=True)
