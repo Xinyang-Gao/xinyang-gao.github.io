@@ -1,13 +1,17 @@
 /* ==========================================
-   footer.css v7.0
+   footer.css v7.1
    数据区照搬 stats 页 .stat-card / .stat-card-icon 的实现：
-   右下角、大字号、低透明度主题色装饰图标；
+   右下角、大字号、半透明主题色装饰图标；
    ========================================== */
 
 :root {
   --footer-rule: var(--border-color);
   --footer-hairline: var(--border-light);
   --footer-muted: var(--text-secondary);
+
+  /* 数据卡片装饰图标的半透明度：基态 / 悬停，按需微调这两个值即可 */
+  --footer-stat-icon-opacity: 0.16;
+  --footer-stat-icon-opacity-hover: 0.3;
 }
 
 /* ---------- 容器：通栏实色纸带 ---------- */
@@ -159,20 +163,20 @@
   z-index: 0;
 }
 
-/* 装饰性图标 —— 完全照搬 stats 页 .stat-card-icon */
+/* 装饰性图标 —— 半透明的主题色剪影，压在文字下方 */
 .stats-grid-bg .stat-card-icon {
   position: absolute;
   right: -5px;
   bottom: -5px;
   font-size: 4rem;
   line-height: 1;
-  opacity: 0.16;
   color: var(--accent-color);
+  opacity: var(--footer-stat-icon-opacity);
   transform: rotate(3deg) scale(1.1);
   transition: opacity 0.3s ease;
 }
 .stats-grid-item:hover .stat-card-icon {
-  opacity: 0.3;
+  opacity: var(--footer-stat-icon-opacity-hover);
 }
 
 /* 文字信息浮于图标之上 */

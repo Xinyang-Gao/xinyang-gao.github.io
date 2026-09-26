@@ -1,5 +1,5 @@
 // /js/ui/brand-logo.ts
-// 职责：站点品牌标识（/assets/gaoxinyang.svg）的挂载、隐藏与勾边动画编排
+// 职责：站点品牌标识（/assets/GaoXinYang.svg）的挂载、隐藏与勾边动画编排
 // -----------------------------------------------------------------------------
 // 统一封装两处同源 LOGO 的行为差异：
 //   · 导航栏（manual） ：默认隐藏，加载覆盖层完全消失后由 AppInitializer 调用 play()
@@ -17,14 +17,14 @@ import { createSvgDraw } from '/js/ui/svg-draw-animation.js';
 import type { SvgDrawAnimation } from '/js/ui/svg-draw-animation.js';
 
 /** 品牌 SVG 资源路径 */
-const BRAND_SVG_SRC = '/assets/gaoxinyang.svg';
+const BRAND_SVG_SRC = '/assets/GaoXinYang.svg';
 /** 勾边总时长（毫秒） */
 const DRAW_DURATION = 2000;
 /** 缓动：先慢-快-慢 */
 const DRAW_EASING = 'smooth';
 /** 勾边结束后填充淡入时长（毫秒） */
 const FADE_DURATION = 600;
-/** gaoxinyang.svg 的 viewBox 比例，用于 CSS 占位 */
+/** GaoXinYang.svg 的 viewBox 比例，用于 CSS 占位 */
 const VIEWBOX_RATIO = '3355 / 1050';
 
 /** 容器通用类名（CSS 依据它做默认隐藏与占位） */

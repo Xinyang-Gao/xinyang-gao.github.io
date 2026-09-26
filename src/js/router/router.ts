@@ -833,6 +833,26 @@ export async function loadNavbar(): Promise<NavbarManager> {
   return initNavbar();
 }
 
+/**
+ * 激活 innerHTML 注入的 <script>。
+ * 通过 innerHTML 写入的脚本节点不会被执行，页脚里的统计挂件
+ * （fakeicp widget.js）因此从未运行，访问量永远停在占位值 0。
+ * 这里按原属性重建节点并替换占位节点，插入文档后即会正常加载执行。
+ */
+function reviveInjectedScripts(container: HTMLElement): void {
+  container.querySelectorAll('script').forEach((stub) => {
+    const script = document.createElement('script');
+    // 原样搬运全部属性：widget.js 靠 data-site / data-target 定位容器
+    for (const attr of Array.from(stub.attributes)) {
+      script.setAttribute(attr.name, attr.value);
+    }
+    if (!script.src) script.textContent = stub.textContent || '';
+    script.onerror = () =>
+      console.warn('[Router] 页脚脚本加载失败:', script.src || 'inline');
+    stub.replaceWith(script);
+  });
+}
+
 export async function loadFooter(): Promise<void> {
   try {
     const res = await fetch('/footer.html');
@@ -841,6 +861,8 @@ export async function loadFooter(): Promise<void> {
     const ph = document.getElementById('footer-placeholder');
     if (!ph) return;
     ph.innerHTML = html;
+    // 页脚脚本（统计挂件）需手动重建才会执行，必须在品牌 LOGO 初始化前完成
+    reviveInjectedScripts(ph);
     // 页脚品牌 LOGO：滚动进入视口后勾边并显示
     initBrandLogos(ph);
   } catch (e) {

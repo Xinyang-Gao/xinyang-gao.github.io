@@ -1205,7 +1205,7 @@ body.custom-cursor-enabled .list-item { cursor: none; }
 }
 
 /* ============================================================
-   品牌 LOGO（gaoxinyang.svg）
+   品牌 LOGO（GaoXinYang.svg）
    默认隐藏并占位，落笔时由 JS 追加 .is-revealed 显形
    勾边动画本体由 /js/ui/svg-draw-animation.ts 负责
    ============================================================ */
