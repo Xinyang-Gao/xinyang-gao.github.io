@@ -387,10 +387,6 @@
   font-weight: 600;
   letter-spacing: 0.01em;
 }
-.copyright-reserved {
-  color: var(--footer-muted);
-  opacity: 0.9;
-}
 
 /* 移动端：致谢列表缩进稍减 */
 @media (max-width: 640px) {
@@ -443,7 +439,6 @@
   align-items: baseline;
   gap: 0.45rem;
 }
-.separator-dot { font-size: 0.62rem; opacity: 0.5; }
 
 .license-lines {
   display: flex;

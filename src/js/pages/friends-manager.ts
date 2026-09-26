@@ -88,6 +88,8 @@ export class FriendsPageManager extends PageBase {
   private applyRandomSort(): void {
     if (!this.container) return;
 
+    // 后台标签页不重排：replaceChildren 会强制重排并重新解码卡片头像
+    if (document.hidden) return;
     if (document.querySelector('.friend-card:hover')) return;
 
     const children = Array.from(this.container.children) as HTMLElement[];

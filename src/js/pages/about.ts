@@ -180,8 +180,14 @@ export class AboutPageManager extends PageBase {
         this.scheduleMilestoneRender();
       });
       this.milestoneResizeObserver.observe(track);
+      // 交清理栈托管，避免 unmount 遗漏（ResizeObserver 不 disconnect 会持续触发）
+      this.stack.addObserver(this.milestoneResizeObserver);
     } else {
-      window.addEventListener('resize', this.scheduleMilestoneRender, { passive: true });
+      // 降级分支必须登记清理：原来直接 addEventListener，unmount 从不移除，
+      // 页面销毁后 resize 仍会触发 renderMilestones()。
+      this.stack.addEventListener(window, 'resize', this.scheduleMilestoneRender, {
+        passive: true,
+      });
     }
   }
 

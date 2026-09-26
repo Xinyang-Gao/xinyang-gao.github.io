@@ -1,31 +1,51 @@
-// /js/core/clarity.js
+// /js/core/clarity.ts
+// Microsoft Clarity 接入（站点默认同意统计，直接加载）
 
-let clarityLoaded = false;
+type ClarityFn = ((...args: unknown[]) => void) & { q?: unknown[][] };
 
-function loadClarity() {
-  if (clarityLoaded) return;
-  clarityLoaded = true;
-
-  (function(c,l,a,r,i,t,y){
-    c[a] = c[a] || function() { (c[a].q = c[a].q || []).push(arguments); };
-    t = l.createElement(r);
-    t.async = 1;
-    t.src = "https://www.clarity.ms/tag/" + i;
-    y = l.getElementsByTagName(r)[0];
-    y.parentNode.insertBefore(t, y);
-  })(window, document, "clarity", "script", "wnxwo9anpg");
-
-  // 可选：初始化后立即记录当前页面
-  if (window.clarity) {
-    window.clarity("set", "page", window.location.href);
+declare global {
+  interface Window {
+    clarity?: ClarityFn;
   }
 }
 
-// 用于 SPA 导航时更新页面视图
-export function updateClarityPage() {
-  if (window.clarity) {
-    window.clarity("set", "page", window.location.href);
-    // 或 clarity("upgrade"); 视官方建议，新版通常用 set page
+const CLARITY_PROJECT_ID = 'wnxwo9anpg';
+
+let clarityLoaded = false;
+
+function loadClarity(): void {
+  if (clarityLoaded) return;
+  clarityLoaded = true;
+
+  // Clarity 官方注入片段：先用队列函数占位，真实脚本就绪后自动回放调用
+  if (!window.clarity) {
+    const queue: unknown[][] = [];
+    const stub = ((...args: unknown[]) => {
+      queue.push(args);
+    }) as ClarityFn;
+    stub.q = queue;
+    window.clarity = stub;
+  }
+
+  const script = document.createElement('script');
+  script.async = true;
+  script.src = `https://www.clarity.ms/tag/${CLARITY_PROJECT_ID}`;
+
+  const firstScript = document.getElementsByTagName('script')[0];
+  if (firstScript?.parentNode) {
+    firstScript.parentNode.insertBefore(script, firstScript);
+  } else {
+    document.head.appendChild(script);
+  }
+
+  // 初始化后立即记录当前页面（未就绪时会入队，稍后自动回放）
+  updateClarityPage();
+}
+
+/** 用于 SPA 导航时更新页面视图 */
+export function updateClarityPage(): void {
+  if (typeof window.clarity === 'function') {
+    window.clarity('set', 'page', window.location.href);
   }
 }
 

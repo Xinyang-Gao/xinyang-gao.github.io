@@ -15,10 +15,12 @@ const K = CONFIG.STORAGE_KEYS;
 //  ExternalLinkManager — 外链管理（基于 jump-dialog）
 // ===================================================================
 export class ExternalLinkManager {
-  private WHITELIST: Set<string> = new Set([
-    'github.com', 'google.com', 'wikipedia.org',
-    'twitter.com', 'linkedin.com', 'amazon.com', 'microsoft.com', 'travellings.cn'
-  ]);
+  /**
+   * 白名单统一取自 CONFIG.EXTERNAL_WHITELIST。
+   * 原来这里另有一份内容不一致的副本（core 里那份则完全没人用），
+   * 导致同源外链判定存在两套标准。
+   */
+  private WHITELIST: Set<string> = CONFIG.EXTERNAL_WHITELIST;
   private _boundHandleClick: ((e: Event) => void) | null = null;
 
   constructor() {

@@ -54,11 +54,16 @@ export function initBackToTop(): void {
 
   let isHovered = false;
 
-  // 动态阈值：至少 150px，且不低于视口高度的 20%（最大 300px）
-  const threshold = Math.min(300, Math.max(150, window.innerHeight * 0.2));
+  /**
+   * 动态阈值：至少 150px，且不低于视口高度的 20%（最大 300px）。
+   * 必须每次重新计算——原来只在初始化时算一次，
+   * 旋转屏幕 / 改变窗口高度后阈值会一直停留在旧值。
+   */
+  const getThreshold = (): number =>
+    Math.min(300, Math.max(150, window.innerHeight * 0.2));
 
   const updateVisibility = (scrollY: number): void => {
-    const show = scrollY > threshold;
+    const show = scrollY > getThreshold();
     btn.classList.toggle('hidden', !show);
 
     if (isHovered) {

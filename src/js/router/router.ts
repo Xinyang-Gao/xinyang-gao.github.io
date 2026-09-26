@@ -299,7 +299,7 @@ export function registerPageManager(
 
 // 页面注册 
 function registerDefaultPages(): void {
-  PageManagerRegistry.register('index', async () => initHomePage() as any);
+  PageManagerRegistry.register('index', async () => await initHomePage());
 
   PageManagerRegistry.register('articles', async (fn) => {
     const { initSearchPage } = await import('/js/pages/search-render.js');
@@ -525,17 +525,20 @@ async function processContent(
   }
 
   // 7. 异步加载新资源
+  // 注意：即使本次导航已被判为 stale，已经插入 DOM 的 link/script 也必须登记到
+  // activeStyleIds / activeScriptIds。原来用 `if (!isStale())` 直接丢弃 ids，
+  // 下一次导航的 unload() 就找不到它们 → 样式与脚本永久泄漏在 head 里。
   resourceManager
     .loadStyles(content.styles)
     .then((ids) => {
-      if (!isStale()) state.activeStyleIds = ids;
+      if (ids.length) state.activeStyleIds = state.activeStyleIds.concat(ids);
     })
     .catch((e) => console.error('[Router] 样式加载失败:', e));
 
   resourceManager
     .loadScripts(content.scripts)
     .then((ids) => {
-      if (!isStale()) state.activeScriptIds = ids;
+      if (ids.length) state.activeScriptIds = state.activeScriptIds.concat(ids);
     })
     .catch((e) => console.error('[Router] 脚本加载失败:', e));
 
@@ -578,8 +581,17 @@ export async function fetchAndReplaceContent(
   isPopState: boolean = false
 ): Promise<boolean> {
   const navId = ++state.navigationId;
+  const cacheKey = url.split('#')[0];
 
-  if (currentAbortController) currentAbortController.abort();
+  /**
+   * 目标页面已有在途请求时不要 abort。
+   * 下面会复用 `state.pendingRequests` 里的 Promise，而它绑定的是**上一次导航**的
+   * AbortController——先 abort 再复用，等于自己把自己取消掉，
+   * 本次导航会收到 AbortError 并触发无意义的重试。
+   */
+  if (currentAbortController && !state.pendingRequests.has(cacheKey)) {
+    currentAbortController.abort();
+  }
   const ac = new AbortController();
   currentAbortController = ac;
   const signal = ac.signal;
@@ -587,21 +599,25 @@ export async function fetchAndReplaceContent(
   state.isProcessing = true;
 
   try {
-    const cacheKey = url.split('#')[0];
     let content = state.cache.get(cacheKey)?.content;
 
     if (!content) {
       let resp: PageResponse;
 
-      if (state.pendingRequests.has(cacheKey)) {
-        resp = await state.pendingRequests.get(cacheKey)!;
+      const pending = state.pendingRequests.get(cacheKey);
+      if (pending) {
+        resp = await pending;
       } else {
         const p = fetchPageContent(cacheKey, signal);
         state.pendingRequests.set(cacheKey, p);
         try {
           resp = await p;
         } finally {
-          state.pendingRequests.delete(cacheKey);
+          // 只有仍属于自己的登记时才删除：
+          // 并发导航可能已经用同一个 cacheKey 覆盖了条目，无条件删会把别人的请求抹掉。
+          if (state.pendingRequests.get(cacheKey) === p) {
+            state.pendingRequests.delete(cacheKey);
+          }
         }
       }
 

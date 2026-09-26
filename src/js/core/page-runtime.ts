@@ -5,12 +5,11 @@
 import { CONFIG, Utils } from '/js/core/core.js';
 
 // ========== 背景图（不阻塞 LCP） ==========
-export function applyRandomBackgroundImage({ force = false } = {}): void {
-  const { BACKGROUND_IMAGES } = CONFIG;
-  if (!Array.isArray(BACKGROUND_IMAGES) || BACKGROUND_IMAGES.length === 0) return;
 
-  const imageUrl = BACKGROUND_IMAGES[Math.floor(Math.random() * BACKGROUND_IMAGES.length)];
+/** 当前壁纸 URL 记录在 overlay 上，用于"恢复显示 vs 重新下载"的判定 */
+const BG_URL_DATA = 'bgUrl';
 
+function ensureOverlay(): HTMLElement | null {
   let overlay = document.getElementById('bg-image-overlay');
   if (!overlay) {
     overlay = document.createElement('div');
@@ -27,22 +26,66 @@ export function applyRandomBackgroundImage({ force = false } = {}): void {
     `;
     document.body.appendChild(overlay);
   }
+  return overlay;
+}
 
-  if (!force && overlay.style.backgroundImage === `url("${imageUrl}")` && overlay.classList.contains('active')) {
+function revealOverlay(overlay: HTMLElement, imageUrl: string): void {
+  overlay.style.backgroundImage = `url('${imageUrl}')`;
+  overlay.classList.add('active');
+  overlay.style.opacity = '1';
+  document.body.classList.remove('background-loading');
+}
+
+/**
+ * 确保背景壁纸处于显示态。
+ *
+ * 关键：已下载过壁纸时**只恢复显示，不重新下载**。
+ * 之前的写法是每次 SPA 导航都走到 `applyRandomBackgroundImage({force:true})`，
+ * force 会跳过同图短路，导致每次导航都重新拉一张 Bing UHD 壁纸（数百 KB）。
+ */
+export function showBackgroundImage(): void {
+  const overlay = ensureOverlay();
+  if (!overlay) return;
+
+  const existing = overlay.dataset[BG_URL_DATA];
+  if (existing) {
+    revealOverlay(overlay, existing);
     return;
+  }
+  applyRandomBackgroundImage();
+}
+
+/** 随机挑选并下载一张壁纸（首次进入站点 / 用户主动换图） */
+export function applyRandomBackgroundImage(): void {
+  const { BACKGROUND_IMAGES } = CONFIG;
+  if (!Array.isArray(BACKGROUND_IMAGES) || BACKGROUND_IMAGES.length === 0) return;
+
+  const overlay = ensureOverlay();
+  if (!overlay) return;
+
+  // 已加载同一张且正在显示：直接返回
+  const current = overlay.dataset[BG_URL_DATA];
+  if (current && overlay.classList.contains('active') && overlay.style.opacity === '1') {
+    revealOverlay(overlay, current);
+    return;
+  }
+
+  // 有候选多张时避免连续选中同一张
+  let imageUrl = BACKGROUND_IMAGES[Math.floor(Math.random() * BACKGROUND_IMAGES.length)];
+  if (BACKGROUND_IMAGES.length > 1 && current && imageUrl === current) {
+    imageUrl = BACKGROUND_IMAGES[(BACKGROUND_IMAGES.indexOf(current) + 1) % BACKGROUND_IMAGES.length];
   }
 
   const img = new Image();
   img.onload = () => {
-    overlay!.style.backgroundImage = `url('${imageUrl}')`;
-    overlay!.classList.add('active');
-    overlay!.style.opacity = '1';
-    document.body.classList.remove('background-loading');
+    // 下载成功才记账，失败的图片不应被"恢复显示"复用
+    overlay.dataset[BG_URL_DATA] = imageUrl;
+    revealOverlay(overlay, imageUrl);
   };
   img.onerror = (error) => {
     console.warn('[WARN] 背景图片加载失败:', error);
-    overlay!.classList.add('active');
-    overlay!.style.opacity = '0.3';
+    overlay.classList.add('active');
+    overlay.style.opacity = '0.3';
     document.body.classList.remove('background-loading');
   };
   img.src = imageUrl;
@@ -54,8 +97,31 @@ export function applyRandomBackgroundImage({ force = false } = {}): void {
 export function startSiteAgeUpdater(siteBirth: Date): () => void {
   let intervalId: number | null = null;
 
+  const stop = (): void => {
+    if (intervalId !== null) {
+      clearInterval(intervalId);
+      intervalId = null;
+    }
+  };
+
+  const start = (): void => {
+    if (intervalId === null) intervalId = window.setInterval(updateAge, 1000);
+  };
+
+  // 页面不可见时停止计时：既省电，也避免后台标签页堆积无意义的 DOM 写入
+  const onVisibilityChange = (): void => {
+    if (document.hidden) {
+      stop();
+    } else {
+      updateAge();
+      start();
+    }
+  };
+
   const updateAge = (): void => {
     const ageSpan = document.getElementById('site-age');
+    // 元素短暂缺失（页脚异步加载中）时跳过本次，不要停掉计时器，
+    // 否则页脚一旦被重建，年龄就永远不再更新了。
     if (!ageSpan) return;
     const diff = Date.now() - siteBirth.getTime();
     if (diff < 0) {
@@ -72,13 +138,12 @@ export function startSiteAgeUpdater(siteBirth: Date): () => void {
   };
 
   updateAge();
-  intervalId = window.setInterval(updateAge, 1000);
+  start();
+  document.addEventListener('visibilitychange', onVisibilityChange);
 
   return () => {
-    if (intervalId !== null) {
-      clearInterval(intervalId);
-      intervalId = null;
-    }
+    stop();
+    document.removeEventListener('visibilitychange', onVisibilityChange);
   };
 }
 

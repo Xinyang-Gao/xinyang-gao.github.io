@@ -1,7 +1,7 @@
 // /js/pages/article.ts
 import { PageBase } from '/js/core/page-manager.js';
 import { initTwikoo, destroyTwikoo } from '/js/core/twikoo-manager.js';
-import { CONFIG } from '/js/core/core.js';
+import { CONFIG, safeSession } from '/js/core/core.js';
 import { scrollDispatcher } from '/js/core/scroll-dispatcher.js';
 import { themeController } from '/js/core/theme-controller.js';
 
@@ -37,6 +37,20 @@ export class ArticlePageManager extends PageBase {
     // Twikoo 容器
     private twikooContainer: HTMLElement | null = null;
 
+    // ---------- 滚动期 DOM 缓存 ----------
+    // 滚动回调以 rAF 频率触发，绝不能在回调里做 querySelectorAll / getBoundingClientRect 全量扫描，
+    // 否则每帧都要遍历全部标题并强制同步布局。以下缓存在 mount / resize / 内容变化后重建。
+    /** 带 id 的标题元素 */
+    private headingElements: HTMLElement[] = [];
+    /** TOC 条目：data-id → li */
+    private tocItems = new Map<string, HTMLElement>();
+    /** 文档可滚动区间（scrollHeight - innerHeight） */
+    private docScrollRange = 0;
+    /** 上一次高亮的标题 id，避免每帧重复写 class */
+    private lastActiveId: string | null = null;
+    /** 上一次写入的进度百分比，避免每帧重复写 textContent / width */
+    private lastProgressPercent = -1;
+
     // 注：资源清理栈由 PageBase 提供（protected stack），无需在此声明
 
     // ---------- 初始化（原 init → mount） ----------
@@ -65,6 +79,10 @@ export class ArticlePageManager extends PageBase {
     protected unmount(): void {
         // 移除移动端遮罩
         document.querySelector('.article-sidebar-overlay')?.remove();
+
+        // 必须解锁滚动：侧边栏开着时做了 SPA 导航的话，
+        // body 的 overflow: hidden 会一直留在新页面上。
+        document.body.style.overflow = '';
 
         // 销毁 Twikoo
         if (this.twikooContainer) {
@@ -158,6 +176,26 @@ export class ArticlePageManager extends PageBase {
         }
     }
 
+    /**
+     * 重建滚动期使用的 DOM 缓存。
+     * 标题集合与 TOC 条目在页面生命周期内基本不变，只在 resize / 内容渲染完成后刷新。
+     */
+    private refreshDomCaches(): void {
+        this.headingElements = Array.from(
+            document.querySelectorAll<HTMLElement>(
+                '#articleBody h1, #articleBody h2, #articleBody h3, #articleBody h4'
+            )
+        ).filter((h) => !!h.id);
+
+        this.tocItems.clear();
+        document.querySelectorAll<HTMLElement>('.toc-list li[data-id]').forEach((li) => {
+            const id = li.dataset.id;
+            if (id) this.tocItems.set(id, li);
+        });
+
+        this.docScrollRange = document.documentElement.scrollHeight - window.innerHeight;
+    }
+
     private initTOC(): void {
         // 获取已存在的 TOC 容器（由后端渲染）
         this.tocListContainer = document.getElementById('toc-list-container');
@@ -165,6 +203,11 @@ export class ArticlePageManager extends PageBase {
             console.warn('[Article] TOC 容器不存在，可能页面未包含目录');
             return;
         }
+
+        // 建立滚动期缓存（TOC 由后端渲染，此处 DOM 已就绪）
+        this.refreshDomCaches();
+        // 数学公式 / 懒加载图片可能改变文档高度，下一帧再校正一次
+        requestAnimationFrame(() => this.refreshDomCaches());
 
         // 绑定链接点击事件
         this.bindTocLinkEvents();
@@ -212,7 +255,20 @@ export class ArticlePageManager extends PageBase {
         const target = document.getElementById(targetId);
         if (target) {
             this.smoothScrollTo(target, 90);
-            history.pushState(null, '', href);
+            /**
+             * 必须写入带 url 的 state：router 的 popstate 处理遇到
+             * 没有 url 的 state 会执行 location.reload()，
+             * 导致「点目录 → 按返回键」变成整页刷新。
+             */
+            history.pushState(
+                {
+                    url: `${location.pathname}${location.search}${href}`,
+                    scroll: { x: window.scrollX, y: window.scrollY },
+                    timestamp: Date.now(),
+                },
+                '',
+                href
+            );
             this.updateActiveItem(targetId);
             this.scrollTocToItem(targetId);
         }
@@ -224,9 +280,14 @@ export class ArticlePageManager extends PageBase {
     }
 
     private updateActiveItem(activeId: string): void {
-        document.querySelectorAll('.toc-list li').forEach((li) => li.classList.remove('active'));
-        const activeLi = document.querySelector(`.toc-list li[data-id="${activeId}"]`);
-        if (activeLi) activeLi.classList.add('active');
+        // 命中缓存直接返回：滚动时绝大多数帧不会改变高亮项
+        if (this.lastActiveId === activeId) return;
+        if (this.tocItems.size === 0) this.refreshDomCaches();
+
+        const prev = this.lastActiveId ? this.tocItems.get(this.lastActiveId) : undefined;
+        if (prev) prev.classList.remove('active');
+        this.tocItems.get(activeId)?.classList.add('active');
+        this.lastActiveId = activeId;
     }
 
     private scrollTocToItem(itemId: string): void {
@@ -247,10 +308,8 @@ export class ArticlePageManager extends PageBase {
     }
 
     private getCurrentActiveHeading(): string | null {
-        const headings = Array.from(
-            document.querySelectorAll('#articleBody h1, #articleBody h2, #articleBody h3, #articleBody h4')
-        ).filter((h) => h.id);
-        if (!headings.length) return null;
+        const headings = this.headingElements;
+        if (headings.length === 0) return null;
 
         const scrollTop = window.scrollY + 90;
         let active: string | null = null;
@@ -286,11 +345,14 @@ export class ArticlePageManager extends PageBase {
 
     private updateTocReadingProgress(): void {
         if (!this.tocProgressFill) return;
-        const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-        let percent = 0;
-        if (docHeight > 0) percent = (window.scrollY / docHeight) * 100;
+        const range = this.docScrollRange;
+        const percent = range > 0 ? (window.scrollY / range) * 100 : 0;
+        const rounded = Math.round(percent);
+        // 百分比未变化时不写 DOM，滚动时绝大多数帧都会被跳过
+        if (rounded === this.lastProgressPercent) return;
+        this.lastProgressPercent = rounded;
         if (this.tocProgressPercent) {
-            this.tocProgressPercent.textContent = `${Math.round(percent)}%`;
+            this.tocProgressPercent.textContent = `${rounded}%`;
         }
         this.tocProgressFill.style.width = `${percent}%`;
     }
@@ -345,9 +407,12 @@ export class ArticlePageManager extends PageBase {
         const progressBar = document.getElementById('progress-bar');
         if (!progressBar) return;
 
+        let lastPercent = -1;
         const unsubscribe = scrollDispatcher.subscribe((scrollY) => {
-            const total = document.documentElement.scrollHeight - window.innerHeight;
-            const percent = total > 0 ? (scrollY / total) * 100 : 0;
+            const percent = this.docScrollRange > 0 ? (scrollY / this.docScrollRange) * 100 : 0;
+            const rounded = Math.round(percent);
+            if (rounded === lastPercent) return;
+            lastPercent = rounded;
             progressBar.style.width = `${percent}%`;
         });
         this.stack.add(unsubscribe);
@@ -429,6 +494,9 @@ export class ArticlePageManager extends PageBase {
         const resizeHandler = (): void => {
             if (resizeTimer !== null) clearTimeout(resizeTimer);
             resizeTimer = window.setTimeout(() => {
+                // 视口变化会改变文档可滚动区间与标题位置，必须重建缓存
+                this.refreshDomCaches();
+                this.lastProgressPercent = -1;
                 checkMobile();
                 resizeTimer = null;
             }, 150);
@@ -473,7 +541,7 @@ export class ArticlePageManager extends PageBase {
                 const el = document.getElementById(targetId);
                 if (el) {
                     el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    sessionStorage.removeItem(key);
+                    safeSession.remove(key);
                 } else {
                     this.restoreScrollPosition(key);
                 }
@@ -487,7 +555,7 @@ export class ArticlePageManager extends PageBase {
         const unsubscribe = scrollDispatcher.subscribe((scrollY) => {
             if (saveTimer !== null) clearTimeout(saveTimer);
             saveTimer = window.setTimeout(() => {
-                sessionStorage.setItem(key, String(scrollY));
+                safeSession.set(key, String(scrollY));
                 saveTimer = null;
             }, 200);
         });
@@ -502,7 +570,7 @@ export class ArticlePageManager extends PageBase {
     }
 
     private restoreScrollPosition(key: string): void {
-        const saved = sessionStorage.getItem(key);
+        const saved = safeSession.get(key);
         if (saved) {
             const scrollY = parseInt(saved, 10);
             if (!isNaN(scrollY)) {

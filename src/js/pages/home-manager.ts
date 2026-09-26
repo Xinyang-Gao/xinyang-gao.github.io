@@ -259,13 +259,21 @@ export class HomePageManager extends PageBase {
       const client = this.getUapiClient();
       if (!client?.poem?.getSayingRandom) return null;
 
-      const call = () =>
-        Promise.race([
-          client.poem.getSayingRandom(UAPI_PAYLOAD),
-          new Promise((_, reject) =>
-            setTimeout(() => reject(new Error('timeout')), 6000)
-          ),
-        ]);
+      // 超时定时器必须在 race 结束后清掉：
+      // 原来它永远挂满 6s，请求早就返回了仍占着一个 timer
+      const call = async (): Promise<unknown> => {
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        try {
+          return await Promise.race([
+            client.poem.getSayingRandom(UAPI_PAYLOAD),
+            new Promise<never>((_, reject) => {
+              timer = setTimeout(() => reject(new Error('timeout')), 6000);
+            }),
+          ]);
+        } finally {
+          if (timer !== undefined) clearTimeout(timer);
+        }
+      };
 
       let q = this.normalizeQuote(await call());
       if (q?.uuid && q.uuid === this.lastQuoteUuid) {
@@ -329,13 +337,17 @@ export class HomePageManager extends PageBase {
     const btn = document.getElementById('quoteRefresh');
     if (!btn) return;
     this.stack.addEventListener(btn, 'click', () => {
-      this.loadQuote();
+      this.loadQuote().catch((err) =>
+        console.warn('[Home] 刷新名言失败:', err)
+      );
     });
   }
 }
 
-export function initHomePage(): HomePageManager {
+export async function initHomePage(): Promise<HomePageManager> {
   const manager = new HomePageManager();
-  manager.init();
+  // 必须 await：原来直接返回未完成的 Promise，mount() 内的异常会变成未处理拒绝，
+  // 且 router 会在页面尚未挂载完成时就认为初始化成功。
+  await manager.init();
   return manager;
 }

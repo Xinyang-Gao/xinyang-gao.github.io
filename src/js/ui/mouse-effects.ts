@@ -911,13 +911,19 @@ export class CustomCursor {
   }
 
   #installGuardian(): void {
+    // 只观察 body 的直接子节点变化。
+    // 原来观察 documentElement 的 { childList, subtree }，
+    // 页面上任何节点插入（搜索结果分批渲染、tooltip 插入等）都会触发回调。
+    // dot / ring 是 body 的直接子元素，看住这一层就够了。
     this.#guardian = new MutationObserver(() => {
       if (!this.#isMounted()) {
         this.#createElements();
         this.#wake();
       }
     });
-    this.#guardian.observe(document.documentElement, { childList: true, subtree: true });
+    this.#guardian.observe(document.body || document.documentElement, {
+      childList: true,
+    });
   }
 
   // ================================================================

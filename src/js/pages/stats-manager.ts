@@ -27,6 +27,9 @@ interface ChartInstance {
   destroy(): void;
 }
 
+/** Chart.js CDN 等待上限（毫秒），超时后走无图表降级渲染 */
+const CHART_CDN_TIMEOUT_MS = 10000;
+
 /** Chart 构造函数签名（与 Chart.js v4 UMD 兼容） */
 type ChartConstructor = new (
   ctx: CanvasRenderingContext2D,
@@ -100,14 +103,44 @@ export class StatsManager {
 
   // ==================== 加载 Chart.js ====================
 
-  private loadChartJS(): Promise<void> {
-    if (window.Chart) return Promise.resolve();
-    return new Promise((resolve, reject) => {
+  /**
+   * 加载 Chart.js，返回是否就绪。
+   *
+   * 关键点：CDN 失败时**不能 reject**。
+   * 原来 reject 会直接中断 init()，router 捕获后返回 null，
+   * 结果是整个统计页静默空白。现在改为降级——KPI / 洞察 / 页脚照常渲染。
+   * 另加超时兜底：CDN 挂起时 onerror 不一定触发，否则会永久卡住 await。
+   */
+  private loadChartJS(): Promise<boolean> {
+    if (window.Chart) return Promise.resolve(true);
+
+    return new Promise<boolean>((resolve) => {
+      let settled = false;
+      let timer: number | undefined;
+
+      const finish = (ok: boolean): void => {
+        if (settled) return;
+        settled = true;
+        if (timer !== undefined) clearTimeout(timer);
+        resolve(ok);
+      };
+
       const script = document.createElement('script');
       script.src = 'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js';
-      script.onload = () => resolve();
-      script.onerror = () => reject(new Error('Chart.js 加载失败'));
+      script.onload = () => finish(!!window.Chart);
+      script.onerror = () => {
+        console.warn('[StatsManager] Chart.js 加载失败，图表将降级');
+        finish(false);
+      };
       document.head.appendChild(script);
+
+      timer = window.setTimeout(() => {
+        if (window.Chart) finish(true);
+        else {
+          console.warn('[StatsManager] Chart.js 加载超时，图表将降级');
+          finish(false);
+        }
+      }, CHART_CDN_TIMEOUT_MS);
     });
   }
 
@@ -268,7 +301,11 @@ export class StatsManager {
     const ChartCtor = window.Chart;
 
     if (!ChartCtor) {
-      console.warn('[StatsManager] Chart.js 未就绪，跳过图表渲染');
+      // 降级：至少告诉用户图表为什么是空的，而不是留一排空白画布
+      console.warn('[StatsManager] Chart.js 未就绪，图表降级为占位提示');
+      grid.querySelectorAll<HTMLElement>('.chart-card .chart-container').forEach((box) => {
+        box.innerHTML = '<p class="chart-error">图表加载失败，请检查网络后刷新</p>';
+      });
       return;
     }
 

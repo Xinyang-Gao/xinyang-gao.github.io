@@ -48,7 +48,7 @@ export function registerServiceWorker(): void {
   }
   if (!('serviceWorker' in navigator)) return;
 
-  window.addEventListener('load', () => {
+  const doRegister = (): void => {
     navigator.serviceWorker
       .register('/js/data/sw.js')
       .then((registration) => {
@@ -57,7 +57,19 @@ export function registerServiceWorker(): void {
       .catch((error) => {
         console.warn('[SW] Service Worker 注册失败:', error);
       });
-  });
+  };
+
+  /**
+   * 原来无条件监听 window 'load'，但本函数是在 DOMContentLoaded 之后
+   * 又经过多轮 await 才被调用的，此时 load 早已触发 → 监听器永不回调，
+   * 生产环境 SW 注册不上。这里改为按 readyState 判断：
+   * 已完成就直接注册，否则仍挂 load（首屏极早就调用时的兜底）。
+   */
+  if (document.readyState === 'complete') {
+    doRegister();
+  } else {
+    window.addEventListener('load', doRegister, { once: true });
+  }
 }
 
 // ==================== 页脚统计信息填充 ====================

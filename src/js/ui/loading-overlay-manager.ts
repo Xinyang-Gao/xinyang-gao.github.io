@@ -54,6 +54,11 @@ export class LoadingOverlayManager {
   private logContainer: HTMLElement | null = null;
   private doneContainer: HTMLElement | null = null;
 
+  /** 更新态下「文字淡出」的定时器句柄，用户提前点击时必须清掉 */
+  private fadeTimer: number | null = null;
+  /** 覆盖层点击关闭回调，保证只绑定 / 解绑一次 */
+  private dismissHandler: (() => void) | null = null;
+
   /* ==================== 字符构建 ==================== */
 
   /**
@@ -314,20 +319,35 @@ export class LoadingOverlayManager {
     // .update-info 由 CSS 延迟 1s 后开始入场
     this.showUpdateContent(versionMsg, awayText, changesHTML);
 
-    // 更新内容稳定 3s 后，两栏文字开始逐字下落淡出
-    window.setTimeout(() => {
+    // 更新内容稳定 3s 后，两栏文字开始逐字下落淡出。
+    // 句柄必须保存：用户提前点击关闭时若不清掉，定时器仍会对已隐藏的容器做 replaceChildren()
+    this.fadeTimer = window.setTimeout(() => {
+      this.fadeTimer = null;
       void this.fadeOutAllPanels();
     }, LOG_FADE_DELAY_MS);
 
+    // 幂等：重复进入 runFlow 时不叠加第二个监听器
+    if (this.dismissHandler) {
+      this.overlay!.removeEventListener('click', this.dismissHandler);
+    }
+
     const handler = (): void => {
+      if (this.fadeTimer !== null) {
+        clearTimeout(this.fadeTimer);
+        this.fadeTimer = null;
+      }
       this.persistVisitRecord(latestWebVersion);
       this.overlay!.classList.add('hidden');
       this.restoreScroll();
       window.dispatchEvent(new CustomEvent('welcomeOverlayDismissed'));
-      this.overlay!.removeEventListener('click', handler);
+      if (this.dismissHandler) {
+        this.overlay!.removeEventListener('click', this.dismissHandler);
+        this.dismissHandler = null;
+      }
       resolve();
     };
-    this.overlay.addEventListener('click', handler);
+    this.dismissHandler = handler;
+    this.overlay!.addEventListener('click', handler);
   }
 
   /* ==================== 数据摘要日志 ==================== */

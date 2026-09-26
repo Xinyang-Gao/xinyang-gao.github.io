@@ -17,15 +17,15 @@ function sortByField(items: Item[], order: string): Item[] {
     case 'updated_asc':
       sorted.sort(
         (a, b) =>
-          Utils.parseArticleTimestamp((a as any).last_updated || a.date) -
-          Utils.parseArticleTimestamp((b as any).last_updated || b.date)
+          Utils.parseArticleTimestamp(a.last_updated || a.date) -
+          Utils.parseArticleTimestamp(b.last_updated || b.date)
       );
       break;
     case 'updated_desc':
       sorted.sort(
         (a, b) =>
-          Utils.parseArticleTimestamp((b as any).last_updated || b.date) -
-          Utils.parseArticleTimestamp((a as any).last_updated || a.date)
+          Utils.parseArticleTimestamp(b.last_updated || b.date) -
+          Utils.parseArticleTimestamp(a.last_updated || a.date)
       );
       break;
     case 'wordcount_asc':
@@ -93,6 +93,16 @@ function filterAndSort(
   }
 
   return sortByField(result, sortOrder);
+}
+
+/**
+ * 安全取出对应类型的条目数组。
+ * 后端 JSON 缺字段（或 fetch 失败返回 null）时返回空数组，
+ * 避免 `[...data.works]` 直接抛 TypeError 中断搜索流程。
+ */
+function pickItems(data: unknown, page: 'works' | 'articles'): Item[] {
+  const list = (data as Record<string, unknown> | null | undefined)?.[page];
+  return Array.isArray(list) ? (list as Item[]) : [];
 }
 
 // ==================== 数据管理器 ====================
@@ -229,7 +239,7 @@ export class SearchController {
   public scrollRevealRefresh?: () => void;
   private selectedTags: string[] = [];
   private sortOrder = 'date_desc';
-  private dataCache: any = null;
+  private dataCache: Record<string, unknown> | null = null;
   private renderToken = 0;
   private isDestroyed = false;
   private tagsInitialized = false;
@@ -272,17 +282,17 @@ export class SearchController {
       return;
     }
 
-    const inputHandler = Utils.debounce(() => this.handleSearch(), 300);
-    const fieldHandler = () => this.handleSearch();
+    const inputHandler = Utils.debounce(() => this.runSearch(), 300);
+    const fieldHandler = () => this.runSearch();
     const sortHandler = () => {
       this.sortOrder = this.sortSelect!.value;
-      this.handleSearch();
+      this.runSearch();
       this.updateURL();
     };
     const popstateHandler = (e: PopStateEvent) => {
       if (!e.state?.skip) {
         this.restoreFromURL();
-        this.handleSearch(true);
+        this.runSearch(true);
       }
     };
 
@@ -294,8 +304,10 @@ export class SearchController {
     this.stack.addEventListener(window, 'popstate', popstateHandler as EventListener);
 
     this.restoreFromURL();
-    this.handleSearch(true);
-    this.updateTagFilters();
+    this.runSearch(true);
+    this.updateTagFilters().catch((err) => {
+      console.warn(`[SearchController] 标签筛选初始化失败 (${this.page}):`, err);
+    });
   }
 
   // ---------- 销毁 ----------
@@ -309,10 +321,21 @@ export class SearchController {
 
   // ---------- 数据 ----------
 
-  private async getData(): Promise<any> {
+  private async getData(): Promise<Record<string, unknown> | null> {
     if (this.dataCache) return this.dataCache;
-    this.dataCache = await DataManager.fetchData(this.page, true);
+    const data = await DataManager.fetchData(this.page, true);
+    this.dataCache = (data ?? null) as Record<string, unknown> | null;
     return this.dataCache;
+  }
+
+  /**
+   * handleSearch 的容错包装：把内部异常收敛为一条 warn，
+   * 避免事件回调里出现未处理的 Promise rejection。
+   */
+  private runSearch(skipUpdateURL = false): void {
+    this.handleSearch(skipUpdateURL).catch((err) => {
+      console.warn(`[SearchController] 搜索失败 (${this.page}):`, err);
+    });
   }
 
   // ---------- 搜索主流程 ----------
@@ -325,7 +348,7 @@ export class SearchController {
 
     const q = this.input?.value.trim() || '';
     const field = this.field?.value || 'all';
-    const items = this.page === 'works' ? [...data.works] : [...data.articles];
+    const items = pickItems(data, this.page);
 
     const token = ++this.renderToken;
 
@@ -447,7 +470,7 @@ export class SearchController {
     const data = await this.getData();
     if (!data) return;
 
-    const items = this.page === 'works' ? data.works : data.articles;
+    const items = pickItems(data, this.page);
     const tagMap = new Map<string, number>();
     items.forEach((item: Item) =>
       Utils.getTags(item).forEach((t) => tagMap.set(t, (tagMap.get(t) || 0) + 1))
@@ -483,7 +506,7 @@ export class SearchController {
         const idx = this.selectedTags.indexOf(name);
         idx > -1 ? this.selectedTags.splice(idx, 1) : this.selectedTags.push(name);
         this.applyTagsToButtons();
-        this.handleSearch();
+        this.runSearch();
       });
 
       this.tagsContainer!.appendChild(btn);
@@ -498,7 +521,7 @@ export class SearchController {
     clear.addEventListener('click', () => {
       this.selectedTags = [];
       this.applyTagsToButtons();
-      this.handleSearch();
+      this.runSearch();
     });
     this.tagsContainer.appendChild(clear);
 

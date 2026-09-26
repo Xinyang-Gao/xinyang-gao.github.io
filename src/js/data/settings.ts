@@ -2,10 +2,10 @@
 // 站点设置：读写本地存储 / 应用设置 / 绑定设置面板控件
 // 所有设置键统一来自 core.ts 的 CONFIG.STORAGE_KEYS，禁止在此处硬编码
 
-import { CONFIG, storageController } from '/js/core/core.js';
+import { CONFIG, safeLocal, safeSession, storageController } from '/js/core/core.js';
 import { themeController, type ThemeMode } from '/js/core/theme-controller.js';
 import { showDetailDialog } from '/js/ui/detail-dialog.js';
-import { applyRandomBackgroundImage } from '/js/core/page-runtime.js';
+import { showBackgroundImage } from '/js/core/page-runtime.js';
 
 const K = CONFIG.STORAGE_KEYS;
 
@@ -43,6 +43,17 @@ export function isEnabled(key: SettingKey, defaultValue = true): boolean {
   return getSetting(key, defaultValue) as boolean;
 }
 
+/**
+ * 读取数值型设置。
+ * localStorage 只存字符串，直接 `as number` 拿到的是 "110" 这样的假类型，
+ * 靠后续 `/` 的隐式转换才不出错。这里显式转换并做有限性校验。
+ */
+export function getNumberSetting(key: SettingKey, defaultValue: number): number {
+  const raw = getSetting(key, defaultValue);
+  const num = typeof raw === 'number' ? raw : Number(raw);
+  return Number.isFinite(num) ? num : defaultValue;
+}
+
 // ==================== 清理工具 ====================
 export async function clearSWCacheAndReload(): Promise<void> {
   // 清空 DataService 内存缓存
@@ -50,23 +61,33 @@ export async function clearSWCacheAndReload(): Promise<void> {
   dataService.clearCache();
 
   if ('serviceWorker' in navigator) {
-    const registrations = await navigator.serviceWorker.getRegistrations();
-    for (const reg of registrations) {
-      await reg.unregister();
+    try {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.map((reg) => reg.unregister()));
+    } catch (e) {
+      console.warn('[Settings] 注销 Service Worker 失败:', e);
     }
   }
-  const cacheNames = await caches.keys();
-  await Promise.all(cacheNames.map((name) => caches.delete(name)));
+  try {
+    const cacheNames = await caches.keys();
+    await Promise.all(cacheNames.map((name) => caches.delete(name)));
+  } catch (e) {
+    console.warn('[Settings] 清空 CacheStorage 失败:', e);
+  }
   window.location.reload();
 }
 
 export async function clearAllStorageAndReload(): Promise<void> {
-  localStorage.clear();
-  sessionStorage.clear();
+  // 无痕模式下这里会抛异常，必须兜住，否则后面的注销与刷新都不会执行
+  safeLocal.clear();
+  safeSession.clear();
+
   if ('serviceWorker' in navigator) {
-    const registrations = await navigator.serviceWorker.getRegistrations();
-    for (const reg of registrations) {
-      await reg.unregister();
+    try {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.map((reg) => reg.unregister()));
+    } catch (e) {
+      console.warn('[Settings] 注销 Service Worker 失败:', e);
     }
   }
   window.location.reload();
@@ -113,11 +134,12 @@ function applyRevealEnabled(enabled: boolean): void {
 }
 
 /**
- * 控制背景图显示状态
- * @param enabled 是否启用
- * @param force 是否强制重新加载（仅在启用时生效）
+ * 控制背景图显示状态。
+ *
+ * 关闭时只清空 background-image，保留 overlay 上记录的壁纸 URL，
+ * 因此重新开启可以直接恢复，**无需再次下载**。
  */
-function applyBgImageEnabled(enabled: boolean, force = false): void {
+function applyBgImageEnabled(enabled: boolean): void {
   const overlay = document.getElementById('bg-image-overlay') as HTMLElement | null;
 
   if (!enabled) {
@@ -129,17 +151,7 @@ function applyBgImageEnabled(enabled: boolean, force = false): void {
     return;
   }
 
-  // 未初始化 overlay 且非强制：交给 AppInitializer 的 scheduleIdle 处理
-  if (!overlay && !force) return;
-  if (overlay && !force) {
-    const hasImage =
-      overlay.style.backgroundImage && overlay.style.backgroundImage !== 'none';
-    const isActive =
-      overlay.classList.contains('active') && overlay.style.opacity === '1';
-    if (hasImage && isActive) return;
-  }
-
-  applyRandomBackgroundImage({ force: true });
+  showBackgroundImage();
 }
 
 // ==================== 应用所有存储的设置 ====================
@@ -160,7 +172,7 @@ export function applyStoredSettings(): void {
   if (themeCheckbox) themeCheckbox.checked = themeController.getTheme() === 'dark';
 
   // 2. 字体大小
-  const scale = getSetting(K.FONT_SCALE, 100) as number;
+  const scale = getNumberSetting(K.FONT_SCALE, 100);
   applyFontScale(scale);
 
   // 3. 滚动揭示
@@ -169,7 +181,7 @@ export function applyStoredSettings(): void {
 
   // 4. 背景图
   const bg = isEnabled(K.BG_IMAGE_ENABLED, true);
-  applyBgImageEnabled(bg, false); // 不强制重载
+  applyBgImageEnabled(bg);
 }
 
 // ==================== 绑定设置控件 ====================
@@ -195,7 +207,7 @@ export function bindSettingsControls(container: HTMLElement): void {
     themeSelect.value = themeController.getMode();
   }
   if (fontScaleSelect) {
-    const fontScale = getSetting(K.FONT_SCALE, 100) as number;
+    const fontScale = getNumberSetting(K.FONT_SCALE, 100);
     fontScaleSelect.value = String(fontScale);
   }
   if (revealCheckbox) {
@@ -243,8 +255,8 @@ export function bindSettingsControls(container: HTMLElement): void {
   bgImageCheckbox?.addEventListener('change', (e) => {
     const enabled = (e.target as HTMLInputElement).checked;
     setSetting(K.BG_IMAGE_ENABLED, enabled);
-    // 用户切换时，若启用则强制加载新图，若禁用则隐藏
-    applyBgImageEnabled(enabled, true);
+    // 启用时恢复已缓存的壁纸（不重新下载 UHD 大图），禁用时隐藏
+    applyBgImageEnabled(enabled);
   });
 
   clearSWBtn?.addEventListener('click', clearSWCacheAndReload);

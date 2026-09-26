@@ -4,6 +4,8 @@ export class TooltipManager {
   private textEl: HTMLElement | null = null;
   private typeRaf: number | null = null;
   private hideTimer: number | null = null;
+  /** hide() 退场动画的接力定时器句柄（4 段），销毁时必须全部清掉 */
+  private hideAnimTimers: number[] = [];
   private isVisible = false;
   private currentTarget: HTMLElement | null = null;
   private isHiding = false;
@@ -442,8 +444,18 @@ export class TooltipManager {
 
     bg.style.boxShadow = '0 0 0 0 rgba(0,0,0,0)';
 
-    setTimeout(() => {
-      if (!this.isHiding) return;
+    /**
+     * 退场用 4 段接力 setTimeout 实现。句柄必须登记到 hideAnimTimers：
+     * 原来它们是无主的，destroy() / hideImmediate() 都清不掉，
+     * 实例销毁后仍会继续操作已经 remove 的 container / bg。
+     */
+    const later = (fn: () => void, delay: number): void => {
+      this.hideAnimTimers.push(window.setTimeout(() => {
+        if (this.isHiding) fn();
+      }, delay));
+    };
+
+    later(() => {
       const oldTop = parseFloat(bg.style.top) || 0;
       const oldHeight = parseFloat(bg.style.height) || 0;
       const newTop = oldTop + oldHeight - 2;
@@ -452,8 +464,7 @@ export class TooltipManager {
       bg.style.transition =
         'height 0.2s cubic-bezier(0.34, 1.2, 0.64, 1), top 0.2s cubic-bezier(0.34, 1.2, 0.64, 1)';
 
-      setTimeout(() => {
-        if (!this.isHiding) return;
+      later(() => {
         const oldLeft = parseFloat(bg.style.left) || 0;
         const oldWidth = parseFloat(bg.style.width) || 0;
         const newLeft = oldLeft + oldWidth / 2 - 1;
@@ -462,17 +473,14 @@ export class TooltipManager {
         bg.style.transition =
           'width 0.2s cubic-bezier(0.34, 1.2, 0.64, 1), left 0.2s cubic-bezier(0.34, 1.2, 0.64, 1)';
 
-        setTimeout(() => {
-          if (!this.isHiding) return;
+        later(() => {
           bg.style.opacity = '0';
           container.style.opacity = '0';
-          setTimeout(() => {
-            if (this.isHiding) {
-              this.resetElements();
-              this.isVisible = false;
-              this.isHiding = false;
-              this.currentTarget = null;
-            }
+          later(() => {
+            this.resetElements();
+            this.isVisible = false;
+            this.isHiding = false;
+            this.currentTarget = null;
           }, 150);
         }, 200);
       }, 200);
@@ -481,6 +489,12 @@ export class TooltipManager {
     // 文字随机下移散落 —— 与切换共用同一函数
     const chars = this.textEl?.querySelectorAll<HTMLElement>('.tooltip-char');
     if (chars) this.fadeOutChars(chars);
+  }
+
+  /** 清掉 hide() 的接力动画定时器 */
+  private clearHideAnimTimers(): void {
+    for (const id of this.hideAnimTimers) clearTimeout(id);
+    this.hideAnimTimers = [];
   }
 
   private hideImmediate() {
@@ -492,6 +506,7 @@ export class TooltipManager {
       clearTimeout(this.hideTimer);
       this.hideTimer = null;
     }
+    this.clearHideAnimTimers();
     if (this.moveListener) {
       document.removeEventListener('mousemove', this.moveListener);
       this.moveListener = null;
@@ -536,6 +551,7 @@ export class TooltipManager {
     document.removeEventListener('mouseout', this.onMouseOut, true);
     if (this.typeRaf !== null) cancelAnimationFrame(this.typeRaf);
     if (this.hideTimer) clearTimeout(this.hideTimer);
+    this.clearHideAnimTimers();
     if (this.moveListener) {
       document.removeEventListener('mousemove', this.moveListener);
       this.moveListener = null;

@@ -2,16 +2,12 @@
 // 图片延迟加载与全局图片查看器管理
 // 仅加载外部 CSS，无内联样式
 
-import { onNavigation } from '/js/core/core.js';
+import { IS_DEV, onNavigation } from '/js/core/core.js';
 
 type ImageViewerModule = typeof import('/js/ui/image-viewer.js');
 type ImageViewerClass = ImageViewerModule['ImageViewer'];
 
-/** 开发环境开启详细日志 */
-const IS_DEV =
-  typeof location !== 'undefined' &&
-  (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
-
+/** 开发环境开启详细日志（IS_DEV 统一取自 core，避免多套判定） */
 const log = (...args: unknown[]): void => {
   if (IS_DEV) console.log('[ImageManager]', ...args);
 };
@@ -179,6 +175,13 @@ export class GlobalImageManager {
     ) {
       return;
     }
+
+    /**
+     * 图片被 <a href> 包裹时不要劫持点击。
+     * 这里用了 capture + stopPropagation，一旦拦截就会整条吞掉事件，
+     * 外链跳转确认（jump-dialog）、SPA 路由导航全部失效。
+     */
+    if (img.closest('a[href]')) return;
 
     e.preventDefault();
     e.stopPropagation();

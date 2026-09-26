@@ -1,11 +1,11 @@
 // /js/core/app-initializer.ts
 // 应用启动编排器 + 全站导航后刷新入口
 
-import { CONFIG, IS_DEV, scheduleIdle, onNavigation } from '/js/core/core.js';
+import { CONFIG, IS_DEV, safeLocal, scheduleIdle, onNavigation } from '/js/core/core.js';
 import { Utils } from '/js/core/core.js';
 import { themeController } from '/js/core/theme-controller.js';
 import {
-  applyRandomBackgroundImage,
+  showBackgroundImage,
   startSiteAgeUpdater,
   updateFooterUpdateTime,
 } from '/js/core/page-runtime.js';
@@ -62,10 +62,11 @@ export class AppInitializer {
     themeController.init();
 
     // 背景图延迟加载：尊重用户设置
+    // 用 showBackgroundImage 而非强制换图：已有壁纸时只恢复显示，避免重复下载
     scheduleIdle(
       () => {
         if (this.isBgImageEnabled()) {
-          applyRandomBackgroundImage({ force: true });
+          showBackgroundImage();
         }
       },
       { timeout: 100 }
@@ -218,7 +219,7 @@ export class AppInitializer {
   }
 
   private static isBgImageEnabled(): boolean {
-    const stored = localStorage.getItem(CONFIG.STORAGE_KEYS.BG_IMAGE_ENABLED);
+    const stored = safeLocal.get(CONFIG.STORAGE_KEYS.BG_IMAGE_ENABLED);
     return stored === null ? true : stored !== 'false';
   }
 

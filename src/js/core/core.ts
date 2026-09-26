@@ -82,18 +82,34 @@ export const CONFIG = {
     ARTICLES: '/json/articles.json',
     STATISTICS: '/json/statistics.json',
   } as const,
+  /**
+   * 外链白名单（全站唯一来源）。
+   * 命中白名单的外链直接跳转，其余走 jump-dialog 二次确认。
+   * 原来 ui-effects.ts 里还有一份内容不一致的副本，已统一到此处。
+   */
   EXTERNAL_WHITELIST: new Set<string>([
+    // 代码托管 / 部署
     'github.com',
     'vercel.com',
     'netlify.app',
-    'wikipedia.org',
-    'bilibili.com',
+    // 搜索 / 百科
+    'google.com',
     'bing.com',
     'baidu.com',
+    'wikipedia.org',
+    // 社交 / 内容平台
+    'twitter.com',
+    'linkedin.com',
     'zhihu.com',
+    'bilibili.com',
     'csdn.net',
-    'cloud.tencent.com',
+    // 云服务
+    'microsoft.com',
+    'amazon.com',
     'aliyun.com',
+    'cloud.tencent.com',
+    // 其它
+    'travellings.cn',
     'gaoxinyang.lanzouq.com',
     'icp.gov.moe',
   ]),
@@ -224,11 +240,12 @@ export class Utils {
 
   static validateData(data: unknown, type: 'works' | 'articles'): boolean {
     if (!data) return false;
+    // 字段缺失时 `undefined > 0` 虽为 false，但依赖隐式行为，
+    // 显式取长度并判空，语义更清晰也更抗重构。
     if (type === 'works') {
-      return (data as WorksData)?.works?.length > 0;
-    } else {
-      return (data as ArticlesData)?.articles?.length > 0;
+      return ((data as WorksData)?.works?.length ?? 0) > 0;
     }
+    return ((data as ArticlesData)?.articles?.length ?? 0) > 0;
   }
 
   /**
@@ -505,7 +522,80 @@ export class StorageController {
 // ==================== 全局实例 ====================
 export const storageController = new StorageController();
 
+// ==================== 安全存储（无痕模式 / 配额超限兜底） ====================
+/**
+ * sessionStorage / localStorage 在 Safari 无痕模式、禁用 Cookie、
+ * 配额耗尽（QuotaExceededError）等场景下会**直接抛异常**。
+ * 全站禁止裸调用这两个 API，统一走下面的封装。
+ */
+function createSafeStorage(pick: () => Storage | null, label: string) {
+  return {
+    get(key: string): string | null {
+      const store = pick();
+      if (!store) return null;
+      try {
+        return store.getItem(key);
+      } catch {
+        return null;
+      }
+    },
+    set(key: string, value: string): boolean {
+      const store = pick();
+      if (!store) return false;
+      try {
+        store.setItem(key, value);
+        return true;
+      } catch (e) {
+        console.warn(`[Storage:${label}] 写入 "${key}" 失败`, e);
+        return false;
+      }
+    },
+    remove(key: string): void {
+      const store = pick();
+      if (!store) return;
+      try {
+        store.removeItem(key);
+      } catch {
+        /* 删除失败无需处理：读取侧已有降级 */
+      }
+    },
+    clear(): boolean {
+      const store = pick();
+      if (!store) return false;
+      try {
+        store.clear();
+        return true;
+      } catch (e) {
+        console.warn(`[Storage:${label}] 清空失败`, e);
+        return false;
+      }
+    },
+  };
+}
+
+export const safeSession = createSafeStorage(() => {
+  try {
+    return window.sessionStorage;
+  } catch {
+    return null;
+  }
+}, 'session');
+
+export const safeLocal = createSafeStorage(() => {
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
+}, 'local');
+
 // ==================== 性能监控器 ====================
+/**
+ * 只保留最近 N 条指标。
+ * 原来的 metrics 数组只增不减，长时间停留页面会无界增长。
+ */
+const MAX_METRICS = 50;
+
 export class PerformanceMonitor {
   private timers = new Map<string, number>();
   private metrics: Array<{ label: string; duration: number; timestamp: number }> = [];
@@ -529,12 +619,15 @@ export class PerformanceMonitor {
       console.log(`[INFO] ${label}: ${duration.toFixed(2)}ms (较慢)`);
     }
     this.metrics.push({ label, duration, timestamp: Date.now() });
+    if (this.metrics.length > MAX_METRICS) {
+      this.metrics.splice(0, this.metrics.length - MAX_METRICS);
+    }
     this.timers.delete(label);
     return duration;
   }
 
   getMetrics(): typeof this.metrics {
-    return this.metrics.slice(-50);
+    return this.metrics.slice();
   }
 
   clearMetrics(): void {
