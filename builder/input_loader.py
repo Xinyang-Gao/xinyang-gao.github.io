@@ -628,7 +628,12 @@ def _create_html_page(title, date, content_html, headings_json, description, tag
     <meta name="author" content="{author if author else 'GaoXinYang'}">
     {f'<meta name="keywords" content="{", ".join(tags) if tags else ""}">' if tags else ''}
     <title>{title} - 高新炀的小站</title>
-    <link rel="stylesheet" href="/css/main.css?v={cache_buster}">
+    <link rel="stylesheet" href="/css/core/variables.css?v={cache_buster}">
+    <link rel="stylesheet" href="/css/core/base.css?v={cache_buster}">
+    <link rel="stylesheet" href="/css/core/layout.css?v={cache_buster}">
+    <link rel="stylesheet" href="/css/core/components.css?v={cache_buster}">
+    <link rel="stylesheet" href="/css/components/loading-overlay.css?v={cache_buster}">
+    <link rel="stylesheet" href="/css/components/tooltip.css?v={cache_buster}">
     <link rel="stylesheet" href="/css/pages/article.css?v={cache_buster}">
     <link rel="stylesheet" href="/css/components/comments.css?v={cache_buster}">
     <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous" defer></script>

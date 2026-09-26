@@ -265,7 +265,7 @@ export class LoadingOverlayManager {
       document.body.style.overflow = 'hidden';
       this.content = document.getElementById('loading-content');
 
-      // 左右两栏容器（不存在则创建并挂到 content 上；布局由 main.css 控制）
+      // 左右两栏容器（不存在则创建并挂到 content 上；布局由 loading-overlay.css 控制）
       this.logContainer = this.ensurePanel('loading-log');
       this.doneContainer = this.ensurePanel('loading-done');
 

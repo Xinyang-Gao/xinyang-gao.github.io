@@ -22,7 +22,7 @@
   font-weight: 500;
   border: 1px solid var(--border-color);
   line-height: 1.4;
-  transition: all var(--transition-fast);
+  transition: var(--transition-ui);
 }
 .tag:hover {
   transform: translateY(-2px);
@@ -64,7 +64,7 @@
   cursor: pointer;
   border: 1px solid var(--border-color);
   font-weight: 500;
-  transition: all var(--transition-fast);
+  transition: var(--transition-ui);
 }
 .tag-button:hover {
   background: var(--accent-light);
@@ -256,7 +256,7 @@
   background: transparent;
   border: none;
   z-index: 10;
-  transition: all var(--transition-fast);
+  transition: var(--transition-ui);
 }
 .work-details-close:hover {
   color: var(--accent-color);
@@ -289,7 +289,7 @@
   padding: 8px 20px;
   border-radius: var(--radius-full);
   font-weight: 500;
-  transition: all var(--transition-fast);
+  transition: var(--transition-ui);
 }
 .work-details-link:hover {
   background: var(--accent-dark);
@@ -336,7 +336,12 @@
   cursor: pointer;
   user-select: none;
   box-shadow: var(--shadow-sm);
-  transition: all 0.25s var(--transition-bounce);
+  transition: background-color 0.25s var(--transition-bounce),
+              border-color 0.25s var(--transition-bounce),
+              color 0.25s var(--transition-bounce),
+              box-shadow 0.25s var(--transition-bounce),
+              opacity 0.25s var(--transition-bounce),
+              transform 0.25s var(--transition-bounce);
 }
 .floating-buttons .floating-btn.hidden {
   opacity: 0;
@@ -418,7 +423,7 @@
   border: 1px solid transparent;
   background: transparent;
   font-family: inherit;
-  transition: all var(--transition-fast);
+  transition: var(--transition-ui);
 }
 .cookie-btn-accept {
   background: var(--accent-color);
@@ -465,7 +470,7 @@
   font-weight: 500;
   cursor: pointer;
   color: var(--text-secondary);
-  transition: all 0.2s ease;
+  transition: var(--transition-ui-ease);
 }
 .year-capsule:hover {
   background: var(--accent-color);
@@ -622,7 +627,7 @@
   font-size: 0.8rem;
   padding: 2px 0;
   border-bottom: 1px dashed transparent;
-  transition: all var(--transition-fast);
+  transition: color var(--transition-fast), border-bottom-color var(--transition-fast);
 }
 .icp-link i {
   font-size: 0.8rem;
@@ -683,6 +688,8 @@ body.custom-cursor-enabled .list-item { cursor: none; }
 .friend-link-overlay {
   position: fixed;
   z-index: 10000;
+  /* 遮罩的入场/退场由 JS 直接写 inline 样式，变化的正是 top/left/width/height
+     等几何属性 + backdrop-filter，因此这里必须保留 all，不能换成属性白名单 */
   transition: all 0.65s var(--transition-bounce);
   display: flex;
   align-items: center;
@@ -961,7 +968,7 @@ body.custom-cursor-enabled .list-item { cursor: none; }
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  transition: all 0.2s ease;
+  transition: var(--transition-ui-ease);
   border: 1px solid transparent;
   font-family: var(--font-sans);
 }

@@ -280,7 +280,7 @@
   font-size: var(--font-size-tag);
   font-weight: 500;
   border: 1px solid var(--border-color);
-  transition: all var(--transition-fast);
+  transition: var(--transition-ui);
 }
 .article-tags .tag:hover {
   background: var(--accent-color);
@@ -371,7 +371,9 @@
   color: var(--text-secondary);
   text-decoration: none;
   border-left: 2px solid transparent;
-  transition: all var(--transition-fast);
+  /* border-left-color 是独立长手写法，border-color 覆盖不到，需单独列出；
+     激活态的 font-weight 不再过渡（会逐帧触发重排），改为立即生效 */
+  transition: var(--transition-ui), border-left-color var(--transition-fast);
   word-break: break-word;
 }
 .toc-list ul a { padding-left: 1.8rem; }
@@ -470,7 +472,7 @@
   font-family: var(--font-mono);
   border: none;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: var(--transition-ui);
 }
 .code-copy-btn:hover {
   background: var(--accent-color);
@@ -518,7 +520,7 @@
   z-index: 1000;
   opacity: 0;
   visibility: hidden;
-  transition: all 0.3s ease;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
 }
 .article-sidebar-overlay.open { opacity: 1; visibility: visible; }
 

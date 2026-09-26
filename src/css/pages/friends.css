@@ -228,7 +228,7 @@
     border: 1px solid var(--border-color);
     padding: 28px 32px;
     margin: 32px 0 28px;
-    transition: all var(--transition-normal);
+    transition: var(--transition-ui-normal);
     box-shadow: var(--shadow-sm);
 }
 .info-card:hover {
@@ -275,7 +275,8 @@
     background: var(--surface-color);
     border-radius: var(--radius-lg);
     padding: 20px 18px;
-    transition: all 0.25s ease;
+    transition: border-color 0.25s ease, background-color 0.25s ease,
+                box-shadow 0.25s ease, transform 0.25s ease;
     border: 1px solid var(--border-light);
     backdrop-filter: blur(2px);
 }
@@ -351,7 +352,7 @@
     margin: 20px 0;
     overflow: hidden;
     position: relative;
-    transition: all 0.2s;
+    transition: var(--transition-ui-ease);
 }
 .code-block-wrapper:hover {
     border-color: var(--accent-light);
@@ -373,8 +374,8 @@
     font-weight: 500;
     cursor: pointer;
     color: var(--text-secondary);
-    transition: all var(--transition-fast);
-    font-family: var(--font-family);
+    transition: var(--transition-ui);
+    font-family: var(--font-sans);
 }
 .copy-btn:hover {
     background: var(--accent-color);
@@ -404,7 +405,7 @@ code {
     border-radius: var(--radius-md);
     font-size: 0.9rem;
     color: var(--text-secondary);
-    transition: all 0.2s;
+    transition: var(--transition-ui-ease);
 }
 .warning-note:hover {
     background: rgba(180, 91, 99, 0.12);
@@ -454,9 +455,7 @@ code {
     animation: spin 0.8s linear infinite;
     margin-bottom: 16px;
 }
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
+/* spin 关键帧已在 core/components.css 中统一定义（全站共用） */
 /* 次要信息（浅色小字） */
 .info-secondary {
     font-size: 0.8rem;
@@ -662,7 +661,7 @@ code {
     background: var(--surface-color);
     border: 1px solid var(--border-light);
     border-radius: var(--radius-full);
-    transition: all var(--transition-fast);
+    transition: var(--transition-ui);
     text-decoration: none;
     color: var(--text-color);
     box-shadow: var(--shadow-sm);
@@ -771,7 +770,7 @@ code {
     border-radius: var(--radius-full);
     cursor: pointer;
     font-size: 0.85rem;
-    transition: all 0.2s;
+    transition: var(--transition-ui-ease);
 }
 .info-btn:hover {
     background: var(--accent-color);

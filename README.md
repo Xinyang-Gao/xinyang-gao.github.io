@@ -136,7 +136,9 @@ Website
 │  │  │  ├─ footer.css
 │  │  │  ├─ github-contrib-graph.css
 │  │  │  ├─ image-viewer.css
-│  │  │  └─ navbar.css
+│  │  │  ├─ loading-overlay.css
+│  │  │  ├─ navbar.css
+│  │  │  └─ tooltip.css
 │  │  ├─ core
 │  │  │  ├─ base.css
 │  │  │  ├─ components.css
@@ -150,7 +152,6 @@ Website
 │  │  │  ├─ home.css
 │  │  │  ├─ stats.css
 │  │  │  └─ timeline.css
-│  │  └─ main.css
 │  ├─ js
 │  │  ├─ core
 │  │  │  ├─ app-initializer.ts

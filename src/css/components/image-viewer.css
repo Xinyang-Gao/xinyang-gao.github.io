@@ -163,10 +163,10 @@
   border: 2px solid rgba(242, 239, 230, 0.18);
   border-top-color: var(--v-accent);
   border-radius: 50%;
-  animation: v-spin 0.8s linear infinite;
+  animation: spin 0.8s linear infinite;
 }
 .viewer-spinner[hidden] { display: none; }
-@keyframes v-spin { to { transform: rotate(360deg); } }
+/* spin 关键帧已在 core/components.css 中统一定义（全站共用） */
 
 .viewer-error {
   position: absolute; left: 50%; top: 50%; z-index: 3;

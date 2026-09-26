@@ -31,12 +31,12 @@
     padding: 8px 16px;
     border: 1px solid var(--border-color, #e8e2db);
     border-radius: var(--radius-full, 30px);
-    font-family: var(--font-family, inherit);
+    font-family: var(--font-sans, inherit);
     font-size: 0.95rem;
     background: var(--surface-color, #fff);
     color: var(--text-color, #2c2c2c);
     cursor: pointer;
-    transition: all 0.2s;
+    transition: var(--transition-ui-ease);
     min-width: 140px;
 }
 #timeline-year-filter:focus {
@@ -57,7 +57,7 @@
     font-size: 0.9rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: var(--transition-ui-ease);
     font-family: inherit;
 }
 .btn-secondary:hover {
@@ -101,12 +101,12 @@
     padding: 8px 16px;
     border: 1px solid var(--border-color, #e8e2db);
     border-radius: var(--radius-full, 30px);
-    font-family: var(--font-family, inherit);
+    font-family: var(--font-sans, inherit);
     font-size: 0.9rem;
     background: var(--surface-color, #fff);
     color: var(--text-color, #2c2c2c);
     min-width: 180px;
-    transition: all 0.2s;
+    transition: var(--transition-ui-ease);
 }
 #timeline-search:focus {
     outline: none;
@@ -159,7 +159,7 @@
     font-size: 0.85rem;
     font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: var(--transition-ui-ease);
     color: var(--text-secondary, #6b6b6b);
     font-family: inherit;
 }
@@ -256,7 +256,7 @@
     background: var(--bg-color, #faf8f5);
     border: 2px solid var(--accent-color, #b45b63);
     border-radius: 50%;
-    transition: all 0.2s;
+    transition: var(--transition-ui-ease);
     z-index: 1;
 }
 .day-card:hover::before {
@@ -316,7 +316,7 @@
     border: 1px solid var(--border-color, #e8e2db);
     color: var(--text-color, #2c2c2c);
     text-decoration: none;
-    transition: all 0.2s ease;
+    transition: var(--transition-ui-ease);
 }
 .day-subcard::after { display: none; }
 .day-subcard:hover {
@@ -428,7 +428,7 @@
     font-weight: 600;
     font-family: var(--font-mono, monospace);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: var(--transition-ui-ease);
     line-height: 1.5;
 }
 .version-capsule:hover {
@@ -612,9 +612,7 @@
     animation: spin 0.8s linear infinite;
     margin: 0 auto 16px;
 }
-@keyframes spin {
-    to { transform: rotate(360deg); }
-}
+/* spin 关键帧已在 core/components.css 中统一定义（全站共用） */
 
 /* ============================================
    响应式

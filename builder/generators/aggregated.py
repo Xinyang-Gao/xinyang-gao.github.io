@@ -490,7 +490,7 @@ class AggregatedGenerator(OutputGenerator):
         return f'''<!DOCTYPE html>
 <html lang="zh-CN">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><title>{title} - 高新炀的小站</title>
-<link rel="stylesheet" href="/css/main.css"><link rel="stylesheet" href="/css/pages/friends.css"><link rel="stylesheet" href="/css/components/comments.css">
+<link rel="stylesheet" href="/css/core/variables.css"><link rel="stylesheet" href="/css/core/base.css"><link rel="stylesheet" href="/css/core/layout.css"><link rel="stylesheet" href="/css/core/components.css"><link rel="stylesheet" href="/css/components/loading-overlay.css"><link rel="stylesheet" href="/css/components/tooltip.css"><link rel="stylesheet" href="/css/pages/friends.css"><link rel="stylesheet" href="/css/components/comments.css">
 <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous" defer></script></head>
 <body>
 <div id="loading-overlay" role="status" aria-label="页面加载中"><div class="loading-glow"></div><div id="loading-content"><span class="loading-title">GaoXinYang</span></div></div>
@@ -581,7 +581,10 @@ class AggregatedGenerator(OutputGenerator):
         html = f'''<!DOCTYPE html>
 <html lang="zh-CN">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>高新炀的小站 · 静态镜像</title>
-<link rel="stylesheet" href="/css/main.css">
+<link rel="stylesheet" href="/css/core/variables.css">
+<link rel="stylesheet" href="/css/core/base.css">
+<link rel="stylesheet" href="/css/core/layout.css">
+<link rel="stylesheet" href="/css/core/components.css">
 <style>
 .nojs-alert {{ background: var(--accent-color,#b45b63); color: white; text-align: center; padding: 8px; }}
 .section-header {{ margin-top: 2rem; border-bottom: 2px solid var(--accent-color,#b45b63); display: inline-block; }}
@@ -795,7 +798,12 @@ class AggregatedGenerator(OutputGenerator):
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
         <title>友情链接 - 高新炀的小站</title>
-        <link rel="stylesheet" href="/css/main.css">
+        <link rel="stylesheet" href="/css/core/variables.css">
+        <link rel="stylesheet" href="/css/core/base.css">
+        <link rel="stylesheet" href="/css/core/layout.css">
+        <link rel="stylesheet" href="/css/core/components.css">
+        <link rel="stylesheet" href="/css/components/loading-overlay.css">
+        <link rel="stylesheet" href="/css/components/tooltip.css">
         <link rel="stylesheet" href="/css/pages/friends.css">
         <link rel="stylesheet" href="/css/components/comments.css">
         <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous" defer></script>

@@ -73,6 +73,8 @@
 .list-item.revealed {
   opacity: 1;
   transform: translateY(0);
+  /* 入场动画结束后释放合成层，避免长列表常驻大量 GPU 图层 */
+  will-change: auto;
 }
 
 .list-item:hover {
@@ -338,7 +340,7 @@
   font-size: 1.1rem;
   border: 1px solid var(--border-color);
   text-decoration: none;
-  transition: all var(--transition-fast);
+  transition: var(--transition-ui);
 }
 .social-link::after { display: none; }
 
@@ -398,7 +400,7 @@
   font-size: var(--font-size-tag);
   font-weight: 500;
   line-height: 1.4;
-  transition: all var(--transition-fast);
+  transition: var(--transition-ui);
 }
 
 .tag-interest:hover {
