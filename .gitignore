@@ -1,10 +1,15 @@
-todo.md
 builder/__pycache__/
 builder/generators/__pycache__/
 builder/friend_link_reply_building.py
+
+src/markdown_exporter.py
+dist/
 node_modules/
+
 tsconfig.json
 .build_state.json
-dist/
+
 test.bat
 server.bat
+
+todo.md
