@@ -10,7 +10,7 @@
 
 | 层级 | 技术 | 说明 |
 |------|----------|-----------|
-| **构建系统** | Python 3.10+ | 运行构建脚本（`run.py`），处理 Markdown 解析、数据聚合、静态资源生成 |
+| **构建系统** | Python 3.12+ | 运行构建脚本（`run.py`），处理 Markdown 解析、数据聚合、静态资源生成 |
 | **Markdown 解析** | `markdown` + `pymdown-extensions` | 支持 Frontmatter、Admonition、任务列表、选项卡、代码高亮、数学公式（KaTeX 前端渲染） |
 | **数据序列化** | `PyYAML`、`json` | 解析文章 Frontmatter、作品元数据、友链 JSON |
 | **颜色提取** | `requests` + `Pillow` | 为友链头像提取主色调，生成 `friend_colors.json` |
@@ -31,7 +31,16 @@
 | **通用弹窗** | `jump-dialog` + `detail-dialog` | 基于原生 DOM 构建，复用友链卡片样式，支持锚点放大动画、倒计时自动跳转、键盘操作 |
 | **Service Worker** | 自定义 `sw.js` | 精细化缓存策略：静态资源（Cache First）、JSON 数据（Stale-While-Revalidate）、HTML 文档（Network First），启用 Navigation Preload |
 | **数据格式** | JSON（API 数据）、YAML（文章 Frontmatter） | 所有内容数据（文章、作品、统计、友链、版本日志）均以 JSON 形式提供给前端，构建时生成 |
-| **部署** | GitHub Actions + GitHub Pages | 自动化构建部署，详见 `.github/workflows/static.yml` |
+| **部署** | GitHub Actions + GitHub Pages | 自动化构建部署，详见 `.github/workflows/static.yml`（构建 / 部署拆分为两个作业） |
+
+运行期版本由以下文件统一锁定，本地与 CI 共用同一份来源：
+
+| 文件 | 作用 |
+|------|------|
+| `.python-version` | Python 版本（`setup-python` 的 `python-version-file`） |
+| `.nvmrc` | Node.js 版本（`setup-node` 的 `node-version-file`） |
+| `requirements.txt` | Python 依赖（锁定下限，CI 用 pip 缓存加速） |
+| `package-lock.json` | Node 依赖（CI 用 `npm ci` 精确还原） |
 
 ---
 
@@ -63,6 +72,26 @@ pymdown-extensions     # 扩展 Markdown 语法
 
 ---
 
+## 快速开始
+
+```bash
+# 1) 安装依赖
+python -m pip install -r requirements.txt
+npm ci                    # 或 npm install
+
+# 2) 开发预览
+npm run dev               # Vite dev server
+python run.py             # 生成 dist（内容侧产物 + 前端编译）
+
+# 3) 常用构建命令
+python run.py             # 增量构建（默认）
+python run.py --clean     # 清空 dist 后全量构建（发布前推荐）
+python run.py --no-frontend   # 跳过 Vite，仅生成内容侧产物
+python run.py --ci        # CI 模式：纯文本日志 + 前端失败即失败
+```
+
+---
+
 ## 3. 目录结构
 
 ```txt
@@ -77,6 +106,7 @@ Website
 │  │  └─ friend_colors.py
 │  ├─ build_context.py
 │  ├─ common.py
+│  ├─ config.py
 │  ├─ engine.py
 │  ├─ input_loader.py
 │  └─ __init__.py
@@ -190,14 +220,17 @@ Website
 │        └─ metadata.json
 ├─ .gitignore
 ├─ .gitmodules
+├─ .nvmrc
+├─ .python-version
 ├─ CNAME
 ├─ LICENSE
 ├─ package-lock.json
 ├─ package.json
+├─ pyproject.toml
 ├─ README.md
 ├─ requirements.txt
 ├─ run.py
-└─ vite.config.ts
+└─ vite.config.mts
 ```
 
 ---
@@ -213,7 +246,8 @@ Website
 | **数据模型** | `build_context.py` | 定义 `Article`、`Work`、`Friend`、`BuildContext` 等数据结构，作为构建上下文在各模块间传递。 |
 | **公共工具** | `common.py` | 提供日志、JSON 读写、哈希计算、日期格式化、路径处理等通用函数。 |
 | **输入加载器** | `input_loader.py` | 扫描 `src/assets/source/` 下的 Markdown 文件、`src/works/` 下的作品元数据、`src/assets/friends.json` 友链以及 `src/assets/网站更新日志.md`，解析后填充 `BuildContext`。 |
-| **构建引擎** | `engine.py` | 管理所有生成器（`OutputGenerator`），协调执行顺序，支持串行/并行运行，并依据 `.build_state.json` 进行增量判断。 |
+| **构建配置** | `config.py` | 定义 `BuildConfig`（force / clean / skip_frontend / offline / strict / parallel / max_workers / dry_run / ci），一次构建的所有开关集中在此，经 `BuildContext.options` 下发给各生成器。 |
+| **构建引擎** | `engine.py` | 管理所有生成器（`OutputGenerator`），协调执行顺序，支持串行/并行运行，并依据 `.build_state.json` 进行增量判断；返回 `BuildReport` 汇总耗时与结果。 |
 | **生成器基类** | `generators/base.py` | 定义生成器抽象接口，包含 `name`、`inputs`、`outputs`、`generate()` 等方法，以及输入哈希计算和状态更新逻辑。 |
 | **聚合生成器** | `generators/aggregated.py` | 核心生成器，负责生成绝大部分输出：统计 JSON、RSS、站点地图、文章/作品/友链列表页、无 JS 回退页、复制静态资源（CSS、JS、素材）等。 |
 | **友链颜色生成器** | `generators/friend_colors.py` | 独立生成器，通过下载友链头像并提取主色调，生成 `friend_colors.json` 用于前端卡片背景色。 |
@@ -221,17 +255,20 @@ Website
 
 ### 4.2 构建流程
 
-1. **加载输入**：`InputLoader` 读取所有源文件，生成 `BuildContext` 对象。
-2. **生成器注册**：在 `run.py` 中注册 `FriendColorsGenerator` 和 `AggregatedGenerator`。
-3. **增量判断**：引擎检查每个生成器的输出文件是否都存在，并比对输入数据的哈希值（以及前端资源的哈希），若未变化则跳过。
-4. **执行生成**：依次（或并行）调用各生成器的 `generate()` 方法，将结果写入 `dist/` 目录。
-5. **更新状态**：成功生成后，将当前输入哈希及时间戳保存到 `.build_state.json`，供下次增量判断使用。
+1. **装配配置**：`run.py` 依据命令行 + 环境变量构造 `BuildConfig`，必要时清理 `dist/`（`--clean`）。
+2. **加载输入**：`InputLoader` 读取所有源文件，生成 `BuildContext` 对象（`ctx.options` 携带本次构建配置）。
+3. **生成器注册**：在 `run.py` 中注册 `FriendColorsGenerator` 和 `AggregatedGenerator`。
+4. **增量判断**：引擎检查每个生成器的输出文件是否都存在，并比对输入数据的哈希值（以及前端资源的哈希），若未变化则跳过。
+5. **执行生成**：按依赖分层，层内并行调用各生成器的 `generate()` 方法，将结果写入 `dist/` 目录。
+6. **更新状态**：成功生成后，将当前输入哈希（及 `AggregatedGenerator` 的前端哈希）与时间戳写入 `.build_state.json`，供下次增量判断使用。
 
 ### 4.3 增量构建机制
 
-- **状态文件**：`.build_state.json` 存储每个生成器上次运行的“输入哈希”和“前端哈希”。
+- **状态文件**：`.build_state.json` 存储每个生成器上次运行的“输入哈希”和“前端哈希”，并带 `_version` 字段；格式或哈希算法升级时旧状态自动失效，退化为一次全量构建。
 - **输入哈希**：由生成器声明的依赖（如 `articles`、`works`）的序列化内容计算而得，任一源文件改动都会导致哈希变化。
-- **前端哈希**：`AggregatedGenerator` 额外监控 `src/css/`、`src/js/`、`src/templates/`、`src/assets/`（除 `source/` 外）以及根目录下的 `favicon.ico`、`robots.txt` 等文件，确保前端资源变动时重新编译。
+- **前端哈希**：`AggregatedGenerator` 额外监控 `src/css/`、`src/js/`、`src/templates/`、`src/assets/`（排除 `source/` 子目录）以及 `src/` 下的 `favicon.ico`、`robots.txt` 等文件，确保前端资源变动时重新编译；该哈希通过重写 `build_state_entry()` 写入，否则前端未变化也会每次触发 Vite 编译。
+- **哈希算法**：统一使用 BLAKE2b(128bit)。相比 MD5 更快，且在启用 FIPS 的运行环境中不会报错。
+- **产物一致性**：所有由构建系统写出的文本/JSON 统一使用 LF 换行，避免 Windows 本地构建与 CI（Linux）产物出现换行差异。
 - **强制重建**：通过 `--force` 参数可忽略所有增量判断，强制全量构建；`--force-colors` 可单独强制更新友链颜色。
 
 ### 4.4 生成器详解
@@ -248,7 +285,7 @@ Website
 - **友链页面**：渲染 `dist/friends/index.html`，包含友链卡片（带主题色）和申请要求说明。
 - **无 JS 回退页**：生成 `dist/nojs.html`，提供完全静态的内容列表，方便搜索引擎或禁用 JavaScript 的用户访问。
 - **子目录页面**：将 `src/templates/` 下的 `about.html`、`timeline.html`、`stats.html`、`contact.html`、`privacy.html` 复制到对应的 `dist/about/`、`dist/timeline/` 等目录。
-- **前端构建**：调用 Vite 编译 TypeScript（`npm run build`），并将结果输出到 `dist/js/`。
+- **前端构建**：跨平台调用 `npm run build`（Windows 自动使用 `npm.cmd` 并做引号转义）编译 TypeScript，实时流式输出 Vite 日志；**默认失败即中止整个构建**（`--no-strict` 可恢复旧的宽容行为）。可用 `--no-frontend` 跳过。
 - **静态资源复制**：
   - 压缩 CSS（使用 `rcssmin`）并复制到 `dist/css/`。
   - 复制 `src/assets/`（排除 `source/`）到 `dist/assets/`。
@@ -262,13 +299,20 @@ Website
 - **功能**：为每个友链的头像图片提取主色调，生成 `src/assets/friend_colors.json`（映射：网站链接 → [R, G, B]）。
 - **缓存**：头像图片会被缓存到临时目录，避免重复下载。
 - **依赖**：需 `requests` 和 `Pillow` 库，若未安装则生成器跳过（但构建不会失败，只会使用默认灰色）。
-- **增量**：默认只处理新增或缺失颜色的友链，使用 `--force-colors` 可强制刷新所有。
+- **增量**：默认只处理新增或缺失颜色的友链，使用 `--force-colors` 可强制刷新所有；已删除的友链颜色会被自动清理。
+- **并发与容错**：头像下载使用带重试的连接池 + 线程池并发（默认 8 并发，`FRIEND_COLOR_WORKERS` 可调），结果缓存到系统临时目录；单个站点失败降级为默认灰色，不会中断构建。`--offline` / `SKIP_NETWORK=1` 可完全跳过网络请求。
 
 ### 4.5 命令行用法
 
 ```bash
-# 全量构建（忽略增量）
+# 增量构建（默认，最快）
+python run.py
+
+# 全量构建（忽略增量状态）
 python run.py --force
+
+# 清空 dist 目录后全量构建（发布前推荐，避免残留旧文件被发布）
+python run.py --clean
 
 # 仅强制更新友链颜色（其他生成器仍按增量判断）
 python run.py --force-colors
@@ -276,22 +320,52 @@ python run.py --force-colors
 # 只运行指定生成器（如只生成友链颜色）
 python run.py --targets friend_colors
 
-# 禁用并行执行（串行运行所有生成器）
-python run.py --no-parallel
+# 跳过前端编译，只生成内容侧产物（写 Markdown / 调 API 时最快）
+python run.py --no-frontend
 
-# 调整并行线程数（默认 4）
+# 离线构建：跳过所有网络请求（友链头像等）
+python run.py --offline
+
+# CI 模式：纯文本日志 + 严格模式（等价于 CI=true python run.py）
+python run.py --ci
+
+# 宽容模式：前端编译失败仍继续构建（默认失败即中止）
+python run.py --no-strict
+
+# 禁用并行执行 / 调整并行线程数（默认自动：CI=4，本地取 CPU 数量且 ≤8）
+python run.py --no-parallel
 python run.py --workers 6
+
+# 预览执行计划而不真正生成
+python run.py --dry-run
+
+# 列出可用生成器
+python run.py --list
 ```
+
+### 4.5.1 环境变量
+
+| 变量 | 作用 |
+|------|------|
+| `CI` / `GITHUB_ACTIONS` | 自动开启 CI 模式（纯文本日志、严格模式） |
+| `NO_COLOR` / `FORCE_COLOR` | 手工控制日志着色 |
+| `LOG_LEVEL` | 日志级别（默认 `INFO`，排错可设 `DEBUG`） |
+| `BUILD_WORKERS` | 默认并行线程数 |
+| `FRIEND_COLOR_WORKERS` | 友链头像并发数 |
+| `SKIP_NETWORK` | 等价于 `--offline` |
+| `VITE_BUILD_TIMEOUT` | 前端编译超时秒数（默认 900） |
 
 ### 4.6 依赖与环境
 
-- **Python 依赖**：见 `requirements.txt`，主要包括 `markdown`、`pyyaml`、`requests`、`pillow`、`rcssmin`、`python-dateutil`、`packaging`、`pymdown-extensions`。
+- **版本来源**：Python 版本取自 `.python-version`，Node.js 版本取自 `.nvmrc`，CI 与本地共用，避免“我这儿能跑”。
+- **Python 依赖**：见 `requirements.txt`（锁定下限），主要包括 `markdown`、`pyyaml`、`requests`、`pillow`、`rcssmin`、`python-dateutil`、`packaging`、`pymdown-extensions`。
 - **Node.js 依赖**：用于前端 TypeScript 编译，见 `package.json`，使用 Vite 作为构建工具。
+- **代码规范**：`pyproject.toml` 提供项目元数据与 ruff / black 配置。
 - **安装命令**：
 
 ```bash
-pip install -r requirements.txt
-npm install
+python -m pip install -r requirements.txt
+npm ci
 ```
 
 ### 4.7 扩展新生成器
@@ -707,8 +781,9 @@ engine.register(MyGenerator())
 ### 8.3 修改前端构建（Vite）
 
 - 入口文件：`src/js/entry/main.ts`。
-- Vite 配置：`vite.config.ts` 将 `src/js` 映射为 `/js`，构建输出到 `dist/`（`preserveModules` 保持目录结构）。
-- 生产构建通过 Python 构建系统调用 `npm run build` 触发 Vite。
+- Vite 配置：`vite.config.mts` 将 `src/js` 映射为 `/js`，构建输出到 `dist/`（`preserveModules` 保持目录结构），路径基于配置文件自身位置解析，不依赖当前工作目录。
+- `build.emptyOutDir` 必须为 `false`：dist 由 Python 构建系统与 Vite 共同写入，清空会删除其他生成器已写入的 HTML / JSON / RSS；需要干净构建请用 `python run.py --clean`。
+- 生产构建由 Python 构建系统调用 `npm run build` 触发（见 `AggregatedGenerator._run_vite`）。
 
 ### 8.4 调试技巧
 
@@ -723,34 +798,36 @@ engine.register(MyGenerator())
 
 ## 9. 部署说明
 
-1. 安装 Python 依赖：
+### 9.1 自动化部署（GitHub Actions）
+
+`.github/workflows/static.yml` 在 `push` 到 `main` 或手动触发时运行，拆分为两个作业：
+
+| 作业 | 职责 |
+|------|------|
+| `build` | 检出（含子模块）→ 安装 Python / Node 依赖 → `python run.py --ci` → 上传 `dist` 为 Pages artifact |
+| `deploy` | `actions/deploy-pages` 发布 artifact 到 GitHub Pages 环境 |
+
+要点：
+
+- **不使用 `--force`**：CI 每次都是全新检出，不存在 `.build_state.json`，本来就等价于全量构建；`--force` 只会额外触发全部友链头像重抓，拖慢构建并增加网络失败概率。
+- **使用 `--ci`**：开启严格模式，前端编译失败直接让工作流失败，避免部署半成品（旧行为会“报错但继续”，容易把缺 JS 的站点发布上线）。
+- 版本统一由 `.python-version` / `.nvmrc` 提供，依赖分别由 `pip` 与 `npm` 官方缓存加速；构建作业设有 `timeout-minutes`，异常任务不会长期占用 runner。
+
+### 9.2 手动构建
 
 ```bash
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
+npm ci
+python run.py --clean        # 干净全量构建
 ```
 
-2. 安装 Node.js 依赖：
+构建产物位于 `dist/` 目录，可直接上传到任意静态托管平台（GitHub Pages、Netlify、Vercel 等）。
 
-```bash
-npm install
-```
+注意事项：
 
-3. 运行构建：
-
-```bash
-python run.py
-```
-
-或：
-
-```bash
-python run.py
-```
-
-4. 构建产物位于 `dist/` 目录。
-5. 将 `dist/` 内容上传到静态托管平台（如 GitHub Pages、Netlify、Vercel）。
-6. 确保 `CNAME` 文件内容为自定义域名（如需）。
-7. 若使用 Twikoo，需部署云函数并更新各页面中的 `envId`。
+1. 确保 `CNAME` 文件内容为自定义域名（如需）。
+2. 若使用 Twikoo，需部署云函数并更新各页面中的 `envId`。
+3. 发布前建议使用 `--clean`，避免 dist 中残留的旧文件被一并部署。
 
 ---
 
@@ -763,4 +840,4 @@ python run.py
 
 *本文档持续更新，以项目最新代码为准。*  
 *维护者：高新炀*  
-*最后更新：2026-09-12*
+*最后更新：2026-09-26*

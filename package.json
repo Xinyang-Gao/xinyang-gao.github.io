@@ -1,12 +1,8 @@
 {
   "name": "xinyang-gao.github.io",
   "version": "1.0.0",
+  "private": true,
   "description": "一个个人网站",
-  "main": "index.js",
-  "scripts": {
-    "build": "vite build",
-    "dev": "vite"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Xinyang-Gao/xinyang-gao.github.io.git"
@@ -14,14 +10,21 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs",
   "bugs": {
     "url": "https://github.com/Xinyang-Gao/xinyang-gao.github.io/issues"
   },
   "homepage": "https://github.com/Xinyang-Gao/xinyang-gao.github.io#readme",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
   "devDependencies": {
     "rollup-plugin-copy": "^3.5.0",
     "typescript": "^7.0.2",
     "vite": "^8.3.0"
+  },
+  "engines": {
+    "node": "^20.19.0 || >=22.12.0"
   }
 }

@@ -8,6 +8,7 @@ from datetime import datetime
 
 from ..build_context import BuildContext
 from ..common import compute_object_hash
+from ..config import BuildConfig
 
 
 class OutputGenerator(ABC):
@@ -15,6 +16,9 @@ class OutputGenerator(ABC):
 
     子类只需声明：name / inputs / outputs / generate。
     依赖关系通过 dependencies 声明，引擎会做拓扑排序。
+
+    运行期开关统一从 ``context.options``（:class:`BuildConfig`）读取，
+    不再依赖模块级全局变量，便于并行执行与测试。
     """
 
     # ---------- 必须实现的抽象属性 ----------
@@ -47,6 +51,12 @@ class OutputGenerator(ABC):
     def timeout(self) -> float:
         """单次生成的超时秒数（0 表示不限制）。"""
         return 0.0
+
+    # ---------- 运行时配置 ----------
+    @staticmethod
+    def get_config(context: BuildContext) -> BuildConfig:
+        """获取本次构建的配置（缺省时返回默认配置）。"""
+        return getattr(context, "options", None) or BuildConfig()
 
     # ---------- 状态计算 ----------
     def compute_input_hash(self, context: BuildContext) -> str:

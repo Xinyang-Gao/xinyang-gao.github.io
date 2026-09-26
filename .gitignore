@@ -1,5 +1,6 @@
-builder/__pycache__/
-builder/generators/__pycache__/
+__pycache__/
+*.pyc
+.tmp_*.log
 builder/friend_link_reply_building.py
 
 src/markdown_exporter.py

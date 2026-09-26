@@ -1,8 +1,11 @@
-markdown
-pyyaml
-requests
-pillow
-rcssmin
-python-dateutil
-packaging
-pymdown-extensions
+# 内容构建（Python）依赖
+# 策略：仅锁定下限，避免 CI 每次解析到破坏性新版本，同时允许获取安全更新；
+#       需要完全可复现时使用 pip-compile 生成 constraints.txt。
+markdown>=3.6
+pyyaml>=6.0.1
+requests>=2.32.0
+pillow>=10.3.0
+rcssmin>=1.1.0
+python-dateutil>=2.8.2
+packaging>=24.0
+pymdown-extensions>=10.9

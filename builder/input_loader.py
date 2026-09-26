@@ -706,7 +706,7 @@ def _process_markdown_file(md_file_path: Path, old_article: Optional[Dict] = Non
         description, tags, author, word_count, read_time,
         category=final_category, last_updated=last_updated, modify_count=modify_count
     )
-    with open(output_path, 'w', encoding='utf-8') as f:
+    with open(output_path, 'w', encoding='utf-8', newline='\n') as f:
         f.write(full_html)
 
     # ---------- 返回 Article 对象 ----------

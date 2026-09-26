@@ -1,0 +1,29 @@
+# 现代 Python 项目元数据与工具配置（构建本身不依赖本文件，仅供 lint / 编辑器使用）
+[project]
+name = "xinyang-gao-website"
+version = "1.0.0"
+description = "个人网站静态站点构建系统"
+requires-python = ">=3.10"
+dependencies = [
+    "markdown>=3.6",
+    "pyyaml>=6.0.1",
+    "requests>=2.32.0",
+    "pillow>=10.3.0",
+    "rcssmin>=1.1.0",
+    "python-dateutil>=2.8.2",
+    "packaging>=24.0",
+    "pymdown-extensions>=10.9",
+]
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+exclude = ["dist", "node_modules", ".git"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B"]
+ignore = ["E501"]
+
+[tool.black]
+line-length = 120
+target-version = ["py310"]

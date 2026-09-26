@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from dataclasses import dataclass, field
-from typing import List, Dict, Any
+from typing import Dict, List
+
+from .config import BuildConfig
 
 @dataclass
 class Article:
@@ -44,3 +46,4 @@ class BuildContext:
     friends: List[Friend] = field(default_factory=list)
     version: Dict = field(default_factory=dict)   # 来自 version.json
     statistics: Dict = field(default_factory=dict)  # 由统计生成器填充
+    options: BuildConfig = field(default_factory=BuildConfig)  # 本次构建的运行选项
