@@ -463,10 +463,22 @@ export class SearchController {
       ? params.set('tags', this.selectedTags.join(','))
       : params.delete('tags');
 
-    const newUrl = `${location.pathname}?${params.toString()}`;
-    if (newUrl !== location.href.split('#')[0]) {
-      history.pushState({ skip: true }, '', newUrl);
-    }
+    const query = params.toString();
+    const newUrl = query ? `${location.pathname}?${query}` : location.pathname;
+    // 注意：newUrl 是相对地址，必须跟 pathname+search 比，
+    // 原来的 `newUrl !== location.href.split('#')[0]` 恒为真，等于每次输入都塞一条历史记录。
+    if (newUrl === `${location.pathname}${location.search}`) return;
+
+    /**
+     * 搜索/筛选属于同一页面的状态，用 replaceState 而非 pushState：
+     * 否则每次输入都会压入一条历史记录，返回键要倒退 N 次才能离开本页。
+     * 状态必须带 url：router 的 popstate 遇到没有 url 的 state 会退化成整页刷新。
+     */
+    history.replaceState(
+      { ...((history.state as object | null) ?? {}), url: newUrl, skip: true },
+      '',
+      newUrl
+    );
   }
 
   private restoreFromURL(): void {

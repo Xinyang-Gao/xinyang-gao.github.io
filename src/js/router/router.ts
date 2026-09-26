@@ -569,7 +569,8 @@ async function processContent(
     })
   );
 
-  state.lastRenderedUrl = url;
+  // 统一存绝对地址：popstate 的比较基准必须能和 location.href / history.state.url 对齐
+  state.lastRenderedUrl = new URL(url, location.href).href;
   return true;
 }
 
@@ -632,7 +633,12 @@ export async function fetchAndReplaceContent(
     if (signal.aborted || navId !== state.navigationId) return false;
 
     const target = new URL(url, location.href);
-    const currentBase = location.href.split('#')[0];
+    /**
+     * 同样要用「已渲染的 URL」作基准：popstate 调用本函数时 location.href
+     * 已经是目标地址，用它比较会恒等，导致「跨页 + 锚点」的条目被误判成
+     * 同页锚点跳转而被跳过，内容永远不替换。
+     */
+    const currentBase = (state.lastRenderedUrl ?? location.href).split('#')[0];
     const targetBase = target.href.split('#')[0];
 
     if (currentBase === targetBase && target.hash) {
@@ -784,6 +790,9 @@ export function initPopstate(): void {
   if (popstateBound) return;
   popstateBound = true;
 
+  // 首屏：当前 DOM 就是 location.href 对应的内容，作为比较基准
+  if (!state.lastRenderedUrl) state.lastRenderedUrl = location.href;
+
   if (!history.state || !(history.state as HistoryState).url) {
     history.replaceState(
       {
@@ -801,26 +810,33 @@ export function initPopstate(): void {
     const targetState = event.state as HistoryState | null;
     const currentUrl = location.href;
 
-    if (!targetState?.url) {
-      window.location.reload();
-      return;
-    }
+    /**
+     * popstate 触发时 location.href 已经变成目标地址，
+     * 所以「当前地址」必须取 state.lastRenderedUrl（当前 DOM 实际渲染的页面），
+     * 而不是 location.href——后者与 targetState.url 恒等，
+     * 会让前进/后退永远命中下面的「仅哈希变化」分支，内容再也不会被替换。
+     */
+    const renderedUrl = state.lastRenderedUrl ?? currentUrl;
+    // 缺少 url 的历史条目（如旧记录）退化为按当前地址导航，避免整页刷新
+    const targetUrl = targetState?.url ?? currentUrl;
 
-    if (currentUrl.split('#')[0] === targetState.url.split('#')[0]) {
+    if (renderedUrl.split('#')[0] === targetUrl.split('#')[0]) {
       const hash = new URL(currentUrl).hash;
       if (hash) {
         const el = document.getElementById(hash.slice(1));
         if (el) el.scrollIntoView({ behavior: 'smooth' });
       } else {
-        scrollManager.restore(targetState.scroll, false);
+        scrollManager.restore(targetState?.scroll, false);
       }
+      // 同一文档内的锚点跳转也要同步，保证后续比较基准正确
+      state.lastRenderedUrl = currentUrl;
       return;
     }
 
     fetchAndReplaceContent(
       currentUrl,
       false,
-      targetState.scroll,
+      targetState?.scroll ?? null,
       0,
       true
     );
