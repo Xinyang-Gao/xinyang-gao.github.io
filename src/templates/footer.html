@@ -44,13 +44,17 @@
         </div>
       </div>
 
-      <!-- 数据区：作为 flm-pv-widget 容器，data-target 显式指定 -->
-      <div
+      <!-- 数据区：整块为链接（点击经路由无刷新跳转到 /stats/），同时作为 flm-pv-widget 容器 -->
+      <a
         id="footer-stats-widget"
         class="footer-col stats-col flm-pv-widget"
+        href="/stats/"
         data-type="popover"
       >
-        <h4 class="footer-col-title">数据</h4>
+        <h4 class="footer-col-title">
+          数据
+          <span class="stats-col-hint" aria-hidden="true">查看统计 →</span>
+        </h4>
 
         <div class="stats-grid">
           <!-- 运行时长 -->
@@ -166,7 +170,7 @@
             <strong id="footerSnapshotDate">—</strong>
           </span>
         </div>
-      </div>
+      </a>
     </div>
 
     <div class="footer-acknowledgements">

@@ -124,8 +124,46 @@
 
 /* ==========================================
    数据区：KPI 卡片网格
+   —— 整块是 <a>，点击由路由无刷新跳转到 /stats/
    —— 图标实现完全照搬 stats 页 .stat-card-icon
    ========================================== */
+.stats-col {
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  border-radius: var(--radius-md);
+  -webkit-tap-highlight-color: transparent;
+}
+.stats-col:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 6px;
+}
+.stats-col:hover .footer-col-title { color: var(--accent-color); }
+
+/* 标题右侧的「查看统计 →」提示 */
+.stats-col .footer-col-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem;
+  transition: color 0.2s ease;
+}
+.stats-col-hint {
+  font-family: var(--font-sans);
+  font-size: 0.64rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: none;
+  color: var(--accent-color);
+  opacity: 0.6;
+  white-space: nowrap;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.stats-col:hover .stats-col-hint {
+  opacity: 1;
+  transform: translateX(2px);
+}
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);

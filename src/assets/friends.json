@@ -171,6 +171,11 @@
       "desc": "萌国 ICP 备案"
     },
     {
+      "name": "UApiPro",
+      "link": "https://uapis.cn/",
+      "desc": "免费公共 API 服务\n本站的随机一言 API 来自此"
+    },
+    {
       "name": "Fake ICP",
       "link": "https://fakeicp.top/",
       "desc": "假 ICP 备案"

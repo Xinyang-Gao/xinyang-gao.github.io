@@ -1260,8 +1260,11 @@ i[class*="fa-"] {
   to   { opacity: 1; transform: none; }
 }
 
-/* 排除 FA 自带动画类，否则会覆盖 fa-spin / fa-beat 等的 animation */
-.svg-inline--fa:not(.fa-spin):not(.fa-pulse):not(.fa-beat):not(.fa-bounce):not(.fa-fade):not(.fa-flip):not(.fa-shake) {
+/* 排除 FA 自带动画类，否则会覆盖 fa-spin / fa-beat 等的 animation；
+   同时排除 .stat-card-icon（统计卡片/页脚数据区的装饰性半透明图标）：
+   fa-pop-in 的 fill-mode: both 会把 opacity 永久钉在 1、transform 钉在 none，
+   动画值优先级高于普通声明，会把半透明装饰图标渲染成完全不透明。 */
+.svg-inline--fa:not(.fa-spin):not(.fa-pulse):not(.fa-beat):not(.fa-bounce):not(.fa-fade):not(.fa-flip):not(.fa-shake):not(.stat-card-icon) {
   animation: fa-pop-in 0.18s ease-out both;
 }
 
