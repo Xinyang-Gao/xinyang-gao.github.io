@@ -214,11 +214,14 @@ Website
 │  │  ├─ privacy.html
 │  │  ├─ stats.html
 │  │  └─ timeline.html
-│  └─ works
-│     ├─ 作品一
+│  └─ works                        # 作品（Git 子模块）
+│     ├─ 作品一                    # 纯外链作品：只保留元数据
 │     │  └─ metadata.json
-│     └─ 作品二
+│     └─ 作品二                    # 站内作品：页面 + 约定命名的资源
 │        ├─ index.html
+│        ├─ work-style.css
+│        ├─ work-js.js
+│        ├─ data.json              # 可选
 │        └─ metadata.json
 ├─ .gitignore
 ├─ .gitmodules
@@ -751,6 +754,18 @@ cover: /assets/cover.webp  # 可选，文章列表项的封面/背景图
 
 - `cover` 与 `archived` 均为可选字段，缺省分别等价于「无封面」与「未归档」。
 - `archived` 支持 `true` / `"true"` / `1` / `"yes"` 等写法。
+
+**作品目录约定**（站内作品，即未填写外链 `link` 的目录）：
+
+| 文件 | 作用 |
+|------|------|
+| `index.html` | 作品页面入口，发布为 `/works/<作品名>/` |
+| `work-style.css` | 样式，统一命名，页面用 `/works/<作品名>/work-style.css` 引用 |
+| `work-js.js` | 脚本，统一命名，页面用 `/works/<作品名>/work-js.js` 引用 |
+| `data.json` | 可选，作品自带数据 |
+| `metadata.json` | 构建期元数据，不会被复制到 `dist/` |
+
+约定要点：样式与脚本一律外链，不在 `index.html` 内联 `<style>` / `<script>`；站内资源统一使用以 `/works/<作品名>/` 开头的绝对路径；文件统一 UTF-8 编码。
 
 ### 7.3 友链（`dist/json/friends.json`）
 
