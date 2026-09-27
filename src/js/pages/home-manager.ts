@@ -24,14 +24,40 @@ const LOCAL_QUOTES: Saying[] = [
     uuid: '',
     bio: '',
   },
+  {
+    text: '我们一路奋战，不是为了改变世界，而是为了不让世界改变我们。',
+    author: '老男孩',
+    source: '老男孩',
+    category: '影视',
+    uuid: '',
+    bio: '',
+  },
+  {
+    text: '所谓无底深渊，下去，也是前程万里。',
+    author: '木心',
+    source: '素履之往',
+    category: '文学',
+    uuid: '',
+    bio: '',
+  },
 ];
 
-const UAPI_PAYLOAD = { category: '文学' };
+/**
+ * UAPI 一言（随机）接口。
+ * 站点从未加载过 UAPI 的 JS SDK，`window.uapiClient` 恒为 undefined，
+ * 因此这里直接调用公开 REST 端点（支持 CORS，无需 API Key）。
+ * 文档：https://uapis.cn/docs/api-reference/get-saying-random
+ */
+const UAPI_ENDPOINT = 'https://uapis.cn/api/v1/saying/random';
+const UAPI_CATEGORY = '文学';
+const UAPI_TIMEOUT = 6000;
 
 export class HomePageManager extends PageBase {
   private isDestroyed = false;
   private lastQuoteUuid = '';
   private isQuoteLoading = false;
+  /** 当前进行中的名言请求，用于切换页面/连点时取消 */
+  private quoteAbort: AbortController | null = null;
 
   /* ---------- 生命周期 ---------- */
 
@@ -42,11 +68,14 @@ export class HomePageManager extends PageBase {
     this.startLiveClock();
     this.setupReveal();
     this.bindQuoteRefresh();
-    this.loadQuote(); // 初始加载一条名言
+    // 初始加载一条名言（必须 catch：否则异常会变成未处理的 Promise 拒绝）
+    this.loadQuote().catch((err) => console.warn('[Home] 初始化名言失败:', err));
   }
 
   protected unmount(): void {
     this.isDestroyed = true;
+    this.quoteAbort?.abort();
+    this.quoteAbort = null;
   }
 
   /* ---------- 统计与标签 ---------- */
@@ -235,53 +264,74 @@ export class HomePageManager extends PageBase {
 
   /* ---------- 名言相关 ---------- */
 
-  private getUapiClient(): any {
-    return (window as any).uapiClient || null;
-  }
-
+  /**
+   * 归一化 UAPI 返回体：
+   * 兼容 `{data}` 包装、`{item}` 包装（daily/recommend/moment 模式）与裸对象，
+   * 同时兼容 `content` / `text` 两种正文字段名。
+   */
   private normalizeQuote(raw: any): Saying | null {
-    if (!raw) return null;
-    const d = raw?.data && typeof raw.data === 'object' ? raw.data : raw;
-    const text = typeof d.content === 'string' ? d.content.trim() : '';
+    let d: any = raw;
+    if (d && typeof d === 'object') {
+      if (d.data && typeof d.data === 'object') d = d.data;
+      if (d.item && typeof d.item === 'object') d = d.item;
+    }
+    if (!d || typeof d !== 'object') return null;
+
+    const str = (v: unknown): string => (typeof v === 'string' ? v.trim() : '');
+    const text = str(d.content) || str(d.text) || str(d.saying);
     if (!text) return null;
+
     return {
       text,
-      author: typeof d.author === 'string' ? d.author.trim() : '',
-      source: typeof d.source === 'string' ? d.source.trim() : '',
-      category: typeof d.category === 'string' ? d.category.trim() : '',
-      uuid: typeof d.uuid === 'string' ? d.uuid : '',
-      bio: d.authorinfo?.description || d.authorinfo?.bio || '',
+      author: str(d.author),
+      source: str(d.source),
+      category: str(d.category) || str(d.corpus),
+      uuid: str(d.uuid),
+      bio: str(d.authorinfo?.description) || str(d.authorinfo?.bio),
     };
+  }
+
+  /** 请求一条随机语录；超时/失败由调用方降级处理 */
+  private async requestSaying(category?: string): Promise<unknown> {
+    const url = new URL(UAPI_ENDPOINT);
+    url.searchParams.set('mode', 'random');
+    if (category) url.searchParams.set('category', category);
+
+    // 连点"换一句"时取消上一请求，避免旧响应覆盖新结果
+    this.quoteAbort?.abort();
+    const ac = new AbortController();
+    this.quoteAbort = ac;
+
+    const timer = setTimeout(() => ac.abort(), UAPI_TIMEOUT);
+    try {
+      const res = await fetch(url.href, {
+        signal: ac.signal,
+        credentials: 'omit',
+        headers: { Accept: 'application/json' },
+      });
+      if (!res.ok) throw new Error(`UAPI HTTP ${res.status}`);
+      return await res.json();
+    } finally {
+      clearTimeout(timer);
+      if (this.quoteAbort === ac) this.quoteAbort = null;
+    }
   }
 
   private async fetchRemoteQuote(): Promise<Saying | null> {
     try {
-      const client = this.getUapiClient();
-      if (!client?.poem?.getSayingRandom) return null;
+      // 指定分类可能命中不到（404 / 空结果），放宽条件再试一次
+      let q = this.normalizeQuote(await this.requestSaying(UAPI_CATEGORY));
+      if (!q) q = this.normalizeQuote(await this.requestSaying());
 
-      // 超时定时器必须在 race 结束后清掉：
-      // 原来它永远挂满 6s，请求早就返回了仍占着一个 timer
-      const call = async (): Promise<unknown> => {
-        let timer: ReturnType<typeof setTimeout> | undefined;
-        try {
-          return await Promise.race([
-            client.poem.getSayingRandom(UAPI_PAYLOAD),
-            new Promise<never>((_, reject) => {
-              timer = setTimeout(() => reject(new Error('timeout')), 6000);
-            }),
-          ]);
-        } finally {
-          if (timer !== undefined) clearTimeout(timer);
-        }
-      };
-
-      let q = this.normalizeQuote(await call());
+      // 随机模式偶尔撞到同一条：重试一次，保证"换一句"真的换了
       if (q?.uuid && q.uuid === this.lastQuoteUuid) {
-        q = this.normalizeQuote(await call()) ?? q;
+        const retry = this.normalizeQuote(await this.requestSaying(UAPI_CATEGORY));
+        if (retry) q = retry;
       }
       if (q?.uuid) this.lastQuoteUuid = q.uuid;
       return q;
     } catch (err) {
+      if ((err as Error)?.name === 'AbortError' && this.isDestroyed) return null;
       console.warn('[quote] 远程名言获取失败，回退本地：', err);
       return null;
     }
@@ -292,45 +342,51 @@ export class HomePageManager extends PageBase {
     this.isQuoteLoading = true;
 
     const quote = document.querySelector('.inspire-quote');
-    const sourceEl = document.querySelector<HTMLElement>('.inspire-source');
-    const textEl = quote?.querySelector('.quote-text');
-    const authorEl = quote?.querySelector<HTMLElement>('.inspire-author');
-
-    if (!quote || !textEl || !authorEl) {
+    if (!quote) {
       this.isQuoteLoading = false;
       return;
     }
 
-    quote.classList.add('is-swapping');
-    await new Promise((resolve) => setTimeout(resolve, 260));
+    const sourceEl = quote.querySelector<HTMLElement>('.inspire-source');
+    // .quote-text 缺失时退回第一个段落，避免整块语录停在占位符
+    const textEl = quote.querySelector('.quote-text') ?? quote.querySelector('p');
+    const authorEl = quote.querySelector<HTMLElement>('.inspire-author');
 
-    if (this.isDestroyed) {
+    if (!textEl || !authorEl) {
+      this.isQuoteLoading = false;
+      return;
+    }
+
+    try {
+      quote.classList.add('is-swapping');
+      await new Promise((resolve) => setTimeout(resolve, 260));
+
+      if (this.isDestroyed) return;
+
+      let q = await this.fetchRemoteQuote();
+      let isRemote = !!q;
+      if (!q) {
+        const local = LOCAL_QUOTES[Math.floor(Math.random() * LOCAL_QUOTES.length)];
+        q = { ...local, uuid: '' };
+        isRemote = false;
+      }
+
+      if (this.isDestroyed) return;
+
+      textEl.textContent = q.text;
+      const who = [q.author, q.source ? `《${q.source}》` : ''].filter(Boolean).join(' ');
+      authorEl.textContent = who || '佚名';
+      if (q.bio) authorEl.setAttribute('title', q.bio);
+      else authorEl.removeAttribute('title');
+
+      if (sourceEl) {
+        sourceEl.textContent = isRemote ? `UAPI · ${q.category || UAPI_CATEGORY}` : '本地收藏';
+        sourceEl.classList.toggle('is-local', !isRemote);
+      }
+    } finally {
       quote.classList.remove('is-swapping');
       this.isQuoteLoading = false;
-      return;
     }
-
-    let q = await this.fetchRemoteQuote();
-    let isRemote = !!q;
-    if (!q) {
-      const local = LOCAL_QUOTES[Math.floor(Math.random() * LOCAL_QUOTES.length)];
-      q = { ...local, uuid: '' };
-      isRemote = false;
-    }
-
-    textEl.textContent = q.text;
-    const who = [q.author, q.source ? `《${q.source}》` : ''].filter(Boolean).join(' ');
-    authorEl.textContent = who || '佚名';
-    if (q.bio) authorEl.setAttribute('title', q.bio);
-    else authorEl.removeAttribute('title');
-
-    if (sourceEl) {
-      sourceEl.textContent = isRemote ? `UAPI · ${q.category || '文学'}` : '本地收藏';
-      sourceEl.classList.toggle('is-local', !isRemote);
-    }
-
-    quote.classList.remove('is-swapping');
-    this.isQuoteLoading = false;
   }
 
   private bindQuoteRefresh(): void {

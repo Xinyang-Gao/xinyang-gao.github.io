@@ -148,9 +148,14 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // ---------- 策略 2：API / JSON 数据 —— Stale-While-Revalidate ----------
-  // 匹配 /json/ 或 /api/ 路径
-  if (url.pathname.startsWith('/json/') || url.pathname.startsWith('/api/')) {
+  // ---------- 策略 2：本站 API / JSON 数据 —— Stale-While-Revalidate ----------
+  // 匹配 /json/ 或 /api/ 路径。
+  // 仅限同源：第三方 API（如 uapis.cn/api/v1/saying/random）被 SWR 缓存后，
+  // 每次请求都会命中同一份缓存，随机接口将永远返回同一条结果。
+  if (
+    url.origin === self.location.origin &&
+    (url.pathname.startsWith('/json/') || url.pathname.startsWith('/api/'))
+  ) {
     event.respondWith(
       (async () => {
         const cache = await caches.open(CACHE_NAME);
@@ -215,11 +220,13 @@ self.addEventListener('fetch', (event) => {
   }
 
   // ---------- 策略 3：HTML 文档 —— Network First，回退缓存 ----------
-  // 匹配 .html 或根路径（且不是静态资源）
+  // 匹配 .html 或根路径（且不是静态资源）；同样只处理同源导航请求，
+  // 避免把第三方接口的响应当成 HTML 塞进缓存。
   if (
-    url.pathname.endsWith('.html') ||
-    url.pathname === '/' ||
-    !url.pathname.includes('.')
+    url.origin === self.location.origin &&
+    (url.pathname.endsWith('.html') ||
+      url.pathname === '/' ||
+      !url.pathname.includes('.'))
   ) {
     event.respondWith(
       (async () => {

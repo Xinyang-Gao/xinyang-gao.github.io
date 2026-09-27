@@ -359,8 +359,31 @@
   transition: opacity 0.26s ease;
 }
 .inspire-author::before { content: '—— '; }
+/* 来源徽标：远端命中显示 UAPI · 分类，回退时显示"本地收藏" */
+.inspire-source {
+  display: inline-block;
+  margin-left: 10px;
+  vertical-align: 1px;
+  padding: 2px 10px;
+  border: 1px solid color-mix(in srgb, var(--accent-color) 35%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent-color) 10%, transparent);
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  font-style: normal;
+  letter-spacing: 0.06em;
+  color: var(--accent-color);
+  white-space: nowrap;
+  transition: opacity 0.26s ease;
+}
+.inspire-source.is-local {
+  border-color: var(--border-color);
+  background: transparent;
+  color: var(--text-secondary);
+}
 .inspire-quote.is-swapping p,
-.inspire-quote.is-swapping .inspire-author { opacity: 0; transform: translateY(6px); }
+.inspire-quote.is-swapping .inspire-author,
+.inspire-quote.is-swapping .inspire-source { opacity: 0; transform: translateY(6px); }
 
 .quote-refresh {
   position: absolute;
