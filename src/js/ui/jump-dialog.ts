@@ -56,6 +56,105 @@ export interface BindJumpTriggersOptions {
   dialogDefaults?: Partial<JumpDialogOptions>;
 }
 
+// ==================== 头像（照片）提取 ====================
+
+/** 元素是否处于可显示状态（只看 display / visibility，忽略淡入用的 opacity） */
+function isDisplayed(el: HTMLElement): boolean {
+  const style = window.getComputedStyle(el);
+  return style.display !== 'none' && style.visibility !== 'hidden';
+}
+
+/**
+ * 图片是否可用：有真实地址，且不是「已加载完成但宽度为 0」这种必然失败的情况。
+ * 尚未 complete（懒加载 / 仍在下载）视为可用 —— 弹窗里会重新发起加载。
+ */
+export function isDisplayableImage(img: HTMLImageElement): boolean {
+  const src = img.currentSrc || img.src || '';
+  if (!src) return false;
+  if (img.complete && img.naturalWidth === 0) return false;
+  return isDisplayed(img);
+}
+
+/**
+ * 生成弹窗头像 HTML。
+ *
+ * 默认只渲染一张铺满容器的照片，首字母占位用行内 `display:none` 藏起来；
+ * 只有照片加载失败时（onerror）才把占位显示出来并移除破图。
+ * 不做「照片压在占位之上」的叠层——叠层一旦缺样式就会变成上下各半、两边都看不全。
+ */
+export function buildAvatarHtml(src: string, alt: string, fallbackText = ''): string {
+  if (!src) return '';
+  const text = (fallbackText || alt || '').trim();
+  const initial = (text.charAt(0) || '?').toUpperCase();
+  return (
+    // 关键尺寸一并写成行内样式：弹窗不依赖新 CSS 也能正确铺满容器
+    `<div class="friend-link-avatar-stack" style="position:relative;width:100%;height:100%">` +
+    `<img class="friend-link-avatar-img" src="${Utils.escapeHtml(src)}" ` +
+    `alt="${Utils.escapeHtml(alt || text || '头像')}" decoding="async" ` +
+    `style="width:100%;height:100%;object-fit:cover;display:block" ` +
+    `onerror="var p=this.nextElementSibling;if(p)p.style.display='flex';this.remove()">` +
+    `<div class="friend-link-avatar-placeholder" style="display:none;width:100%;height:100%;align-items:center;justify-content:center;font-size:3rem;font-weight:700;color:#fff;background:var(--accent-color,#b45b63)">${Utils.escapeHtml(initial)}</div>` +
+    `</div>`
+  );
+}
+
+/**
+ * 从触发器里挑出头像（照片）。
+ *
+ * 调用方常写成 '.avatar-img, .avatar-placeholder' 这类逗号选择器，
+ * 而 querySelector 只返回「文档顺序第一个」——友链卡片里占位 div 排在 img 前面，
+ * 照片会被整段丢弃，弹窗永远只显示首字母。
+ * 这里改为按选择器声明顺序逐个尝试，并跳过已隐藏 / 加载失败的候选。
+ */
+export function extractAvatarHtml(
+  root: HTMLElement,
+  avatarSelector: string,
+  name = ''
+): string {
+  // 1) 显式声明的照片地址优先级最高
+  const explicit = root.dataset?.jumpAvatar || root.dataset?.avatar;
+  if (explicit) return buildAvatarHtml(explicit, name, name);
+
+  const selectors = avatarSelector.split(',').map(s => s.trim()).filter(Boolean);
+
+  for (const selector of selectors) {
+    const el = root.querySelector<HTMLElement>(selector);
+    if (!el || !isDisplayed(el)) continue;
+
+    // 2) 候选本身就是图片
+    if (el.tagName === 'IMG') {
+      const img = el as HTMLImageElement;
+      if (isDisplayableImage(img)) {
+        return buildAvatarHtml(img.currentSrc || img.src, img.alt || name, name);
+      }
+      continue; // 加载失败：让位给后面的占位选择器
+    }
+
+    // 3) 候选是容器：内部有可用图片时优先用图片
+    const inner = el.querySelector<HTMLImageElement>('img');
+    if (inner && isDisplayableImage(inner)) {
+      return buildAvatarHtml(inner.currentSrc || inner.src, inner.alt || name, name);
+    }
+
+    // 4) 纯占位元素：首字母 + 背景色
+    const initial = (name.trim() || '?').charAt(0).toUpperCase();
+    const bg =
+      window.getComputedStyle(el).backgroundColor || 'var(--accent-color, #b45b63)';
+    return `<div class="friend-link-avatar-placeholder" style="background:${Utils.escapeHtml(bg)};">${Utils.escapeHtml(initial)}</div>`;
+  }
+
+  return '';
+}
+
+/** 取 URL 的主机名，失败时返回空串 */
+function hostnameOf(url: string): string {
+  try {
+    return new URL(url, window.location.href).hostname;
+  } catch {
+    return '';
+  }
+}
+
 // ==================== 主函数 ====================
 
 /**
@@ -293,59 +392,65 @@ export function bindJumpTriggers(
     dialogDefaults = {},
   } = options;
 
+  /**
+   * 打标记：告诉 ExternalLinkManager「这个触发器已被接管」，
+   * 避免同一张卡片被弹窗处理两次。
+   */
+  const markBound = (el: Element): void => {
+    if (el instanceof HTMLElement) el.dataset.jumpBound = 'true';
+  };
+  container.querySelectorAll(triggerSelector).forEach(markBound);
+
   const handleClick = (e: Event): void => {
-    const trigger = (e.target as HTMLElement).closest(triggerSelector) as HTMLElement | null;
+    const start = e.target as HTMLElement | null;
+    const trigger = start?.closest?.(triggerSelector) as HTMLElement | null;
     if (!trigger) return;
 
-    e.preventDefault();
-    e.stopPropagation();
+    markBound(trigger);
 
     let dialogOptions: Partial<JumpDialogOptions> = {};
 
     if (extractor) {
-      dialogOptions = { ...dialogOptions, ...extractor(trigger) };
+      dialogOptions = { ...extractor(trigger) };
     } else {
       // ---------- 默认提取逻辑 ----------
       const url = trigger.getAttribute(urlAttr) || trigger.getAttribute('data-url') || '';
       const nameEl = trigger.querySelector<HTMLElement>(nameSelector);
       const descEl = trigger.querySelector<HTMLElement>(descSelector);
-      const avatarEl = trigger.querySelector<HTMLElement>(avatarSelector);
 
       const name = nameEl ? nameEl.textContent?.trim() || '' : '';
       const desc = descEl ? descEl.textContent?.trim() || '' : '';
-      let avatarHtml = '';
-
-      if (avatarEl) {
-        if (avatarEl.tagName === 'IMG') {
-          const img = avatarEl as HTMLImageElement;
-          avatarHtml = `<img src="${Utils.escapeHtml(img.src)}" alt="${Utils.escapeHtml(img.alt || name || '头像')}" style="width:100%;height:100%;object-fit:cover;display:block;">`;
-        } else {
-          // 占位元素：取首字母 + 背景色
-          const initial = name ? name.charAt(0).toUpperCase() : '?';
-          const bg = window.getComputedStyle(avatarEl).backgroundColor || 'var(--accent-color, #b45b63)';
-          avatarHtml = `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:${Utils.escapeHtml(bg)};color:#fff;font-size:32px;font-weight:600;">${Utils.escapeHtml(initial)}</div>`;
-        }
-      }
 
       dialogOptions = {
         url,
-        name: name || '未命名',
+        name,
         desc,
-        avatarHtml,
+        // 照片：按选择器顺序挑选真正可用的图片，失败再退回首字母占位
+        avatarHtml: extractAvatarHtml(trigger, avatarSelector, name),
       };
     }
 
-    const finalOptions: JumpDialogOptions = {
+    const finalOptions = {
       ...dialogDefaults,
       ...dialogOptions,
       anchorElement: trigger,
     } as JumpDialogOptions;
 
-    if (!finalOptions.url || !finalOptions.name) {
-      console.warn('[JumpDialog] 缺少必填字段 url 或 name，跳过弹窗');
+    /**
+     * 校验必须放在 preventDefault 之前：
+     * 原来「先拦截、再校验」，缺字段时直接 return，
+     * 点击被整条吞掉，链接再也打不开。
+     */
+    if (!finalOptions.url) {
+      console.warn('[JumpDialog] 触发器缺少 url，交由浏览器默认行为处理');
       return;
     }
+    if (!finalOptions.name) {
+      finalOptions.name = hostnameOf(finalOptions.url) || '外部链接';
+    }
 
+    e.preventDefault();
+    e.stopPropagation();
     showJumpDialog(finalOptions);
   };
 

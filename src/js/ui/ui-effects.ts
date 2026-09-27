@@ -5,7 +5,7 @@
 
 import { CONFIG, Utils, scheduleIdle } from '/js/core/core.js';
 import { isEnabled } from '/js/data/settings.js';
-import { showJumpDialog } from '/js/ui/jump-dialog.js';
+import { showJumpDialog, extractAvatarHtml } from '/js/ui/jump-dialog.js';
 import { MouseEffectManager, CustomCursor } from './mouse-effects.js';
 import { initTooltips } from './tooltip.js';
 
@@ -21,7 +21,7 @@ export class ExternalLinkManager {
    * 导致同源外链判定存在两套标准。
    */
   private WHITELIST: Set<string> = CONFIG.EXTERNAL_WHITELIST;
-  private _boundHandleClick: ((e: Event) => void) | null = null;
+  private _boundHandleClick: ((e: MouseEvent) => void) | null = null;
 
   constructor() {
     this.init();
@@ -53,40 +53,84 @@ export class ExternalLinkManager {
     return false;
   }
 
-  private handleLinkClick = (e: Event): void => {
-    const anchor = (e.target as Element).closest('a');
+  /**
+   * 弹窗标题的取值顺序：
+   * 显式声明 > title / aria-label > 卡片标题 > 图片 alt > 文本 > 主机名。
+   * 原来只取 anchor.textContent，图片链接拿不到名字，
+   * 而卡片类链接会把整段描述塞进标题。
+   */
+  private pickName(anchor: HTMLAnchorElement, href: string): string {
+    const declared = (anchor.dataset.jumpName || anchor.dataset.name || '').trim();
+    if (declared) return declared;
+
+    const label = (anchor.getAttribute('title') || anchor.getAttribute('aria-label') || '').trim();
+    if (label) return label;
+
+    const heading = anchor.querySelector('.friend-name, .jump-name, .external-link-name, h1, h2, h3');
+    const headingText = heading?.textContent?.trim();
+    if (headingText) return headingText;
+
+    const alt = anchor.querySelector('img[alt]')?.getAttribute('alt')?.trim();
+    if (alt) return alt;
+
+    const text = (anchor.textContent || '').replace(/\s+/g, ' ').trim();
+    if (text) return text.length > 40 ? `${text.slice(0, 40)}…` : text;
+
+    try {
+      return new URL(href, window.location.href).hostname;
+    } catch {
+      return '外部链接';
+    }
+  }
+
+  private handleLinkClick = (e: MouseEvent): void => {
+    /**
+     * 中键 / Ctrl(Cmd)+点击 / Shift+点击 等交给浏览器：
+     * 这些操作本意是「新标签页打开」，不该被确认弹窗拦下。
+     */
+    if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+    // 已被更内层的处理器消费（图片查看器等）
+    if (e.defaultPrevented) return;
+
+    const start = e.target as Element | null;
+    const anchor = start?.closest?.('a') as HTMLAnchorElement | null;
     if (!anchor) return;
-    // 跳过友链卡片（由 friend-link-manager 处理）
-    if (anchor.closest('[data-friend-link="true"]')) return;
+
+    // 下载链接不拦
+    if (anchor.hasAttribute('download')) return;
+    // 已由 bindJumpTriggers 接管（友链卡片等），避免弹两次
+    if (anchor.closest('[data-jump-bound="true"], [data-friend-link="true"]')) return;
 
     const href = anchor.getAttribute('href');
-    if (!href) return;
+    if (!href || !this.isExternalLink(href)) return;
 
-    if (this.isExternalLink(href)) {
-      e.preventDefault();
-      e.stopPropagation();
+    e.preventDefault();
+    e.stopPropagation();
 
-      // 白名单直接跳转
-      if (this.isWhitelisted(href)) {
-        window.open(href, '_blank', 'noopener,noreferrer');
-        return;
-      }
-
-      // 使用 jump-dialog 弹窗确认
-      const name =
-        anchor.textContent?.trim() ||
-        new URL(href, window.location.href).hostname;
-      showJumpDialog({
-        name: name || '外部链接',
-        url: href,
-        desc: '您即将访问外部网站，本站不对第三方内容负责',
-        countdown: 6,
-        redirectTarget: '_blank',
-        onRedirect: (url) => {
-          console.log('[ExternalLinkManager] 跳转至:', url);
-        },
-      });
+    // 白名单直接跳转
+    if (this.isWhitelisted(href)) {
+      window.open(href, '_blank', 'noopener,noreferrer');
+      return;
     }
+
+    const name = this.pickName(anchor, href);
+
+    // 使用 jump-dialog 弹窗确认
+    showJumpDialog({
+      name,
+      url: href,
+      desc:
+        (anchor.dataset.jumpDesc || '').trim() ||
+        '您即将访问外部网站，本站不对第三方内容负责',
+      // 链接里的照片（头像 / 封面）传给弹窗展示
+      avatarHtml: extractAvatarHtml(anchor, 'img', name),
+      countdown: 6,
+      redirectTarget: '_blank',
+      anchorElement: anchor,
+      onRedirect: (url) => {
+        console.log('[ExternalLinkManager] 跳转至:', url);
+      },
+    });
   };
 
   private init(): void {
