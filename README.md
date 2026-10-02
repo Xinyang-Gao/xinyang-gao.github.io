@@ -122,8 +122,7 @@ Website
 │  │  │     └─ 网站的起源.md
 │  │  ├─ avatar.webp
 │  │  ├─ friends.json
-│  │  ├─ friend_colors.json
-│  │  └─ 网站更新日志.md
+│  │  └─ friend_colors.json
 │  ├─ public                      # 原样发布到 dist 根目录（约定式，加文件即可）
 │  │  ├─ .well-known
 │  │  │  └─ vercount-verify-pof0sq1cg39g4rpkl66s6rtf.txt
@@ -227,6 +226,7 @@ Website
 ├─ .gitmodules
 ├─ .nvmrc
 ├─ .python-version
+├─ CHANGELOG.md
 ├─ CNAME
 ├─ LICENSE
 ├─ package-lock.json
@@ -250,7 +250,7 @@ Website
 |------|------|------|
 | **数据模型** | `build_context.py` | 定义 `Article`、`Work`、`Friend`、`BuildContext` 等数据结构，作为构建上下文在各模块间传递。 |
 | **公共工具** | `common.py` | 提供日志、JSON 读写、哈希计算、日期格式化、路径处理等通用函数。 |
-| **输入加载器** | `input_loader.py` | 扫描 `src/assets/source/` 下的 Markdown 文件、`src/works/` 下的作品元数据、`src/assets/friends.json` 友链以及 `src/assets/网站更新日志.md`，解析后填充 `BuildContext`。 |
+| **输入加载器** | `input_loader.py` | 扫描 `src/assets/source/` 下的 Markdown 文件、`src/works/` 下的作品元数据、`src/assets/friends.json` 友链以及根目录的 `CHANGELOG.md` 更新日志，解析后填充 `BuildContext`。 |
 | **构建配置** | `config.py` | 定义 `BuildConfig`（force / clean / skip_frontend / offline / strict / parallel / max_workers / dry_run / ci），一次构建的所有开关集中在此，经 `BuildContext.options` 下发给各生成器。 |
 | **构建引擎** | `engine.py` | 管理所有生成器（`OutputGenerator`），协调执行顺序，支持串行/并行运行，并依据 `.build_state.json` 进行增量判断；返回 `BuildReport` 汇总耗时与结果。 |
 | **生成器基类** | `generators/base.py` | 定义生成器抽象接口，包含 `name`、`inputs`、`outputs`、`generate()` 等方法，以及输入哈希计算和状态更新逻辑。 |
@@ -312,7 +312,8 @@ Website
 | 源 | 目标 | 说明 |
 |------|------|------|
 | `src/public/**` | `dist/**` | 站点根文件：`favicon.ico`、`robots.txt`、`BingSiteAuth.xml`、`.well-known/` 验证文件。**新增根文件放进该目录即可发布，无需改代码** |
-| `src/assets/**` | `dist/assets/**` | 全局素材（头像、图片、更新日志），排除 `source/`（Markdown 源） |
+| `CHANGELOG.md` | `dist/CHANGELOG.md` | 网站更新日志（Keep a Changelog 格式），原样发布到站点根 |
+| `src/assets/**` | `dist/assets/**` | 全局素材（头像、图片、数据 JSON），排除 `source/`（Markdown 源） |
 | `src/works/**` | `dist/works/**` | 作品子页面资源，排除 `metadata.json`（仅构建期使用） |
 | `src/assets/*.json` | `dist/json/*.json` | 友链数据与主题色，直接作为 `/json` 接口发布 |
 | `src/templates/*.html` | `dist/` 或 `dist/<子目录>/index.html` | 首页 / 404 / 页脚片段，以及 `PAGE_TEMPLATES` 定义的子目录页 |
@@ -793,6 +794,17 @@ cover: /assets/cover.webp  # 可选，文章列表项的封面/背景图
 | `article_categories` | 同 `article_tags` |
 | `work_tags` | 同 `article_tags` |
 | `total_update_days` | 有更新的日期天数 |
+
+### 7.5 网站更新日志（根目录 `CHANGELOG.md`）
+
+更新日志位于仓库根目录 `CHANGELOG.md`，格式遵循 [Keep a Changelog 1.1.0](https://keepachangelog.com/zh-CN/1.1.0/)：
+
+- **版本标题**：`## [8.45.6] - 2026-09-27`；被回滚的版本追加 `[YANKED]` 标记；只有日期、没有版本号的标题（`## 2025-12-06`）属于旧日志，构建时标记 `is_old`。
+- **变动类型小节**：`### 新增` / `### 变更` / `### 弃用` / `### 移除` / `### 修复` / `### 安全`（也允许自定义小节，如 `### 已知问题`），小节名会原样成为条目的 `type`。
+- **变更条目**：0 缩进的 `- 描述`，其后以空白缩进的行为该条目的续行；条目之间的空行不影响归属。
+- **`## [Unreleased]`**：收集尚未发布的改动，构建时整体忽略，发版时再把内容移动到新的版本块。
+
+构建期由 `input_loader.parse_changelog()` 解析成 `dist/json/version.json`（索引）与 `dist/json/version/version-N.json`（正文分片），条目随小节分组后进入时间线与加载覆盖层，类型徽标按 `type` 着色。
 
 ---
 

@@ -796,8 +796,31 @@ export class TimelineManager extends PageBase {
     });
   }
 
+  /**
+   * 变更类型徽标的颜色。
+   * 正文小节名来自 Keep a Changelog（新增 / 变更 / 弃用 / 移除 / 修复 / 安全），
+   * 另外兼容英文小节名与旧版 Conventional Commits 前缀（Service Worker 里
+   * 可能还缓存着旧格式的版本分片）。
+   */
   private getTypeColor(type: string): string {
     const map: Record<string, string> = {
+      // Keep a Changelog 变动类型
+      新增: '#4CAF50',
+      变更: '#2196F3',
+      弃用: '#FF9800',
+      移除: '#FF5722',
+      修复: '#f44336',
+      安全: '#9C27B0',
+      // 自定义小节
+      已知问题: '#795548',
+      // 英文小节名
+      Added: '#4CAF50',
+      Changed: '#2196F3',
+      Deprecated: '#FF9800',
+      Removed: '#FF5722',
+      Fixed: '#f44336',
+      Security: '#9C27B0',
+      // 旧格式（Conventional Commits 前缀）
       feat: '#4CAF50',
       fix: '#f44336',
       perf: '#FF9800',

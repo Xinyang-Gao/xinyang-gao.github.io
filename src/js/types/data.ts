@@ -117,7 +117,9 @@ export interface FriendItem {
 }
 
 export interface VersionChange {
+  /** 变更类型：取自 CHANGELOG.md 的小节标题（新增 / 变更 / 弃用 / 移除 / 修复 / 安全） */
   type: string;
+  /** 变更描述，可能是多行 Markdown */
   description: string;
 }
 

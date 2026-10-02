@@ -19,7 +19,7 @@ from urllib.parse import quote
 # 导入公共模块
 from .common import (
     PROJECT_ROOT, SRC_ROOT, ASSETS_SOURCE_DIR, ASSETS_DIR,
-    ARTICLES_OUTPUT_DIR, JSON_OUTPUT_DIR, WORKS_SRC_DIR,
+    ARTICLES_OUTPUT_DIR, JSON_OUTPUT_DIR, WORKS_SRC_DIR, CHANGELOG_FILE,
     log_info, log_warning, log_error,
     load_json, save_json, compute_content_hash, compute_file_hash, compute_object_hash,
     ensure_dir, env_int,
@@ -58,32 +58,37 @@ except ImportError:
 LAZY_PLACEHOLDER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E"
 
 # ---------- 版本日志解析 ----------
-# 标题格式（仅两种）：
-#   1. `## v8.37.4 (2026-09-24)` —— 带版本号 + 日期
-#   2. `## 2025-12-06`           —— 仅有日期（旧日志，is_old=True）
+# 更新日志位于仓库根目录 `CHANGELOG.md`，格式遵循 Keep a Changelog 1.1.0：
+#   ## [8.45.7] - 2026-09-30   正式版本（可追加撤回标记，如 ` [YANKED]`）
+#   ## 2025-12-06               旧日志：只有日期、没有版本号（is_old=True）
+#   ### 修复                    变更类型小节（新增 / 变更 / 弃用 / 移除 / 修复 / 安全，
+#                               也允许自定义小节，小节名会原样作为条目的 type）
+#   - 描述                      一条变更；其后以空白缩进的行为该条目的续行
+# 顶部的 `## [Unreleased]` 用于收集尚未发布的改动，构建时整体忽略——
+# 它既没有发布日期，也不该出现在 version.json 的“最新版本”里。
 VERSION_PATTERN = re.compile(
-    r'^(#{2,4})\s+(?:'
-    r'v([\w.]+(?:-[\w.]+)?)\s*\((\d{4}-\d{2}-\d{2})\)'   # vX.Y.Z[-devN] (YYYY-MM-DD)
+    r'^(?:#{1,3})\s+\[?\s*(?P<version>[\w.]+(?:-[\w.]+)?)\s*\]?\s*-\s*(?P<date>\d{4}-\d{2}-\d{2})'
+    r'(?:\s*~\s*\d{4}-\d{2}-\d{2})?'      # 兼容日期区间写法，取起始日期
+    r'(?:\s*\[\s*(?P<flag>[A-Za-z]+)\s*\])?\s*$'
     r'|'
-    r'(\d{4}-\d{2}-\d{2})'                                # YYYY-MM-DD
-    r')\s*$'
+    r'^(?:#{1,3})\s+v(?P<legacy>[\w.]+(?:-[\w.]+)?)\s*\(\s*(?P<legacy_date>\d{4}-\d{2}-\d{2})'  # 旧格式 `## v8.45.7 (2026-09-30)`
+    r'(?:\s*~\s*\d{4}-\d{2}-\d{2})?\s*\)\s*$'
+    r'|'
+    r'^(?:#{1,3})\s+(?P<old_date>\d{4}-\d{2}-\d{2})\s*$'
 )
 
-# 变更条目：`- type: description`；无冒号时整行作为 description
-# 缩进行（以空格开头）会被识别为上一个 change 的续行，而非新条目
-CHANGE_PATTERN = re.compile(r'^-\s+(?:([^:]+?):\s*)?(.*)$')
+#: `## [Unreleased]`：未发布区块，显式关闭当前版本后忽略其内容
+UNRELEASED_PATTERN = re.compile(r'^#{1,3}\s+\[\s*unreleased\s*\]\s*$', re.IGNORECASE)
 
-# ---------- 版本日志分片配置 ----------
-# 更新日志只会越积越多，全部塞进单个 version.json 会拖慢首屏下载。
-# 这里按固定条数切片：version.json 退化为「索引」，正文落在 version/version-N.json。
-VERSION_SHARD_SIZE = 40                    # 单个分片最多包含的版本数
-VERSION_SHARD_DIRNAME = "version"          # JSON_OUTPUT_DIR 下的分片目录名
-VERSION_SHARD_URL_PREFIX = "/json/version/"  # 前端访问前缀（需与目录名对应）
-VERSION_SHARD_FILE_PATTERN = re.compile(r'^version-(\d+)\.json$')
+#: 变更类型小节（恰好三级标题，正文里的 `#### xxx` 等不当作小节）
+SECTION_PATTERN = re.compile(r'^###\s+(?P<section>\S.*?)\s*$')
+
+#: 变更条目：`- 描述`（`-` 单独成行时描述为空）
+CHANGE_PATTERN = re.compile(r'^-(?:\s+|$)')
 
 
 def parse_changelog(md_text: str) -> Dict:
-    """解析更新日志 Markdown。
+    """解析 `CHANGELOG.md`（Keep a Changelog 格式）。
 
     返回结构：
         {
@@ -91,16 +96,21 @@ def parse_changelog(md_text: str) -> Dict:
           "2025-12-06":{"date": "2025-12-06", "changes": [...], "is_old": True},
           ...
         }
-    每个 change 形如 {"type": "refactor", "description": "..."}。
-    旧日志与正式版本共用同一套解析逻辑，仅用 is_old 区分。
+    每个 change 形如 {"type": "修复", "description": "..."}：
+      * `type` 取自条目所属的小节标题（`### 修复` -> `修复`），小节之外为空串；
+      * `description` 为条目正文，缩进行原样保留在其中（多行 Markdown）。
+    版本号保留 `v` 前缀写入（与历史 version.json 一致，前端可直接比较）；
+    `## [Unreleased]` 及版本块之外的注记（引用块、文末链接定义等）不会进入数据。
     """
     version_map: Dict[str, Dict] = {}
     current_version: Optional[str] = None
     current_date: Optional[str] = None
     current_is_old: bool = False
+    current_section: str = ""
     changes: List[Dict] = []
     current_change: Optional[Dict] = None
     description_lines: List[str] = []
+    in_fence: bool = False
 
     def flush_change() -> None:
         nonlocal current_change, description_lines
@@ -111,7 +121,7 @@ def parse_changelog(md_text: str) -> Dict:
             description_lines = []
 
     def flush_version() -> None:
-        nonlocal current_version, current_date, current_is_old, changes
+        nonlocal current_version, current_date, current_is_old, current_section, changes
         nonlocal current_change, description_lines
         if current_version is not None:
             flush_change()
@@ -125,48 +135,87 @@ def parse_changelog(md_text: str) -> Dict:
         current_version = None
         current_date = None
         current_is_old = False
+        current_section = ""
         changes = []
         current_change = None
         description_lines = []
 
     for line in md_text.splitlines():
+        # 0) 围栏代码块内不解析结构，只随当前条目透传
+        if line.lstrip().startswith('```'):
+            in_fence = not in_fence
+            if current_change is not None:
+                description_lines.append(line.rstrip())
+            continue
+        if in_fence:
+            if current_change is not None:
+                description_lines.append(line.rstrip())
+            continue
+
         # 1) 版本标题
         m = VERSION_PATTERN.match(line)
         if m:
             flush_version()
-            if m.group(2):
-                # 带版本号：## v8.37.4 (2026-09-24)
-                current_version = f"v{m.group(2)}"
-                current_date = m.group(3)
-                current_is_old = False
+            if m.group('version'):
+                # ## [8.45.7] - 2026-09-30（可选 [YANKED] 等标记，此处仅存日期）
+                current_version = f"v{m.group('version')}"
+                current_date = m.group('date')
+            elif m.group('legacy'):
+                current_version = f"v{m.group('legacy')}"
+                current_date = m.group('legacy_date')
             else:
                 # 旧日志：## 2025-12-06
-                current_version = m.group(4)
-                current_date = m.group(4)
+                current_version = m.group('old_date')
+                current_date = m.group('old_date')
                 current_is_old = True
             continue
 
-        # 2) 版本块之前的内容忽略
+        # 2) 未发布区块：关闭上一个版本，其内容不计入任何版本
+        if UNRELEASED_PATTERN.match(line):
+            flush_version()
+            continue
+
+        # 3) 版本标题之前（文件头说明等）的内容忽略
         if current_version is None:
             continue
 
-        # 3) 新的变更条目
-        m = CHANGE_PATTERN.match(line)
+        # 4) 变更类型小节
+        m = SECTION_PATTERN.match(line)
         if m:
             flush_change()
-            change_type = (m.group(1) or '').strip()
-            initial_desc = m.group(2).strip()
-            current_change = {'type': change_type, 'description': ''}
-            if initial_desc:
-                description_lines.append(initial_desc)
+            current_section = m.group('section').strip()
             continue
 
-        # 4) 缩进的续行
-        if current_change is not None:
-            description_lines.append(line.rstrip())
+        # 5) 新的变更条目
+        if CHANGE_PATTERN.match(line):
+            flush_change()
+            current_change = {'type': current_section, 'description': ''}
+            description_lines.append(line[1:].strip())
+            continue
+
+        # 6) 空行：保持当前条目开启（条目内部允许空行）
+        if not line.strip():
+            continue
+
+        # 7) 缩进行：上一个条目的续行
+        if line[0] in ' \t':
+            if current_change is not None:
+                description_lines.append(line.rstrip())
+            continue
+
+        # 8) 0 缩进的其它文本（引用块、文末链接定义……）：视为注记，结束当前条目
+        flush_change()
 
     flush_version()
     return version_map
+
+# ---------- 版本日志分片配置 ----------
+# 更新日志只会越积越多，全部塞进单个 version.json 会拖慢首屏下载。
+# 这里按固定条数切片：version.json 退化为「索引」，正文落在 version/version-N.json。
+VERSION_SHARD_SIZE = 40                    # 单个分片最多包含的版本数
+VERSION_SHARD_DIRNAME = "version"          # JSON_OUTPUT_DIR 下的分片目录名
+VERSION_SHARD_URL_PREFIX = "/json/version/"  # 前端访问前缀（需与目录名对应）
+VERSION_SHARD_FILE_PATTERN = re.compile(r'^version-(\d+)\.json$')
 
 
 def sort_versions(version_strings: List[str]) -> List[str]:
@@ -292,7 +341,7 @@ def read_version_shards(shard_dir: Path, index_data: Dict) -> Optional[List[Dict
 
 
 def load_version(force: bool = False) -> Dict:
-    changelog_path = ASSETS_DIR / "网站更新日志.md"
+    changelog_path = CHANGELOG_FILE
     version_json_path = JSON_OUTPUT_DIR / "version.json"
     shard_dir = JSON_OUTPUT_DIR / VERSION_SHARD_DIRNAME
 

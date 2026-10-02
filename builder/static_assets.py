@@ -98,8 +98,12 @@ STATIC_ASSET_RULES: Tuple[AssetRule, ...] = (
         note="站点根文件：favicon / robots / 域名验证文件",
     ),
     AssetRule(
+        "CHANGELOG.md", "CHANGELOG.md", required=True,
+        note="更新日志（Keep a Changelog 格式），原样发布到站点根",
+    ),
+    AssetRule(
         "src/assets", "assets", exclude=("source", "source/**"),
-        note="全局素材：头像、图片、更新日志（source/ 为 Markdown 源，不发布）",
+        note="全局素材：头像、图片（source/ 为 Markdown 源，不发布）",
     ),
     AssetRule(
         "src/works", "works", exclude=("**/metadata.json",),
