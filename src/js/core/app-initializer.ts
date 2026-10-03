@@ -69,7 +69,7 @@ export class AppInitializer {
           showBackgroundImage();
         }
       },
-      { timeout: 100 }
+      { timeout: 100 },
     );
   }
 
@@ -99,37 +99,49 @@ export class AppInitializer {
 
   private static scheduleDeferredTasks(): void {
     // 无刷新导航和列表点击
-    scheduleIdle(() => {
-      enableAjaxNavigation();
-      document.addEventListener('click', handleListItemClick);
-    }, { timeout: 500 });
+    scheduleIdle(
+      () => {
+        enableAjaxNavigation();
+        document.addEventListener('click', handleListItemClick);
+      },
+      { timeout: 500 },
+    );
 
     // 当前页面特性初始化
-    scheduleIdle(() => {
-      let currentPage = Utils.getPageNameFromPath(window.location.pathname) || 'index';
-      if (
-        document.querySelector('.article-page-container') ||
-        document.getElementById('articleBody')
-      ) {
-        currentPage = 'article-detail';
-      }
-      initPageFeatures(currentPage).catch(console.warn);
-    }, { timeout: 800 });
+    scheduleIdle(
+      () => {
+        let currentPage = Utils.getPageNameFromPath(window.location.pathname) || 'index';
+        if (
+          document.querySelector('.article-page-container') ||
+          document.getElementById('articleBody')
+        ) {
+          currentPage = 'article-detail';
+        }
+        initPageFeatures(currentPage).catch(console.warn);
+      },
+      { timeout: 800 },
+    );
 
     // 其他非关键功能
-    scheduleIdle(() => {
-      initUIEffects();
-      dataService.warmup();
-      LazyImageLoader.init();
-      GlobalImageManager.init();
-      updateFooterUpdateTime().catch(console.warn);
-      initFooterStats().catch(console.warn);
-    }, { timeout: 3000 });
+    scheduleIdle(
+      () => {
+        initUIEffects();
+        dataService.warmup();
+        LazyImageLoader.init();
+        GlobalImageManager.init();
+        updateFooterUpdateTime().catch(console.warn);
+        initFooterStats().catch(console.warn);
+      },
+      { timeout: 3000 },
+    );
 
     // 音乐播放器（更晚，避免抢带宽）
-    scheduleIdle(() => {
-      import('/js/vendor/global-music-player.js').catch(() => {});
-    }, { timeout: 5000 });
+    scheduleIdle(
+      () => {
+        import('/js/vendor/global-music-player.js').catch(() => {});
+      },
+      { timeout: 5000 },
+    );
   }
 
   // ---------- 阶段 4：收尾 ----------
@@ -147,10 +159,7 @@ export class AppInitializer {
 
     // 覆盖层有 0.8s 淡出：等它彻底不可见，再让导航栏入场并勾边 LOGO
     await this.waitOverlayFullyHidden();
-    if (
-      this.navbarInstance &&
-      typeof this.navbarInstance.playEntranceAnimation === 'function'
-    ) {
+    if (this.navbarInstance && typeof this.navbarInstance.playEntranceAnimation === 'function') {
       this.navbarInstance.playEntranceAnimation();
     }
 

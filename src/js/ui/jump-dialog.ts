@@ -106,16 +106,15 @@ export function buildAvatarHtml(src: string, alt: string, fallbackText = ''): st
  * 照片会被整段丢弃，弹窗永远只显示首字母。
  * 这里改为按选择器声明顺序逐个尝试，并跳过已隐藏 / 加载失败的候选。
  */
-export function extractAvatarHtml(
-  root: HTMLElement,
-  avatarSelector: string,
-  name = ''
-): string {
+export function extractAvatarHtml(root: HTMLElement, avatarSelector: string, name = ''): string {
   // 1) 显式声明的照片地址优先级最高
   const explicit = root.dataset?.jumpAvatar || root.dataset?.avatar;
   if (explicit) return buildAvatarHtml(explicit, name, name);
 
-  const selectors = avatarSelector.split(',').map(s => s.trim()).filter(Boolean);
+  const selectors = avatarSelector
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
 
   for (const selector of selectors) {
     const el = root.querySelector<HTMLElement>(selector);
@@ -138,8 +137,7 @@ export function extractAvatarHtml(
 
     // 4) 纯占位元素：首字母 + 背景色
     const initial = (name.trim() || '?').charAt(0).toUpperCase();
-    const bg =
-      window.getComputedStyle(el).backgroundColor || 'var(--accent-color, #b45b63)';
+    const bg = window.getComputedStyle(el).backgroundColor || 'var(--accent-color, #b45b63)';
     return `<div class="friend-link-avatar-placeholder" style="background:${Utils.escapeHtml(bg)};">${Utils.escapeHtml(initial)}</div>`;
   }
 
@@ -180,7 +178,8 @@ export function showJumpDialog(options: JumpDialogOptions): { close: () => void 
     onRedirect,
     overlayClass = '',
     contentClass = '',
-    showCloseButton = false,
+    // 默认显示关闭按钮：外链确认弹窗只留 Esc / 点遮罩关闭对键盘与移动端不友好
+    showCloseButton = true,
     anchorElement,
     anchorRect,
   } = options;
@@ -210,16 +209,21 @@ export function showJumpDialog(options: JumpDialogOptions): { close: () => void 
     }
 
     if (shouldRedirect) {
-      window.open(url, redirectTarget, 'noopener,noreferrer');
+      const win = window.open(url, redirectTarget, 'noopener,noreferrer');
+      if (!win) {
+        // 弹窗被浏览器拦截（用户激活超时 / 拦截器）：降级为当前标签页导航，
+        // 否则用户看到"倒计时归零却毫无反应"。此处已有确认弹窗，跳转是用户意图
+        console.warn('[JumpDialog] window.open 被拦截，降级为当前页跳转:', url);
+        window.location.href = url;
+        return;
+      }
     }
     // 稍等片刻让用户看到跳转反馈
     window.setTimeout(() => modalInstance?.close(), 300);
   };
 
   // ---------- 内容片段 ----------
-  const avatarHtmlContent = avatarHtml
-    ? `<div class="friend-link-avatar">${avatarHtml}</div>`
-    : '';
+  const avatarHtmlContent = avatarHtml ? `<div class="friend-link-avatar">${avatarHtml}</div>` : '';
 
   const closeBtnHtml = showCloseButton
     ? `<button class="friend-link-close" aria-label="关闭" style="position:absolute;top:12px;right:16px;background:none;border:none;font-size:28px;color:#fff;opacity:0.6;cursor:pointer;pointer-events:auto;">&times;</button>`
@@ -242,10 +246,10 @@ export function showJumpDialog(options: JumpDialogOptions): { close: () => void 
   const modal = createModal({
     overlayClass: `friend-link-overlay ${overlayClass}`.trim(),
     containerClass: `friend-link-content ${contentClass}`.trim(),
-    containerInOverlay: true,   // friend-link 的 content 在 overlay 内
-    autoActivate: false,        // 使用自定义的入场动画
+    containerInOverlay: true, // friend-link 的 content 在 overlay 内
+    autoActivate: false, // 使用自定义的入场动画
     closeOnEsc: true,
-    closeOnOverlayClick: true,  // 点击遮罩空白处关闭
+    closeOnOverlayClick: true, // 点击遮罩空白处关闭
     closeDuration: 400,
     content: contentHtml,
     onOpening: (instance) => {
@@ -266,8 +270,7 @@ export function showJumpDialog(options: JumpDialogOptions): { close: () => void 
       // content：透明 + 下移
       instance.container.style.opacity = '0';
       instance.container.style.transform = 'translateY(20px) scale(0.95)';
-      instance.container.style.transition =
-        'opacity 0.5s ease 0.35s, transform 0.5s ease 0.35s';
+      instance.container.style.transition = 'opacity 0.5s ease 0.35s, transform 0.5s ease 0.35s';
 
       // ----- 下一帧执行锚点动画 -----
       requestAnimationFrame(() => {
@@ -380,7 +383,7 @@ export function showJumpDialog(options: JumpDialogOptions): { close: () => void 
  */
 export function bindJumpTriggers(
   container: HTMLElement,
-  options: BindJumpTriggersOptions = {}
+  options: BindJumpTriggersOptions = {},
 ): () => void {
   const {
     triggerSelector = '[data-jump-trigger]',

@@ -6,589 +6,589 @@ import { scrollDispatcher } from '/js/core/scroll-dispatcher.js';
 import { themeController } from '/js/core/theme-controller.js';
 
 interface Heading {
-    id: string;
-    level: number;
-    text: string;
-    children?: Heading[];
+  id: string;
+  level: number;
+  text: string;
+  children?: Heading[];
 }
 
 interface ArticleGlobals {
-    ARTICLE_HEADINGS?: Heading[];
-    renderMathInElement?: (element: Element, options: unknown) => void;
-    vercount?: { fetch?: () => void };
+  ARTICLE_HEADINGS?: Heading[];
+  renderMathInElement?: (element: Element, options: unknown) => void;
+  vercount?: { fetch?: () => void };
 }
 
 declare global {
-    interface Window {
-        ARTICLE_HEADINGS?: Heading[];
-        renderMathInElement?: (element: Element, options: unknown) => void;
-        vercount?: { fetch?: () => void };
-    }
+  interface Window {
+    ARTICLE_HEADINGS?: Heading[];
+    renderMathInElement?: (element: Element, options: unknown) => void;
+    vercount?: { fetch?: () => void };
+  }
 }
 
 export class ArticlePageManager extends PageBase {
-    // TOC 状态
-    private tocClickHandler: ((e: Event) => void) | null = null;
-    private tocScrollWrapper: HTMLElement | null = null;
-    private tocListContainer: HTMLElement | null = null;
-    private tocProgressPercent: HTMLElement | null = null;
-    private tocProgressFill: HTMLElement | null = null;
+  // TOC 状态
+  private tocClickHandler: ((e: Event) => void) | null = null;
+  private tocScrollWrapper: HTMLElement | null = null;
+  private tocListContainer: HTMLElement | null = null;
+  private tocProgressPercent: HTMLElement | null = null;
+  private tocProgressFill: HTMLElement | null = null;
 
-    // Twikoo 容器
-    private twikooContainer: HTMLElement | null = null;
+  // Twikoo 容器
+  private twikooContainer: HTMLElement | null = null;
 
-    // ---------- 滚动期 DOM 缓存 ----------
-    // 滚动回调以 rAF 频率触发，绝不能在回调里做 querySelectorAll / getBoundingClientRect 全量扫描，
-    // 否则每帧都要遍历全部标题并强制同步布局。以下缓存在 mount / resize / 内容变化后重建。
-    /** 带 id 的标题元素 */
-    private headingElements: HTMLElement[] = [];
-    /** TOC 条目：data-id → li */
-    private tocItems = new Map<string, HTMLElement>();
-    /** 文档可滚动区间（scrollHeight - innerHeight） */
-    private docScrollRange = 0;
-    /** 上一次高亮的标题 id，避免每帧重复写 class */
-    private lastActiveId: string | null = null;
-    /** 上一次写入的进度百分比，避免每帧重复写 textContent / width */
-    private lastProgressPercent = -1;
+  // ---------- 滚动期 DOM 缓存 ----------
+  // 滚动回调以 rAF 频率触发，绝不能在回调里做 querySelectorAll / getBoundingClientRect 全量扫描，
+  // 否则每帧都要遍历全部标题并强制同步布局。以下缓存在 mount / resize / 内容变化后重建。
+  /** 带 id 的标题元素 */
+  private headingElements: HTMLElement[] = [];
+  /** TOC 条目：data-id → li */
+  private tocItems = new Map<string, HTMLElement>();
+  /** 文档可滚动区间（scrollHeight - innerHeight） */
+  private docScrollRange = 0;
+  /** 上一次高亮的标题 id，避免每帧重复写 class */
+  private lastActiveId: string | null = null;
+  /** 上一次写入的进度百分比，避免每帧重复写 textContent / width */
+  private lastProgressPercent = -1;
 
-    // 注：资源清理栈由 PageBase 提供（protected stack），无需在此声明
+  // 注：资源清理栈由 PageBase 提供（protected stack），无需在此声明
 
-    // ---------- 初始化（原 init → mount） ----------
-    protected mount(): void {
-        const articleBody = document.getElementById('articleBody');
-        if (!articleBody) {
-            console.warn('[Article] 缺少文章主体元素 #articleBody');
-            return;
-        }
-
-        this.ensureTOCStructure();
-        this.initTOC();
-        this.initImageLazyLoad();
-        this.initReadingProgress();
-        this.initCodeBlocks();
-        this.initMobileSidebar();
-        this.initScrollSave();
-        this.setupThemeListener();
-        requestAnimationFrame(() => this.onScroll());
-        this.renderMath();
-        this.initTwikoo();
-        this.refreshVercount();
+  // ---------- 初始化（原 init → mount） ----------
+  protected mount(): void {
+    const articleBody = document.getElementById('articleBody');
+    if (!articleBody) {
+      console.warn('[Article] 缺少文章主体元素 #articleBody');
+      return;
     }
 
-    // ---------- 销毁（原 destroy 中的自定义逻辑 → unmount） ----------
-    protected unmount(): void {
-        // 移除移动端遮罩
-        document.querySelector('.article-sidebar-overlay')?.remove();
+    this.ensureTOCStructure();
+    this.initTOC();
+    this.initImageLazyLoad();
+    this.initReadingProgress();
+    this.initCodeBlocks();
+    this.initMobileSidebar();
+    this.initScrollSave();
+    this.setupThemeListener();
+    requestAnimationFrame(() => this.onScroll());
+    this.renderMath();
+    this.initTwikoo();
+    this.refreshVercount();
+  }
 
-        // 必须解锁滚动：侧边栏开着时做了 SPA 导航的话，
-        // body 的 overflow: hidden 会一直留在新页面上。
-        document.body.style.overflow = '';
+  // ---------- 销毁（原 destroy 中的自定义逻辑 → unmount） ----------
+  protected unmount(): void {
+    // 移除移动端遮罩
+    document.querySelector('.article-sidebar-overlay')?.remove();
 
-        // 销毁 Twikoo
-        if (this.twikooContainer) {
-            destroyTwikoo(this.twikooContainer);
-            this.twikooContainer = null;
-        }
+    // 必须解锁滚动：侧边栏开着时做了 SPA 导航的话，
+    // body 的 overflow: hidden 会一直留在新页面上。
+    document.body.style.overflow = '';
 
-        // 重置 TOC 状态
-        this.tocScrollWrapper = null;
-        this.tocListContainer = null;
-        this.tocProgressPercent = null;
-        this.tocProgressFill = null;
-        this.tocClickHandler = null;
+    // 销毁 Twikoo
+    if (this.twikooContainer) {
+      destroyTwikoo(this.twikooContainer);
+      this.twikooContainer = null;
     }
 
-    // ---------- 数学公式渲染 ----------
-    renderMath(): void {
-        const articleBody = document.getElementById('articleBody');
-        if (!articleBody) return;
-        const global = window as Window & ArticleGlobals;
-        if (typeof global.renderMathInElement === 'function') {
-            try {
-                global.renderMathInElement(articleBody, {
-                    delimiters: [
-                        { left: '$$', right: '$$', display: true },
-                        { left: '$', right: '$', display: false },
-                    ],
-                });
-            } catch (e) {
-                console.warn('[Article] 数学渲染失败:', e);
-            }
-        }
-    }
+    // 重置 TOC 状态
+    this.tocScrollWrapper = null;
+    this.tocListContainer = null;
+    this.tocProgressPercent = null;
+    this.tocProgressFill = null;
+    this.tocClickHandler = null;
+  }
 
-    // ---------- Twikoo 评论 ----------
-    async initTwikoo(): Promise<void> {
-        const container = document.getElementById('twikoo-comments');
-        if (!container) return;
-        this.twikooContainer = container;
-        await initTwikoo(container, {
-            path: window.location.pathname,
+  // ---------- 数学公式渲染 ----------
+  renderMath(): void {
+    const articleBody = document.getElementById('articleBody');
+    if (!articleBody) return;
+    const global = window as Window & ArticleGlobals;
+    if (typeof global.renderMathInElement === 'function') {
+      try {
+        global.renderMathInElement(articleBody, {
+          delimiters: [
+            { left: '$$', right: '$$', display: true },
+            { left: '$', right: '$', display: false },
+          ],
         });
+      } catch (e) {
+        console.warn('[Article] 数学渲染失败:', e);
+      }
+    }
+  }
+
+  // ---------- Twikoo 评论 ----------
+  async initTwikoo(): Promise<void> {
+    const container = document.getElementById('twikoo-comments');
+    if (!container) return;
+    this.twikooContainer = container;
+    await initTwikoo(container, {
+      path: window.location.pathname,
+    });
+  }
+
+  refreshVercount(): void {
+    const global = window as Window & ArticleGlobals;
+    if (global.vercount?.fetch) {
+      try {
+        global.vercount.fetch();
+      } catch {
+        // ignore
+      }
+    }
+  }
+
+  // ---------- TOC 结构（兼容后端预渲染） ----------
+  private ensureTOCStructure(): void {
+    const tocCard = document.querySelector('.sidebar-card.toc-card');
+    if (!tocCard) return;
+
+    // 确保 header 存在
+    let header = tocCard.querySelector('.toc-header');
+    if (!header) {
+      header = document.createElement('div');
+      header.className = 'toc-header';
+      header.innerHTML = '<i class="fas fa-list-ul"></i><span>目录</span>';
+      tocCard.prepend(header);
     }
 
-    refreshVercount(): void {
-        const global = window as Window & ArticleGlobals;
-        if (global.vercount?.fetch) {
-            try {
-                global.vercount.fetch();
-            } catch {
-                // ignore
-            }
-        }
+    // 确保 wrapper 存在，但不覆盖已有内容
+    let wrapper = tocCard.querySelector('.toc-list-wrapper');
+    if (!wrapper) {
+      wrapper = document.createElement('div');
+      wrapper.className = 'toc-list-wrapper';
+      const existingNav = tocCard.querySelector('.toc-nav');
+      if (existingNav) {
+        wrapper.appendChild(existingNav);
+      } else {
+        const newNav = document.createElement('nav');
+        newNav.className = 'toc-nav';
+        newNav.id = 'toc-list-container';
+        wrapper.appendChild(newNav);
+      }
+      tocCard.appendChild(wrapper);
     }
 
-    // ---------- TOC 结构（兼容后端预渲染） ----------
-    private ensureTOCStructure(): void {
-        const tocCard = document.querySelector('.sidebar-card.toc-card');
-        if (!tocCard) return;
+    this.tocScrollWrapper = wrapper as HTMLElement;
+    this.tocListContainer = wrapper.querySelector('.toc-nav, #toc-list-container') as HTMLElement;
+    if (this.tocListContainer && !this.tocListContainer.id) {
+      this.tocListContainer.id = 'toc-list-container';
+    }
+  }
 
-        // 确保 header 存在
-        let header = tocCard.querySelector('.toc-header');
-        if (!header) {
-            header = document.createElement('div');
-            header.className = 'toc-header';
-            header.innerHTML = '<i class="fas fa-list-ul"></i><span>目录</span>';
-            tocCard.prepend(header);
-        }
+  /**
+   * 重建滚动期使用的 DOM 缓存。
+   * 标题集合与 TOC 条目在页面生命周期内基本不变，只在 resize / 内容渲染完成后刷新。
+   */
+  private refreshDomCaches(): void {
+    this.headingElements = Array.from(
+      document.querySelectorAll<HTMLElement>(
+        '#articleBody h1, #articleBody h2, #articleBody h3, #articleBody h4',
+      ),
+    ).filter((h) => !!h.id);
 
-        // 确保 wrapper 存在，但不覆盖已有内容
-        let wrapper = tocCard.querySelector('.toc-list-wrapper');
-        if (!wrapper) {
-            wrapper = document.createElement('div');
-            wrapper.className = 'toc-list-wrapper';
-            const existingNav = tocCard.querySelector('.toc-nav');
-            if (existingNav) {
-                wrapper.appendChild(existingNav);
-            } else {
-                const newNav = document.createElement('nav');
-                newNav.className = 'toc-nav';
-                newNav.id = 'toc-list-container';
-                wrapper.appendChild(newNav);
-            }
-            tocCard.appendChild(wrapper);
-        }
+    this.tocItems.clear();
+    document.querySelectorAll<HTMLElement>('.toc-list li[data-id]').forEach((li) => {
+      const id = li.dataset.id;
+      if (id) this.tocItems.set(id, li);
+    });
 
-        this.tocScrollWrapper = wrapper as HTMLElement;
-        this.tocListContainer = wrapper.querySelector('.toc-nav, #toc-list-container') as HTMLElement;
-        if (this.tocListContainer && !this.tocListContainer.id) {
-            this.tocListContainer.id = 'toc-list-container';
-        }
+    this.docScrollRange = document.documentElement.scrollHeight - window.innerHeight;
+  }
+
+  private initTOC(): void {
+    // 获取已存在的 TOC 容器（由后端渲染）
+    this.tocListContainer = document.getElementById('toc-list-container');
+    if (!this.tocListContainer) {
+      console.warn('[Article] TOC 容器不存在，可能页面未包含目录');
+      return;
     }
 
-    /**
-     * 重建滚动期使用的 DOM 缓存。
-     * 标题集合与 TOC 条目在页面生命周期内基本不变，只在 resize / 内容渲染完成后刷新。
-     */
-    private refreshDomCaches(): void {
-        this.headingElements = Array.from(
-            document.querySelectorAll<HTMLElement>(
-                '#articleBody h1, #articleBody h2, #articleBody h3, #articleBody h4'
-            )
-        ).filter((h) => !!h.id);
+    // 建立滚动期缓存（TOC 由后端渲染，此处 DOM 已就绪）
+    this.refreshDomCaches();
+    // 数学公式 / 懒加载图片可能改变文档高度，下一帧再校正一次
+    requestAnimationFrame(() => this.refreshDomCaches());
 
-        this.tocItems.clear();
-        document.querySelectorAll<HTMLElement>('.toc-list li[data-id]').forEach((li) => {
-            const id = li.dataset.id;
-            if (id) this.tocItems.set(id, li);
-        });
+    // 绑定链接点击事件
+    this.bindTocLinkEvents();
 
-        this.docScrollRange = document.documentElement.scrollHeight - window.innerHeight;
+    // 初始化阅读进度条
+    this.initTocReadingProgress();
+
+    // 滚动监听统一走 ScrollDispatcher（rAF 节流 + 单监听）
+    const unsubscribe = scrollDispatcher.subscribe(() => this.onScroll());
+    this.stack.add(unsubscribe);
+
+    // 首次更新高亮
+    this.onScroll();
+  }
+
+  private bindTocLinkEvents(): void {
+    // 清理旧的监听器（如重复 init）
+    if (this.tocClickHandler) {
+      document.querySelectorAll('.toc-link').forEach((link) => {
+        link.removeEventListener('click', this.tocClickHandler!);
+      });
     }
 
-    private initTOC(): void {
-        // 获取已存在的 TOC 容器（由后端渲染）
-        this.tocListContainer = document.getElementById('toc-list-container');
-        if (!this.tocListContainer) {
-            console.warn('[Article] TOC 容器不存在，可能页面未包含目录');
-            return;
-        }
+    this.tocClickHandler = this.handleTocClick.bind(this);
+    document.querySelectorAll('.toc-link').forEach((link) => {
+      link.addEventListener('click', this.tocClickHandler!);
+    });
 
-        // 建立滚动期缓存（TOC 由后端渲染，此处 DOM 已就绪）
-        this.refreshDomCaches();
-        // 数学公式 / 懒加载图片可能改变文档高度，下一帧再校正一次
-        requestAnimationFrame(() => this.refreshDomCaches());
+    // 登记到清理栈
+    this.stack.add(() => {
+      if (!this.tocClickHandler) return;
+      document.querySelectorAll('.toc-link').forEach((link) => {
+        link.removeEventListener('click', this.tocClickHandler!);
+      });
+      this.tocClickHandler = null;
+    });
+  }
 
-        // 绑定链接点击事件
-        this.bindTocLinkEvents();
-
-        // 初始化阅读进度条
-        this.initTocReadingProgress();
-
-        // 滚动监听统一走 ScrollDispatcher（rAF 节流 + 单监听）
-        const unsubscribe = scrollDispatcher.subscribe(() => this.onScroll());
-        this.stack.add(unsubscribe);
-
-        // 首次更新高亮
-        this.onScroll();
+  private handleTocClick(e: Event): void {
+    e.preventDefault();
+    const link = e.currentTarget as HTMLAnchorElement;
+    const href = link.getAttribute('href');
+    if (!href || !href.startsWith('#')) return;
+    const targetId = href.slice(1);
+    const target = document.getElementById(targetId);
+    if (target) {
+      this.smoothScrollTo(target, 90);
+      /**
+       * 必须写入带 url 的 state：router 的 popstate 处理遇到
+       * 没有 url 的 state 会执行 location.reload()，
+       * 导致「点目录 → 按返回键」变成整页刷新。
+       */
+      history.pushState(
+        {
+          url: `${location.pathname}${location.search}${href}`,
+          scroll: { x: window.scrollX, y: window.scrollY },
+          timestamp: Date.now(),
+        },
+        '',
+        href,
+      );
+      this.updateActiveItem(targetId);
+      this.scrollTocToItem(targetId);
     }
+  }
 
-    private bindTocLinkEvents(): void {
-        // 清理旧的监听器（如重复 init）
-        if (this.tocClickHandler) {
-            document.querySelectorAll('.toc-link').forEach((link) => {
-                link.removeEventListener('click', this.tocClickHandler!);
-            });
-        }
+  private smoothScrollTo(element: HTMLElement, offset = 90): void {
+    const pos = element.getBoundingClientRect().top + window.scrollY - offset;
+    window.scrollTo({ top: Math.max(0, pos), behavior: 'smooth' });
+  }
 
-        this.tocClickHandler = this.handleTocClick.bind(this);
-        document.querySelectorAll('.toc-link').forEach((link) => {
-            link.addEventListener('click', this.tocClickHandler!);
-        });
+  private updateActiveItem(activeId: string): void {
+    // 命中缓存直接返回：滚动时绝大多数帧不会改变高亮项
+    if (this.lastActiveId === activeId) return;
+    if (this.tocItems.size === 0) this.refreshDomCaches();
 
-        // 登记到清理栈
-        this.stack.add(() => {
-            if (!this.tocClickHandler) return;
-            document.querySelectorAll('.toc-link').forEach((link) => {
-                link.removeEventListener('click', this.tocClickHandler!);
-            });
-            this.tocClickHandler = null;
-        });
+    const prev = this.lastActiveId ? this.tocItems.get(this.lastActiveId) : undefined;
+    if (prev) prev.classList.remove('active');
+    this.tocItems.get(activeId)?.classList.add('active');
+    this.lastActiveId = activeId;
+  }
+
+  private scrollTocToItem(itemId: string): void {
+    const li = document.querySelector(`.toc-list li[data-id="${itemId}"]`);
+    if (li && this.tocScrollWrapper) {
+      li.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
+  }
 
-    private handleTocClick(e: Event): void {
-        e.preventDefault();
-        const link = e.currentTarget as HTMLAnchorElement;
-        const href = link.getAttribute('href');
-        if (!href || !href.startsWith('#')) return;
-        const targetId = href.slice(1);
-        const target = document.getElementById(targetId);
-        if (target) {
-            this.smoothScrollTo(target, 90);
-            /**
-             * 必须写入带 url 的 state：router 的 popstate 处理遇到
-             * 没有 url 的 state 会执行 location.reload()，
-             * 导致「点目录 → 按返回键」变成整页刷新。
-             */
-            history.pushState(
-                {
-                    url: `${location.pathname}${location.search}${href}`,
-                    scroll: { x: window.scrollX, y: window.scrollY },
-                    timestamp: Date.now(),
-                },
-                '',
-                href
-            );
-            this.updateActiveItem(targetId);
-            this.scrollTocToItem(targetId);
-        }
+  /**
+   * 滚动回调：由 ScrollDispatcher 以 rAF 频率触发，
+   * 内部不再做节流（Dispatcher 已保证）。
+   */
+  private onScroll(): void {
+    const activeId = this.getCurrentActiveHeading();
+    if (activeId) this.updateActiveItem(activeId);
+    this.updateTocReadingProgress();
+  }
+
+  private getCurrentActiveHeading(): string | null {
+    const headings = this.headingElements;
+    if (headings.length === 0) return null;
+
+    const scrollTop = window.scrollY + 90;
+    let active: string | null = null;
+    let minDist = Infinity;
+
+    for (const h of headings) {
+      const offset = h.getBoundingClientRect().top + window.scrollY;
+      if (offset <= scrollTop && scrollTop - offset < minDist) {
+        minDist = scrollTop - offset;
+        active = h.id;
+      }
     }
+    return active;
+  }
 
-    private smoothScrollTo(element: HTMLElement, offset = 90): void {
-        const pos = element.getBoundingClientRect().top + window.scrollY - offset;
-        window.scrollTo({ top: Math.max(0, pos), behavior: 'smooth' });
-    }
+  private initTocReadingProgress(): void {
+    const header = document.querySelector('.toc-header');
+    if (!header) return;
+    if (header.querySelector('.reading-progress-wrapper')) return;
 
-    private updateActiveItem(activeId: string): void {
-        // 命中缓存直接返回：滚动时绝大多数帧不会改变高亮项
-        if (this.lastActiveId === activeId) return;
-        if (this.tocItems.size === 0) this.refreshDomCaches();
-
-        const prev = this.lastActiveId ? this.tocItems.get(this.lastActiveId) : undefined;
-        if (prev) prev.classList.remove('active');
-        this.tocItems.get(activeId)?.classList.add('active');
-        this.lastActiveId = activeId;
-    }
-
-    private scrollTocToItem(itemId: string): void {
-        const li = document.querySelector(`.toc-list li[data-id="${itemId}"]`);
-        if (li && this.tocScrollWrapper) {
-            li.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }
-    }
-
-    /**
-     * 滚动回调：由 ScrollDispatcher 以 rAF 频率触发，
-     * 内部不再做节流（Dispatcher 已保证）。
-     */
-    private onScroll(): void {
-        const activeId = this.getCurrentActiveHeading();
-        if (activeId) this.updateActiveItem(activeId);
-        this.updateTocReadingProgress();
-    }
-
-    private getCurrentActiveHeading(): string | null {
-        const headings = this.headingElements;
-        if (headings.length === 0) return null;
-
-        const scrollTop = window.scrollY + 90;
-        let active: string | null = null;
-        let minDist = Infinity;
-
-        for (const h of headings) {
-            const offset = h.getBoundingClientRect().top + window.scrollY;
-            if (offset <= scrollTop && scrollTop - offset < minDist) {
-                minDist = scrollTop - offset;
-                active = h.id;
-            }
-        }
-        return active;
-    }
-
-    private initTocReadingProgress(): void {
-        const header = document.querySelector('.toc-header');
-        if (!header) return;
-        if (header.querySelector('.reading-progress-wrapper')) return;
-
-        const wrapper = document.createElement('div');
-        wrapper.className = 'reading-progress-wrapper';
-        wrapper.innerHTML = `
+    const wrapper = document.createElement('div');
+    wrapper.className = 'reading-progress-wrapper';
+    wrapper.innerHTML = `
             <span class="reading-percent">0%</span>
             <div class="reading-progress-container"><div class="reading-progress-fill"></div></div>
         `;
-        header.appendChild(wrapper);
+    header.appendChild(wrapper);
 
-        this.tocProgressPercent = wrapper.querySelector('.reading-percent');
-        this.tocProgressFill = wrapper.querySelector('.reading-progress-fill');
-        this.updateTocReadingProgress();
+    this.tocProgressPercent = wrapper.querySelector('.reading-percent');
+    this.tocProgressFill = wrapper.querySelector('.reading-progress-fill');
+    this.updateTocReadingProgress();
+  }
+
+  private updateTocReadingProgress(): void {
+    if (!this.tocProgressFill) return;
+    const range = this.docScrollRange;
+    const percent = range > 0 ? (window.scrollY / range) * 100 : 0;
+    const rounded = Math.round(percent);
+    // 百分比未变化时不写 DOM，滚动时绝大多数帧都会被跳过
+    if (rounded === this.lastProgressPercent) return;
+    this.lastProgressPercent = rounded;
+    if (this.tocProgressPercent) {
+      this.tocProgressPercent.textContent = `${rounded}%`;
+    }
+    this.tocProgressFill.style.width = `${percent}%`;
+  }
+
+  // ---------- 图片懒加载 ----------
+  private initImageLazyLoad(): void {
+    const images = document.querySelectorAll<HTMLImageElement>('#articleBody img[data-src]');
+    if (!images.length) return;
+
+    if (!('IntersectionObserver' in window)) {
+      // 降级：直接加载
+      images.forEach((img) => this.loadImage(img));
+      return;
     }
 
-    private updateTocReadingProgress(): void {
-        if (!this.tocProgressFill) return;
-        const range = this.docScrollRange;
-        const percent = range > 0 ? (window.scrollY / range) * 100 : 0;
-        const rounded = Math.round(percent);
-        // 百分比未变化时不写 DOM，滚动时绝大多数帧都会被跳过
-        if (rounded === this.lastProgressPercent) return;
-        this.lastProgressPercent = rounded;
-        if (this.tocProgressPercent) {
-            this.tocProgressPercent.textContent = `${rounded}%`;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            this.loadImage(entry.target as HTMLImageElement);
+            observer.unobserve(entry.target);
+          }
         }
-        this.tocProgressFill.style.width = `${percent}%`;
-    }
+      },
+      { rootMargin: '100px 0px', threshold: 0.01 },
+    );
 
-    // ---------- 图片懒加载 ----------
-    private initImageLazyLoad(): void {
-        const images = document.querySelectorAll<HTMLImageElement>('#articleBody img[data-src]');
-        if (!images.length) return;
+    images.forEach((img) => observer.observe(img));
+    this.stack.addObserver(observer);
+  }
 
-        if (!('IntersectionObserver' in window)) {
-            // 降级：直接加载
-            images.forEach((img) => this.loadImage(img));
-            return;
+  private loadImage(img: HTMLImageElement): void {
+    const src = img.dataset.src;
+    if (!src) return;
+
+    img.classList.add('lazy-loading');
+    const temp = new Image();
+    temp.onload = () => {
+      img.src = src;
+      img.classList.remove('lazy-loading');
+      img.classList.add('loaded');
+      delete img.dataset.src;
+    };
+    temp.onerror = () => {
+      img.classList.remove('lazy-loading');
+    };
+    temp.src = src;
+  }
+
+  // ---------- 阅读进度条（顶部） ----------
+  private initReadingProgress(): void {
+    const progressBar = document.getElementById('progress-bar');
+    if (!progressBar) return;
+
+    let lastPercent = -1;
+    const unsubscribe = scrollDispatcher.subscribe((scrollY) => {
+      const percent = this.docScrollRange > 0 ? (scrollY / this.docScrollRange) * 100 : 0;
+      const rounded = Math.round(percent);
+      if (rounded === lastPercent) return;
+      lastPercent = rounded;
+      progressBar.style.width = `${percent}%`;
+    });
+    this.stack.add(unsubscribe);
+  }
+
+  // ---------- 代码块复制 ----------
+  private initCodeBlocks(): void {
+    document.querySelectorAll('#articleBody pre').forEach((pre) => {
+      if ((pre as HTMLElement).dataset.enhanced) return;
+      const code = pre.querySelector('code');
+      if (!code) return;
+
+      const langMatch = code.className.match(/language-(\w+)/);
+      const lang = langMatch ? langMatch[1] : '';
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'code-block-wrapper';
+      pre.parentNode!.insertBefore(wrapper, pre);
+      wrapper.appendChild(pre);
+
+      const toolbar = document.createElement('div');
+      toolbar.className = 'code-toolbar';
+
+      if (lang) {
+        const span = document.createElement('span');
+        span.className = 'code-filetype';
+        span.textContent = lang.toUpperCase();
+        toolbar.appendChild(span);
+      }
+
+      const copyBtn = document.createElement('button');
+      copyBtn.className = 'code-copy-btn';
+      copyBtn.textContent = '复制';
+      copyBtn.addEventListener('click', async () => {
+        try {
+          await navigator.clipboard.writeText(code.textContent!);
+          copyBtn.textContent = '已复制';
+          setTimeout(() => (copyBtn.textContent = '复制'), 1500);
+        } catch {
+          copyBtn.textContent = '失败';
+          setTimeout(() => (copyBtn.textContent = '复制'), 1500);
         }
+      });
+      toolbar.appendChild(copyBtn);
+      pre.prepend(toolbar);
 
-        const observer = new IntersectionObserver(
-            (entries) => {
-                for (const entry of entries) {
-                    if (entry.isIntersecting) {
-                        this.loadImage(entry.target as HTMLImageElement);
-                        observer.unobserve(entry.target);
-                    }
-                }
-            },
-            { rootMargin: '100px 0px', threshold: 0.01 }
-        );
+      (pre as HTMLElement).dataset.enhanced = 'true';
+    });
+  }
 
-        images.forEach((img) => observer.observe(img));
-        this.stack.addObserver(observer);
+  // ---------- 移动端侧边栏 ----------
+  private initMobileSidebar(): void {
+    const checkMobile = (): void => {
+      const isMobile = window.innerWidth <= CONFIG.BREAKPOINTS.MOBILE;
+      const floating = document.querySelector<HTMLElement>('.floating-buttons');
+      if (floating) floating.style.display = isMobile ? 'flex' : 'none';
+      if (this.tocScrollWrapper) {
+        this.tocScrollWrapper.style.maxHeight = isMobile
+          ? 'calc(100vh - 160px)'
+          : 'calc(100vh - 220px)';
+      }
+    };
+
+    // 触发侧边栏切换
+    const toggleHandler = (): void => this.toggleMobileSidebar();
+    this.stack.addEventListener(window, 'article:toggleSidebar', toggleHandler);
+
+    // 遮罩（单次创建）
+    let overlay = document.querySelector<HTMLElement>('.article-sidebar-overlay');
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.className = 'article-sidebar-overlay';
+      document.body.appendChild(overlay);
+      this.stack.addEventListener(overlay, 'click', () => this.closeMobileSidebar());
     }
 
-    private loadImage(img: HTMLImageElement): void {
-        const src = img.dataset.src;
-        if (!src) return;
-
-        img.classList.add('lazy-loading');
-        const temp = new Image();
-        temp.onload = () => {
-            img.src = src;
-            img.classList.remove('lazy-loading');
-            img.classList.add('loaded');
-            delete img.dataset.src;
-        };
-        temp.onerror = () => {
-            img.classList.remove('lazy-loading');
-        };
-        temp.src = src;
-    }
-
-    // ---------- 阅读进度条（顶部） ----------
-    private initReadingProgress(): void {
-        const progressBar = document.getElementById('progress-bar');
-        if (!progressBar) return;
-
-        let lastPercent = -1;
-        const unsubscribe = scrollDispatcher.subscribe((scrollY) => {
-            const percent = this.docScrollRange > 0 ? (scrollY / this.docScrollRange) * 100 : 0;
-            const rounded = Math.round(percent);
-            if (rounded === lastPercent) return;
-            lastPercent = rounded;
-            progressBar.style.width = `${percent}%`;
-        });
-        this.stack.add(unsubscribe);
-    }
-
-    // ---------- 代码块复制 ----------
-    private initCodeBlocks(): void {
-        document.querySelectorAll('#articleBody pre').forEach((pre) => {
-            if ((pre as HTMLElement).dataset.enhanced) return;
-            const code = pre.querySelector('code');
-            if (!code) return;
-
-            const langMatch = code.className.match(/language-(\w+)/);
-            const lang = langMatch ? langMatch[1] : '';
-
-            const wrapper = document.createElement('div');
-            wrapper.className = 'code-block-wrapper';
-            pre.parentNode!.insertBefore(wrapper, pre);
-            wrapper.appendChild(pre);
-
-            const toolbar = document.createElement('div');
-            toolbar.className = 'code-toolbar';
-
-            if (lang) {
-                const span = document.createElement('span');
-                span.className = 'code-filetype';
-                span.textContent = lang.toUpperCase();
-                toolbar.appendChild(span);
-            }
-
-            const copyBtn = document.createElement('button');
-            copyBtn.className = 'code-copy-btn';
-            copyBtn.textContent = '复制';
-            copyBtn.addEventListener('click', async () => {
-                try {
-                    await navigator.clipboard.writeText(code.textContent!);
-                    copyBtn.textContent = '已复制';
-                    setTimeout(() => (copyBtn.textContent = '复制'), 1500);
-                } catch {
-                    copyBtn.textContent = '失败';
-                    setTimeout(() => (copyBtn.textContent = '复制'), 1500);
-                }
-            });
-            toolbar.appendChild(copyBtn);
-            pre.prepend(toolbar);
-
-            (pre as HTMLElement).dataset.enhanced = 'true';
-        });
-    }
-
-    // ---------- 移动端侧边栏 ----------
-    private initMobileSidebar(): void {
-        const checkMobile = (): void => {
-            const isMobile = window.innerWidth <= CONFIG.BREAKPOINTS.MOBILE;
-            const floating = document.querySelector<HTMLElement>('.floating-buttons');
-            if (floating) floating.style.display = isMobile ? 'flex' : 'none';
-            if (this.tocScrollWrapper) {
-                this.tocScrollWrapper.style.maxHeight = isMobile
-                    ? 'calc(100vh - 160px)'
-                    : 'calc(100vh - 220px)';
-            }
-        };
-
-        // 触发侧边栏切换
-        const toggleHandler = (): void => this.toggleMobileSidebar();
-        this.stack.addEventListener(window, 'article:toggleSidebar', toggleHandler);
-
-        // 遮罩（单次创建）
-        let overlay = document.querySelector<HTMLElement>('.article-sidebar-overlay');
-        if (!overlay) {
-            overlay = document.createElement('div');
-            overlay.className = 'article-sidebar-overlay';
-            document.body.appendChild(overlay);
-            this.stack.addEventListener(overlay, 'click', () => this.closeMobileSidebar());
-        }
-
-        // resize 防抖
-        let resizeTimer: number | null = null;
-        const resizeHandler = (): void => {
-            if (resizeTimer !== null) clearTimeout(resizeTimer);
-            resizeTimer = window.setTimeout(() => {
-                // 视口变化会改变文档可滚动区间与标题位置，必须重建缓存
-                this.refreshDomCaches();
-                this.lastProgressPercent = -1;
-                checkMobile();
-                resizeTimer = null;
-            }, 150);
-        };
-        this.stack.addEventListener(window, 'resize', resizeHandler);
-        this.stack.add(() => {
-            if (resizeTimer !== null) {
-                clearTimeout(resizeTimer);
-                resizeTimer = null;
-            }
-        });
-
+    // resize 防抖
+    let resizeTimer: number | null = null;
+    const resizeHandler = (): void => {
+      if (resizeTimer !== null) clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(() => {
+        // 视口变化会改变文档可滚动区间与标题位置，必须重建缓存
+        this.refreshDomCaches();
+        this.lastProgressPercent = -1;
         checkMobile();
-    }
+        resizeTimer = null;
+      }, 150);
+    };
+    this.stack.addEventListener(window, 'resize', resizeHandler);
+    this.stack.add(() => {
+      if (resizeTimer !== null) {
+        clearTimeout(resizeTimer);
+        resizeTimer = null;
+      }
+    });
 
-    private toggleMobileSidebar(): void {
-        const sidebar = document.querySelector('.article-sidebar');
-        const overlay = document.querySelector('.article-sidebar-overlay');
-        if (!sidebar) return;
-        sidebar.classList.toggle('open');
-        overlay?.classList.toggle('open');
-        document.body.style.overflow = sidebar.classList.contains('open') ? 'hidden' : '';
-    }
+    checkMobile();
+  }
 
-    private closeMobileSidebar(): void {
-        const sidebar = document.querySelector('.article-sidebar');
-        const overlay = document.querySelector('.article-sidebar-overlay');
-        sidebar?.classList.remove('open');
-        overlay?.classList.remove('open');
-        document.body.style.overflow = '';
-    }
+  private toggleMobileSidebar(): void {
+    const sidebar = document.querySelector('.article-sidebar');
+    const overlay = document.querySelector('.article-sidebar-overlay');
+    if (!sidebar) return;
+    sidebar.classList.toggle('open');
+    overlay?.classList.toggle('open');
+    document.body.style.overflow = sidebar.classList.contains('open') ? 'hidden' : '';
+  }
 
-    // ---------- 滚动位置保存（支持锚点优先） ----------
-    private initScrollSave(): void {
-        const key = `scroll_${window.location.pathname}`;
-        const hash = window.location.hash;
+  private closeMobileSidebar(): void {
+    const sidebar = document.querySelector('.article-sidebar');
+    const overlay = document.querySelector('.article-sidebar-overlay');
+    sidebar?.classList.remove('open');
+    overlay?.classList.remove('open');
+    document.body.style.overflow = '';
+  }
 
-        if (hash) {
-            // 有 hash：滚动到锚点，并清除保存的滚动位置
-            const targetId = hash.slice(1);
-            setTimeout(() => {
-                const el = document.getElementById(targetId);
-                if (el) {
-                    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                    safeSession.remove(key);
-                } else {
-                    this.restoreScrollPosition(key);
-                }
-            }, 50);
+  // ---------- 滚动位置保存（支持锚点优先） ----------
+  private initScrollSave(): void {
+    const key = `scroll_${window.location.pathname}`;
+    const hash = window.location.hash;
+
+    if (hash) {
+      // 有 hash：滚动到锚点，并清除保存的滚动位置
+      const targetId = hash.slice(1);
+      setTimeout(() => {
+        const el = document.getElementById(targetId);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          safeSession.remove(key);
         } else {
-            this.restoreScrollPosition(key);
+          this.restoreScrollPosition(key);
         }
-
-        // 滚动位置保存：Dispatcher 已节流，写入用 debounce
-        let saveTimer: number | null = null;
-        const unsubscribe = scrollDispatcher.subscribe((scrollY) => {
-            if (saveTimer !== null) clearTimeout(saveTimer);
-            saveTimer = window.setTimeout(() => {
-                safeSession.set(key, String(scrollY));
-                saveTimer = null;
-            }, 200);
-        });
-
-        this.stack.add(unsubscribe);
-        this.stack.add(() => {
-            if (saveTimer !== null) {
-                clearTimeout(saveTimer);
-                saveTimer = null;
-            }
-        });
+      }, 50);
+    } else {
+      this.restoreScrollPosition(key);
     }
 
-    private restoreScrollPosition(key: string): void {
-        const saved = safeSession.get(key);
-        if (saved) {
-            const scrollY = parseInt(saved, 10);
-            if (!isNaN(scrollY)) {
-                setTimeout(() => window.scrollTo(0, scrollY), 50);
-            }
-        }
-    }
+    // 滚动位置保存：Dispatcher 已节流，写入用 debounce
+    let saveTimer: number | null = null;
+    const unsubscribe = scrollDispatcher.subscribe((scrollY) => {
+      if (saveTimer !== null) clearTimeout(saveTimer);
+      saveTimer = window.setTimeout(() => {
+        safeSession.set(key, String(scrollY));
+        saveTimer = null;
+      }, 200);
+    });
 
-    // ---------- 主题变化刷新进度（统一走 themeController.onChange） ----------
-    private setupThemeListener(): void {
-        const unsubscribe = themeController.onChange(() => this.updateTocReadingProgress());
-        this.stack.add(unsubscribe);
+    this.stack.add(unsubscribe);
+    this.stack.add(() => {
+      if (saveTimer !== null) {
+        clearTimeout(saveTimer);
+        saveTimer = null;
+      }
+    });
+  }
+
+  private restoreScrollPosition(key: string): void {
+    const saved = safeSession.get(key);
+    if (saved) {
+      const scrollY = parseInt(saved, 10);
+      if (!isNaN(scrollY)) {
+        setTimeout(() => window.scrollTo(0, scrollY), 50);
+      }
     }
+  }
+
+  // ---------- 主题变化刷新进度（统一走 themeController.onChange） ----------
+  private setupThemeListener(): void {
+    const unsubscribe = themeController.onChange(() => this.updateTocReadingProgress());
+    this.stack.add(unsubscribe);
+  }
 }
 
 // ---------- 导出初始化函数供 router 调用 ----------
 export async function initArticlePage(): Promise<ArticlePageManager> {
-    const manager = new ArticlePageManager();
-    await manager.init();
-    return manager;
+  const manager = new ArticlePageManager();
+  await manager.init();
+  return manager;
 }

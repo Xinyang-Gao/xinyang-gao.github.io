@@ -153,9 +153,7 @@ export class NavbarManager {
     this.logoDraw = handle;
 
     // SVG 就绪后再切到「LOGO 模式」（隐藏文字降级层）
-    void handle.ready
-      .then(() => this.elements.navbar?.classList.add('logo-ready'))
-      .catch(() => {});
+    void handle.ready.then(() => this.elements.navbar?.classList.add('logo-ready')).catch(() => {});
 
     this.stack.add(() => {
       this.logoDraw?.destroy();
@@ -175,10 +173,7 @@ export class NavbarManager {
     this.scrollTicking = true;
     requestAnimationFrame(() => {
       this.scrollTicking = false;
-      this.elements.navbar?.classList.toggle(
-        'scrolled',
-        window.scrollY > SCROLL_THRESHOLD
-      );
+      this.elements.navbar?.classList.toggle('scrolled', window.scrollY > SCROLL_THRESHOLD);
     });
   };
 
@@ -248,9 +243,7 @@ export class NavbarManager {
     const h1 = document.querySelector<HTMLElement>('main h1, article h1, h1');
     const fromH1 = h1?.textContent?.trim() ?? '';
     if (fromH1) return fromH1;
-    return document.title
-      .replace(new RegExp(`\\s*[|｜–—-]\\s*${SITE_NAME}\\s*$`), '')
-      .trim();
+    return document.title.replace(new RegExp(`\\s*[|｜–—-]\\s*${SITE_NAME}\\s*$`), '').trim();
   }
 
   private enterTitleMode(title: string): void {
@@ -404,9 +397,7 @@ export class NavbarManager {
     this.mountLogo();
 
     if (fresh) {
-      requestAnimationFrame(() =>
-        requestAnimationFrame(() => this.playEntranceAnimation())
-      );
+      requestAnimationFrame(() => requestAnimationFrame(() => this.playEntranceAnimation()));
     } else {
       this.entrancePlayed = true;
       navbar.classList.remove('initial');

@@ -12,10 +12,15 @@
   --surface-color-secondary: #f7f6f3;
   --text-color: #23231f;
   --text-secondary: #6d6d66;
-  --accent-color: #b45b63;
+  /* 对比度（WCAG AA 正文 4.5:1，对 #f4f3f0 / #fff 实测）：
+     旧值 #b45b63 = 4.10 ✗ → 新值 #ab4f57 = 4.75 / 5.27 ✓ */
+  --accent-color: #ab4f57;
   --accent-light: #cd8189;
   --accent-dark: #984a52;
-  --accent-rgb: 180, 91, 99;
+  /* 链接/文字 hover 色：accent-light 对浅底只有 2.67:1，
+     文字场景改用本令牌（= accent-dark 5.51:1）；装饰性边框/渐变仍用 accent-light */
+  --accent-hover: #984a52;
+  --accent-rgb: 171, 79, 87;
   --accent-light-rgb: 205, 129, 137;
   --accent-dark-rgb: 152, 74, 82;
   --border-color: #e4e1da;
@@ -145,6 +150,8 @@
   --accent-color: #5aa9ff;
   --accent-light: #a3d4ff;
   --accent-dark: #2f7fd9;
+  /* 暗色下 accent-light 对 #101015 已有 6:1，hover 直接沿用 */
+  --accent-hover: #a3d4ff;
   --accent-rgb: 90, 169, 255;
   --accent-light-rgb: 163, 212, 255;
   --accent-dark-rgb: 47, 127, 217;

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 """友链主题色生成器。
 
@@ -22,15 +21,20 @@ from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from io import BytesIO
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
 
+from ..build_context import BuildContext
 from ..common import (
     FRIEND_COLORS_JSON,
-    compute_bytes_hash, ensure_dir, env_int, env_str,
-    log_info, log_warning, log_error,
-    load_json, save_json,
+    compute_bytes_hash,
+    ensure_dir,
+    env_int,
+    env_str,
+    load_json,
+    log_error,
+    log_info,
+    log_warning,
+    save_json,
 )
-from ..build_context import BuildContext
 from .base import OutputGenerator
 
 # ---------- 抓取参数 ----------
@@ -75,13 +79,13 @@ def _build_session():
 
 
 # ---------- 颜色提取 ----------
-def _is_valid_color(rgb: Tuple[int, int, int]) -> bool:
+def _is_valid_color(rgb: tuple[int, int, int]) -> bool:
     r, g, b = rgb
     _, s, v = colorsys.rgb_to_hsv(r / 255.0, g / 255.0, b / 255.0)
     return not (v < 0.15 or v > 0.85 or s < 0.20)
 
 
-def _select_best_color(color_counts: List[Tuple[Tuple[int, int, int], int]]) -> Optional[Tuple[int, int, int]]:
+def _select_best_color(color_counts: list[tuple[tuple[int, int, int], int]]) -> tuple[int, int, int] | None:
     if not color_counts:
         return None
 
@@ -103,7 +107,7 @@ def _select_best_color(color_counts: List[Tuple[Tuple[int, int, int], int]]) -> 
     return max(color_counts, key=lambda x: x[1])[0]
 
 
-def get_dominant_color_from_image(image_data: bytes) -> Optional[Tuple[int, int, int]]:
+def get_dominant_color_from_image(image_data: bytes) -> tuple[int, int, int] | None:
     try:
         from PIL import Image
     except ImportError:
@@ -125,7 +129,7 @@ def _cache_path(avatar_url: str) -> Path:
     return CACHE_DIR / f"{compute_bytes_hash(avatar_url.encode('utf-8'))}.img"
 
 
-def fetch_avatar_bytes(avatar_url: str, session) -> Optional[bytes]:
+def fetch_avatar_bytes(avatar_url: str, session) -> bytes | None:
     """读取磁盘缓存 / 网络下载头像字节流。"""
     cache_file = _cache_path(avatar_url)
     if cache_file.is_file():
@@ -153,7 +157,7 @@ def fetch_avatar_bytes(avatar_url: str, session) -> Optional[bytes]:
     return image_data
 
 
-def fetch_avatar_color(avatar_url: str, session=None) -> Optional[Tuple[int, int, int]]:
+def fetch_avatar_color(avatar_url: str, session=None) -> tuple[int, int, int] | None:
     image_data = fetch_avatar_bytes(avatar_url, session)
     if image_data is None:
         return None
@@ -178,7 +182,7 @@ class FriendColorsGenerator(OutputGenerator):
             log_warning("缺少 requests / pillow，跳过友链主题色提取（前端将使用默认色）")
             return True
 
-        existing: Dict[str, list] = {}
+        existing: dict[str, list] = {}
         if FRIEND_COLORS_JSON.exists():
             raw = load_json(FRIEND_COLORS_JSON, {}) or {}
             existing = raw if isinstance(raw, dict) else {}
@@ -235,18 +239,18 @@ class FriendColorsGenerator(OutputGenerator):
     @staticmethod
     def _dependencies_ready() -> bool:
         try:
-            from PIL import Image          # noqa: F401
-            import requests                # noqa: F401
+            import requests  # noqa: F401
+            from PIL import Image  # noqa: F401
         except ImportError as e:
             log_error(f"缺少依赖库: {e}（需要 requests 和 pillow）")
             return False
         return True
 
-    def _fetch_colors(self, pending, cfg, existing: Optional[Dict[str, list]] = None) -> Dict[str, list]:
+    def _fetch_colors(self, pending, cfg, existing: dict[str, list] | None = None) -> dict[str, list]:
         existing = existing or {}
         workers = env_int("FRIEND_COLOR_WORKERS", 0) or min(DEFAULT_WORKERS, max(1, len(pending)))
         session = _build_session()
-        results: Dict[str, list] = {}
+        results: dict[str, list] = {}
         try:
             if workers <= 1:
                 for key, friend in pending:
@@ -271,7 +275,7 @@ class FriendColorsGenerator(OutputGenerator):
         return results
 
     @staticmethod
-    def _color_or_fallback(friend, session, fallback: Optional[list] = None) -> list:
+    def _color_or_fallback(friend, session, fallback: list | None = None) -> list:
         """提取头像主色；失败时优先沿用历史颜色，其次才用兜底灰。"""
         log_info(f"处理友链颜色: {friend.name}")
         color = fetch_avatar_color(friend.avatar, session)

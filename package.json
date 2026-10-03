@@ -17,9 +17,17 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "biome check src/js",
+    "lint:fix": "biome check --write --unsafe src/js",
+    "lint:py": "ruff check builder run.py",
+    "format": "biome format --write src/js",
+    "format:check": "biome format src/js",
+    "check": "npm run typecheck && npm run lint && npm run format:check && npm run lint:py"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.5.15",
     "rollup-plugin-copy": "^3.5.0",
     "typescript": "^7.0.2",
     "vite": "^8.3.0"

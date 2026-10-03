@@ -33,7 +33,7 @@ const CHART_CDN_TIMEOUT_MS = 10000;
 /** Chart 构造函数签名（与 Chart.js v4 UMD 兼容） */
 type ChartConstructor = new (
   ctx: CanvasRenderingContext2D,
-  config: Record<string, unknown>
+  config: Record<string, unknown>,
 ) => ChartInstance;
 
 declare global {
@@ -165,18 +165,6 @@ export class StatsManager {
     this.worksList = this.data.works?.works || [];
   }
 
-  // ==================== 安全 DOM 辅助 ====================
-
-  private setText(selector: string, value: unknown): void {
-    const el = this.container?.querySelector(selector);
-    if (el) el.textContent = value == null ? '—' : String(value);
-  }
-
-  private setHtml(selector: string, html: string): void {
-    const el = this.container?.querySelector(selector);
-    if (el) el.innerHTML = html;
-  }
-
   // ==================== 渲染：英雄区 ====================
 
   private renderHero(): void {
@@ -219,7 +207,7 @@ export class StatsManager {
     let totalReadMins = 0;
     for (const art of this.articlesList) {
       if (art.read_time) {
-        const mins = parseInt(String(art.read_time));
+        const mins = parseInt(String(art.read_time), 10);
         if (!isNaN(mins)) totalReadMins += mins;
         else if (art.word_count) totalReadMins += Math.ceil(art.word_count / 300);
       } else if (art.word_count) {
@@ -230,7 +218,12 @@ export class StatsManager {
     const kpis = [
       { icon: 'fas fa-file-lines', number: totalArticles, label: '文章总数', sub: '篇' },
       { icon: 'fas fa-box', number: totalWorks, label: '作品总数', sub: '个' },
-      { icon: 'fas fa-pen-to-square', number: totalWords.toLocaleString(), label: '总字数', sub: '字' },
+      {
+        icon: 'fas fa-pen-to-square',
+        number: totalWords.toLocaleString(),
+        label: '总字数',
+        sub: '字',
+      },
       { icon: 'fas fa-tags', number: articleTags, label: '文章标签', sub: '种' },
       { icon: 'fas fa-palette', number: workTags, label: '作品标签', sub: '类' },
       {
@@ -245,7 +238,12 @@ export class StatsManager {
         label: '代码行数',
         sub: '非空',
       },
-      { icon: 'fas fa-chart-line', number: avgWord.toLocaleString(), label: '篇均字数', sub: '深度' },
+      {
+        icon: 'fas fa-chart-line',
+        number: avgWord.toLocaleString(),
+        label: '篇均字数',
+        sub: '深度',
+      },
       { icon: 'fas fa-bookmark', number: avgTag, label: '篇均标签', sub: '维度' },
       {
         icon: 'fas fa-clock',
@@ -264,7 +262,7 @@ export class StatsManager {
         <div class="stat-card-label">${k.label}</div>
         <div class="stat-card-sub">${k.sub}</div>
       </div>
-    `
+    `,
       )
       .join('');
   }
@@ -291,7 +289,7 @@ export class StatsManager {
           <canvas id="${def.id}" width="500" height="280"></canvas>
         </div>
       </div>
-    `
+    `,
       )
       .join('');
 
@@ -360,7 +358,7 @@ export class StatsManager {
       ? sortedByWords
           .map(
             (art) =>
-              `<li><span>${art.title || '无题'}</span><span>${(art.word_count || 0).toLocaleString()}字</span></li>`
+              `<li><span>${art.title || '无题'}</span><span>${(art.word_count || 0).toLocaleString()}字</span></li>`,
           )
           .join('')
       : '<li>暂无数据</li>';
@@ -458,7 +456,7 @@ export class StatsManager {
     return {
       textColor: isDark ? '#eceef2' : '#2c2c2c',
       gridColor: isDark ? '#3f3f4b' : '#e8e2db',
-      accent: '#b45b63',
+      accent: '#ab4f57',
     };
   }
 

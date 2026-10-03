@@ -44,8 +44,7 @@ const CLOSE_DURATION = 450;
 const CLOSE_RESET_DURATION = 150;
 
 // Utilities
-const clamp = (v: number, min: number, max: number): number =>
-  v < min ? min : v > max ? max : v;
+const clamp = (v: number, min: number, max: number): number => (v < min ? min : v > max ? max : v);
 
 const pad2 = (n: number): string => (n < 10 ? `0${n}` : String(n));
 
@@ -90,7 +89,9 @@ const ICONS = {
   next: svg('<path d="M9.5 5.5L16 12l-6.5 6.5"/>'),
   zoomIn: svg('<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3M11 8.5v5M8.5 11h5"/>'),
   zoomOut: svg('<circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3M8.5 11h5"/>'),
-  rotate: svg('<polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>'),
+  rotate: svg(
+    '<polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>',
+  ),
   fsEnter: svg('<path d="M9 4H4v5M15 4h5v5M9 20H4v-5M15 20h5v-5"/>'),
   fsExit: svg('<path d="M4 9h5V4M20 9h-5V4M4 15h5v5M20 15h-5v5"/>'),
 };
@@ -149,7 +150,14 @@ export class ImageViewer {
 
   // ---- 手势 ----
   private pointers = new Map<number, { x: number; y: number }>();
-  private pinch: { dist: number; scale: number; x: number; y: number; midX: number; midY: number } | null = null;
+  private pinch: {
+    dist: number;
+    scale: number;
+    x: number;
+    y: number;
+    midX: number;
+    midY: number;
+  } | null = null;
   private dragStart = { x: 0, y: 0 };
   private dragBase = { x: 0, y: 0 };
   private moved = false;
@@ -186,8 +194,12 @@ export class ImageViewer {
 
   /* ================= 公开 API ================= */
 
-  prev(): void { this.nav(-1); }
-  next(): void { this.nav(1); }
+  prev(): void {
+    this.nav(-1);
+  }
+  next(): void {
+    this.nav(1);
+  }
 
   go(index: number): void {
     if (index === this.index || index < 0 || index >= this.images.length) return;
@@ -298,7 +310,7 @@ export class ImageViewer {
       target: EventTarget,
       type: string,
       fn: (e: Event) => void,
-      opts?: AddEventListenerOptions
+      opts?: AddEventListenerOptions,
     ) => target.addEventListener(type, fn, { signal, ...opts });
 
     on(this.closeBtn, 'click', () => this.destroy());
@@ -319,11 +331,16 @@ export class ImageViewer {
       else this.zoomAt(me.clientX, me.clientY, 2.5, true);
     });
 
-    on(this.stage, 'wheel', (e) => {
-      e.preventDefault();
-      const we = e as WheelEvent;
-      this.zoomAt(we.clientX, we.clientY, Math.exp(-we.deltaY * 0.0015), false);
-    }, { passive: false });
+    on(
+      this.stage,
+      'wheel',
+      (e) => {
+        e.preventDefault();
+        const we = e as WheelEvent;
+        this.zoomAt(we.clientX, we.clientY, Math.exp(-we.deltaY * 0.0015), false);
+      },
+      { passive: false },
+    );
 
     on(this.stage, 'pointerdown', (e) => this.onPointerDown(e as PointerEvent));
     on(window, 'pointermove', (e) => this.onPointerMove(e as PointerEvent));
@@ -349,10 +366,18 @@ export class ImageViewer {
       const btn = (e.target as HTMLElement).closest('button[data-act]');
       if (!btn) return;
       switch (btn.getAttribute('data-act')) {
-        case 'zoom-in': this.zoomBy(ZOOM_STEP); break;
-        case 'zoom-out': this.zoomBy(1 / ZOOM_STEP); break;
-        case 'rotate': this.rotate(); break;
-        case 'fullscreen': this.toggleFullscreen(); break;
+        case 'zoom-in':
+          this.zoomBy(ZOOM_STEP);
+          break;
+        case 'zoom-out':
+          this.zoomBy(1 / ZOOM_STEP);
+          break;
+        case 'rotate':
+          this.rotate();
+          break;
+        case 'fullscreen':
+          this.toggleFullscreen();
+          break;
       }
     });
 
@@ -366,7 +391,10 @@ export class ImageViewer {
   }
 
   private onKeydown(e: KeyboardEvent): void {
-    if (e.key === 'Tab') { this.trapFocus(e); return; }
+    if (e.key === 'Tab') {
+      this.trapFocus(e);
+      return;
+    }
     if (e.metaKey || e.ctrlKey || e.altKey) return;
 
     switch (e.key) {
@@ -374,19 +402,42 @@ export class ImageViewer {
         if (document.fullscreenElement) return;
         this.destroy();
         break;
-      case 'ArrowLeft': e.preventDefault(); this.nav(-1); break;
-      case 'ArrowRight': e.preventDefault(); this.nav(1); break;
-      case '+': case '=': e.preventDefault(); this.zoomBy(ZOOM_STEP); break;
-      case '-': case '_': e.preventDefault(); this.zoomBy(1 / ZOOM_STEP); break;
-      case '0': e.preventDefault(); this.resetTransform(true, true); break;
-      case 'r': case 'R': this.rotate(); break;
-      case 'f': case 'F': this.toggleFullscreen(); break;
+      case 'ArrowLeft':
+        e.preventDefault();
+        this.nav(-1);
+        break;
+      case 'ArrowRight':
+        e.preventDefault();
+        this.nav(1);
+        break;
+      case '+':
+      case '=':
+        e.preventDefault();
+        this.zoomBy(ZOOM_STEP);
+        break;
+      case '-':
+      case '_':
+        e.preventDefault();
+        this.zoomBy(1 / ZOOM_STEP);
+        break;
+      case '0':
+        e.preventDefault();
+        this.resetTransform(true, true);
+        break;
+      case 'r':
+      case 'R':
+        this.rotate();
+        break;
+      case 'f':
+      case 'F':
+        this.toggleFullscreen();
+        break;
     }
   }
 
   private trapFocus(e: KeyboardEvent): void {
     const focusables = Array.from(
-      this.root.querySelectorAll<HTMLElement>('button:not([disabled])')
+      this.root.querySelectorAll<HTMLElement>('button:not([disabled])'),
     ).filter((el) => !el.closest('[hidden]'));
     if (!focusables.length) return;
 
@@ -546,15 +597,14 @@ export class ImageViewer {
 
     const scale = Math.min(
       originRect.width / naturalRect.width,
-      originRect.height / naturalRect.height
+      originRect.height / naturalRect.height,
     );
     const tx = originCx - naturalCx;
     const ty = originCy - naturalCy;
 
     // 立即设置初始 transform（禁用过渡，强制 reflow 提交）
     this.img.style.transition = 'none';
-    this.img.style.transform =
-      `translate3d(${tx}px, ${ty}px, 0) scale(${scale})`;
+    this.img.style.transform = `translate3d(${tx}px, ${ty}px, 0) scale(${scale})`;
     void this.img.offsetWidth; // 强制同步布局
 
     // 下一帧开启过渡，回到自然位置
@@ -599,10 +649,7 @@ export class ImageViewer {
 
       const hasOrigin = !!(this.originRect && this.baseW > 0);
       const needsReset =
-        this.tx.scale !== 1 ||
-        this.tx.x !== 0 ||
-        this.tx.y !== 0 ||
-        this.tx.rotate !== 0;
+        this.tx.scale !== 1 || this.tx.x !== 0 || this.tx.y !== 0 || this.tx.rotate !== 0;
 
       // 无 originRect（例如通过 API 打开）→ 只做遮罩淡出
       if (!hasOrigin) {
@@ -652,18 +699,14 @@ export class ImageViewer {
 
     const originCx = originRect.left + originRect.width / 2;
     const originCy = originRect.top + originRect.height / 2;
-    const targetScale = Math.min(
-      originRect.width / naturalW,
-      originRect.height / naturalH
-    );
+    const targetScale = Math.min(originRect.width / naturalW, originRect.height / naturalH);
     const tx = originCx - naturalCx;
     const ty = originCy - naturalCy;
 
     // 应用终点 transform，让 CSS 从 identity 平滑过渡到此
     this.img.classList.remove('is-smooth');
     this.img.classList.add('is-closing-anim');
-    this.img.style.transform =
-      `translate3d(${tx}px, ${ty}px, 0) scale(${targetScale})`;
+    this.img.style.transform = `translate3d(${tx}px, ${ty}px, 0) scale(${targetScale})`;
   }
 
   /* ================= 布局测量 ================= */
@@ -694,8 +737,7 @@ export class ImageViewer {
   private apply(smooth = false): void {
     this.img.classList.toggle('is-smooth', smooth);
     const { scale, x, y, rotate } = this.tx;
-    this.img.style.transform =
-      `translate3d(${x}px, ${y}px, 0) scale(${scale}) rotate(${rotate}deg)`;
+    this.img.style.transform = `translate3d(${x}px, ${y}px, 0) scale(${scale}) rotate(${rotate}deg)`;
   }
 
   private resetTransform(smooth: boolean, flash = false): void {
@@ -731,7 +773,7 @@ export class ImageViewer {
     this.zoomAt(
       this.stageRect.left + this.stageRect.w / 2,
       this.stageRect.top + this.stageRect.h / 2,
-      factor
+      factor,
     );
   }
 
@@ -790,7 +832,11 @@ export class ImageViewer {
     if ((e.target as HTMLElement).closest('button')) return;
 
     this.downTarget = e.target;
-    try { this.stage.setPointerCapture(e.pointerId); } catch { /* noop */ }
+    try {
+      this.stage.setPointerCapture(e.pointerId);
+    } catch {
+      /* noop */
+    }
     this.pointers.set(e.pointerId, { x: e.clientX, y: e.clientY });
 
     // 双指落下 → 进入捏合
@@ -923,7 +969,7 @@ export class ImageViewer {
         (it, i) => `
           <button class="viewer-thumb" type="button" data-index="${i}" aria-label="第 ${i + 1} 张">
             <img src="${Utils.escapeHtml(it.thumb || it.src)}" alt="" loading="lazy" decoding="async" draggable="false" />
-          </button>`
+          </button>`,
       )
       .join('');
   }

@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 """静态资源（非构建资源）同步。
 
@@ -10,7 +9,9 @@
   * **约定优先**：新增站点根文件放进 `src/public/`，新增对外 JSON 放进
     `src/assets/`，均无需改动任何代码即可发布；
   * **内容寻址增量复制**：目标文件与源一致时跳过写入，避免无意义的写盘与
-    mtime 抖动（CI 与本地产物更稳定）。
+    mtime 抖动（CI 与本地产物更稳定）；
+  * **占位符渲染**：`.html` / `.txt` / `.xml` 文本产物可写 `{{SITE_URL}}`
+    占位符，同步时展开为 :data:`builder.common.SITE_URL`，换域名只改一处。
 
 规则语义（`source` 相对项目根，`destination` 相对 `dist`）：
   * `source` 为目录：递归复制，按 `include` / `exclude` 过滤，保持相对结构；
@@ -23,16 +24,18 @@
 from __future__ import annotations
 
 import fnmatch
+import re
 import shutil
 import time
+from collections.abc import Sequence
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Dict, List, Sequence, Tuple
 
 from .common import (
     DIST_ROOT,
     PROJECT_ROOT,
+    SITE_URL,
     compute_file_hash,
     compute_object_hash,
     ensure_dir,
@@ -47,7 +50,7 @@ MAX_SYNC_WORKERS = 8
 
 #: 任何规则都会额外排除的条目（版本控制元数据、编辑器垃圾文件等）。
 #: 注意 `.well-known/` 这类需要发布的点目录**不在**其中。
-DEFAULT_EXCLUDES: Tuple[str, ...] = (
+DEFAULT_EXCLUDES: tuple[str, ...] = (
     ".git", ".gitignore", ".gitattributes", ".gitmodules",
     ".github", ".svn", ".hg", ".DS_Store",
     "__pycache__", "*.pyc", "*.pyo",
@@ -65,9 +68,9 @@ class AssetRule:
     #: 相对 `dist/` 的目标：目录与 glob 规则为目录，单文件规则为目标文件名
     destination: str
     #: 仅复制命中任一 glob 的相对路径（相对源目录/通配根），为空表示全部
-    include: Tuple[str, ...] = ()
+    include: tuple[str, ...] = ()
     #: 命中任一 glob 的相对路径或其祖先目录会被排除
-    exclude: Tuple[str, ...] = ()
+    exclude: tuple[str, ...] = ()
     #: 源缺失时是否记为错误（否则仅告警）
     required: bool = False
     #: 人类可读说明，用于日志与文档
@@ -83,7 +86,7 @@ class AssetRule:
 
 
 #: 模板页 → 输出子目录（复制为 `<子目录>/index.html`）
-PAGE_TEMPLATES: Dict[str, str] = {
+PAGE_TEMPLATES: dict[str, str] = {
     "about.html": "about",
     "timeline.html": "timeline",
     "stats.html": "stats",
@@ -92,7 +95,7 @@ PAGE_TEMPLATES: Dict[str, str] = {
 }
 
 #: 全站静态资源规则 —— 新增资源只需在此追加一条，无需改动生成器代码
-STATIC_ASSET_RULES: Tuple[AssetRule, ...] = (
+STATIC_ASSET_RULES: tuple[AssetRule, ...] = (
     AssetRule(
         "src/public", ".", required=True,
         note="站点根文件：favicon / robots / 域名验证文件",
@@ -149,7 +152,7 @@ def _dest_root(rule: AssetRule) -> Path:
     return DIST_ROOT if dest in ("", ".") else DIST_ROOT / dest
 
 
-def collect_rule_files(rule: AssetRule) -> List[Tuple[Path, Path]]:
+def collect_rule_files(rule: AssetRule) -> list[tuple[Path, Path]]:
     """展开一条规则，返回 `(源文件, 目标文件)` 列表（顺序稳定）。"""
     source = rule.source_path
     dest = _dest_root(rule)
@@ -168,7 +171,7 @@ def collect_rule_files(rule: AssetRule) -> List[Tuple[Path, Path]]:
     else:
         return []
 
-    pairs: List[Tuple[Path, Path]] = []
+    pairs: list[tuple[Path, Path]] = []
     for path in sorted(candidates):
         rel = path.relative_to(base).as_posix()
         if rule.include and not _match_any(rel, rule.include):
@@ -179,9 +182,9 @@ def collect_rule_files(rule: AssetRule) -> List[Tuple[Path, Path]]:
     return pairs
 
 
-def iter_rule_files(rules: Sequence[AssetRule] = STATIC_ASSET_RULES) -> List[Tuple[Path, Path]]:
+def iter_rule_files(rules: Sequence[AssetRule] = STATIC_ASSET_RULES) -> list[tuple[Path, Path]]:
     """展开全部规则（去重，按目标路径稳定排序）。"""
-    seen: Dict[Path, Path] = {}
+    seen: dict[Path, Path] = {}
     for rule in rules:
         for src, dst in collect_rule_files(rule):
             seen[dst] = src
@@ -201,7 +204,7 @@ class SyncStats:
     bytes_copied: int = 0
     duration: float = 0.0
     #: 缺失且标记为 required 的规则源
-    failed: List[str] = field(default_factory=list)
+    failed: list[str] = field(default_factory=list)
 
     @property
     def total(self) -> int:
@@ -233,8 +236,54 @@ def _needs_sync(src: Path, dst: Path) -> bool:
     return compute_file_hash(src) != compute_file_hash(dst)
 
 
-def _sync_one(pair: Tuple[Path, Path]) -> Tuple[str, int]:
+# ------------------------------------------------------------------
+# 占位符渲染（文本模板产物）
+# ------------------------------------------------------------------
+#: 文本产物中可使用的占位符。换域名时只需改 common.SITE_URL 一处，
+#: 模板与 robots.txt 里的 `{{SITE_URL}}` 会自动展开为绝对地址。
+_PLACEHOLDER_RE = re.compile(r"\{\{\s*([A-Z_]+)\s*\}\}")
+_PLACEHOLDER_SUFFIXES = (".html", ".txt", ".xml")
+
+#: 判定"是否含占位符"的探测上限（robots/模板都远小于此值）
+_TEMPLATE_PROBE_BYTES = 64 * 1024
+
+
+def render_placeholders(text: str) -> str:
+    """展开文本中的 `{{NAME}}` 占位符；未知占位符原样保留。"""
+    values = {"SITE_URL": SITE_URL}
+    return _PLACEHOLDER_RE.sub(lambda m: values.get(m.group(1), m.group(0)), text)
+
+
+def _read_template(src: Path) -> str | None:
+    """若源文件是含占位符的文本模板则返回其内容，否则返回 None。"""
+    if src.suffix.lower() not in _PLACEHOLDER_SUFFIXES:
+        return None
+    try:
+        if src.stat().st_size > _TEMPLATE_PROBE_BYTES:
+            return None
+        text = src.read_text(encoding="utf-8")
+    except (OSError, UnicodeDecodeError):
+        return None
+    return text if "{{" in text and _PLACEHOLDER_RE.search(text) else None
+
+
+def _sync_one(pair: tuple[Path, Path]) -> tuple[str, int]:
     src, dst = pair
+
+    # 含占位符的文本模板：按渲染后的内容比对与写入
+    rendered = _read_template(src)
+    if rendered is not None:
+        output = render_placeholders(rendered)
+        if dst.is_file():
+            try:
+                if dst.read_text(encoding="utf-8") == output:
+                    return "skipped", 0
+            except (OSError, UnicodeDecodeError):
+                pass
+        ensure_dir(dst.parent)
+        dst.write_text(output, encoding="utf-8", newline="\n")
+        return "copied", len(output.encode("utf-8"))
+
     if not _needs_sync(src, dst):
         return "skipped", 0
     ensure_dir(dst.parent)
@@ -249,7 +298,7 @@ def sync_static_assets(rules: Sequence[AssetRule] = STATIC_ASSET_RULES, *,
     started = time.monotonic()
     stats = SyncStats()
 
-    pairs: List[Tuple[Path, Path]] = []
+    pairs: list[tuple[Path, Path]] = []
     for rule in rules:
         rule_pairs = collect_rule_files(rule)
         if not rule_pairs:
@@ -268,7 +317,7 @@ def sync_static_assets(rules: Sequence[AssetRule] = STATIC_ASSET_RULES, *,
         pairs.extend(rule_pairs)
 
     # 同一目标被多条规则命中时以最后一条为准，避免重复写盘
-    unique: Dict[Path, Path] = {}
+    unique: dict[Path, Path] = {}
     for src, dst in pairs:
         unique[dst] = src
     pairs = [(unique[dst], dst) for dst in sorted(unique, key=lambda p: p.as_posix())]

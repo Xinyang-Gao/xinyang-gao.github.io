@@ -29,12 +29,8 @@ let libraryLoadPromise: Promise<void> | null = null;
 const initializedContainers = new WeakSet<Element>();
 
 /** 把「元素或选择器」统一解析成元素 */
-function resolveContainer(
-  container: string | HTMLElement
-): HTMLElement | null {
-  return typeof container === 'string'
-    ? document.querySelector<HTMLElement>(container)
-    : container;
+function resolveContainer(container: string | HTMLElement): HTMLElement | null {
+  return typeof container === 'string' ? document.querySelector<HTMLElement>(container) : container;
 }
 
 /**
@@ -70,7 +66,7 @@ function loadTwikooLibrary(): Promise<void> {
  */
 export async function initTwikoo(
   container: string | HTMLElement,
-  options: TwikooOptions = {}
+  options: TwikooOptions = {},
 ): Promise<boolean> {
   const containerEl = resolveContainer(container);
 

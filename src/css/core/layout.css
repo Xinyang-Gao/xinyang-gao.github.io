@@ -368,7 +368,7 @@
   word-break: break-all;
 }
 .profile-info-item a:hover {
-  color: var(--accent-light);
+  color: var(--accent-hover);
   text-decoration: underline;
 }
 

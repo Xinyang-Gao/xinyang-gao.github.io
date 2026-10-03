@@ -54,6 +54,9 @@ const URL_MAP: Record<DataKey, string> = {
 // ==================== 核心服务类 ====================
 
 class DataService {
+  /** 全站数据请求超时（毫秒）：弱网下到点失败，而非无限挂起 */
+  private static readonly FETCH_TIMEOUT_MS = 10000;
+
   /**
    * 内存缓存。key 为 DataKey 或具体 URL（版本分片等动态地址），
    * 载荷类型各异，统一以 unknown 存储，对外返回时由泛型断言。
@@ -75,7 +78,7 @@ class DataService {
   private async fetchByCacheKey<T>(
     cacheKey: string,
     url: string,
-    options: FetchOptions
+    options: FetchOptions,
   ): Promise<T> {
     const { forceRefresh = false } = options;
 
@@ -116,7 +119,7 @@ class DataService {
 
   private async fetchWithCache<K extends DataKey>(
     key: K,
-    options: FetchOptions = {}
+    options: FetchOptions = {},
   ): Promise<DataKeyMap[K]> {
     return this.fetchByCacheKey<DataKeyMap[K]>(key, URL_MAP[key], options);
   }
@@ -130,16 +133,32 @@ class DataService {
    * 实际网络请求。
    * 关键：不再加 ?t= 时间戳（会污染 SW 缓存 key）；
    * 强制刷新通过 cache: 'reload' 通知 SW 绕过缓存。
+   *
+   * 统一超时：审计发现 5 处 fetch 无超时，弱网下 Promise 永远挂起、
+   * 页面停在加载态。这里用 AbortController（而非 AbortSignal.timeout，
+   * 兼容更早的浏览器）给所有数据请求兜一个上限。
    */
   private async doFetch<T>(url: string, forceRefresh: boolean): Promise<T> {
-    const res = await fetch(url, {
-      cache: forceRefresh ? 'reload' : 'default',
-      credentials: 'same-origin',
-    });
-    if (!res.ok) {
-      throw new Error(`HTTP ${res.status} (${res.statusText})`);
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), DataService.FETCH_TIMEOUT_MS);
+    try {
+      const res = await fetch(url, {
+        cache: forceRefresh ? 'reload' : 'default',
+        credentials: 'same-origin',
+        signal: controller.signal,
+      });
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status} (${res.statusText})`);
+      }
+      return (await res.json()) as T;
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        throw new Error(`请求超时（>${DataService.FETCH_TIMEOUT_MS}ms）: ${url}`);
+      }
+      throw err;
+    } finally {
+      window.clearTimeout(timer);
     }
-    return (await res.json()) as T;
   }
 
   // ---------- 对外方法 ----------
@@ -201,9 +220,7 @@ class DataService {
       if (count >= limit) break;
     }
 
-    const payloads = await Promise.all(
-      targets.map((url) => this.getVersionShard(url, options))
-    );
+    const payloads = await Promise.all(targets.map((url) => this.getVersionShard(url, options)));
     const versions: VersionEntry[] = [];
     for (const p of payloads) {
       versions.push(...(p.versions || []));
@@ -221,9 +238,7 @@ class DataService {
   async getVersion(options?: FetchOptions): Promise<VersionPayload> {
     const index = await this.getVersionIndex(options);
     const shards = [...(index.shards || [])].sort((a, b) => a.index - b.index);
-    const payloads = await Promise.all(
-      shards.map((s) => this.getVersionShard(s.url, options))
-    );
+    const payloads = await Promise.all(shards.map((s) => this.getVersionShard(s.url, options)));
 
     const versions: VersionEntry[] = [];
     for (const p of payloads) {
@@ -240,7 +255,9 @@ class DataService {
 
   clearCache(): void {
     this.memoryCache.clear();
-    this.pending.clear();
+    // 注意：不清 this.pending——在途 Promise 若被移除，新调用者会再发一次
+    // 相同请求（重复网络开销 + 结果乱序）。在途请求完成后会自行 delete。
+    // 需要强制重取时，调用方用 forceRefresh: true 即可。
   }
 
   warmup(): void {

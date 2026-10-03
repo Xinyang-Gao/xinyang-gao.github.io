@@ -1,11 +1,17 @@
 // /js/pages/timeline.ts
 // 时间线页面：合并文章、作品与版本更新，按时间线展示
 
-import { DataManager, UIRenderer } from '/js/pages/search-render.js';
-import { Utils, perf } from '/js/core/core.js';
+import { DataManager } from '/js/pages/search-render.js';
+import { Utils } from '/js/core/core.js';
 import { PageBase } from '/js/core/page-manager.js';
 import { dataService } from '/js/core/data-service.js';
-import type { VersionIndexPayload, VersionShardMeta } from '/js/types/data.js';
+import type {
+  VersionIndexPayload,
+  VersionShardMeta,
+  Item as TimelineDataItem,
+  VersionEntry as Version,
+  VersionChange as Change,
+} from '/js/types/data.js';
 
 declare const marked: { parse(src: string): string };
 
@@ -13,34 +19,12 @@ declare const marked: { parse(src: string): string };
 const INITIAL_VERSION_COUNT = 30;
 
 // ==================== 类型定义 ====================
+// 文章/作品条目与版本记录全部复用 types/data.ts（第 3 套并行定义已收编）：
+// 此前这里是 BaseItem + 两个空扩展 `interface Article extends BaseItem {}`，
+// 以及与 VersionEntry/VersionChange 同构的 Version/Change，纯属重复。
 
-interface BaseItem {
-  title?: string;
-  description?: string;
-  url?: string;
-  link?: string;
-  tag?: string | string[];
-  tags?: string[];
-  date?: string;
-  last_updated?: string;
-  hidden?: boolean;
-  [key: string]: unknown;
-}
-
-interface Article extends BaseItem {}
-interface Work extends BaseItem {}
-
-interface Change {
-  type: string;
-  description: string;
-}
-
-interface Version {
-  id: number;
-  version: string;
-  date: string;
-  changes: Change[];
-}
+type Article = TimelineDataItem;
+type Work = TimelineDataItem;
 
 interface TimelineItem {
   id: string;
@@ -250,7 +234,7 @@ export class TimelineManager extends PageBase {
     this.loadingShards = true;
     try {
       const results = await Promise.allSettled(
-        metas.map((meta) => dataService.getVersionShard(meta.url))
+        metas.map((meta) => dataService.getVersionShard(meta.url)),
       );
 
       let changed = false;
@@ -318,7 +302,7 @@ export class TimelineManager extends PageBase {
   private buildTimelineItems(
     articles: Article[],
     works: Work[],
-    versions: Version[]
+    versions: Version[],
   ): TimelineItem[] {
     const items: TimelineItem[] = [];
 
@@ -419,7 +403,7 @@ export class TimelineManager extends PageBase {
         (year) =>
           `<button class="year-capsule ${
             this.currentYear === String(year) ? 'active' : ''
-          }" data-year="${year}">${year}</button>`
+          }" data-year="${year}">${year}</button>`,
       )
       .join('');
     this.yearCapsulesContainer.innerHTML = html;
@@ -508,9 +492,7 @@ export class TimelineManager extends PageBase {
         const desc = (item.description || '').toLowerCase();
         const tags = (item.tags || []).join(' ').toLowerCase();
         const versionNum = (item.versionNumber || '').toLowerCase();
-        return (
-          title.includes(q) || desc.includes(q) || tags.includes(q) || versionNum.includes(q)
-        );
+        return title.includes(q) || desc.includes(q) || tags.includes(q) || versionNum.includes(q);
       }
       return true;
     });
@@ -558,9 +540,8 @@ export class TimelineManager extends PageBase {
     for (const year of sortedYears) {
       const monthMap = yearMap.get(year)!;
       const yearTotal = Array.from(monthMap.values()).reduce(
-        (sum, dayMap) =>
-          sum + Array.from(dayMap.values()).reduce((s, arr) => s + arr.length, 0),
-        0
+        (sum, dayMap) => sum + Array.from(dayMap.values()).reduce((s, arr) => s + arr.length, 0),
+        0,
       );
 
       html += `<div class="timeline-year">
@@ -642,9 +623,7 @@ export class TimelineManager extends PageBase {
         return (a.title || '').localeCompare(b.title || '', 'zh');
       });
 
-    const versionItems = items
-      .filter((i) => i.type === 'version')
-      .sort(compareVersionDesc);
+    const versionItems = items.filter((i) => i.type === 'version').sort(compareVersionDesc);
 
     const itemsHtml = contentItems.length
       ? `<div class="day-card-items">${contentItems
@@ -758,14 +737,10 @@ export class TimelineManager extends PageBase {
     if (!this.container) return;
 
     this.container.querySelectorAll<HTMLElement>('.day-card').forEach((card) => {
-      const capsules = Array.from(
-        card.querySelectorAll<HTMLButtonElement>('.version-capsule')
-      );
+      const capsules = Array.from(card.querySelectorAll<HTMLButtonElement>('.version-capsule'));
       if (!capsules.length) return;
 
-      const details = Array.from(
-        card.querySelectorAll<HTMLElement>('.version-detail-content')
-      );
+      const details = Array.from(card.querySelectorAll<HTMLElement>('.version-detail-content'));
 
       const closeAll = () => {
         capsules.forEach((btn) => {
@@ -838,7 +813,7 @@ export class TimelineManager extends PageBase {
 // ==================== 入口函数 ====================
 
 export async function initTimelinePage(
-  scrollRevealRefreshCallback?: () => void
+  scrollRevealRefreshCallback?: () => void,
 ): Promise<TimelineManager> {
   const manager = new TimelineManager();
   manager.setRefreshCallback(scrollRevealRefreshCallback || null);

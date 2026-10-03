@@ -2,51 +2,31 @@
 // 配置常量、工具类、存储控制器与性能监控（TypeScript 严格模式）
 
 // ==================== 全局类型声明 ====================
+// 说明：
+//  * requestIdleCallback / cancelIdleCallback 已由 DOM lib 全局声明，不再重复（TS2300）；
+//  * 全站 window 扩展（fetchAndReplaceContent / scrollRevealInstance / APlayer 等）
+//    统一声明在 src/js/types/globals.d.ts，此处只保留 LZString。
 declare global {
   interface Window {
     LZString?: {
       compressToUTF16(input: string): string;
       decompressFromUTF16(input: string): string;
     };
-    clearAllServiceWorkerCache?: () => Promise<void>;
-    requestIdleCallback?: (
-      cb: IdleRequestCallback,
-      opts?: IdleRequestOptions
-    ) => number;
-    cancelIdleCallback?: (handle: number) => void;
   }
 }
 
 // ==================== 数据类型定义 ====================
-export interface WorkItem {
-  id?: string | number;
-  title?: string;
-  description?: string;
-  tags?: string[];
-  tag?: string[] | string;
-  date?: string;
-  [key: string]: unknown;
-}
+// 类型真源是 /js/types/data.ts（第 1 套并行定义已收编）。
+// 这里保留同名 re-export：既有调用方仍可 `import { ArticleItem } from core`，
+// 但字段定义只维护一份。
+import type {
+  Item as ArticleItem,
+  Work as WorkItem,
+  ArticlesPayload as ArticlesData,
+  WorksPayload as WorksData,
+} from '/js/types/data.js';
 
-export interface WorksData {
-  works: WorkItem[];
-}
-
-export interface ArticleItem {
-  id?: string | number;
-  title?: string;
-  description?: string;
-  tags?: string[];
-  tag?: string[] | string;
-  date?: string;
-  last_updated?: string;
-  updated_date?: string;
-  [key: string]: unknown;
-}
-
-export interface ArticlesData {
-  articles: ArticleItem[];
-}
+export type { ArticleItem, WorkItem, ArticlesData, WorksData };
 
 // ==================== 运行环境 ====================
 /**
@@ -130,7 +110,7 @@ export const CONFIG = {
   },
 } as const;
 
-export type StorageKey = typeof CONFIG.STORAGE_KEYS[keyof typeof CONFIG.STORAGE_KEYS];
+export type StorageKey = (typeof CONFIG.STORAGE_KEYS)[keyof typeof CONFIG.STORAGE_KEYS];
 
 // ==================== 调度工具 ====================
 /**
@@ -138,10 +118,7 @@ export type StorageKey = typeof CONFIG.STORAGE_KEYS[keyof typeof CONFIG.STORAGE_
  * 不支持 requestIdleCallback 时按 timeout 降级为 setTimeout。
  * 全站所有“非关键延迟初始化”必须走此函数，禁止各处重复实现降级逻辑。
  */
-export function scheduleIdle(
-  callback: () => void,
-  options?: { timeout?: number }
-): void {
+export function scheduleIdle(callback: () => void, options?: { timeout?: number }): void {
   if (typeof window.requestIdleCallback === 'function') {
     window.requestIdleCallback(callback, options ?? {});
   } else {
@@ -188,9 +165,7 @@ function ensureNavigationBound(): void {
  *   const unsub = onNavigation(cb);
  *   stack.add(unsub);
  */
-export function onNavigation(
-  cb: (detail: NavigationDetail) => void
-): () => void {
+export function onNavigation(cb: (detail: NavigationDetail) => void): () => void {
   ensureNavigationBound();
   navigationCallbacks.add(cb);
   return () => {
@@ -204,9 +179,7 @@ export function onNavigation(
  */
 export function dispatchNavigation(detail: NavigationDetail): void {
   ensureNavigationBound();
-  window.dispatchEvent(
-    new CustomEvent<NavigationDetail>('ajax:navigation', { detail })
-  );
+  window.dispatchEvent(new CustomEvent<NavigationDetail>('ajax:navigation', { detail }));
 }
 
 // ==================== 工具类 ====================
@@ -252,10 +225,15 @@ export class Utils {
    * 统一提取标签：兼容 tags / tag 两种字段，tag 支持 string | string[]。
    * 全站唯一实现，其他模块一律引用此方法。
    */
-  static getTags(item: {
-    tags?: string[];
-    tag?: string[] | string;
-  } | null | undefined): string[] {
+  static getTags(
+    item:
+      | {
+          tags?: string[];
+          tag?: string[] | string;
+        }
+      | null
+      | undefined,
+  ): string[] {
     if (!item) return [];
     if (item.tags?.length) return item.tags;
     const tag = item.tag;
@@ -268,19 +246,25 @@ export class Utils {
     if (str === null || str === undefined || str === '') return '';
     return String(str).replace(/[&<>"']/g, (m) => {
       switch (m) {
-        case '&': return '&amp;';
-        case '<': return '&lt;';
-        case '>': return '&gt;';
-        case '"': return '&quot;';
-        case "'": return '&#39;';
-        default: return m;
+        case '&':
+          return '&amp;';
+        case '<':
+          return '&lt;';
+        case '>':
+          return '&gt;';
+        case '"':
+          return '&quot;';
+        case "'":
+          return '&#39;';
+        default:
+          return m;
       }
     });
   }
 
   static debounce<T extends (...args: unknown[]) => void>(
     func: T,
-    wait: number
+    wait: number,
   ): (...args: Parameters<T>) => void {
     let timeout: ReturnType<typeof setTimeout> | null = null;
     return function executedFunction(...args: Parameters<T>) {
@@ -294,7 +278,7 @@ export class Utils {
 
   static throttle<T extends (...args: unknown[]) => void>(
     func: T,
-    limit: number
+    limit: number,
   ): (...args: Parameters<T>) => void {
     let inThrottle = false;
     return function (this: unknown, ...args: Parameters<T>) {
@@ -331,14 +315,10 @@ export class Utils {
    * 统一日期解析：支持 ArticleItem / 字符串 / undefined / null。
    * 兼容 "2026年05月24日" 与标准格式，失败返回 null。
    */
-  static parseArticleDate(
-    input: ArticleItem | string | undefined | null
-  ): Date | null {
+  static parseArticleDate(input: ArticleItem | string | undefined | null): Date | null {
     if (!input) return null;
     const value =
-      typeof input === 'string'
-        ? input
-        : input.date || input.last_updated || input.updated_date;
+      typeof input === 'string' ? input : input.date || input.last_updated || input.updated_date;
     if (!value) return null;
 
     const chineseMatch = String(value).match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
@@ -355,9 +335,7 @@ export class Utils {
    * 日期解析为时间戳（毫秒），失败返回 0。
    * 排序场景专用，避免调用方重复判空。
    */
-  static parseArticleTimestamp(
-    input: ArticleItem | string | undefined | null
-  ): number {
+  static parseArticleTimestamp(input: ArticleItem | string | undefined | null): number {
     const d = Utils.parseArticleDate(input);
     return d ? d.getTime() : 0;
   }
@@ -368,10 +346,7 @@ export class Utils {
    */
   static isSameOrigin(href: string | URL, base?: string): boolean {
     try {
-      const url =
-        href instanceof URL
-          ? href
-          : new URL(href, base ?? window.location.href);
+      const url = href instanceof URL ? href : new URL(href, base ?? window.location.href);
       return url.origin === window.location.origin;
     } catch {
       return false;
@@ -388,7 +363,7 @@ export class Utils {
   static renderTags(
     tags: string[] | undefined | null,
     className = 'tag',
-    wrapperClass = 'tags'
+    wrapperClass = 'tags',
   ): string {
     if (!tags || !tags.length) return '';
     const inner = tags

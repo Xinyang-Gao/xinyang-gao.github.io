@@ -6,7 +6,7 @@
 import { CONFIG, Utils, scheduleIdle } from '/js/core/core.js';
 import { isEnabled } from '/js/data/settings.js';
 import { showJumpDialog, extractAvatarHtml } from '/js/ui/jump-dialog.js';
-import { MouseEffectManager, CustomCursor } from './mouse-effects.js';
+import { CustomCursor } from './mouse-effects.js';
 import { initTooltips } from './tooltip.js';
 
 const K = CONFIG.STORAGE_KEYS;
@@ -66,7 +66,9 @@ export class ExternalLinkManager {
     const label = (anchor.getAttribute('title') || anchor.getAttribute('aria-label') || '').trim();
     if (label) return label;
 
-    const heading = anchor.querySelector('.friend-name, .jump-name, .external-link-name, h1, h2, h3');
+    const heading = anchor.querySelector(
+      '.friend-name, .jump-name, .external-link-name, h1, h2, h3',
+    );
     const headingText = heading?.textContent?.trim();
     if (headingText) return headingText;
 
@@ -119,12 +121,12 @@ export class ExternalLinkManager {
     showJumpDialog({
       name,
       url: href,
-      desc:
-        (anchor.dataset.jumpDesc || '').trim() ||
-        '您即将访问外部网站，本站不对第三方内容负责',
+      desc: (anchor.dataset.jumpDesc || '').trim() || '您即将访问外部网站，本站不对第三方内容负责',
       // 链接里的照片（头像 / 封面）传给弹窗展示
       avatarHtml: extractAvatarHtml(anchor, 'img', name),
-      countdown: 6,
+      // Chrome 的瞬时用户激活只保留 5s：弹窗入场 650ms + 倒计时必须留出余量。
+      // 原为 6s（总 6.65s），自动跳转的 window.open 必被弹窗拦截 → "倒计时到 0 却没反应"
+      countdown: 3,
       redirectTarget: '_blank',
       anchorElement: anchor,
       onRedirect: (url) => {
@@ -165,22 +167,22 @@ export class ScrollReveal {
     if (this.observer) this.observer.disconnect();
     this.observer = new IntersectionObserver(
       (entries) => {
-        entries.forEach(entry => {
+        entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add('revealed');
             this.observer?.unobserve(entry.target);
           }
         });
       },
-      { threshold: 0.2, rootMargin: '0px 0px -20px 0px' }
+      { threshold: 0.2, rootMargin: '0px 0px -20px 0px' },
     );
   }
 
   public observe(
-    targets: NodeListOf<Element> | Element[] = document.querySelectorAll(this.targetSelector)
+    targets: NodeListOf<Element> | Element[] = document.querySelectorAll(this.targetSelector),
   ): void {
     if (!this.observer) return;
-    targets.forEach(el => {
+    targets.forEach((el) => {
       if (!el.classList.contains('revealed')) {
         this.observer!.observe(el);
       }
@@ -190,7 +192,7 @@ export class ScrollReveal {
   public refresh(): void {
     const hidden = document.querySelectorAll(`${this.targetSelector}:not(.revealed)`);
     if (hidden.length) {
-      hidden.forEach(el => this.observer?.observe(el));
+      hidden.forEach((el) => this.observer?.observe(el));
     }
   }
 
@@ -263,7 +265,7 @@ export function initUIEffects(): void {
       refreshUIEffects();
       initTooltips();
     },
-    { timeout: 3000 }
+    { timeout: 3000 },
   );
 }
 

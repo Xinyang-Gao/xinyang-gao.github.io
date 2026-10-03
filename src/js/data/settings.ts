@@ -21,7 +21,7 @@ type SettingKey =
 // ==================== 通用读写（唯一出口） ====================
 export function getSetting(
   key: SettingKey,
-  defaultValue: boolean | string | number = true
+  defaultValue: boolean | string | number = true,
 ): boolean | string {
   const stored = storageController.getItem(key);
   if (stored !== null) {
@@ -166,9 +166,7 @@ export function applyStoredSettings(): void {
   const themeSelect = document.getElementById('themeModeSelect') as HTMLSelectElement | null;
   if (themeSelect) themeSelect.value = themeController.getMode();
 
-  const themeCheckbox = document.getElementById(
-    'theme-toggle-checkbox'
-  ) as HTMLInputElement | null;
+  const themeCheckbox = document.getElementById('theme-toggle-checkbox') as HTMLInputElement | null;
   if (themeCheckbox) themeCheckbox.checked = themeController.getTheme() === 'dark';
 
   // 2. 字体大小
@@ -186,7 +184,9 @@ export function applyStoredSettings(): void {
 
 // ==================== 绑定设置控件 ====================
 export function bindSettingsControls(container: HTMLElement): void {
-  const cursorCheckbox = container.querySelector('#cursorToggleCheckbox') as HTMLInputElement | null;
+  const cursorCheckbox = container.querySelector(
+    '#cursorToggleCheckbox',
+  ) as HTMLInputElement | null;
   const linkCheckbox = container.querySelector('#linkWarningCheckbox') as HTMLInputElement | null;
   const themeSelect = container.querySelector('#themeModeSelect') as HTMLSelectElement | null;
   const fontScaleSelect = container.querySelector('#fontScaleSelect') as HTMLSelectElement | null;
@@ -357,7 +357,8 @@ export function showSettingsPanel(): void {
     </div>
   `;
 
-  const { close } = showDetailDialog({
+  // 不解构 close：弹窗已支持 Esc / 点遮罩关闭，此处无需编程式关闭入口
+  showDetailDialog({
     title: '站点设置',
     htmlContent: settingsHTML,
     source: 'settings',

@@ -1,0 +1,66 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.5.15/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    "includes": [
+      "src/js/**",
+      "!src/js/vendor/*.min.js"
+    ]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100,
+    "lineEnding": "lf"
+  },
+  "javascript": {
+    "formatter": {
+      "enabled": true,
+      "quoteStyle": "single",
+      "trailingCommas": "all",
+      "semicolons": "always"
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": false,
+      "correctness": {
+        "recommended": true,
+        "noUnusedVariables": "warn",
+        "noUnusedImports": "warn",
+        "noInvalidUseBeforeDeclaration": "error",
+        "noConstAssign": "error",
+        "noSelfAssign": "error",
+        "noUndeclaredVariables": "off",
+        "useExhaustiveDependencies": "off"
+      },
+      "suspicious": {
+        "recommended": false,
+        "noDoubleEquals": "error",
+        "noAssignInExpressions": "error",
+        "noDuplicateCase": "error",
+        "noShadowRestrictedNames": "error",
+        "noPrototypeBuiltins": "error",
+        "noRedeclare": "error",
+        "noUnusedExpressions": "warn"
+      },
+      "performance": {
+        "recommended": false,
+        "noAccumulatingSpread": "error"
+      },
+      "style": {
+        "recommended": false,
+        "noNonNullAssertion": "off"
+      }
+    }
+  },
+  "assist": {
+    "enabled": false
+  }
+}

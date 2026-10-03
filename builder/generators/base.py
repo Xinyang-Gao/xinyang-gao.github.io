@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 from abc import ABC, abstractmethod
-from pathlib import Path
-from typing import Set, List, FrozenSet
 from datetime import datetime
+from pathlib import Path
 
 from ..build_context import BuildContext
 from ..common import compute_object_hash
@@ -29,12 +27,12 @@ class OutputGenerator(ABC):
 
     @property
     @abstractmethod
-    def inputs(self) -> Set[str]:
+    def inputs(self) -> set[str]:
         """依赖的 BuildContext 属性名，如 {'articles', 'works'}。"""
 
     @property
     @abstractmethod
-    def outputs(self) -> List[Path]:
+    def outputs(self) -> list[Path]:
         """生成的文件路径，用于增量判断。"""
 
     @abstractmethod
@@ -43,7 +41,7 @@ class OutputGenerator(ABC):
 
     # ---------- 可选扩展 ----------
     @property
-    def dependencies(self) -> FrozenSet[str]:
+    def dependencies(self) -> frozenset[str]:
         """必须在这些生成器之后运行（默认无依赖）。"""
         return frozenset()
 

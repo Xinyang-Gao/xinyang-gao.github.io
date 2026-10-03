@@ -107,8 +107,7 @@ export class FriendsPageManager extends PageBase {
   }
 
   private setupJumpTriggers(): void {
-    const container =
-      document.getElementById('friends-list-container-inner') || document.body;
+    const container = document.getElementById('friends-list-container-inner') || document.body;
 
     const unbind = bindJumpTriggers(container, {
       triggerSelector: '.friend-card',

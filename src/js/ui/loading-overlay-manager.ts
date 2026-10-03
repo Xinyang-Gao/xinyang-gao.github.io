@@ -54,6 +54,16 @@ const FADE_DISTANCE_RANGE = 50;
 /** 逐字入场节拍（毫秒/字符），与 tooltip 的 typeTimer 对齐 */
 const CHAR_TYPE_INTERVAL = 18;
 
+/** 单个数据请求的超时（毫秒）：弱网下不让 Promise.allSettled 无限等 */
+const FETCH_TIMEOUT_MS = 6000;
+
+/**
+ * 覆盖层整体硬超时（毫秒）：
+ * 无论数据请求、版本比对哪一环挂起，到点强制进入页面，
+ * 杜绝"黑屏永远进不去"（JS 报错/请求挂起时的最终兜底）。
+ */
+const OVERLAY_HARD_TIMEOUT_MS = 8000;
+
 export class LoadingOverlayManager {
   private overlay: HTMLElement | null = null;
   private content: HTMLElement | null = null;
@@ -64,6 +74,14 @@ export class LoadingOverlayManager {
   private fadeTimer: number | null = null;
   /** 覆盖层点击关闭回调，保证只绑定 / 解绑一次 */
   private dismissHandler: (() => void) | null = null;
+  /** 键盘关闭回调（Enter/Space 确认、Escape 跳过），与 click 成对绑定 */
+  private keyHandler: ((e: KeyboardEvent) => void) | null = null;
+  /** 整体硬超时句柄；流程正常结束时清掉 */
+  private hardTimer: number | null = null;
+  /** show() 的 resolve 是否已调用（点击 / 键盘 / 硬超时三方竞争，只能生效一次） */
+  private settled = false;
+  /** 待写入的远程版本号：用户关闭更新提示时持久化，避免下次重复弹 */
+  private pendingVersion: string | null = null;
 
   /* ==================== 字符构建 ==================== */
 
@@ -73,7 +91,7 @@ export class LoadingOverlayManager {
    */
   private buildEntry(
     className: string,
-    segments: Array<{ text: string; className?: string }>
+    segments: Array<{ text: string; className?: string }>,
   ): HTMLElement {
     const root = document.createElement('div');
     root.className = className;
@@ -159,10 +177,7 @@ export class LoadingOverlayManager {
   private done(msg: string): void {
     if (!this.doneContainer) return;
 
-    const item = this.buildEntry('done-entry', [
-      { text: '✓ ' },
-      { text: msg },
-    ]);
+    const item = this.buildEntry('done-entry', [{ text: '✓ ' }, { text: msg }]);
 
     this.doneContainer.prepend(item);
     this.animateCharsIn(item);
@@ -172,7 +187,7 @@ export class LoadingOverlayManager {
   /** 由于新项 prepend 到顶部，越靠后越旧；slice(max) 即为需要退场的项。 */
   private enforceLimit(container: HTMLElement, selector: string, max: number): void {
     const entries = Array.from(
-      container.querySelectorAll<HTMLElement>(`${selector}:not(.is-leaving)`)
+      container.querySelectorAll<HTMLElement>(`${selector}:not(.is-leaving)`),
     );
     if (entries.length <= max) return;
     entries.slice(max).forEach((el) => this.removeEntry(el));
@@ -232,10 +247,25 @@ export class LoadingOverlayManager {
       version: () => dataService.getRecentVersions(UPDATE_NOTICE_VERSION_LIMIT),
     };
 
+    // 单请求超时：弱网时以 FETCH_TIMEOUT_MS 为上限拿到结果或失败，
+    // 不让 Promise.allSettled 被某个挂起的请求无限拖住（配合整体硬超时双保险）
+    const withTimeout = (promise: Promise<any>): Promise<any> => {
+      let timer: number | null = null;
+      const timeout = new Promise<never>((_, reject) => {
+        timer = window.setTimeout(
+          () => reject(new Error(`加载超时（>${FETCH_TIMEOUT_MS}ms）`)),
+          FETCH_TIMEOUT_MS,
+        );
+      });
+      return Promise.race([promise, timeout]).finally(() => {
+        if (timer !== null) clearTimeout(timer);
+      });
+    };
+
     const results = await Promise.allSettled(
-      keys.map(
-        (key) => fetchMap[key]?.() ?? Promise.reject(new Error(`Unknown key: ${key}`))
-      )
+      keys.map((key) =>
+        withTimeout(fetchMap[key]?.() ?? Promise.reject(new Error(`Unknown key: ${key}`))),
+      ),
     );
 
     const dataMap: Record<string, any> = {};
@@ -275,18 +305,73 @@ export class LoadingOverlayManager {
 
       this.log('Data', '开始并行请求关键数据');
 
+      // 整体硬超时：流程卡死（请求挂起 / 未捕获异常）也保证能进站。
+      // dismiss() 幂等，正常流程结束时会清掉该定时器。
+      this.hardTimer = window.setTimeout(() => {
+        this.hardTimer = null;
+        console.warn(`[LoadingOverlay] 超过 ${OVERLAY_HARD_TIMEOUT_MS}ms 未完成，强制进入页面`);
+        this.dismiss(resolve, /* userInitiated */ false);
+      }, OVERLAY_HARD_TIMEOUT_MS);
+
       this.runFlow(resolve).catch((err) => {
         console.error('[LoadingOverlay] 流程执行失败', err);
-        resolve();
+        this.dismiss(resolve, /* userInitiated */ false);
       });
     });
+  }
+
+  /**
+   * 统一收尾：幂等（点击 / Enter / Escape / 硬超时 / 异常多方竞争只会生效一次）。
+   * @param resolve show() 的 resolve
+   * @param userInitiated true 表示用户主动关闭（写入访客记录并广播事件）
+   */
+  private dismiss(resolve: () => void, userInitiated: boolean): void {
+    if (this.settled) return;
+    this.settled = true;
+
+    if (this.hardTimer !== null) {
+      clearTimeout(this.hardTimer);
+      this.hardTimer = null;
+    }
+    if (this.fadeTimer !== null) {
+      clearTimeout(this.fadeTimer);
+      this.fadeTimer = null;
+    }
+    if (userInitiated) {
+      this.persistVisitRecord(this.pendingVersion);
+    }
+
+    this.overlay?.classList.add('hidden');
+    this.restoreScroll();
+    if (userInitiated) {
+      window.dispatchEvent(new CustomEvent('welcomeOverlayDismissed'));
+    }
+    this.unbindDismiss();
+    resolve();
+  }
+
+  /** 解绑 click + keydown（两处监听成对出现，避免重复绑定与泄漏）。 */
+  private unbindDismiss(): void {
+    if (this.dismissHandler && this.overlay) {
+      this.overlay.removeEventListener('click', this.dismissHandler);
+    }
+    if (this.keyHandler) {
+      document.removeEventListener('keydown', this.keyHandler);
+    }
+    this.dismissHandler = null;
+    this.keyHandler = null;
   }
 
   /* ==================== 内部流程 ==================== */
 
   private async runFlow(resolve: () => void): Promise<void> {
     const dataMap = await this.fetchData([
-      'statistics', 'articles', 'works', 'code', 'friends', 'version',
+      'statistics',
+      'articles',
+      'works',
+      'code',
+      'friends',
+      'version',
     ]);
 
     this.logDataSummary(dataMap);
@@ -295,10 +380,7 @@ export class LoadingOverlayManager {
     const versionInfo = this.resolveVersionInfo(dataMap.version);
     const { allVersions, latestWebVersion, storedVersion, lastVisit, needUpdate } = versionInfo;
 
-    this.log(
-      'Version',
-      `本地 ${storedVersion || '无'} → 远程 ${latestWebVersion || '无'}`
-    );
+    this.log('Version', `本地 ${storedVersion || '无'} → 远程 ${latestWebVersion || '无'}`);
     this.done('版本比对完成');
 
     const awayText = this.buildAwayText(lastVisit);
@@ -310,13 +392,18 @@ export class LoadingOverlayManager {
       this.persistVisitRecord(latestWebVersion);
 
       await this.fadeOutAllPanels();
-      this.overlay!.classList.add('hidden');
-      this.restoreScroll();
-      resolve();
+      this.dismiss(resolve, /* userInitiated */ false);
       return;
     }
 
     // ---- 需要更新：LOGO 先动，更新内容随后入场 ----
+    this.pendingVersion = latestWebVersion;
+    // 覆盖层已进入"等待用户确认"的可交互状态，硬超时的使命（防黑屏）已完成；
+    // 此时再倒计时会把用户正在读的更新提示强行关掉，故解除。
+    if (this.hardTimer !== null) {
+      clearTimeout(this.hardTimer);
+      this.hardTimer = null;
+    }
     const { versionMsg, changesHTML } = this.buildUpdateContent(allVersions, storedVersion);
     this.log('Version', '发现新版本，正在渲染更新提示');
     this.done('更新内容已就绪');
@@ -326,34 +413,35 @@ export class LoadingOverlayManager {
     this.showUpdateContent(versionMsg, awayText, changesHTML);
 
     // 更新内容稳定 3s 后，两栏文字开始逐字下落淡出。
-    // 句柄必须保存：用户提前点击关闭时若不清掉，定时器仍会对已隐藏的容器做 replaceChildren()
+    // 句柄必须保存：用户提前关闭时若不清掉，定时器仍会对已隐藏的容器做 replaceChildren()
     this.fadeTimer = window.setTimeout(() => {
       this.fadeTimer = null;
       void this.fadeOutAllPanels();
     }, LOG_FADE_DELAY_MS);
 
-    // 幂等：重复进入 runFlow 时不叠加第二个监听器
-    if (this.dismissHandler) {
-      this.overlay!.removeEventListener('click', this.dismissHandler);
-    }
+    // 幂等：重复进入 runFlow 时不叠加第二组监听器
+    this.unbindDismiss();
 
     const handler = (): void => {
-      if (this.fadeTimer !== null) {
-        clearTimeout(this.fadeTimer);
-        this.fadeTimer = null;
-      }
-      this.persistVisitRecord(latestWebVersion);
-      this.overlay!.classList.add('hidden');
-      this.restoreScroll();
-      window.dispatchEvent(new CustomEvent('welcomeOverlayDismissed'));
-      if (this.dismissHandler) {
-        this.overlay!.removeEventListener('click', this.dismissHandler);
-        this.dismissHandler = null;
-      }
-      resolve();
+      this.dismiss(resolve, /* userInitiated */ true);
     };
     this.dismissHandler = handler;
     this.overlay!.addEventListener('click', handler);
+
+    // 键盘可达：Enter/Space 确认继续（等价点击），Escape 跳过更新提示。
+    // 监听挂在 document 上——overlay 本身不可聚焦，键盘用户也能操作。
+    this.keyHandler = (e: KeyboardEvent): void => {
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') {
+        e.preventDefault();
+        handler();
+      }
+    };
+    document.addEventListener('keydown', this.keyHandler);
+
+    // 更新态下给覆盖层一个可聚焦的语义角色，配合 role=status 的播报
+    this.overlay!.setAttribute('role', 'dialog');
+    this.overlay!.setAttribute('aria-modal', 'true');
+    this.overlay!.setAttribute('aria-label', '网站更新提示');
   }
 
   /* ==================== 数据摘要日志 ==================== */
@@ -362,18 +450,18 @@ export class LoadingOverlayManager {
     const { statistics, articles, works, code, friends } = dataMap;
 
     if (statistics) {
-      const articleCount = statistics.total_articles ?? (articles?.articles?.length ?? 0);
-      const workCount = statistics.total_works ?? (works?.works?.length ?? 0);
+      const articleCount = statistics.total_articles ?? articles?.articles?.length ?? 0;
+      const workCount = statistics.total_works ?? works?.works?.length ?? 0;
       this.log(
         'Data',
-        `统计: 版本 ${statistics.version ?? '—'} · 文章 ${articleCount} · 作品 ${workCount}`
+        `统计: 版本 ${statistics.version ?? '—'} · 文章 ${articleCount} · 作品 ${workCount}`,
       );
     }
 
     if (code) {
       this.log(
         'Data',
-        `代码: ${code.total_files ?? 0} 文件 · ${(code.non_empty_lines ?? 0).toLocaleString()} 行`
+        `代码: ${code.total_files ?? 0} 文件 · ${(code.non_empty_lines ?? 0).toLocaleString()} 行`,
       );
     }
 
@@ -425,12 +513,13 @@ export class LoadingOverlayManager {
           const record = JSON.parse(raw);
           storedVersion = record.version || null;
           lastVisit = record.lastVisit || null;
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
       }
     }
 
-    const needUpdate =
-      !storedVersion || (!!latestWebVersion && storedVersion !== latestWebVersion);
+    const needUpdate = !storedVersion || (!!latestWebVersion && storedVersion !== latestWebVersion);
 
     return { allVersions, latestWebVersion, storedVersion, lastVisit, needUpdate };
   }
@@ -447,7 +536,7 @@ export class LoadingOverlayManager {
 
   private buildUpdateContent(
     allVersions: VersionEntry[],
-    storedVersion: string | null
+    storedVersion: string | null,
   ): { versionMsg: string; changesHTML: string } {
     let startIdx: number;
     if (storedVersion) {
@@ -461,9 +550,7 @@ export class LoadingOverlayManager {
 
     let versionMsg: string;
     if (!storedVersion) {
-      versionMsg = sorted.length
-        ? `当前是最新版本 ${sorted[0].version}`
-        : '版本信息已就绪';
+      versionMsg = sorted.length ? `当前是最新版本 ${sorted[0].version}` : '版本信息已就绪';
     } else if (sorted.length === 0) {
       versionMsg = '版本信息已就绪';
     } else if (sorted.length === 1) {
@@ -481,7 +568,7 @@ export class LoadingOverlayManager {
           .slice(0, 8)
           .map(
             (c) =>
-              `<li><span class="change-type">[${Utils.escapeHtml(c.type || '')}]</span> ${Utils.escapeHtml(c.description || '')}</li>`
+              `<li><span class="change-type">[${Utils.escapeHtml(c.type || '')}]</span> ${Utils.escapeHtml(c.description || '')}</li>`,
           )
           .join('');
         if (!changeItems) return '';
@@ -524,7 +611,11 @@ export class LoadingOverlayManager {
       if (storageController.isAllowed()) {
         const raw = storageController.getItem(CONFIG.STORAGE_KEYS.VISIT_RECORD);
         if (raw) {
-          try { record = JSON.parse(raw); } catch { /* ignore */ }
+          try {
+            record = JSON.parse(raw);
+          } catch {
+            /* ignore */
+          }
         }
       }
       record.lastVisit = Date.now();

@@ -449,7 +449,7 @@
 
     try {
       await loadResources();
-    } catch (err) {
+    } catch (_err) {
       console.error('[MusicPlayer] 资源加载失败，无法创建播放器');
       return;
     }
@@ -516,3 +516,6 @@
 
   console.log('[MusicPlayer] 初始化脚本已执行');
 })();
+// 使 TypeScript 将本文件视为模块（动态 import() 需要模块身份）；
+// 顶层逻辑是 IIFE，副作用不变。
+export {};

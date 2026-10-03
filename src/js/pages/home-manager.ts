@@ -117,8 +117,7 @@ export class HomePageManager extends PageBase {
         if (badge) badge.textContent = `最后更新 · ${stat.last_updated || '未知'}`;
       })
       .catch(() => {
-        container.innerHTML =
-          `<div class="stats-empty"><i class="fas fa-cloud-moon"></i>统计信息正在星海漂流，稍后再来看看吧~</div>`;
+        container.innerHTML = `<div class="stats-empty"><i class="fas fa-cloud-moon"></i>统计信息正在星海漂流，稍后再来看看吧~</div>`;
       });
   }
 
@@ -151,9 +150,7 @@ export class HomePageManager extends PageBase {
 
     const list = (tags || [])
       .map((t: any) =>
-        typeof t === 'string'
-          ? { name: t, count: 0 }
-          : { name: t.name || '', count: t.count || 0 }
+        typeof t === 'string' ? { name: t, count: 0 } : { name: t.name || '', count: t.count || 0 },
       )
       .filter((t: any) => t.name);
 
@@ -182,9 +179,7 @@ export class HomePageManager extends PageBase {
       const statCell = target.closest<HTMLElement>('.stat-cell[data-stat-type]');
       if (statCell) {
         e.preventDefault();
-        this.navigate(
-          statCell.dataset.statType === 'articles' ? '/articles/' : '/works/'
-        );
+        this.navigate(statCell.dataset.statType === 'articles' ? '/articles/' : '/works/');
         return;
       }
 
@@ -192,16 +187,14 @@ export class HomePageManager extends PageBase {
       if (tagEl && tagEl.dataset.tagName) {
         const isArticleZone = !!tagEl.closest('#articleTagsList');
         this.navigate(
-          `${isArticleZone ? '/articles/' : '/works/'}?tags=${encodeURIComponent(tagEl.dataset.tagName)}`
+          `${isArticleZone ? '/articles/' : '/works/'}?tags=${encodeURIComponent(tagEl.dataset.tagName)}`,
         );
       }
     }) as EventListener);
 
     this.stack.addEventListener(document, 'keydown', ((e: KeyboardEvent) => {
       if (e.key !== 'Enter' && e.key !== ' ') return;
-      const cell = (e.target as HTMLElement).closest<HTMLElement>(
-        '.stat-cell[data-stat-type]'
-      );
+      const cell = (e.target as HTMLElement).closest<HTMLElement>('.stat-cell[data-stat-type]');
       if (cell) {
         e.preventDefault();
         cell.click();
@@ -256,7 +249,7 @@ export class HomePageManager extends PageBase {
           }
         });
       },
-      { threshold: 0.12 }
+      { threshold: 0.12 },
     );
     els.forEach((el) => observer.observe(el));
     this.stack.addObserver(observer);
@@ -393,9 +386,7 @@ export class HomePageManager extends PageBase {
     const btn = document.getElementById('quoteRefresh');
     if (!btn) return;
     this.stack.addEventListener(btn, 'click', () => {
-      this.loadQuote().catch((err) =>
-        console.warn('[Home] 刷新名言失败:', err)
-      );
+      this.loadQuote().catch((err) => console.warn('[Home] 刷新名言失败:', err));
     });
   }
 }

@@ -15,7 +15,7 @@ export async function clearAllServiceWorkerCache() {
       await registration.unregister();
     }
     const cacheNames = await caches.keys();
-    await Promise.all(cacheNames.map(name => caches.delete(name)));
+    await Promise.all(cacheNames.map((name) => caches.delete(name)));
     console.log('[SW] 所有 Service Worker 缓存已清除并注销');
     window.location.reload();
   }

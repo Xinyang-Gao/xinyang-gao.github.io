@@ -41,7 +41,7 @@ export class LazyImageLoader {
           this.#lazyImages.delete(img);
         }
       },
-      { rootMargin: '50px 0px', threshold: 0.01 }
+      { rootMargin: '50px 0px', threshold: 0.01 },
     );
 
     this.#observeNew();
@@ -223,7 +223,7 @@ export class GlobalImageManager {
   /** 遍历容器收集所有可展示图片，返回 { items, currentIndex } */
   static #collectGallery(
     container: HTMLElement,
-    clickedImg: HTMLImageElement
+    clickedImg: HTMLImageElement,
   ): {
     items: Array<{ src: string; alt: string; title: string }>;
     currentIndex: number;

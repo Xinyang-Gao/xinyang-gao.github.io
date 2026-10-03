@@ -1,44 +1,13 @@
 // /js/data/site-state.ts
 // 统计管理与服务工作线程注册（全面接入 DataService）
 
-import { CONFIG, storageController, Utils, IS_DEV } from '/js/core/core.js';
+import { IS_DEV } from '/js/core/core.js';
 import { dataService } from '/js/core/data-service.js';
 
-// ==================== 类型定义 ====================
-interface VisitRecord {
-  version?: string;
-  lastVisit?: number;
-  [key: string]: unknown;
-}
-
-interface StatisticsData {
-  version?: string | number;
-  total_articles?: number;
-  total_word_count?: number;
-  total_works?: number;
-  total_article_categories?: number;
-  total_article_tags?: number;
-  total_work_tags?: number;
-  last_updated?: string;
-  last_updated_full?: string;
-  article_tags?: Array<{ name: string; count: number }>;
-  work_tags?: Array<{ name: string; count: number }>;
-  [key: string]: unknown;
-}
-
-interface CodeAnalysisData {
-  total_files?: number;
-  total_lines?: number;
-  non_empty_lines?: number;
-  total_size_bytes?: number;
-  by_extension?: Array<{
-    extension: string;
-    count: number;
-    total_lines?: number;
-    non_empty_lines?: number;
-  }>;
-  [key: string]: unknown;
-}
+// ==================== 类型说明 ====================
+// 本文件不再自定义数据类型：统计/代码分析载荷的类型真源是 /js/types/data.ts，
+// 经 dataService 泛型返回。此前这里重复声明了 VisitRecord / StatisticsData /
+// CodeAnalysisData 三套接口，均未被引用（第 5 套并行类型定义），已移除。
 
 // ==================== Service Worker 注册 ====================
 export function registerServiceWorker(): void {
@@ -95,28 +64,26 @@ export async function initFooterStats(): Promise<void> {
       dataService.getCodeAnalysis(),
     ]);
 
-    // 填充统计信息
+    // 填充统计信息（innerText 只收 string，数字需 String() 归一）
     if (elements.articles) {
-      elements.articles.innerText = stats.total_articles ?? '—';
+      elements.articles.innerText = String(stats.total_articles ?? '—');
     }
     if (elements.words) {
       const words = stats.total_word_count ?? 0;
-      elements.words.innerText =
-        typeof words === 'number' ? words.toLocaleString() : words;
+      elements.words.innerText = typeof words === 'number' ? words.toLocaleString() : String(words);
     }
     if (elements.works) {
-      elements.works.innerText = stats.total_works ?? '—';
+      elements.works.innerText = String(stats.total_works ?? '—');
     }
     if (elements.categories) {
-      elements.categories.innerText = stats.total_article_categories ?? '—';
+      elements.categories.innerText = String(stats.total_article_categories ?? '—');
     }
     if (elements.version) {
       const version = stats.version ? `v${stats.version}` : '—';
       elements.version.innerText = version;
     }
     if (elements.snapshot) {
-      const lastUpdated =
-        stats.last_updated || stats.last_updated_full?.split('T')[0] || '未知';
+      const lastUpdated = stats.last_updated || stats.last_updated_full?.split('T')[0] || '未知';
       elements.snapshot.innerText = `最后更新 · ${lastUpdated}`;
     }
 

@@ -7,9 +7,10 @@ import { Utils } from '/js/core/core.js';
 
 // ==================== 调色板 ====================
 
-const PALETTE = ['#b45b63', '#cd8189', '#e3a5a9', '#9e5e66', '#d99ca2', '#c06f78', '#e9b3b7'];
-const PALETTE_ALT = ['#4ea8ff', '#7dcea0', '#f9b5a4', '#b45b63', '#cd8189', '#e6c3a0', '#9ba5c9'];
-const PALETTE_CODE = ['#b45b63', '#4ea8ff', '#7dcea0', '#f4b942', '#c97e5a', '#9b59b6', '#95a5a6'];
+// 调色板首色跟随 --accent-color 新值 #ab4f57（旧 #b45b63 对比度不达 AA）
+const PALETTE = ['#ab4f57', '#cd8189', '#e3a5a9', '#9e5e66', '#d99ca2', '#c06f78', '#e9b3b7'];
+const PALETTE_ALT = ['#4ea8ff', '#7dcea0', '#f9b5a4', '#ab4f57', '#cd8189', '#e6c3a0', '#9ba5c9'];
+const PALETTE_CODE = ['#ab4f57', '#4ea8ff', '#7dcea0', '#f4b942', '#c97e5a', '#9b59b6', '#95a5a6'];
 
 // ==================== 工具 ====================
 
@@ -231,7 +232,7 @@ registerChart({
         new Chart(ctx, {
           type: 'pie',
           data: { labels: ['暂无数据'], datasets: [{ data: [1] }] },
-        })
+        }),
       );
       return;
     }
@@ -328,16 +329,14 @@ registerChart({
         new Chart(ctx, {
           type: 'doughnut',
           data: { labels: ['暂无数据'], datasets: [{ data: [1] }] },
-        })
+        }),
       );
       return;
     }
     let valid = exts.filter((e) => (e.non_empty_lines || e.total_lines || 0) > 0);
     if (valid.length === 0) valid = exts;
 
-    const sorted = [...valid].sort(
-      (a, b) => (b.non_empty_lines || 0) - (a.non_empty_lines || 0)
-    );
+    const sorted = [...valid].sort((a, b) => (b.non_empty_lines || 0) - (a.non_empty_lines || 0));
     const top = sorted.slice(0, 6);
     const othersLines = sorted.slice(6).reduce((s, e) => s + (e.non_empty_lines || 0), 0);
     if (othersLines > 0) {

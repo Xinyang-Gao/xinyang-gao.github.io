@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 """统一构建入口。
 
@@ -16,7 +15,7 @@ import os
 import sys
 from datetime import datetime
 
-from builder.common import configure_console, env_flag, set_ci_mode, log_info, log_error
+from builder.common import configure_console, env_flag, log_error, log_info, set_ci_mode
 from builder.config import BuildConfig, log_config
 from builder.engine import BuildEngine
 from builder.generators.aggregated import AggregatedGenerator
@@ -106,7 +105,13 @@ def main(argv=None) -> int:
         log_info(f"可用生成器: {', '.join(names)}")
         return 0
 
-    report = engine.run_report(config=config, target_names=args.targets)
+    try:
+        report = engine.run_report(config=config, target_names=args.targets)
+    except RuntimeError as e:
+        # 输入加载失败（如文章解析失败且处于严格模式）：
+        # 干净地报错并以非 0 退出，避免 traceback 淹没日志
+        log_error(f"构建失败：{e}")
+        return 1
 
     if not report.results:
         log_error("没有执行任何生成器")

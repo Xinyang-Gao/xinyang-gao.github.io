@@ -146,9 +146,7 @@ export interface SvgDrawOptions {
 }
 
 /** 合并默认值后的完整配置（container / source 由调用方必传，不设默认值） */
-type ResolvedOptions = Required<
-  Omit<SvgDrawOptions, 'onReady' | 'onFinish' | 'onError'>
-> &
+type ResolvedOptions = Required<Omit<SvgDrawOptions, 'onReady' | 'onFinish' | 'onError'>> &
   Pick<SvgDrawOptions, 'onReady' | 'onFinish' | 'onError'>;
 
 interface DrawPath {
@@ -248,11 +246,7 @@ function normalizeSvg(svg: SVGSVGElement): void {
 function parseSvgText(text: string): SVGSVGElement {
   const doc = new DOMParser().parseFromString(text, 'image/svg+xml');
   const root = doc.documentElement;
-  if (
-    doc.querySelector('parsererror') ||
-    !root ||
-    root.nodeName.toLowerCase() !== 'svg'
-  ) {
+  if (doc.querySelector('parsererror') || !root || root.nodeName.toLowerCase() !== 'svg') {
     throw new Error('[SvgDraw] 无法解析为 SVG，请检查内容');
   }
   // DOMParser 产出的是同 window 下的 SVG 元素，可安全断言
@@ -306,9 +300,7 @@ export class SvgDrawAnimation {
     if (typeof this.options.source !== 'string') {
       // 已有元素：默认克隆，避免污染原节点
       const src = this.options.source;
-      svg = (src.nodeName.toLowerCase() === 'svg'
-        ? src.cloneNode(true)
-        : src) as SVGSVGElement;
+      svg = (src.nodeName.toLowerCase() === 'svg' ? src.cloneNode(true) : src) as SVGSVGElement;
       if (svg.nodeName.toLowerCase() !== 'svg') {
         throw new Error('[SvgDraw] source 必须是 <svg> 元素');
       }
@@ -322,7 +314,8 @@ export class SvgDrawAnimation {
     normalizeSvg(svg);
 
     if (this.options.responsive) svg.classList.add(SVG_DRAW_SVG_CLASS);
-    if (this.options.className) svg.classList.add(...this.options.className.split(/\s+/).filter(Boolean));
+    if (this.options.className)
+      svg.classList.add(...this.options.className.split(/\s+/).filter(Boolean));
 
     this.container.replaceChildren(svg);
     this.svg = svg;
@@ -351,7 +344,7 @@ export class SvgDrawAnimation {
     this.fades = [];
 
     const nodes = Array.from(
-      svg.querySelectorAll('path,line,polyline,polygon,circle,ellipse,rect')
+      svg.querySelectorAll('path,line,polyline,polygon,circle,ellipse,rect'),
     ) as SVGGeometryElement[];
 
     nodes.forEach((el) => {
@@ -372,7 +365,10 @@ export class SvgDrawAnimation {
 
       const fill = cs.fill;
       const hasFill =
-        !!fill && fill !== 'none' && fill !== 'transparent' && !/rgba\(0,\s*0,\s*0,\s*0\)/.test(fill);
+        !!fill &&
+        fill !== 'none' &&
+        fill !== 'transparent' &&
+        !/rgba\(0,\s*0,\s*0,\s*0\)/.test(fill);
       const noStroke = !cs.stroke || cs.stroke === 'none';
       const strokeWidth = parseFloat(cs.strokeWidth) || 0;
 
@@ -428,7 +424,7 @@ export class SvgDrawAnimation {
           if (this.options.once) io.disconnect();
         });
       },
-      { threshold: 0.15 }
+      { threshold: 0.15 },
     );
     io.observe(svg);
     this.stack.addObserver(io);
@@ -569,9 +565,12 @@ export class SvgDrawAnimation {
 
     // 兜底：动画事件丢失时仍能收尾
     play.addTimeout(
-      window.setTimeout(() => {
-        if (remaining > 0) this.finish();
-      }, longest + delay + 120)
+      window.setTimeout(
+        () => {
+          if (remaining > 0) this.finish();
+        },
+        longest + delay + 120,
+      ),
     );
   }
 
@@ -586,7 +585,11 @@ export class SvgDrawAnimation {
   public update(patch: Partial<SvgDrawOptions>, applyNow = false): void {
     if (this.destroyed) return;
     const { container: _c, source: _s, ...rest } = patch;
-    this.options = { ...this.options, ...rest, className: patch.className ?? this.options.className };
+    this.options = {
+      ...this.options,
+      ...rest,
+      className: patch.className ?? this.options.className,
+    };
     this.applyRoundCaps();
     if (applyNow) this.play();
   }
@@ -644,9 +647,7 @@ export class SvgDrawAnimation {
  * 创建并加载一个绘制动画实例（推荐入口）。
  * @returns 已解析完成的实例（未等待播放结束）
  */
-export async function createSvgDraw(
-  options: SvgDrawOptions
-): Promise<SvgDrawAnimation> {
+export async function createSvgDraw(options: SvgDrawOptions): Promise<SvgDrawAnimation> {
   const instance = new SvgDrawAnimation(options);
   await instance.ready;
   return instance;
@@ -712,11 +713,9 @@ function readDatasetOptions(el: HTMLElement): Partial<SvgDrawOptions> {
  */
 export function initSvgDraw(
   root: ParentNode = document,
-  defaults: Partial<SvgDrawOptions> = {}
+  defaults: Partial<SvgDrawOptions> = {},
 ): () => void {
-  const nodes = Array.from(
-    root.querySelectorAll<HTMLElement>(SVG_DRAW_SELECTOR)
-  );
+  const nodes = Array.from(root.querySelectorAll<HTMLElement>(SVG_DRAW_SELECTOR));
   const instances: SvgDrawAnimation[] = [];
 
   nodes.forEach((el) => {
@@ -740,7 +739,7 @@ export function initSvgDraw(
         ...readDatasetOptions(el),
         container: el,
         source,
-      })
+      }),
     );
   });
 

@@ -1,17 +1,13 @@
 // /js/router/router.ts
 // 无刷新导航
 
-import { CONFIG, Utils } from '/js/core/core.js';
+import { Utils } from '/js/core/core.js';
 import { ensureScrollReveal } from '/js/ui/ui-effects.js';
 import { initHomePage } from '/js/pages/home-manager.js';
 import type { PageManager } from '/js/core/page-manager.js';
 import { LazyImageLoader } from '/js/ui/image-manager.js';
 import { showDetailDialog } from '/js/ui/detail-dialog.js';
-import {
-  initNavbar,
-  refreshNavbarTitle,
-  initNavigation,
-} from '/js/ui/navbar-manager.js';
+import { initNavbar, refreshNavbarTitle, initNavigation } from '/js/ui/navbar-manager.js';
 import type { NavbarManager } from '/js/ui/navbar-manager.js';
 import { initBrandLogos } from '/js/ui/brand-logo.js';
 
@@ -113,7 +109,7 @@ class ScrollManager {
           timestamp: Date.now(),
         } as HistoryState,
         document.title,
-        location.href
+        location.href,
       );
     } catch {
       // 忽略跨域或特殊页面的错误
@@ -272,11 +268,10 @@ class PageManagerRegistry {
   static async create(
     name: string,
     path: string,
-    refreshFn: () => void
+    refreshFn: () => void,
   ): Promise<PageManager | null> {
     for (const [pattern, factory] of this.factories) {
-      const matched =
-        typeof pattern === 'string' ? pattern === name : pattern.test(path);
+      const matched = typeof pattern === 'string' ? pattern === name : pattern.test(path);
       if (!matched) continue;
 
       try {
@@ -290,14 +285,11 @@ class PageManagerRegistry {
   }
 }
 
-export function registerPageManager(
-  pattern: string | RegExp,
-  factory: PageManagerFactory
-): void {
+export function registerPageManager(pattern: string | RegExp, factory: PageManagerFactory): void {
   PageManagerRegistry.register(pattern, factory);
 }
 
-// 页面注册 
+// 页面注册
 function registerDefaultPages(): void {
   PageManagerRegistry.register('index', async () => await initHomePage());
 
@@ -344,13 +336,13 @@ function registerDefaultPages(): void {
 
   PageManagerRegistry.register('contact', async () => {
     const { initTwikoo, resetTwikooContainer } = await import('/js/core/twikoo-manager.js');
-    const c = document.querySelector('#twikoo-comments');
+    const c = document.querySelector<HTMLElement>('#twikoo-comments');
     if (c) await initTwikoo(c);
 
     return {
       init: () => {},
       destroy: () => {
-        const el = document.querySelector('#twikoo-comments');
+        const el = document.querySelector<HTMLElement>('#twikoo-comments');
         if (el) resetTwikooContainer(el);
       },
     } as PageManager;
@@ -370,8 +362,8 @@ function extractPageContent(html: string, url: string): ExtractedContent {
     mainHtml: routerView?.outerHTML || '',
     styles: Array.from(
       doc.querySelectorAll<HTMLLinkElement | HTMLStyleElement>(
-        'head link[rel="stylesheet"], head style'
-      )
+        'head link[rel="stylesheet"], head style',
+      ),
     ),
     scripts: Array.from(doc.querySelectorAll<HTMLScriptElement>('body script')),
     pageName: Utils.getPageNameFromPath(new URL(url, location.href).pathname),
@@ -437,10 +429,43 @@ function replaceContentWithTransition(mainHtml: string): Promise<boolean> {
   });
 }
 
+/** 页面导航请求超时（毫秒）：弱网下到点走错误弹窗，而非无限转圈 */
+const PAGE_FETCH_TIMEOUT_MS = 12000;
+
+/**
+ * HTTP 错误（4xx/5xx）：携带状态码，供上层区分"页面不存在"与"网络抖动"。
+ * 404 重试没有意义——原实现对 404 也无退避重试 2 次，白等两轮才报错。
+ */
+class HttpStatusError extends Error {
+  constructor(
+    readonly status: number,
+    statusText: string,
+  ) {
+    super(`HTTP ${status}: ${statusText}`);
+    this.name = 'HttpStatusError';
+  }
+}
+
 async function fetchPageContent(url: string, signal: AbortSignal): Promise<PageResponse> {
-  const res = await fetch(url, { credentials: 'same-origin', signal });
-  if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-  return { html: await res.text(), url };
+  const controller = new AbortController();
+  const timer = window.setTimeout(() => controller.abort(), PAGE_FETCH_TIMEOUT_MS);
+  // 外层导航 abort 时同步取消内层超时控制器
+  const onAbort = (): void => controller.abort();
+  signal.addEventListener('abort', onAbort, { once: true });
+  try {
+    const res = await fetch(url, { credentials: 'same-origin', signal: controller.signal });
+    if (!res.ok) throw new HttpStatusError(res.status, res.statusText);
+    return { html: await res.text(), url };
+  } catch (e) {
+    if (e instanceof DOMException && e.name === 'AbortError' && !signal.aborted) {
+      // 内层超时触发（外层并未取消）→ 转成普通错误走重试/弹窗
+      throw new Error(`页面请求超时（>${PAGE_FETCH_TIMEOUT_MS}ms）`);
+    }
+    throw e;
+  } finally {
+    window.clearTimeout(timer);
+    signal.removeEventListener('abort', onAbort);
+  }
 }
 
 async function destroyCurrentManager(): Promise<void> {
@@ -474,7 +499,7 @@ async function processContent(
   scrollData: { x: number; y: number } | null,
   ac: AbortController,
   isPopState: boolean,
-  navId: number
+  navId: number,
 ): Promise<boolean> {
   const isStale = () => ac.signal.aborted || navId !== state.navigationId;
 
@@ -493,7 +518,7 @@ async function processContent(
     history.pushState(
       { url, scroll: { x: 0, y: 0 }, timestamp: Date.now(), navId } as HistoryState,
       content.title,
-      url
+      url,
     );
   }
 
@@ -566,7 +591,7 @@ async function processContent(
   window.dispatchEvent(
     new CustomEvent('ajax:navigation', {
       detail: { url, page: content.pageName },
-    })
+    }),
   );
 
   // 统一存绝对地址：popstate 的比较基准必须能和 location.href / history.state.url 对齐
@@ -579,7 +604,7 @@ export async function fetchAndReplaceContent(
   pushState: boolean = true,
   scrollData: { x: number; y: number } | null = null,
   retryCount: number = 0,
-  isPopState: boolean = false
+  isPopState: boolean = false,
 ): Promise<boolean> {
   const navId = ++state.navigationId;
   const cacheKey = url.split('#')[0];
@@ -652,7 +677,7 @@ export async function fetchAndReplaceContent(
             navId,
           } as HistoryState,
           document.title,
-          target.href
+          target.href,
         );
       }
       const el = document.getElementById(target.hash.slice(1));
@@ -668,8 +693,15 @@ export async function fetchAndReplaceContent(
 
     console.error('[Router] 导航异常:', err);
 
-    if (retryCount < 2) {
-      console.log(`[Router] 正在重试 (${retryCount + 1}/2)...`);
+    // 404/410 等"页面确实不存在"：重试无意义，直接报错
+    const isMissing =
+      err instanceof HttpStatusError && err.status >= 400 && err.status < 500 && err.status !== 429;
+    if (retryCount < 2 && !isMissing) {
+      // 指数退避：原实现是无延迟连打 2 次，网络故障时只会让拥塞更糟
+      const backoff = 300 * Math.pow(3, retryCount);
+      console.log(`[Router] 正在重试 (${retryCount + 1}/2)，${backoff}ms 后…`);
+      await new Promise((resolve) => window.setTimeout(resolve, backoff));
+      if (navId !== state.navigationId) return false;
       return fetchAndReplaceContent(url, pushState, scrollData, retryCount + 1, isPopState);
     }
 
@@ -714,9 +746,7 @@ function cleanupCache(): void {
     if (now - v.timestamp > CACHE_TTL) state.cache.delete(k);
   }
   if (state.cache.size >= MAX_CACHE_SIZE) {
-    const oldest = [...state.cache.entries()].sort(
-      (a, b) => a[1].timestamp - b[1].timestamp
-    )[0];
+    const oldest = [...state.cache.entries()].sort((a, b) => a[1].timestamp - b[1].timestamp)[0];
     if (oldest) state.cache.delete(oldest[0]);
   }
 }
@@ -727,7 +757,7 @@ function cleanupCache(): void {
  */
 async function initPageManager(
   pageName: string,
-  refreshFn: () => void
+  refreshFn: () => void,
 ): Promise<PageManager | null> {
   return PageManagerRegistry.create(pageName, location.pathname, refreshFn);
 }
@@ -768,7 +798,7 @@ export function enableAjaxNavigation(): void {
           navId: state.navigationId,
         } as HistoryState,
         document.title,
-        fullUrl
+        fullUrl,
       );
       const hash = new URL(fullUrl).hash;
       if (hash) {
@@ -802,7 +832,7 @@ export function initPopstate(): void {
         navId: 0,
       } as HistoryState,
       document.title,
-      location.href
+      location.href,
     );
   }
 
@@ -833,13 +863,7 @@ export function initPopstate(): void {
       return;
     }
 
-    fetchAndReplaceContent(
-      currentUrl,
-      false,
-      targetState?.scroll ?? null,
-      0,
-      true
-    );
+    fetchAndReplaceContent(currentUrl, false, targetState?.scroll ?? null, 0, true);
   });
 }
 
@@ -863,8 +887,7 @@ function reviveInjectedScripts(container: HTMLElement): void {
       script.setAttribute(attr.name, attr.value);
     }
     if (!script.src) script.textContent = stub.textContent || '';
-    script.onerror = () =>
-      console.warn('[Router] 页脚脚本加载失败:', script.src || 'inline');
+    script.onerror = () => console.warn('[Router] 页脚脚本加载失败:', script.src || 'inline');
     stub.replaceWith(script);
   });
 }

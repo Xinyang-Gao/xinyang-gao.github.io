@@ -31,12 +31,12 @@ export class AboutPageManager extends PageBase {
       duration: 3200,
       easing: 'out',
       delay: 200,
-      evenSpeed: true,          // 按路径长度分配时长 → 所有笔同时收笔
+      evenSpeed: true, // 按路径长度分配时长 → 所有笔同时收笔
       minSegmentDuration: 200,
       fillAfterDraw: true,
       fadeDuration: 600,
       roundCaps: true,
-      trigger: 'visible',       // 滚到可见时起笔
+      trigger: 'visible', // 滚到可见时起笔
       once: true,
       loop: false,
       strokeFallbackColor: 'currentColor', // 无描边图形补色，随主题变化

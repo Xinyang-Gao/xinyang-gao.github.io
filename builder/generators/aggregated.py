@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 """
 聚合生成器：一次性生成统计 JSON、RSS、站点地图、列表页、子目录页面、复制静态资源。
@@ -7,31 +6,52 @@
 
 import json
 import os
-import sys
 import shutil
 import subprocess
-from concurrent.futures import ThreadPoolExecutor
-from pathlib import Path
-from html import escape
-from datetime import datetime
+import threading
+import time
 from collections import Counter
+from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
+from html import escape
+from pathlib import Path
+from urllib.parse import quote
 from xml.etree import ElementTree as ET
+
 from rcssmin import cssmin
+
+from ..build_context import BuildContext
 
 # 使用相对导入
 from ..common import (
-    PROJECT_ROOT, CSS_SRC_DIR, JS_SRC_DIR, ASSETS_DIR,
-    DIST_ROOT, ARTICLES_OUTPUT_DIR, JSON_OUTPUT_DIR, CSS_DIST_DIR, JS_DIST_DIR,
-    RSS_OUTPUT, SITEMAP_OUTPUT,
-    ensure_dir, env_int, iter_files,
-    log_info, log_warning, log_error,
-    load_json, save_json, format_date, format_date_iso, is_known_date,
-    get_current_date_iso, get_current_datetime_iso,
-    compute_dir_hash, compute_object_hash,
-    load_build_state
+    ASSETS_DIR,
+    CSS_DIST_DIR,
+    CSS_SRC_DIR,
+    DIST_ROOT,
+    JS_SRC_DIR,
+    JSON_OUTPUT_DIR,
+    PROJECT_ROOT,
+    RSS_OUTPUT,
+    SITE_URL,
+    SITEMAP_OUTPUT,
+    compute_dir_hash,
+    compute_object_hash,
+    ensure_dir,
+    env_int,
+    format_date_iso,
+    get_current_date_iso,
+    get_current_datetime_iso,
+    is_known_date,
+    iter_files,
+    load_build_state,
+    load_json,
+    log_error,
+    log_info,
+    log_warning,
+    save_json,
 )
-from ..build_context import BuildContext
 from ..config import BuildConfig
+from ..seo import json_ld_webpage, seo_head_tags
 from ..static_assets import PAGE_TEMPLATES, static_sources_hash, sync_static_assets
 from .base import OutputGenerator
 
@@ -42,6 +62,7 @@ NPM_TIMEOUT_SECONDS = 900
 ARTICLES_LIST_HTML = DIST_ROOT / "articles" / "index.html"
 WORKS_LIST_HTML = DIST_ROOT / "works" / "index.html"
 NOJS_HTML = DIST_ROOT / "nojs.html"
+OFFLINE_HTML = DIST_ROOT / "offline.html"
 STATISTICS_JSON = JSON_OUTPUT_DIR / "statistics.json"
 
 class AggregatedGenerator(OutputGenerator):
@@ -49,7 +70,8 @@ class AggregatedGenerator(OutputGenerator):
     inputs = {"articles", "works", "friends", "version"}
     dependencies = frozenset({"friend_colors"})
     outputs = [
-        RSS_OUTPUT, SITEMAP_OUTPUT, ARTICLES_LIST_HTML, WORKS_LIST_HTML, NOJS_HTML, STATISTICS_JSON,
+        RSS_OUTPUT, SITEMAP_OUTPUT, ARTICLES_LIST_HTML, WORKS_LIST_HTML, NOJS_HTML, OFFLINE_HTML,
+        STATISTICS_JSON,
         JSON_OUTPUT_DIR / "code_analysis.json",
         JSON_OUTPUT_DIR / "works.json",
         JSON_OUTPUT_DIR / "friends.json",
@@ -239,12 +261,12 @@ class AggregatedGenerator(OutputGenerator):
         config = load_json(PROJECT_ROOT / "rss_config.json", {})
         site = config.get("site", {
             "title": "高新炀的个人网站",
-            "link": "https://xinyang-gao.github.io",
+            "link": SITE_URL,
             "description": "学生 · 开发者 · 写作者",
             "language": "zh-CN",
             "generator": "AggregatedGenerator"
         })
-        base_url = site.get("link", "https://xinyang-gao.github.io").rstrip('/')
+        base_url = site.get("link", SITE_URL).rstrip('/')
 
         def parse_date_rfc822(date_str):
             if not date_str or date_str == "未指定日期":
@@ -253,7 +275,7 @@ class AggregatedGenerator(OutputGenerator):
                 from dateutil import parser
                 dt = parser.parse(date_str, fuzzy=True)
                 return dt.strftime("%a, %d %b %Y %H:%M:%S GMT")
-            except:
+            except (ValueError, TypeError, OverflowError):
                 formats = ["%Y-%m-%d", "%Y年%m月%d日", "%Y-%m-%d %H:%M:%S", "%Y/%m/%d"]
                 for fmt in formats:
                     try:
@@ -262,13 +284,16 @@ class AggregatedGenerator(OutputGenerator):
                             return dt.strftime("%a, %d %b %Y 00:00:00 GMT")
                         else:
                             return dt.strftime("%a, %d %b %Y %H:%M:%S GMT")
-                    except:
+                    except ValueError:
                         continue
             return None
 
         items = []
         for art in context.articles:
             if art.hidden:
+                continue
+            # README 是构建文档，不作为文章推送
+            if getattr(art, "category", "") == "README文档自动构建":
                 continue
             pub = parse_date_rfc822(art.date)
             if not pub:
@@ -333,7 +358,7 @@ class AggregatedGenerator(OutputGenerator):
 
     # ---------- 站点地图 ----------
     def _generate_sitemap(self, context: BuildContext) -> None:
-        base_url = "https://xinyang-gao.github.io"
+        base_url = SITE_URL
         urlset = ET.Element("urlset", xmlns="http://www.sitemaps.org/schemas/sitemap/0.9")
         added = set()
 
@@ -342,29 +367,34 @@ class AggregatedGenerator(OutputGenerator):
                 return
             added.add(loc)
             elem = ET.SubElement(urlset, "url")
-            ET.SubElement(elem, "loc").text = loc
+            # 中文文件名做百分号编码：sitemap 协议要求 URL 已转义
+            ET.SubElement(elem, "loc").text = quote(loc, safe=":/@")
             ET.SubElement(elem, "lastmod").text = lastmod
             ET.SubElement(elem, "changefreq").text = changefreq
             ET.SubElement(elem, "priority").text = priority
 
         # 文章
+        # README 是构建文档（category 特判），不属于站点内容，不进站点地图
         for art in context.articles:
             if art.hidden:
+                continue
+            if getattr(art, "category", "") == "README文档自动构建":
                 continue
             lastmod = art.last_updated if art.last_updated else art.date
             if lastmod == "未指定日期":
                 lastmod = get_current_date_iso()
-            add_url(base_url + art.url, lastmod[:10], "weekly", "0.9")
+            add_url(base_url + art.url, lastmod[:10], "weekly", "0.6")
 
         # 固定页面
+        # 说明：此处只列 dist 中真实存在的页面
         default_pages = {
             "/": {"changefreq": "weekly", "priority": "1.0"},
             "/about/": {"changefreq": "weekly", "priority": "0.8"},
-            "/articles/": {"changefreq": "daily", "priority": "0.9"},
+            "/articles/": {"changefreq": "daily", "priority": "0.8"},
             "/works/": {"changefreq": "weekly", "priority": "0.8"},
             "/timeline/": {"changefreq": "weekly", "priority": "0.7"},
             "/stats/": {"changefreq": "weekly", "priority": "0.6"},
-            "/settings/": {"changefreq": "monthly", "priority": "0.5"},
+            "/privacy/": {"changefreq": "yearly", "priority": "0.3"},
             "/contact/": {"changefreq": "monthly", "priority": "0.5"},
             "/friends/": {"changefreq": "weekly", "priority": "0.7"},
             "/rss.xml": {"changefreq": "daily", "priority": "0.5"},
@@ -540,10 +570,18 @@ class AggregatedGenerator(OutputGenerator):
             list_html = f'<div class="{type_name}s-list">{"".join(list_items)}</div>'
 
         json_str = json.dumps(items, ensure_ascii=False, default=lambda o: o.__dict__ if hasattr(o, '__dict__') else str(o))
+        page_path = "/works/" if is_work else "/articles/"
+        seo_block = (
+            seo_head_tags(title=title, description=desc, path=page_path)
+            + "\n    "
+            + json_ld_webpage(name=title, description=desc, path=page_path,
+                              page_type="CollectionPage")
+        )
         return f'''<!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><title>{title} - 高新炀的小站</title>
-<link rel="stylesheet" href="/css/core/variables.css"><link rel="stylesheet" href="/css/core/base.css"><link rel="stylesheet" href="/css/core/layout.css"><link rel="stylesheet" href="/css/core/components.css"><link rel="stylesheet" href="/css/components/loading-overlay.css"><link rel="stylesheet" href="/css/components/tooltip.css"><link rel="stylesheet" href="/css/pages/friends.css"><link rel="stylesheet" href="/css/components/comments.css">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><meta name="description" content="{escape(desc, quote=True)}"><title>{title} - 高新炀的小站</title>
+    {seo_block}
+<link rel="stylesheet" href="/css/core.css"><link rel="stylesheet" href="/css/components/loading-overlay.css"><link rel="stylesheet" href="/css/components/tooltip.css"><link rel="stylesheet" href="/css/pages/friends.css"><link rel="stylesheet" href="/css/components/comments.css">
 <script src="https://kit.fontawesome.com/a3c3c05703.js" crossorigin="anonymous" defer></script></head>
 <body>
 <div id="loading-overlay" role="status" aria-label="页面加载中"><div class="loading-glow"></div><div id="loading-content"><span class="loading-title">GaoXinYang</span></div></div>
@@ -634,10 +672,7 @@ class AggregatedGenerator(OutputGenerator):
         html = f'''<!DOCTYPE html>
 <html lang="zh-CN">
 <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>高新炀的小站 · 静态镜像</title>
-<link rel="stylesheet" href="/css/core/variables.css">
-<link rel="stylesheet" href="/css/core/base.css">
-<link rel="stylesheet" href="/css/core/layout.css">
-<link rel="stylesheet" href="/css/core/components.css">
+<link rel="stylesheet" href="/css/core.css">
 <style>
 .nojs-alert {{ background: var(--accent-color,#b45b63); color: white; text-align: center; padding: 8px; }}
 .section-header {{ margin-top: 2rem; border-bottom: 2px solid var(--accent-color,#b45b63); display: inline-block; }}
@@ -686,12 +721,63 @@ class AggregatedGenerator(OutputGenerator):
         with open(NOJS_HTML, 'w', encoding='utf-8', newline='\n') as f:
             f.write(html)
         log_info(f"无JS索引页生成: {NOJS_HTML}")
+        self._generate_offline_page()
+
+    def _generate_offline_page(self) -> None:
+        """生成 /offline.html —— Service Worker 的离线降级页。
+
+        sw.js 一直预缓存并回退到该文件，但此前从未生成过它（线上 404），
+        页面必须自包含（内联样式），
+        因为离线时拿不到任何外部 CSS。
+        """
+        year = datetime.now().year
+        html = f'''<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>离线 · 高新炀的小站</title>
+<style>
+  html {{ color-scheme: light dark; }}
+  body {{
+    margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    font-family: "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    background: #f4f3f0; color: #23231f; text-align: center; padding: 24px;
+  }}
+  .card {{ max-width: 420px; }}
+  h1 {{ font-size: 1.6rem; margin: 0 0 .6rem; }}
+  p {{ line-height: 1.7; color: #6d6d66; margin: 0 0 1.4rem; }}
+  .retry {{
+    display: inline-block; padding: 10px 24px; border-radius: 999px; cursor: pointer;
+    background: #b45b63; color: #fff; border: 0; font-size: 1rem;
+  }}
+  footer {{ margin-top: 2rem; font-size: .8rem; color: #9a9a92; }}
+  @media (prefers-color-scheme: dark) {{
+    body {{ background: #17171e; color: #e8e8e6; }}
+    p {{ color: #9a9aa2; }}
+  }}
+</style>
+</head>
+<body>
+  <main class="card">
+    <h1>你现在处于离线状态</h1>
+    <p>网络连接不可用，部分内容暂时无法加载。<br>恢复网络后点击下方按钮重试。</p>
+    <button class="retry" type="button" onclick="location.reload()">重新加载</button>
+    <footer>© {year} 高新炀的小站</footer>
+  </main>
+</body>
+</html>
+'''
+        with open(OFFLINE_HTML, 'w', encoding='utf-8', newline='\n') as f:
+            f.write(html)
+        log_info(f"离线降级页生成: {OFFLINE_HTML}")
 
     # ---------- CSS 压缩 ----------
     @staticmethod
     def _minify_one_css(css_file: Path) -> str:
         rel_path = css_file.relative_to(CSS_SRC_DIR)
-        with open(css_file, 'r', encoding='utf-8') as f:
+        with open(css_file, encoding='utf-8') as f:
             content = f.read()
         try:
             minified = cssmin(content)
@@ -722,6 +808,54 @@ class AggregatedGenerator(OutputGenerator):
         for rel in results:
             log_info(f"压缩 CSS: {rel}")
         log_info(f"CSS 压缩完成（{len(results)} 个文件）")
+        self._bundle_core_css()
+
+    #: core 层合并顺序 = 原 <link> 引用顺序；顺序错会破坏层叠（变量必须最先）
+    CORE_CSS_ORDER = (
+        "core/variables.css",
+        "core/base.css",
+        "core/layout.css",
+        "core/components.css",
+    )
+    #: 合并产物：各页面 head 用一个 <link> 替代 4 个（审计 P1-31 首屏 CSS）
+    CORE_CSS_BUNDLE = "core.css"
+
+    def _bundle_core_css(self) -> None:
+        """把 core 四件套按顺序合并为单个 `dist/css/core.css`。
+
+        首屏此前要串行加载 4 个 core CSS 才能开始有意义的渲染；合并后为 1 个，
+        请求数从 7 降到 4（各页面另有 loading-overlay/tooltip/页面级样式）。
+        各单文件仍照常产出——JS 动态注入只依赖 components/navbar 与
+        components/image-viewer，不涉及 core，合并对它们无影响。
+        """
+        parts: list[str] = []
+        for rel in self.CORE_CSS_ORDER:
+            src = CSS_SRC_DIR / rel
+            if not src.is_file():
+                log_warning(f"core 合并跳过缺失文件: {rel}")
+                continue
+            try:
+                parts.append(cssmin(src.read_text(encoding="utf-8")))
+            except Exception as e:  # noqa: BLE001 - 压缩失败不应中断构建
+                log_warning(f"core 合并压缩失败 {rel}: {e}，使用原文")
+                parts.append(src.read_text(encoding="utf-8"))
+
+        if not parts:
+            log_error("core CSS 合并失败：没有任何 core 文件被读取")
+            return
+
+        bundle = "\n".join(parts)
+        dst = CSS_DIST_DIR / self.CORE_CSS_BUNDLE
+        ensure_dir(dst.parent)
+        if dst.is_file():
+            try:
+                if dst.read_text(encoding="utf-8") == bundle:
+                    return
+            except OSError:
+                pass
+        with open(dst, "w", encoding="utf-8", newline="\n") as f:
+            f.write(bundle)
+        log_info(f"core CSS 合并: {self.CORE_CSS_BUNDLE} ({len(bundle):,} 字节)")
 
     # ---------- 前端编译 ----------
     @staticmethod
@@ -762,8 +896,16 @@ class AggregatedGenerator(OutputGenerator):
         display = argv if isinstance(argv, str) else " ".join(argv)
         log_info(f"执行前端编译: {display} (cwd={PROJECT_ROOT})")
         started = datetime.now()
+
+        # 超时与进程生命周期：
+        #  旧实现 `for line in proc.stdout` 读流永无超时，即便 proc.wait(timeout)
+        #  抛 TimeoutExpired，with Popen 的 __exit__（py3.12 无条件 self.wait()）
+        #  仍会继续阻塞——900s 超时形同虚设，卡死只能靠 CI job 超时兜底。
+        # 现在：读流放独立线程，主线程按 deadline 轮询；超时显式 kill + reap。
+        proc = None
+        reader = None
         try:
-            with subprocess.Popen(
+            proc = subprocess.Popen(
                 argv,
                 cwd=str(PROJECT_ROOT),
                 stdout=subprocess.PIPE,
@@ -773,25 +915,52 @@ class AggregatedGenerator(OutputGenerator):
                 errors="replace",
                 env=env,
                 shell=use_shell,
-            ) as proc:
-                assert proc.stdout is not None
-                for line in proc.stdout:
+            )
+
+            def _pump(stream) -> None:
+                for line in stream:
                     line = line.rstrip()
                     if line:
                         log_info(f"[vite] {line}")
-                returncode = proc.wait(timeout=timeout)
+
+            assert proc.stdout is not None
+            reader = threading.Thread(target=_pump, args=(proc.stdout,), daemon=True)
+            reader.start()
+
+            deadline = time.monotonic() + timeout
+            while proc.poll() is None:
+                if time.monotonic() >= deadline:
+                    raise subprocess.TimeoutExpired(argv, timeout)
+                time.sleep(0.2)
+            returncode = proc.returncode
+            reader.join(timeout=10)
         except subprocess.TimeoutExpired:
+            # 必须先 kill 再 wait：只 wait 不 kill 会永远挂起
             message = f"前端编译超时（>{timeout}s）"
+            if proc is not None and proc.poll() is None:
+                proc.kill()
+                try:
+                    proc.wait(timeout=10)
+                except subprocess.TimeoutExpired:
+                    log_error("kill 后进程仍未退出，放弃回收")
+            if reader is not None:
+                reader.join(timeout=5)
             if cfg.strict:
-                raise RuntimeError(message)
+                raise RuntimeError(message) from None
             log_error(f"{message}，继续执行其余构建步骤。")
             return
         except OSError as e:
             message = f"启动前端编译进程失败: {e}"
             if cfg.strict:
-                raise RuntimeError(message)
+                raise RuntimeError(message) from e
             log_error(message)
             return
+        finally:
+            if proc is not None and proc.stdout is not None:
+                try:
+                    proc.stdout.close()
+                except OSError:
+                    pass
 
         elapsed = (datetime.now() - started).total_seconds()
         if returncode != 0:
@@ -850,11 +1019,11 @@ class AggregatedGenerator(OutputGenerator):
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+        <meta name="description" content="友情链接 —— 互联网上志同道合的朋友们，双向奔赴的博客与小站。">
         <title>友情链接 - 高新炀的小站</title>
-        <link rel="stylesheet" href="/css/core/variables.css">
-        <link rel="stylesheet" href="/css/core/base.css">
-        <link rel="stylesheet" href="/css/core/layout.css">
-        <link rel="stylesheet" href="/css/core/components.css">
+        {seo_head_tags(title="友情链接", description="互联网上志同道合的朋友们，双向奔赴的博客与小站。", path="/friends/")}
+        {json_ld_webpage(name="友情链接", description="互联网上志同道合的朋友们，双向奔赴的博客与小站。", path="/friends/")}
+        <link rel="stylesheet" href="/css/core.css">
         <link rel="stylesheet" href="/css/components/loading-overlay.css">
         <link rel="stylesheet" href="/css/components/tooltip.css">
         <link rel="stylesheet" href="/css/pages/friends.css">
@@ -914,14 +1083,14 @@ class AggregatedGenerator(OutputGenerator):
                                     <div class="provide-info-text" id="provideInfoText">
                                         <!-- 主要信息 -->
                                         <div><span class="info-label">名称：</span><span class="info-value">高新炀的小站</span></div>
-                                        <div><span class="info-label">地址：</span><span class="info-value">https://xinyang-gao.github.io</span></div>
-                                        <div><span class="info-label">头像：</span><span class="info-value">https://xinyang-gao.github.io/assets/avatar.webp</span></div>
+                                        <div><span class="info-label">地址：</span><span class="info-value">{SITE_URL}</span></div>
+                                        <div><span class="info-label">头像：</span><span class="info-value">{SITE_URL}/assets/avatar.webp</span></div>
                                         <div><span class="info-label">描述：</span><span class="info-value">一个装着些稀奇古怪东西的个人小站，欢迎来逛逛~</span></div>
                                         <!-- 次要信息 -->
-                                        <div class="info-secondary" data-tooltip="本站的小图标"><span class="info-label">图标：</span><span class="info-value">http://xinyang-gao.github.io/favicon.ico</span></div>
+                                        <div class="info-secondary" data-tooltip="本站的小图标"><span class="info-label">图标：</span><span class="info-value">{SITE_URL}/favicon.ico</span></div>
                                         <div class="info-secondary" data-tooltip="网站截图"><span class="info-label">截图：</span><span class="info-value">https://s41.ax1x.com/2026/08/29/pnPVN6S.png</span></div>
-                                        <div class="info-secondary" data-tooltip="一种内容订阅协议，让你在阅读器里自动聚合接收网站的最新更新，无需逐个访问网页\n一些网站的“朋友圈”可能会用到此文件"><span class="info-label">订阅：</span><span class="info-value">https://xinyang-gao.github.io/rss.xml</span></div>
-                                        <div class="info-secondary" data-tooltip="一个列出网站所有重要网址及其最后更新时间等信息的文件，旨在向搜索引擎爬虫清晰展示网站结构"><span class="info-label">站点地图：</span><span class="info-value">https://xinyang-gao.github.io/sitemap.xml</span></div>
+                                        <div class="info-secondary" data-tooltip="一种内容订阅协议，让你在阅读器里自动聚合接收网站的最新更新，无需逐个访问网页\n一些网站的“朋友圈”可能会用到此文件"><span class="info-label">订阅：</span><span class="info-value">{SITE_URL}/rss.xml</span></div>
+                                        <div class="info-secondary" data-tooltip="一个列出网站所有重要网址及其最后更新时间等信息的文件，旨在向搜索引擎爬虫清晰展示网站结构"><span class="info-label">站点地图：</span><span class="info-value">{SITE_URL}/sitemap.xml</span></div>
                                         <div class="info-secondary" data-tooltip="网站的未构建源代码开源\n如果你想看某个功能是如何实现的话\n可能有些屎山（划掉）"><span class="info-label">开源：</span><span class="info-value">https://github.com/Xinyang-Gao/xinyang-gao.github.io</span></div>
                                     </div>
                                     <div class="info-actions">
@@ -964,8 +1133,8 @@ class AggregatedGenerator(OutputGenerator):
                     <div class="friend-avatar">
                         <div class="avatar-wrapper">
                             <div class="avatar-placeholder" style="background: var(--accent-color);">{escape(initial)}</div>
-                            <img class="avatar-img" src="{escape(avatar)}" alt="{escape(name)}的头像" 
-                                loading="lazy" 
+                            <img class="avatar-img" src="{escape(avatar)}" alt="{escape(name)}的头像"
+                                loading="lazy"
                                 onload="this.style.opacity='1'; this.previousElementSibling.style.display='none';"
                                 onerror="this.style.display='none'; this.previousElementSibling.style.display='flex';">
                         </div>
@@ -1023,7 +1192,7 @@ class AggregatedGenerator(OutputGenerator):
             lines = 0
             non_empty = 0
             try:
-                with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                with open(file_path, encoding='utf-8', errors='ignore') as f:
                     for line in f:
                         lines += 1
                         if line.strip():

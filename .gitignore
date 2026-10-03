@@ -2,15 +2,14 @@ __pycache__/
 *.pyc
 .tmp_*.log
 builder/friend_link_reply_building.py
-
-src/markdown_exporter.py
 dist/
 node_modules/
 
-tsconfig.json
 .build_state.json
 
 test.bat
 server.bat
 
-todo.md
+.cache/
+
+docs/审计报告-2026-10-03.md

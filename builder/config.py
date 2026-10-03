@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 """构建选项：集中描述一次构建的行为开关。
 
@@ -7,9 +6,8 @@
 也便于在 GitHub Actions 中通过环境变量统一配置。
 """
 
-from dataclasses import dataclass, field
 import os
-from typing import Dict, Optional
+from dataclasses import dataclass, field
 
 from .common import IS_CI, env_flag, env_int, log_info
 
@@ -38,7 +36,7 @@ class BuildConfig:
     ci: bool = IS_CI
 
     #: 覆盖特定生成器的 force（如 {"friend_colors": True}）
-    force_overrides: Dict[str, bool] = field(default_factory=dict)
+    force_overrides: dict[str, bool] = field(default_factory=dict)
 
     def is_forced(self, name: str) -> bool:
         return bool(self.force_overrides.get(name, self.force))
@@ -47,8 +45,8 @@ class BuildConfig:
     def from_env(cls, *, force: bool = False, clean: bool = False,
                  skip_frontend: bool = False, offline: bool = False,
                  strict: bool = True, parallel: bool = True,
-                 max_workers: Optional[int] = None, dry_run: bool = False,
-                 force_overrides: Optional[Dict[str, bool]] = None) -> "BuildConfig":
+                 max_workers: int | None = None, dry_run: bool = False,
+                 force_overrides: dict[str, bool] | None = None) -> "BuildConfig":
         """结合环境变量默认值构造配置（显式参数优先）。"""
         return cls(
             force=force,

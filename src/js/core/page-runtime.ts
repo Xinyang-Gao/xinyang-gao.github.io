@@ -3,6 +3,7 @@
 // 工具函数（getPageNameFromPath / getTimeBasedTheme / isSameOrigin）已统一至 core.Utils。
 
 import { CONFIG, Utils } from '/js/core/core.js';
+import { dataService } from '/js/core/data-service.js';
 
 // ========== 背景图（不阻塞 LCP） ==========
 
@@ -57,8 +58,10 @@ export function showBackgroundImage(): void {
 
 /** 随机挑选并下载一张壁纸（首次进入站点 / 用户主动换图） */
 export function applyRandomBackgroundImage(): void {
-  const { BACKGROUND_IMAGES } = CONFIG;
-  if (!Array.isArray(BACKGROUND_IMAGES) || BACKGROUND_IMAGES.length === 0) return;
+  // 防御式空判：CONFIG.BACKGROUND_IMAGES 是 as const 元组（length 恒为 9），
+  // 直接 `.length === 0` 会被 TS2367 判为"不可能的比较"；退化成只读数组再判
+  const images: readonly string[] = CONFIG.BACKGROUND_IMAGES;
+  if (!images.length) return;
 
   const overlay = ensureOverlay();
   if (!overlay) return;
@@ -71,9 +74,9 @@ export function applyRandomBackgroundImage(): void {
   }
 
   // 有候选多张时避免连续选中同一张
-  let imageUrl = BACKGROUND_IMAGES[Math.floor(Math.random() * BACKGROUND_IMAGES.length)];
-  if (BACKGROUND_IMAGES.length > 1 && current && imageUrl === current) {
-    imageUrl = BACKGROUND_IMAGES[(BACKGROUND_IMAGES.indexOf(current) + 1) % BACKGROUND_IMAGES.length];
+  let imageUrl = images[Math.floor(Math.random() * images.length)];
+  if (images.length > 1 && current && imageUrl === current) {
+    imageUrl = images[(images.indexOf(current) + 1) % images.length];
   }
 
   const img = new Image();
@@ -153,9 +156,9 @@ export async function updateFooterUpdateTime(): Promise<void> {
   if (!updateSpan) return;
 
   try {
-    const response = await fetch(CONFIG.API.STATISTICS);
-    if (!response.ok) throw new Error('无法获取统计信息');
-    const stats = await response.json();
+    // 走 dataService 而非裸 fetch：statistics.json 在首屏已被加载过，
+    // 裸 fetch 会让同一份数据被请求两次（审计 M8）
+    const stats = await dataService.getStatistics();
     const fullTime = stats.last_updated_full;
     const dateOnly = stats.last_updated;
 

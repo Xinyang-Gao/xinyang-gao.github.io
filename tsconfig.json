@@ -1,0 +1,40 @@
+{
+  "compilerOptions": {
+    /* Vite 只做转译不做类型检查——本文件是全项目唯一的类型门禁 */
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "types": [],
+
+    /* 严格模式：这是 README 与注释中宣称的"strict"落地 */
+    "strict": true,
+    "noImplicitAny": true,
+    "strictNullChecks": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "noFallthroughCasesInSwitch": true,
+    "forceConsistentCasingInFileNames": true,
+
+    /* 只检查不产出（Vite 负责编译） */
+    "noEmit": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "checkJs": false,
+
+    /* 与 vite.config.mts 的 resolve.alias 保持一致
+       （TypeScript 7 移除了 baseUrl，paths 直接用相对路径） */
+    "paths": {
+      "/js/*": ["./src/js/*"],
+      "/css/*": ["./src/css/*"],
+      "/assets/*": ["./src/assets/*"]
+    }
+  },
+  /* 只检查浏览器侧代码：vite.config.mts 依赖 Node 类型，
+     一旦纳入会把 NodeJS.Timeout 混进全局 setTimeout 推断，污染 DOM 类型 */
+  "include": ["src/js/**/*.ts", "src/js/**/*.js"],
+  "exclude": ["node_modules", "dist", "src/js/vendor/*.min.js", "src/works"]
+}

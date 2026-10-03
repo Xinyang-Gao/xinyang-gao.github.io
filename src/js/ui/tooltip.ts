@@ -99,7 +99,7 @@ export class TooltipManager {
     }
     this.currentTarget = tooltipTarget as HTMLElement;
     const rawText = tooltipTarget.getAttribute('data-tooltip') || '';
-    this.show(tooltipTarget, rawText, e.clientX, e.clientY);
+    this.show(tooltipTarget as HTMLElement, rawText, e.clientX, e.clientY);
   };
 
   private onMouseOut = (e: MouseEvent) => {
@@ -118,7 +118,10 @@ export class TooltipManager {
     this.hideTimer = window.setTimeout(() => this.hide(), 100);
   }
 
-  private measureText(text: string, maxWidth?: number): { width: number; height: number; needWrap: boolean } {
+  private measureText(
+    text: string,
+    maxWidth?: number,
+  ): { width: number; height: number; needWrap: boolean } {
     const measure = document.createElement('div');
     measure.className = 'tooltip-measure';
     Object.assign(measure.style, {
@@ -148,7 +151,9 @@ export class TooltipManager {
     const vw = window.innerWidth;
     const estimatedLeft = this.mouseX + this.offsetX;
     const needWrap =
-      maxWidth === undefined && estimatedLeft + width > vw && this.mouseX - width - this.offsetX < 0;
+      maxWidth === undefined &&
+      estimatedLeft + width > vw &&
+      this.mouseX - width - this.offsetX < 0;
 
     return { width, height, needWrap };
   }
@@ -450,9 +455,11 @@ export class TooltipManager {
      * 实例销毁后仍会继续操作已经 remove 的 container / bg。
      */
     const later = (fn: () => void, delay: number): void => {
-      this.hideAnimTimers.push(window.setTimeout(() => {
-        if (this.isHiding) fn();
-      }, delay));
+      this.hideAnimTimers.push(
+        window.setTimeout(() => {
+          if (this.isHiding) fn();
+        }, delay),
+      );
     };
 
     later(() => {

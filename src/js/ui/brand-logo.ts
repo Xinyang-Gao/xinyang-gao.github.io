@@ -64,7 +64,7 @@ export interface BrandLogoHandle {
  */
 export function mountBrandLogo(
   container: HTMLElement,
-  options: BrandLogoOptions = {}
+  options: BrandLogoOptions = {},
 ): BrandLogoHandle {
   const {
     mode = 'manual',
@@ -101,7 +101,7 @@ export function mountBrandLogo(
           start();
         });
       },
-      { threshold }
+      { threshold },
     );
     io.observe(svg);
     stack.addObserver(io);
@@ -160,11 +160,9 @@ export function mountBrandLogo(
  */
 export function initBrandLogos(
   root: ParentNode = document,
-  options: BrandLogoOptions = {}
+  options: BrandLogoOptions = {},
 ): () => void {
-  const nodes = Array.from(
-    root.querySelectorAll<HTMLElement>(`[${BRAND_DATA_ATTR}]`)
-  );
+  const nodes = Array.from(root.querySelectorAll<HTMLElement>(`[${BRAND_DATA_ATTR}]`));
   const handles = nodes.map((el) => {
     const mode: BrandLogoMode =
       el.getAttribute(BRAND_DATA_ATTR) === 'visible' ? 'visible' : 'manual';

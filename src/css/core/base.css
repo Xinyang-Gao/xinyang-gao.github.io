@@ -223,12 +223,18 @@ a::after {
   border-radius: var(--radius-full);
   transition: width var(--transition-fast);
 }
-a:hover { color: var(--accent-light); }
+/* hover 用 accent-hover（浅色=accent-dark 5.5:1，暗色=原 accent-light 6:1）；
+   原先直接用 --accent-light 对浅底仅 2.67:1，正文链接不达 AA */
+a:hover { color: var(--accent-hover); }
 a:hover::after { width: 100%; }
 
-/* ---------- 焦点环 ---------- */
+/* ---------- 焦点环 ----------
+   WCAG 2.4.11 / 1.4.11 要求焦点指示与相邻色对比 ≥3:1。
+   原实现是 4px、18% 透明度的光晕（对 #f4f3f0 仅 1.24:1），几乎不可见；
+   改为 2px 实线 outline + 保留光晕作为过渡装饰 */
 :focus-visible {
-  outline: none;
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
   box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.18);
   border-radius: 6px;
 }

@@ -14,6 +14,66 @@
 - **修复** —— 缺陷修复
 - **安全** —— 安全相关的改进
 
+## [8.47.0] - 2026-10-03
+
+### 新增
+
+- seo：构建期统一注入 canonical / Open Graph / Twitter Card / JSON-LD / RSS 自动发现
+ - builder: 新增 `seo.py`（`seo_head_tags` / `json_ld_webpage`），文章页、文章与作品列表页、友链页共用同一套标签生成
+ - templates: 7 个静态模板补齐上述标签；关于 / 留言板 / 时间线 / 文章 / 作品 / 友链六个一级页补上缺失的 meta description
+ - 中文文件名在 canonical 与 sitemap 中统一百分号编码，两者形态一致
+- sw：新增离线降级页 `/offline.html` —— 此前 Service Worker 预缓存与回退指向的地址从未被生成（线上 404），离线兜底一直是死代码；新页面自包含内联样式，离线时无需请求任何外部资源
+- build：新增 `SITE_URL` 单点（`builder/common.py`），RSS、sitemap、robots、友链信息卡与静态模板共用；`src/public` 下的 `.html` / `.txt` / `.xml` 支持 `{{SITE_URL}}` 占位符，将来换域名只改一处
+- ci：新增质量门禁与产物冒烟断言
+ - typecheck: `tsconfig.json` 纳入版本库并从 `.gitignore` 移除，`tsc --noEmit` strict 全量校验（首次运行即暴露 35 个历史错误，已全部修完）
+ - lint: biome（TS/JS 正确性规则）与 ruff（`builder/` 与 `run.py`）；另提供 `npm run check` 一条命令串行跑完四条门禁
+ - smoke: 校验 17 个关键产物、robots 含绝对 Sitemap 地址、sitemap 不含 404 页面、index 含 OG 与 canonical、favicon 体积上限；`pull_request` 同样触发门禁但不部署
+- css：core 四件套（variables / base / layout / components）按序合并为 `/css/core.css`，首页 CSS 请求 7 → 4、文章页 9 → 5；单文件照常产出，外部引用不受影响
+- a11y：加载遮罩支持键盘关闭（Enter / Space / Escape），更新提示态设 `role="dialog"` 与 `aria-modal`
+- repo：新增 `.gitattributes` 固定行尾（此前 42 个 CRLF / 3 个 LF 混用），biome formatter 统一 45 个源文件的格式
+
+### 变更
+
+- theme：浅色主题强调色 `#b45b63` → `#ab4f57`
+ - 正文链接与加粗的对比度 4.10 → 4.75（WCAG AA 正文需 4.5），白色背景上 5.27；暗色主题本就达标，未改动
+ - 新增 `--accent-hover` 令牌承载文字 hover（浅色取 accent-dark 5.51，暗色沿用原 accent-light 6.03），33 处硬编码旧色值同步更新；统计图表调色板首色跟随
+- a11y：焦点指示由 18% 透明度光晕（对浅底 1.24，WCAG 1.4.11 需 3）改为 2px 实线 outline，并移除 10 处 `outline: none` 对全局焦点环的覆盖
+- perf：KaTeX 改为按需注入 —— 在转换前的 Markdown 源上判定是否含公式（先剔除围栏 / 缩进 / 行内代码，避免把 PHP 的 `$var` 当成公式），全站仅 1 篇真含公式，20 篇中 19 篇不再加载三件套（约省 300KB / 页）
+- sw：静态资源缓存策略 Cache First → Stale-While-Revalidate，`CACHE_VERSION` v6 → v7
+ - 产物不带内容哈希，Cache First 会把访客锁死在首次缓存的 JS / CSS 上，只能靠手动改版本号强刷
+- build：sitemap 排除指向 404 的 `/settings/`、补上遗漏的 `/privacy/`、排除 README 构建文档，priority 分层（首页 1.0 / 频道 0.8 / 文章 0.6），中文 URL 百分号编码
+- types：四套并行的同构类型定义归一到 `types/data.ts` 唯一真源
+ - core: `WorkItem` / `ArticleItem` / `WorksData` / `ArticlesData` 改为 re-export，既有导入路径不变
+ - timeline: `BaseItem` 加两个空扩展 `Article` / `Work`、以及与 `VersionEntry` 同构的 `Version` / `Change` 全部改为别名
+ - stats: `chart-registry` 的 `StatisticsData` / `ArticleItem` / `CodeAnalysisData` 改为引用；`site-state` 三个从未使用的 interface 移除
+- ui：外链确认弹窗倒计时 6 → 3 秒，关闭按钮默认显示
+ - Chrome 的瞬时用户激活只保留 5 秒，原「入场 650ms + 6 秒倒计时」的自动 `window.open` 必被弹窗拦截，表现为倒计时归零却毫无反应
+ - 弹窗被拦截时降级为当前标签页导航，不再静默失败
+- works：Google Fonts 改为 `media="print" onload` 非阻塞加载（国内访问不到，同步引用会阻塞渲染到超时）；Font Awesome 统一到 6.5.0（原有 6.0.0-beta3 / 6.0.0 / 6.4.0 / 6.5.0 四版并存）；《周总理，你在哪里》页面移除已失效（http / https 均 403）的背景图并以渐变兜底
+- README：同步版本漂移（TypeScript 6.0.3 → 7.0.2、Vite 8.1.1 → 8.3.0、Twikoo 1.7.22 → 2.0.12），修正 `page-utils.ts` → `page-runtime.ts`、`standalone/404.ts` → `pages/404.ts`，补充质量门禁章节
+
+### 修复
+
+- 文章与 README 的目录不再把围栏代码块里的 `#` 注释、示例当作标题：此前它们会混进目录条目，并让其后所有真实标题的锚点错位
+- ui: 自定义光标 `refresh()` 从未生效 —— 方法内解构的 `this.dot` / `this.ring` 并不存在（实际字段是私有 `#dot` / `#ring`），解构恒得 `undefined` 后在下一行早退
+- ui: 加载遮罩在无 JS 或 JS 报错时是全屏黑屏，唯一的 noscript 提示还被遮罩自身的 `z-index: 999999` 盖住
+ - 7 个整页模板各加 `<noscript>` 遮罩样式；noscript 横幅 z-index 提到 1000001
+ - 遮罩新增单请求 6 秒超时与整体 8 秒硬兜底，弱网不再永久黑屏；`dismiss()` 幂等，点击 / 键盘 / 超时多方竞争只生效一次
+ - 硬超时在进入「等待用户确认」态时解除，不会把用户正在读的更新提示强行关掉
+- seo: favicon 由 205,086 字节（单条目 256×256 未压缩 BMP、无 alpha 通道）压缩到 10,254 字节，并在 head 显式声明 `rel="icon"`，不再让每个页面白付约 200KB
+- build: 单篇 Markdown 解析失败只记一行日志后继续，CI 绿灯发布缺文章的站点
+ - 收集失败列表并在**写入 articles.json 之前**抛出，避免增量缓存把「这些文章本来就不存在」固化；`--no-strict` 仍可宽容继续
+- build: `_run_vite` 的 900 秒超时形同虚设 —— 读流无超时，`TimeoutExpired` 后 `Popen.__exit__` 仍会阻塞等待；改为读流独立线程 + 超时先 `proc.kill()` 再回收
+- build: 删除源文件后 HTML 永久残留并继续被部署，隐藏标签来回切换会在 `articles/` 与 `articles/.hidden/` 各留一份；新增陈旧产物清理
+- articles: README 被渲染成「未命名文章」—— 标题在 HTML 写盘之后才被改写，列表与页面标题对不上；改为写盘前确定
+- articles: 「markdown 渲染测试」（作者含 DEEPSEEK-V3）对外可访问并以 0.9 的 priority 进入站点地图；打上隐藏标签走 noindex 通道
+- fetch: 数据请求无超时、对 404 也无退避连打 2 次、`clearCache()` 连在途 Promise 一起清掉导致重复请求
+ - `data-service` 统一 10 秒超时；router 加 12 秒超时与 `HttpStatusError`（4xx 不重试），重试改为 300ms 起的指数退避
+- fetch: `page-runtime` 绕过 `dataService` 裸 fetch statistics.json，首屏同一份数据被请求两次
+- a11y: 首页 `main` 上的 `aria-live` 让读屏每秒播报一次实时时钟；时钟加 `aria-hidden`，内层第二个 `<main>`（HTML 非法）降级为 `<section>`
+- timeline: `<head>` 内同步加载 marked 阻塞页面解析（同页的 Font Awesome 已是 defer），补上 `defer`
+- frontend: window 扩展（`fetchAndReplaceContent` / `scrollRevealInstance` / `APlayer` 等）无类型声明，只能靠 `(window as any)` 绕过；新建 `types/globals.d.ts` 统一收口，此前散落在 6 个文件的 `declare global` 一并收敛
+
 ## [8.46.0] - 2026-10-02
 
 ### 变更

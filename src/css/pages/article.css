@@ -566,9 +566,10 @@
   .article-body h2 { font-size: 1.35rem; }
 }
 
-/* ========== 焦点环 & 无障碍 ========== */
+/* ========== 焦点环 & 无障碍 ==========
+   不再 outline:none：base.css 的全局 :focus-visible 2px 实线是底线指示，
+   本规则只额外叠加光晕装饰（同特异性、更靠后，box-shadow 覆盖全局值） */
 :focus-visible {
-  outline: none;
   box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.2);
   border-radius: var(--radius-sm);
 }

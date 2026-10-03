@@ -14,7 +14,8 @@ class ScrollDispatcher {
     this.ticking = true;
     requestAnimationFrame(() => {
       this.ticking = false;
-      this.lastY = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
+      this.lastY =
+        window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0;
       this.listeners.forEach((cb) => {
         try {
           cb(this.lastY);

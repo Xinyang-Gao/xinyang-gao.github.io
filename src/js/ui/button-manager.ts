@@ -2,7 +2,7 @@
 // 统一管理浮动按钮：返回顶部 + 文章目录（TOC）+ 设置
 // 滚动监听统一走 ScrollDispatcher（全局单监听 + rAF 节流）
 
-import { CONFIG, onNavigation } from '/js/core/core.js';
+import { CONFIG } from '/js/core/core.js';
 import { scrollDispatcher } from '/js/core/scroll-dispatcher.js';
 
 // ---------- 模块级单例状态 ----------
@@ -59,8 +59,7 @@ export function initBackToTop(): void {
    * 必须每次重新计算——原来只在初始化时算一次，
    * 旋转屏幕 / 改变窗口高度后阈值会一直停留在旧值。
    */
-  const getThreshold = (): number =>
-    Math.min(300, Math.max(150, window.innerHeight * 0.2));
+  const getThreshold = (): number => Math.min(300, Math.max(150, window.innerHeight * 0.2));
 
   const updateVisibility = (scrollY: number): void => {
     const show = scrollY > getThreshold();
@@ -114,8 +113,7 @@ export function initBackToTop(): void {
 // 判断是否应该显示 TOC 按钮（仅移动端 + 文章页）
 function shouldShowTocButton(): boolean {
   const isArticlePage = !!(
-    document.querySelector('.article-page-container') ||
-    document.getElementById('articleBody')
+    document.querySelector('.article-page-container') || document.getElementById('articleBody')
   );
   if (!isArticlePage) return false;
   return window.innerWidth <= CONFIG.BREAKPOINTS.MOBILE;

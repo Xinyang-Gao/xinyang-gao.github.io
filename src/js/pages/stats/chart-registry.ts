@@ -3,62 +3,27 @@
 // 主类 StatsManager 只负责数据获取与布局，图表逻辑全部外置到 charts.ts
 
 // ==================== 数据类型 ====================
+// 唯一真源是 /js/types/data.ts（本文件曾与 core.ts、types/data.ts、timeline.ts
+// 并行维护四套同构类型，字段漂移后互相赋值报错）。这里全部改为复用/再导出。
 
-export interface StatisticsData {
-  total_articles?: number;
-  total_works?: number;
-  total_word_count?: number;
-  total_article_tags?: number;
-  total_work_tags?: number;
-  total_update_days?: number;
-  version?: string;
-  last_updated?: string;
-  last_updated_full?: string;
-  article_categories?: Array<{ name: string; count: number }>;
-  article_tags?: Array<{ name: string; count: number }>;
-  work_tags?: Array<{ name: string; count: number }>;
-  [key: string]: unknown;
-}
+import type {
+  StatisticsPayload,
+  Article,
+  Work,
+  CodeAnalysisData as BaseCodeAnalysisData,
+  CodeExtensionStats as BaseCodeExtensionStats,
+} from '/js/types/data.js';
 
-export interface ArticleItem {
-  title?: string;
-  description?: string;
-  category?: string;
-  tags?: string[];
-  date?: string;
-  last_updated?: string;
-  word_count?: number;
-  read_time?: string | number;
-  hidden?: boolean;
-  author?: string;
-  [key: string]: unknown;
-}
-
-export interface WorkItem {
-  title?: string;
-  description?: string;
-  tags?: string[];
-  tag?: string[];
-  date?: string;
-  [key: string]: unknown;
-}
-
-export interface CodeExtensionStats {
-  extension: string;
-  count: number;
-  total_lines?: number;
-  non_empty_lines?: number;
-  [key: string]: unknown;
-}
-
-export interface CodeAnalysisData {
-  total_files?: number;
-  total_lines?: number;
-  non_empty_lines?: number;
-  total_size_bytes?: number;
-  by_extension?: CodeExtensionStats[];
-  [key: string]: unknown;
-}
+/** 统计数据（= statistics.json 载荷） */
+export type StatisticsData = StatisticsPayload;
+/** 列表中的文章条目 */
+export type ArticleItem = Article;
+/** 列表中的作品条目 */
+export type WorkItem = Work;
+/** 单语言/扩展的代码统计行 */
+export type CodeExtensionStats = BaseCodeExtensionStats;
+/** 代码分析数据（= code_analysis.json 载荷） */
+export type CodeAnalysisData = BaseCodeAnalysisData;
 
 // ==================== 渲染上下文 ====================
 

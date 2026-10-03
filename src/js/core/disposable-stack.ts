@@ -30,7 +30,7 @@ export class DisposableStack {
     target: EventTarget,
     type: string,
     listener: EventListenerOrEventListenerObject,
-    options?: AddEventListenerOptions | boolean
+    options?: AddEventListenerOptions | boolean,
   ): void {
     target.addEventListener(type, listener, options);
     this.add(() => target.removeEventListener(type, listener, options));

@@ -16,13 +16,13 @@
 | **颜色提取** | `requests` + `Pillow` | 为友链头像提取主色调，生成 `friend_colors.json` |
 | **CSS 压缩** | `rcssmin` | 构建时压缩 CSS 文件 |
 | **日期处理** | `python-dateutil`、`packaging` | 解析多种日期格式，版本号排序 |
-| **前端语言** | TypeScript 6.0.3 | 所有交互逻辑、页面管理器、路由、UI 组件均使用 TypeScript 编写，部分传统模块为 JavaScript |
-| **前端构建工具** | Vite 8.1.1 | 编译 TypeScript、打包模块、复制 vendor 库，支持 HMR 开发服务器 |
+| **前端语言** | TypeScript 7.0.2 | 所有交互逻辑、页面管理器、路由、UI 组件均使用 TypeScript 编写，部分传统模块为 JavaScript |
+| **前端构建工具** | Vite 8.3.0 | 编译 TypeScript、打包模块、复制 vendor 库，支持 HMR 开发服务器 |
 | **路由与 SPA** | 原生 History API + 自定义 Router | 无刷新页面切换，支持 `popstate`、滚动位置恢复、内存页面缓存（LRU 清理）、资源动态加载/卸载 |
 | **状态管理** | 单例模式 + 内存缓存 + Service Worker | `DataService` 负责内存缓存与并发去重，持久化缓存由 Service Worker 负责；`storageController` 管理 localStorage 设置、访客记录等 |
 | **样式系统** | 原生 CSS + CSS 变量 | 模块化设计：`core/`（变量、布局、基础）、`components/`（导航、评论、页脚等）、`pages/`（各页面独有样式），支持明暗主题自动切换 |
 | **图表渲染** | Chart.js 4.4.0 | 统计仪表板动态加载，绘制文章趋势、分类占比、标签排行、代码分布等图表，主题自适应 |
-| **评论系统** | Twikoo 1.7.22 | 无后端评论，部署于 Netlify Functions，支持 Markdown、邮件通知 |
+| **评论系统** | Twikoo 2.0.12 | 无后端评论，部署于 Netlify Functions，支持 Markdown、邮件通知 |
 | **访问统计** | vercount | 基于 `vercount.one` 服务，统计站点/页面 PV、UV，兼容不蒜子数据属性 |
 | **隐私统计** | Microsoft Clarity | 通过 `clarity.ts` 初始化，站点默认同意统计，SPA 导航时更新页面视图 |
 | **图片查看器** | 自定义 DOM + CSS Transform | 支持缩放（滚轮/双指）、旋转、拖拽、键盘快捷键、全屏、画廊模式，无第三方依赖 |
@@ -63,9 +63,10 @@ pymdown-extensions     # 扩展 Markdown 语法
 ```json
 {
   "devDependencies": {
-    "typescript": "^6.0.3",
-    "vite": "^8.1.1",
-    "rollup-plugin-copy": "^3.5.0"
+    "typescript": "^7.0.2",
+    "vite": "^8.3.0",
+    "rollup-plugin-copy": "^3.5.0",
+    "@biomejs/biome": "^2.5.15"
   }
 }
 ```
@@ -88,7 +89,16 @@ python run.py             # 增量构建（默认）
 python run.py --clean     # 清空 dist 后全量构建（发布前推荐）
 python run.py --no-frontend   # 跳过 Vite，仅生成内容侧产物
 python run.py --ci        # CI 模式：纯文本日志 + 前端失败即失败
+
+# 4) 质量门禁（CI 每次 push / PR 都会跑，本地建议提交前自查）
+npm run typecheck         # tsc --noEmit（strict，tsconfig.json）
+npm run lint              # biome（TS/JS 正确性规则）
+npm run lint:py           # ruff（builder/ 与 run.py）
 ```
+
+四条门禁全部通过才允许部署，另有一组产物冒烟断言（关键文件存在、
+robots 有绝对 Sitemap 地址、sitemap 不含 404 页面、index 有 OG/canonical、
+favicon 体积上限），见 `.github/workflows/static.yml` 的 `Smoke check dist`。
 
 ---
 
@@ -160,7 +170,7 @@ Website
 │  │  │  ├─ disposable-stack.ts
 │  │  │  ├─ modal-base.ts
 │  │  │  ├─ page-manager.ts
-│  │  │  ├─ page-utils.ts
+│  │  │  ├─ page-runtime.ts
 │  │  │  ├─ scroll-dispatcher.ts
 │  │  │  ├─ theme-controller.ts
 │  │  │  └─ twikoo-manager.ts
@@ -526,9 +536,9 @@ flowchart TB
 | **`/js/data/`** | 数据辅助模块：<br> • `searchWorker.ts` – 历史/预留 Web Worker 模块，当前 `SearchController` 未接入<br> • `settings.ts` – 用户设置管理（光标、外链拦截、主题、字体、滚动揭示、背景图）<br> • `site-state.ts` – 统计记录同步、Service Worker 注册、页脚信息填充 |
 | **`/js/ui/`** | UI 组件集合：<br> • `theme.ts` – 仅绑定导航栏主题开关，状态由 `theme-controller` 管理<br> • `navbar-manager.ts` – 导航栏 DOM 生成、移动端适配、标题替换模式<br> • `personal-card.ts` – 个人信息卡片渲染<br> • `button-manager.ts` – 返回顶部、目录（移动端）、设置按钮<br> • `mouse-effects.ts` – 自定义光标（圆点+圆环）、长按连线、爆发粒子<br> • `image-manager.ts` – 全局图片懒加载与点击查看器绑定<br> • `image-viewer.ts` – 图片查看器（DOM + CSS Transform，缩放、旋转、拖拽、键盘控制）<br> • `jump-dialog.ts` – 通用跳转确认弹窗，支持锚点放大动画<br> • `detail-dialog.ts` – 通用详情弹窗（作品信息、设置面板）<br> • `list-events.ts` – 列表项点击处理（作品弹窗、文章导航）<br> • `loading-overlay-manager.ts` – 加载遮罩层，展示版本更新日志<br> • `tooltip.ts` – 全局工具提示<br> • `ui-effects.ts` – 滚动揭示（IntersectionObserver）、外链拦截管理、UI 特效编排 |
 | **`/js/core/core.ts`** | 核心工具库：配置常量、存储控制器（含 LZ 压缩兼容）、空闲调度、导航事件总线、通用工具函数、性能监控器 |
-| **`/js/core/page-utils.ts`** | 页面相关工具：时间主题判断、路径解析、背景图加载、站点年龄更新、页脚更新时间 |
+| **`/js/core/page-runtime.ts`** | 页面运行时：背景图加载与随机切换、站点年龄更新、页脚更新时间 |
 | **`/js/vendor/`** | 第三方库封装：<br> • `global-music-player.ts` – 动态加载 APlayer，创建悬浮播放器<br> • `APlayer.min.js` – 音乐播放器核心（含网易云歌单）<br> • `vercount.min.js` – 访问统计（不蒜子风格）<br> • `browser.global.min.js` – GitHub 贡献图组件 |
-| **`/js/standalone/404.ts`** | 404 页面独立逻辑，包含智能路径分析和自定义错误消息 |
+| **`/js/pages/404.ts`** | 404 页面独立逻辑，包含智能路径分析和自定义错误消息 |
 
 ---
 
@@ -906,4 +916,4 @@ python run.py --clean        # 干净全量构建
 
 *本文档持续更新，以项目最新代码为准。*  
 *维护者：高新炀*  
-*最后更新：2026-09-26*
+*最后更新：2026-10-03*

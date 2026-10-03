@@ -1,27 +1,30 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 """
 构建引擎：加载输入，按生成器依赖分层执行，支持增量判断与线程安全并行。
 """
 
-import time
 import threading
+import time
 import traceback
+from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass
-from typing import List, Optional, Callable, Dict, Set
 
+from .build_context import BuildContext
 from .common import (
     DIST_ROOT,
-    clean_dir, ensure_build_dirs,
-    log_info, log_error, log_warning,
-    load_build_state, save_build_state,
+    clean_dir,
+    ensure_build_dirs,
+    load_build_state,
+    log_error,
+    log_info,
+    log_warning,
+    save_build_state,
 )
-from .build_context import BuildContext
 from .config import BuildConfig, log_config
-from .input_loader import load_all
 from .generators.base import OutputGenerator
+from .input_loader import load_all
 
 
 @dataclass
@@ -30,14 +33,14 @@ class GeneratorResult:
     success: bool
     duration: float
     skipped: bool = False
-    error: Optional[str] = None
+    error: str | None = None
 
 
 @dataclass
 class BuildReport:
     """一次构建的汇总结果，便于 CLI 输出与 CI 日志。"""
 
-    results: List[GeneratorResult]
+    results: list[GeneratorResult]
     elapsed: float
 
     @property
@@ -57,8 +60,8 @@ class BuildReport:
 
 
 class BuildEngine:
-    def __init__(self, config: Optional[BuildConfig] = None):
-        self.generators: Dict[str, OutputGenerator] = {}
+    def __init__(self, config: BuildConfig | None = None):
+        self.generators: dict[str, OutputGenerator] = {}
         self.state_lock = threading.Lock()
         self.config = config or BuildConfig()
         # 清理构建产物后，旧的增量状态不再有效
@@ -76,14 +79,14 @@ class BuildEngine:
         log_info(f"注册生成器: {generator.name}")
 
     # ---------- 依赖解析 ----------
-    def _select_targets(self, target_names: Optional[List[str]]) -> List[str]:
+    def _select_targets(self, target_names: list[str] | None) -> list[str]:
         if not target_names:
             return list(self.generators.keys())
         missing = set(target_names) - set(self.generators.keys())
         if missing:
             raise ValueError(f"未找到生成器: {missing}")
         # 自动补全依赖（传递闭包）
-        selected: Set[str] = set()
+        selected: set[str] = set()
         stack = list(target_names)
         while stack:
             name = stack.pop()
@@ -97,11 +100,11 @@ class BuildEngine:
                 stack.append(dep)
         return [n for n in self.generators if n in selected]
 
-    def _resolve_batches(self, selected: List[str]) -> List[List[str]]:
+    def _resolve_batches(self, selected: list[str]) -> list[list[str]]:
         """Kahn 拓扑排序，按层分批 —— 同批内可并行。"""
         selected_set = set(selected)
         in_degree = {n: 0 for n in selected}
-        graph: Dict[str, List[str]] = {n: [] for n in selected}
+        graph: dict[str, list[str]] = {n: [] for n in selected}
 
         for name in selected:
             for dep in self.generators[name].dependencies:
@@ -109,7 +112,7 @@ class BuildEngine:
                     graph[dep].append(name)
                     in_degree[name] += 1
 
-        batches: List[List[str]] = []
+        batches: list[list[str]] = []
         remaining = set(selected)
         while remaining:
             batch = [n for n in remaining if in_degree[n] == 0]
@@ -128,13 +131,13 @@ class BuildEngine:
     def run(
         self,
         force: bool = False,
-        target_names: Optional[List[str]] = None,
+        target_names: list[str] | None = None,
         parallel: bool = True,
         max_workers: int = 4,
-        progress_callback: Optional[Callable[[str, str], None]] = None,
-        force_overrides: Optional[Dict[str, bool]] = None,
+        progress_callback: Callable[[str, str], None] | None = None,
+        force_overrides: dict[str, bool] | None = None,
         dry_run: bool = False,
-        config: Optional[BuildConfig] = None,
+        config: BuildConfig | None = None,
     ) -> bool:
         return self.run_report(
             force=force,
@@ -150,13 +153,13 @@ class BuildEngine:
     def run_report(
         self,
         force: bool = False,
-        target_names: Optional[List[str]] = None,
+        target_names: list[str] | None = None,
         parallel: bool = True,
         max_workers: int = 4,
-        progress_callback: Optional[Callable[[str, str], None]] = None,
-        force_overrides: Optional[Dict[str, bool]] = None,
+        progress_callback: Callable[[str, str], None] | None = None,
+        force_overrides: dict[str, bool] | None = None,
         dry_run: bool = False,
-        config: Optional[BuildConfig] = None,
+        config: BuildConfig | None = None,
     ) -> BuildReport:
         """执行一次构建并返回 :class:`BuildReport`（失败也会返回报告）。"""
         started = time.monotonic()
@@ -187,7 +190,9 @@ class BuildEngine:
         log_config(config)
         ensure_build_dirs()
 
-        ctx = load_all(force_articles=config.force)
+        # 文章解析失败默认让构建失败（strict 可用 --no-strict 放宽），
+        # 避免 CI 绿灯发布缺失文章的站点
+        ctx = load_all(force_articles=config.force, strict=config.strict)
         ctx.options = config
 
         try:
@@ -210,7 +215,7 @@ class BuildEngine:
 
         total = len(selected)
         done = 0
-        results: List[GeneratorResult] = []
+        results: list[GeneratorResult] = []
         for batch_idx, batch in enumerate(batches):
             log_info(f"--- 批次 {batch_idx + 1}/{len(batches)}: {batch} ---")
             if config.dry_run:
@@ -252,7 +257,7 @@ class BuildEngine:
         return self.generators[name].is_up_to_date(ctx, self.state)
 
     def _run_one(self, name: str, ctx: BuildContext,
-                 callback: Optional[Callable[[str, str], None]]) -> GeneratorResult:
+                 callback: Callable[[str, str], None] | None) -> GeneratorResult:
         gen = self.generators[name]
         force = self.config.is_forced(name)
         start = time.monotonic()
@@ -294,7 +299,7 @@ class BuildEngine:
 
     def _run_batch_parallel(self, batch, ctx, max_workers, callback):
         to_run = []
-        results: List[GeneratorResult] = []
+        results: list[GeneratorResult] = []
         for name in batch:
             if self._should_skip(name, ctx):
                 log_info(f"生成器 {name} 已是最新，跳过")

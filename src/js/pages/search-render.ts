@@ -1,8 +1,8 @@
 // /js/pages/search-render.ts
 // 文章/作品页面的数据管理、UI 渲染和搜索控制
 
-import { CONFIG, Utils, perf } from '/js/core/core.js';
-import type { Item } from '/js/types/data.js';
+import { Utils, perf } from '/js/core/core.js';
+import type { Item, ArticlesPayload, WorksPayload } from '/js/types/data.js';
 import { dataService } from '/js/core/data-service.js';
 import { DisposableStack } from '/js/core/disposable-stack.js';
 
@@ -18,14 +18,14 @@ function sortByField(items: Item[], order: string): Item[] {
       sorted.sort(
         (a, b) =>
           Utils.parseArticleTimestamp(a.last_updated || a.date) -
-          Utils.parseArticleTimestamp(b.last_updated || b.date)
+          Utils.parseArticleTimestamp(b.last_updated || b.date),
       );
       break;
     case 'updated_desc':
       sorted.sort(
         (a, b) =>
           Utils.parseArticleTimestamp(b.last_updated || b.date) -
-          Utils.parseArticleTimestamp(a.last_updated || a.date)
+          Utils.parseArticleTimestamp(a.last_updated || a.date),
       );
       break;
     case 'wordcount_asc':
@@ -36,17 +36,13 @@ function sortByField(items: Item[], order: string): Item[] {
       break;
     case 'date_asc':
       sorted.sort(
-        (a, b) =>
-          Utils.parseArticleTimestamp(a.date) -
-          Utils.parseArticleTimestamp(b.date)
+        (a, b) => Utils.parseArticleTimestamp(a.date) - Utils.parseArticleTimestamp(b.date),
       );
       break;
     case 'date_desc':
     default:
       sorted.sort(
-        (a, b) =>
-          Utils.parseArticleTimestamp(b.date) -
-          Utils.parseArticleTimestamp(a.date)
+        (a, b) => Utils.parseArticleTimestamp(b.date) - Utils.parseArticleTimestamp(a.date),
       );
       break;
   }
@@ -58,7 +54,7 @@ function filterAndSort(
   query: string,
   field: string,
   selectedTags: string[],
-  sortOrder: string
+  sortOrder: string,
 ): Item[] {
   let result = [...items];
 
@@ -110,15 +106,11 @@ function pickItems(data: unknown, page: 'works' | 'articles'): Item[] {
 export class DataManager {
   static readonly TYPE_LABEL = { works: '作品', articles: '文章' } as const;
 
-  static async fetchData(
-    type: 'works' | 'articles',
-    useCache = true
-  ): Promise<any> {
+  static async fetchData(type: 'works' | 'articles', useCache = true): Promise<any> {
     const win = window as any;
 
     // 静态内嵌数据优先（构建时注入，跳过网络请求）
-    const staticKey =
-      type === 'articles' ? '__STATIC_ARTICLES_DATA' : '__STATIC_WORKS_DATA';
+    const staticKey = type === 'articles' ? '__STATIC_ARTICLES_DATA' : '__STATIC_WORKS_DATA';
     if (win[staticKey]) {
       console.log(`[DataManager] 使用静态内嵌${this.TYPE_LABEL[type]}数据`);
       return { [type]: win[staticKey] };
@@ -126,22 +118,23 @@ export class DataManager {
 
     try {
       const options = useCache ? undefined : { forceRefresh: true };
-      const data =
+      const data: ArticlesPayload | WorksPayload =
         type === 'articles'
           ? await dataService.getArticles(options)
           : await dataService.getWorks(options);
 
-      // 字段标准化（文章）
-      if (type === 'articles' && data.articles) {
-        data.articles = data.articles.map((a: any) => ({
+      // 字段标准化（文章）——先用 in 收窄联合类型，避免对 WorksPayload 访问 .articles
+      if (type === 'articles' && 'articles' in data && data.articles) {
+        data.articles = data.articles.map((a) => ({
           ...a,
           last_updated: a.last_updated || a.date,
           date: a.date,
           updated_date: a.last_updated || a.date,
         }));
+        return { articles: data.articles };
       }
 
-      return { [type]: data[type] };
+      return { works: 'works' in data ? data.works : [] };
     } catch (e) {
       console.error(`[DataManager] 获取${this.TYPE_LABEL[type]}数据失败:`, e);
       throw e;
@@ -176,15 +169,13 @@ export class UIRenderer {
   /** 作品归档标记（右上角） */
   static generateArchivedBadgeHTML(archived: unknown): string {
     if (!archived) return '';
-    return '<div class="work-archived-badge" title="该作品已归档，不再维护">' +
-      '<i class="fa-solid fa-box-archive" aria-hidden="true"></i> 已归档 · 不再维护</div>';
+    return (
+      '<div class="work-archived-badge" title="该作品已归档，不再维护">' +
+      '<i class="fa-solid fa-box-archive" aria-hidden="true"></i> 已归档 · 不再维护</div>'
+    );
   }
 
-  static generateListItem(
-    item: Item,
-    type: 'article' | 'work',
-    index: number
-  ): string {
+  static generateListItem(item: Item, type: 'article' | 'work', index: number): string {
     const tagsHtml = this.generateTagsHTML(item);
     const desc = Utils.escapeHtml(item.description || '');
     const title = Utils.escapeHtml(item.title);
@@ -228,7 +219,7 @@ export class UIRenderer {
           link: item.link || '',
           tags: Utils.getTags(item),
           archived: !!item.archived,
-        })
+        }),
       );
       const coverHtml = UIRenderer.generateCoverHTML(item.cover);
       const coverClass = coverHtml ? ' has-cover' : '';
@@ -260,7 +251,7 @@ export class UIRenderer {
     }
     const html = `<div class="${type}-list">${items
       .map((item: Item, i: number) =>
-        this.generateListItem(item, type.slice(0, -1) as 'article' | 'work', i)
+        this.generateListItem(item, type.slice(0, -1) as 'article' | 'work', i),
       )
       .join('')}</div>`;
     perf.end(`生成${DataManager.TYPE_LABEL[type]}HTML`);
@@ -312,9 +303,7 @@ export class SearchController {
         this.stack.addTimeout(t);
         return;
       }
-      console.error(
-        `[SearchController] 搜索元素在 ${this.page} 页面中未找到，放弃初始化`
-      );
+      console.error(`[SearchController] 搜索元素在 ${this.page} 页面中未找到，放弃初始化`);
       return;
     }
 
@@ -400,11 +389,7 @@ export class SearchController {
 
   // ---------- 分批渲染 ----------
 
-  private renderItemsInBatches(
-    items: Item[],
-    container: HTMLElement,
-    token: number
-  ): void {
+  private renderItemsInBatches(items: Item[], container: HTMLElement, token: number): void {
     container.innerHTML = '';
 
     if (!items.length) {
@@ -456,12 +441,18 @@ export class SearchController {
     const field = this.field?.value || 'all';
     const sort = this.sortSelect?.value || 'date_desc';
 
-    q ? params.set('q', q) : params.delete('q');
-    field && field !== 'all' ? params.set('field', field) : params.delete('field');
-    sort && sort !== 'date_desc' ? params.set('sort', sort) : params.delete('sort');
-    this.selectedTags.length
-      ? params.set('tags', this.selectedTags.join(','))
-      : params.delete('tags');
+    // 三元表达式当语句用会被 lint 判为 noUnusedExpressions，且可读性差 → if/else
+    if (q) params.set('q', q);
+    else params.delete('q');
+    if (field && field !== 'all') params.set('field', field);
+    else params.delete('field');
+    if (sort && sort !== 'date_desc') params.set('sort', sort);
+    else params.delete('sort');
+    if (this.selectedTags.length) {
+      params.set('tags', this.selectedTags.join(','));
+    } else {
+      params.delete('tags');
+    }
 
     const query = params.toString();
     const newUrl = query ? `${location.pathname}?${query}` : location.pathname;
@@ -477,7 +468,7 @@ export class SearchController {
     history.replaceState(
       { ...((history.state as object | null) ?? {}), url: newUrl, skip: true },
       '',
-      newUrl
+      newUrl,
     );
   }
 
@@ -504,10 +495,7 @@ export class SearchController {
       .querySelectorAll<HTMLElement>('.tag-button:not(:last-child)')
       .forEach((btn) => {
         const tag = btn.dataset.tag;
-        btn.classList.toggle(
-          'active',
-          tag !== undefined && this.selectedTags.includes(tag)
-        );
+        btn.classList.toggle('active', tag !== undefined && this.selectedTags.includes(tag));
       });
   }
 
@@ -521,7 +509,7 @@ export class SearchController {
     const items = pickItems(data, this.page);
     const tagMap = new Map<string, number>();
     items.forEach((item: Item) =>
-      Utils.getTags(item).forEach((t) => tagMap.set(t, (tagMap.get(t) || 0) + 1))
+      Utils.getTags(item).forEach((t) => tagMap.set(t, (tagMap.get(t) || 0) + 1)),
     );
 
     const tags = Array.from(tagMap.entries())
@@ -552,7 +540,11 @@ export class SearchController {
 
       btn.addEventListener('click', () => {
         const idx = this.selectedTags.indexOf(name);
-        idx > -1 ? this.selectedTags.splice(idx, 1) : this.selectedTags.push(name);
+        if (idx > -1) {
+          this.selectedTags.splice(idx, 1);
+        } else {
+          this.selectedTags.push(name);
+        }
         this.applyTagsToButtons();
         this.runSearch();
       });
@@ -581,17 +573,11 @@ export class SearchController {
 
 export async function initSearchPage(
   page: 'works' | 'articles',
-  scrollRevealRefreshCallback?: () => void
+  scrollRevealRefreshCallback?: () => void,
 ): Promise<SearchController> {
-  const existing = (window as any)._currentSearchController as
-    | SearchController
-    | undefined;
+  const existing = (window as any)._currentSearchController as SearchController | undefined;
 
-  if (
-    existing &&
-    !(existing as any).isDestroyed &&
-    (existing as any).page === page
-  ) {
+  if (existing && !(existing as any).isDestroyed && (existing as any).page === page) {
     existing.scrollRevealRefresh = scrollRevealRefreshCallback;
     return existing;
   }

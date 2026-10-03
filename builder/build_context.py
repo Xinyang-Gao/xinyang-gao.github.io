@@ -1,10 +1,9 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 from dataclasses import dataclass, field
-from typing import Dict, List
 
 from .config import BuildConfig
+
 
 @dataclass
 class Article:
@@ -17,7 +16,7 @@ class Article:
     date: str          # ISO 格式
     description: str
     author: str
-    tags: List[str]
+    tags: list[str]
     category: str
     url: str
     word_count: int
@@ -30,7 +29,7 @@ class Work:
     description: str
     author: str
     date: str
-    tag: List[str]
+    tag: list[str]
     link: str
     cover: str = ""        # 封面图 URL/路径，可为空
     archived: bool = False  # 已归档且不再维护
@@ -44,9 +43,9 @@ class Friend:
 
 @dataclass
 class BuildContext:
-    articles: List[Article] = field(default_factory=list)
-    works: List[Work] = field(default_factory=list)
-    friends: List[Friend] = field(default_factory=list)
-    version: Dict = field(default_factory=dict)   # 来自 version.json
-    statistics: Dict = field(default_factory=dict)  # 由统计生成器填充
+    articles: list[Article] = field(default_factory=list)
+    works: list[Work] = field(default_factory=list)
+    friends: list[Friend] = field(default_factory=list)
+    version: dict = field(default_factory=dict)   # 来自 version.json
+    statistics: dict = field(default_factory=dict)  # 由统计生成器填充
     options: BuildConfig = field(default_factory=BuildConfig)  # 本次构建的运行选项

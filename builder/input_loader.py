@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 """
 InputLoader：从文件系统加载文章、作品、友链、版本等，返回 BuildContext 对象。
@@ -7,30 +6,51 @@ InputLoader：从文件系统加载文章、作品、友链、版本等，返回
 并自动将 GitHub 风格的 [!NOTE] 警告块转换为标准 admonition 语法。
 """
 
-import sys
-import re
-import json
 import html
-from pathlib import Path
-from typing import List, Dict, Any, Optional
+import json
+import re
+import sys
 from datetime import datetime
+from pathlib import Path
+from typing import Any
 from urllib.parse import quote
+
+# 导入数据结构
+from .build_context import Article, BuildContext, Friend, Work
 
 # 导入公共模块
 from .common import (
-    PROJECT_ROOT, SRC_ROOT, ASSETS_SOURCE_DIR, ASSETS_DIR,
-    ARTICLES_OUTPUT_DIR, JSON_OUTPUT_DIR, WORKS_SRC_DIR, CHANGELOG_FILE,
-    log_info, log_warning, log_error,
-    load_json, save_json, compute_content_hash, compute_file_hash, compute_object_hash,
-    ensure_dir, env_int,
-    get_relative_path, format_date, format_date_iso, is_known_date,
+    ARTICLES_OUTPUT_DIR,
+    ASSETS_DIR,
+    ASSETS_SOURCE_DIR,
+    CHANGELOG_FILE,
+    JSON_OUTPUT_DIR,
+    PROJECT_ROOT,
     UNKNOWN_DATE_TEXT,
-    get_current_date_iso, get_current_datetime_iso,
-    count_words, calculate_read_time, slugify,
+    WORKS_SRC_DIR,
+    calculate_read_time,
+    compute_content_hash,
+    compute_file_hash,
+    compute_object_hash,
+    count_words,
+    ensure_dir,
+    env_int,
+    format_date,
+    format_date_iso,
+    get_current_date_iso,
+    get_current_datetime_iso,
+    get_relative_path,
+    is_known_date,
+    load_json,
+    log_error,
+    log_info,
+    log_warning,
+    save_json,
+    slugify,
 )
 
-# 导入数据结构
-from .build_context import Article, Work, Friend, BuildContext
+# SEO <head> 片段（canonical / OG / Twitter Card / RSS 自动发现 / JSON-LD）
+from .seo import json_ld_webpage, seo_head_tags
 
 # ---------- Markdown 解析依赖检查 ----------
 try:
@@ -46,10 +66,13 @@ except ImportError:
     HAS_YAML = False
     log_warning("PyYAML 未安装，将使用简易 frontmatter 解析")
 
-# 尝试导入 pymdownx 扩展（可选，但强烈推荐）
+# 检测 pymdownx 扩展是否可用（可选，但强烈推荐）
+# 用 find_spec 而非直接 import：只做可用性探测，不需要引入模块命名空间
 try:
-    import pymdownx
-    HAS_PYMDOWN = True
+    import importlib.util as _importlib_util
+    HAS_PYMDOWN = _importlib_util.find_spec("pymdownx") is not None
+    if not HAS_PYMDOWN:
+        raise ImportError("pymdownx not found")
 except ImportError:
     HAS_PYMDOWN = False
     log_warning("pymdown-extensions 未安装，部分高级语法将不可用。建议: pip install pymdown-extensions")
@@ -87,7 +110,7 @@ SECTION_PATTERN = re.compile(r'^###\s+(?P<section>\S.*?)\s*$')
 CHANGE_PATTERN = re.compile(r'^-(?:\s+|$)')
 
 
-def parse_changelog(md_text: str) -> Dict:
+def parse_changelog(md_text: str) -> dict:
     """解析 `CHANGELOG.md`（Keep a Changelog 格式）。
 
     返回结构：
@@ -102,14 +125,14 @@ def parse_changelog(md_text: str) -> Dict:
     版本号保留 `v` 前缀写入（与历史 version.json 一致，前端可直接比较）；
     `## [Unreleased]` 及版本块之外的注记（引用块、文末链接定义等）不会进入数据。
     """
-    version_map: Dict[str, Dict] = {}
-    current_version: Optional[str] = None
-    current_date: Optional[str] = None
+    version_map: dict[str, dict] = {}
+    current_version: str | None = None
+    current_date: str | None = None
     current_is_old: bool = False
     current_section: str = ""
-    changes: List[Dict] = []
-    current_change: Optional[Dict] = None
-    description_lines: List[str] = []
+    changes: list[dict] = []
+    current_change: dict | None = None
+    description_lines: list[str] = []
     in_fence: bool = False
 
     def flush_change() -> None:
@@ -218,7 +241,7 @@ VERSION_SHARD_URL_PREFIX = "/json/version/"  # 前端访问前缀（需与目录
 VERSION_SHARD_FILE_PATTERN = re.compile(r'^version-(\d+)\.json$')
 
 
-def sort_versions(version_strings: List[str]) -> List[str]:
+def sort_versions(version_strings: list[str]) -> list[str]:
     """排序版本号列表。
 
     规则：
@@ -258,7 +281,7 @@ def _shard_url(index: int) -> str:
     return f"{VERSION_SHARD_URL_PREFIX}version-{index}.json"
 
 
-def _build_shard_payload(index: int, entries: List[Dict]) -> Dict:
+def _build_shard_payload(index: int, entries: list[dict]) -> dict:
     """构造单个分片的数据（含内容哈希，供增量跳过写入）。"""
     payload = {
         "index": index,
@@ -271,7 +294,7 @@ def _build_shard_payload(index: int, entries: List[Dict]) -> Dict:
     return payload
 
 
-def write_version_shards(version_list: List[Dict], shard_dir: Path) -> List[Dict]:
+def write_version_shards(version_list: list[dict], shard_dir: Path) -> list[dict]:
     """把版本列表切成多个分片写入磁盘，返回分片索引元信息。
 
     - 分片内容未变化时跳过写入（哈希比对），避免无谓的磁盘 IO；
@@ -279,7 +302,7 @@ def write_version_shards(version_list: List[Dict], shard_dir: Path) -> List[Dict
     """
     ensure_dir(shard_dir)
     size = _version_shard_size()
-    metas: List[Dict] = []
+    metas: list[dict] = []
 
     for start in range(0, len(version_list), size):
         entries = version_list[start:start + size]
@@ -317,12 +340,12 @@ def write_version_shards(version_list: List[Dict], shard_dir: Path) -> List[Dict
     return metas
 
 
-def read_version_shards(shard_dir: Path, index_data: Dict) -> Optional[List[Dict]]:
+def read_version_shards(shard_dir: Path, index_data: dict) -> list[dict] | None:
     """按索引从磁盘读回全部分片，重建完整版本列表。
 
     任一分片缺失/损坏/哈希不匹配时返回 None，由调用方重新生成。
     """
-    versions: List[Dict] = []
+    versions: list[dict] = []
     for meta in index_data.get("shards", []):
         try:
             idx = int(meta.get("index"))
@@ -340,7 +363,7 @@ def read_version_shards(shard_dir: Path, index_data: Dict) -> Optional[List[Dict
     return versions
 
 
-def load_version(force: bool = False) -> Dict:
+def load_version(force: bool = False) -> dict:
     changelog_path = CHANGELOG_FILE
     version_json_path = JSON_OUTPUT_DIR / "version.json"
     shard_dir = JSON_OUTPUT_DIR / VERSION_SHARD_DIRNAME
@@ -365,7 +388,7 @@ def load_version(force: bool = False) -> Dict:
         log_error(f"更新日志文件不存在: {changelog_path}")
         return {}
 
-    with open(changelog_path, 'r', encoding='utf-8') as f:
+    with open(changelog_path, encoding='utf-8') as f:
         md_content = f.read()
 
     version_map = parse_changelog(md_content)
@@ -417,13 +440,26 @@ def load_version(force: bool = False) -> Dict:
     return result
 
 # ---------- 文章加载（包含 Markdown 处理及 HTML 生成） ----------
-def _extract_headings(content: str) -> List[Dict]:
+def _extract_headings(content: str) -> list[dict]:
     headings = []
     seen = {}
     lines = content.split('\n')
     i = 0
+    in_fence = False
     while i < len(lines):
         line = lines[i]
+
+        # 围栏代码块内的 `#` 是注释或示例文本，不是标题：
+        # 若被当成标题，目录会多出假条目，并让其后所有真实标题的锚点错位。
+        stripped = line.lstrip()
+        if stripped.startswith('```') or stripped.startswith('~~~'):
+            in_fence = not in_fence
+            i += 1
+            continue
+        if in_fence:
+            i += 1
+            continue
+
         m = re.match(r'^\s*(#{1,4})\s+(.+?)\s*$', line)
         if m:
             level = len(m.group(1))
@@ -523,7 +559,7 @@ def _preprocess_github_alerts(md_text: str) -> str:
             i += 1
     return '\n'.join(output)
 
-def _convert_markdown_to_html(md_content: str, headings: List[Dict]) -> str:
+def _convert_markdown_to_html(md_content: str, headings: list[dict]) -> str:
     """
     将 Markdown 转换为 HTML，使用增强扩展。
     支持：任务列表、Admonition、选项卡、高亮、上标/下标、删除线、代码高亮等。
@@ -584,7 +620,6 @@ def _convert_markdown_to_html(md_content: str, headings: List[Dict]) -> str:
             nonlocal idx
             if idx >= len(headings):
                 return match.group(0)
-            tag_open = match.group(1)
             level = int(match.group(2))
             existing_attrs = match.group(3)
             hid = headings[idx]['id']
@@ -599,7 +634,7 @@ def _convert_markdown_to_html(md_content: str, headings: List[Dict]) -> str:
     return html_content
 
 # ---------- TOC 渲染 ----------
-def _render_toc_html(headings: List[Dict]) -> str:
+def _render_toc_html(headings: list[dict]) -> str:
     if not headings:
         return ''
 
@@ -631,8 +666,34 @@ def _render_toc_html(headings: List[Dict]) -> str:
     return render_children(tree)
 
 # ---------- 生成完整的文章 HTML ----------
+# KaTeX 注入的判定：正文含数学公式才加载（三件套约 300KB，
+# 绝大多数文章无公式，无条件加载纯属浪费 —— 审计 P1-28）
+#
+# 在 **转换前的 Markdown 源** 上判定，而非渲染后的 HTML：
+# 缩进代码块、围栏代码块渲染后都只是普通 <p>/<pre>，无法可靠区分，
+# 而其中的 `$`（如 PHP 的 $json、价格 $1.2）会被误判成行内公式。
+_FENCED_CODE_RE = re.compile(r'```.*?```|~~~.*?~~~', re.DOTALL)
+_INDENTED_CODE_RE = re.compile(r'(?m)^(?: {4}|\t)\S.*(?:\n(?: {4}|\t).*)*')
+_INLINE_CODE_RE = re.compile(r'`[^`\n]*`')
+_MATH_HINT_RE = re.compile(r'\$\$.+?\$\$|\\begin\{|\\end\{|[^\n$]*\$[^$\n]+\$')
+
+
+def _has_math(md_source: str) -> bool:
+    """启发式判断 Markdown 源是否含 KaTeX 公式。
+
+    依次剔除围栏代码块、缩进代码块、行内代码，再匹配：
+    $$..$$ 显示公式、\\begin{...} LaTeX 环境、同行成对 $..$ 行内公式。
+    误判方向是"多加载"（与旧的无条件加载行为一致），不会漏掉公式。
+    """
+    text = _FENCED_CODE_RE.sub('', md_source)
+    text = _INDENTED_CODE_RE.sub('', text)
+    text = _INLINE_CODE_RE.sub('', text)
+    return bool(_MATH_HINT_RE.search(text))
+
+
 def _create_html_page(title, date, content_html, headings_json, description, tags, author,
-                      word_count, read_time_str, category, last_updated, modify_count):
+                      word_count, read_time_str, category, last_updated, modify_count,
+                      page_path=None, noindex=False, has_math=False):
     formatted_date = format_date(date)
     formatted_last_updated = format_date(last_updated) if last_updated else ""
 
@@ -669,6 +730,27 @@ def _create_html_page(title, date, content_html, headings_json, description, tag
     headings = json.loads(headings_json) if headings_json else []
     toc_html = _render_toc_html(headings)
 
+    # SEO：canonical / OG / Twitter Card / RSS 自动发现 / JSON-LD
+    # 隐藏文章不在列表/站点地图中，标 noindex 避免被单独收录
+    seo_block = ""
+    if page_path:
+        seo_block = seo_head_tags(
+            title=title, description=meta_description, path=page_path,
+            page_type="article",
+        ) + "\n    " + json_ld_webpage(
+            name=title, description=meta_description, path=page_path,
+            page_type="Article",
+        )
+    robots_meta = '<meta name="robots" content="noindex, nofollow">' if noindex else ''
+
+    # KaTeX：仅正文含公式时才注入三件套（CSS + 2 个 JS 约 300KB）。
+    # has_math 由调用方在 Markdown 源上判定（见 _has_math 的说明）
+    katex_block = ''
+    if has_math:
+        katex_block = '''    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.getElementById('articleBody'), {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>'''
+
     return f'''<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -677,11 +759,10 @@ def _create_html_page(title, date, content_html, headings_json, description, tag
     <meta name="description" content="{meta_description}">
     <meta name="author" content="{author if author else 'GaoXinYang'}">
     {f'<meta name="keywords" content="{", ".join(tags) if tags else ""}">' if tags else ''}
+    {robots_meta}
     <title>{title} - 高新炀的小站</title>
-    <link rel="stylesheet" href="/css/core/variables.css?v={cache_buster}">
-    <link rel="stylesheet" href="/css/core/base.css?v={cache_buster}">
-    <link rel="stylesheet" href="/css/core/layout.css?v={cache_buster}">
-    <link rel="stylesheet" href="/css/core/components.css?v={cache_buster}">
+    {seo_block}
+    <link rel="stylesheet" href="/css/core.css?v={cache_buster}">
     <link rel="stylesheet" href="/css/components/loading-overlay.css?v={cache_buster}">
     <link rel="stylesheet" href="/css/components/tooltip.css?v={cache_buster}">
     <link rel="stylesheet" href="/css/pages/article.css?v={cache_buster}">
@@ -758,9 +839,7 @@ def _create_html_page(title, date, content_html, headings_json, description, tag
     <script src="https://vercount.one/js" defer></script>
     <script src="/js/entry/main.js?v={cache_buster}" type="module"></script>
     <script src="/js/pages/article.js?v={cache_buster}" type="module"></script>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.getElementById('articleBody'), {{delimiters: [{{left: '$$', right: '$$', display: true}}, {{left: '$', right: '$', display: false}}]}});"></script>
+{katex_block}
 </body>
 </html>'''
 
@@ -780,8 +859,9 @@ def _parse_bool(value: Any) -> bool:
     return str(value).strip().lower() in ('true', '1', 'yes', 'y', 'on')
 
 
-def _process_markdown_file(md_file_path: Path, old_article: Optional[Dict] = None, category: str = None) -> Article:
-    with open(md_file_path, 'r', encoding='utf-8') as f:
+def _process_markdown_file(md_file_path: Path, old_article: dict | None = None, category: str = None,
+                           title_fallback: str = '未命名文章') -> Article:
+    with open(md_file_path, encoding='utf-8') as f:
         md_content = f.read()
 
     current_hash = compute_content_hash(md_content)
@@ -842,7 +922,9 @@ def _process_markdown_file(md_file_path: Path, old_article: Optional[Dict] = Non
         final_category = md_file_path.parent.name if md_file_path.parent != ASSETS_SOURCE_DIR else "未分类"
 
     # ---------- 标题、日期等基本信息 ----------
-    title = metadata.get('title', '未命名文章')
+    # 无 frontmatter title 时用调用方给定的回退名（如根 README → "README"），
+    # 必须在生成 HTML 之前确定——写盘后无法再改 <title>/<h1>
+    title = metadata.get('title') or title_fallback
     date_iso = format_date_iso(_clean_text(metadata.get('date', '')))
     date_updated_iso = format_date_iso(_clean_text(metadata.get('last_updated', '')))
     # date 为 HTML 展示用格式（xxxx年xx月xx日），date_iso 为列表/排序使用的 ISO 格式
@@ -898,7 +980,12 @@ def _process_markdown_file(md_file_path: Path, old_article: Optional[Dict] = Non
     full_html = _create_html_page(
         title, date, content_html, headings_json,
         description, tags, author, word_count, read_time,
-        category=final_category, last_updated=last_updated, modify_count=modify_count
+        category=final_category, last_updated=last_updated, modify_count=modify_count,
+        page_path=f'/articles/{output_filename}',
+        noindex=hidden,
+        # 在 Markdown 源（cleaned，已去 frontmatter）上判定公式，
+        # 此时代码块/行内代码仍可辨识，渲染后再判会把 PHP 的 $var 当公式
+        has_math=_has_math(cleaned),
     )
     with open(output_path, 'w', encoding='utf-8', newline='\n') as f:
         f.write(full_html)
@@ -923,11 +1010,17 @@ def _process_markdown_file(md_file_path: Path, old_article: Optional[Dict] = Non
     )
 
 
-def load_articles(force_refresh: bool = False) -> List[Article]:
+def load_articles(force_refresh: bool = False, strict: bool = True) -> list[Article]:
+    """加载全部文章。
+
+    :param strict: 为 True 时，任何一篇解析失败都会让整个构建失败。
+        此前失败只 log_error 后继续——CI 绿灯发布"缺文章"的站点（审计 H1）。
+    """
     old_articles = load_json(JSON_OUTPUT_DIR / "articles.json", {})
     old_dict = {a['relative_path']: a for a in old_articles.get('articles', [])}
     new_articles = []
     changed_count = 0
+    failures: list[str] = []
 
     if ASSETS_SOURCE_DIR.exists():
         for category_dir in ASSETS_SOURCE_DIR.iterdir():
@@ -937,7 +1030,7 @@ def load_articles(force_refresh: bool = False) -> List[Article]:
             for md_file in category_dir.glob('*.md'):
                 rel = get_relative_path(md_file)
                 old = old_dict.get(rel)
-                with open(md_file, 'r', encoding='utf-8') as f:
+                with open(md_file, encoding='utf-8') as f:
                     current_hash = compute_content_hash(f.read())
                 if not force_refresh and old and old.get('hash') == current_hash \
                         and is_known_date(old.get('date')):
@@ -968,8 +1061,10 @@ def load_articles(force_refresh: bool = False) -> List[Article]:
                     if article.hidden:
                         log_info(f"文章 '{article.title}' 含有“隐藏”标签")
                 except Exception as e:
+                    failures.append(f"{md_file.name}: {e}")
                     log_error(f"处理失败 {md_file.name}: {e}")
     else:
+        failures.append(f"文章源目录不存在: {ASSETS_SOURCE_DIR}")
         log_error(f"文章源目录不存在: {ASSETS_SOURCE_DIR}")
 
     # 处理 README.md
@@ -977,7 +1072,7 @@ def load_articles(force_refresh: bool = False) -> List[Article]:
     if readme_path.exists():
         rel = get_relative_path(readme_path)
         old = old_dict.get(rel)
-        with open(readme_path, 'r', encoding='utf-8') as f:
+        with open(readme_path, encoding='utf-8') as f:
             current_hash = compute_content_hash(f.read())
         if not force_refresh and old and old.get('hash') == current_hash \
                 and is_known_date(old.get('date')):
@@ -1001,18 +1096,26 @@ def load_articles(force_refresh: bool = False) -> List[Article]:
             new_articles.append(article)
         else:
             try:
-                article = _process_markdown_file(readme_path, old, category="README文档自动构建")
-                if article.title == '未命名文章':
-                    article.title = 'README'
+                article = _process_markdown_file(readme_path, old, category="README文档自动构建",
+                                                  title_fallback="README")
                 new_articles.append(article)
                 changed_count += 1
             except Exception as e:
+                failures.append(f"README.md: {e}")
                 log_error(f"处理 README.md 失败: {e}")
 
     existing_rels = {a.relative_path for a in new_articles}
     for rel, old in old_dict.items():
         if rel not in existing_rels:
             log_info(f"移除已删除文章: {old.get('title', rel)}")
+
+    # 解析失败必须在写盘前拦截：若照常写入 articles.json，增量缓存会认为
+    # "这些文章本来就没有"，下次构建也不会重试 → 缺文章被永久固化（审计 H1）
+    if failures:
+        summary = f"{len(failures)} 篇文章解析失败：\n  - " + "\n  - ".join(failures)
+        if strict:
+            raise RuntimeError(summary)
+        log_error(f"（宽容模式，继续构建）{summary}")
 
     articles_data = {
         'generated_at': get_current_datetime_iso(),
@@ -1038,11 +1141,59 @@ def load_articles(force_refresh: bool = False) -> List[Article]:
     }
     save_json(articles_data, JSON_OUTPUT_DIR / "articles.json")
 
+    _prune_stale_article_html(new_articles)
+
     log_info(f"共加载 {len(new_articles)} 篇文章（含隐藏），其中变动 {changed_count} 篇")
     return new_articles
 
+
+def _prune_stale_article_html(articles: list[Article]) -> None:
+    """清理没有对应源文件的文章 HTML。
+
+    此前删除源 md 只打一行日志，HTML 永久残留并继续被部署；隐藏标签来回
+    切换也会在 `articles/` 与 `articles/.hidden/` 各留一份。dist 每次全新
+    检出的 CI 侥幸没事，本地/自建部署必然越积越多。
+
+    只删除 `articles/` 目录下的 `.html`（不动 `index.html` 与子目录资源），
+    且仅在对应源确实不存在（或该文章已换到另一目录）时删除。
+    """
+    if not ARTICLES_OUTPUT_DIR.exists():
+        return
+
+    # 当前所有文章应有的产物路径（含 .hidden/）
+    expected: set[Path] = set()
+    for a in articles:
+        expected.add(ARTICLES_OUTPUT_DIR / Path(a.url).name if not a.hidden
+                     else ARTICLES_OUTPUT_DIR / ".hidden" / Path(a.url).name)
+
+    removed = 0
+    for html_file in ARTICLES_OUTPUT_DIR.glob("*.html"):
+        if html_file.name == "index.html":
+            continue
+        if html_file not in expected:
+            try:
+                html_file.unlink()
+                removed += 1
+                log_info(f"清理陈旧文章产物: {html_file.name}")
+            except OSError as e:
+                log_warning(f"无法删除陈旧产物 {html_file.name}: {e}")
+
+    hidden_dir = ARTICLES_OUTPUT_DIR / ".hidden"
+    if hidden_dir.is_dir():
+        for html_file in hidden_dir.glob("*.html"):
+            if html_file not in expected:
+                try:
+                    html_file.unlink()
+                    removed += 1
+                    log_info(f"清理陈旧隐藏文章产物: .hidden/{html_file.name}")
+                except OSError as e:
+                    log_warning(f"无法删除陈旧产物 .hidden/{html_file.name}: {e}")
+
+    if removed:
+        log_info(f"共清理 {removed} 个陈旧文章产物")
+
 # ---------- 作品加载 ----------
-def load_works() -> List[Work]:
+def load_works() -> list[Work]:
     works_list = []
     works_root = WORKS_SRC_DIR
     if not works_root.exists():
@@ -1097,7 +1248,7 @@ def load_works() -> List[Work]:
     return works_list
 
 # ---------- 友链加载 ----------
-def load_friends() -> List[Friend]:
+def load_friends() -> list[Friend]:
     friends_src = ASSETS_DIR / "friends.json"
     data = load_json(friends_src, {})
     if isinstance(data, list):
@@ -1119,10 +1270,10 @@ def load_friends() -> List[Friend]:
     return friends
 
 # ---------- 全量加载 ----------
-def load_all(force_articles: bool = False, force_version: bool = False) -> BuildContext:
+def load_all(force_articles: bool = False, force_version: bool = False, strict: bool = True) -> BuildContext:
     log_info("开始加载所有输入数据...")
     ctx = BuildContext()
-    ctx.articles = load_articles(force_refresh=force_articles)
+    ctx.articles = load_articles(force_refresh=force_articles, strict=strict)
     ctx.works = load_works()
     ctx.friends = load_friends()
     ctx.version = load_version(force=force_version)

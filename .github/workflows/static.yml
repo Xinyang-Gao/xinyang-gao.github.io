@@ -3,6 +3,8 @@ name: Deploy static content to Pages
 on:
   push:
     branches: ["main"]
+  pull_request:
+    branches: ["main"]
   workflow_dispatch:
 
 permissions:
@@ -10,9 +12,10 @@ permissions:
   pages: write
   id-token: write
 
+# PR 只构建不部署；同分支的 push 继续走完整部署
 concurrency:
-  group: "pages"
-  cancel-in-progress: false
+  group: "pages-${{ github.ref }}"
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 defaults:
   run:
@@ -53,6 +56,18 @@ jobs:
       - name: Install Node dependencies
         run: npm ci
 
+      # ---------- 质量门禁：静态检查（在构建前快速失败） ----------
+      # ruff 配置已随 pyproject.toml 入库；typecheck 是 TypeScript 唯一的
+      # 类型校验（Vite 只转译不检查）
+      - name: Lint Python (ruff)
+        run: |
+          python -m pip install ruff
+          ruff check builder run.py
+      - name: Typecheck TypeScript
+        run: npm run typecheck
+      - name: Lint TypeScript (biome)
+        run: npm run lint
+
       # ---------- 友链主题色缓存 ----------
       # src/assets/friend_colors.json 是随仓库提交的持久化缓存：只要能读到，
       # CI 就只给新增友链抓头像，既避免重复网络请求，也不会因个别站点访问
@@ -85,6 +100,58 @@ jobs:
           # 与上面的 actions/cache 步骤配套：复用已下载的头像字节
           FRIEND_AVATAR_CACHE_DIR: ${{ github.workspace }}/.cache/friend-avatars
 
+      # ---------- 质量门禁：产物冒烟检查 ----------
+      # 关键产物缺失（生成器静默失败、增量误判）时拒绝部署半成品
+      - name: Smoke check dist
+        run: |
+          set -euo pipefail
+          required=(
+            dist/index.html
+            dist/404.html
+            dist/nojs.html
+            dist/offline.html
+            dist/robots.txt
+            dist/rss.xml
+            dist/sitemap.xml
+            dist/favicon.ico
+            dist/articles/index.html
+            dist/works/index.html
+            dist/friends/index.html
+            dist/json/articles.json
+            dist/json/works.json
+            dist/json/statistics.json
+            dist/js/entry/main.js
+            dist/css/core/base.css
+          )
+          missing=0
+          for f in "${required[@]}"; do
+            if [ ! -s "$f" ]; then
+              echo "::error::产物缺失或为空: $f"
+              missing=1
+            fi
+          done
+          # robots 的 Sitemap 行必须是绝对地址
+          grep -q '^Sitemap: https://' dist/robots.txt \
+            || { echo "::error::robots.txt 缺少绝对 Sitemap 地址"; missing=1; }
+          # sitemap 不得包含已知 404 页面
+          if grep -q '/settings/' dist/sitemap.xml; then
+            echo "::error::sitemap 包含不存在的 /settings/"
+            missing=1
+          fi
+          # 分享卡片必须存在（index 的 head 不能是空的）
+          grep -q 'property="og:title"' dist/index.html \
+            || { echo "::error::index.html 缺少 OG 标签"; missing=1; }
+          grep -q 'rel="canonical"' dist/index.html \
+            || { echo "::error::index.html 缺少 canonical"; missing=1; }
+          # favicon 不得回退到未压缩的大文件（205KB 事故回归保护）
+          fav_size=$(stat -c %s dist/favicon.ico)
+          if [ "$fav_size" -gt 50000 ]; then
+            echo "::error::favicon.ico 过大 (${fav_size}B)，疑似未压缩"
+            missing=1
+          fi
+          [ "$missing" -eq 0 ] && echo "冒烟检查通过"
+          exit "$missing"
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
@@ -93,6 +160,8 @@ jobs:
   # ---------- 2. 部署 ----------
   deploy:
     name: Deploy to Pages
+    # PR 只验证不部署
+    if: github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
     timeout-minutes: 10

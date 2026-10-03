@@ -6,13 +6,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="description" content="高新炀的个人网站 - 学生、开发者、写作者，用代码和文字探索世界">
   <title>高新炀 · 个人网站</title>
+  <link rel="canonical" href="{{SITE_URL}}/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="高新炀的小站">
+  <meta property="og:title" content="高新炀 · 个人网站">
+  <meta property="og:description" content="高新炀的个人网站 - 学生、开发者、写作者，用代码和文字探索世界">
+  <meta property="og:url" content="{{SITE_URL}}/">
+  <meta property="og:image" content="{{SITE_URL}}/assets/avatar.webp">
+  <meta property="og:locale" content="zh_CN">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="高新炀 · 个人网站">
+  <meta name="twitter:description" content="高新炀的个人网站 - 学生、开发者、写作者，用代码和文字探索世界">
+  <meta name="twitter:image" content="{{SITE_URL}}/assets/avatar.webp">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="alternate" type="application/rss+xml" title="高新炀的小站 RSS" href="{{SITE_URL}}/rss.xml">
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"高新炀的小站","url":"{{SITE_URL}}/","inLanguage":"zh-CN","potentialAction":{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"{{SITE_URL}}/articles/?q={search_term_string}"},"query-input":"required name=search_term_string"}}</script>
+  <noscript><style>#loading-overlay{display:none!important}</style></noscript>
   <link rel="preconnect" href="https://kit.fontawesome.com" crossorigin>
   <link rel="preconnect" href="https://ka-f.fontawesome.com" crossorigin>
   <link rel="preconnect" href="https://uapis.cn" crossorigin>
-  <link rel="stylesheet" href="/css/core/variables.css">
-  <link rel="stylesheet" href="/css/core/base.css">
-  <link rel="stylesheet" href="/css/core/layout.css">
-  <link rel="stylesheet" href="/css/core/components.css">
+  <link rel="stylesheet" href="/css/core.css">
   <link rel="stylesheet" href="/css/components/loading-overlay.css">
   <link rel="stylesheet" href="/css/components/tooltip.css">
   <link rel="stylesheet" href="/css/pages/home.css">
@@ -30,8 +43,8 @@
 
   <noscript>
     <div
-      style="background: #b45b63; color: white; text-align: center; padding: 12px 16px; font-size: 0.9rem; position: sticky; top: 0; z-index: 1000;">
-      诶呀！您的浏览器似乎未启用 JavaScript，或您使用了爬虫（或 AI ）？<br>不过别担心，我们提供无需 JS 即可访问全部内容的静态镜像页面，请移步：
+      style="background: #ab4f57; color: white; text-align: center; padding: 12px 16px; font-size: 0.9rem; position: sticky; top: 0; z-index: 1000001;">
+      诶呀！您的浏览器似乎未启用 JavaScript。<br>不过别担心，我们提供无需 JS 即可访问全部内容的静态镜像页面，请移步：
       <a href="/nojs.html" style="color: white; font-weight: bold; text-decoration: underline;">静态镜像版 /nojs.html</a>
       以获得更好的体验 。
     </div>
@@ -45,14 +58,15 @@
         <div id="personal-card-container"></div>
       </aside>
 
-      <main class="main-content-area" role="main" aria-live="polite">
+      <main class="main-content-area">
         <div class="container">
           <section class="home-hero">
             <div class="hero-meta">
               <span class="hero-path">~/gaoxinyang · personal site</span>
               <span class="hero-clock">
                 <i class="live-dot" aria-hidden="true"></i>
-                <span id="live-clock">--:--:--</span>
+                <!-- 装饰性实时时钟：不进无障碍树，避免读屏每秒播报 -->
+                <span id="live-clock" aria-hidden="true">--:--:--</span>
               </span>
             </div>
 
@@ -79,7 +93,8 @@
             </a>
           </section>
 
-          <main class="home-main" id="blogHome">
+          <!-- 曾是第二个 <main>（嵌套 main 属 HTML 非法），降级为 section -->
+          <section class="home-main" id="blogHome">
 
             <section class="home-section reveal">
               <header class="section-head">
@@ -130,7 +145,7 @@
                 <a href="/timeline/">时间线</a><a href="/works/">作品</a><a href="/friends/">友链</a><a href="/contact/">留言板</a>
               </div>
             </nav>
-          </main>
+          </section>
         </div>
       </main>
     </div>

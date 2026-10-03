@@ -1,0 +1,16 @@
+# 统一行尾：此前 45 个源文件里 42 个 CRLF、3 个 LF，缺规范。
+# biome format + 本文件共同保证本地（Windows）与 CI（Linux）看到同一份字节，
+# 否则 `lineEnding: auto` 会让格式化检查在两个平台互相打架。
+* text=auto eol=lf
+
+# 二进制文件不做行尾转换
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.webp binary
+*.ico binary
+*.svg text
+*.sb3 binary
+*.woff binary
+*.woff2 binary
