@@ -20,7 +20,6 @@ import { initUIEffects, ensureScrollReveal } from '/js/ui/ui-effects.js';
 import { LazyImageLoader, GlobalImageManager } from '/js/ui/image-manager.js';
 import { initButtons, refreshButtonsOnNavigation } from '/js/ui/button-manager.js';
 import { renderPersonalCard } from '/js/ui/personal-card.js';
-import { initClarityOnConsent, updateClarityPage } from '/js/core/clarity.js';
 import { registerServiceWorker, initFooterStats } from '/js/data/site-state.js';
 import { handleListItemClick } from '/js/ui/list-events.js';
 import { LoadingOverlayManager } from '/js/ui/loading-overlay-manager.js';
@@ -147,9 +146,6 @@ export class AppInitializer {
   // ---------- 阶段 4：收尾 ----------
 
   private static async finalizeAndReveal(): Promise<void> {
-    // Clarity 初始化（站点默认同意存储与统计）
-    initClarityOnConsent();
-
     // 浏览器回退/前进支持
     initPopstate();
 
@@ -187,7 +183,6 @@ export class AppInitializer {
       renderPersonalCard();
       refreshButtonsOnNavigation();
       applyStoredSettings();
-      updateClarityPage();
 
       // 延迟：等待新 DOM 插入后再更新（避免拿到旧 DOM）
       window.setTimeout(() => {

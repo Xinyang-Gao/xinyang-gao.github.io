@@ -1,6 +1,6 @@
 // /js/types/globals.d.ts
-// 全站 window 扩展的唯一声明处（曾散落在 core/router/article/stats-manager/
-// twikoo-manager/clarity 等 6 个文件的 declare global 中，且有遗漏——
+// 全站 window 扩展的唯一声明处（此前散落在 core / router / article /
+// stats-manager / twikoo-manager 等文件的 declare global 中，且有遗漏——
 // 漏声明的属性只能靠 (window as any) 绕过，此处统一收口）。
 
 export {};

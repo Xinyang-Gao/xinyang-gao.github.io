@@ -24,7 +24,6 @@
 | **图表渲染** | Chart.js 4.4.0 | 统计仪表板动态加载，绘制文章趋势、分类占比、标签排行、代码分布等图表，主题自适应 |
 | **评论系统** | Twikoo 2.0.12 | 无后端评论，部署于 Netlify Functions，支持 Markdown、邮件通知 |
 | **访问统计** | vercount | 基于 `vercount.one` 服务，统计站点/页面 PV、UV，兼容不蒜子数据属性 |
-| **隐私统计** | Microsoft Clarity | 通过 `clarity.ts` 初始化，站点默认同意统计，SPA 导航时更新页面视图 |
 | **图片查看器** | 自定义 DOM + CSS Transform | 支持缩放（滚轮/双指）、旋转、拖拽、键盘快捷键、全屏、画廊模式，无第三方依赖 |
 | **鼠标特效** | Canvas 2D 渲染 | 自定义光标（圆点+圆环）、长按连线拖拽、释放爆发粒子，帧率自适应、空闲暂停 |
 | **音乐播放器** | APlayer | 悬浮播放器，自动加载网易云歌单，支持歌词显示、音量控制、播放列表 |
@@ -164,7 +163,6 @@ Website
 │  ├─ js
 │  │  ├─ core
 │  │  │  ├─ app-initializer.ts
-│  │  │  ├─ clarity.ts
 │  │  │  ├─ core.ts
 │  │  │  ├─ data-service.ts
 │  │  │  ├─ disposable-stack.ts
@@ -503,7 +501,6 @@ flowchart TB
         K --> AN[Chart.js 图表]
         K --> AO[APlayer 音乐播放器]
         K --> AP[GitHub 贡献图]
-        B --> AQ[Microsoft Clarity]
     end
 
     subgraph 性能与工具
@@ -529,7 +526,6 @@ flowchart TB
 | **`/js/core/modal-base.ts`** | 通用模态框基础设施：遮罩、容器、生命周期、关闭逻辑 |
 | **`/js/core/scroll-dispatcher.ts`** | 全局滚动事件分发器：单监听 + rAF 节流，多订阅者共享 |
 | **`/js/core/theme-controller.ts`** | 主题控制器：单一数据源，统一 `auto/light/dark` 模式、系统偏好、存储与事件分发 |
-| **`/js/core/clarity.ts`** | Microsoft Clarity 初始化与 SPA 页面视图更新 |
 | **`/js/pages/`** | 各页面管理器实现：<br> • `home-manager.ts` – 首页统计、标签云、名言轮播、实时时钟<br> • `search-render.ts` – 文章/作品列表的搜索、筛选、排序、分批渲染<br> • `article.ts` – 文章详情：TOC 高亮、阅读进度、代码复制、图片懒加载、数学公式渲染、移动端侧边栏<br> • `timeline.ts` – 时间线聚合（文章、作品、版本日志），支持年份/类型/搜索过滤<br> • `stats-manager.ts` – 统计仪表板，动态加载 Chart.js 绘制图表<br> • `friends-manager.ts` – 友链卡片随机排序、复制 JSON、跳转弹窗绑定<br> • `about.ts` – 关于页面：年龄升级系统、翻转卡片、GitHub 贡献图 |
 | **`/js/pages/stats/`** | 统计图表定义：<br> • `chart-registry.ts` – 图表注册表与上下文类型<br> • `charts.ts` – 8 张图表的具体渲染逻辑，通过 `registerChart` 自注册 |
 | **`/js/core/data-service.ts`** | 数据服务单例：统一管理 API 请求，内存缓存（60 秒 TTL）+ 并发请求去重，持久化缓存由 Service Worker 负责，支持强制刷新与预热 |
@@ -565,7 +561,6 @@ flowchart TB
      - 初始化 UI 特效、预热 DataService、图片懒加载、全局图片查看器、页脚统计。
      - 加载音乐播放器。
    - **阶段 4：收尾**
-     - 初始化 Clarity，监听 `ajax:navigation` 更新页面。
      - 注册 `popstate`。
      - 显示加载覆盖层（`LoadingOverlayManager`）。
      - 播放导航栏入场动画。
@@ -645,7 +640,6 @@ flowchart TB
 | **Twikoo** | 评论系统 | 无后端、部署简单，支持 Markdown |
 | **vercount** | 访问统计 | 轻量、隐私友好 |
 | **APlayer** | 音乐播放器 | 支持歌单、歌词显示，界面美观 |
-| **Microsoft Clarity** | 隐私统计 | 站点默认同意，SPA 导航更新页面视图 |
 
 ---
 
@@ -916,4 +910,4 @@ python run.py --clean        # 干净全量构建
 
 *本文档持续更新，以项目最新代码为准。*  
 *维护者：高新炀*  
-*最后更新：2026-10-03*
+*最后更新：2026-10-04*
