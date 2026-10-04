@@ -487,6 +487,23 @@
   box-shadow: 0 4px 10px rgba(var(--accent-rgb), 0.25);
 }
 
+/* ---------- 技术栈标签：SVG 蒙版 + 文字 ----------
+   图形与品牌色由标签上的 --icon / --icon-color 给出（personal-card.ts），
+   蒙版本体在 core/components.css 的 .svg-icon */
+.profile-tags .tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.profile-tags .svg-icon {
+  width: 0.95em;
+  height: 0.95em;
+}
+/* hover 反色时图标跟随文字色（暗色主题下文字是深色，写死 #fff 会露馅） */
+.profile-tags .tag:hover .svg-icon {
+  background-color: currentColor;
+}
+
 /* ---------- 底部出口：档案摘要通往完整版的两个去处 ----------
    卡片是「关于页 + 页脚」的索引而不是竞品，完整内容留在原处 */
 .profile-actions {

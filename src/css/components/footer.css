@@ -429,6 +429,16 @@
   text-decoration-color: var(--accent-color);
 }
 
+/* 致谢条目里的图标（javascript.svg / git.svg / Simple Icons）：
+   蒙版本体在 core/components.css，这里只调尺寸与对齐，颜色跟随正文 */
+.acknowledgement-list .ack-icon {
+  width: 0.95em;
+  height: 0.95em;
+  margin-right: 4px;
+  vertical-align: -0.1em;
+  opacity: 0.8;
+}
+
 /* 版权声明规范化细节 */
 .copyright-main .copyright-symbol {
   font-family: var(--font-mono);

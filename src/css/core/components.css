@@ -1208,34 +1208,37 @@ body.custom-cursor-enabled .list-item { cursor: none; }
 }
 
 /* ============================================================
-   SVG 图标蒙版（Font Awesome 未收录的图标，如 CurseForge / Modrinth）
-   挂在 core 里：页脚联系区与侧边栏个人信息卡共用一份，
-   颜色交给 currentColor，由各自的容器（.social-capsule / .social-link）
-   决定主题色与 hover 反色，尺寸也可按容器覆盖。
+   SVG 蒙版图标（Font Awesome 未收录的图标 / 需要品牌色的技术栈图标）
+   图形由 --icon 给出（url() 或下面的具名类），颜色取 --icon-color，
+   缺省 currentColor —— 由容器决定主题色与 hover 反色，尺寸同样由容器覆盖。
+   使用处：页脚联系区、侧边栏卡片社交区、页脚开源致谢、卡片技术栈标签。
    ============================================================ */
+.svg-icon,
 .social-svg-icon {
   display: inline-block;
   flex: none;
   align-self: center;
-  width: 1.1rem;
-  height: 1.1rem;
-  background-color: currentColor;
+  width: 1em;
+  height: 1em;
+  background-color: var(--icon-color, currentColor);
+  -webkit-mask-image: var(--icon);
+          mask-image: var(--icon);
   -webkit-mask-repeat: no-repeat;
           mask-repeat: no-repeat;
   -webkit-mask-position: center;
           mask-position: center;
   -webkit-mask-size: contain;
           mask-size: contain;
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  transition: opacity 0.2s ease, transform 0.2s ease, background-color 0.2s ease;
 }
-.social-svg-icon--curseforge {
-  -webkit-mask-image: url("/assets/svg/curseforge.svg");
-          mask-image: url("/assets/svg/curseforge.svg");
-}
-.social-svg-icon--modrinth {
-  -webkit-mask-image: url("/assets/svg/modrinth.svg");
-          mask-image: url("/assets/svg/modrinth.svg");
-}
+/* 社交区固定尺寸（侧边栏卡片在 layout.css 里再覆写一次） */
+.social-svg-icon { width: 1.1rem; height: 1.1rem; }
+
+/* 联系区具名图标：新增一个平台 = 这里加一行 + 标记里写上类名 */
+.social-svg-icon--curseforge        { --icon: url("/assets/svg/curseforge.svg"); }
+.social-svg-icon--modrinth          { --icon: url("/assets/svg/modrinth.svg"); }
+.social-svg-icon--mcmod             { --icon: url("/assets/svg/mcmod.svg"); }
+.social-svg-icon--neteasecloudmusic { --icon: url("/assets/svg/neteasecloudmusic.svg"); }
 
 /* ============================================================
    品牌 LOGO（GaoXinYang.svg）

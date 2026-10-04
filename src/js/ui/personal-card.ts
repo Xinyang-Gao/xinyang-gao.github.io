@@ -21,6 +21,19 @@ function infoItem(icon: string, body: string): string {
   return `<div class="profile-info-item"><i class="fas ${icon}" aria-hidden="true"></i><span>${body}</span></div>`;
 }
 
+/**
+ * 技术栈胶囊：SVG 蒙版 + 文字。
+ * 图形走 --icon（蒙版本体在 core/components.css 的 .svg-icon），
+ * 品牌色走 --icon-color，未给色的回落到文字色。
+ */
+function stackTag(name: string, file: string, color?: string): string {
+  const colorVar = color ? `;--icon-color:${color}` : '';
+  return (
+    `<span class="tag tag-interest" style="--icon:url('/assets/svg/${file}.svg')${colorVar}">` +
+    `<span class="svg-icon" aria-hidden="true"></span>${name}</span>`
+  );
+}
+
 export function generatePersonalCardHTML(): string {
   return `
     <div class="profile-card">
@@ -39,9 +52,7 @@ export function generatePersonalCardHTML(): string {
       </div>
 
       <div class="profile-body">
-        ${infoItem('fa-graduation-cap', '高一在读 · 新乡市第一中学')}
-        ${infoItem('fa-earth-asia', '中国 · UTC+8')}
-        ${infoItem('fa-brain', 'INTP · 逻辑学家')}
+        ${infoItem('fa-graduation-cap', '高一在读')}
         ${infoItem(
           'fa-pen-nib',
           `<a href="/articles/"><span id="profileStatArticles">${
@@ -57,7 +68,9 @@ export function generatePersonalCardHTML(): string {
         <a href="https://github.com/Xinyang-Gao" target="_blank" class="social-link" aria-label="GitHub" rel="noopener noreferrer"><i class="fab fa-github"></i></a>
         <a href="https://www.curseforge.com/members/gaoxinyang/projects" target="_blank" class="social-link" aria-label="CurseForge" rel="noopener noreferrer"><span class="social-svg-icon social-svg-icon--curseforge" aria-hidden="true"></span></a>
         <a href="https://modrinth.com/user/GaoXinyang" target="_blank" class="social-link" aria-label="Modrinth" rel="noopener noreferrer"><span class="social-svg-icon social-svg-icon--modrinth" aria-hidden="true"></span></a>
+        <a href="https://center.mcmod.cn/844981/" target="_blank" class="social-link" aria-label="MC百科" rel="noopener noreferrer"><span class="social-svg-icon social-svg-icon--mcmod" aria-hidden="true"></span></a>
         <a href="https://space.bilibili.com/1064600697" target="_blank" class="social-link" aria-label="Bilibili" rel="noopener noreferrer"><i class="fab fa-bilibili"></i></a>
+        <a href="https://music.163.com/#/user/home?id=12237308704" target="_blank" class="social-link" aria-label="网易云音乐" rel="noopener noreferrer"><span class="social-svg-icon social-svg-icon--neteasecloudmusic" aria-hidden="true"></span></a>
         <a href="mailto:gao_xinyang@foxmail.com" class="social-link" aria-label="邮箱"><i class="fas fa-envelope"></i></a>
         <a href="https://user.qzone.qq.com/2489083744/" target="_blank" class="social-link" aria-label="QQ" rel="noopener noreferrer"><i class="fab fa-qq"></i></a>
         <a href="/rss.xml" target="_blank" class="social-link" aria-label="RSS" rel="noopener noreferrer"><i class="fas fa-rss"></i></a>
@@ -71,14 +84,17 @@ export function generatePersonalCardHTML(): string {
       </div>
 
       <div class="profile-tags">
-        <span class="tag tag-interest">Python</span>
-        <span class="tag tag-interest">Html</span>
-        <span class="tag tag-interest">JavaScript</span>
-        <span class="tag tag-interest">TypeScript</span>
-        <span class="tag tag-interest">Scratch</span>
+        ${stackTag('HTML5', 'html5', '#E34F26')}
+        ${stackTag('TypeScript', 'typescript', '#3178C6')}
+        ${stackTag('JavaScript', 'javascript', '#C9A227')}
+        ${stackTag('CSS', 'css', '#1572B6')}
+        ${stackTag('Vite', 'vite', '#646CFF')}
+        ${stackTag('Python', 'python', '#3776AB')}
+        ${stackTag('Java', 'java', '#5382A1')}
+        ${stackTag('Git', 'git', '#F05032')}
+        ${stackTag('Scratch', 'scratch', '#E8720C')}
         <span class="tag tag-interest">绘画</span>
         <span class="tag tag-interest">轮滑</span>
-        <span class="tag tag-interest">Minecraft</span>
       </div>
 
       <div class="profile-actions">

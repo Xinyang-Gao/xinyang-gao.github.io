@@ -181,6 +181,11 @@
       "desc": "假 ICP 备案"
     },
     {
+      "name": "Simple Icons",
+      "link": "https://simpleicons.org/",
+      "desc": "站内图标（Java / Python / HTML5 / JavaScript / TypeScript / Git / Vite / Scratch / CSS）的来源"
+    },
+    {
       "name": "NeteaseMiniPlayerV2",
       "link": "https://github.com/numakkiyu/NeteaseMiniPlayer/",
       "desc": "（曾使用）网易云音乐迷你播放器，因开发新版本现已停止维护"

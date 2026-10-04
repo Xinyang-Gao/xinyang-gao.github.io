@@ -14,6 +14,25 @@
 - **修复** —— 缺陷修复
 - **安全** —— 安全相关的改进
 
+## [8.48.0] - 2026-10-04
+
+### 新增
+
+- contact：卡片与页脚联系区同步新增网易云音乐、MC百科两枚入口（现共 9 枚，两处顺序一致）
+  - `neteasecloudmusic.svg` → `music.163.com/#/user/home?id=12237308704`，`mcmod.svg` → `center.mcmod.cn/844981/`
+  - 蒙版图形收进 `core/components.css` 的具名类：以后加平台 = 加一行 `--icon` + 标记里写类名，页脚与卡片共用
+- ui：卡片技术栈标签改为「SVG + 文字」9 枚（Java / Python / HTML5 / JavaScript / TypeScript / Git / Vite / Scratch / CSS）
+  - 图形走 `--icon`、品牌色走 `--icon-color`，蒙版本体复用 core 的 `.svg-icon`，胶囊结构与 hover 上浮动效不变
+  - 配色按浅暗两种底都取可读值：JavaScript 用暗金 `#C9A227`（品牌黄 `#F7DF1E` 在浅色胶囊上糊成一片）
+  - hover 反色时图标改跟随 `currentColor`，暗色主题下文字是深色也不会露馅
+  - 绘画 / 轮滑 / Minecraft 无对应图标，保留为纯文字胶囊
+- footer：开源致谢补三条图标素材来源，栏目标题改为「代码与图标素材来源」
+  - `javascript.svg` → [MIT](https://spdx.org/licenses/MIT)、`git.svg` → [CC BY 3.0](https://spdx.org/licenses/CC-BY-3.0)、其余单色图标 → [Simple Icons](https://simpleicons.org/)（[CC0 1.0 Universal](https://github.com/simple-icons/simple-icons/blob/develop/LICENSE.md)），每条前面带一枚 0.95em 的蒙版图标
+
+### 修复
+
+- assets：`mcmod.svg` 补 `viewBox="0 0 1536 1536"` —— 没有 viewBox 的 SVG 当蒙版/图片使用时不会跟随容器缩放，在 16px 图标位上只会露出左上角一小块
+
 ## [8.47.3] - 2026-10-04
 
 ### 变更
