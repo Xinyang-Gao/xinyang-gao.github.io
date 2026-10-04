@@ -362,7 +362,9 @@
   padding: 4px 0;
 }
 
-.profile-info-item i {
+/* FA Kit 会把 <i> 换成 <svg class="svg-inline--fa">，两种形态都要命中 */
+.profile-info-item i,
+.profile-info-item .svg-inline--fa {
   width: 20px;
   color: var(--accent-color);
   font-size: 0.95rem;
@@ -383,11 +385,12 @@
   word-break: break-word;
 }
 
-/* ---------- 社交链接 ---------- */
+/* ---------- 社交链接（与页脚联系区同源，7 枚图标需在窄侧栏放下：
+   32px × 7 + 8px × 6 = 272px，侧栏最大宽 340px 时单行） ---------- */
 .profile-social {
   display: flex;
   justify-content: center;
-  gap: 12px;
+  gap: 8px;
   padding: 12px 20px;
   flex-wrap: wrap;
   border-top: 1px solid var(--border-light);
@@ -397,17 +400,25 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   background: var(--surface-color);
   border-radius: 50%;
   color: var(--text-secondary);
-  font-size: 1.1rem;
+  font-size: 1rem;
   border: 1px solid var(--border-color);
   text-decoration: none;
   transition: var(--transition-ui);
 }
 .social-link::after { display: none; }
+
+/* SVG 蒙版图标（CurseForge / Modrinth）：蒙版本体在 core/components.css，
+   这里跟随按钮前景色，hover 变白时图标一并反白 */
+.social-link .social-svg-icon {
+  width: 1rem;
+  height: 1rem;
+  color: inherit;
+}
 
 .social-link:hover {
   background: var(--accent-color);
@@ -475,6 +486,47 @@
   transform: translateY(-2px);
   box-shadow: 0 4px 10px rgba(var(--accent-rgb), 0.25);
 }
+
+/* ---------- 底部出口：档案摘要通往完整版的两个去处 ----------
+   卡片是「关于页 + 页脚」的索引而不是竞品，完整内容留在原处 */
+.profile-actions {
+  display: flex;
+  gap: 10px;
+  padding: 12px 20px 16px;
+  border-top: 1px solid var(--border-light);
+}
+
+.profile-action {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 9px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--surface-color-secondary);
+  color: var(--text-color);
+  font-size: 0.85rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: var(--transition-ui);
+}
+.profile-action i,
+.profile-action .svg-inline--fa {
+  font-size: 0.72rem;
+  opacity: 0.7;
+  transition: transform 0.2s ease;
+}
+.profile-action:hover {
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+  background: var(--surface-color);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(var(--accent-rgb), 0.18);
+}
+.profile-action:hover i,
+.profile-action:hover .svg-inline--fa { transform: translateX(3px); }
 
 /* ============================================
    Hero
@@ -630,8 +682,8 @@
   .profile-name { font-size: 1.6rem; }
   .profile-body { padding: 18px 24px 12px; gap: 10px; }
   .profile-info-item { font-size: 0.9rem; }
-  .profile-social { padding: 12px 24px; gap: 14px; }
-  .social-link { width: 40px; height: 40px; font-size: 1.2rem; }
+  .profile-social { padding: 12px 24px; gap: 8px; }
+  .profile-actions { padding: 12px 24px 18px; }
   .profile-travelling { padding: 14px 24px 8px; }
   .profile-travelling .travelling-img { width: 110px; }
   .profile-tags { padding: 14px 24px 20px; gap: 10px; }
@@ -683,9 +735,10 @@
   .profile-bio { font-size: 0.95rem; }
   .profile-body { padding: 20px 28px 14px; gap: 10px; }
   .profile-info-item { font-size: 0.92rem; gap: 14px; }
-  .profile-info-item i { width: 22px; font-size: 1rem; }
-  .profile-social { padding: 14px 28px; gap: 16px; }
-  .social-link { width: 42px; height: 42px; font-size: 1.3rem; }
+  .profile-info-item i,
+  .profile-info-item .svg-inline--fa { width: 22px; font-size: 1rem; }
+  .profile-social { padding: 14px 28px; gap: 8px; }
+  .profile-actions { padding: 14px 28px 20px; }
   .profile-travelling { padding: 16px 28px 10px; }
   .profile-travelling .travelling-img { width: 120px; }
   .profile-tags { padding: 16px 28px 22px; }
@@ -718,8 +771,8 @@
   .profile-name { font-size: 1.8rem; }
   .profile-body { padding: 22px 32px 16px; gap: 12px; }
   .profile-info-item { font-size: 0.95rem; }
-  .profile-social { padding: 16px 32px; gap: 18px; }
-  .social-link { width: 44px; height: 44px; font-size: 1.4rem; }
+  .profile-social { padding: 16px 32px; gap: 8px; }
+  .profile-actions { padding: 16px 32px 22px; }
   .profile-travelling { padding: 18px 32px 12px; }
   .profile-tags { padding: 18px 32px 24px; gap: 12px; }
   .landing-hero {

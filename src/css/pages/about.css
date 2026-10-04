@@ -856,6 +856,11 @@
   color: var(--text-color);
   max-width: none;
 }
+/* 第二段是「还没想好」的自嘲，降一级灰度，与正文拉开层次 */
+.bio-card .card-body p + p {
+  margin-top: 0.7em;
+  color: var(--text-secondary);
+}
 
 .mbti-dimensions {
   display: flex;
