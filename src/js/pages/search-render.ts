@@ -166,13 +166,10 @@ export class UIRenderer {
     return `<div class="list-item-cover" aria-hidden="true" style="background-image: url('${Utils.escapeHtml(url)}')"></div>`;
   }
 
-  /** 作品归档标记（右上角） */
+  /** 作品归档标记（卡片右上角 45° 浅红横条） */
   static generateArchivedBadgeHTML(archived: unknown): string {
     if (!archived) return '';
-    return (
-      '<div class="work-archived-badge" title="该作品已归档，不再维护">' +
-      '<i class="fa-solid fa-box-archive" aria-hidden="true"></i> 已归档 · 不再维护</div>'
-    );
+    return '<div class="work-archived-badge" title="该作品已归档，不再维护">已归档</div>';
   }
 
   static generateListItem(item: Item, type: 'article' | 'work', index: number): string {

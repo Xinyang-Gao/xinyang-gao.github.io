@@ -160,31 +160,38 @@
 [data-theme="dark"] .list-item-cover { opacity: 0.22; }
 [data-theme="dark"] .list-item:hover .list-item-cover { opacity: 0.34; }
 
-/* ---------- 作品归档标记 ---------- */
-.work-archived-badge {
+/* ---------- 作品归档标记：卡片右上角 45° 浅红横条 ---------- */
+/* 选择器带上 .list-item.has-archived，是为了盖过上面
+   「.list-item.has-cover > *」的 position: relative（同特异性、后写者胜） */
+.list-item.has-archived {
+  /* 横条两端要被卡片边角裁掉，必须裁剪溢出 */
+  overflow: hidden;
+}
+.list-item.has-archived > .work-archived-badge {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  z-index: 2;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 10px;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-full);
-  background: var(--surface-color-secondary);
-  color: var(--text-secondary);
+  /* 圆角右上角的角平分线上：中心距角 24px，band 中线距角 24√2 ≈ 34px */
+  top: 13px;
+  right: -41px;
+  z-index: 3;
+  box-sizing: border-box;
+  width: 130px;
+  height: 22px;
+  line-height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: rgba(var(--danger-rgb), 0.16);
+  color: var(--danger-color);
   font-size: var(--font-size-xs);
   font-weight: 600;
-  letter-spacing: 0.02em;
-  line-height: 1.5;
+  letter-spacing: 0.12em;
+  text-align: center;
   white-space: nowrap;
+  transform: rotate(45deg);
+  pointer-events: none;
 }
-.work-archived-badge i {
-  font-size: 0.7rem;
-  opacity: 0.85;
-}
-/* 给右上角标签让出位置 */
+.work-archived-badge i { display: none; }
+/* 给右上角横条让出位置 */
 .list-item.has-archived > .list-item-header {
   margin-top: 26px;
 }

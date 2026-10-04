@@ -454,11 +454,10 @@ class AggregatedGenerator(OutputGenerator):
 
     @staticmethod
     def _archived_badge_html(archived: bool) -> str:
-        """归档标记（仅作品使用）。"""
+        """归档标记（仅作品使用）：卡片右上角 45° 浅红横条。"""
         if not archived:
             return ''
-        return ('<div class="work-archived-badge" title="该作品已归档，不再维护">'
-                '<i class="fa-solid fa-box-archive" aria-hidden="true"></i> 已归档 · 不再维护</div>')
+        return ('<div class="work-archived-badge" data-tooltip="该作品已归档，不再维护">已归档</div>')
 
     @staticmethod
     def _dates_html(date: str, last_updated: str) -> str:

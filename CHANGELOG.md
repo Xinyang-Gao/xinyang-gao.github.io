@@ -14,6 +14,21 @@
 - **修复** —— 缺陷修复
 - **安全** —— 安全相关的改进
 
+## [8.47.2] - 2026-10-04
+
+### 新增
+
+- footer：联系区新增 CurseForge 与 Modrinth 两个入口
+  - 分别指向 `https://www.curseforge.com/members/gaoxinyang/projects` 与 `https://modrinth.com/user/GaoXinyang`
+  - Font Awesome 未收录此二枚图标，改用 `src/assets/svg/curseforge.svg` / `modrinth.svg` 作 CSS 蒙版着色，尺寸、主题色与悬停动效同相邻 `<i>` 图标保持一致
+
+### 变更
+
+- works：作品卡片的归档提示改为右上角 45° 浅红横条「已归档」
+  - 原先的胶囊标签（已归档 · 不再维护）由卡片内容区移出，改为压在右上角角平分线上的横条，两端由卡片圆角裁切（`.list-item.has-archived` 增加 `overflow: hidden`）
+  - 选择器带上 `.list-item.has-archived` 以盖过 `.list-item.has-cover > *` 的 `position: relative`（同特异性后写者胜），带封面的归档卡片才会保持绝对定位
+  - 构建期 SSR（`builder/generators/aggregated.py`）与前端渲染（`search-render.ts`）两处标记同源更新，鼠标悬停仍保留 `该作品已归档，不再维护` 提示
+
 ## [8.47.1] - 2026-10-04
 
 ### 移除

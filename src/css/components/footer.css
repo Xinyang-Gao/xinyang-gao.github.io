@@ -122,6 +122,34 @@
 }
 .social-capsule:hover i { opacity: 1; transform: translateY(-1px); }
 
+/* SVG 图标（CurseForge / Modrinth）：Font Awesome 无此二枚，
+   用蒙版把 src/assets/svg/*.svg 染成主题色，视觉上与 <i> 图标完全一致 */
+.social-capsule .social-svg-icon {
+  width: 1.1rem;
+  height: 1.1rem;
+  flex: none;
+  align-self: center;
+  display: inline-block;
+  background-color: var(--accent-color);
+  opacity: 0.8;
+  -webkit-mask-repeat: no-repeat;
+          mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+          mask-position: center;
+  -webkit-mask-size: contain;
+          mask-size: contain;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.social-svg-icon--curseforge {
+  -webkit-mask-image: url("/assets/svg/curseforge.svg");
+          mask-image: url("/assets/svg/curseforge.svg");
+}
+.social-svg-icon--modrinth {
+  -webkit-mask-image: url("/assets/svg/modrinth.svg");
+          mask-image: url("/assets/svg/modrinth.svg");
+}
+.social-capsule:hover .social-svg-icon { opacity: 1; transform: translateY(-1px); }
+
 /* ==========================================
    数据区：KPI 卡片网格
    —— 整块是 <a>，点击由路由无刷新跳转到 /stats/
