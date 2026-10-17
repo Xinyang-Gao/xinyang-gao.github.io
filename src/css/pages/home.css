@@ -36,21 +36,25 @@
   position: relative;
   display: flex;
   flex-direction: column;
-  padding: calc(var(--nav-height) + clamp(20px, 9vh, 88px)) clamp(20px, 6vw, 72px) 0;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  /* 上下留白对称：抬头区才会真正落在屏幕正中（上面多出的 nav-height 由两侧同时承担） */
+  padding: calc(var(--nav-height) + clamp(12px, 3vh, 30px)) clamp(20px, 6vw, 72px)
+           calc(var(--nav-height) + clamp(12px, 3vh, 30px));
 }
 
 .sky-headline {
-  max-width: min(620px, 90vw);
-  /* 云朵分布在画面中上部，抬头区跟着落在那一带 */
-  margin-top: clamp(0px, 4vh, 48px);
+  max-width: min(680px, 92vw);
+  margin: 0 auto;
 }
 
 /* 时间：全屏最大的元素，等宽 + 细字重，像仪表盘 */
 .headline-clock {
-  margin: 0 0 clamp(8px, 1.6vh, 18px);
+  margin: 0 0 clamp(10px, 2vh, 20px);
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 .clock-time {
   display: block;
@@ -63,27 +67,13 @@
   color: var(--text-color);
   text-shadow: var(--sky-text-shadow);
 }
-.clock-meta {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+.clock-date {
+  display: block;
   font-family: var(--font-mono);
-  font-size: 0.76rem;
-  letter-spacing: 0.1em;
+  font-size: clamp(0.72rem, 1.6vw, 0.92rem);
+  letter-spacing: 0.14em;
   color: var(--text-secondary);
   text-shadow: var(--sky-text-shadow);
-}
-.live-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #3fb950;
-  display: inline-block;
-  animation: livePulse 2.2s ease-out infinite;
-}
-@keyframes livePulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(63, 185, 80, 0.45); }
-  50%      { box-shadow: 0 0 0 6px rgba(63, 185, 80, 0); }
 }
 
 /* 站名：次之 */
@@ -92,7 +82,7 @@
   padding: 0;
   border: 0;
   font-size: inherit;
-  text-align: left;
+  text-align: center;
 }
 .headline-title::after { display: none; }
 .headline-name {
@@ -125,29 +115,6 @@
   letter-spacing: 0.08em;
   color: var(--accent-color);
   text-shadow: var(--sky-text-shadow);
-}
-
-/* 下滑提示 */
-.sky-scroll-cue {
-  position: absolute;
-  left: clamp(20px, 6vw, 72px);
-  bottom: clamp(20px, 5vh, 52px);
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  font-family: var(--font-mono);
-  font-size: 0.76rem;
-  letter-spacing: 0.14em;
-  color: var(--text-secondary);
-  text-decoration: none;
-  text-shadow: var(--sky-text-shadow);
-  transition: color var(--transition-fast);
-}
-.sky-scroll-cue:hover { color: var(--accent-color); }
-.sky-scroll-cue i { animation: cueBob 1.9s ease-in-out infinite; }
-@keyframes cueBob {
-  0%, 100% { transform: translateY(0); opacity: 0.75; }
-  50%      { transform: translateY(5px); opacity: 1; }
 }
 
 /* ============================================
@@ -343,11 +310,13 @@
 /* ============================================
    第三屏：地面 —— 每日一言悬浮在地面上空
    ============================================ */
+/* 一言悬浮在"地面上空"：整屏内容贴底，与地面只留一小段呼吸位，
+   不再出现"一整屏的空白把一言和地面隔开" */
 .home-ground {
   display: flex;
-  align-items: flex-start;
+  align-items: flex-end;
   justify-content: center;
-  padding: clamp(36px, 11vh, 130px) clamp(14px, 4vw, 48px) 0;
+  padding: clamp(40px, 12vh, 140px) clamp(14px, 4vw, 48px) clamp(14px, 3vh, 34px);
 }
 
 .quote-float {
@@ -473,9 +442,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   .air-float,
-  .quote-float,
-  .sky-scroll-cue i,
-  .live-dot {
+  .quote-float {
     animation: none !important;
   }
   .air-float,

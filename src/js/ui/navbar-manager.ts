@@ -12,6 +12,11 @@ import type { BrandLogoHandle } from '/js/ui/brand-logo.js';
 const SITE_NAME = 'GaoXinYang';
 const CSS_PATH = '/css/components/navbar.css';
 const SCROLL_THRESHOLD = 24;
+/**
+ * 折叠判定的滚动步长阈值（px）。
+ * 只有当累计位移超过它才切换状态，避免触控板/惯性滚动的抖动让导航栏反复开合。
+ */
+const COLLAPSE_DELTA = 8;
 const DESKTOP_BREAKPOINT = CONFIG.BREAKPOINTS.MOBILE;
 
 const NAV_LINKS: ReadonlyArray<{ href: string; page: string; text: string }> = [
@@ -39,6 +44,14 @@ export class NavbarManager {
   private titleMode = false;
   private scrollTicking = false;
   private resizeTicking = false;
+  /** 上一次判定折叠时的滚动位置（用于累计方向位移） */
+  private lastCollapseY = 0;
+  /**
+   * 当前是否处于收起态。
+   * 初值设 false：让 bindShell 里的 setCollapsed(true) 真正加上类
+   * （若初值就是 true，会被"状态未变"的短路挡掉，导航栏永远收不起来）。
+   */
+  private collapsed = false;
   private titleHoverTimer: number | undefined;
 
   /** 统一资源清理栈 */
@@ -173,9 +186,35 @@ export class NavbarManager {
     this.scrollTicking = true;
     requestAnimationFrame(() => {
       this.scrollTicking = false;
-      this.elements.navbar?.classList.toggle('scrolled', window.scrollY > SCROLL_THRESHOLD);
+      const y = window.scrollY;
+      this.elements.navbar?.classList.toggle('scrolled', y > SCROLL_THRESHOLD);
+      this.updateCollapse(y);
     });
   };
+
+  /**
+   * 导航栏默认收起成一条线贴顶：向上翻时展开，向下滚回收。
+   *
+   * 只有累计位移超过 COLLAPSE_DELTA 才切换状态并重置基准，
+   * 这样细碎抖动不会造成开合闪烁；悬停 / 聚焦 / 移动菜单展开时保持展开，
+   * 避免用户正在操作时导航栏被抽走（CSS 侧也有 :hover 兜底）。
+   */
+  private updateCollapse(y: number): void {
+    const navbar = this.elements.navbar;
+    const delta = y - this.lastCollapseY;
+    if (Math.abs(delta) < COLLAPSE_DELTA) return;
+
+    const busy =
+      navbar?.classList.contains('active') || (navbar?.contains(document.activeElement) ?? false);
+    if (!busy) this.setCollapsed(delta > 0);
+    this.lastCollapseY = y;
+  }
+
+  private setCollapsed(collapsed: boolean): void {
+    if (this.collapsed === collapsed) return;
+    this.collapsed = collapsed;
+    this.elements.navbar?.classList.toggle('is-collapsed', collapsed);
+  }
 
   private onResize = (): void => {
     if (this.resizeTicking) return;
@@ -187,9 +226,22 @@ export class NavbarManager {
   };
 
   private bindShell(): void {
+    // 收起态只有一条线：点它也算"想用导航"，展开即可（链接点击不受影响）
+    const navbar = this.elements.navbar;
+    if (navbar) {
+      this.stack.addEventListener(navbar, 'click', ((e: MouseEvent) => {
+        if (!this.collapsed) return;
+        if ((e.target as HTMLElement).closest('a, input, .mobile-toggle')) return;
+        this.setCollapsed(false);
+      }) as EventListener);
+    }
+
     this.stack.addEventListener(window, 'scroll', this.onScroll, { passive: true });
     this.stack.addEventListener(window, 'resize', this.onResize, { passive: true });
     this.observeMenuToggle();
+    // 默认收起：先置位再跑一次滚动判定（此时位移为 0，不会改变状态）
+    this.setCollapsed(true);
+    this.lastCollapseY = window.scrollY;
     this.onScroll();
   }
 

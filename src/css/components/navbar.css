@@ -54,6 +54,51 @@
   box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
+/* ---------- 收起态：贴顶的一条线 ----------
+   默认收起（NavbarManager 初始就加 .is-collapsed）：
+   以导航栏上边缘为界，高度收成一条线，内容淡出；向上翻时由 JS 摘掉本类展开。
+   :hover / :focus-within 是兜底——鼠标移到线上、或用键盘聚焦到导航项时自动张开，
+   不会因为"收着"就点不到。 */
+.navbar {
+  /* 收起 / 展开过渡的属性全部显式列出，不用 all */
+  transition: top 0.35s ease,
+              height 0.32s cubic-bezier(0.4, 0, 0.2, 1),
+              padding 0.32s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.35s ease,
+              border-color 0.35s ease,
+              background-color 0.35s ease;
+}
+.navbar > * {
+  transition: opacity 0.22s ease;
+}
+.navbar.is-collapsed {
+  height: 4px;
+  padding-top: 0;
+  padding-bottom: 0;
+  overflow: hidden;
+  box-shadow: none;
+}
+.navbar.is-collapsed > * {
+  opacity: 0;
+  pointer-events: none;
+}
+/* 兜底展开：悬停、键盘聚焦、移动菜单打开 */
+.navbar.is-collapsed:hover,
+.navbar.is-collapsed:focus-within,
+.navbar.is-collapsed.active {
+  height: var(--nav-height-mobile);
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow: visible;
+  box-shadow: var(--shadow-nav), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+.navbar.is-collapsed:hover > *,
+.navbar.is-collapsed:focus-within > *,
+.navbar.is-collapsed.active > * {
+  opacity: 1;
+  pointer-events: auto;
+}
+
 /* ---------- Logo：衬线 wordmark ---------- */
 .nav-logo {
   display: flex;
@@ -393,6 +438,14 @@ nav.title-hovered .nav-title-placeholder.active {
     padding: 6px 14px;
   }
   .navbar.scrolled { top: 10px; }
+  /* 桌面形态更高，收起/展开都要用桌面高度，否则兜底展开会撑成移动端的矮条 */
+  .navbar.is-collapsed:hover,
+  .navbar.is-collapsed:focus-within,
+  .navbar.is-collapsed.active {
+    height: var(--nav-height);
+    padding-top: 6px;
+    padding-bottom: 6px;
+  }
   .logo-text { font-size: 1.3rem; }
   .nav-logo-mark { width: 124px; }
   .nav-item { font-size: 0.85rem; padding: 9px 12px; }

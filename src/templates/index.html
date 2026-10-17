@@ -55,15 +55,12 @@
   <div id="router-view">
     <div class="home-stage">
 
-      <!-- 第一屏：天空。左上角 = 时间（主）→ 站名 → 欢迎语 -->
+      <!-- 第一屏：天空。屏幕正中 = 时间（主）→ 日期 → 站名 → 欢迎语 -->
       <section class="home-sky" aria-label="站点抬头">
         <div class="sky-headline">
           <p class="headline-clock">
             <span class="clock-time" id="live-clock" aria-hidden="true">--:--:--</span>
-            <span class="clock-meta">
-              <i class="live-dot" aria-hidden="true"></i>
-              <span class="clock-date" id="headlineDate" aria-hidden="true"></span>
-            </span>
+            <span class="clock-date" id="headlineDate" aria-hidden="true"></span>
           </p>
 
           <h1 class="headline-title">
@@ -73,11 +70,6 @@
 
           <p class="headline-greeting" id="dynamic-greeting">你好</p>
         </div>
-
-        <a class="sky-scroll-cue" href="#homeAir" aria-label="向下滚动，查看站内概览">
-          <span>继续下滑</span>
-          <i class="fas fa-chevron-down" aria-hidden="true"></i>
-        </a>
       </section>
 
       <!-- 第二屏：半空。统计与标签悬浮在半空中 -->
