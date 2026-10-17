@@ -24,7 +24,13 @@ declare global {
 
 // ==================== 常量定义 ====================
 const ROUTER_VIEW_ID = 'router-view';
-const TRANSITION_DURATION = 300;
+/** 内容渐变（淡出 / 淡入）时长 */
+const TRANSITION_FADE_MS = 170;
+/** 卡片收缩 / 扩张时长 */
+const TRANSITION_COLLAPSE_MS = 260;
+const TRANSITION_EXPAND_MS = 360;
+/** 卡片收缩到原高度的比例（并夹在 [120, 360]px 之间，避免极端页面抽风） */
+const COLLAPSE_RATIO = 0.42;
 const MAX_CACHE_SIZE = 50;
 const CACHE_TTL = 600_000; // 10分钟
 const SCROLL_DEBOUNCE_MS = 80;
@@ -370,6 +376,13 @@ function extractPageContent(html: string, url: string): ExtractedContent {
   };
 }
 
+/**
+ * 页面切换：卡片（#router-view）只做收缩 → 扩张，内容只做渐变。
+ *
+ * 旧实现是整块内容 `scale(0.92)` + 淡出，缩放会把文字一起压扁，
+ * 视觉上像"整个页面被抽走"；现在改成高度动画：容器自己是那张卡片，
+ * 高度收到一半再张开，里面的内容在收拢时淡出、张开时淡入，两者互不干扰。
+ */
 function replaceContentWithTransition(mainHtml: string): Promise<boolean> {
   const currentView = document.getElementById(ROUTER_VIEW_ID);
   if (!currentView || !mainHtml) return Promise.resolve(false);
@@ -379,54 +392,94 @@ function replaceContentWithTransition(mainHtml: string): Promise<boolean> {
   const newView = tmpDiv.querySelector(`#${ROUTER_VIEW_ID}`);
   if (!newView) return Promise.resolve(false);
 
-  return new Promise((resolve) => {
-    let settled = false;
-    const finish = (success: boolean) => {
-      if (!settled) {
-        settled = true;
-        resolve(success);
-      }
-    };
+  const newEl = newView as HTMLElement;
 
-    currentView.classList.add('page-transition-exit');
+  // 已经滚到页面中段时不收缩：文档变矮会让浏览器夹取滚动位置，
+  // 那一下跳动比动画本身更显眼，退化成纯渐变。
+  const canMorph = !prefersReducedMotion() && window.scrollY < 48;
 
-    const performSwap = () => {
-      if (!currentView.parentNode) {
-        finish(false);
-        return;
-      }
+  return (canMorph ? morphSwap(currentView, newEl) : fadeSwap(currentView, newEl)).then(
+    () => true,
+    () => false,
+  );
+}
 
-      currentView.replaceWith(newView);
-      newView.classList.add('page-transition-enter');
+function wait(ms: number): Promise<void> {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
 
-      const onEnterEnd = () => {
-        newView.removeEventListener('transitionend', onEnterEnd);
-        newView.classList.remove('page-transition-enter');
-        finish(true);
-      };
-      newView.addEventListener('transitionend', onEnterEnd);
+/** 等一帧：确保新节点已完成布局，能读出真实高度 */
+function waitFrame(): Promise<void> {
+  return new Promise((resolve) => requestAnimationFrame(() => resolve()));
+}
 
-      setTimeout(() => {
-        if (newView.classList.contains('page-transition-enter')) {
-          newView.classList.remove('page-transition-enter');
-          finish(true);
-        }
-      }, TRANSITION_DURATION * 1.5);
-    };
+function prefersReducedMotion(): boolean {
+  return typeof window.matchMedia === 'function'
+    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    : false;
+}
 
-    const onExitEnd = () => {
-      currentView.removeEventListener('transitionend', onExitEnd);
-      performSwap();
-    };
-    currentView.addEventListener('transitionend', onExitEnd);
+function clamp(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
 
-    setTimeout(() => {
-      if (!settled) {
-        currentView.removeEventListener('transitionend', onExitEnd);
-        performSwap();
-      }
-    }, TRANSITION_DURATION + 50);
-  });
+function settle(el: HTMLElement): void {
+  el.classList.remove('is-page-morphing', 'is-content-muted');
+  el.style.removeProperty('height');
+  el.style.removeProperty('transition');
+  el.style.removeProperty('overflow');
+}
+
+/** 完整的"收缩 → 换内容 → 扩张" */
+async function morphSwap(currentView: HTMLElement, newEl: HTMLElement): Promise<void> {
+  const startHeight = currentView.getBoundingClientRect().height;
+  const collapsed = Math.round(clamp(startHeight * COLLAPSE_RATIO, 120, 360));
+
+  // 1) 内容淡出，卡片高度先锁定在当前值（否则下一步的高度动画没有起点）
+  currentView.classList.add('is-page-morphing', 'is-content-muted');
+  currentView.style.height = `${Math.round(startHeight)}px`;
+  await wait(TRANSITION_FADE_MS);
+  if (!currentView.parentNode) return;
+
+  // 2) 卡片收缩
+  currentView.style.transition = `height ${TRANSITION_COLLAPSE_MS}ms cubic-bezier(0.4, 0, 0.2, 1)`;
+  currentView.style.height = `${collapsed}px`;
+  await wait(TRANSITION_COLLAPSE_MS);
+  if (!currentView.parentNode) return;
+
+  // 3) 换 DOM：新卡片从同一个收缩高度起步，看上去是同一张卡片在张开
+  newEl.classList.add('is-page-morphing', 'is-content-muted');
+  newEl.style.height = `${collapsed}px`;
+  currentView.replaceWith(newEl);
+  await waitFrame();
+
+  // 4) 量目标高度；超长页面只展开到一屏多一点，剩下的部分在视野外，
+  //    交还文档流时不会有可见跳动
+  const contentHeight = Math.max(collapsed, newEl.scrollHeight);
+  const expandTarget = Math.round(Math.min(contentHeight, window.innerHeight * 0.88));
+
+  // 5) 卡片扩张 + 内容渐变回来
+  newEl.style.transition = `height ${TRANSITION_EXPAND_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`;
+  newEl.style.height = `${expandTarget}px`;
+  newEl.classList.remove('is-content-muted');
+  await wait(TRANSITION_EXPAND_MS);
+
+  // 6) 交还文档流：后续图片加载撑高也不会被裁掉
+  settle(newEl);
+}
+
+/** 退化路径：只做内容渐变，不动高度（滚动位置较深 / 降低动效偏好） */
+async function fadeSwap(currentView: HTMLElement, newEl: HTMLElement): Promise<void> {
+  currentView.classList.add('is-page-morphing', 'is-content-muted');
+  await wait(TRANSITION_FADE_MS);
+  if (!currentView.parentNode) return;
+
+  newEl.classList.add('is-page-morphing', 'is-content-muted');
+  currentView.replaceWith(newEl);
+  await waitFrame();
+  newEl.classList.remove('is-content-muted');
+  await wait(TRANSITION_FADE_MS + 80);
+  settle(newEl);
 }
 
 /** 页面导航请求超时（毫秒）：弱网下到点走错误弹窗，而非无限转圈 */

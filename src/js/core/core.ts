@@ -55,7 +55,10 @@ export const CONFIG = {
     LINK_WARNING_ENABLED: 'settings_link_warning_enabled',
     FONT_SCALE: 'settings_font_scale',
     REVEAL_ENABLED: 'settings_reveal_enabled',
-    BG_IMAGE_ENABLED: 'settings_bg_image_enabled',
+    /** 天空时段：auto | dawn | morning | noon | afternoon | dusk | night */
+    SKY_TIME: 'settings_sky_time',
+    /** 渐变天空背景总开关（云朵 / 星空一并关闭） */
+    SKY_ENABLED: 'settings_sky_enabled',
   } as const,
   API: {
     WORKS: '/json/works.json',
@@ -93,17 +96,6 @@ export const CONFIG = {
     'gaoxinyang.lanzouq.com',
     'icp.gov.moe',
   ]),
-  BACKGROUND_IMAGES: [
-    'https://cn.bing.com/th?id=OHR.MayLaborDayY26_ZH-CN7554485395_UHD.jpg&pid=hp',
-    'https://cn.bing.com/th?id=OHR.OloupenaFalls_ZH-CN2980118660_UHD.jpg&pid=hp',
-    'https://cn.bing.com/th?id=OHR.LoganCreek_ZH-CN5372283365_UHD.jpg&pid=hp',
-    'https://cn.bing.com/th?id=OHR.PerseidasTenerife_ZH-CN8520379683_UHD.jpg&pid=hp&w=1920',
-    'https://cn.bing.com/th?id=OHR.FanetteIsland_ZH-CN6466809551_UHD.jpg&pid=hp',
-    'https://cn.bing.com/th?id=OHR.WaitangiFjordlandNP_ZH-CN9436140228_UHD.jpg&pid=hp&w=1920',
-    'https://cn.bing.com/th?id=OHR.SichuanTea_ZH-CN6703437873_UHD.jpg&pid=hp&w=1920',
-    'https://cn.bing.com/th?id=OHR.EuropeFromISS_ZH-CN0722816540_UHD.jpg&pid=hp&w=1920',
-    'https://cn.bing.com/th?id=OHR.SplugenPass_ZH-CN8347591461_UHD.jpg&pid=hp&w=1920',
-  ],
   SITE_BIRTH: new Date('2025-02-22T12:23:53Z'),
   BREAKPOINTS: {
     MOBILE: 768,

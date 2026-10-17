@@ -5,7 +5,14 @@
 import { CONFIG, safeLocal, safeSession, storageController } from '/js/core/core.js';
 import { themeController, type ThemeMode } from '/js/core/theme-controller.js';
 import { showDetailDialog } from '/js/ui/detail-dialog.js';
-import { showBackgroundImage } from '/js/core/page-runtime.js';
+import {
+  getSkyPhase,
+  getSkyStatusText,
+  isSkyEnabled,
+  setSkyEnabled,
+  setSkyPhase,
+  type SkyPhase,
+} from '/js/ui/sky-backdrop.js';
 
 const K = CONFIG.STORAGE_KEYS;
 
@@ -16,7 +23,8 @@ type SettingKey =
   | typeof K.THEME_MODE
   | typeof K.FONT_SCALE
   | typeof K.REVEAL_ENABLED
-  | typeof K.BG_IMAGE_ENABLED;
+  | typeof K.SKY_TIME
+  | typeof K.SKY_ENABLED;
 
 // ==================== 通用读写（唯一出口） ====================
 export function getSetting(
@@ -133,25 +141,40 @@ function applyRevealEnabled(enabled: boolean): void {
   }
 }
 
-/**
- * 控制背景图显示状态。
- *
- * 关闭时只清空 background-image，保留 overlay 上记录的壁纸 URL，
- * 因此重新开启可以直接恢复，**无需再次下载**。
- */
-function applyBgImageEnabled(enabled: boolean): void {
-  const overlay = document.getElementById('bg-image-overlay') as HTMLElement | null;
+/** 应用天空时段（auto = 跟随真实时间） */
+function applySkyTime(phase: string): void {
+  const valid: SkyPhase = isSkyPhase(phase) ? phase : 'auto';
+  setSkyPhase(valid);
 
-  if (!enabled) {
-    if (overlay) {
-      overlay.style.backgroundImage = 'none';
-      overlay.style.opacity = '0';
-      overlay.classList.remove('active');
-    }
-    return;
-  }
+  const select = document.getElementById('skyTimeSelect') as HTMLSelectElement | null;
+  if (select) select.value = valid;
+  syncSkyHint();
+}
 
-  showBackgroundImage();
+/** 应用天空背景总开关（关掉后回到纯色底） */
+function applySkyEnabled(enabled: boolean): void {
+  setSkyEnabled(enabled);
+
+  const checkbox = document.getElementById('skyEnabledCheckbox') as HTMLInputElement | null;
+  if (checkbox) checkbox.checked = enabled;
+}
+
+/** 面板里"当前：xx"的实时说明 */
+function syncSkyHint(): void {
+  const hint = document.getElementById('skyTimeHint');
+  if (hint) hint.textContent = `当前：${getSkyStatusText()}`;
+}
+
+function isSkyPhase(value: string): value is SkyPhase {
+  return (
+    value === 'auto' ||
+    value === 'dawn' ||
+    value === 'morning' ||
+    value === 'noon' ||
+    value === 'afternoon' ||
+    value === 'dusk' ||
+    value === 'night'
+  );
 }
 
 // ==================== 应用所有存储的设置 ====================
@@ -177,9 +200,9 @@ export function applyStoredSettings(): void {
   const reveal = isEnabled(K.REVEAL_ENABLED, true);
   applyRevealEnabled(reveal);
 
-  // 4. 背景图
-  const bg = isEnabled(K.BG_IMAGE_ENABLED, true);
-  applyBgImageEnabled(bg);
+  // 4. 天空背景（时段 + 总开关）
+  applySkyTime(String(getSetting(K.SKY_TIME, 'auto')));
+  applySkyEnabled(isEnabled(K.SKY_ENABLED, true));
 }
 
 // ==================== 绑定设置控件 ====================
@@ -191,7 +214,10 @@ export function bindSettingsControls(container: HTMLElement): void {
   const themeSelect = container.querySelector('#themeModeSelect') as HTMLSelectElement | null;
   const fontScaleSelect = container.querySelector('#fontScaleSelect') as HTMLSelectElement | null;
   const revealCheckbox = container.querySelector('#revealCheckbox') as HTMLInputElement | null;
-  const bgImageCheckbox = container.querySelector('#bgImageCheckbox') as HTMLInputElement | null;
+  const skyTimeSelect = container.querySelector('#skyTimeSelect') as HTMLSelectElement | null;
+  const skyEnabledCheckbox = container.querySelector(
+    '#skyEnabledCheckbox',
+  ) as HTMLInputElement | null;
   const clearSWBtn = container.querySelector('#clearSWCacheBtn') as HTMLButtonElement | null;
   const clearCookiesBtn = container.querySelector('#clearCookiesBtn') as HTMLButtonElement | null;
 
@@ -213,9 +239,13 @@ export function bindSettingsControls(container: HTMLElement): void {
   if (revealCheckbox) {
     revealCheckbox.checked = isEnabled(K.REVEAL_ENABLED, true);
   }
-  if (bgImageCheckbox) {
-    bgImageCheckbox.checked = isEnabled(K.BG_IMAGE_ENABLED, true);
+  if (skyTimeSelect) {
+    skyTimeSelect.value = getSkyPhase();
   }
+  if (skyEnabledCheckbox) {
+    skyEnabledCheckbox.checked = isSkyEnabled();
+  }
+  syncSkyHint();
 
   // ---------- 事件绑定 ----------
 
@@ -252,11 +282,16 @@ export function bindSettingsControls(container: HTMLElement): void {
     applyRevealEnabled(enabled);
   });
 
-  bgImageCheckbox?.addEventListener('change', (e) => {
+  skyTimeSelect?.addEventListener('change', (e) => {
+    const phase = (e.target as HTMLSelectElement).value;
+    setSetting(K.SKY_TIME, phase);
+    applySkyTime(phase);
+  });
+
+  skyEnabledCheckbox?.addEventListener('change', (e) => {
     const enabled = (e.target as HTMLInputElement).checked;
-    setSetting(K.BG_IMAGE_ENABLED, enabled);
-    // 启用时恢复已缓存的壁纸（不重新下载 UHD 大图），禁用时隐藏
-    applyBgImageEnabled(enabled);
+    setSetting(K.SKY_ENABLED, enabled);
+    applySkyEnabled(enabled);
   });
 
   clearSWBtn?.addEventListener('click', clearSWCacheAndReload);
@@ -316,21 +351,40 @@ export function showSettingsPanel(): void {
             <span class="toggle-slider"></span>
           </label>
         </div>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <span class="setting-label"><i class="fas fa-cloud-sun"></i> 天空时间</span>
+            <span class="setting-desc">
+              渐变天空与云朵的时段，默认跟随真实时间
+              <span class="setting-hint" id="skyTimeHint">当前：自动</span>
+            </span>
+          </div>
+          <select id="skyTimeSelect" class="setting-select">
+            <option value="auto">自动</option>
+            <option value="dawn">黎明</option>
+            <option value="morning">清晨</option>
+            <option value="noon">正午</option>
+            <option value="afternoon">午后</option>
+            <option value="dusk">黄昏</option>
+            <option value="night">夜晚</option>
+          </select>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <span class="setting-label"><i class="fas fa-sun"></i> 天空背景</span>
+            <span class="setting-desc">关闭后回到纯色底，云朵与星空一并隐藏</span>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="skyEnabledCheckbox">
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
       </div>
 
       <div class="settings-group">
         <div class="group-header"><h3><i class="fas fa-cog"></i> 内容与数据</h3></div>
-
-        <div class="setting-item">
-          <div class="setting-info">
-            <span class="setting-label"><i class="fas fa-image"></i> 背景图片</span>
-            <span class="setting-desc">显示每日 Bing 壁纸作为背景</span>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="bgImageCheckbox">
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
 
         <div class="setting-item">
           <div class="setting-info">

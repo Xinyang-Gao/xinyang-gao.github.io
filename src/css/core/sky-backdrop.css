@@ -1,0 +1,185 @@
+/* ============================================
+   core/sky-backdrop.css
+   渐变天空背景：时间驱动配色 + 视差云朵 / 星空
+   所有颜色与位移变量由 /js/ui/sky-backdrop.ts 写入
+   ============================================ */
+
+#sky-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+
+  /* 滚动进度（px，无单位数值）与"离地进度"（0 → 1，越接近页脚越大） */
+  --sky-scroll: 0;
+  --sky-ground: 0;
+  /* 云朵配色与描边/填充浓度 */
+  --sky-cloud-color: #ffffff;
+  --sky-cloud-fill-opacity: 0.24;
+  --sky-cloud-stroke-opacity: 0.55;
+  /* 星空整体浓度（JS 平滑逼近，配合 canvas 绘制） */
+  --sky-star-alpha: 0;
+}
+
+#sky-backdrop.is-ready { opacity: 1; }
+#sky-backdrop.is-disabled { opacity: 0; }
+
+/* ---------- 天空开启时，让主卡片透出一点天色 ----------
+   正文容器是不透明的，天空原本只能在两侧窄边里露出来。
+   这里给主容器与个人卡片降一点不透明度：整页会随时间染上天空的色调
+   （清晨偏暖、正午偏蓝、黄昏偏橘），云朵则主要在留白处与滚动视差中被看见。
+   数值刻意压得很低，正文对比度不受影响。 */
+body.has-sky .container {
+  background: color-mix(in srgb, var(--surface-color-secondary) 88%, transparent);
+}
+body.has-sky .profile-card {
+  background: color-mix(in srgb, var(--surface-color) 90%, transparent);
+}
+
+/* ---------- 天空渐变（双图层交叉淡化） ---------- */
+.sky-gradient {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 1.1s ease;
+  background-image:
+    radial-gradient(130% 76% at 50% 104%, var(--sky-glow, transparent) 0%, transparent 62%),
+    linear-gradient(
+      180deg,
+      var(--sky-top, transparent) 0%,
+      var(--sky-mid, transparent) 52%,
+      var(--sky-bottom, transparent) 100%
+    );
+}
+.sky-gradient.is-active { opacity: 1; }
+
+/* 地平线附近的一层薄雾，让渐变与云朵之间有过渡 */
+.sky-haze {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 42%;
+  background: linear-gradient(to top, var(--sky-glow, transparent) 0%, transparent 100%);
+  opacity: 0.32;
+  pointer-events: none;
+}
+
+/* ---------- 星空 ---------- */
+.sky-stars-wrap {
+  position: absolute;
+  inset: -6% -4%;
+  opacity: calc(var(--sky-star-alpha) * (1 - var(--sky-ground)));
+  transform: translate3d(
+    0,
+    calc(var(--sky-scroll) * -0.022px - var(--sky-ground) * 26px),
+    0
+  );
+  will-change: transform, opacity;
+}
+.sky-stars {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ---------- 日月 ---------- */
+.sky-celestial-ground {
+  position: absolute;
+  inset: 0;
+  opacity: calc(1 - var(--sky-ground));
+  transform: translate3d(
+    0,
+    calc(var(--sky-scroll) * -0.035px - var(--sky-ground) * 44px),
+    0
+  );
+}
+.sky-celestial {
+  position: absolute;
+  left: var(--celestial-x, 50%);
+  top: var(--celestial-y, 50%);
+  width: var(--celestial-size, 86px);
+  height: var(--celestial-size, 86px);
+  margin-top: calc(var(--celestial-size, 86px) / -2);
+  margin-left: calc(var(--celestial-size, 86px) / -2);
+  color: var(--celestial-color, #fff);
+  opacity: 0;
+  transition: opacity 0.9s ease, left 0.9s ease, top 0.9s ease;
+}
+/* 光晕：比本体大一圈的径向渐变，日出日落时最浓 */
+.sky-celestial::before {
+  content: '';
+  position: absolute;
+  inset: -120%;
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--celestial-glow, transparent) 0%, transparent 68%);
+}
+.sky-celestial svg {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.sky-celestial svg circle,
+.sky-celestial svg path {
+  fill: currentColor;
+  fill-opacity: 0.2;
+  stroke: currentColor;
+  stroke-opacity: 0.75;
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+}
+
+/* ---------- 云朵 ---------- */
+/* 外层层负责视差与"接近地面"的退场，内层负责漂移与配色 —— 分开是为了
+   让滚动时的高频更新不撞上配色过渡（transition 只写在内层）。 */
+.sky-cloud-layer {
+  position: absolute;
+  inset: -12% -26% -36% -26%;
+  opacity: calc(var(--layer-opacity, 0.7) * (1 - var(--sky-ground)));
+  transform: translate3d(
+    0,
+    calc(var(--sky-scroll) * var(--layer-parallax, 0.1) * -1px - var(--sky-ground) * var(--layer-rise, 60px)),
+    0
+  );
+  filter: blur(var(--layer-blur, 0px));
+  will-change: transform, opacity;
+}
+
+.sky-cloud {
+  position: absolute;
+  color: var(--sky-cloud-color);
+  transition: color 0.9s ease;
+  animation: sky-cloud-drift var(--drift-duration, 90s) ease-in-out infinite alternate;
+  animation-delay: var(--drift-delay, 0s);
+}
+.sky-cloud svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  fill: currentColor;
+  fill-opacity: var(--sky-cloud-fill-opacity);
+  stroke: currentColor;
+  stroke-opacity: var(--sky-cloud-stroke-opacity);
+  stroke-width: 1.7;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+@keyframes sky-cloud-drift {
+  from { transform: translateX(-3%); }
+  to { transform: translateX(3%); }
+}
+
+/* ---------- 降低动效偏好：去掉漂移与视差，只留静态配色 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .sky-cloud { animation: none; }
+  .sky-cloud-layer,
+  .sky-stars-wrap,
+  .sky-celestial-ground {
+    transform: none;
+  }
+}

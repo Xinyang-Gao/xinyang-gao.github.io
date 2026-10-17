@@ -51,24 +51,8 @@ body::before {
   pointer-events: none;
 }
 
-/* Bing 壁纸层（加载完成后淡入） */
-#bg-image-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-  filter: blur(20px) var(--background-overlay-filter);
-  opacity: 0;
-  transition: opacity 0.6s ease, filter 3s ease;
-}
-#bg-image-overlay.active {
-  opacity: 1;
-  filter: blur(0) var(--background-overlay-filter);
-}
+/* 渐变天空层（#sky-backdrop，由 sky-backdrop.js 创建）
+   同样占据 z-index: -1，配色与云朵/星空样式见 core/sky-backdrop.css */
 
 /* ---------- 滚动条 ---------- */
 ::-webkit-scrollbar {

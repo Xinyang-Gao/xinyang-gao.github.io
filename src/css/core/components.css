@@ -572,19 +572,20 @@
   transition-duration: 0.5s;
 }
 
-.page-transition-exit {
-  animation: pageExit 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+/* ---------- 页面切换：卡片收缩 / 扩张 + 内容渐变 ----------
+   高度由 router.ts 以内联样式驱动（收缩 → 扩张），这里只负责：
+     1. 动画期间裁掉溢出内容（否则高度变小会露出下面的页脚）
+     2. 直接子元素的淡出 / 淡入
+   两者分开是为了内容不被缩放——缩放会把文字压扁，看着像整页被抽走。 */
+#router-view.is-page-morphing {
+  overflow: hidden;
 }
-.page-transition-enter {
-  animation: pageEnter 0.35s var(--transition-bounce) forwards;
+#router-view.is-page-morphing > * {
+  transition: opacity 0.22s ease, transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
 }
-@keyframes pageExit {
-  0% { opacity: 1; transform: scale(1); }
-  100% { opacity: 0; transform: scale(0.92); }
-}
-@keyframes pageEnter {
-  0% { opacity: 0; transform: scale(0.96); }
-  100% { opacity: 1; transform: scale(1); }
+#router-view.is-page-morphing.is-content-muted > * {
+  opacity: 0;
+  transform: translateY(-10px);
 }
 
 .draw-animation-paper {
@@ -903,6 +904,17 @@ body.custom-cursor-enabled .list-item { cursor: none; }
   font-size: 0.85rem;
   color: var(--text-secondary);
   line-height: 1.4;
+}
+/* 设置项里的实时状态行（如"当前：黄昏 · 18:30"） */
+.setting-hint {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  background: var(--tag-bg);
+  color: var(--tag-color);
+  font-size: var(--font-size-xs);
+  font-variant-numeric: tabular-nums;
 }
 
 /* 现代化 Toggle Switch */

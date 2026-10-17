@@ -813,6 +813,7 @@ class AggregatedGenerator(OutputGenerator):
     CORE_CSS_ORDER = (
         "core/variables.css",
         "core/base.css",
+        "core/sky-backdrop.css",
         "core/layout.css",
         "core/components.css",
     )

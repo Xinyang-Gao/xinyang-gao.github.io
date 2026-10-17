@@ -1,14 +1,10 @@
 // /js/core/app-initializer.ts
 // 应用启动编排器 + 全站导航后刷新入口
 
-import { CONFIG, IS_DEV, safeLocal, scheduleIdle, onNavigation } from '/js/core/core.js';
+import { CONFIG, IS_DEV, scheduleIdle, onNavigation } from '/js/core/core.js';
 import { Utils } from '/js/core/core.js';
 import { themeController } from '/js/core/theme-controller.js';
-import {
-  showBackgroundImage,
-  startSiteAgeUpdater,
-  updateFooterUpdateTime,
-} from '/js/core/page-runtime.js';
+import { startSiteAgeUpdater, updateFooterUpdateTime } from '/js/core/page-runtime.js';
 import {
   loadNavbar,
   loadFooter,
@@ -25,6 +21,7 @@ import { handleListItemClick } from '/js/ui/list-events.js';
 import { LoadingOverlayManager } from '/js/ui/loading-overlay-manager.js';
 import { dataService } from '/js/core/data-service.js';
 import { applyStoredSettings } from '/js/data/settings.js';
+import { initSkyBackdrop, refreshSkyBackdrop } from '/js/ui/sky-backdrop.js';
 import type { NavbarManager } from '/js/ui/navbar-manager.js';
 
 export class AppInitializer {
@@ -60,16 +57,8 @@ export class AppInitializer {
     ensureScrollReveal();
     themeController.init();
 
-    // 背景图延迟加载：尊重用户设置
-    // 用 showBackgroundImage 而非强制换图：已有壁纸时只恢复显示，避免重复下载
-    scheduleIdle(
-      () => {
-        if (this.isBgImageEnabled()) {
-          showBackgroundImage();
-        }
-      },
-      { timeout: 100 },
-    );
+    // 渐变天空：读本地设置后建 DOM，纯装饰不阻塞首屏
+    scheduleIdle(() => initSkyBackdrop(), { timeout: 100 });
   }
 
   // ---------- 阶段 2：页面骨架 ----------
@@ -188,6 +177,8 @@ export class AppInitializer {
       window.setTimeout(() => {
         initFooterStats().catch(console.warn);
         updateFooterUpdateTime().catch(console.warn);
+        // 页脚是异步插入的，文档高度变了才能算准"离地进度"
+        refreshSkyBackdrop();
       }, 100);
     });
   }
@@ -222,11 +213,6 @@ export class AppInitializer {
     });
   }
 
-  private static isBgImageEnabled(): boolean {
-    const stored = safeLocal.get(CONFIG.STORAGE_KEYS.BG_IMAGE_ENABLED);
-    return stored === null ? true : stored !== 'false';
-  }
-
   private static registerServiceWorkerByEnv(): void {
     if (!IS_DEV) {
       registerServiceWorker();
@@ -242,11 +228,6 @@ export class AppInitializer {
 
   private static addOptimizationLinks(): void {
     const head = document.head;
-
-    const preconnectBing = document.createElement('link');
-    preconnectBing.rel = 'preconnect';
-    preconnectBing.href = 'https://cn.bing.com';
-    head.appendChild(preconnectBing);
 
     const preconnectAPI = document.createElement('link');
     preconnectAPI.rel = 'preconnect';
