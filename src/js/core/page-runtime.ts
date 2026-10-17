@@ -41,11 +41,7 @@ export function startSiteAgeUpdater(siteBirth: Date): () => void {
       ageSpan.innerText = '……等等，结果是负数？？！';
       return;
     }
-    const totalSeconds = Math.floor(diff / 1000);
-    const days = Math.floor(totalSeconds / 86400);
-    const hours = Math.floor((totalSeconds % 86400) / 3600);
-    const minutes = Math.floor((totalSeconds % 3600) / 60);
-    const seconds = totalSeconds % 60;
+    const { days, hours, minutes, seconds } = Utils.getSiteAgeParts(siteBirth);
     const pad = (n: number) => n.toString().padStart(2, '0');
     ageSpan.innerText = `${days}天${pad(hours)}小时${pad(minutes)}分钟${pad(seconds)}秒`;
   };

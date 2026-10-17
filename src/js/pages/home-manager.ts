@@ -1,7 +1,7 @@
 // /js/pages/home-manager.ts
 import { PageBase } from '/js/core/page-manager.js';
 import { dataService } from '/js/core/data-service.js';
-import { Utils } from '/js/core/core.js';
+import { CONFIG, Utils } from '/js/core/core.js';
 import { fetchAndReplaceContent } from '/js/router/router.js';
 import { clearGroundContent, setGroundContent } from '/js/ui/ground.js';
 
@@ -68,6 +68,7 @@ export class HomePageManager extends PageBase {
     this.bindGlobalNavigateEvents();
     this.startGreetingUpdater();
     this.startLiveClock();
+    this.startUptime();
     this.setupReveal();
     this.bindQuoteRefresh();
     // 初始加载一条名言（必须 catch：否则异常会变成未处理的 Promise 拒绝）
@@ -271,6 +272,22 @@ export class HomePageManager extends PageBase {
       }
     };
     render();
+    const timer = setInterval(render, 1000);
+    this.stack.addInterval(timer);
+  }
+
+  /* ---------- 站点已运行时间 ---------- */
+  private startUptime(): void {
+    const el = document.getElementById('home-site-age');
+    if (!el) return;
+
+    const pad = (n: number): string => String(n).padStart(2, '0');
+    const render = (): void => {
+      const { days, hours, minutes, seconds } = Utils.getSiteAgeParts(CONFIG.SITE_BIRTH);
+      el.textContent = `${days} 天 ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+    };
+    render();
+    // 与页脚共用同一算法，但这里自己计时：抬头区要在首页可见时每秒跳
     const timer = setInterval(render, 1000);
     this.stack.addInterval(timer);
   }

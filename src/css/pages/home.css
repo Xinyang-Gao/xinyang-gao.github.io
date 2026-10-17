@@ -17,15 +17,20 @@
 
 /* 统一的三段高度：优先 svh（移动端地址栏收起时不跳） */
 .home-sky,
-.home-air,
-.home-ground {
+.home-air {
   min-height: 100vh;
+}
+/* 第三屏刻意比一屏矮：一言与地面同屏可见，才是"悬浮在地面上空" */
+.home-ground {
+  min-height: clamp(300px, 38vh, 460px);
 }
 @supports (height: 100svh) {
   .home-sky,
-  .home-air,
-  .home-ground {
+  .home-air {
     min-height: 100svh;
+  }
+  .home-ground {
+    min-height: clamp(300px, 38svh, 460px);
   }
 }
 
@@ -51,10 +56,10 @@
 
 /* 时间：全屏最大的元素，等宽 + 细字重，像仪表盘 */
 .headline-clock {
-  margin: 0 0 clamp(10px, 2vh, 20px);
+  margin: 0 0 clamp(14px, 2.6vh, 26px);
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: clamp(6px, 1.2vh, 12px);
 }
 .clock-time {
   display: block;
@@ -67,13 +72,27 @@
   color: var(--text-color);
   text-shadow: var(--sky-text-shadow);
 }
-.clock-date {
-  display: block;
+/* 日期 · 已运行时间：一行等宽小字，用竖线分隔，是时钟的"副刻度" */
+.clock-meta {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0 clamp(6px, 1.4vw, 12px);
   font-family: var(--font-mono);
-  font-size: clamp(0.72rem, 1.6vw, 0.92rem);
-  letter-spacing: 0.14em;
+  font-size: clamp(0.7rem, 1.5vw, 0.88rem);
+  letter-spacing: 0.1em;
   color: var(--text-secondary);
   text-shadow: var(--sky-text-shadow);
+}
+.clock-date { white-space: nowrap; }
+.meta-sep { opacity: 0.55; }
+.clock-uptime { white-space: nowrap; }
+/* 运行时间的数字是这行的重点，提亮并给等宽数字对齐 */
+.uptime-value {
+  color: var(--text-color);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
 }
 
 /* 站名：次之 */
@@ -88,18 +107,18 @@
 .headline-name {
   display: block;
   font-family: var(--font-display);
-  font-size: clamp(1.3rem, 3.6vw, 2.1rem);
+  font-size: clamp(1.15rem, 3vw, 1.75rem);
   font-weight: 700;
-  letter-spacing: 0.03em;
-  line-height: 1.2;
+  letter-spacing: 0.06em;
+  line-height: 1.25;
   color: var(--text-color);
   text-shadow: var(--sky-text-shadow);
 }
 .headline-en {
   display: block;
-  margin-top: 5px;
+  margin-top: 6px;
   font-family: var(--font-mono);
-  font-size: clamp(0.64rem, 1.4vw, 0.8rem);
+  font-size: clamp(0.6rem, 1.3vw, 0.76rem);
   font-weight: 400;
   letter-spacing: 0.17em;
   text-transform: uppercase;
@@ -109,7 +128,11 @@
 
 /* 欢迎语：再次，主题色点缀 */
 .headline-greeting {
-  margin: clamp(6px, 1.4vh, 16px) 0 0;
+  margin: clamp(10px, 1.8vh, 20px) auto 0;
+  padding-top: clamp(10px, 1.8vh, 20px);
+  /* 一道细分隔线：把"站点信息"和"对你的问候"分成两层 */
+  border-top: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+  max-width: min(420px, 84%);
   font-size: clamp(0.85rem, 2vw, 1.02rem);
   font-weight: 600;
   letter-spacing: 0.08em;
@@ -120,11 +143,12 @@
 /* ============================================
    第二屏：半空 —— 统计与标签悬浮在半空中
    ============================================ */
+/* 内容在"半空"里略微偏下：既保留悬浮感，又把与下一屏的间距压下来 */
 .home-air {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: clamp(32px, 9vh, 110px) clamp(14px, 4vw, 48px);
+  padding: clamp(80px, 15vh, 170px) clamp(14px, 4vw, 48px) clamp(14px, 2vh, 30px);
 }
 
 .air-float {
@@ -310,13 +334,13 @@
 /* ============================================
    第三屏：地面 —— 每日一言悬浮在地面上空
    ============================================ */
-/* 一言悬浮在"地面上空"：整屏内容贴底，与地面只留一小段呼吸位，
-   不再出现"一整屏的空白把一言和地面隔开" */
+/* 一言悬浮在"地面上空"：这一屏不再占满一整屏，内容靠上，
+   于是"半空 → 一言 → 地面"三段首尾相接，中间只在百来像素的呼吸位 */
 .home-ground {
   display: flex;
-  align-items: flex-end;
+  align-items: flex-start;
   justify-content: center;
-  padding: clamp(40px, 12vh, 140px) clamp(14px, 4vw, 48px) clamp(14px, 3vh, 34px);
+  padding: clamp(26px, 4vh, 52px) clamp(14px, 4vw, 48px) clamp(12px, 2vh, 26px);
 }
 
 .quote-float {
@@ -436,6 +460,8 @@
 @media (max-width: 480px) {
   .home-sky { padding-inline: 18px; }
   .air-float { padding: 18px 16px; }
+  /* 小屏上"半空"那一块本身就快占满一屏，间距再按 vh 算就太挤了，给个固定呼吸位 */
+  .home-ground { padding-top: 44px; }
   .quote-float { padding-left: 40px; }
   .quote-mark { left: -30px; font-size: 1.3rem; }
 }

@@ -7,11 +7,14 @@ import { themeController, type ThemeMode } from '/js/core/theme-controller.js';
 import { showDetailDialog } from '/js/ui/detail-dialog.js';
 import {
   getSkyPhase,
-  getSkyStatusText,
+  getSkyWeather,
+  getSkyWeatherText,
   isSkyEnabled,
   setSkyEnabled,
   setSkyPhase,
+  setSkyWeather,
   type SkyPhase,
+  type SkyWeather,
 } from '/js/ui/sky-backdrop.js';
 
 const K = CONFIG.STORAGE_KEYS;
@@ -24,7 +27,8 @@ type SettingKey =
   | typeof K.FONT_SCALE
   | typeof K.REVEAL_ENABLED
   | typeof K.SKY_TIME
-  | typeof K.SKY_ENABLED;
+  | typeof K.SKY_ENABLED
+  | typeof K.SKY_WEATHER;
 
 // ==================== 通用读写（唯一出口） ====================
 export function getSetting(
@@ -151,6 +155,16 @@ function applySkyTime(phase: string): void {
   syncSkyHint();
 }
 
+/** 应用天空天气（晴 / 多云 / 雨 / 雷暴） */
+function applySkyWeather(weather: string): void {
+  const valid: SkyWeather = isSkyWeather(weather) ? weather : 'clear';
+  setSkyWeather(valid);
+
+  const select = document.getElementById('skyWeatherSelect') as HTMLSelectElement | null;
+  if (select) select.value = valid;
+  syncSkyHint();
+}
+
 /** 应用天空背景总开关（关掉后回到纯色底） */
 function applySkyEnabled(enabled: boolean): void {
   setSkyEnabled(enabled);
@@ -162,7 +176,11 @@ function applySkyEnabled(enabled: boolean): void {
 /** 面板里"当前：xx"的实时说明 */
 function syncSkyHint(): void {
   const hint = document.getElementById('skyTimeHint');
-  if (hint) hint.textContent = `当前：${getSkyStatusText()}`;
+  if (hint) hint.textContent = `当前：${getSkyWeatherText()}`;
+}
+
+function isSkyWeather(value: string): value is SkyWeather {
+  return value === 'clear' || value === 'cloudy' || value === 'rain' || value === 'storm';
 }
 
 function isSkyPhase(value: string): value is SkyPhase {
@@ -200,8 +218,9 @@ export function applyStoredSettings(): void {
   const reveal = isEnabled(K.REVEAL_ENABLED, true);
   applyRevealEnabled(reveal);
 
-  // 4. 天空背景（时段 + 总开关）
+  // 4. 天空背景（时段 + 天气 + 总开关）
   applySkyTime(String(getSetting(K.SKY_TIME, 'auto')));
+  applySkyWeather(String(getSetting(K.SKY_WEATHER, 'clear')));
   applySkyEnabled(isEnabled(K.SKY_ENABLED, true));
 }
 
@@ -215,6 +234,7 @@ export function bindSettingsControls(container: HTMLElement): void {
   const fontScaleSelect = container.querySelector('#fontScaleSelect') as HTMLSelectElement | null;
   const revealCheckbox = container.querySelector('#revealCheckbox') as HTMLInputElement | null;
   const skyTimeSelect = container.querySelector('#skyTimeSelect') as HTMLSelectElement | null;
+  const skyWeatherSelect = container.querySelector('#skyWeatherSelect') as HTMLSelectElement | null;
   const skyEnabledCheckbox = container.querySelector(
     '#skyEnabledCheckbox',
   ) as HTMLInputElement | null;
@@ -241,6 +261,9 @@ export function bindSettingsControls(container: HTMLElement): void {
   }
   if (skyTimeSelect) {
     skyTimeSelect.value = getSkyPhase();
+  }
+  if (skyWeatherSelect) {
+    skyWeatherSelect.value = getSkyWeather();
   }
   if (skyEnabledCheckbox) {
     skyEnabledCheckbox.checked = isSkyEnabled();
@@ -286,6 +309,12 @@ export function bindSettingsControls(container: HTMLElement): void {
     const phase = (e.target as HTMLSelectElement).value;
     setSetting(K.SKY_TIME, phase);
     applySkyTime(phase);
+  });
+
+  skyWeatherSelect?.addEventListener('change', (e) => {
+    const weather = (e.target as HTMLSelectElement).value;
+    setSetting(K.SKY_WEATHER, weather);
+    applySkyWeather(weather);
   });
 
   skyEnabledCheckbox?.addEventListener('change', (e) => {
@@ -368,6 +397,21 @@ export function showSettingsPanel(): void {
             <option value="afternoon">午后</option>
             <option value="dusk">黄昏</option>
             <option value="night">夜晚</option>
+          </select>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <span class="setting-label"><i class="fas fa-cloud-showers-heavy"></i> 天空天气</span>
+            <span class="setting-desc">
+              晴天、多云、雨天与雷暴：云量、雨势、闪电与天色各不相同
+            </span>
+          </div>
+          <select id="skyWeatherSelect" class="setting-select">
+            <option value="clear">晴天</option>
+            <option value="cloudy">多云</option>
+            <option value="rain">雨天</option>
+            <option value="storm">雷暴</option>
           </select>
         </div>
 

@@ -22,6 +22,11 @@
   --sky-cloud-stroke-opacity: 0.55;
   /* 星空整体浓度（JS 平滑逼近，配合 canvas 绘制） */
   --sky-star-alpha: 0;
+  /* 地平线雾气浓度（阴雨天更浓，由 JS 按天气写入） */
+  --sky-haze-opacity: 0.32;
+  /* 闪电：横向位置与缩放，每次打闪由 JS 随机化 */
+  --bolt-x: 42%;
+  --bolt-scale: 1;
 }
 
 #sky-backdrop.is-ready { opacity: 1; }
@@ -64,7 +69,8 @@ body.has-sky .profile-card {
   bottom: 0;
   height: 42%;
   background: linear-gradient(to top, var(--sky-glow, transparent) 0%, transparent 100%);
-  opacity: 0.32;
+  opacity: var(--sky-haze-opacity, 0.32);
+  transition: opacity 0.9s ease;
   pointer-events: none;
 }
 
@@ -172,6 +178,98 @@ body.has-sky .profile-card {
 @keyframes sky-cloud-drift {
   from { transform: translateX(-3%); }
   to { transform: translateX(3%); }
+}
+
+/* ---------- 云量分档：晴 → 多云 → 雨 → 雷暴 ----------
+   每朵云带 data-min-weather（1 晴就有 / 2 多云起 / 3 雨起 / 4 仅雷暴），
+   这里纯靠 CSS 显隐切换档位，JS 不必重建 DOM。 */
+.sky-backdrop[data-weather='clear'] .sky-cloud:not([data-min-weather='1']),
+.sky-backdrop[data-weather='cloudy'] .sky-cloud[data-min-weather='3'],
+.sky-backdrop[data-weather='cloudy'] .sky-cloud[data-min-weather='4'],
+.sky-backdrop[data-weather='rain'] .sky-cloud[data-min-weather='4'] {
+  display: none;
+}
+
+/* ---------- 雨 ---------- */
+.sky-rain {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* ---------- 闪电 ---------- */
+.sky-lightning {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+/* 整屏白闪：两亮一暗的快速抽搐，比单次淡入更像真实闪电 */
+.sky-lightning-flash {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  background: radial-gradient(
+    120% 80% at var(--bolt-x) 12%,
+    rgba(255, 255, 255, 0.92) 0%,
+    rgba(226, 236, 255, 0.5) 34%,
+    transparent 72%
+  );
+}
+.sky-lightning-bolt {
+  position: absolute;
+  left: var(--bolt-x);
+  top: -6%;
+  width: 58px;
+  height: 46%;
+  transform: scale(var(--bolt-scale));
+  transform-origin: top center;
+  opacity: 0;
+  overflow: visible;
+}
+.sky-lightning-bolt path {
+  fill: rgba(255, 255, 255, 0.9);
+  stroke: rgba(214, 230, 255, 0.95);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
+}
+
+.sky-backdrop.is-flashing .sky-lightning-flash {
+  animation: skyFlash 0.62s ease-out;
+}
+.sky-backdrop.is-flashing .sky-lightning-bolt {
+  animation: skyBolt 0.62s ease-out;
+}
+/* 打闪的一瞬间云层被照亮 */
+.sky-backdrop.is-flashing .sky-cloud-layer {
+  animation: skyCloudLit 0.62s ease-out;
+}
+
+@keyframes skyFlash {
+  0%   { opacity: 0; }
+  5%   { opacity: 0.9; }
+  11%  { opacity: 0.12; }
+  17%  { opacity: 0.72; }
+  28%  { opacity: 0.06; }
+  38%  { opacity: 0.34; }
+  100% { opacity: 0; }
+}
+@keyframes skyBolt {
+  0%   { opacity: 0; }
+  5%   { opacity: 1; }
+  12%  { opacity: 0.15; }
+  18%  { opacity: 0.95; }
+  34%  { opacity: 0; }
+  100% { opacity: 0; }
+}
+@keyframes skyCloudLit {
+  0%   { filter: blur(var(--layer-blur, 0px)) brightness(1); }
+  6%   { filter: blur(var(--layer-blur, 0px)) brightness(1.75); }
+  14%  { filter: blur(var(--layer-blur, 0px)) brightness(1.05); }
+  20%  { filter: blur(var(--layer-blur, 0px)) brightness(1.5); }
+  100% { filter: blur(var(--layer-blur, 0px)) brightness(1); }
 }
 
 /* ---------- 降低动效偏好：去掉漂移与视差，只留静态配色 ---------- */

@@ -59,6 +59,8 @@ export const CONFIG = {
     SKY_TIME: 'settings_sky_time',
     /** 渐变天空背景总开关（云朵 / 星空一并关闭） */
     SKY_ENABLED: 'settings_sky_enabled',
+    /** 天空天气：clear | cloudy | rain | storm */
+    SKY_WEATHER: 'settings_sky_weather',
   } as const,
   API: {
     WORKS: '/json/works.json',
@@ -178,6 +180,26 @@ export function dispatchNavigation(detail: NavigationDetail): void {
 export class Utils {
   static getUrlParam(name: string): string | null {
     return new URLSearchParams(window.location.search).get(name);
+  }
+
+  /**
+   * 站点自诞生以来运行了多久（按 CONFIG.SITE_BIRTH 计算）。
+   * 页脚与首页抬头区共用同一份计算，避免两处格式对不上。
+   */
+  static getSiteAgeParts(birth: Date): {
+    days: number;
+    hours: number;
+    minutes: number;
+    seconds: number;
+  } {
+    const diff = Date.now() - birth.getTime();
+    const total = Math.max(0, Math.floor(diff / 1000));
+    return {
+      days: Math.floor(total / 86400),
+      hours: Math.floor((total % 86400) / 3600),
+      minutes: Math.floor((total % 3600) / 60),
+      seconds: total % 60,
+    };
   }
 
   static getGreetingMessage(): string {

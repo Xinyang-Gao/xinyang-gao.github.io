@@ -11,6 +11,98 @@ import { scrollDispatcher } from '/js/core/scroll-dispatcher.js';
 /** 设置面板可选的天空时段（auto = 跟随真实时间连续变化） */
 export type SkyPhase = 'auto' | 'dawn' | 'morning' | 'noon' | 'afternoon' | 'dusk' | 'night';
 
+/** 天气：晴（默认）→ 多云 → 雨 → 雷暴，云量、雨势、天色逐级递进 */
+export type SkyWeather = 'clear' | 'cloudy' | 'rain' | 'storm';
+
+/**
+ * 一份天气对天空的全部影响。
+ *
+ * 设计原则：天气不另起一套配色，而是在"时段配色"之上做后处理 ——
+ * 这样"雨天的黄昏"仍然是黄昏，只是被云压暗、抽掉了一部分饱和度，
+ * 不会出现"切到雨天就变成另一套主题"的割裂感。
+ */
+interface WeatherProfile {
+  label: string;
+  /** 天色向中性阴云灰混合的比例 */
+  overcast: number;
+  /** 整体亮度系数（乌云压顶时压暗） */
+  dim: number;
+  /** 云量档位：1 最少 → 4 最多，决定显示到第几批云 */
+  clouds: number;
+  /** 云朵颜色压暗程度（雨云更沉） */
+  cloudDim: number;
+  /** 云朵填充浓度倍率（雨云更厚实） */
+  cloudFill: number;
+  /** 雨势 0 → 1，0 表示无雨 */
+  rain: number;
+  /** 是否有闪电 */
+  lightning: boolean;
+  /** 日月可见度（阴雨天被云遮住） */
+  celestial: number;
+  /** 星星可见度（阴雨天看不到星） */
+  star: number;
+  /** 地平线雾气浓度倍率 */
+  haze: number;
+}
+
+const WEATHER_PROFILES: Record<SkyWeather, WeatherProfile> = {
+  clear: {
+    label: '晴',
+    overcast: 0,
+    dim: 1,
+    clouds: 1,
+    cloudDim: 0,
+    cloudFill: 1,
+    rain: 0,
+    lightning: false,
+    celestial: 1,
+    star: 1,
+    haze: 1,
+  },
+  cloudy: {
+    label: '多云',
+    overcast: 0.24,
+    dim: 0.97,
+    clouds: 2,
+    cloudDim: 0.16,
+    cloudFill: 1.3,
+    rain: 0,
+    lightning: false,
+    celestial: 0.55,
+    star: 0.4,
+    haze: 1.2,
+  },
+  rain: {
+    label: '雨',
+    overcast: 0.44,
+    dim: 0.87,
+    clouds: 3,
+    cloudDim: 0.34,
+    cloudFill: 1.55,
+    rain: 0.6,
+    lightning: false,
+    celestial: 0.16,
+    star: 0.1,
+    haze: 1.55,
+  },
+  storm: {
+    label: '雷暴',
+    overcast: 0.6,
+    dim: 0.74,
+    clouds: 4,
+    cloudDim: 0.48,
+    cloudFill: 1.75,
+    rain: 1,
+    lightning: true,
+    celestial: 0.06,
+    star: 0.03,
+    haze: 1.85,
+  },
+};
+
+/** 阴云灰：所有天气的"抽色"都朝这个中性偏冷的方向靠 */
+const OVERCAST_GRAY: RGB = [104, 112, 128];
+
 type RGB = readonly [number, number, number];
 
 /** 一天中的关键帧；小时数在 0–24 上线性插值，首尾同色以闭合循环 */
@@ -225,7 +317,7 @@ interface CloudLayerConfig {
 const CLOUD_LAYERS: readonly CloudLayerConfig[] = [
   {
     depth: 'far',
-    count: 4,
+    count: 9,
     width: [90, 150],
     top: [4, 38],
     parallax: 0.05,
@@ -236,7 +328,7 @@ const CLOUD_LAYERS: readonly CloudLayerConfig[] = [
   },
   {
     depth: 'mid',
-    count: 3,
+    count: 7,
     width: [160, 250],
     top: [10, 46],
     parallax: 0.1,
@@ -247,7 +339,7 @@ const CLOUD_LAYERS: readonly CloudLayerConfig[] = [
   },
   {
     depth: 'near',
-    count: 3,
+    count: 5,
     width: [260, 400],
     top: [16, 58],
     parallax: 0.18,
@@ -273,6 +365,9 @@ const CLOUD_PATHS: readonly { viewBox: string; d: string }[] = [
     d: 'M7 26 Q2 26 3 21 Q4 16 10 16 Q13 9 21 10 Q28 4 35 9 Q43 6 47 13 Q55 12 58 18 Q64 18 64 23 Q65 27 58 27 Z',
   },
 ];
+
+/** 闪电：一条主干 + 两个分叉，简笔勾线的风格与云朵一致 */
+const LIGHTNING_PATH = 'M32 4 L18 78 L34 76 L14 132 L30 128 L8 196 L26 118 L12 120 L28 66 L14 68 Z';
 
 const SUN_SVG = `<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="11" /></svg>`;
 const MOON_SVG = `<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M23 5 A16 16 0 1 0 37 21 A13 13 0 1 1 23 5 Z" /></svg>`;
@@ -326,6 +421,18 @@ function mulberry32(seed: number): () => number {
   };
 }
 
+/**
+ * 第 i 朵云（共 count 朵）属于哪一档：1 晴就有、2 多云起、3 雨起、4 仅雷暴。
+ * 靠前的云永远在场，靠后的随天气加重逐步补上。
+ */
+function weatherTier(i: number, count: number): number {
+  const rank = count > 1 ? i / (count - 1) : 0;
+  if (rank <= 0.36) return 1;
+  if (rank <= 0.62) return 2;
+  if (rank <= 0.84) return 3;
+  return 4;
+}
+
 function prefersReducedMotion(): boolean {
   return typeof window.matchMedia === 'function'
     ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -342,18 +449,42 @@ function resolveHour(phase: SkyPhase): number {
 }
 
 interface ResolvedSky {
-  top: string;
-  mid: string;
-  bottom: string;
-  glow: string;
-  cloud: string;
+  top: RGB;
+  mid: RGB;
+  bottom: RGB;
+  glow: RGB;
+  cloud: RGB;
   cloudFill: number;
   cloudStroke: number;
   star: number;
   starTint: RGB;
 }
 
-function resolveSky(hour: number, theme: Theme): ResolvedSky {
+/**
+ * 在时段配色之上叠加天气：向阴云灰混合（抽掉饱和度）+ 整体压暗。
+ * 先算时段再算天气，所以"雨天的黄昏"仍然是黄昏的色相，只是沉下去了。
+ */
+function applyWeather(base: ResolvedSky, weather: SkyWeather): ResolvedSky {
+  const w = WEATHER_PROFILES[weather];
+  const overcast = (c: RGB): RGB => mix(c, OVERCAST_GRAY, w.overcast);
+  const dim = (c: RGB, k = w.dim): RGB => [c[0] * k, c[1] * k, c[2] * k];
+  const sky = (c: RGB): RGB => dim(overcast(c));
+
+  return {
+    top: sky(base.top),
+    mid: sky(base.mid),
+    bottom: sky(base.bottom),
+    glow: sky(base.glow),
+    // 云比天空更"吃"天气：雨云要明显沉下去，但别沉成纯黑
+    cloud: dim(overcast(base.cloud), 1 - w.cloudDim),
+    cloudFill: Math.min(0.92, base.cloudFill * w.cloudFill),
+    cloudStroke: Math.min(1, base.cloudStroke * (1 + w.overcast * 0.5)),
+    star: base.star * w.star,
+    starTint: base.starTint,
+  };
+}
+
+function resolveSky(hour: number, theme: Theme, weather: SkyWeather): ResolvedSky {
   const h = ((hour % 24) + 24) % 24;
 
   let i = 0;
@@ -371,18 +502,21 @@ function resolveSky(hour: number, theme: Theme): ResolvedSky {
   const tintCloud = (hex: string): RGB => shadeColor(hexToRgb(hex), cloudShade);
   const blend = (x: string, y: string): RGB => mix(tint(x), tint(y), t);
 
-  return {
-    top: toCss(blend(a.top, b.top)),
-    mid: toCss(blend(a.mid, b.mid)),
-    bottom: toCss(blend(a.bottom, b.bottom)),
-    // 地平线辉光带一点透明度，直接叠在渐变上不至于糊成一块
-    glow: toCss(blend(a.glow, b.glow), 0.6),
-    cloud: toCss(mix(tintCloud(a.cloud), tintCloud(b.cloud), t)),
-    cloudFill: lerp(a.cloudFill, b.cloudFill, t),
-    cloudStroke: lerp(a.cloudStroke, b.cloudStroke, t),
-    star: lerp(a.star, b.star, t),
-    starTint: mix(hexToRgb(a.starTint), hexToRgb(b.starTint), t),
-  };
+  return applyWeather(
+    {
+      top: blend(a.top, b.top),
+      mid: blend(a.mid, b.mid),
+      bottom: blend(a.bottom, b.bottom),
+      // 地平线辉光带一点透明度，直接叠在渐变上不至于糊成一块
+      glow: blend(a.glow, b.glow),
+      cloud: mix(tintCloud(a.cloud), tintCloud(b.cloud), t),
+      cloudFill: lerp(a.cloudFill, b.cloudFill, t),
+      cloudStroke: lerp(a.cloudStroke, b.cloudStroke, t),
+      star: lerp(a.star, b.star, t),
+      starTint: mix(hexToRgb(a.starTint), hexToRgb(b.starTint), t),
+    },
+    weather,
+  );
 }
 
 /** 日月：沿一条弧线东升西落，日出日落时贴着地平线（最出片的位置） */
@@ -422,6 +556,15 @@ interface Star {
   halo: boolean;
 }
 
+/** 雨滴：斜着落下，长度与速度成正比（快的雨丝更长） */
+interface Drop {
+  x: number;
+  y: number;
+  len: number;
+  speed: number;
+  alpha: number;
+}
+
 // ==================== 天空控制器 ====================
 
 class SkyBackdrop {
@@ -433,11 +576,22 @@ class SkyBackdrop {
   private stars: Star[] = [];
   private sunEl: HTMLElement | null = null;
   private moonEl: HTMLElement | null = null;
+  /** 雨：独立 canvas，与星空分开便于各自控制强度 */
+  private rainCanvas: HTMLCanvasElement | null = null;
+  private rainCtx: CanvasRenderingContext2D | null = null;
+  private drops: Drop[] = [];
+  /** 闪电：整屏白闪 + 一道分叉的折线 */
+  private lightningEl: HTMLElement | null = null;
+  private lightningTimer: ReturnType<typeof setTimeout> | null = null;
 
   private phase: SkyPhase = 'auto';
+  private weather: SkyWeather = 'clear';
   private enabled = true;
   private theme: Theme = 'light';
 
+  /** 当前雨势 0 → 1，平滑逼近目标，切换天气时不会突然出现/消失 */
+  private rainAlpha = 0;
+  private rainTarget = 0;
   private starAlpha = 0;
   private starTarget = 0;
   private starTint: RGB = [231, 237, 255];
@@ -459,6 +613,7 @@ class SkyBackdrop {
     this.started = true;
 
     this.phase = this.readPhase();
+    this.weather = this.readWeather();
     this.enabled = this.readEnabled();
     this.theme = themeController.getTheme();
 
@@ -483,6 +638,21 @@ class SkyBackdrop {
     return `${PHASE_LABEL[this.phase]} · ${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
   }
 
+  getWeather(): SkyWeather {
+    return this.weather;
+  }
+
+  setWeather(weather: SkyWeather): void {
+    // 平滑逼近依赖 rAF：先改再 apply，循环条件会自动补上/停掉
+    this.weather = weather;
+    this.apply(false);
+  }
+
+  /** 设置面板里"天空"那行的说明：时段 + 天气 */
+  getWeatherText(): string {
+    return `${this.getStatusText()} · ${WEATHER_PROFILES[this.weather].label}`;
+  }
+
   setPhase(phase: SkyPhase): void {
     this.phase = phase;
     this.apply(false);
@@ -497,6 +667,8 @@ class SkyBackdrop {
     if (!enabled) {
       this.starAlpha = 0;
       this.starTarget = 0;
+      this.rainAlpha = 0;
+      this.rainTarget = 0;
     }
     this.apply(false);
     this.syncStarLoop();
@@ -519,6 +691,8 @@ class SkyBackdrop {
     this.autoTimer = null;
     if (this.resizeTimer) clearTimeout(this.resizeTimer);
     this.resizeTimer = null;
+    if (this.lightningTimer) clearTimeout(this.lightningTimer);
+    this.lightningTimer = null;
     this.unsubscribeScroll?.();
     this.unsubscribeScroll = null;
     this.unsubscribeTheme?.();
@@ -574,7 +748,22 @@ class SkyBackdrop {
     haze.className = 'sky-haze';
     root.appendChild(haze);
 
+    // 雨在云之下、雾之上：雨丝从云底落下来
+    const rainCanvas = document.createElement('canvas');
+    rainCanvas.className = 'sky-rain';
+    root.appendChild(rainCanvas);
+    this.rainCanvas = rainCanvas;
+    this.rainCtx = rainCanvas.getContext('2d');
+
     this.buildClouds(root);
+
+    // 闪电盖在最上面：一瞬间的整屏白 + 折线
+    const lightning = document.createElement('div');
+    lightning.className = 'sky-lightning';
+    lightning.innerHTML = `<span class="sky-lightning-flash"></span>
+      <svg class="sky-lightning-bolt" viewBox="0 0 60 200" aria-hidden="true"><path d="${LIGHTNING_PATH}" /></svg>`;
+    root.appendChild(lightning);
+    this.lightningEl = lightning;
 
     document.body.appendChild(root);
     this.root = root;
@@ -594,10 +783,13 @@ class SkyBackdrop {
       el.style.setProperty('--layer-opacity', String(layer.opacity));
       el.style.setProperty('--layer-blur', `${layer.blur}px`);
 
-      const count = Math.max(2, Math.round(layer.count * (narrow ? 0.7 : 1)));
+      const count = Math.max(3, Math.round(layer.count * (narrow ? 0.7 : 1)));
       for (let i = 0; i < count; i += 1) {
         const cloud = document.createElement('div');
         cloud.className = 'sky-cloud';
+        // 分批出场：朵云按序位分配"从哪一档天气开始出现"，
+        // 于是晴天疏、多云中、雨天密、雷暴乌云压顶 —— 无需重建 DOM，纯 CSS 显隐。
+        cloud.dataset.minWeather = String(weatherTier(i, count));
         const width = Math.round(lerp(layer.width[0], layer.width[1], rand()) * scale);
         const left = lerp(-6, 92, rand());
         const top = lerp(layer.top[0], layer.top[1], rand());
@@ -617,16 +809,49 @@ class SkyBackdrop {
   }
 
   private resizeCanvas(): void {
-    const canvas = this.canvas;
-    if (!canvas) return;
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const w = window.innerWidth;
     const h = window.innerHeight;
-    canvas.width = Math.round(w * dpr);
-    canvas.height = Math.round(h * dpr);
-    const ctx = this.ctx;
-    if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const canvas = this.canvas;
+    if (canvas) {
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      const ctx = this.ctx;
+      if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    const rainCanvas = this.rainCanvas;
+    if (rainCanvas) {
+      rainCanvas.width = Math.round(w * dpr);
+      rainCanvas.height = Math.round(h * dpr);
+      const ctx = this.rainCtx;
+      if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
     this.buildStars(w, h);
+    this.buildDrops(w, h);
+  }
+
+  /**
+   * 雨滴池按最大雨势（雷暴）一次性建好，绘制时只取前 N 个 ——
+   * 切换天气不必重建粒子，也不会因为反复分配造成 GC 抖动。
+   */
+  private buildDrops(w: number, h: number): void {
+    const rand = mulberry32(20261017);
+    const count = Math.min(320, Math.max(90, Math.round((w * h) / 5200)));
+    const drops: Drop[] = [];
+    for (let i = 0; i < count; i += 1) {
+      const speed = lerp(620, 1250, rand());
+      drops.push({
+        x: rand() * (w + 260) - 130, // 左右多铺一些，斜风才不会在边缘露空
+        y: rand() * h,
+        len: lerp(10, 26, rand()),
+        speed,
+        alpha: lerp(0.18, 0.52, rand()),
+      });
+    }
+    this.drops = drops;
   }
 
   private buildStars(w: number, h: number): void {
@@ -659,25 +884,29 @@ class SkyBackdrop {
     const theme = themeController.getTheme();
     this.theme = theme;
 
-    const sky = resolveSky(hour, theme);
+    const sky = resolveSky(hour, theme, this.weather);
+    const profile = WEATHER_PROFILES[this.weather];
 
     // 渐变：写入非当前层，再交叉淡化
     const next = this.gradients[this.activeGradient === 0 ? 1 : 0];
     if (next) {
-      next.style.setProperty('--sky-top', sky.top);
-      next.style.setProperty('--sky-mid', sky.mid);
-      next.style.setProperty('--sky-bottom', sky.bottom);
-      next.style.setProperty('--sky-glow', sky.glow);
+      next.style.setProperty('--sky-top', toCss(sky.top));
+      next.style.setProperty('--sky-mid', toCss(sky.mid));
+      next.style.setProperty('--sky-bottom', toCss(sky.bottom));
+      next.style.setProperty('--sky-glow', toCss(sky.glow, 0.6));
       next.classList.add('is-active');
       const prev = this.gradients[this.activeGradient];
       prev?.classList.remove('is-active');
       this.activeGradient = this.activeGradient === 0 ? 1 : 0;
     }
 
-    root.style.setProperty('--sky-cloud-color', sky.cloud);
+    root.style.setProperty('--sky-cloud-color', toCss(sky.cloud));
     root.style.setProperty('--sky-cloud-fill-opacity', sky.cloudFill.toFixed(3));
     root.style.setProperty('--sky-cloud-stroke-opacity', sky.cloudStroke.toFixed(3));
+    // 地平线雾气：阴雨天更浓，把远景糊进天色里
+    root.style.setProperty('--sky-haze-opacity', (0.32 * profile.haze).toFixed(3));
     root.dataset.phase = this.phase;
+    root.dataset.weather = this.weather;
     root.dataset.theme = theme;
 
     // 星星：目标值交给 rAF 循环平滑逼近（含首次立即到位）
@@ -689,6 +918,13 @@ class SkyBackdrop {
     }
     root.style.setProperty('--sky-star-alpha', this.starAlpha.toFixed(3));
 
+    // 雨：目标雨势，同样交给 rAF 平滑逼近
+    this.rainTarget = this.enabled ? profile.rain : 0;
+    if (immediate) this.rainAlpha = this.rainTarget;
+
+    // 闪电：只在雷暴且天空开启时排期
+    this.scheduleLightning();
+
     // 日月
     const c = resolveCelestial(hour);
     const size = window.innerWidth < 768 ? 64 : 86;
@@ -698,7 +934,7 @@ class SkyBackdrop {
       this.sunEl.style.setProperty('--celestial-size', `${size}px`);
       this.sunEl.style.setProperty('--celestial-color', c.color);
       this.sunEl.style.setProperty('--celestial-glow', c.glow);
-      this.sunEl.style.opacity = this.enabled ? c.sun.toFixed(3) : '0';
+      this.sunEl.style.opacity = this.enabled ? (c.sun * profile.celestial).toFixed(3) : '0';
     }
     if (this.moonEl) {
       this.moonEl.style.setProperty('--celestial-x', `${c.x.toFixed(2)}%`);
@@ -706,7 +942,7 @@ class SkyBackdrop {
       this.moonEl.style.setProperty('--celestial-size', `${Math.round(size * 0.72)}px`);
       this.moonEl.style.setProperty('--celestial-color', c.color);
       this.moonEl.style.setProperty('--celestial-glow', c.glow);
-      this.moonEl.style.opacity = this.enabled ? c.moon.toFixed(3) : '0';
+      this.moonEl.style.opacity = this.enabled ? (c.moon * profile.celestial).toFixed(3) : '0';
     }
 
     this.measureGround();
@@ -757,9 +993,13 @@ class SkyBackdrop {
 
   // ---------- 星空循环 ----------
 
+  /** 循环条件：星空闪烁或下雨时才需要 rAF，晴天夜里没星星就完全静止 */
   private syncStarLoop(): void {
+    const needsRain = this.rainAlpha > 0.01 || this.rainTarget > 0.01;
+    const needsStars = this.starAlpha > 0.02 || this.starTarget > 0.02;
     const shouldRun =
-      this.enabled && !prefersReducedMotion() && !document.hidden && this.starAlpha > 0.02;
+      this.enabled && !prefersReducedMotion() && !document.hidden && (needsRain || needsStars);
+
     if (shouldRun && !this.rafId) {
       this.lastDraw = 0;
       this.rafId = requestAnimationFrame(this.tick);
@@ -767,8 +1007,7 @@ class SkyBackdrop {
       cancelAnimationFrame(this.rafId);
       this.rafId = 0;
       this.drawStars(0, true);
-    } else if (shouldRun && this.starAlpha <= 0.02) {
-      this.drawStars(0, true);
+      this.drawRain(0);
     }
   }
 
@@ -776,17 +1015,107 @@ class SkyBackdrop {
     this.rafId = requestAnimationFrame(this.tick);
     // 约 30fps：星星闪烁不需要 60fps，省一半电量
     if (time - this.lastDraw < 33) return;
+    // dt 要在覆盖 lastDraw 之前算出来：雨滴按真实经过的时间下落，
+    // 这样掉帧时雨速不会跟着变慢。
+    const dt = Math.min((time - this.lastDraw) / 1000, 0.06);
     this.lastDraw = time;
 
-    // 目标值平滑逼近：切时段/切主题时星星不会硬跳
+    // 目标值平滑逼近：切时段/切主题/切天气时不会硬跳
     this.starAlpha += (this.starTarget - this.starAlpha) * 0.12;
     this.starTint = mix(this.starTint, this.starTintTarget, 0.12);
+    this.rainAlpha += (this.rainTarget - this.rainAlpha) * 0.09;
     this.root?.style.setProperty('--sky-star-alpha', this.starAlpha.toFixed(3));
 
     if (Math.abs(this.starTarget - this.starAlpha) < 0.004) this.starAlpha = this.starTarget;
+    if (Math.abs(this.rainTarget - this.rainAlpha) < 0.004) this.rainAlpha = this.rainTarget;
+
     this.drawStars(time / 1000, false);
+    this.drawRain(dt);
     this.syncStarLoop();
   };
+
+  /**
+   * 画雨：斜风细雨到密集雨幕都靠同一批粒子，只是数量与透明度随雨势缩放。
+   * dt 传秒，速度按 60fps 的观感标定。
+   */
+  private drawRain(dt: number): void {
+    const ctx = this.rainCtx;
+    const canvas = this.rainCanvas;
+    if (!ctx || !canvas) return;
+
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const w = canvas.width / dpr;
+    const h = canvas.height / dpr;
+    ctx.clearRect(0, 0, w, h);
+
+    if (this.rainAlpha <= 0.01) return;
+    const active = Math.round(this.drops.length * this.rainAlpha);
+    if (active <= 0) return;
+
+    // 雨丝略带冷调，天色越暗越明显
+    ctx.lineWidth = 1.15;
+    ctx.lineCap = 'round';
+    for (let i = 0; i < active; i += 1) {
+      const d = this.drops[i];
+      d.y += d.speed * dt;
+      d.x += d.speed * dt * 0.26; // 斜风
+      if (d.y > h + 20) {
+        d.y = -30;
+        d.x = Math.random() * (w + 260) - 130;
+      }
+      if (d.x > w + 140) d.x -= w + 260;
+
+      const a = d.alpha * this.rainAlpha;
+      ctx.strokeStyle = `rgba(196, 214, 236, ${a.toFixed(3)})`;
+      ctx.beginPath();
+      ctx.moveTo(d.x, d.y);
+      ctx.lineTo(d.x + d.len * 0.26, d.y + d.len);
+      ctx.stroke();
+    }
+  }
+
+  // ---------- 闪电 ----------
+
+  /**
+   * 雷暴时随机打闪：间隔 2.4–7.2s，一次flash 约 0.6s。
+   * 用随机间隔而不是固定周期，避免形成可预期的节拍感。
+   */
+  private scheduleLightning(): void {
+    if (this.lightningTimer) {
+      clearTimeout(this.lightningTimer);
+      this.lightningTimer = null;
+    }
+    const profile = WEATHER_PROFILES[this.weather];
+    if (!profile.lightning || !this.enabled || prefersReducedMotion() || document.hidden) return;
+
+    const delay = lerp(2400, 7200, Math.random());
+    this.lightningTimer = setTimeout(() => {
+      this.strike();
+      this.scheduleLightning();
+    }, delay);
+  }
+
+  /** 打一次闪：随机横向位置与缩放，避免每次都在同一处 */
+  private strike(): void {
+    const el = this.lightningEl;
+    const root = this.root;
+    if (!el || !root) return;
+
+    el.style.setProperty('--bolt-x', `${(18 + Math.random() * 64).toFixed(1)}%`);
+    el.style.setProperty('--bolt-scale', (0.8 + Math.random() * 0.5).toFixed(2));
+
+    // 类加在 root 上：云层是闪电元素的前置兄弟，靠 root 才能一起被照亮
+    root.classList.remove('is-flashing');
+    // 强制回流，保证连续两次打闪也能重新播放动画
+    void root.offsetWidth;
+    root.classList.add('is-flashing');
+
+    const clear = (): void => {
+      root.classList.remove('is-flashing');
+      el.removeEventListener('animationend', clear);
+    };
+    el.addEventListener('animationend', clear);
+  }
 
   private drawStars(seconds: number, staticDraw: boolean): void {
     const ctx = this.ctx;
@@ -854,6 +1183,15 @@ class SkyBackdrop {
 
   private handleVisibility = (): void => {
     this.syncStarLoop();
+    // 后台标签页不打闪（也别让定时器在后台空转）
+    if (document.hidden) {
+      if (this.lightningTimer) {
+        clearTimeout(this.lightningTimer);
+        this.lightningTimer = null;
+      }
+    } else {
+      this.scheduleLightning();
+    }
   };
 
   // ---------- 读取设置 ----------
@@ -871,6 +1209,11 @@ class SkyBackdrop {
       return raw;
     }
     return 'auto';
+  }
+
+  private readWeather(): SkyWeather {
+    const raw = storageController.getItem(CONFIG.STORAGE_KEYS.SKY_WEATHER);
+    return raw === 'cloudy' || raw === 'rain' || raw === 'storm' ? raw : 'clear';
   }
 
   private readEnabled(): boolean {
@@ -894,6 +1237,19 @@ export function setSkyPhase(phase: SkyPhase): void {
 
 export function setSkyEnabled(enabled: boolean): void {
   skyBackdrop.setEnabled(enabled);
+}
+
+export function setSkyWeather(weather: SkyWeather): void {
+  skyBackdrop.setWeather(weather);
+}
+
+export function getSkyWeather(): SkyWeather {
+  return skyBackdrop.getWeather();
+}
+
+/** 设置面板里"天空"那行的说明：时段 + 天气 */
+export function getSkyWeatherText(): string {
+  return skyBackdrop.getWeatherText();
 }
 
 export function getSkyPhase(): SkyPhase {
