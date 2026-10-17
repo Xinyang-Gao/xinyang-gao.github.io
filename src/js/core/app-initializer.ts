@@ -22,6 +22,7 @@ import { LoadingOverlayManager } from '/js/ui/loading-overlay-manager.js';
 import { dataService } from '/js/core/data-service.js';
 import { applyStoredSettings } from '/js/data/settings.js';
 import { initSkyBackdrop, refreshSkyBackdrop } from '/js/ui/sky-backdrop.js';
+import { ensureGround } from '/js/ui/ground.js';
 import type { NavbarManager } from '/js/ui/navbar-manager.js';
 
 export class AppInitializer {
@@ -70,16 +71,19 @@ export class AppInitializer {
     // 2. 应用所有本地设置（含字体大小、滚动揭示、背景图开关等）
     applyStoredSettings();
 
-    // 3. 加载页脚（非阻塞）
+    // 3. 地面：地平线必须在页脚之前插入（页脚属于"地面之下"）
+    ensureGround();
+
+    // 4. 加载页脚（非阻塞）
     loadFooter().catch(console.warn);
 
-    // 4. 渲染个人卡片
+    // 5. 渲染个人卡片
     renderPersonalCard();
 
-    // 5. 站点年龄更新
+    // 6. 站点年龄更新
     startSiteAgeUpdater(CONFIG.SITE_BIRTH);
 
-    // 6. 浮动按钮
+    // 7. 浮动按钮
     initButtons();
   }
 

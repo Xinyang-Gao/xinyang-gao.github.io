@@ -1,0 +1,142 @@
+/* ============================================
+   core/ground.css — 全局地面（地平线）
+   地面之上 = 页面内容（首页：天空 / 半空 / 一言；其余页：卡片）
+   地面之上留白由各页面自己撑开，地面本身刻意压得很矮
+   地面之下 = 页脚（#footer-placeholder 换成土层色）
+   ============================================ */
+
+.site-ground {
+  position: relative;
+  /* 装饰层：默认不吃鼠标，只有 slot 内的导航恢复可点 */
+  pointer-events: none;
+  height: clamp(120px, 19vh, 190px);
+  margin-top: clamp(16px, 4vh, 48px);
+}
+
+/* ---------- 地表与土层 ---------- */
+.ground-body {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 56%;
+  background: linear-gradient(to bottom, var(--ground-surface), var(--ground-deep));
+}
+
+/* 地平线：一条起伏的剪影，压在土层顶边上，让直线不那么死板 */
+.ground-ridge {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(56% - 2px);
+  display: block;
+  width: 100%;
+  height: clamp(24px, 3.6vh, 40px);
+  color: var(--ground-surface);
+}
+.ground-ridge path {
+  fill: currentColor;
+}
+
+/* ---------- 地上的草（简笔勾线，站点手绘风） ---------- */
+.ground-flora {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(56% - 4px);
+  height: clamp(30px, 5vh, 52px);
+  color: var(--ground-grass);
+}
+.ground-flora svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.ground-flora path {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+/* ---------- 地面上放的东西（首页快捷导航） ---------- */
+.ground-slot {
+  position: absolute;
+  left: 50%;
+  bottom: calc(56% + 4px);
+  transform: translateX(-50%);
+  z-index: 2;
+  width: min(1100px, 92vw);
+  pointer-events: auto;
+}
+.ground-slot:empty {
+  display: none;
+}
+
+/* 地面导航：贴着地平线排一排胶囊 */
+.ground-nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 10px;
+}
+.ground-nav a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border-color);
+  background: color-mix(in srgb, var(--surface-color) 82%, transparent);
+  color: var(--text-color);
+  font-size: var(--font-size-small);
+  text-decoration: none;
+  white-space: nowrap;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: color var(--transition-fast),
+              background-color var(--transition-fast),
+              border-color var(--transition-fast),
+              transform var(--transition-fast);
+}
+.ground-nav a:hover,
+.ground-nav a:focus-visible {
+  color: var(--accent-color);
+  border-color: var(--accent-color);
+  transform: translateY(-2px);
+}
+.ground-nav a.is-current {
+  background: var(--accent-color);
+  border-color: var(--accent-color);
+  color: #fff;
+}
+
+/* ---------- 地面之下：页脚换成土层色 ---------- */
+#footer-placeholder {
+  position: relative;
+  background: var(--ground-deep);
+}
+/* 页脚自带的不透明底色会盖住土层，这里让出背景给"地下" */
+#footer-placeholder .global-footer {
+  background: transparent;
+}
+/* 从地面到地下的接缝：一层向下的暗渐变，避免硬切一条线 */
+#footer-placeholder::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 28px;
+  background: linear-gradient(to bottom, var(--ground-deep), transparent);
+  opacity: 0.9;
+  pointer-events: none;
+}
+
+/* ---------- 降低动效偏好 ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .ground-nav a:hover,
+  .ground-nav a:focus-visible {
+    transform: none;
+  }
+}

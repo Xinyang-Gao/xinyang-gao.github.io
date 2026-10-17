@@ -450,6 +450,8 @@ class SkyBackdrop {
   private unsubscribeScroll: (() => void) | null = null;
   private unsubscribeTheme: (() => void) | null = null;
   private started = false;
+  /** 地面顶边的文档坐标（缓存，避免滚动时每帧回流） */
+  private groundTopDoc = 0;
 
   /** 幂等初始化：只建一次 DOM，之后所有入口都走 apply() */
   init(): void {
@@ -707,6 +709,7 @@ class SkyBackdrop {
       this.moonEl.style.opacity = this.enabled ? c.moon.toFixed(3) : '0';
     }
 
+    this.measureGround();
     this.updateScroll();
     this.syncStarLoop();
   }
@@ -724,17 +727,32 @@ class SkyBackdrop {
 
   /**
    * 0 → 1 表示"离地面越来越近"。
-   * 页脚是异步 fetch 进来的，取不到时按 260px 兜底；阈值覆盖整个页脚高度
-   * 再加半屏，保证滚到页脚上沿时云朵已经淡干净。
+   *
+   * 基准是真正的地面元素（#site-ground）：它一进视口底部就开始退场，
+   * 滚到视口上部时云朵/星空/日月已淡干净，正好把舞台交给地面与页脚。
+   * 地面组件缺失时（例如尚未初始化）退回按页脚占位符计算。
    */
   private groundProgress(y: number): number {
-    const docHeight = document.documentElement.scrollHeight;
     const viewport = window.innerHeight;
-    const footer = document.querySelector<HTMLElement>('#footer-placeholder');
-    const footerHeight = footer ? footer.offsetHeight : 260;
-    const threshold = footerHeight + viewport * 0.5;
-    const remaining = docHeight - (y + viewport);
-    return clamp01(1 - remaining / threshold);
+    const distanceToGround = this.groundTopDoc - y; // ≈ 地面顶边的视口坐标
+    const fadeSpan = viewport * 0.6;
+    return clamp01((viewport - distanceToGround) / fadeSpan);
+  }
+
+  /**
+   * 量一次地面顶边的文档坐标，滚动时复用。
+   * 每帧 getBoundingClientRect 会强制回流，缓存后只在 apply/resize 时算一次。
+   */
+  private measureGround(): void {
+    const ground = document.getElementById('site-ground');
+    const footer = document.getElementById('footer-placeholder');
+    const target = ground ?? footer;
+    if (!target) {
+      this.groundTopDoc = document.documentElement.scrollHeight;
+      return;
+    }
+    const rect = target.getBoundingClientRect();
+    this.groundTopDoc = rect.top + (window.scrollY || document.documentElement.scrollTop || 0);
   }
 
   // ---------- 星空循环 ----------

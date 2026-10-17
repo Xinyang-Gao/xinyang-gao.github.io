@@ -40,6 +40,14 @@
   --danger-rgb: 201, 70, 61;
   --background-overlay-filter: brightness(1.03) saturate(1.02);
 
+  /* ---------- 地面（地平线） ----------
+     地表 → 地下由浅入深，地下同时作为页脚（"地面之下"）的底色 */
+  --ground-surface: #ddd6c8;
+  --ground-deep: #c6beaf;
+  --ground-grass: #8b9e6a;
+  /* 天空背景上悬浮文字的可读性描边 */
+  --sky-text-shadow: 0 1px 12px rgba(255, 255, 255, 0.55);
+
   /* ---------- 字体 ---------- */
   --font-display: "Avenir Next", "Futura", "Trebuchet MS", "PingFang SC",
                   "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
@@ -171,6 +179,11 @@
   --danger-color: #e05a50;
   --danger-rgb: 224, 90, 80;
   --background-overlay-filter: brightness(0.72) saturate(1.05);
+
+  --ground-surface: #2b2733;
+  --ground-deep: #17141d;
+  --ground-grass: #6d7f4f;
+  --sky-text-shadow: 0 1px 14px rgba(0, 0, 0, 0.6);
 }
 
 /* ============================================

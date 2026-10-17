@@ -3,6 +3,7 @@ import { PageBase } from '/js/core/page-manager.js';
 import { dataService } from '/js/core/data-service.js';
 import { Utils } from '/js/core/core.js';
 import { fetchAndReplaceContent } from '/js/router/router.js';
+import { clearGroundContent, setGroundContent } from '/js/ui/ground.js';
 
 /** UAPI 名言归一化结构 */
 interface Saying {
@@ -62,6 +63,7 @@ export class HomePageManager extends PageBase {
   /* ---------- 生命周期 ---------- */
 
   protected mount(): void {
+    this.renderGroundNav();
     this.loadStatisticsAndTags();
     this.bindGlobalNavigateEvents();
     this.startGreetingUpdater();
@@ -76,6 +78,35 @@ export class HomePageManager extends PageBase {
     this.isDestroyed = true;
     this.quoteAbort?.abort();
     this.quoteAbort = null;
+    // 地面是全局组件：离开首页必须撤掉导航，否则会残留到别的页面
+    clearGroundContent();
+  }
+
+  /* ---------- 地面上的快捷导航 ---------- */
+
+  /**
+   * 首页的导航放在地面（.site-ground）上，而不是页面卡片里。
+   * 地面由 /js/ui/ground.js 全局维护，这里只负责往插槽里填内容。
+   */
+  private renderGroundNav(): void {
+    const links: Array<{ href: string; label: string }> = [
+      { href: '/', label: '首页' },
+      { href: '/about/', label: '关于' },
+      { href: '/articles/', label: '文章' },
+      { href: '/timeline/', label: '时间线' },
+      { href: '/works/', label: '作品' },
+      { href: '/friends/', label: '友链' },
+      { href: '/contact/', label: '留言板' },
+    ];
+
+    const html = `<nav class="ground-nav" aria-label="全站快捷导航">${links
+      .map((l) => {
+        const current = l.href === location.pathname ? ' class="is-current"' : '';
+        return `<a href="${l.href}"${current}>${l.label}</a>`;
+      })
+      .join('')}</nav>`;
+
+    setGroundContent(html);
   }
 
   /* ---------- 统计与标签 ---------- */
@@ -221,12 +252,23 @@ export class HomePageManager extends PageBase {
     this.stack.addInterval(timer);
   }
 
-  /* ---------- 实时时钟 ---------- */
+  /* ---------- 实时时钟（抬头区主元素） ---------- */
   private startLiveClock(): void {
     const el = document.getElementById('live-clock');
-    if (!el) return;
+    const dateEl = document.getElementById('headlineDate');
+    if (!el && !dateEl) return;
+
     const render = (): void => {
-      el.textContent = new Date().toLocaleTimeString('zh-CN', { hour12: false });
+      const now = new Date();
+      if (el) el.textContent = now.toLocaleTimeString('zh-CN', { hour12: false });
+      if (dateEl) {
+        dateEl.textContent = now.toLocaleDateString('zh-CN', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+          weekday: 'long',
+        });
+      }
     };
     render();
     const timer = setInterval(render, 1000);

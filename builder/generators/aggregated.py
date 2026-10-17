@@ -814,6 +814,7 @@ class AggregatedGenerator(OutputGenerator):
         "core/variables.css",
         "core/base.css",
         "core/sky-backdrop.css",
+        "core/ground.css",
         "core/layout.css",
         "core/components.css",
     )
