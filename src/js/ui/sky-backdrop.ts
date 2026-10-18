@@ -445,31 +445,44 @@ const CLOUD_PATHS: readonly { viewBox: string; d: string }[] = [
 
 /**
  * 远景山脉：三层山脊，越远越高越淡（大气透视）。
- * viewBox 1200×400 + preserveAspectRatio="none"，横向铺满、纵向拉满容器高度；
- * 山脊底部用一段平底收口，保证与地面衔接处不出缝。
+ *
+ * 轮廓是 Catmull-Rom 样条转出来的三次贝塞尔（C1 连续），没有生硬的折角；
+ * 峰谷高度不等、间距不均，避免出现"锯齿状"的廉价感。
+ * viewBox 1200×660 与容器实际渲染比例接近（横向约 1.27×、纵向约 1.2×），
+ * 所以不会被拉伸变形；底部用一段平底收口，保证与地面衔接处不出缝。
  */
 const MOUNTAIN_RIDGES: readonly { depth: 'far' | 'mid' | 'near'; d: string }[] = [
   {
     depth: 'far',
-    d: 'M0 400 L0 208 L70 150 L150 196 L235 108 L320 174 L402 94 L490 164 L570 130 L660 186 L745 118 L835 180 L920 144 L1010 190 L1100 154 L1200 196 L1200 400 Z',
+    d: 'M0 660 L0 330 C31.7 315.0 35.0 288.3 95 285 C155.0 281.7 123.3 351.7 180 320 C236.7 288.3 208.3 215.0 265 190 C321.7 165.0 293.3 282.3 350 245 C406.7 207.7 378.3 98.0 435 78 C491.7 58.0 463.3 167.7 520 185 C576.7 202.3 548.3 120.0 605 130 C661.7 140.0 630.0 243.3 690 215 C750.0 186.7 725.0 58.3 785 45 C845.0 31.7 813.3 151.7 870 175 C926.7 198.3 896.7 100.0 955 115 C1013.3 130.0 988.3 226.7 1045 220 C1101.7 213.3 1073.3 86.7 1125 95 C1176.7 103.3 1175.0 195.0 1200 245 L1200 660 Z',
   },
   {
     depth: 'mid',
-    d: 'M0 400 L0 266 L90 220 L175 256 L265 204 L355 246 L445 198 L530 250 L615 224 L705 262 L790 214 L880 252 L965 230 L1060 266 L1140 234 L1200 262 L1200 400 Z',
+    d: 'M0 660 L0 425 C35.0 411.7 36.7 386.7 105 385 C173.3 383.3 138.3 441.7 205 420 C271.7 398.3 240.0 336.0 305 320 C370.0 304.0 336.7 383.7 400 372 C463.3 360.3 431.7 293.0 495 285 C558.3 277.0 526.7 355.7 590 348 C653.3 340.3 621.7 265.3 685 262 C748.3 258.7 716.7 329.3 780 338 C843.3 346.7 811.7 282.3 875 288 C938.3 293.7 908.3 351.0 970 355 C1031.7 359.0 1000.0 299.0 1060 300 C1120.0 301.0 1103.3 346.3 1150 358 C1196.7 369.7 1183.3 342.7 1200 335 L1200 660 Z',
   },
   {
     depth: 'near',
-    d: 'M0 400 L0 316 L100 284 L190 312 L280 274 L370 306 L460 280 L550 314 L640 290 L730 316 L820 286 L910 312 L1000 292 L1090 318 L1200 300 L1200 400 Z',
+    d: 'M0 660 L0 545 C43.3 535.0 45.0 514.0 130 515 C215.0 516.0 173.3 557.0 255 548 C336.7 539.0 296.7 493.3 375 488 C453.3 482.7 413.3 534.0 490 532 C566.7 530.0 528.3 484.3 605 482 C681.7 479.7 641.7 529.0 720 525 C798.3 521.0 761.7 472.3 840 470 C918.3 467.7 878.3 513.0 955 518 C1031.7 523.0 988.3 489.3 1070 485 C1151.7 480.7 1156.7 498.3 1200 505 L1200 660 Z',
   },
 ];
 
 /**
  * 山脉占视口高度的比例。
- * 地面顶边落在屏幕下边缘时，山脊顶端 = 视口高 × (1 - 0.88) ≈ 屏幕上边缘靠下一点。
+ *
+ * 略大于一屏：山脚锚在地表线上，山体向上延伸一屏多一点，
+ * 于是地表线落在屏幕下边缘时，最高的峰顶落在视口约 14% 处（屏幕上边缘靠下）。
  */
-const MOUNTAIN_HEIGHT_RATIO = 0.88;
+const MOUNTAIN_HEIGHT_RATIO = 1.02;
 /** 山脉的滚动视差：比地面慢一点，才像"很远的山" */
 const MOUNTAIN_PARALLAX = 0.92;
+/**
+ * 山脚压进地表的深度（px）。
+ *
+ * 视差让山比地面走得慢，还没滚到地面时算出的山脚会**提前进入视口**，
+ * 于是山脚与地表之间露出一条天空色的缝。这里让山脚始终多压进地表几像素，
+ * 接缝被地面的丘线盖住，任何滚动位置都不会露空。
+ */
+const MOUNTAIN_FOOT_OVERLAP = 6;
 /** 触发阵风特效的风级阈值（蒲福 6 级 = 强风） */
 const GUST_WIND_LEVEL = 6;
 
@@ -724,6 +737,12 @@ class SkyBackdrop {
   private started = false;
   /** 地面顶边的文档坐标（缓存，避免滚动时每帧回流） */
   private groundTopDoc = 0;
+  /**
+   * 地表线（土层顶边）的文档坐标。
+   * 地面元素顶边到土层顶边之间还隔着草丛与丘线的高度，
+   * 拿元素顶边当基准会让山脚悬在半空 —— 山脉必须对齐这条真正的地平线。
+   */
+  private surfaceTopDoc = 0;
 
   /** 幂等初始化：只建一次 DOM，之后所有入口都走 apply() */
   init(): void {
@@ -925,7 +944,7 @@ class SkyBackdrop {
     wrap.className = 'sky-mountains';
     wrap.innerHTML = MOUNTAIN_RIDGES.map(
       (r) =>
-        `<svg class="sky-ridge sky-ridge--${r.depth}" viewBox="0 0 1200 400" preserveAspectRatio="none" aria-hidden="true"><path d="${r.d}" /></svg>`,
+        `<svg class="sky-ridge sky-ridge--${r.depth}" viewBox="0 0 1200 660" preserveAspectRatio="none" aria-hidden="true"><path d="${r.d}" /></svg>`,
     ).join('');
     root.appendChild(wrap);
     this.mountainsEl = wrap;
@@ -1245,7 +1264,7 @@ class SkyBackdrop {
   }
 
   /**
-   * 山脉锚在地面顶边上：地面在屏幕下边缘时，山脊顶端正好落在屏幕上边缘靠下一点。
+   * 山脉锚在地表线（土层顶边）上：地面在屏幕下边缘时，山脊顶端落在屏幕上边缘靠下一点。
    *
    * 视差系数 0.92 < 1 —— 山比地面"走得慢"，才有"很远"的感觉；
    * 地面还在屏幕下方时算出的 top 会远大于视口高度，山脉自然在视野之外。
@@ -1255,9 +1274,11 @@ class SkyBackdrop {
     if (!root) return;
     const viewport = window.innerHeight;
     const height = Math.round(viewport * MOUNTAIN_HEIGHT_RATIO);
-    const groundVp = this.groundTopDoc - y; // 地面顶边的视口坐标
-    const top = (groundVp - viewport) * MOUNTAIN_PARALLAX + (viewport - height);
-    root.style.setProperty('--sky-mountain-y', `${Math.round(top)}px`);
+    const surfaceVp = this.surfaceTopDoc - y; // 地表线的视口坐标
+    const top = (surfaceVp - viewport) * MOUNTAIN_PARALLAX + (viewport - height);
+    // 山脚永远不能高于地表线：夹住之后任何滚动位置都不会露出那条缝。
+    const clamped = Math.max(top, surfaceVp - height + MOUNTAIN_FOOT_OVERLAP);
+    root.style.setProperty('--sky-mountain-y', `${Math.round(clamped)}px`);
     root.style.setProperty('--sky-mountain-height', `${height}px`);
     // 整座山还在视口下方时直接隐藏：否则一整块近一屏高的 SVG 会白白参与合成
     if (this.mountainsEl) {
@@ -1289,10 +1310,19 @@ class SkyBackdrop {
     const target = ground ?? footer;
     if (!target) {
       this.groundTopDoc = document.documentElement.scrollHeight;
+      this.surfaceTopDoc = this.groundTopDoc;
       return;
     }
+    const scroll = window.scrollY || document.documentElement.scrollTop || 0;
     const rect = target.getBoundingClientRect();
-    this.groundTopDoc = rect.top + (window.scrollY || document.documentElement.scrollTop || 0);
+    this.groundTopDoc = rect.top + scroll;
+
+    // 地表线 = 土层顶边（.ground-body 的顶边）。拿不到时按"土层占 56%、
+    // 顶边落在 44% 处"的比例估算，不至于退化成拿元素顶边当地平线。
+    const body = ground?.querySelector<HTMLElement>('.ground-body');
+    this.surfaceTopDoc = body
+      ? body.getBoundingClientRect().top + scroll
+      : this.groundTopDoc + rect.height * 0.44;
   }
 
   // ---------- 星空循环 ----------
