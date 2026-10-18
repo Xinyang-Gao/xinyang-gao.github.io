@@ -63,6 +63,8 @@ export const CONFIG = {
     SKY_WEATHER: 'settings_sky_weather',
     /** 真实天气数据缓存（30 分钟，由 weather-service 维护） */
     WEATHER_CACHE: 'weather_cache',
+    /** 云朵飘动速度倍率（默认 1 = 改动前的速度；有真实风级时再乘以风力系数） */
+    CLOUD_SPEED: 'settings_cloud_speed',
   } as const,
   API: {
     WORKS: '/json/works.json',

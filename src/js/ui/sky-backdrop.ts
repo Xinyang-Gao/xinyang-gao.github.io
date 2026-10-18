@@ -17,8 +17,14 @@ import { scrollDispatcher } from '/js/core/scroll-dispatcher.js';
 /** 设置面板可选的天空时段（auto = 跟随真实时间连续变化） */
 export type SkyPhase = 'auto' | 'dawn' | 'morning' | 'noon' | 'afternoon' | 'dusk' | 'night';
 
-/** 天气：晴 → 多云 → 雨 → 雷暴，云量、雨势、天色逐级递进 */
-export type SkyWeather = 'clear' | 'cloudy' | 'rain' | 'storm';
+/** 天气：晴 → 多云 → 阴 → 雨 → 雷暴 → 雪 → 雨夹雪 */
+export type SkyWeather = 'clear' | 'cloudy' | 'overcast' | 'rain' | 'storm' | 'snow' | 'sleet';
+
+/**
+ * 降水形态。雨是斜线，雪是飘落的白点，雨夹雪两者混着来。
+ * 三者共用同一个粒子池，只是绘制方式不同 —— 切换天气不用重建粒子。
+ */
+export type PrecipKind = 'none' | 'rain' | 'snow' | 'sleet';
 
 /** 天气来源：auto 跟随真实天气（UAPI），其余为手动指定 */
 export type SkyWeatherMode = 'auto' | SkyWeather;
@@ -42,8 +48,10 @@ interface WeatherProfile {
   cloudDim: number;
   /** 云朵填充浓度倍率（雨云更厚实） */
   cloudFill: number;
-  /** 雨势 0 → 1，0 表示无雨 */
-  rain: number;
+  /** 降水形态 */
+  precip: PrecipKind;
+  /** 降水强度 0 → 1（粒子池里取用的比例），0 表示无降水 */
+  precipRate: number;
   /** 是否有闪电 */
   lightning: boolean;
   /** 日月可见度（阴雨天被云遮住） */
@@ -52,6 +60,8 @@ interface WeatherProfile {
   star: number;
   /** 地平线雾气浓度倍率 */
   haze: number;
+  /** 远景山脉的可见度（雨雪天被水汽糊掉，晴天最清楚） */
+  mountain: number;
 }
 
 const WEATHER_PROFILES: Record<SkyWeather, WeatherProfile> = {
@@ -62,11 +72,13 @@ const WEATHER_PROFILES: Record<SkyWeather, WeatherProfile> = {
     clouds: 1,
     cloudDim: 0,
     cloudFill: 1,
-    rain: 0,
+    precip: 'none',
+    precipRate: 0,
     lightning: false,
     celestial: 1,
     star: 1,
     haze: 1,
+    mountain: 1,
   },
   cloudy: {
     label: '多云',
@@ -75,11 +87,29 @@ const WEATHER_PROFILES: Record<SkyWeather, WeatherProfile> = {
     clouds: 2,
     cloudDim: 0.16,
     cloudFill: 1.3,
-    rain: 0,
+    precip: 'none',
+    precipRate: 0,
     lightning: false,
     celestial: 0.55,
     star: 0.4,
     haze: 1.2,
+    mountain: 0.95,
+  },
+  // 阴：全天被云盖住但不降水 —— 云量比多云更满，天色更闷，不画雨
+  overcast: {
+    label: '阴',
+    overcast: 0.37,
+    dim: 0.92,
+    clouds: 3,
+    cloudDim: 0.24,
+    cloudFill: 1.42,
+    precip: 'none',
+    precipRate: 0,
+    lightning: false,
+    celestial: 0.3,
+    star: 0.16,
+    haze: 1.4,
+    mountain: 0.82,
   },
   rain: {
     label: '雨',
@@ -88,11 +118,13 @@ const WEATHER_PROFILES: Record<SkyWeather, WeatherProfile> = {
     clouds: 3,
     cloudDim: 0.34,
     cloudFill: 1.55,
-    rain: 0.6,
+    precip: 'rain',
+    precipRate: 0.6,
     lightning: false,
     celestial: 0.16,
     star: 0.1,
     haze: 1.55,
+    mountain: 0.72,
   },
   storm: {
     label: '雷暴',
@@ -101,11 +133,45 @@ const WEATHER_PROFILES: Record<SkyWeather, WeatherProfile> = {
     clouds: 4,
     cloudDim: 0.48,
     cloudFill: 1.75,
-    rain: 1,
+    precip: 'rain',
+    precipRate: 1,
     lightning: true,
     celestial: 0.06,
     star: 0.03,
     haze: 1.85,
+    mountain: 0.6,
+  },
+  // 雪：雪云是亮的而不是乌的，所以 dim > 1（雪面反照把天"提亮"），云几乎不压暗
+  snow: {
+    label: '雪',
+    overcast: 0.4,
+    dim: 1.04,
+    clouds: 3,
+    cloudDim: 0.06,
+    cloudFill: 1.6,
+    precip: 'snow',
+    precipRate: 0.75,
+    lightning: false,
+    celestial: 0.2,
+    star: 0.08,
+    haze: 1.5,
+    mountain: 0.68,
+  },
+  // 雨夹雪：介于雨与雪之间 —— 云压暗，粒子一半是雪片一半是雨丝
+  sleet: {
+    label: '雨夹雪',
+    overcast: 0.48,
+    dim: 0.9,
+    clouds: 3,
+    cloudDim: 0.28,
+    cloudFill: 1.5,
+    precip: 'sleet',
+    precipRate: 0.82,
+    lightning: false,
+    celestial: 0.14,
+    star: 0.06,
+    haze: 1.62,
+    mountain: 0.7,
   },
 };
 
@@ -311,8 +377,10 @@ const DARK_CLOUD_SHADE = { scale: 0.92, lift: [12, 14, 30] as const, liftAmount:
 const LIGHT_CLOUD_SHADE = { scale: 1, lift: [255, 255, 255] as const, liftAmount: 0.06 };
 
 /** 云层：越近的云越大、越快、越清晰（视差系数越大） */
+type CloudDepth = 'far' | 'mid' | 'near';
+
 interface CloudLayerConfig {
-  depth: 'far' | 'mid' | 'near';
+  depth: CloudDepth;
   count: number;
   width: readonly [number, number];
   top: readonly [number, number];
@@ -374,6 +442,36 @@ const CLOUD_PATHS: readonly { viewBox: string; d: string }[] = [
     d: 'M7 26 Q2 26 3 21 Q4 16 10 16 Q13 9 21 10 Q28 4 35 9 Q43 6 47 13 Q55 12 58 18 Q64 18 64 23 Q65 27 58 27 Z',
   },
 ];
+
+/**
+ * 远景山脉：三层山脊，越远越高越淡（大气透视）。
+ * viewBox 1200×400 + preserveAspectRatio="none"，横向铺满、纵向拉满容器高度；
+ * 山脊底部用一段平底收口，保证与地面衔接处不出缝。
+ */
+const MOUNTAIN_RIDGES: readonly { depth: 'far' | 'mid' | 'near'; d: string }[] = [
+  {
+    depth: 'far',
+    d: 'M0 400 L0 208 L70 150 L150 196 L235 108 L320 174 L402 94 L490 164 L570 130 L660 186 L745 118 L835 180 L920 144 L1010 190 L1100 154 L1200 196 L1200 400 Z',
+  },
+  {
+    depth: 'mid',
+    d: 'M0 400 L0 266 L90 220 L175 256 L265 204 L355 246 L445 198 L530 250 L615 224 L705 262 L790 214 L880 252 L965 230 L1060 266 L1140 234 L1200 262 L1200 400 Z',
+  },
+  {
+    depth: 'near',
+    d: 'M0 400 L0 316 L100 284 L190 312 L280 274 L370 306 L460 280 L550 314 L640 290 L730 316 L820 286 L910 312 L1000 292 L1090 318 L1200 300 L1200 400 Z',
+  },
+];
+
+/**
+ * 山脉占视口高度的比例。
+ * 地面顶边落在屏幕下边缘时，山脊顶端 = 视口高 × (1 - 0.88) ≈ 屏幕上边缘靠下一点。
+ */
+const MOUNTAIN_HEIGHT_RATIO = 0.88;
+/** 山脉的滚动视差：比地面慢一点，才像"很远的山" */
+const MOUNTAIN_PARALLAX = 0.92;
+/** 触发阵风特效的风级阈值（蒲福 6 级 = 强风） */
+const GUST_WIND_LEVEL = 6;
 
 /** 闪电：一条主干 + 两个分叉，简笔勾线的风格与云朵一致 */
 const LIGHTNING_PATH = 'M32 4 L18 78 L34 76 L14 132 L30 128 L8 196 L26 118 L12 120 L28 66 L14 68 Z';
@@ -585,10 +683,14 @@ class SkyBackdrop {
   private stars: Star[] = [];
   private sunEl: HTMLElement | null = null;
   private moonEl: HTMLElement | null = null;
-  /** 雨：独立 canvas，与星空分开便于各自控制强度 */
-  private rainCanvas: HTMLCanvasElement | null = null;
-  private rainCtx: CanvasRenderingContext2D | null = null;
+  /** 降水（雨 / 雪 / 雨夹雪）：独立 canvas，与星空分开便于各自控制强度 */
+  private precipCanvas: HTMLCanvasElement | null = null;
+  private precipCtx: CanvasRenderingContext2D | null = null;
   private drops: Drop[] = [];
+  /** 远景山脉：夹在"中景云"与"近景云"之间，于是有的云在山前、有的在山后 */
+  private mountainsEl: HTMLElement | null = null;
+  /** 阵风：大风时才出现的横向气流线 */
+  private gustsEl: HTMLElement | null = null;
   /** 闪电：整屏白闪 + 一道分叉的折线 */
   private lightningEl: HTMLElement | null = null;
   private lightningTimer: ReturnType<typeof setTimeout> | null = null;
@@ -603,9 +705,9 @@ class SkyBackdrop {
   private unsubscribeWeather: (() => void) | null = null;
   private theme: Theme = 'light';
 
-  /** 当前雨势 0 → 1，平滑逼近目标，切换天气时不会突然出现/消失 */
-  private rainAlpha = 0;
-  private rainTarget = 0;
+  /** 当前降水强度 0 → 1，平滑逼近目标，切换天气时不会突然出现/消失 */
+  private precipAlpha = 0;
+  private precipTarget = 0;
   private starAlpha = 0;
   private starTarget = 0;
   private starTint: RGB = [231, 237, 255];
@@ -617,6 +719,8 @@ class SkyBackdrop {
   private resizeTimer: ReturnType<typeof setTimeout> | null = null;
   private unsubscribeScroll: (() => void) | null = null;
   private unsubscribeTheme: (() => void) | null = null;
+  /** 观察文档高度变化：页脚插入、统计加载、SPA 导航都会让"地面在哪"失效 */
+  private bodyObserver: ResizeObserver | null = null;
   private started = false;
   /** 地面顶边的文档坐标（缓存，避免滚动时每帧回流） */
   private groundTopDoc = 0;
@@ -641,6 +745,8 @@ class SkyBackdrop {
       const changed = info?.weather !== this.realWeather?.weather;
       this.realWeather = info;
       if (this.weatherMode === 'auto' && changed) this.apply(false);
+      // 天气现象没变、但风力变了（或首次拿到数据）：只更新云速与阵风
+      else this.applyWind();
     });
     if (this.weatherMode === 'auto') void ensureWeather();
 
@@ -701,8 +807,8 @@ class SkyBackdrop {
     if (!enabled) {
       this.starAlpha = 0;
       this.starTarget = 0;
-      this.rainAlpha = 0;
-      this.rainTarget = 0;
+      this.precipAlpha = 0;
+      this.precipTarget = 0;
     }
     this.apply(false);
     this.syncStarLoop();
@@ -733,6 +839,8 @@ class SkyBackdrop {
     this.unsubscribeTheme = null;
     this.unsubscribeWeather?.();
     this.unsubscribeWeather = null;
+    this.bodyObserver?.disconnect();
+    this.bodyObserver = null;
     window.removeEventListener('resize', this.handleResize);
     document.removeEventListener('visibilitychange', this.handleVisibility);
     this.root?.remove();
@@ -784,14 +892,21 @@ class SkyBackdrop {
     haze.className = 'sky-haze';
     root.appendChild(haze);
 
-    // 雨在云之下、雾之上：雨丝从云底落下来
-    const rainCanvas = document.createElement('canvas');
-    rainCanvas.className = 'sky-rain';
-    root.appendChild(rainCanvas);
-    this.rainCanvas = rainCanvas;
-    this.rainCtx = rainCanvas.getContext('2d');
+    // 图层顺序 = 绘制顺序（同一个层叠上下文里，后面的盖住前面的）：
+    //   远景云 → 中景云 → 【山脉】 → 近景云 → 降水 → 阵风 → 闪电
+    // 山脉插在中景与近景之间，于是中景/远景的云在山后、近景的云在山前。
+    this.buildCloudLayers(root, ['far', 'mid']);
+    this.buildMountains(root);
+    this.buildCloudLayers(root, ['near']);
 
-    this.buildClouds(root);
+    // 降水在近景云之后：雨雪从云底落下来，应该盖住云而不是被云盖住
+    const precipCanvas = document.createElement('canvas');
+    precipCanvas.className = 'sky-precip';
+    root.appendChild(precipCanvas);
+    this.precipCanvas = precipCanvas;
+    this.precipCtx = precipCanvas.getContext('2d');
+
+    this.buildGusts(root);
 
     // 闪电盖在最上面：一瞬间的整屏白 + 折线
     const lightning = document.createElement('div');
@@ -805,12 +920,44 @@ class SkyBackdrop {
     this.root = root;
   }
 
-  private buildClouds(root: HTMLElement): void {
+  private buildMountains(root: HTMLElement): void {
+    const wrap = document.createElement('div');
+    wrap.className = 'sky-mountains';
+    wrap.innerHTML = MOUNTAIN_RIDGES.map(
+      (r) =>
+        `<svg class="sky-ridge sky-ridge--${r.depth}" viewBox="0 0 1200 400" preserveAspectRatio="none" aria-hidden="true"><path d="${r.d}" /></svg>`,
+    ).join('');
+    root.appendChild(wrap);
+    this.mountainsEl = wrap;
+  }
+
+  /** 阵风：几条横向掠过的气流线，只在大风时出现（可见度由 JS 控制） */
+  private buildGusts(root: HTMLElement): void {
+    const wrap = document.createElement('div');
+    wrap.className = 'sky-gusts';
+    const rand = mulberry32(20261018);
+    for (let i = 0; i < 6; i += 1) {
+      const gust = document.createElement('span');
+      gust.className = 'sky-gust';
+      const duration = lerp(2.4, 5.6, rand());
+      gust.style.top = `${lerp(6, 78, rand()).toFixed(1)}%`;
+      gust.style.width = `${lerp(16, 34, rand()).toFixed(1)}%`;
+      gust.style.setProperty('--gust-duration', `${duration.toFixed(2)}s`);
+      gust.style.setProperty('--gust-delay', `-${(rand() * duration).toFixed(2)}s`);
+      gust.style.setProperty('--gust-scale', lerp(0.6, 1.5, rand()).toFixed(2));
+      wrap.appendChild(gust);
+    }
+    root.appendChild(wrap);
+    this.gustsEl = wrap;
+  }
+
+  private buildCloudLayers(root: HTMLElement, depths: readonly CloudDepth[]): void {
     const rand = mulberry32(20260222);
     const narrow = window.innerWidth < 768;
     const scale = narrow ? 0.7 : 1;
 
     for (const layer of CLOUD_LAYERS) {
+      if (!depths.includes(layer.depth)) continue;
       const el = document.createElement('div');
       el.className = 'sky-cloud-layer';
       el.dataset.depth = layer.depth;
@@ -857,11 +1004,11 @@ class SkyBackdrop {
       if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
-    const rainCanvas = this.rainCanvas;
-    if (rainCanvas) {
-      rainCanvas.width = Math.round(w * dpr);
-      rainCanvas.height = Math.round(h * dpr);
-      const ctx = this.rainCtx;
+    const precipCanvas = this.precipCanvas;
+    if (precipCanvas) {
+      precipCanvas.width = Math.round(w * dpr);
+      precipCanvas.height = Math.round(h * dpr);
+      const ctx = this.precipCtx;
       if (ctx) ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
@@ -870,8 +1017,8 @@ class SkyBackdrop {
   }
 
   /**
-   * 雨滴池按最大雨势（雷暴）一次性建好，绘制时只取前 N 个 ——
-   * 切换天气不必重建粒子，也不会因为反复分配造成 GC 抖动。
+   * 降水粒子池按最大强度一次性建好，绘制时只取前 N 个 ——
+   * 切换天气（雨 ↔ 雪 ↔ 雨夹雪）不必重建粒子，也不会因为反复分配造成 GC 抖动。
    */
   private buildDrops(w: number, h: number): void {
     const rand = mulberry32(20261017);
@@ -945,6 +1092,15 @@ class SkyBackdrop {
     root.dataset.phase = this.phase;
     root.dataset.weather = weather;
     root.dataset.theme = theme;
+    root.dataset.cloudTier = String(profile.clouds);
+
+    // 山脉：大气透视 —— 越远越淡越接近天色，越近越沉。
+    // 颜色由当前天色算出，所以黄昏的山是暖的、夜晚的山是墨蓝的，不会是同一块灰。
+    const ink: RGB = theme === 'dark' ? [6, 7, 14] : [46, 52, 66];
+    const mOpacity = profile.mountain;
+    root.style.setProperty('--mountain-far', toCss(mix(sky.mid, ink, 0.3), 0.55 * mOpacity));
+    root.style.setProperty('--mountain-mid', toCss(mix(sky.mid, ink, 0.46), 0.72 * mOpacity));
+    root.style.setProperty('--mountain-near', toCss(mix(sky.bottom, ink, 0.63), 0.88 * mOpacity));
 
     // 星星：目标值交给 rAF 循环平滑逼近（含首次立即到位）
     this.starTarget = this.enabled ? sky.star : 0;
@@ -955,9 +1111,9 @@ class SkyBackdrop {
     }
     root.style.setProperty('--sky-star-alpha', this.starAlpha.toFixed(3));
 
-    // 雨：目标雨势，同样交给 rAF 平滑逼近
-    this.rainTarget = this.enabled ? profile.rain : 0;
-    if (immediate) this.rainAlpha = this.rainTarget;
+    // 降水：目标强度，同样交给 rAF 平滑逼近
+    this.precipTarget = this.enabled ? profile.precipRate : 0;
+    if (immediate) this.precipAlpha = this.precipTarget;
 
     // 闪电：只在雷暴且天空开启时排期
     this.scheduleLightning();
@@ -982,9 +1138,98 @@ class SkyBackdrop {
       this.moonEl.style.opacity = this.enabled ? (c.moon * profile.celestial).toFixed(3) : '0';
     }
 
+    this.applyWind();
     this.measureGround();
     this.updateScroll();
     this.syncStarLoop();
+  }
+
+  // ---------- 风力 → 云速 / 阵风 ----------
+
+  /** 真实风级（0–17）；拿不到天气或解析不出风级时为 null */
+  private windLevel(): number | null {
+    const lv = this.realWeather?.windLevel;
+    return typeof lv === 'number' && Number.isFinite(lv) ? lv : null;
+  }
+
+  /**
+   * 风级 → 云朵飘动速度倍率。
+   * 0–2 级基本不动（甚至比默认更慢一点），3 级起明显加快，9 级往上封顶 3 倍 ——
+   * 再快就变成"云在飞"，反而不像天空了。
+   */
+  private windFactor(): number {
+    const lv = this.windLevel();
+    if (lv === null) return 1;
+    // 0–2 级（无风到轻风）保持默认速度：只有"真的起风了"才加速，
+    // 否则用户会看到云比设置里的默认值更慢，像是出了 bug。
+    const table = [1, 1, 1, 1.15, 1.35, 1.6, 2, 2.4, 2.8, 3, 3, 3, 3, 3, 3, 3, 3, 3];
+    const i = Math.max(0, Math.min(table.length - 1, Math.round(lv)));
+    return table[i];
+  }
+
+  /** 风级 → 0–1 的倾斜量，用来把雨吹斜、把阵风拉长 */
+  private windSlant(): number {
+    const lv = this.windLevel();
+    return lv === null ? 0 : clamp01((lv - 1) / 8);
+  }
+
+  /**
+   * 把"设置里的云速 × 风力系数"写进 CSS 变量，并决定要不要刮阵风。
+   * 单独抽出来：真实天气刷新但天气现象没变时，只更新风速即可，不必整套重算。
+   */
+  private applyWind(): void {
+    const root = this.root;
+    if (!root) return;
+
+    const speed = this.readCloudSpeed() * this.windFactor();
+    root.style.setProperty('--sky-cloud-speed', speed.toFixed(3));
+    // 风大时云不只是走得快，来回摆动的幅度也更大（默认 3%，与改动前一致）
+    root.style.setProperty(
+      '--sky-drift-range',
+      `${(3 * Math.min(2.4, Math.max(1, speed * 0.8))).toFixed(2)}%`,
+    );
+
+    const lv = this.windLevel();
+    const gusting = lv !== null && lv >= GUST_WIND_LEVEL && this.enabled && !prefersReducedMotion();
+    if (this.gustsEl) {
+      this.gustsEl.classList.toggle('is-on', gusting);
+      if (gusting) {
+        // 6 级刚起风时若隐若现，9 级以上明显到"看得见风"
+        const strength = clamp01((lv - GUST_WIND_LEVEL + 1) / 4);
+        this.gustsEl.style.setProperty('--gust-opacity', (0.25 + strength * 0.55).toFixed(3));
+        // 风越大，气流线掠过越快
+        this.gustsEl.style.setProperty(
+          '--gust-speed',
+          (1 / Math.max(0.35, 1.9 - strength * 1.1)).toFixed(3),
+        );
+      }
+    }
+  }
+
+  /** 当前云朵飘动速度倍率（供设置面板显示） */
+  getCloudSpeed(): number {
+    return this.readCloudSpeed();
+  }
+
+  /** 设置面板里"云朵飘动速度"那行的说明 */
+  getCloudSpeedText(): string {
+    const base = this.readCloudSpeed();
+    const lv = this.windLevel();
+    const wind = this.realWeather?.windPower;
+    const total = base * this.windFactor();
+    if (lv === null) return `×${total.toFixed(1)}（默认）`;
+    return `×${total.toFixed(1)} · ${wind || `${lv}级`}`;
+  }
+
+  setCloudSpeed(multiplier: number): void {
+    const valid = Number.isFinite(multiplier) ? Math.max(0.25, Math.min(3, multiplier)) : 1;
+    storageController.setItem(CONFIG.STORAGE_KEYS.CLOUD_SPEED, String(valid));
+    this.applyWind();
+  }
+
+  private readCloudSpeed(): number {
+    const raw = Number(storageController.getItem(CONFIG.STORAGE_KEYS.CLOUD_SPEED));
+    return Number.isFinite(raw) && raw > 0 ? Math.max(0.25, Math.min(3, raw)) : 1;
   }
 
   // ---------- 滚动视差 / 页脚退场 ----------
@@ -996,6 +1241,28 @@ class SkyBackdrop {
     root.style.setProperty('--sky-scroll', String(Math.round(y)));
     root.style.setProperty('--sky-ground', this.groundProgress(y).toFixed(4));
     root.style.setProperty('--sky-star-alpha', this.starAlpha.toFixed(3));
+    this.updateMountainY(y);
+  }
+
+  /**
+   * 山脉锚在地面顶边上：地面在屏幕下边缘时，山脊顶端正好落在屏幕上边缘靠下一点。
+   *
+   * 视差系数 0.92 < 1 —— 山比地面"走得慢"，才有"很远"的感觉；
+   * 地面还在屏幕下方时算出的 top 会远大于视口高度，山脉自然在视野之外。
+   */
+  private updateMountainY(y: number): void {
+    const root = this.root;
+    if (!root) return;
+    const viewport = window.innerHeight;
+    const height = Math.round(viewport * MOUNTAIN_HEIGHT_RATIO);
+    const groundVp = this.groundTopDoc - y; // 地面顶边的视口坐标
+    const top = (groundVp - viewport) * MOUNTAIN_PARALLAX + (viewport - height);
+    root.style.setProperty('--sky-mountain-y', `${Math.round(top)}px`);
+    root.style.setProperty('--sky-mountain-height', `${height}px`);
+    // 整座山还在视口下方时直接隐藏：否则一整块近一屏高的 SVG 会白白参与合成
+    if (this.mountainsEl) {
+      this.mountainsEl.style.visibility = top > viewport ? 'hidden' : 'visible';
+    }
   }
 
   /**
@@ -1032,10 +1299,10 @@ class SkyBackdrop {
 
   /** 循环条件：星空闪烁或下雨时才需要 rAF，晴天夜里没星星就完全静止 */
   private syncStarLoop(): void {
-    const needsRain = this.rainAlpha > 0.01 || this.rainTarget > 0.01;
+    const needsPrecip = this.precipAlpha > 0.01 || this.precipTarget > 0.01;
     const needsStars = this.starAlpha > 0.02 || this.starTarget > 0.02;
     const shouldRun =
-      this.enabled && !prefersReducedMotion() && !document.hidden && (needsRain || needsStars);
+      this.enabled && !prefersReducedMotion() && !document.hidden && (needsPrecip || needsStars);
 
     if (shouldRun && !this.rafId) {
       this.lastDraw = 0;
@@ -1044,7 +1311,7 @@ class SkyBackdrop {
       cancelAnimationFrame(this.rafId);
       this.rafId = 0;
       this.drawStars(0, true);
-      this.drawRain(0);
+      this.drawPrecip(0, 0);
     }
   }
 
@@ -1060,24 +1327,38 @@ class SkyBackdrop {
     // 目标值平滑逼近：切时段/切主题/切天气时不会硬跳
     this.starAlpha += (this.starTarget - this.starAlpha) * 0.12;
     this.starTint = mix(this.starTint, this.starTintTarget, 0.12);
-    this.rainAlpha += (this.rainTarget - this.rainAlpha) * 0.09;
+    this.precipAlpha += (this.precipTarget - this.precipAlpha) * 0.09;
     this.root?.style.setProperty('--sky-star-alpha', this.starAlpha.toFixed(3));
 
     if (Math.abs(this.starTarget - this.starAlpha) < 0.004) this.starAlpha = this.starTarget;
-    if (Math.abs(this.rainTarget - this.rainAlpha) < 0.004) this.rainAlpha = this.rainTarget;
+    if (Math.abs(this.precipTarget - this.precipAlpha) < 0.004) {
+      this.precipAlpha = this.precipTarget;
+    }
 
     this.drawStars(time / 1000, false);
-    this.drawRain(dt);
+    this.drawPrecip(dt, time / 1000);
     this.syncStarLoop();
   };
 
+  /** 当前降水形态；天空关闭时一律不画 */
+  private precipKind(): PrecipKind {
+    if (!this.enabled) return 'none';
+    return WEATHER_PROFILES[this.effectiveWeather()].precip;
+  }
+
   /**
-   * 画雨：斜风细雨到密集雨幕都靠同一批粒子，只是数量与透明度随雨势缩放。
-   * dt 传秒，速度按 60fps 的观感标定。
+   * 画降水：雨 / 雪 / 雨夹雪共用同一批粒子，只是画法不同。
+   *
+   * - 雨：斜向的短线，落得快
+   * - 雪：缓慢飘落的白点，带左右摆动
+   * - 雨夹雪：一半画雪片、一半画雨丝（按粒子下标奇偶分），速度取中间值
+   *
+   * @param dt 本帧经过的秒数（真实经过时间，掉帧时速度不会变慢）
+   * @param seconds 累计秒数，用于雪片的摆动相位
    */
-  private drawRain(dt: number): void {
-    const ctx = this.rainCtx;
-    const canvas = this.rainCanvas;
+  private drawPrecip(dt: number, seconds: number): void {
+    const ctx = this.precipCtx;
+    const canvas = this.precipCanvas;
     if (!ctx || !canvas) return;
 
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
@@ -1085,29 +1366,48 @@ class SkyBackdrop {
     const h = canvas.height / dpr;
     ctx.clearRect(0, 0, w, h);
 
-    if (this.rainAlpha <= 0.01) return;
-    const active = Math.round(this.drops.length * this.rainAlpha);
+    const kind = this.precipKind();
+    if (kind === 'none' || this.precipAlpha <= 0.01) return;
+    const active = Math.round(this.drops.length * this.precipAlpha);
     if (active <= 0) return;
 
-    // 雨丝略带冷调，天色越暗越明显
+    // 风把降水吹斜：无风时是最基础的 0.26，大风时可以斜到 0.85
+    const slant = 0.26 + this.windSlant() * 0.6;
+    // 雪落得慢、雨夹雪居中、雨最快
+    const fallScale = kind === 'snow' ? 0.13 : kind === 'sleet' ? 0.45 : 1;
+
     ctx.lineWidth = 1.15;
     ctx.lineCap = 'round';
     for (let i = 0; i < active; i += 1) {
       const d = this.drops[i];
-      d.y += d.speed * dt;
-      d.x += d.speed * dt * 0.26; // 斜风
+      const isFlake = kind === 'snow' || (kind === 'sleet' && (i & 1) === 0);
+      // 雨夹雪里雪片再慢一档，才看得出"夹"的层次
+      const vy = d.speed * fallScale * (kind === 'sleet' && isFlake ? 0.7 : 1);
+
+      d.y += vy * dt;
+      d.x += vy * dt * slant;
       if (d.y > h + 20) {
         d.y = -30;
         d.x = Math.random() * (w + 260) - 130;
       }
       if (d.x > w + 140) d.x -= w + 260;
 
-      const a = d.alpha * this.rainAlpha;
-      ctx.strokeStyle = `rgba(196, 214, 236, ${a.toFixed(3)})`;
-      ctx.beginPath();
-      ctx.moveTo(d.x, d.y);
-      ctx.lineTo(d.x + d.len * 0.26, d.y + d.len);
-      ctx.stroke();
+      const a = Math.min(0.85, d.alpha * this.precipAlpha * (isFlake ? 1.25 : 1));
+      if (isFlake) {
+        // 雪片：左右摆动的正弦位移只在绘制时叠加，不积分进 x，避免越飘越偏
+        const sway = Math.sin(seconds * 0.9 + i) * 22;
+        const r = 0.8 + d.len * 0.055;
+        ctx.beginPath();
+        ctx.arc(d.x + sway, d.y, r, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${a.toFixed(3)})`;
+        ctx.fill();
+      } else {
+        ctx.strokeStyle = `rgba(196, 214, 236, ${a.toFixed(3)})`;
+        ctx.beginPath();
+        ctx.moveTo(d.x, d.y);
+        ctx.lineTo(d.x + d.len * slant, d.y + d.len);
+        ctx.stroke();
+      }
     }
   }
 
@@ -1196,6 +1496,15 @@ class SkyBackdrop {
 
     this.unsubscribeScroll = scrollDispatcher.subscribe(() => this.updateScroll());
 
+    // 缓存的地面坐标会过期：页脚异步插入、统计/标签渲染完、SPA 换页都会改变
+    // 地面在文档里的位置。这里用 ResizeObserver 自动重测，
+    // 否则山脉会画在几百像素之外（云朵退场也会算错时机）。
+    this.bodyObserver = new ResizeObserver(() => {
+      this.measureGround();
+      this.updateScroll();
+    });
+    this.bodyObserver.observe(document.body);
+
     this.unsubscribeTheme = themeController.onChange((theme) => {
       if (theme === this.theme) return;
       this.apply(false);
@@ -1249,8 +1558,17 @@ class SkyBackdrop {
   }
 
   private readWeatherMode(): SkyWeatherMode {
+    const isSkyWeather = (v: string): v is SkyWeather =>
+      v === 'clear' ||
+      v === 'cloudy' ||
+      v === 'overcast' ||
+      v === 'rain' ||
+      v === 'snow' ||
+      v === 'sleet' ||
+      v === 'storm';
+
     const raw = storageController.getItem(CONFIG.STORAGE_KEYS.SKY_WEATHER);
-    return raw === 'clear' || raw === 'cloudy' || raw === 'rain' || raw === 'storm' ? raw : 'auto';
+    return raw !== null && isSkyWeather(raw) ? raw : 'auto';
   }
 
   private readEnabled(): boolean {
@@ -1280,6 +1598,20 @@ export function setSkyWeatherMode(mode: SkyWeatherMode): void {
   skyBackdrop.setWeatherMode(mode);
 }
 
+/** 云朵飘动速度倍率（默认 1 = 改动前的速度；有真实风级时会再乘风力系数） */
+export function setSkyCloudSpeed(multiplier: number): void {
+  skyBackdrop.setCloudSpeed(multiplier);
+}
+
+export function getSkyCloudSpeed(): number {
+  return skyBackdrop.getCloudSpeed();
+}
+
+/** 设置面板里"云朵飘动速度"那行的说明（含真实风力） */
+export function getSkyCloudSpeedText(): string {
+  return skyBackdrop.getCloudSpeedText();
+}
+
 export function getSkyWeatherMode(): SkyWeatherMode {
   return skyBackdrop.getWeatherMode();
 }
@@ -1302,7 +1634,7 @@ export function isSkyEnabled(): boolean {
   return skyBackdrop.isEnabled();
 }
 
-/** 页面高度变化（SPA 导航、页脚加载完成）后重算"离地距离" */
+/** 页面高度变化（SPA 导航、页脚加载完成）后重算"离地距离"与山脉位置 */
 export function refreshSkyBackdrop(): void {
   skyBackdrop.refresh();
 }

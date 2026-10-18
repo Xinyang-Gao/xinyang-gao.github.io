@@ -27,6 +27,16 @@
   /* 闪电：横向位置与缩放，每次打闪由 JS 随机化 */
   --bolt-x: 42%;
   --bolt-scale: 1;
+  /* 云朵飘动：速度倍率与幅度（风力 + 设置共同决定，默认 1 / 3% = 改动前的手感） */
+  --sky-cloud-speed: 1;
+  --sky-drift-range: 3%;
+  /* 山脉：纵向位置与高度由 JS 按地面位置算出 */
+  --sky-mountain-y: 100vh;
+  --sky-mountain-height: 88vh;
+  /* 三层山脊的颜色（大气透视：越远越淡） */
+  --mountain-far: transparent;
+  --mountain-mid: transparent;
+  --mountain-near: transparent;
 }
 
 #sky-backdrop.is-ready { opacity: 1; }
@@ -159,7 +169,10 @@ body.has-sky .profile-card {
   position: absolute;
   color: var(--sky-cloud-color);
   transition: color 0.9s ease;
-  animation: sky-cloud-drift var(--drift-duration, 90s) ease-in-out infinite alternate;
+  /* 基础周期由云层随机给出（--drift-duration），再除以速度倍率：
+     倍率来自设置 × 真实风力；默认 1，也就是改动前的速度。 */
+  animation: sky-cloud-drift calc(var(--drift-duration, 90s) / var(--sky-cloud-speed, 1))
+    ease-in-out infinite alternate;
   animation-delay: var(--drift-delay, 0s);
 }
 .sky-cloud svg {
@@ -176,22 +189,94 @@ body.has-sky .profile-card {
 }
 
 @keyframes sky-cloud-drift {
-  from { transform: translateX(-3%); }
-  to { transform: translateX(3%); }
+  from { transform: translateX(calc(var(--sky-drift-range, 3%) * -1)); }
+  to { transform: translateX(var(--sky-drift-range, 3%)); }
 }
 
-/* ---------- 云量分档：晴 → 多云 → 雨 → 雷暴 ----------
-   每朵云带 data-min-weather（1 晴就有 / 2 多云起 / 3 雨起 / 4 仅雷暴），
-   这里纯靠 CSS 显隐切换档位，JS 不必重建 DOM。 */
-.sky-backdrop[data-weather='clear'] .sky-cloud:not([data-min-weather='1']),
-.sky-backdrop[data-weather='cloudy'] .sky-cloud[data-min-weather='3'],
-.sky-backdrop[data-weather='cloudy'] .sky-cloud[data-min-weather='4'],
-.sky-backdrop[data-weather='rain'] .sky-cloud[data-min-weather='4'] {
+/* ---------- 远景山脉 ----------
+   锚在地面顶边上（位置由 JS 按滚动算出），越远的山脊越高越淡。
+   图层顺序上夹在"中景云"与"近景云"之间：中景/远景的云在山后，近景的云在山前。 */
+.sky-mountains {
+  position: absolute;
+  left: -3%;
+  right: -3%;
+  height: var(--sky-mountain-height, 88vh);
+  top: var(--sky-mountain-y, 100vh);
+  pointer-events: none;
+}
+.sky-ridge {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.sky-ridge path {
+  stroke: none;
+  fill: var(--ridge-color, transparent);
+}
+.sky-ridge--far { --ridge-color: var(--mountain-far); }
+.sky-ridge--mid { --ridge-color: var(--mountain-mid); }
+.sky-ridge--near { --ridge-color: var(--mountain-near); }
+/* 山脚一层薄雾：山脊与地面衔接处不至于切出硬边 */
+.sky-mountains::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 15%;
+  background: linear-gradient(to top, var(--mountain-near), transparent);
+  pointer-events: none;
+}
+
+/* ---------- 阵风（大风时才出现） ---------- */
+.sky-gusts {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 0.9s ease;
+  pointer-events: none;
+}
+.sky-gusts.is-on { opacity: var(--gust-opacity, 0.5); }
+.sky-gust {
+  position: absolute;
+  left: -35%;
+  width: 28%;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.9) 42%,
+    rgba(255, 255, 255, 0.25) 78%,
+    transparent 100%
+  );
+  filter: blur(0.9px);
+  opacity: calc(0.45 * var(--gust-scale, 1));
+  animation: skyGust calc(var(--gust-duration, 3.4s) * var(--gust-speed, 1)) linear infinite;
+  animation-delay: var(--gust-delay, 0s);
+}
+@keyframes skyGust {
+  from { transform: translateX(0) rotate(-1.5deg); }
+  to { transform: translateX(470%) rotate(-1.5deg); }
+}
+
+/* ---------- 云量分档 ----------
+   每朵云带 data-min-weather（1 最少就有 / 2 / 3 / 4 仅最恶劣天气），
+   JS 只需写 data-cloud-tier（1=晴 2=多云 3=阴/雨/雪 4=雷暴），
+   这里纯靠 CSS 显隐，切换天气不必重建 DOM。 */
+.sky-backdrop[data-cloud-tier='1'] .sky-cloud[data-min-weather='2'],
+.sky-backdrop[data-cloud-tier='1'] .sky-cloud[data-min-weather='3'],
+.sky-backdrop[data-cloud-tier='1'] .sky-cloud[data-min-weather='4'],
+.sky-backdrop[data-cloud-tier='2'] .sky-cloud[data-min-weather='3'],
+.sky-backdrop[data-cloud-tier='2'] .sky-cloud[data-min-weather='4'],
+.sky-backdrop[data-cloud-tier='3'] .sky-cloud[data-min-weather='4'] {
   display: none;
 }
 
-/* ---------- 雨 ---------- */
-.sky-rain {
+/* ---------- 降水（雨 / 雪 / 雨夹雪，均由 JS 画在 canvas 上） ---------- */
+.sky-precip {
   position: absolute;
   inset: 0;
   display: block;
@@ -275,6 +360,9 @@ body.has-sky .profile-card {
 /* ---------- 降低动效偏好：去掉漂移与视差，只留静态配色 ---------- */
 @media (prefers-reduced-motion: reduce) {
   .sky-cloud { animation: none; }
+  .sky-gust { animation: none; }
+  /* 阵风是纯装饰的横向气流，减弱动效时干脆不显示 */
+  .sky-gusts { display: none; }
   .sky-cloud-layer,
   .sky-stars-wrap,
   .sky-celestial-ground {

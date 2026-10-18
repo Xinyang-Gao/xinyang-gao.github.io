@@ -6,11 +6,14 @@ import { CONFIG, safeLocal, safeSession, storageController } from '/js/core/core
 import { themeController, type ThemeMode } from '/js/core/theme-controller.js';
 import { showDetailDialog } from '/js/ui/detail-dialog.js';
 import {
+  getSkyCloudSpeed,
+  getSkyCloudSpeedText,
   getSkyPhase,
   getSkyWeatherMode,
   getSkyWeatherText,
   isSkyEnabled,
   setSkyEnabled,
+  setSkyCloudSpeed,
   setSkyPhase,
   setSkyWeatherMode,
   type SkyPhase,
@@ -28,7 +31,8 @@ type SettingKey =
   | typeof K.REVEAL_ENABLED
   | typeof K.SKY_TIME
   | typeof K.SKY_ENABLED
-  | typeof K.SKY_WEATHER;
+  | typeof K.SKY_WEATHER
+  | typeof K.CLOUD_SPEED;
 
 // ==================== 通用读写（唯一出口） ====================
 export function getSetting(
@@ -165,6 +169,20 @@ function applySkyWeather(mode: string): void {
   syncSkyHint();
 }
 
+/** 应用云朵飘动速度（默认 1；有真实风级时实际速度 = 本值 × 风力系数） */
+function applyCloudSpeed(multiplier: number): void {
+  setSkyCloudSpeed(multiplier);
+  const select = document.getElementById('cloudSpeedSelect') as HTMLSelectElement | null;
+  if (select) select.value = String(multiplier);
+  syncCloudSpeedHint();
+}
+
+/** 「云朵飘动速度」那行的说明：实际倍率 + 真实风力 */
+function syncCloudSpeedHint(): void {
+  const hint = document.getElementById('cloudSpeedHint');
+  if (hint) hint.textContent = `当前：${getSkyCloudSpeedText()}`;
+}
+
 /** 应用天空背景总开关（关掉后回到纯色底） */
 function applySkyEnabled(enabled: boolean): void {
   setSkyEnabled(enabled);
@@ -184,7 +202,10 @@ function isSkyWeatherMode(value: string): value is SkyWeatherMode {
     value === 'auto' ||
     value === 'clear' ||
     value === 'cloudy' ||
+    value === 'overcast' ||
     value === 'rain' ||
+    value === 'snow' ||
+    value === 'sleet' ||
     value === 'storm'
   );
 }
@@ -227,6 +248,7 @@ export function applyStoredSettings(): void {
   // 4. 天空背景（时段 + 天气 + 总开关）
   applySkyTime(String(getSetting(K.SKY_TIME, 'auto')));
   applySkyWeather(String(getSetting(K.SKY_WEATHER, 'auto')));
+  applyCloudSpeed(getNumberSetting(K.CLOUD_SPEED, 1));
   applySkyEnabled(isEnabled(K.SKY_ENABLED, true));
 }
 
@@ -241,6 +263,7 @@ export function bindSettingsControls(container: HTMLElement): void {
   const revealCheckbox = container.querySelector('#revealCheckbox') as HTMLInputElement | null;
   const skyTimeSelect = container.querySelector('#skyTimeSelect') as HTMLSelectElement | null;
   const skyWeatherSelect = container.querySelector('#skyWeatherSelect') as HTMLSelectElement | null;
+  const cloudSpeedSelect = container.querySelector('#cloudSpeedSelect') as HTMLSelectElement | null;
   const skyEnabledCheckbox = container.querySelector(
     '#skyEnabledCheckbox',
   ) as HTMLInputElement | null;
@@ -271,10 +294,14 @@ export function bindSettingsControls(container: HTMLElement): void {
   if (skyWeatherSelect) {
     skyWeatherSelect.value = getSkyWeatherMode();
   }
+  if (cloudSpeedSelect) {
+    cloudSpeedSelect.value = String(getSkyCloudSpeed());
+  }
   if (skyEnabledCheckbox) {
     skyEnabledCheckbox.checked = isSkyEnabled();
   }
   syncSkyHint();
+  syncCloudSpeedHint();
 
   // ---------- 事件绑定 ----------
 
@@ -321,6 +348,13 @@ export function bindSettingsControls(container: HTMLElement): void {
     const weather = (e.target as HTMLSelectElement).value;
     setSetting(K.SKY_WEATHER, weather);
     applySkyWeather(weather);
+  });
+
+  cloudSpeedSelect?.addEventListener('change', (e) => {
+    const multiplier = Number.parseFloat((e.target as HTMLSelectElement).value);
+    if (!Number.isFinite(multiplier)) return;
+    setSetting(K.CLOUD_SPEED, multiplier);
+    applyCloudSpeed(multiplier);
   });
 
   skyEnabledCheckbox?.addEventListener('change', (e) => {
@@ -417,8 +451,28 @@ export function showSettingsPanel(): void {
             <option value="auto">自动 · 真实天气</option>
             <option value="clear">晴天</option>
             <option value="cloudy">多云</option>
+            <option value="overcast">阴天</option>
             <option value="rain">雨天</option>
+            <option value="snow">雪天</option>
+            <option value="sleet">雨夹雪</option>
             <option value="storm">雷暴</option>
+          </select>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <span class="setting-label"><i class="fas fa-wind"></i> 云朵飘动速度</span>
+            <span class="setting-desc">
+              默认即为原始速度；拿到真实天气后会再按风力自动加成
+              <span class="setting-hint" id="cloudSpeedHint">当前：×1.0</span>
+            </span>
+          </div>
+          <select id="cloudSpeedSelect" class="setting-select">
+            <option value="0.5">很慢</option>
+            <option value="0.75">较慢</option>
+            <option value="1">默认</option>
+            <option value="1.5">较快</option>
+            <option value="2">很快</option>
           </select>
         </div>
 

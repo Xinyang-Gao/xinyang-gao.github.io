@@ -33,6 +33,8 @@ export interface WeatherInfo {
   humidity: number | null;
   windDirection: string;
   windPower: string;
+  /** 蒲福风级 0–17；解析不出来（或接口没给）时为 null */
+  windLevel: number | null;
   /** 一条最值得看的预警（可能没有） */
   alert: { title: string; level: string; text: string } | null;
   /** 本地取到这份数据的时间戳 */
@@ -65,6 +67,7 @@ function parseCache(raw: string | null): WeatherInfo | null {
       humidity: typeof data.humidity === 'number' ? data.humidity : null,
       windDirection: typeof data.windDirection === 'string' ? data.windDirection : '',
       windPower: typeof data.windPower === 'string' ? data.windPower : '',
+      windLevel: typeof data.windLevel === 'number' ? data.windLevel : null,
       alert: data.alert ?? null,
       fetchedAt: data.fetchedAt,
     };
@@ -106,6 +109,21 @@ function str(v: unknown): string {
   return typeof v === 'string' ? v.trim() : '';
 }
 
+/**
+ * 从风力文案里取风级：支持「2级」「3-4级」「微风」等写法。
+ * 区间取上限（"3-4级"按 4 算）：宁可让云飘快一点，也别弱化了真实的强风。
+ * 解析不出来返回 null —— 调用方据此回落到"默认风速"。
+ */
+function parseWindLevel(power: string): number | null {
+  const nums = power.match(/\d+(?:\.\d+)?/g);
+  if (nums) {
+    const parsed = nums.map(Number).filter((n) => Number.isFinite(n) && n >= 0 && n <= 17);
+    if (parsed.length) return Math.max(...parsed);
+  }
+  if (/微风|软风|轻风|静风|无风/.test(power)) return 1;
+  return null;
+}
+
 function num(v: unknown): number | null {
   const n = typeof v === 'number' ? v : Number(v);
   return Number.isFinite(n) ? n : null;
@@ -136,6 +154,7 @@ function normalize(raw: unknown): WeatherInfo | null {
     humidity: num(body.humidity),
     windDirection: str(body.wind_direction),
     windPower: str(body.wind_power),
+    windLevel: parseWindLevel(str(body.wind_power)),
     alert: firstAlert
       ? {
           title: str(firstAlert.title),
@@ -214,7 +233,10 @@ const ICON_WEATHER: Record<string, SkyWeather> = {
   '102': 'clear', // 少云
   '103': 'clear', // 晴间多云
   '101': 'cloudy', // 多云
-  '104': 'cloudy', // 阴
+  '104': 'overcast', // 阴
+  '404': 'sleet', // 雨夹雪
+  '405': 'sleet', // 雨雪天气
+  '406': 'sleet', // 阵雨夹雪
   '302': 'storm', // 雷阵雨
   '303': 'storm', // 强雷阵雨
   '304': 'storm', // 雷阵雨伴有冰雹
@@ -225,11 +247,11 @@ const ICON_WEATHER: Record<string, SkyWeather> = {
   '213': 'storm', // 热带风暴
 };
 
-/** 按首位数字兜底：3xx 雨、4xx 雪、5xx 雾霾沙尘、2xx 风 */
+/** 按首位数字兜底：3xx 雨、4xx 雪（雨夹雪已由精确表接管）、5xx 雾霾沙尘、2xx 风 */
 function byIconPrefix(icon: string): SkyWeather | null {
   const head = icon.charAt(0);
   if (head === '3') return 'rain';
-  if (head === '4') return 'rain'; // 雪同样按"有降水"处理
+  if (head === '4') return 'snow';
   if (head === '5') return 'cloudy';
   if (head === '2') return 'cloudy';
   return null;
@@ -247,10 +269,15 @@ export function mapWeatherToSky(info: WeatherInfo | null): SkyWeather {
   const byPrefix = byIconPrefix(info.icon);
   if (byPrefix) return byPrefix;
 
+  // 文本兜底：注意"雨夹雪"要排在"雪"和"雨"之前，否则会被误判成纯雨
   const w = info.weather;
   if (w.includes('雷')) return 'storm';
-  if (/雨|雪|冰雹/.test(w)) return 'rain';
-  if (/阴|多云|雾|霾|沙|尘/.test(w)) return 'cloudy';
+  if (/雨夹雪|雨雪|阵雨夹雪|冻雨/.test(w)) return 'sleet';
+  if (/冰雹/.test(w)) return 'storm';
+  if (w.includes('雪')) return 'snow';
+  if (w.includes('雨')) return 'rain';
+  if (/阴|雾|霾|沙|尘/.test(w)) return 'overcast';
+  if (w.includes('多云')) return 'cloudy';
   if (w.includes('晴')) return 'clear';
   return 'clear';
 }
