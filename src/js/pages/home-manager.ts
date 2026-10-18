@@ -319,10 +319,10 @@ export class HomePageManager extends PageBase {
     const box = document.getElementById('headlineWeather');
     if (!box) return;
 
+    const chipEl = document.getElementById('weatherChip');
     const iconEl = document.getElementById('weatherIcon');
     const textEl = document.getElementById('weatherText');
     const tempEl = document.getElementById('weatherTemp');
-    const metaEl = document.getElementById('weatherMeta');
     const alertEl = document.getElementById('weatherAlert');
     const alertTextEl = document.getElementById('weatherAlertText');
 
@@ -342,7 +342,9 @@ export class HomePageManager extends PageBase {
             : '';
         tempEl.innerHTML = `${info.temperature}°${feels}`;
       }
-      if (metaEl) {
+
+      // 城市 / 风向 / 湿度 / 更新时间不再占一行，收进站点自己的 tooltip
+      if (chipEl) {
         const place = [info.city, info.district].filter(Boolean).join(' · ');
         const wind = [info.windDirection, info.windPower].filter(Boolean).join(' ');
         const parts = [place];
@@ -354,18 +356,19 @@ export class HomePageManager extends PageBase {
           hour12: false,
         });
         parts.push(`${time} 更新`);
-        metaEl.textContent = parts.join(' · ');
+        chipEl.setAttribute('data-tooltip', parts.join(' · '));
       }
+
       if (alertEl && alertTextEl) {
         const alert = info.alert;
         if (alert?.title) {
           alertEl.hidden = false;
           alertTextEl.textContent = alert.title;
-          // 正文很长，挂到 title 上供悬停查看
-          alertEl.setAttribute('title', alert.text || alert.title);
+          // 用站点的 data-tooltip（TooltipManager）而不是浏览器原生 title
+          alertEl.setAttribute('data-tooltip', alert.text || alert.title);
         } else {
           alertEl.hidden = true;
-          alertEl.removeAttribute('title');
+          alertEl.removeAttribute('data-tooltip');
         }
       }
     };

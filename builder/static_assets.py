@@ -91,7 +91,6 @@ PAGE_TEMPLATES: dict[str, str] = {
     "timeline.html": "timeline",
     "stats.html": "stats",
     "contact.html": "contact",
-    "privacy.html": "privacy",
 }
 
 #: 全站静态资源规则 —— 新增资源只需在此追加一条，无需改动生成器代码

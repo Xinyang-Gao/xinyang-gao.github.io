@@ -1,6 +1,7 @@
 // /js/router/router.ts
 // 无刷新导航
 
+import { bindPrivacyLinks } from '/js/ui/privacy-dialog.js';
 import { Utils } from '/js/core/core.js';
 import { ensureScrollReveal } from '/js/ui/ui-effects.js';
 import { initHomePage } from '/js/pages/home-manager.js';
@@ -957,6 +958,8 @@ export async function loadFooter(): Promise<void> {
     reviveInjectedScripts(ph);
     // 页脚品牌 LOGO：滚动进入视口后勾边并显示
     initBrandLogos(ph);
+    // 「隐私政策」就地弹窗（页脚是 fetch 进来的，必须在这里绑定）
+    bindPrivacyLinks(ph);
   } catch (e) {
     console.error('[Router] 页脚加载失败:', e);
   }

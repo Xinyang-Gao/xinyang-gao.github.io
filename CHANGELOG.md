@@ -14,6 +14,35 @@
 - **修复** —— 缺陷修复
 - **安全** —— 安全相关的改进
 
+## [8.54.0] - 2026-10-18
+
+### 变更
+
+- 隐私政策不再有独立页面：`src/templates/privacy.html` 已删除，内容改为 TS 模块 `src/js/data/privacy-content.ts`
+  - 弹窗里按需 `import()` —— 用户不点开就不下载、不解析（实测点击前 `privacy-content.js` 请求为 0，点击后才有）
+  - 内容内置，不存在"取不到"的情况，因此移除了原先退回整页跳转的分支
+  - 顺带更新了两处已过时的文案：本地存储项「背景图开关」→「天空时段 / 天气」；第三方服务移除 Bing 每日壁纸，UAPI 补上天气，并加注"天气按 IP 定位、本地缓存半小时"
+- 页脚入口从 `<a href="/privacy/">` 改为 `<button type="button" data-privacy-dialog>`
+  - 独立页面已不存在，留一个会 404 的链接反而是错的；新增 `.legal-link-button` 抹平按钮默认外观，与旁边的 legal-link 视觉一致并补了 `:focus-visible` 焦点环
+- 构建：`builder/static_assets.py` 移除 `privacy.html` 映射，`builder/generators/aggregated.py` 的 sitemap 移除 `/privacy/` 条目
+
+## [8.53.0] - 2026-10-18
+
+### 变更
+
+- 首页抬头区重排为四层主次，解决此前"天气块长成第二块内容、与时钟抢主角位"的问题
+  - ① 时间：唯一的大字（约 77px，等宽细字重）→ ② 一行状态条（约 13px 次级灰）：日期 · 已运行时间 · 天气芯片，刻意压成一行 → ③ 站名（约 28px）→ ④ 欢迎语（主题色 + 分隔线）
+  - 天气的城市 / 风向 / 湿度 / 更新时间不再单独占一行，收进天气芯片的悬停提示
+- 天气预警提示改用站点自己的 tooltip（`data-tooltip`），不再依赖浏览器原生 `title`
+- 页脚「隐私政策」从跳转页面改为就地弹窗（与「站点设置」同一套 detail-dialog 外壳）
+  - 内容直接取自 `/privacy/`，不在两处各维护一份文案；会话内只解析一次，样式只注入一次
+  - 保留 `href`：中键 / Ctrl+点击 / 无 JS 时仍能打开独立页面；取不到内容时自动退回整页跳转
+  - 因 router 的 document 级点击监听不检查 `defaultPrevented`，链接加 `data-no-ajax` 并在处理函数里 `stopPropagation()`，避免弹窗开了页面也跳走
+
+### 新增
+
+- `src/js/ui/privacy-dialog.ts`：隐私政策弹窗的取数、解析与绑定
+
 ## [8.52.0] - 2026-10-18
 
 ### 新增

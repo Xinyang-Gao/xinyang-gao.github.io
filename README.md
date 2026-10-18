@@ -218,7 +218,6 @@ Website
 │  │  ├─ contact.html
 │  │  ├─ footer.html
 │  │  ├─ index.html
-│  │  ├─ privacy.html
 │  │  ├─ stats.html
 │  │  └─ timeline.html
 │  └─ works                        # 作品（Git 子模块）
@@ -298,7 +297,7 @@ Website
 - **作品列表页**：渲染 `dist/works/index.html`，类似文章列表，数据通过 `window.__STATIC_WORKS_DATA` 注入。
 - **友链页面**：渲染 `dist/friends/index.html`，包含友链卡片（带主题色）和申请要求说明。
 - **无 JS 回退页**：生成 `dist/nojs.html`，提供完全静态的内容列表，方便搜索引擎或禁用 JavaScript 的用户访问。
-- **子目录页面**：将 `src/templates/` 下的 `about.html`、`timeline.html`、`stats.html`、`contact.html`、`privacy.html` 复制到对应的 `dist/about/`、`dist/timeline/` 等目录。
+- **子目录页面**：将 `src/templates/` 下的 `about.html`、`timeline.html`、`stats.html`、`contact.html` 复制到对应的 `dist/about/`、`dist/timeline/` 等目录。
 - **前端构建**：跨平台调用 `npm run build`（Windows 自动使用 `npm.cmd` 并做引号转义）编译 TypeScript，实时流式输出 Vite 日志；**默认失败即中止整个构建**（`--no-strict` 可恢复旧的宽容行为）。可用 `--no-frontend` 跳过。
 - **CSS 压缩**：使用 `rcssmin` 压缩 `src/css/` 并输出到 `dist/css/`。
 - **静态资源同步**：调用 `static_assets.sync_static_assets()`，一次同步所有非构建资源，见下节。

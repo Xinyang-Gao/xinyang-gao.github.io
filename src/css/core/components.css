@@ -1088,6 +1088,44 @@ body.custom-cursor-enabled .list-item { cursor: none; }
   .settings-item + .settings-item { padding-top: 14px; }
 }
 
+/* ---------- 隐私政策弹窗（内容来自 /js/data/privacy-content.ts） ----------
+   外壳复用 detail-dialog；这里只做"塞进弹窗后"的必要调整：
+   正文不再是大卡片，标题由外壳提供，弹窗内自己滚动。 */
+.privacy-dialog-body {
+  /* 页面原样是 .container 大卡片，弹窗里改成无边框的纯正文 */
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  padding: 0;
+  max-width: none;
+}
+.privacy-dialog-body .privacy-hero {
+  margin-top: 0;
+  padding-top: 0;
+}
+/* 外壳已有标题，页面内的 h1 由 JS 摘掉；这里兜底防止改版后重复出现 */
+.privacy-dialog-body .privacy-hero h1 { display: none; }
+/* 正文长，弹窗里给滚动条留点内边距，避免贴着关闭按钮 */
+.privacy-dialog-body { padding-right: 4px; }
+
+/* 页脚入口是 button（独立页面已移除，不留会 404 的链接）：
+   抹掉浏览器默认按钮外观，让它和旁边的 legal-link 长一样 */
+.legal-link-button {
+  background: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  text-align: inherit;
+}
+.legal-link-button:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: 2px;
+  border-radius: 3px;
+}
+
 @media (min-width: 1024px) {
   .tags-filter { margin: 28px 0; }
   #search-container { margin: 28px 0; }

@@ -394,7 +394,6 @@ class AggregatedGenerator(OutputGenerator):
             "/works/": {"changefreq": "weekly", "priority": "0.8"},
             "/timeline/": {"changefreq": "weekly", "priority": "0.7"},
             "/stats/": {"changefreq": "weekly", "priority": "0.6"},
-            "/privacy/": {"changefreq": "yearly", "priority": "0.3"},
             "/contact/": {"changefreq": "monthly", "priority": "0.5"},
             "/friends/": {"changefreq": "weekly", "priority": "0.7"},
             "/rss.xml": {"changefreq": "daily", "priority": "0.5"},

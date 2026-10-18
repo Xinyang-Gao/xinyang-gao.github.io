@@ -55,32 +55,35 @@
   <div id="router-view">
     <div class="home-stage">
 
-      <!-- 第一屏：天空。屏幕正中 = 时间（主）→ 日期 → 站名 → 欢迎语 -->
+      <!-- 第一屏：天空。屏幕正中，四层主次：
+           ① 时间（绝对主角）→ ② 一行状态条（日期 · 运行时间 · 天气）
+           → ③ 站名 → ④ 欢迎语 -->
       <section class="home-sky" aria-label="站点抬头">
         <div class="sky-headline">
           <p class="headline-clock">
             <span class="clock-time" id="live-clock" aria-hidden="true">--:--:--</span>
-            <span class="clock-meta">
-              <span class="clock-date" id="headlineDate" aria-hidden="true"></span>
-              <span class="meta-sep" aria-hidden="true">·</span>
-              <span class="clock-uptime">
-                已运行
-                <span class="uptime-value" id="home-site-age" aria-hidden="true">—</span>
-              </span>
-            </span>
           </p>
 
-          <!-- 真实天气：请求不到时整块隐藏（hidden 由 JS 摘掉） -->
-          <p class="headline-weather" id="headlineWeather" hidden>
-            <span class="weather-primary">
-              <i class="weather-icon fas fa-sun" id="weatherIcon" aria-hidden="true"></i>
-              <span class="weather-text" id="weatherText"></span>
-              <span class="weather-temp" id="weatherTemp"></span>
+          <p class="headline-status">
+            <span class="clock-date" id="headlineDate" aria-hidden="true"></span>
+            <span class="status-sep" aria-hidden="true">·</span>
+            <span class="clock-uptime">
+              已运行
+              <span class="uptime-value" id="home-site-age" aria-hidden="true">—</span>
             </span>
-            <span class="weather-meta" id="weatherMeta"></span>
-            <span class="weather-alert" id="weatherAlert" hidden>
-              <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
-              <span id="weatherAlertText"></span>
+
+            <!-- 真实天气：请求不到时整块隐藏（hidden 由 JS 摘掉） -->
+            <span class="headline-weather" id="headlineWeather" hidden>
+              <span class="status-sep" aria-hidden="true">·</span>
+              <span class="weather-chip" id="weatherChip" role="note">
+                <i class="weather-icon fas fa-sun" id="weatherIcon" aria-hidden="true"></i>
+                <span class="weather-text" id="weatherText"></span>
+                <span class="weather-temp" id="weatherTemp"></span>
+              </span>
+              <span class="weather-alert" id="weatherAlert" role="note" hidden>
+                <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+                <span id="weatherAlertText"></span>
+              </span>
             </span>
           </p>
 
