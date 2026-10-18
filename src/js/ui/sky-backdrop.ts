@@ -4,6 +4,12 @@
 
 import { CONFIG, storageController } from '/js/core/core.js';
 import { themeController, type Theme } from '/js/core/theme-controller.js';
+import {
+  ensureWeather,
+  mapWeatherToSky,
+  subscribeWeather,
+  type WeatherInfo,
+} from '/js/core/weather-service.js';
 import { scrollDispatcher } from '/js/core/scroll-dispatcher.js';
 
 // ==================== 类型 ====================
@@ -11,8 +17,11 @@ import { scrollDispatcher } from '/js/core/scroll-dispatcher.js';
 /** 设置面板可选的天空时段（auto = 跟随真实时间连续变化） */
 export type SkyPhase = 'auto' | 'dawn' | 'morning' | 'noon' | 'afternoon' | 'dusk' | 'night';
 
-/** 天气：晴（默认）→ 多云 → 雨 → 雷暴，云量、雨势、天色逐级递进 */
+/** 天气：晴 → 多云 → 雨 → 雷暴，云量、雨势、天色逐级递进 */
 export type SkyWeather = 'clear' | 'cloudy' | 'rain' | 'storm';
+
+/** 天气来源：auto 跟随真实天气（UAPI），其余为手动指定 */
+export type SkyWeatherMode = 'auto' | SkyWeather;
 
 /**
  * 一份天气对天空的全部影响。
@@ -585,8 +594,13 @@ class SkyBackdrop {
   private lightningTimer: ReturnType<typeof setTimeout> | null = null;
 
   private phase: SkyPhase = 'auto';
-  private weather: SkyWeather = 'clear';
+  /** 用户选择的天气来源（默认 auto = 真实天气） */
+  private weatherMode: SkyWeatherMode = 'auto';
+  /** auto 模式下实际生效的天气；拿不到真实天气时退回晴天 */
+  private realWeather: WeatherInfo | null = null;
   private enabled = true;
+  /** 天气服务的订阅句柄 */
+  private unsubscribeWeather: (() => void) | null = null;
   private theme: Theme = 'light';
 
   /** 当前雨势 0 → 1，平滑逼近目标，切换天气时不会突然出现/消失 */
@@ -613,7 +627,7 @@ class SkyBackdrop {
     this.started = true;
 
     this.phase = this.readPhase();
-    this.weather = this.readWeather();
+    this.weatherMode = this.readWeatherMode();
     this.enabled = this.readEnabled();
     this.theme = themeController.getTheme();
 
@@ -621,6 +635,14 @@ class SkyBackdrop {
     this.apply(true);
     this.bindEvents();
     document.body.classList.toggle('has-sky', this.enabled);
+
+    // 订阅真实天气：拿到后（或后续刷新后）若处于 auto 就重算天空
+    this.unsubscribeWeather = subscribeWeather((info) => {
+      const changed = info?.weather !== this.realWeather?.weather;
+      this.realWeather = info;
+      if (this.weatherMode === 'auto' && changed) this.apply(false);
+    });
+    if (this.weatherMode === 'auto') void ensureWeather();
 
     // 天空是纯装饰，晚一帧再淡入，避免和加载遮罩抢首帧
     requestAnimationFrame(() => this.root?.classList.add('is-ready'));
@@ -638,19 +660,31 @@ class SkyBackdrop {
     return `${PHASE_LABEL[this.phase]} · ${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
   }
 
-  getWeather(): SkyWeather {
-    return this.weather;
+  /** 设置面板下拉里选中哪一项 */
+  getWeatherMode(): SkyWeatherMode {
+    return this.weatherMode;
   }
 
-  setWeather(weather: SkyWeather): void {
+  setWeatherMode(mode: SkyWeatherMode): void {
+    this.weatherMode = mode;
     // 平滑逼近依赖 rAF：先改再 apply，循环条件会自动补上/停掉
-    this.weather = weather;
     this.apply(false);
   }
 
-  /** 设置面板里"天空"那行的说明：时段 + 天气 */
+  /** 实际渲染用的天气：auto 取真实天气，取不到按晴天 */
+  private effectiveWeather(): SkyWeather {
+    return this.weatherMode === 'auto' ? mapWeatherToSky(this.realWeather) : this.weatherMode;
+  }
+
+  /** 设置面板里"天空"那行的说明：时段 + 天气（auto 时带出真实天气来源） */
   getWeatherText(): string {
-    return `${this.getStatusText()} · ${WEATHER_PROFILES[this.weather].label}`;
+    const base = `${this.getStatusText()} · ${WEATHER_PROFILES[this.effectiveWeather()].label}`;
+    if (this.weatherMode === 'auto') {
+      return this.realWeather
+        ? `${base}（真实天气 · ${this.realWeather.city}${this.realWeather.weather}）`
+        : `${base}（真实天气获取中…）`;
+    }
+    return base;
   }
 
   setPhase(phase: SkyPhase): void {
@@ -697,6 +731,8 @@ class SkyBackdrop {
     this.unsubscribeScroll = null;
     this.unsubscribeTheme?.();
     this.unsubscribeTheme = null;
+    this.unsubscribeWeather?.();
+    this.unsubscribeWeather = null;
     window.removeEventListener('resize', this.handleResize);
     document.removeEventListener('visibilitychange', this.handleVisibility);
     this.root?.remove();
@@ -884,8 +920,9 @@ class SkyBackdrop {
     const theme = themeController.getTheme();
     this.theme = theme;
 
-    const sky = resolveSky(hour, theme, this.weather);
-    const profile = WEATHER_PROFILES[this.weather];
+    const weather = this.effectiveWeather();
+    const sky = resolveSky(hour, theme, weather);
+    const profile = WEATHER_PROFILES[weather];
 
     // 渐变：写入非当前层，再交叉淡化
     const next = this.gradients[this.activeGradient === 0 ? 1 : 0];
@@ -906,7 +943,7 @@ class SkyBackdrop {
     // 地平线雾气：阴雨天更浓，把远景糊进天色里
     root.style.setProperty('--sky-haze-opacity', (0.32 * profile.haze).toFixed(3));
     root.dataset.phase = this.phase;
-    root.dataset.weather = this.weather;
+    root.dataset.weather = weather;
     root.dataset.theme = theme;
 
     // 星星：目标值交给 rAF 循环平滑逼近（含首次立即到位）
@@ -1085,7 +1122,7 @@ class SkyBackdrop {
       clearTimeout(this.lightningTimer);
       this.lightningTimer = null;
     }
-    const profile = WEATHER_PROFILES[this.weather];
+    const profile = WEATHER_PROFILES[this.effectiveWeather()];
     if (!profile.lightning || !this.enabled || prefersReducedMotion() || document.hidden) return;
 
     const delay = lerp(2400, 7200, Math.random());
@@ -1211,9 +1248,9 @@ class SkyBackdrop {
     return 'auto';
   }
 
-  private readWeather(): SkyWeather {
+  private readWeatherMode(): SkyWeatherMode {
     const raw = storageController.getItem(CONFIG.STORAGE_KEYS.SKY_WEATHER);
-    return raw === 'cloudy' || raw === 'rain' || raw === 'storm' ? raw : 'clear';
+    return raw === 'clear' || raw === 'cloudy' || raw === 'rain' || raw === 'storm' ? raw : 'auto';
   }
 
   private readEnabled(): boolean {
@@ -1239,12 +1276,12 @@ export function setSkyEnabled(enabled: boolean): void {
   skyBackdrop.setEnabled(enabled);
 }
 
-export function setSkyWeather(weather: SkyWeather): void {
-  skyBackdrop.setWeather(weather);
+export function setSkyWeatherMode(mode: SkyWeatherMode): void {
+  skyBackdrop.setWeatherMode(mode);
 }
 
-export function getSkyWeather(): SkyWeather {
-  return skyBackdrop.getWeather();
+export function getSkyWeatherMode(): SkyWeatherMode {
+  return skyBackdrop.getWeatherMode();
 }
 
 /** 设置面板里"天空"那行的说明：时段 + 天气 */

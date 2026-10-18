@@ -95,6 +95,69 @@
   font-weight: 600;
 }
 
+/* ---------- 真实天气条 ----------
+   排在「日期 · 已运行时间」之下、站名之上：属于站点状态信息，
+   比时钟弱一档，但要能一眼扫到；拿不到天气时整块 hidden。 */
+.headline-weather {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  margin: clamp(8px, 1.6vh, 16px) 0 0;
+  font-size: clamp(0.72rem, 1.5vw, 0.88rem);
+  text-shadow: var(--sky-text-shadow);
+}
+.headline-weather[hidden] { display: none; }
+
+.weather-primary {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  color: var(--text-color);
+}
+.weather-icon {
+  align-self: center;
+  font-size: 1.05em;
+  color: var(--accent-color);
+}
+.weather-text { font-weight: 600; letter-spacing: 0.04em; }
+.weather-temp {
+  font-family: var(--font-mono);
+  font-size: 1.2em;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+/* 体感温度：比实测温度弱一号，与实测温度之间留一点空隙 */
+.weather-feels {
+  margin-left: 7px;
+  opacity: 0.7;
+  font-size: 0.78em;
+  font-weight: 500;
+}
+
+.weather-meta {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  letter-spacing: 0.05em;
+  color: var(--text-secondary);
+}
+
+/* 预警：一枚描边胶囊，完整正文放在 title 里 */
+.weather-alert {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+  padding: 3px 12px;
+  border-radius: var(--radius-full);
+  border: 1px solid color-mix(in srgb, var(--danger-color) 45%, transparent);
+  background: color-mix(in srgb, var(--danger-color) 12%, transparent);
+  color: var(--danger-color);
+  font-size: 0.86em;
+  cursor: help;
+}
+.weather-alert[hidden] { display: none; }
+
 /* 站名：次之 */
 .headline-title {
   margin: 0 0 clamp(6px, 1.2vh, 14px);

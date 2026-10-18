@@ -70,6 +70,20 @@
             </span>
           </p>
 
+          <!-- 真实天气：请求不到时整块隐藏（hidden 由 JS 摘掉） -->
+          <p class="headline-weather" id="headlineWeather" hidden>
+            <span class="weather-primary">
+              <i class="weather-icon fas fa-sun" id="weatherIcon" aria-hidden="true"></i>
+              <span class="weather-text" id="weatherText"></span>
+              <span class="weather-temp" id="weatherTemp"></span>
+            </span>
+            <span class="weather-meta" id="weatherMeta"></span>
+            <span class="weather-alert" id="weatherAlert" hidden>
+              <i class="fas fa-triangle-exclamation" aria-hidden="true"></i>
+              <span id="weatherAlertText"></span>
+            </span>
+          </p>
+
           <h1 class="headline-title">
             <span class="headline-name">高新炀的小站</span>
             <span class="headline-en">GaoXinYang · Personal Site</span>

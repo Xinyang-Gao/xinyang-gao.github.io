@@ -59,8 +59,10 @@ export const CONFIG = {
     SKY_TIME: 'settings_sky_time',
     /** 渐变天空背景总开关（云朵 / 星空一并关闭） */
     SKY_ENABLED: 'settings_sky_enabled',
-    /** 天空天气：clear | cloudy | rain | storm */
+    /** 天空天气：auto | clear | cloudy | rain | storm */
     SKY_WEATHER: 'settings_sky_weather',
+    /** 真实天气数据缓存（30 分钟，由 weather-service 维护） */
+    WEATHER_CACHE: 'weather_cache',
   } as const,
   API: {
     WORKS: '/json/works.json',

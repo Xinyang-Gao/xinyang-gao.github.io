@@ -4,6 +4,7 @@ import { dataService } from '/js/core/data-service.js';
 import { CONFIG, Utils } from '/js/core/core.js';
 import { fetchAndReplaceContent } from '/js/router/router.js';
 import { clearGroundContent, setGroundContent } from '/js/ui/ground.js';
+import { ensureWeather, subscribeWeather, type WeatherInfo } from '/js/core/weather-service.js';
 
 /** UAPI 名言归一化结构 */
 interface Saying {
@@ -69,6 +70,7 @@ export class HomePageManager extends PageBase {
     this.startGreetingUpdater();
     this.startLiveClock();
     this.startUptime();
+    this.startWeather();
     this.setupReveal();
     this.bindQuoteRefresh();
     // 初始加载一条名言（必须 catch：否则异常会变成未处理的 Promise 拒绝）
@@ -290,6 +292,88 @@ export class HomePageManager extends PageBase {
     // 与页脚共用同一算法，但这里自己计时：抬头区要在首页可见时每秒跳
     const timer = setInterval(render, 1000);
     this.stack.addInterval(timer);
+  }
+
+  /* ---------- 真实天气条 ---------- */
+
+  /** 天气现象文本 → Font Awesome 图标 */
+  private weatherIconClass(info: WeatherInfo): string {
+    const w = info.weather;
+    if (w.includes('雷')) return 'fas fa-bolt';
+    if (w.includes('雪')) return 'fas fa-snowflake';
+    if (/大雨|暴雨/.test(w)) return 'fas fa-cloud-showers-heavy';
+    if (w.includes('雨')) return 'fas fa-cloud-rain';
+    if (/雾|霾/.test(w)) return 'fas fa-smog';
+    if (/沙|尘/.test(w)) return 'fas fa-wind';
+    if (w.includes('阴')) return 'fas fa-cloud';
+    if (w.includes('多云')) return 'fas fa-cloud-sun';
+    if (w.includes('晴')) return 'fas fa-sun';
+    return 'fas fa-cloud-sun';
+  }
+
+  /**
+   * 抬头区的天气条：始终显示真实天气（与背景天气是否手动指定无关）。
+   * 请求不到就整块隐藏 —— 不拿占位数据糊弄。
+   */
+  private startWeather(): void {
+    const box = document.getElementById('headlineWeather');
+    if (!box) return;
+
+    const iconEl = document.getElementById('weatherIcon');
+    const textEl = document.getElementById('weatherText');
+    const tempEl = document.getElementById('weatherTemp');
+    const metaEl = document.getElementById('weatherMeta');
+    const alertEl = document.getElementById('weatherAlert');
+    const alertTextEl = document.getElementById('weatherAlertText');
+
+    const render = (info: WeatherInfo | null): void => {
+      if (!info) {
+        box.hidden = true;
+        return;
+      }
+      box.hidden = false;
+
+      if (iconEl) iconEl.className = `weather-icon ${this.weatherIconClass(info)}`;
+      if (textEl) textEl.textContent = info.weather;
+      if (tempEl) {
+        const feels =
+          info.feelsLike !== null && Math.abs(info.feelsLike - info.temperature) >= 2
+            ? `<span class="weather-feels">体感 ${info.feelsLike}°</span>`
+            : '';
+        tempEl.innerHTML = `${info.temperature}°${feels}`;
+      }
+      if (metaEl) {
+        const place = [info.city, info.district].filter(Boolean).join(' · ');
+        const wind = [info.windDirection, info.windPower].filter(Boolean).join(' ');
+        const parts = [place];
+        if (wind) parts.push(wind);
+        if (info.humidity !== null) parts.push(`湿度 ${info.humidity}%`);
+        const time = new Date(info.fetchedAt).toLocaleTimeString('zh-CN', {
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+        });
+        parts.push(`${time} 更新`);
+        metaEl.textContent = parts.join(' · ');
+      }
+      if (alertEl && alertTextEl) {
+        const alert = info.alert;
+        if (alert?.title) {
+          alertEl.hidden = false;
+          alertTextEl.textContent = alert.title;
+          // 正文很长，挂到 title 上供悬停查看
+          alertEl.setAttribute('title', alert.text || alert.title);
+        } else {
+          alertEl.hidden = true;
+          alertEl.removeAttribute('title');
+        }
+      }
+    };
+
+    const unsubscribe = subscribeWeather(render);
+    this.stack.add(unsubscribe);
+    // 幂等：缓存新鲜就直接命中，过期才联网
+    void ensureWeather();
   }
 
   /* ---------- 滚动渐显 ---------- */

@@ -7,14 +7,14 @@ import { themeController, type ThemeMode } from '/js/core/theme-controller.js';
 import { showDetailDialog } from '/js/ui/detail-dialog.js';
 import {
   getSkyPhase,
-  getSkyWeather,
+  getSkyWeatherMode,
   getSkyWeatherText,
   isSkyEnabled,
   setSkyEnabled,
   setSkyPhase,
-  setSkyWeather,
+  setSkyWeatherMode,
   type SkyPhase,
-  type SkyWeather,
+  type SkyWeatherMode,
 } from '/js/ui/sky-backdrop.js';
 
 const K = CONFIG.STORAGE_KEYS;
@@ -155,10 +155,10 @@ function applySkyTime(phase: string): void {
   syncSkyHint();
 }
 
-/** 应用天空天气（晴 / 多云 / 雨 / 雷暴） */
-function applySkyWeather(weather: string): void {
-  const valid: SkyWeather = isSkyWeather(weather) ? weather : 'clear';
-  setSkyWeather(valid);
+/** 应用天空天气（auto = 跟随真实天气，其余为手动指定） */
+function applySkyWeather(mode: string): void {
+  const valid: SkyWeatherMode = isSkyWeatherMode(mode) ? mode : 'auto';
+  setSkyWeatherMode(valid);
 
   const select = document.getElementById('skyWeatherSelect') as HTMLSelectElement | null;
   if (select) select.value = valid;
@@ -179,8 +179,14 @@ function syncSkyHint(): void {
   if (hint) hint.textContent = `当前：${getSkyWeatherText()}`;
 }
 
-function isSkyWeather(value: string): value is SkyWeather {
-  return value === 'clear' || value === 'cloudy' || value === 'rain' || value === 'storm';
+function isSkyWeatherMode(value: string): value is SkyWeatherMode {
+  return (
+    value === 'auto' ||
+    value === 'clear' ||
+    value === 'cloudy' ||
+    value === 'rain' ||
+    value === 'storm'
+  );
 }
 
 function isSkyPhase(value: string): value is SkyPhase {
@@ -220,7 +226,7 @@ export function applyStoredSettings(): void {
 
   // 4. 天空背景（时段 + 天气 + 总开关）
   applySkyTime(String(getSetting(K.SKY_TIME, 'auto')));
-  applySkyWeather(String(getSetting(K.SKY_WEATHER, 'clear')));
+  applySkyWeather(String(getSetting(K.SKY_WEATHER, 'auto')));
   applySkyEnabled(isEnabled(K.SKY_ENABLED, true));
 }
 
@@ -263,7 +269,7 @@ export function bindSettingsControls(container: HTMLElement): void {
     skyTimeSelect.value = getSkyPhase();
   }
   if (skyWeatherSelect) {
-    skyWeatherSelect.value = getSkyWeather();
+    skyWeatherSelect.value = getSkyWeatherMode();
   }
   if (skyEnabledCheckbox) {
     skyEnabledCheckbox.checked = isSkyEnabled();
@@ -404,10 +410,11 @@ export function showSettingsPanel(): void {
           <div class="setting-info">
             <span class="setting-label"><i class="fas fa-cloud-showers-heavy"></i> 天空天气</span>
             <span class="setting-desc">
-              晴天、多云、雨天与雷暴：云量、雨势、闪电与天色各不相同
+              默认跟随真实天气（UAPI，半小时一更新）；也可手动指定云量、雨势与闪电
             </span>
           </div>
           <select id="skyWeatherSelect" class="setting-select">
+            <option value="auto">自动 · 真实天气</option>
             <option value="clear">晴天</option>
             <option value="cloudy">多云</option>
             <option value="rain">雨天</option>
