@@ -218,6 +218,22 @@ body.has-sky .profile-card {
 .sky-ridge--far { --ridge-color: var(--mountain-far); }
 .sky-ridge--mid { --ridge-color: var(--mountain-mid); }
 .sky-ridge--near { --ridge-color: var(--mountain-near); }
+/* 山体裙边。
+   山脉是 fixed 元素、位置由 JS 在 rAF 里更新，天然比随滚动移动的内容晚一帧；
+   快速上滚时这一帧滞后会把山脚"抬高"，露出一条天空色的缝。
+   山体本来就应当一直填到地平线以下（地表线以下由地面盖住），
+   所以这里干脆补一段足够长的同色实心，任何滚动速度下都不会露缝。 */
+.sky-mountains::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 120vh;
+  background: var(--mountain-near);
+  pointer-events: none;
+}
+
 /* 山脚一层薄雾：山脊与地面衔接处不至于切出硬边 */
 .sky-mountains::after {
   content: '';
