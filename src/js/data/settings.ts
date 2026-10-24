@@ -24,7 +24,6 @@ const K = CONFIG.STORAGE_KEYS;
 
 /** 允许被本模块读写/应用的设置键 */
 type SettingKey =
-  | typeof K.CURSOR_ENABLED
   | typeof K.LINK_WARNING_ENABLED
   | typeof K.THEME_MODE
   | typeof K.FONT_SCALE
@@ -254,9 +253,6 @@ export function applyStoredSettings(): void {
 
 // ==================== 绑定设置控件 ====================
 export function bindSettingsControls(container: HTMLElement): void {
-  const cursorCheckbox = container.querySelector(
-    '#cursorToggleCheckbox',
-  ) as HTMLInputElement | null;
   const linkCheckbox = container.querySelector('#linkWarningCheckbox') as HTMLInputElement | null;
   const themeSelect = container.querySelector('#themeModeSelect') as HTMLSelectElement | null;
   const fontScaleSelect = container.querySelector('#fontScaleSelect') as HTMLSelectElement | null;
@@ -271,9 +267,6 @@ export function bindSettingsControls(container: HTMLElement): void {
   const clearCookiesBtn = container.querySelector('#clearCookiesBtn') as HTMLButtonElement | null;
 
   // ---------- 初始化控件状态（仅设置值，不触发应用） ----------
-  if (cursorCheckbox) {
-    cursorCheckbox.checked = isEnabled(K.CURSOR_ENABLED, true);
-  }
   if (linkCheckbox) {
     linkCheckbox.checked = isEnabled(K.LINK_WARNING_ENABLED, true);
   }
@@ -304,14 +297,6 @@ export function bindSettingsControls(container: HTMLElement): void {
   syncCloudSpeedHint();
 
   // ---------- 事件绑定 ----------
-
-  cursorCheckbox?.addEventListener('change', (e) => {
-    const enabled = (e.target as HTMLInputElement).checked;
-    setSetting(K.CURSOR_ENABLED, enabled);
-    import('/js/ui/ui-effects.js').then((module) => {
-      if (module.refreshUIEffects) module.refreshUIEffects();
-    });
-  });
 
   linkCheckbox?.addEventListener('change', (e) => {
     const enabled = (e.target as HTMLInputElement).checked;
@@ -397,17 +382,6 @@ export function showSettingsPanel(): void {
             <option value="110">110%</option>
             <option value="120">120%</option>
           </select>
-        </div>
-
-        <div class="setting-item">
-          <div class="setting-info">
-            <span class="setting-label"><i class="fas fa-arrow-pointer"></i> 自定义光标</span>
-            <span class="setting-desc">启用独特的鼠标跟随动画效果</span>
-          </div>
-          <label class="toggle-switch">
-            <input type="checkbox" id="cursorToggleCheckbox">
-            <span class="toggle-slider"></span>
-          </label>
         </div>
 
         <div class="setting-item">

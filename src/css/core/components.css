@@ -640,46 +640,6 @@
   transform: scale(1.1) rotate(5deg);
 }
 
-/* ---------- 自定义光标 ---------- */
-.custom-cursor {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 0;
-  height: 0;
-  pointer-events: none;
-  z-index: var(--z-cursor);
-  opacity: 0;
-  transition: opacity 0.2s;
-}
-.custom-cursor.visible { opacity: 1; }
-.custom-cursor svg {
-  position: absolute;
-  transform: translate(-50%, -50%);
-  filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.2));
-}
-body.custom-cursor-enabled { cursor: none; }
-body.custom-cursor-enabled a,
-body.custom-cursor-enabled button,
-body.custom-cursor-enabled .nav-item,
-body.custom-cursor-enabled .list-item { cursor: none; }
-
-.custom-cursor-dot {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 10px;
-  height: 10px;
-  background: transparent;
-  border: 2px solid var(--accent-color);
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 10000;
-  transform: translate(-50%, -50%);
-  display: none;
-  transition: transform 0.05s linear;
-}
-
 /* ============================================
    通用跳转弹窗（复用友链样式）
    ============================================ */

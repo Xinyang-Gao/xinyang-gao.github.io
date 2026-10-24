@@ -51,7 +51,6 @@ export const CONFIG = {
     ARTICLES_DATA: 'articlesData',
     // 用户设置（唯一来源，避免多处重复定义）
     THEME_MODE: 'settings_theme_mode',
-    CURSOR_ENABLED: 'settings_cursor_enabled',
     LINK_WARNING_ENABLED: 'settings_link_warning_enabled',
     FONT_SCALE: 'settings_font_scale',
     REVEAL_ENABLED: 'settings_reveal_enabled',

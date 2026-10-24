@@ -43,7 +43,7 @@ export const PRIVACY_HTML = `
   <h2>本地存了什么</h2>
   <div class="storage-grid">
     <div class="storage-item"><i class="fas fa-palette"></i><span>主题 / 字体</span></div>
-    <div class="storage-item"><i class="fas fa-arrow-pointer"></i><span>光标 / 揭示动画</span></div>
+    <div class="storage-item"><i class="fas fa-arrow-pointer"></i><span>揭示动画</span></div>
     <div class="storage-item"><i class="fas fa-cloud-sun"></i><span>天空时段 / 天气</span></div>
     <div class="storage-item"><i class="fas fa-database"></i><span>文章 / 作品缓存</span></div>
     <div class="storage-item"><i class="fas fa-music"></i><span>播放器状态</span></div>

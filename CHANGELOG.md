@@ -14,6 +14,41 @@
 - **修复** —— 缺陷修复
 - **安全** —— 安全相关的改进
 
+## [8.58.1] - 2026-10-25
+
+### 修复
+
+- RSS `pubDate` / `lastBuildDate` 不符合标准 RFC 822
+  - 原写法 `dt.strftime("%a, %d %b %Y %H:%M:%S GMT")` 有两个问题：
+    1. **`%a` / `%b` 依赖进程 locale** —— 中文 locale 下会输出「周四」「十月」，那就完全不是 RFC 822 了
+    2. **时间被标成 GMT 但实际写的是本地时间** —— 订阅器会把它当 UTC 解析，时间错 8 小时
+  - 现新增 `rfc822()`：星期/月份改用固定的英文缩写表（与 locale 无关），时区统一输出站点所在的东八区 `+0800`
+  - 实测：35 条 pubDate 全部匹配 `^[A-Z][a-z]{2}, \d{2} [A-Z][a-z]{2} \d{4} \d{2}:\d{2}:\d{2} [+-]\d{4}$`，且全部可被 `email.utils.parsedate_to_datetime` 解析（订阅器的标准做法）
+
+- RSS 条目排序错误：原来是按**格式化后的字符串**排序，而字符串以星期名开头，等于按星期名的字母序排
+  - 现改为按时间戳排序。实测 35 条已严格按时间倒序（首条 2026-10-01，末条 2024-11-30）
+
+### 变更
+
+- 归档目录改用英文命名：`弃用文件夹/自定义鼠标/` → `deprecated/custom-cursor/`
+
+## [8.58.0] - 2026-10-24
+
+### 移除
+
+- 自定义鼠标（自定义光标 + 鼠标特效）已从站点移除，代码归档到 `deprecated/custom-cursor/`，**不再参与构建与部署**
+  - `src/js/ui/mouse-effects.ts`（1419 行，含 `MouseEffectManager` 长按连线/爆发粒子引擎与 `CustomCursor` 圆点+圆环光标）整体移入归档目录
+  - 归档目录同时保留 `custom-cursor.css`（原 `components.css` 的自定义光标样式）与 `README.md`（含完整的恢复步骤）
+  - 连带清理：
+    - `src/js/ui/ui-effects.ts` — 移除 `CustomCursor` 的 import、实例管理（`refreshUIEffects` 中的创建/销毁）与末尾的重新导出
+    - `src/js/core/core.ts` — 移除 `STORAGE_KEYS.CURSOR_ENABLED`
+    - `src/js/data/settings.ts` — 移除「自定义光标」开关（SettingKey 类型、控件引用、初始化、事件绑定、面板 HTML）
+    - `src/css/core/components.css` — 移除自定义光标样式块（`.custom-cursor` / `.custom-cursor-dot` / `body.custom-cursor-enabled`）
+    - `src/css/core/variables.css` — 移除 `--z-cursor`
+    - `src/js/data/privacy-content.ts` — 本地存储项「光标 / 揭示动画」改为「揭示动画」
+    - `README.md` — 移除技术栈表格、目录树、架构图、`/js/ui/` 说明中的鼠标特效条目
+  - 归档目录 `deprecated/` 位于仓库根目录，而 `tsconfig.json`（`src/js/**`）、`biome.json`（`src/js/**`）、Vite 入口均只扫描 `src/`，因此不会被编译、检查或打包
+
 ## [8.57.0] - 2026-10-24
 
 ### 变更

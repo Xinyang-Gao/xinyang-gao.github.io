@@ -12,7 +12,7 @@ import threading
 import time
 from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from html import escape
 from pathlib import Path
 from urllib.parse import quote
@@ -23,6 +23,7 @@ from rcssmin import cssmin
 from ..build_context import BuildContext
 
 # 使用相对导入
+
 from ..common import (
     ASSETS_DIR,
     CSS_DIST_DIR,
@@ -50,6 +51,46 @@ from ..common import (
     log_warning,
     save_json,
 )
+
+
+# ==================== RSS 时间格式 ====================
+
+# RSS 2.0 要求 pubDate / lastBuildDate 遵循 RFC 822。
+# 站点面向中文读者，统一用东八区（+0800）而不是 GMT/UTC 字面量 ——
+# 标成 GMT 但实际写的是本地时间，会让订阅器把时间算错 8 小时。
+SITE_TZ = timezone(timedelta(hours=8))
+
+# strftime 的 %a / %b 依赖进程 locale：中文 locale 下会输出「周四」「十月」，
+# 那就不是 RFC 822 了。这里固定用英文缩写表，保证任何环境下输出一致。
+_WD = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+_MON = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+
+
+def rfc822(dt: datetime) -> str:
+    """把 datetime 格式化成 RFC 822（如 Wed, 01 Oct 2026 00:00:00 +0800）。
+
+    朴素时间视为东八区；带时区的时间先转换到东八区再输出。
+    """
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=SITE_TZ)
+    else:
+        dt = dt.astimezone(SITE_TZ)
+    off = dt.utcoffset() or timedelta(0)
+    total = int(off.total_seconds())
+    sign = "+" if total >= 0 else "-"
+    total = abs(total)
+    return "%s, %02d %s %04d %02d:%02d:%02d %s%02d%02d" % (
+        _WD[dt.weekday()],
+        dt.day,
+        _MON[dt.month - 1],
+        dt.year,
+        dt.hour,
+        dt.minute,
+        dt.second,
+        sign,
+        total // 3600,
+        (total % 3600) // 60,
+    )
 from ..config import BuildConfig
 from ..seo import json_ld_webpage, seo_head_tags
 from ..static_assets import PAGE_TEMPLATES, static_sources_hash, sync_static_assets
@@ -269,24 +310,29 @@ class AggregatedGenerator(OutputGenerator):
         base_url = site.get("link", SITE_URL).rstrip('/')
 
         def parse_date_rfc822(date_str):
+            """把文章/作品里的日期文本解析成 RFC 822（东八区）。
+
+            只有日期没有时间时按当天 00:00 处理；解析不出来返回 None，该条不进 RSS。
+            """
             if not date_str or date_str == "未指定日期":
                 return None
+            dt = None
             try:
                 from dateutil import parser
                 dt = parser.parse(date_str, fuzzy=True)
-                return dt.strftime("%a, %d %b %Y %H:%M:%S GMT")
             except (ValueError, TypeError, OverflowError):
-                formats = ["%Y-%m-%d", "%Y年%m月%d日", "%Y-%m-%d %H:%M:%S", "%Y/%m/%d"]
-                for fmt in formats:
+                for fmt in ("%Y-%m-%d", "%Y年%m月%d日", "%Y-%m-%d %H:%M:%S", "%Y/%m/%d"):
                     try:
                         dt = datetime.strptime(date_str, fmt)
-                        if fmt in ("%Y-%m-%d", "%Y年%m月%d日", "%Y/%m/%d"):
-                            return dt.strftime("%a, %d %b %Y 00:00:00 GMT")
-                        else:
-                            return dt.strftime("%a, %d %b %Y %H:%M:%S GMT")
+                        break
                     except ValueError:
                         continue
-            return None
+            if dt is None:
+                return None
+            # 统一按东八区解释，排序才和展示一致
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=SITE_TZ)
+            return (rfc822(dt), dt.timestamp())
 
         items = []
         for art in context.articles:
@@ -303,7 +349,8 @@ class AggregatedGenerator(OutputGenerator):
                 "title": art.title,
                 "link": link,
                 "description": art.description,
-                "pubDate": pub,
+                "pubDate": pub[0],
+                "sortKey": pub[1],
                 "author": art.author,
                 "categories": art.tags
             })
@@ -316,12 +363,14 @@ class AggregatedGenerator(OutputGenerator):
                 "title": w.title,
                 "link": link,
                 "description": w.description,
-                "pubDate": pub,
+                "pubDate": pub[0],
+                "sortKey": pub[1],
                 "author": w.author,
                 "categories": w.tag
             })
 
-        items.sort(key=lambda x: x["pubDate"], reverse=True)
+        # 按时间戳排，而不是按格式化后的字符串（后者会按星期名的字母序排，顺序全乱）
+        items.sort(key=lambda x: x["sortKey"], reverse=True)
         max_items = config.get("filters", {}).get("max_items")
         if max_items and len(items) > max_items:
             items = items[:max_items]
@@ -333,7 +382,7 @@ class AggregatedGenerator(OutputGenerator):
             f'    <title>{xml_escape(site["title"])}</title>',
             f'    <link>{xml_escape(base_url)}</link>',
             f'    <description>{xml_escape(site["description"])}</description>',
-            f'    <lastBuildDate>{datetime.now().strftime("%a, %d %b %Y %H:%M:%S GMT")}</lastBuildDate>',
+            f'    <lastBuildDate>{rfc822(datetime.now(SITE_TZ))}</lastBuildDate>',
             f'    <language>{xml_escape(site["language"])}</language>',
             f'    <generator>{xml_escape(site["generator"])}</generator>',
             f'    <atom:link href="{base_url}/rss.xml" rel="self" type="application/rss+xml" />'

@@ -1,12 +1,11 @@
 // /js/ui/ui-effects.ts
-// 顶层 UI 编排：外链管理、滚动揭示、鼠标特效、工具提示
+// 顶层 UI 编排：外链管理、滚动揭示、工具提示
 // 设置读取统一走 settings.ts 的 isEnabled；
 // 同源判定统一走 Utils.isSameOrigin；调度统一走 core.scheduleIdle。
 
 import { CONFIG, Utils, scheduleIdle } from '/js/core/core.js';
 import { isEnabled } from '/js/data/settings.js';
 import { showJumpDialog, extractAvatarHtml } from '/js/ui/jump-dialog.js';
-import { CustomCursor } from './mouse-effects.js';
 import { initTooltips } from './tooltip.js';
 
 const K = CONFIG.STORAGE_KEYS;
@@ -210,24 +209,15 @@ export class ScrollReveal {
 
 let globalScrollRevealInstance: ScrollReveal | null = null;
 let uiEffectsInitialized = false;
-let customCursorInstance: CustomCursor | null = null;
 let externalLinkManagerInstance: ExternalLinkManager | null = null;
 
 export function refreshUIEffects(): void {
-  // 销毁现有实例
-  if (customCursorInstance) {
-    customCursorInstance.destroy();
-    customCursorInstance = null;
-  }
   if (externalLinkManagerInstance) {
     externalLinkManagerInstance.destroy();
     externalLinkManagerInstance = null;
   }
 
   // 根据当前设置重新创建（统一从 settings.ts 读取）
-  if (isEnabled(K.CURSOR_ENABLED, true)) {
-    customCursorInstance = new CustomCursor();
-  }
   if (isEnabled(K.LINK_WARNING_ENABLED, true)) {
     externalLinkManagerInstance = new ExternalLinkManager();
   }
@@ -269,6 +259,4 @@ export function initUIEffects(): void {
   );
 }
 
-// 重新导出鼠标特效与光标类，保持对外兼容
-export { MouseEffectManager, CustomCursor } from './mouse-effects.js';
-export { customCursorInstance, externalLinkManagerInstance };
+export { externalLinkManagerInstance };
