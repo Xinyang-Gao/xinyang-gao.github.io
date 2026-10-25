@@ -14,6 +14,41 @@
 - **修复** —— 缺陷修复
 - **安全** —— 安全相关的改进
 
+## [8.63.0] - 2026-10-25
+
+### 优化
+
+- **Vite 从「只转译」切到「转译 + 打包」**
+  - 以前 `output.preserveModules: true` 让 47 个模块原样输出，靠
+    "源码路径 == 产物路径"这层巧合，使 HTML / Python 生成器里硬编码的
+    `/js/pages/about.js` 之类成立，代价是首屏要发几十个 JS 请求
+  - 改成真正打包后，必须显式声明这些入口并固定输出文件名（`entryFileNames: '[name].js'`），
+    硬编码路径才继续有效。入口清单：
+
+    | 入口 | 谁在引用 |
+    |---|---|
+    | `js/entry/main` | 所有页面 |
+    | `js/pages/404` | `404.html` |
+    | `js/pages/about` | `about.html` |
+    | `js/pages/article` | 文章页（Python 生成器） |
+    | `js/pages/timeline` | `timeline.html` |
+    | `js/data/sw` | Service Worker（必须独立，不能与页面共享 chunk） |
+
+  - 原先的 `js/standalone/404` 与 `js/ui/personal-card` 两个入口已移除：
+    前者是历史命名、无引用（HTML 引的是 `js/pages/404.js`）；后者只被
+    `app-initializer` 静态导入，会自动并入主包
+  - 页面脚本（home-manager / search-render / stats-manager / friends-manager /
+    image-viewer / twikoo-manager / privacy-content）由 router 动态 import，
+    Rollup 自动切 chunk 并改写引用，无需声明
+  - **实测（1440×900，本地静态服务）**：首屏 JS 请求 **38 → 13**（−66%），
+    传输量 356.7 KB → 350.1 KB 基本持平；`dist/js` 文件数 50 → 23
+
+### 说明
+
+- 构建时两条 `INEFFECTIVE_DYNAMIC_IMPORT` 警告为预期行为，已在 `vite.config.mts`
+  注明原因（settings ↔ ui-effects 相互引用，动态 import 用于打破循环依赖，
+  改成静态 import 会产生真正的循环），不要"修"
+
 ## [8.62.1] - 2026-10-25
 
 ### 修复
