@@ -625,7 +625,7 @@ class AggregatedGenerator(OutputGenerator):
 <div id="router-view">
     <div class="two-column-layout">
         <aside class="sidebar-profile">
-            <div id="personal-card-container"></div>
+            <div id="site-info-card-container"></div>
         </aside>
         <main class="main-content-area">
             <div class="container">
@@ -1074,7 +1074,7 @@ class AggregatedGenerator(OutputGenerator):
         <div id="router-view">
             <div class="two-column-layout">
                 <aside class="sidebar-profile">
-                    <div id="personal-card-container"></div>
+                    <div id="site-info-card-container"></div>
                 </aside>
                 <main class="main-content-area">
                     <div class="container">

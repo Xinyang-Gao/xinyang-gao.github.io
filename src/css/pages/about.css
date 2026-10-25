@@ -783,6 +783,41 @@
   grid-template-columns: 1fr;
   gap: 0.9rem;
 }
+/* ---------- 技术栈 / 联系方式（原侧边栏个人信息卡的内容） ----------
+   这些东西讲的是「我是谁」，属于关于页而不是网站信息卡。
+   .stack-tags / .social-link 的本体在 core/layout.css，这里只管排版与间距。 */
+.stack-section,
+.contact-section {
+  margin-bottom: 28px;
+}
+
+.stack-note {
+  margin: 0 0 12px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+.stack-note a {
+  color: var(--accent-color);
+  text-decoration: none;
+}
+.stack-note a:hover {
+  text-decoration: underline;
+}
+
+.stack-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.about-social {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
 @media (min-width: 640px) {
   .about-grid {
     grid-template-columns: 1fr 1fr;

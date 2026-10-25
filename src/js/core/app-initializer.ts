@@ -15,7 +15,7 @@ import {
 import { initUIEffects, ensureScrollReveal } from '/js/ui/ui-effects.js';
 import { LazyImageLoader, GlobalImageManager } from '/js/ui/image-manager.js';
 import { initButtons, refreshButtonsOnNavigation } from '/js/ui/button-manager.js';
-import { renderPersonalCard } from '/js/ui/personal-card.js';
+import { renderSiteInfoCard } from '/js/ui/site-info-card.js';
 import { registerServiceWorker, initFooterStats } from '/js/data/site-state.js';
 import { handleListItemClick } from '/js/ui/list-events.js';
 import { LoadingOverlayManager } from '/js/ui/loading-overlay-manager.js';
@@ -78,7 +78,7 @@ export class AppInitializer {
     loadFooter().catch(console.warn);
 
     // 5. 渲染个人卡片
-    renderPersonalCard();
+    renderSiteInfoCard();
 
     // 6. 站点年龄更新
     startSiteAgeUpdater(CONFIG.SITE_BIRTH);
@@ -173,7 +173,7 @@ export class AppInitializer {
   private static initNavigationHandlers(): void {
     onNavigation(() => {
       // 同步：立即重新计算 UI 状态
-      renderPersonalCard();
+      renderSiteInfoCard();
       refreshButtonsOnNavigation();
       applyStoredSettings();
 

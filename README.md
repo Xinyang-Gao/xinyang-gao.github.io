@@ -202,7 +202,8 @@ Website
 │  │  │  ├─ list-events.ts
 │  │  │  ├─ loading-overlay-manager.ts
 │  │  │  ├─ navbar-manager.ts
-│  │  │  ├─ personal-card.ts
+│  │  │  ├─ site-info-card.ts
+│  │  │  ├─ site-ambient-text.ts
 │  │  │  ├─ theme.ts
 │  │  │  ├─ tooltip.ts
 │  │  │  └─ ui-effects.ts
@@ -484,7 +485,7 @@ flowchart TB
     subgraph UI组件与交互
         C --> AC[主题切换 theme-controller]
         C --> AD[导航栏 navbar-manager]
-        C --> AE[个人卡片 personal-card]
+        C --> AE[网站信息卡 site-info-card]
         C --> AF[浮动按钮 button-manager]
         C --> AH[图片查看器 image-viewer]
         C --> AI[跳转弹窗 jump-dialog]
@@ -527,7 +528,7 @@ flowchart TB
 | **`/js/pages/stats/`** | 统计图表定义：<br> • `chart-registry.ts` – 图表注册表与上下文类型<br> • `charts.ts` – 8 张图表的具体渲染逻辑，通过 `registerChart` 自注册 |
 | **`/js/core/data-service.ts`** | 数据服务单例：统一管理 API 请求，内存缓存（60 秒 TTL）+ 并发请求去重，持久化缓存由 Service Worker 负责，支持强制刷新与预热 |
 | **`/js/data/`** | 数据辅助模块：<br> • `searchWorker.ts` – 历史/预留 Web Worker 模块，当前 `SearchController` 未接入<br> • `settings.ts` – 用户设置管理（外链拦截、主题、字体、滚动揭示、天空时间、天气、云速）<br> • `site-state.ts` – 统计记录同步、Service Worker 注册、页脚信息填充 |
-| **`/js/ui/`** | UI 组件集合：<br> • `theme.ts` – 仅绑定导航栏主题开关，状态由 `theme-controller` 管理<br> • `navbar-manager.ts` – 导航栏 DOM 生成、移动端适配、标题替换模式<br> • `personal-card.ts` – 个人信息卡片渲染<br> • `button-manager.ts` – 返回顶部、目录（移动端）、设置按钮<br><br> • `image-manager.ts` – 全局图片懒加载与点击查看器绑定<br> • `image-viewer.ts` – 图片查看器（DOM + CSS Transform，缩放、旋转、拖拽、键盘控制）<br> • `jump-dialog.ts` – 通用跳转确认弹窗，支持锚点放大动画<br> • `detail-dialog.ts` – 通用详情弹窗（作品信息、设置面板）<br> • `list-events.ts` – 列表项点击处理（作品弹窗、文章导航）<br> • `loading-overlay-manager.ts` – 加载遮罩层，展示版本更新日志<br> • `sky-backdrop.ts` – 渐变天空背景：按时间插值天色、简笔云朵与星空随滚动视差、临近地面淡出；远景山脉分三层，各自独立定位与视差（远山更高更慢，近丘更低更快），山体为不透明实心层<br> • `ground.ts` – 全局地面（地平线）：分隔页面上与页面下，首页可在地面上放快捷导航<br> • `tooltip.ts` – 全局工具提示<br> • `ui-effects.ts` – 滚动揭示（IntersectionObserver）、外链拦截管理、UI 特效编排 |
+| **`/js/ui/`** | UI 组件集合：<br> • `theme.ts` – 仅绑定导航栏主题开关，状态由 `theme-controller` 管理<br> • `navbar-manager.ts` – 导航栏 DOM 生成、移动端适配、标题替换模式<br> • `site-info-card.ts` – 网站信息卡：站点名、运行时长、文章/作品数、建站日期与出口链接<br> • `site-ambient-text.ts` – 「此刻」文案生成器：把地理 / 天气 / 日期 / 季节揉成一句可读的话（变体按「日期+小时」确定性挑选，同一小时稳定；拿不到天气时退成只说时令）<br> • `button-manager.ts` – 返回顶部、目录（移动端）、设置按钮<br><br> • `image-manager.ts` – 全局图片懒加载与点击查看器绑定<br> • `image-viewer.ts` – 图片查看器（DOM + CSS Transform，缩放、旋转、拖拽、键盘控制）<br> • `jump-dialog.ts` – 通用跳转确认弹窗，支持锚点放大动画<br> • `detail-dialog.ts` – 通用详情弹窗（作品信息、设置面板）<br> • `list-events.ts` – 列表项点击处理（作品弹窗、文章导航）<br> • `loading-overlay-manager.ts` – 加载遮罩层，展示版本更新日志<br> • `sky-backdrop.ts` – 渐变天空背景：按时间插值天色、简笔云朵与星空随滚动视差、临近地面淡出；远景山脉分三层，各自独立定位与视差（远山更高更慢，近丘更低更快），山体为不透明实心层<br> • `ground.ts` – 全局地面（地平线）：分隔页面上与页面下，首页可在地面上放快捷导航<br> • `tooltip.ts` – 全局工具提示<br> • `ui-effects.ts` – 滚动揭示（IntersectionObserver）、外链拦截管理、UI 特效编排 |
 | **`/js/core/core.ts`** | 核心工具库：配置常量、存储控制器（含 LZ 压缩兼容）、空闲调度、导航事件总线、通用工具函数、性能监控器 |
 | **`/js/core/weather-service.ts`** | 真实天气查询（UAPI）：30 分钟缓存、并发去重、失败降级为晴天；按天气图标码映射背景天气，覆盖晴/多云/阴/雨/雪/雨夹雪/雷暴/雾/霾/沙尘/大风 |
 | **`/js/core/page-runtime.ts`** | 页面运行时：站点年龄更新、页脚更新时间 |
@@ -814,7 +815,7 @@ cover: /assets/cover.webp  # 可选，文章列表项的封面/背景图
 
 ### 8.1 添加新页面
 
-1. 在 `src/templates/` 下创建新的 HTML 模板，包含 `#navbar-placeholder`、`#personal-card-container`、`#footer-placeholder`、`#router-view` 等占位。
+1. 在 `src/templates/` 下创建新的 HTML 模板，包含 `#navbar-placeholder`、`#site-info-card-container`、`#footer-placeholder`、`#router-view` 等占位。
 2. 在 `builder/static_assets.py` 的 `PAGE_TEMPLATES` 字典中添加映射（模板名 → 子目录），构建时自动复制到 `dist/<子目录>/index.html`。
 3. 若页面需要动态初始化，在 `src/js/pages/` 下创建对应的页面管理器，推荐继承 `PageBase`。
 4. 在 `src/js/router/router.ts` 的 `registerDefaultPages()` 中使用 `PageManagerRegistry.register(pattern, factory)` 注册该页面管理器。
