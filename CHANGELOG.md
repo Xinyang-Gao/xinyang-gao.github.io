@@ -14,6 +14,45 @@
 - **修复** —— 缺陷修复
 - **安全** —— 安全相关的改进
 
+## [8.64.0] - 2026-10-25
+
+### 优化
+
+- **页面切换改用浏览器原生 View Transitions API**
+  - 旧实现是手写高度动画：内容淡出 170ms → 卡片收缩 260ms → 换 DOM → 扩张 360ms，
+    四段时序靠 `setTimeout` 串起来，全程占主线程，主线程一抖动就掉帧
+  - 现在交给 `document.startViewTransition()`：合成器驱动，不占主线程，
+    `#router-view` 前后尺寸不同时由浏览器自动 morph（就是原来的"卡片收缩与扩张"）
+  - **CSS 关键一行**：`:root { view-transition-name: none }`。默认的整页快照会把
+    天空、导航栏、页脚一起拍进去转场 —— 它们是跨页持久的，不该跟着闪。
+    关掉之后只有 `#router-view` 参与，其余部分转场期间照常渲染（实测转场中
+    天空与导航栏像素与切换前完全一致）
+  - 动画时长：group 340ms（尺寸 / 位置插值）、旧内容淡出 160ms、
+    新内容淡入 280ms + 80ms 延迟。实测三个动画的设定值都正确生效
+  - **删掉了整套旧动画代码**：`morphSwap` / `fadeSwap` / `settle` /
+    `wait` / `waitFrame` / `clamp`、四个时长常量、以及
+    `.is-page-morphing` / `.is-content-muted` 两组 CSS
+
+### 修复
+
+- **滚动恢复必须塞进转场回调里同步做**（新增 `ScrollManager.restoreSync`）
+  - `startViewTransition` 的回调一返回就捕获新快照，而原来的 `restore()` 把
+    `scrollTo` 放进 `requestAnimationFrame` —— 那样新快照拍到的是**旧滚动位置**的
+    视口，转场全程展示旧位置、快照一撤才跳到目标位置，等于跳两下
+  - 实测：滚动到 1200px 后跳转，转场结束 `scrollY = 0`（原来靠"滚过 48px 就退化成
+    纯渐变"绕开这个问题，现在不需要这个判断了）
+- **转场被跳过时的 unhandled rejection**
+  - 快速连点（上一次转场没结束就点下一个链接）时，`ready` / `updateCallbackDone` /
+    `finished` **三个** promise 都会 reject；只处理 `finished` 会让前两个变成
+    unhandled rejection，控制台刷 `Transition was skipped. New ViewTransition started`
+  - 一并吞掉后实测：快速连点 3 次，最终页面内容长度 151986（与单次导航基线一致），
+    控制台无报错。修复前是 27121（内容没渲染完）
+
+### 降级
+
+- 浏览器不支持，或用户偏好 `prefers-reduced-motion: reduce` → 直接同步换 DOM，
+  不做动画（reduce 下"瞬间切换"符合规范）。实测两条路径导航均正常
+
 ## [8.63.0] - 2026-10-25
 
 ### 优化

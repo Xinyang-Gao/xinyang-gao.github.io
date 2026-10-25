@@ -572,20 +572,59 @@
   transition-duration: 0.5s;
 }
 
-/* ---------- 页面切换：卡片收缩 / 扩张 + 内容渐变 ----------
-   高度由 router.ts 以内联样式驱动（收缩 → 扩张），这里只负责：
-     1. 动画期间裁掉溢出内容（否则高度变小会露出下面的页脚）
-     2. 直接子元素的淡出 / 淡入
-   两者分开是为了内容不被缩放——缩放会把文字压扁，看着像整页被抽走。 */
-#router-view.is-page-morphing {
-  overflow: hidden;
+/* ---------- 页面切换：View Transitions ----------
+   换页动画交给浏览器原生 API（合成器驱动，不占主线程），这里只定义观感。
+
+   `view-transition-name: none` 用在 :root 上是关键：默认的整页快照会把
+   天空、导航栏、页脚一起拍进去转场 —— 它们是跨页持久的，不该跟着闪。
+   关掉之后只有 #router-view 参与，其余部分在转场期间照常渲染。 */
+:root {
+  view-transition-name: none;
 }
-#router-view.is-page-morphing > * {
-  transition: opacity 0.22s ease, transform 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+#router-view {
+  view-transition-name: page-content;
 }
-#router-view.is-page-morphing.is-content-muted > * {
-  opacity: 0;
-  transform: translateY(-10px);
+
+/* 尺寸 / 位置由浏览器在两张快照之间插值（即"卡片收缩与扩张"）。
+   时长压到 0.34s：快照捕获本身要占 100~200ms（元素越高越贵），
+   总切换时间要对齐改造前手写动画的 790ms，动画段就得让出来。 */
+::view-transition-group(page-content) {
+  animation-duration: 0.34s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* 快照按自身尺寸渲染并顶部对齐：首页与文章页高度可能差好几倍，
+   若让默认行为拉伸填充，文字会被压扁或拉长。 */
+::view-transition-old(page-content),
+::view-transition-new(page-content) {
+  height: auto;
+  object-fit: cover;
+  object-position: center top;
+}
+
+::view-transition-old(page-content) {
+  animation: vt-page-out 0.16s cubic-bezier(0.4, 0, 1, 1) both;
+}
+::view-transition-new(page-content) {
+  animation: vt-page-in 0.28s cubic-bezier(0, 0, 0.2, 1) 0.08s both;
+}
+
+@keyframes vt-page-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+@keyframes vt-page-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* 兜底：JS 侧在 reduce 偏好下已跳过转场，这里再挡一层（例如 CSS 先于 JS 生效） */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(page-content),
+  ::view-transition-old(page-content),
+  ::view-transition-new(page-content) {
+    animation: none !important;
+  }
 }
 
 .draw-animation-paper {
@@ -610,9 +649,6 @@
 @keyframes fadeOutAndShrink {
   0% { opacity: 1; transform: scale(1); }
   100% { opacity: 0; transform: scale(0.96); }
-}
-#router-view {
-  transition: opacity 0.25s ease;
 }
 
 /* ---------- ICP ---------- */

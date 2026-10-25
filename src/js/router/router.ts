@@ -25,13 +25,6 @@ declare global {
 
 // ==================== 常量定义 ====================
 const ROUTER_VIEW_ID = 'router-view';
-/** 内容渐变（淡出 / 淡入）时长 */
-const TRANSITION_FADE_MS = 170;
-/** 卡片收缩 / 扩张时长 */
-const TRANSITION_COLLAPSE_MS = 260;
-const TRANSITION_EXPAND_MS = 360;
-/** 卡片收缩到原高度的比例（并夹在 [120, 360]px 之间，避免极端页面抽风） */
-const COLLAPSE_RATIO = 0.42;
 const MAX_CACHE_SIZE = 50;
 const CACHE_TTL = 600_000; // 10分钟
 const SCROLL_DEBOUNCE_MS = 80;
@@ -133,6 +126,21 @@ class ScrollManager {
         left: targetX,
         behavior: smooth ? 'smooth' : ('instant' as ScrollBehavior),
       });
+    });
+  }
+
+  /**
+   * 同步恢复滚动位置（同 `restore(pos, false)`，但不进 rAF）。
+   *
+   * View Transitions 专用：`startViewTransition` 的回调一返回就捕获新快照，
+   * 而 rAF 里的 scrollTo 要等下一帧 —— 那样新快照拍到的是**旧滚动位置**的
+   * 视口，转场结束快照一撤，页面再跳到目标位置，等于跳了两下。
+   */
+  restoreSync(pos: { x: number; y: number } | null | undefined): void {
+    window.scrollTo({
+      top: pos?.y ?? 0,
+      left: pos?.x ?? 0,
+      behavior: 'instant' as ScrollBehavior,
     });
   }
 }
@@ -378,13 +386,35 @@ function extractPageContent(html: string, url: string): ExtractedContent {
 }
 
 /**
- * 页面切换：卡片（#router-view）只做收缩 → 扩张，内容只做渐变。
+ * 浏览器是否支持**同文档** View Transitions。
  *
- * 旧实现是整块内容 `scale(0.92)` + 淡出，缩放会把文字一起压扁，
- * 视觉上像"整个页面被抽走"；现在改成高度动画：容器自己是那张卡片，
- * 高度收到一半再张开，里面的内容在收拢时淡出、张开时淡入，两者互不干扰。
+ * 注意区分：跨文档（`@view-transition { navigation: auto }`）要求更高
+ * （Chrome 126+ / Safari 18.2+），这里是站内软导航走的
+ * `document.startViewTransition()`，Chrome 111+ / Safari 18+ / Firefox 144+ 即可。
  */
-function replaceContentWithTransition(mainHtml: string): Promise<boolean> {
+function supportsViewTransitions(): boolean {
+  return typeof document.startViewTransition === 'function';
+}
+
+function prefersReducedMotion(): boolean {
+  return typeof window.matchMedia === 'function'
+    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    : false;
+}
+
+/**
+ * 页面切换：用浏览器原生的 View Transitions API。
+ *
+ * 旧实现是手写高度动画（收缩 → 换 DOM → 扩张）加内容渐变，两套时序靠
+ * setTimeout 串起来，主线程的任何抖动都会让它掉帧。现在交给浏览器：
+ * 合成器驱动、不占主线程，而且#router-view 前后尺寸不同时会自动 morph。
+ *
+ * @param afterSwap 紧跟在 DOM 替换之后、**同步**执行的收尾动作。
+ *   必须同步：View Transitions 在回调返回后立即捕获新快照，
+ *   任何异步（哪怕一个 rAF）的动作都会落在快照之后，转场结束才生效 ——
+ *   滚动恢复就属于这一类，放在外面会让页面转场完再跳一下。
+ */
+function replaceContentWithTransition(mainHtml: string, afterSwap?: () => void): Promise<boolean> {
   const currentView = document.getElementById(ROUTER_VIEW_ID);
   if (!currentView || !mainHtml) return Promise.resolve(false);
 
@@ -394,93 +424,34 @@ function replaceContentWithTransition(mainHtml: string): Promise<boolean> {
   if (!newView) return Promise.resolve(false);
 
   const newEl = newView as HTMLElement;
+  const update = (): void => {
+    currentView.replaceWith(newEl);
+    afterSwap?.();
+  };
 
-  // 已经滚到页面中段时不收缩：文档变矮会让浏览器夹取滚动位置，
-  // 那一下跳动比动画本身更显眼，退化成纯渐变。
-  const canMorph = !prefersReducedMotion() && window.scrollY < 48;
+  // 降级：浏览器不支持，或用户偏好减少动效 —— 直接换 DOM，不做动画。
+  // （降低动效偏好下"瞬间切换"是符合规范的行为，不需要退化成渐变）
+  if (!supportsViewTransitions() || prefersReducedMotion()) {
+    update();
+    return Promise.resolve(true);
+  }
 
-  return (canMorph ? morphSwap(currentView, newEl) : fadeSwap(currentView, newEl)).then(
+  const transition = document.startViewTransition(update);
+
+  /**
+   * 转场被跳过时（典型场景：上一次转场还没结束就又点了别的链接），
+   * `ready` / `updateCallbackDone` / `finished` **三个** promise 都会 reject。
+   * 只处理 finished 的话，另外两个会变成 unhandled rejection，控制台刷
+   * "Transition was skipped. New ViewTransition started"。这里一并吞掉 ——
+   * 那一刻 DOM 其实已经换好了，跳过动画不影响结果。
+   */
+  transition.ready.catch(() => {});
+  transition.updateCallbackDone.catch(() => {});
+
+  return transition.finished.then(
     () => true,
-    () => false,
+    () => true,
   );
-}
-
-function wait(ms: number): Promise<void> {
-  return new Promise((resolve) => window.setTimeout(resolve, ms));
-}
-
-/** 等一帧：确保新节点已完成布局，能读出真实高度 */
-function waitFrame(): Promise<void> {
-  return new Promise((resolve) => requestAnimationFrame(() => resolve()));
-}
-
-function prefersReducedMotion(): boolean {
-  return typeof window.matchMedia === 'function'
-    ? window.matchMedia('(prefers-reduced-motion: reduce)').matches
-    : false;
-}
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(max, Math.max(min, value));
-}
-
-function settle(el: HTMLElement): void {
-  el.classList.remove('is-page-morphing', 'is-content-muted');
-  el.style.removeProperty('height');
-  el.style.removeProperty('transition');
-  el.style.removeProperty('overflow');
-}
-
-/** 完整的"收缩 → 换内容 → 扩张" */
-async function morphSwap(currentView: HTMLElement, newEl: HTMLElement): Promise<void> {
-  const startHeight = currentView.getBoundingClientRect().height;
-  const collapsed = Math.round(clamp(startHeight * COLLAPSE_RATIO, 120, 360));
-
-  // 1) 内容淡出，卡片高度先锁定在当前值（否则下一步的高度动画没有起点）
-  currentView.classList.add('is-page-morphing', 'is-content-muted');
-  currentView.style.height = `${Math.round(startHeight)}px`;
-  await wait(TRANSITION_FADE_MS);
-  if (!currentView.parentNode) return;
-
-  // 2) 卡片收缩
-  currentView.style.transition = `height ${TRANSITION_COLLAPSE_MS}ms cubic-bezier(0.4, 0, 0.2, 1)`;
-  currentView.style.height = `${collapsed}px`;
-  await wait(TRANSITION_COLLAPSE_MS);
-  if (!currentView.parentNode) return;
-
-  // 3) 换 DOM：新卡片从同一个收缩高度起步，看上去是同一张卡片在张开
-  newEl.classList.add('is-page-morphing', 'is-content-muted');
-  newEl.style.height = `${collapsed}px`;
-  currentView.replaceWith(newEl);
-  await waitFrame();
-
-  // 4) 量目标高度；超长页面只展开到一屏多一点，剩下的部分在视野外，
-  //    交还文档流时不会有可见跳动
-  const contentHeight = Math.max(collapsed, newEl.scrollHeight);
-  const expandTarget = Math.round(Math.min(contentHeight, window.innerHeight * 0.88));
-
-  // 5) 卡片扩张 + 内容渐变回来
-  newEl.style.transition = `height ${TRANSITION_EXPAND_MS}ms cubic-bezier(0.22, 1, 0.36, 1)`;
-  newEl.style.height = `${expandTarget}px`;
-  newEl.classList.remove('is-content-muted');
-  await wait(TRANSITION_EXPAND_MS);
-
-  // 6) 交还文档流：后续图片加载撑高也不会被裁掉
-  settle(newEl);
-}
-
-/** 退化路径：只做内容渐变，不动高度（滚动位置较深 / 降低动效偏好） */
-async function fadeSwap(currentView: HTMLElement, newEl: HTMLElement): Promise<void> {
-  currentView.classList.add('is-page-morphing', 'is-content-muted');
-  await wait(TRANSITION_FADE_MS);
-  if (!currentView.parentNode) return;
-
-  newEl.classList.add('is-page-morphing', 'is-content-muted');
-  currentView.replaceWith(newEl);
-  await waitFrame();
-  newEl.classList.remove('is-content-muted');
-  await wait(TRANSITION_FADE_MS + 80);
-  settle(newEl);
 }
 
 /** 页面导航请求超时（毫秒）：弱网下到点走错误弹窗，而非无限转圈 */
@@ -576,8 +547,20 @@ async function processContent(
     );
   }
 
-  // 4. DOM 替换与动画
-  await replaceContentWithTransition(content.mainHtml);
+  /**
+   * 4. DOM 替换与动画。
+   *
+   * 滚动恢复必须**塞进转场回调里同步做**（`restoreSync` 而非 `restore`）：
+   * View Transitions 在回调返回那一刻捕获新快照，晚一帧的滚动就拍不进去，
+   * 于是转场全程展示旧位置、结束时才跳到新位置。
+   *
+   * popstate 回到历史位置；新导航一律先到顶部（锚点滚动见第 6 步，
+   * 它是平滑滚动，本就不该被快照捕获）。
+   */
+  const savedPos = isPopState ? (scrollData ?? (history.state as HistoryState)?.scroll) : null;
+  await replaceContentWithTransition(content.mainHtml, () => {
+    scrollManager.restoreSync(savedPos);
+  });
   if (isStale()) return false;
 
   // 5. 更新元数据
@@ -585,21 +568,12 @@ async function processContent(
   refreshNavbarTitle();
   initNavigation();
 
-  // 6. 滚动位置恢复
-  if (isPopState) {
-    const savedPos = scrollData ?? (history.state as HistoryState)?.scroll;
-    scrollManager.restore(savedPos, false);
-  } else {
-    const targetUrl = new URL(url, location.href);
-    if (targetUrl.hash) {
-      const el = document.getElementById(targetUrl.hash.slice(1));
-      if (el) {
-        requestAnimationFrame(() => el.scrollIntoView({ behavior: 'smooth' }));
-      } else {
-        scrollManager.restore({ x: 0, y: 0 });
-      }
-    } else {
-      scrollManager.restore({ x: 0, y: 0 });
+  // 6. 锚点滚动：平滑滚动放在转场之后，让"页面已经就位"再开始滚
+  if (!isPopState) {
+    const hash = new URL(url, location.href).hash.slice(1);
+    if (hash) {
+      const el = document.getElementById(hash);
+      if (el) requestAnimationFrame(() => el.scrollIntoView({ behavior: 'smooth' }));
     }
   }
 
