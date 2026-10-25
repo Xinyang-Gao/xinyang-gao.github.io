@@ -284,13 +284,53 @@ body.has-sky .profile-card {
    每朵云带 data-min-weather（1 最少就有 / 2 / 3 / 4 仅最恶劣天气），
    JS 只需写 data-cloud-tier（1=晴 2=多云 3=阴/雨/雪 4=雷暴），
    这里纯靠 CSS 显隐，切换天气不必重建 DOM。 */
-.sky-backdrop[data-cloud-tier='1'] .sky-cloud[data-min-weather='2'],
-.sky-backdrop[data-cloud-tier='1'] .sky-cloud[data-min-weather='3'],
-.sky-backdrop[data-cloud-tier='1'] .sky-cloud[data-min-weather='4'],
-.sky-backdrop[data-cloud-tier='2'] .sky-cloud[data-min-weather='3'],
-.sky-backdrop[data-cloud-tier='2'] .sky-cloud[data-min-weather='4'],
-.sky-backdrop[data-cloud-tier='3'] .sky-cloud[data-min-weather='4'] {
+:is(.sky-backdrop, .sky-front-clouds)[data-cloud-tier='1'] .sky-cloud[data-min-weather='2'],
+:is(.sky-backdrop, .sky-front-clouds)[data-cloud-tier='1'] .sky-cloud[data-min-weather='3'],
+:is(.sky-backdrop, .sky-front-clouds)[data-cloud-tier='1'] .sky-cloud[data-min-weather='4'],
+:is(.sky-backdrop, .sky-front-clouds)[data-cloud-tier='2'] .sky-cloud[data-min-weather='3'],
+:is(.sky-backdrop, .sky-front-clouds)[data-cloud-tier='2'] .sky-cloud[data-min-weather='4'],
+:is(.sky-backdrop, .sky-front-clouds)[data-cloud-tier='3'] .sky-cloud[data-min-weather='4'] {
   display: none;
+}
+
+/* ---------- 前景云（浮在正文之上） ----------
+   与背景云的区别：这一层在内容**前面**，用来给页面加一层空气感。
+   · 必须 pointer-events: none —— 否则会挡住正文的点击、选中与滚动；
+     "鼠标移上去变半透明"因此改为 JS 按指针距离计算（见 sky-backdrop.ts）。
+   · 位置固定（fixed）：无论首页还是内页，都是随视口走的取景框式前景，
+     所以视差给得很轻（--front-parallax 默认 0.07），既像"最近的一层"又不会很快滑出屏幕。
+   · 接近页脚时与背景云一起退场，给地面让位。 */
+.sky-front-clouds {
+  position: fixed;
+  /* 与视口严格对齐（不向外扩张）：边缘云的位置是 JS 按实测的卡片坐标算出来的，
+     只有原点与视口一致，px 定位才不用再换算偏移量。 */
+  inset: 0;
+  z-index: var(--z-sky-front, 20);
+  pointer-events: none;
+  overflow: hidden;
+  opacity: calc(var(--front-opacity, 0.5) * (1 - var(--sky-ground, 0)));
+  transform: translate3d(0, calc(var(--sky-scroll, 0) * var(--front-parallax, 0.07) * -1px), 0);
+  filter: blur(var(--front-blur, 0.6px));
+  will-change: transform, opacity;
+  transition: opacity 0.9s ease;
+}
+
+/* 首页：云飘在文字之上，压得比较淡，避免影响阅读 */
+.sky-front-clouds[data-layout='home'] {
+  --front-opacity: 0.46;
+  --front-blur: 0.8px;
+}
+/* 内页：云贴左右两侧，只压住卡片边缘一点点，可以更实一些 */
+.sky-front-clouds[data-layout='edge'] {
+  --front-opacity: 0.62;
+  --front-blur: 0.4px;
+}
+
+.sky-front-clouds .sky-cloud {
+  color: var(--sky-cloud-color);
+  /* --front-fade 由 JS 按指针距离写入：靠近指针的云淡到近乎透明 */
+  opacity: calc(1 - var(--front-fade, 0));
+  transition: opacity 0.3s ease, color 0.9s ease;
 }
 
 /* ---------- 降水（雨 / 雪 / 雨夹雪，均由 JS 画在 canvas 上） ---------- */
@@ -383,7 +423,8 @@ body.has-sky .profile-card {
   .sky-gusts { display: none; }
   .sky-cloud-layer,
   .sky-stars-wrap,
-  .sky-celestial-ground {
+  .sky-celestial-ground,
+  .sky-front-clouds {
     transform: none;
   }
 }

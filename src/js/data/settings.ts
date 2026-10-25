@@ -197,8 +197,6 @@ function syncSkyHint(): void {
   if (hint) hint.textContent = `当前：${getSkyWeatherText()}`;
 }
 
-
-
 function isSkyPhase(value: string): value is SkyPhase {
   return (
     value === 'auto' ||

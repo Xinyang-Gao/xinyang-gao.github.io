@@ -554,6 +554,23 @@ const CLOUD_LAYERS: readonly CloudLayerConfig[] = [
   },
 ];
 
+/**
+ * 前景云：浮在正文之上的那一层。
+ *
+ * 每朵云预生成两套坐标（home / edge），切换页面时只改内联样式、不重建 DOM，
+ * 所以同一个种子下形态稳定，不会在导航时"重新洗牌"。
+ */
+interface FrontCloudSpec {
+  el: HTMLElement;
+  /** 首页：横向铺开，可以压在文字上 */
+  home: { left: number; top: number; width: number };
+  /** 内页：贴左/右边缘，只压住卡片一点点 */
+  edge: { side: 'left' | 'right'; overlap: number; top: number; width: number };
+}
+
+const FRONT_CLOUD_COUNT = 6;
+/** 内页时云压进卡片的距离（px）——"稍微覆盖一点点" */
+const FRONT_EDGE_OVERLAP: readonly number[] = [26, 44, 34, 58, 30, 40];
 /** 简笔云朵轮廓：一条底线 + 若干圆弧，描边为主、填充只给一点点 */
 const CLOUD_PATHS: readonly { viewBox: string; d: string }[] = [
   {
@@ -661,7 +678,10 @@ function shadeColor(
 }
 
 function toCss(rgb: RGB, alpha = 1): string {
-  const [r, g, b] = [Math.round(rgb[0]), Math.round(rgb[1]), Math.round(rgb[2])];
+  // 必须夹到 0–255：天气的 dim 系数大于 1（雪天反照）时会算出 270 这类越界值，
+  // 浏览器虽会自己夹紧，但写进 CSS 的就不是合法颜色了（过渡也可能不平滑）。
+  const ch = (v: number): number => Math.max(0, Math.min(255, Math.round(v)));
+  const [r, g, b] = [ch(rgb[0]), ch(rgb[1]), ch(rgb[2])];
   return alpha >= 1 ? `rgb(${r}, ${g}, ${b})` : `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
@@ -844,6 +864,17 @@ class SkyBackdrop {
   private mountainsEl: HTMLElement | null = null;
   /** 阵风：大风时才出现的横向气流线 */
   private gustsEl: HTMLElement | null = null;
+  /** 前景云容器（与背景同级、但浮在内容之上） */
+  private frontEl: HTMLElement | null = null;
+  private frontClouds: FrontCloudSpec[] = [];
+  /** 云朵矩形缓存：指针移动时不再每次回流；窗口尺寸或滚动变化时失效 */
+  private frontRects: DOMRect[] | null = null;
+  /** 上一次排版的指纹：位置没变就不重写样式 */
+  private frontLayoutKey = '';
+  private pointerX = -9999;
+  private pointerY = -9999;
+  private pointerInside = false;
+  private hoverRaf = 0;
   /** 闪电：整屏白闪 + 一道分叉的折线 */
   private lightningEl: HTMLElement | null = null;
   private lightningTimer: ReturnType<typeof setTimeout> | null = null;
@@ -979,6 +1010,8 @@ class SkyBackdrop {
 
   /** 外部（主题切换、尺寸变化、导航完成）触发重算 */
   refresh(): void {
+    // SPA 换页：首页与内页的前景云排版不同
+    this.applyFrontLayout();
     this.apply(false);
   }
 
@@ -1002,6 +1035,16 @@ class SkyBackdrop {
     this.bodyObserver = null;
     window.removeEventListener('resize', this.handleResize);
     document.removeEventListener('visibilitychange', this.handleVisibility);
+    window.removeEventListener('pointermove', this.handlePointerMove);
+    window.removeEventListener('pointerdown', this.handlePointerMove);
+    document.removeEventListener('pointerleave', this.handlePointerLeave);
+    if (this.hoverRaf) cancelAnimationFrame(this.hoverRaf);
+    this.hoverRaf = 0;
+    this.frontEl?.remove();
+    this.frontEl = null;
+    this.frontClouds = [];
+    this.frontRects = null;
+    this.frontLayoutKey = '';
     this.root?.remove();
     this.root = null;
     this.started = false;
@@ -1077,6 +1120,208 @@ class SkyBackdrop {
 
     document.body.appendChild(root);
     this.root = root;
+
+    this.buildFrontClouds();
+  }
+
+  // ---------- 前景云 ----------
+
+  /**
+   * 前景云是 `#sky-backdrop` 的**兄弟**节点而不是子节点：
+   * 背景层 z-index 为 -1，会创建自己的层叠上下文，子元素再高的 z-index
+   * 也逃不出去 —— 想浮在正文之上就必须挂在 body 下。
+   *
+   * 代价是需要把配色/滚动/档位这些变量镜像一份（见 setSharedVar / apply）。
+   */
+  private buildFrontClouds(): void {
+    const front = document.createElement('div');
+    front.id = 'sky-front-clouds';
+    front.className = 'sky-front-clouds';
+    front.setAttribute('aria-hidden', 'true');
+
+    const rand = mulberry32(20261101);
+    const narrow = window.innerWidth < 768;
+    const scale = narrow ? 0.62 : 0.8;
+
+    for (let i = 0; i < FRONT_CLOUD_COUNT; i += 1) {
+      const cloud = document.createElement('div');
+      cloud.className = 'sky-cloud';
+      // 前景云是常驻装饰层，分档比背景云宽松：多数档位都能看到，
+      // 只有两朵留给恶劣天气（雨/雪/雷暴才登场，用来加厚前景）。
+      cloud.dataset.minWeather = String(i < FRONT_CLOUD_COUNT - 2 ? 1 : 3);
+      const shape = CLOUD_PATHS[Math.floor(rand() * CLOUD_PATHS.length)];
+      const duration = Math.round(lerp(46, 82, rand()));
+      cloud.style.setProperty('--drift-duration', `${duration}s`);
+      cloud.style.setProperty('--drift-delay', `-${Math.round(rand() * duration)}s`);
+
+      const svgNS = 'http://www.w3.org/2000/svg';
+      const svg = document.createElementNS(svgNS, 'svg');
+      svg.setAttribute('viewBox', shape.viewBox);
+      const path = document.createElementNS(svgNS, 'path');
+      path.setAttribute('d', shape.d);
+      svg.appendChild(path);
+      cloud.appendChild(svg);
+      front.appendChild(cloud);
+
+      // 首页：横向铺开在内容区（可以压到文字上）
+      //
+      // 纵向按奇偶分成两条带：一半偏上、一半落在页面中部——
+      // 抬头区（时钟、站名、问候语）就在视口中段，云全部飘在顶部
+      // 就只是"天上的云"，压不到文字上，也就谈不上"在文字前面的一层"。
+      const homeWidth = Math.round(lerp(200, 360, rand()) * (narrow ? 0.7 : 1));
+      const homeTop = i % 2 === 0 ? lerp(12, 32, rand()) : lerp(38, 64, rand());
+      // 横向按序位均分（再加一点抖动）：纯随机数会挤到一侧，
+      // 抬头区在页面中部，云飘不到那儿就压不到文字上。
+      const homeLeft = -12 + (i * 94) / (FRONT_CLOUD_COUNT - 1) + lerp(-7, 7, rand());
+      this.frontClouds.push({
+        el: cloud,
+        home: {
+          left: Math.round(homeLeft * 10) / 10,
+          top: Math.round(homeTop * 10) / 10,
+          width: homeWidth,
+        },
+        // 内页：贴边。overlap 是"压进卡片多少 px"
+        edge: {
+          side: i % 2 === 0 ? 'left' : 'right',
+          overlap: FRONT_EDGE_OVERLAP[i % FRONT_EDGE_OVERLAP.length],
+          top: Math.round(lerp(4, 62, rand()) * 10) / 10,
+          width: Math.round(lerp(230, 400, rand()) * scale),
+        },
+      });
+    }
+
+    document.body.appendChild(front);
+    this.frontEl = front;
+    this.applyFrontLayout();
+  }
+
+  /**
+   * 首页判定：只有根路径算首页。
+   * 注意不能写成"以 / 结尾"—— `/articles/` 同样以斜杠结尾，那样内页会被误判成首页。
+   */
+  private static isHomePath(): boolean {
+    const path = location.pathname.replace(/index\.html?$/, '');
+    return path === '' || path === '/';
+  }
+
+  /**
+   * 按当前页面给前景云排版。
+   * 首页铺开在文字之上；内页贴左右边缘、只压住卡片一点点。
+   *
+   * 内页的卡片位置**必须实测**：列表页是双栏布局（侧边栏占掉一侧），
+   * 卡片并不居中，按 "50% ± 半宽" 推算会整体错位一大截。
+   */
+  private applyFrontLayout(): void {
+    const front = this.frontEl;
+    if (!front) return;
+
+    const home = SkyBackdrop.isHomePath();
+    const layout = home ? 'home' : 'edge';
+    const vw = window.innerWidth;
+    let card = { left: vw * 0.08, right: vw * 0.92 };
+
+    if (!home) {
+      // 取**最外层**的内容块：列表页是双栏布局，`.container` 只是右半边的卡片，
+      // 拿它当基准会把左边的云压到侧边栏上。整块内容才是"页面边界"。
+      const sel = '#router-view .two-column-layout, #router-view .container, .container';
+      const el = document.querySelector<HTMLElement>(sel);
+      if (el) {
+        const r = el.getBoundingClientRect();
+        // 只看横向：纵向随滚动变化，而前景云是 fixed，不该跟着走
+        if (r.width > 1) card = { left: r.left, right: r.right };
+      }
+    }
+
+    // 位置没变就别重写样式，避免每次刷新都触发一轮重排
+    const key = home ? 'home' : `edge:${Math.round(card.left)}:${Math.round(card.right)}:${vw}`;
+    if (key === this.frontLayoutKey) return;
+    this.frontLayoutKey = key;
+    front.dataset.layout = layout;
+
+    for (const spec of this.frontClouds) {
+      const el = spec.el;
+      // 两种布局用不同的定位边，切换时必须把另一边清掉
+      el.style.left = '';
+      el.style.right = '';
+      if (layout === 'home') {
+        el.style.left = `${spec.home.left}%`;
+        el.style.top = `${spec.home.top}%`;
+        el.style.width = `${spec.home.width}px`;
+        continue;
+      }
+
+      const w = spec.edge.width;
+      // 至少露出这么宽，否则被切得只剩一条边，看不出是云
+      const minVisible = Math.max(80, Math.min(w * 0.42, 220));
+      el.style.width = `${w}px`;
+      el.style.top = `${spec.edge.top}%`;
+      if (spec.edge.side === 'right') {
+        // 云的左边缘压进卡片 overlap 像素；同时保证露出部分不小于 minVisible
+        const left = Math.min(card.right - spec.edge.overlap, vw - minVisible);
+        el.style.left = `${Math.round(left)}px`;
+      } else {
+        const rightEdge = Math.max(card.left + spec.edge.overlap, minVisible);
+        el.style.right = `${Math.round(vw - rightEdge)}px`;
+      }
+    }
+    // 位置变了，缓存的矩形作废
+    this.frontRects = null;
+    this.updateFrontHover();
+  }
+
+  /**
+   * 指针靠近的云淡下去，避免遮挡正在读的内容。
+   *
+   * 前景层是 pointer-events: none（否则正文没法点、没法选、没法滚），
+   * 拿不到 :hover，所以改成按指针到云外框的距离算淡出量，
+   * 用 rAF 合帧、矩形带缓存，指针移动时不会每帧回流。
+   */
+  private updateFrontHover = (): void => {
+    this.hoverRaf = 0;
+    const front = this.frontEl;
+    if (!front || this.frontClouds.length === 0) return;
+
+    if (!this.pointerInside || !this.enabled) {
+      for (const spec of this.frontClouds) {
+        if (spec.el.style.getPropertyValue('--front-fade') !== '0') {
+          spec.el.style.setProperty('--front-fade', '0');
+        }
+      }
+      return;
+    }
+
+    if (!this.frontRects) {
+      this.frontRects = this.frontClouds.map((spec) => spec.el.getBoundingClientRect());
+    }
+
+    const px = this.pointerX;
+    const py = this.pointerY;
+    for (let i = 0; i < this.frontClouds.length; i += 1) {
+      const r = this.frontRects[i];
+      // 到矩形的距离（在矩形内为 0）
+      const dx = Math.max(r.left - px, 0, px - r.right);
+      const dy = Math.max(r.top - py, 0, py - r.bottom);
+      const dist = Math.hypot(dx, dy);
+      // 矩形内完全淡出，再给 80px 的过渡带，避免边缘生硬
+      const t = clamp01((80 - dist) / 80) ** 1.5;
+      this.frontClouds[i].el.style.setProperty('--front-fade', (t * 0.78).toFixed(3));
+    }
+  };
+
+  /**
+   * 把变量同时写进背景层与前景层。
+   * 前景层是兄弟节点、拿不到背景层上的自定义属性，只能镜像。
+   */
+  private invalidateFrontRects(): void {
+    if (this.frontRects) {
+      this.frontRects = null;
+      if (this.pointerInside) this.updateFrontHover();
+    }
+  }
+
+  private setSharedVar(name: string, value: string): void {
+    this.root?.style.setProperty(name, value);
+    this.frontEl?.style.setProperty(name, value);
   }
 
   private buildMountains(root: HTMLElement): void {
@@ -1243,9 +1488,9 @@ class SkyBackdrop {
       this.activeGradient = this.activeGradient === 0 ? 1 : 0;
     }
 
-    root.style.setProperty('--sky-cloud-color', toCss(sky.cloud));
-    root.style.setProperty('--sky-cloud-fill-opacity', sky.cloudFill.toFixed(3));
-    root.style.setProperty('--sky-cloud-stroke-opacity', sky.cloudStroke.toFixed(3));
+    this.setSharedVar('--sky-cloud-color', toCss(sky.cloud));
+    this.setSharedVar('--sky-cloud-fill-opacity', sky.cloudFill.toFixed(3));
+    this.setSharedVar('--sky-cloud-stroke-opacity', sky.cloudStroke.toFixed(3));
     // 地平线雾气：阴雨天更浓，把远景糊进天色里
     root.style.setProperty('--sky-haze-opacity', Math.min(1, 0.32 * profile.haze).toFixed(3));
     root.style.setProperty('--sky-haze-height', `${profile.hazeHeight}%`);
@@ -1253,6 +1498,8 @@ class SkyBackdrop {
     root.dataset.weather = weather;
     root.dataset.theme = theme;
     root.dataset.cloudTier = String(profile.clouds);
+    // 前景层的云量分档靠同一套 CSS 规则显隐，属性必须同步
+    if (this.frontEl) this.frontEl.dataset.cloudTier = String(profile.clouds);
 
     // 山脉：大气透视 —— 越远越淡越接近天色，越近越沉。
     // 颜色由当前天色算出，所以黄昏的山是暖的、夜晚的山是墨蓝的，不会是同一块灰。
@@ -1342,9 +1589,9 @@ class SkyBackdrop {
     if (!root) return;
 
     const speed = this.readCloudSpeed() * this.windFactor();
-    root.style.setProperty('--sky-cloud-speed', speed.toFixed(3));
+    this.setSharedVar('--sky-cloud-speed', speed.toFixed(3));
     // 风大时云不只是走得快，来回摆动的幅度也更大（默认 3%，与改动前一致）
-    root.style.setProperty(
+    this.setSharedVar(
       '--sky-drift-range',
       `${(3 * Math.min(2.4, Math.max(1, speed * 0.8))).toFixed(2)}%`,
     );
@@ -1405,9 +1652,12 @@ class SkyBackdrop {
   private updateScroll(): void {
     const root = this.root;
     if (!root) return;
+    // 前景层有视差，滚动后云的位置变了，缓存的矩形作废
+    this.invalidateFrontRects();
     const y = scrollDispatcher.getScrollY();
-    root.style.setProperty('--sky-scroll', String(Math.round(y)));
-    root.style.setProperty('--sky-ground', this.groundProgress(y).toFixed(4));
+    // 前景层是兄弟节点，滚动与离地进度要镜像一份（它的视差与退场都靠这两个）
+    this.setSharedVar('--sky-scroll', String(Math.round(y)));
+    this.setSharedVar('--sky-ground', this.groundProgress(y).toFixed(4));
     root.style.setProperty('--sky-star-alpha', this.starAlpha.toFixed(3));
     this.updateMountainY(y);
   }
@@ -1700,6 +1950,7 @@ class SkyBackdrop {
     this.bodyObserver = new ResizeObserver(() => {
       this.measureGround();
       this.updateScroll();
+      this.applyFrontLayout();
     });
     this.bodyObserver.observe(document.body);
 
@@ -1710,6 +1961,10 @@ class SkyBackdrop {
 
     window.addEventListener('resize', this.handleResize);
     document.addEventListener('visibilitychange', this.handleVisibility);
+    // 前景云浮在正文之上，靠指针距离淡出（它没有 :hover，因为必须让正文可点可选）
+    window.addEventListener('pointermove', this.handlePointerMove, { passive: true });
+    window.addEventListener('pointerdown', this.handlePointerMove, { passive: true });
+    document.addEventListener('pointerleave', this.handlePointerLeave);
 
     // auto 模式跟随时钟：一分钟一跳足够平滑（渐变本身是连续插值的）
     this.autoTimer = setInterval(() => {
@@ -1721,8 +1976,23 @@ class SkyBackdrop {
     if (this.resizeTimer) clearTimeout(this.resizeTimer);
     this.resizeTimer = setTimeout(() => {
       this.resizeCanvas();
+      this.applyFrontLayout();
       this.apply(false);
     }, 200);
+  };
+
+  private handlePointerMove = (e: PointerEvent): void => {
+    // 触摸设备没有"悬停"，抬手后就不该再留着淡出状态
+    if (e.pointerType === 'touch') return;
+    this.pointerX = e.clientX;
+    this.pointerY = e.clientY;
+    this.pointerInside = true;
+    if (!this.hoverRaf) this.hoverRaf = requestAnimationFrame(this.updateFrontHover);
+  };
+
+  private handlePointerLeave = (): void => {
+    this.pointerInside = false;
+    if (!this.hoverRaf) this.hoverRaf = requestAnimationFrame(this.updateFrontHover);
   };
 
   private handleVisibility = (): void => {
