@@ -21,9 +21,6 @@ from xml.etree import ElementTree as ET
 from rcssmin import cssmin
 
 from ..build_context import BuildContext
-
-# 使用相对导入
-
 from ..common import (
     ASSETS_DIR,
     CSS_DIST_DIR,
@@ -51,7 +48,10 @@ from ..common import (
     log_warning,
     save_json,
 )
-
+from ..config import BuildConfig
+from ..seo import json_ld_webpage, seo_head_tags
+from ..static_assets import PAGE_TEMPLATES, static_sources_hash, sync_static_assets
+from .base import OutputGenerator
 
 # ==================== RSS 时间格式 ====================
 
@@ -79,23 +79,12 @@ def rfc822(dt: datetime) -> str:
     total = int(off.total_seconds())
     sign = "+" if total >= 0 else "-"
     total = abs(total)
-    return "%s, %02d %s %04d %02d:%02d:%02d %s%02d%02d" % (
-        _WD[dt.weekday()],
-        dt.day,
-        _MON[dt.month - 1],
-        dt.year,
-        dt.hour,
-        dt.minute,
-        dt.second,
-        sign,
-        total // 3600,
-        (total % 3600) // 60,
+    # 用 f-string 而不是 % 格式化：位置参数太多，% 写法一旦顺序写错很难看出来
+    return (
+        f"{_WD[dt.weekday()]}, {dt.day:02d} {_MON[dt.month - 1]} {dt.year:04d} "
+        f"{dt.hour:02d}:{dt.minute:02d}:{dt.second:02d} "
+        f"{sign}{total // 3600:02d}{(total % 3600) // 60:02d}"
     )
-from ..config import BuildConfig
-from ..seo import json_ld_webpage, seo_head_tags
-from ..static_assets import PAGE_TEMPLATES, static_sources_hash, sync_static_assets
-from .base import OutputGenerator
-
 # 前端编译（Vite）相关
 NPM_TIMEOUT_SECONDS = 900
 

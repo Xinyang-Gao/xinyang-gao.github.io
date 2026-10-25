@@ -14,6 +14,22 @@
 - **修复** —— 缺陷修复
 - **安全** —— 安全相关的改进
 
+## [8.62.1] - 2026-10-25
+
+### 修复
+
+- **CI 的 ruff 门禁失败**（`ruff check builder run.py`，6 处）
+  - `builder/generators/aggregated.py`：
+    - **E402（4 处）**：`from ..config import ...` 等 4 个模块级导入被错放在 `rfc822()`
+      函数定义**之后**，只能移到顶部导入区
+    - **I001**：`# 使用相对导入` 这条注释把导入块切成了两半，isort 无法合并排序，已删除
+    - **UP031**：`rfc822()` 用 `%` 做位置格式化，10 个参数一旦顺序写错极难发现，
+      改为 f-string（逐位对照验证：新旧实现在 5 组时间上输出完全一致）
+  - 顺带清理 `tools/gen_mountains.py`（不在 CI 检查范围，但本地全仓库 `ruff check .` 会报）：
+    I001 导入排序、E741 歧义变量名 `l` → `lag`
+- 清理上一轮山脉重写遗留的 3 个未使用字段（`lastMountainY` / `lastMountainHeight` /
+  `lastMountainHidden`）与一条重复注释，`npm run lint` 恢复零告警
+
 ## [8.62.0] - 2026-10-25
 
 ### 变更

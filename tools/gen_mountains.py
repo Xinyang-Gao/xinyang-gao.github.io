@@ -8,6 +8,7 @@ x 始终归一化到 [0,1]，最后再映射到 viewBox 的 y 区间。
 """
 
 import json
+
 import numpy as np
 
 # ==================== 噪声 ====================
@@ -261,7 +262,7 @@ def metrics(x, h):
     # Hurst 指数（变差函数拟合）：E[(h(x+lag)-h(x))^2] ∝ lag^(2H)
     lags = np.array([16, 32, 64, 128, 256, 512], dtype=int)
     lags = lags[lags < n // 2]
-    vg = np.array([float(np.mean((h[l:] - h[:-l]) ** 2)) for l in lags])
+    vg = np.array([float(np.mean((h[lag:] - h[:-lag]) ** 2)) for lag in lags])
     H = float(np.polyfit(np.log(lags), np.log(vg), 1)[0] / 2.0)
 
     # 坡度分布的峰度：真实地形重尾，非高斯

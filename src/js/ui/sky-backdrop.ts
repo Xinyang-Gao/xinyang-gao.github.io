@@ -902,7 +902,6 @@ class SkyBackdrop {
   private precipCanvas: HTMLCanvasElement | null = null;
   private precipCtx: CanvasRenderingContext2D | null = null;
   private drops: Drop[] = [];
-  /** 远景山脉：夹在"中景云"与"近景云"之间，于是有的云在山前、有的在山后 */
   /** 三层远景山，各自独立视差（见 MountainLayerConfig） */
   private mountainLayers: { el: HTMLElement; parallax: number; lastTy: number }[] = [];
   /** 滚动视差的消费者（云层 / 星空 / 日月），见 ScrollTarget */
@@ -911,9 +910,6 @@ class SkyBackdrop {
   private lastScrollY = Number.NaN;
   private lastGround = Number.NaN;
   private lastStarAlpha = Number.NaN;
-  private lastMountainY = Number.NaN;
-  private lastMountainHeight = Number.NaN;
-  private lastMountainHidden: boolean | null = null;
   /** 阵风：大风时才出现的横向气流线 */
   private gustsEl: HTMLElement | null = null;
   /** 闪电：整屏白闪 + 一道分叉的折线 */
