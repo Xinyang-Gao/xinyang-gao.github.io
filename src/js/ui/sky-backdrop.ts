@@ -628,22 +628,42 @@ const MOUNTAIN_RIDGES: readonly { depth: 'far' | 'mid' | 'near'; d: string }[] =
 ];
 
 /**
- * 山脉占视口高度的比例。
+ * 山脉的三层排布。
  *
- * 略大于一屏：山脚锚在地表线上，山体向上延伸一屏多一点，
- * 于是地表线落在屏幕下边缘时，最高的峰顶落在视口约 14% 处（屏幕上边缘靠下）。
+ * 以前整座山锚在页脚的地表线上，只在快滚到底时才露出来 —— 既"贴着页脚"，
+ * 又因为没有远近视差而像一张贴在屏幕上的图。现在改成普通的背景层：
+ * 三层各自定在地平线附近，越远的山越高、走得越慢。
+ *
+ * baseline 是山脚（填充区顶边）所在的视口高度比例；
+ * height 是山脊剪影本身的高度（viewBox 660 会被压到这个高度，所以三层都是
+ * "宽而低"的远景轮廓，横向约 1.27×、纵向压缩，符合远山的实际观感）。
+ *
+ * parallax 刻意比云朵小（云是 0.05 / 0.10 / 0.18）：山比云远得多，
+ * 视差必须更小才符合直觉 —— 远山几乎不动，近处的丘陵才跟得上一点。
  */
-const MOUNTAIN_HEIGHT_RATIO = 1.02;
-/** 山脉的滚动视差：比地面慢一点，才像"很远的山" */
-const MOUNTAIN_PARALLAX = 0.92;
+interface MountainLayerConfig {
+  depth: 'far' | 'mid' | 'near';
+  /** 山脊剪影高度 = 视口高度 × 该比例 */
+  height: number;
+  /** 山脚所在的视口高度比例 */
+  baseline: number;
+  /** 滚动视差系数（越小越远） */
+  parallax: number;
+}
+
+const MOUNTAIN_LAYERS: readonly MountainLayerConfig[] = [
+  { depth: 'far', height: 0.4, baseline: 0.78, parallax: 0.012 },
+  { depth: 'mid', height: 0.32, baseline: 0.86, parallax: 0.022 },
+  { depth: 'near', height: 0.24, baseline: 0.94, parallax: 0.035 },
+];
+
 /**
- * 山脚压进地表的深度（px）。
+ * 视差位移的上限（视口高度的比例）。
  *
- * 视差让山比地面走得慢，还没滚到地面时算出的山脚会**提前进入视口**，
- * 于是山脚与地表之间露出一条天空色的缝。这里让山脚始终多压进地表几像素，
- * 接缝被地面的丘线盖住，任何滚动位置都不会露空。
+ * 山是固定背景层，位移会随滚动一直累积；不封顶的话长页面上近景丘陵
+ * 会一路爬到屏幕中间去。封顶之后远山始终贴在地平线附近。
  */
-const MOUNTAIN_FOOT_OVERLAP = 6;
+const MOUNTAIN_MAX_DRIFT = 0.14;
 /** 触发阵风特效的风级阈值（蒲福 6 级 = 强风） */
 const GUST_WIND_LEVEL = 6;
 
@@ -883,7 +903,8 @@ class SkyBackdrop {
   private precipCtx: CanvasRenderingContext2D | null = null;
   private drops: Drop[] = [];
   /** 远景山脉：夹在"中景云"与"近景云"之间，于是有的云在山前、有的在山后 */
-  private mountainsEl: HTMLElement | null = null;
+  /** 三层远景山，各自独立视差（见 MountainLayerConfig） */
+  private mountainLayers: { el: HTMLElement; parallax: number; lastTy: number }[] = [];
   /** 滚动视差的消费者（云层 / 星空 / 日月），见 ScrollTarget */
   private scrollTargets: ScrollTarget[] = [];
   /** 上一次写入的滚动状态，用来在值没变时跳过样式写入 */
@@ -933,7 +954,6 @@ class SkyBackdrop {
    * 地面元素顶边到土层顶边之间还隔着草丛与丘线的高度，
    * 拿元素顶边当基准会让山脚悬在半空 —— 山脉必须对齐这条真正的地平线。
    */
-  private surfaceTopDoc = 0;
 
   /** 幂等初始化：只建一次 DOM，之后所有入口都走 apply() */
   init(): void {
@@ -1148,15 +1168,52 @@ class SkyBackdrop {
     this.root = root;
   }
 
+  /**
+   * 三层远景山。每层是独立定位 + 独立视差的元素，而不是一整块跟着地面走。
+   *
+   * 每层由两部分组成：上方的山脊剪影（SVG）+ 下方一块实心填充。
+   * 填充必须一直延伸到视口以下 —— 否则视差把整层往上推时会从下边缘露出天空。
+   */
   private buildMountains(root: HTMLElement): void {
     const wrap = document.createElement('div');
     wrap.className = 'sky-mountains';
-    wrap.innerHTML = MOUNTAIN_RIDGES.map(
-      (r) =>
-        `<svg class="sky-ridge sky-ridge--${r.depth}" viewBox="0 0 1200 660" preserveAspectRatio="none" aria-hidden="true"><path d="${r.d}" /></svg>`,
-    ).join('');
+
+    for (const layer of MOUNTAIN_LAYERS) {
+      const ridge = MOUNTAIN_RIDGES.find((r) => r.depth === layer.depth);
+      if (!ridge) continue;
+
+      const el = document.createElement('div');
+      el.className = `sky-ridge-layer sky-ridge-layer--${layer.depth}`;
+      el.dataset.depth = layer.depth;
+      el.innerHTML =
+        `<svg class="sky-ridge" viewBox="0 0 1200 660" preserveAspectRatio="none" aria-hidden="true">` +
+        `<path d="${ridge.d}" /></svg>` +
+        `<span class="sky-ridge-fill"></span>`;
+      wrap.appendChild(el);
+      this.mountainLayers.push({ el, parallax: layer.parallax, lastTy: Number.NaN });
+    }
+
     root.appendChild(wrap);
-    this.mountainsEl = wrap;
+    this.layoutMountains();
+  }
+
+  /**
+   * 山脊的纵向位置与高度只跟视口尺寸有关，滚动时不变 —— 所以在 build / resize
+   * 时算一次写进样式，滚动帧里只改 transform。
+   */
+  private layoutMountains(): void {
+    const vh = window.innerHeight;
+    for (let i = 0; i < this.mountainLayers.length; i += 1) {
+      const cfg = MOUNTAIN_LAYERS[i];
+      if (!cfg) continue;
+      const height = Math.round(vh * cfg.height);
+      const el = this.mountainLayers[i].el;
+      el.style.setProperty('--ridge-h', `${height}px`);
+      // 山脚落在 baseline 处，所以山脊整体要往上抬一个自身的高度
+      el.style.top = `${Math.round(vh * cfg.baseline - height)}px`;
+      // 尺寸变了，缓存的位移也要重算
+      this.mountainLayers[i].lastTy = Number.NaN;
+    }
   }
 
   /** 阵风：几条横向掠过的气流线，只在大风时出现（可见度由 JS 控制） */
@@ -1494,7 +1551,7 @@ class SkyBackdrop {
     // 3 位（千分之一）对透明度与上浮距离已经完全看不出差别。
     const ground = Math.round(this.groundProgress(y) * 1000) / 1000;
     this.applyScrollTransforms(y, ground);
-    this.updateMountainY(y);
+    this.applyMountainParallax(y);
   }
 
   /**
@@ -1549,38 +1606,20 @@ class SkyBackdrop {
   }
 
   /**
-   * 山脉锚在地表线（土层顶边）上：地面在屏幕下边缘时，山脊顶端落在屏幕上边缘靠下一点。
+   * 三层山各自的视差位移。
    *
-   * 视差系数 0.92 < 1 —— 山比地面"走得慢"，才有"很远"的感觉；
-   * 地面还在屏幕下方时算出的 top 会远大于视口高度，山脉自然在视野之外。
+   * 只写 transform（不触发布局），位移变化小于 0.1px 就不写；
+   * 并且封顶，避免长页面上位移无限累积把近景丘陵推到屏幕中间。
    */
-  private updateMountainY(y: number): void {
-    const el = this.mountainsEl;
-    if (!el) return;
-    const viewport = window.innerHeight;
-    const surfaceVp = this.surfaceTopDoc - y; // 地表线的视口坐标
-    const height = Math.round(viewport * MOUNTAIN_HEIGHT_RATIO);
-    const top = (surfaceVp - viewport) * MOUNTAIN_PARALLAX + (viewport - height);
-    // 山脚永远不能高于地表线：夹住之后任何滚动位置都不会露出那条缝。
-    const clamped = Math.round(Math.max(top, surfaceVp - height + MOUNTAIN_FOOT_OVERLAP));
-
-    // 整座山还在视口下方时直接隐藏：否则一整块近一屏高的 SVG 会白白参与合成
-    const hidden = top > viewport;
-    if (hidden !== this.lastMountainHidden) {
-      el.style.visibility = hidden ? 'hidden' : 'visible';
-      this.lastMountainHidden = hidden;
-    }
-    if (hidden) return;
-
-    // 用 transform 而不是 top：top 会触发布局，transform 只走合成。
-    // 同时只在值真的变了才写 —— 山在视口外或已停稳时一次都不写。
-    if (clamped !== this.lastMountainY) {
-      el.style.transform = prefersReducedMotion() ? 'none' : `translate3d(0, ${clamped}px, 0)`;
-      this.lastMountainY = clamped;
-    }
-    if (height !== this.lastMountainHeight) {
-      el.style.height = `${height}px`;
-      this.lastMountainHeight = height;
+  private applyMountainParallax(y: number): void {
+    if (this.mountainLayers.length === 0) return;
+    const maxDrift = window.innerHeight * MOUNTAIN_MAX_DRIFT;
+    const disabled = prefersReducedMotion();
+    for (const m of this.mountainLayers) {
+      const ty = disabled ? 0 : Math.round(-Math.min(y * m.parallax, maxDrift) * 10) / 10;
+      if (ty === m.lastTy) continue;
+      m.el.style.transform = ty === 0 ? 'none' : `translate3d(0, ${ty}px, 0)`;
+      m.lastTy = ty;
     }
   }
 
@@ -1608,19 +1647,11 @@ class SkyBackdrop {
     const target = ground ?? footer;
     if (!target) {
       this.groundTopDoc = document.documentElement.scrollHeight;
-      this.surfaceTopDoc = this.groundTopDoc;
       return;
     }
     const scroll = window.scrollY || document.documentElement.scrollTop || 0;
     const rect = target.getBoundingClientRect();
     this.groundTopDoc = rect.top + scroll;
-
-    // 地表线 = 土层顶边（.ground-body 的顶边）。拿不到时按"土层占 56%、
-    // 顶边落在 44% 处"的比例估算，不至于退化成拿元素顶边当地平线。
-    const body = ground?.querySelector<HTMLElement>('.ground-body');
-    this.surfaceTopDoc = body
-      ? body.getBoundingClientRect().top + scroll
-      : this.groundTopDoc + rect.height * 0.44;
   }
 
   // ---------- 星空循环 ----------
@@ -1873,6 +1904,7 @@ class SkyBackdrop {
     if (this.resizeTimer) clearTimeout(this.resizeTimer);
     this.resizeTimer = setTimeout(() => {
       this.resizeCanvas();
+      this.layoutMountains();
       this.apply(false);
     }, 200);
   };

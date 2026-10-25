@@ -32,8 +32,6 @@
   --sky-cloud-speed: 1;
   --sky-drift-range: 3%;
   /* 山脉：纵向位置与高度由 JS 按地面位置算出 */
-  --sky-mountain-y: 100vh;
-  --sky-mountain-height: 88vh;
   /* 三层山脊的颜色（大气透视：越远越淡） */
   /* 山脉：三层均为**不透明**色（半透明会让近景山盖不住后景） */
   --mountain-far: transparent;
@@ -204,18 +202,42 @@ body.has-sky .profile-card {
 }
 
 /* ---------- 远景山脉 ----------
-   锚在地面顶边上（位置由 JS 按滚动算出），越远的山脊越高越淡。
-   图层顺序上夹在"中景云"与"近景云"之间：中景/远景的云在山后，近景的云在山前。 */
+   三层各自独立定位 + 独立视差，越远的山越高、走得越慢（见 MountainLayerConfig）。
+   图层顺序上夹在"中景云"与"近景云"之间：中景/远景的云在山后，近景的云在山前。
+
+   山体必须是不透明的实心色（半透明会让近景山盖不住后景），
+   "远"与"被水汽糊掉"都改用向天色混合来表达。 */
 .sky-mountains {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.sky-ridge-layer {
   position: absolute;
   left: -3%;
   right: -3%;
-  top: 0;
-  height: var(--sky-mountain-height, 88vh);
-  /* 纵向位置走 transform（JS 直写）：top 会触发布局，transform 只走合成 */
-  transform: translate3d(0, var(--sky-mountain-y, 100vh), 0);
+  /* 山脊剪影的高度（JS 按视口算出）；纵向位置同理由 JS 写 top */
+  height: var(--ridge-h, 40vh);
+  will-change: transform;
+}
+
+/*
+ * 山脚以下的实心填充。
+ *
+ * 视差会把整层往上推，如果山脊只画到自己那一格，推高之后下边缘就会露出天空。
+ * 所以这里补一段远超视口高度的同色实心 —— 山体本来就一直延伸到地平线以下。
+ */
+.sky-ridge-fill {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  height: 160vh;
+  background: var(--ridge-color);
   pointer-events: none;
 }
+
 .sky-ridge {
   position: absolute;
   inset: 0;
@@ -225,40 +247,12 @@ body.has-sky .profile-card {
 }
 .sky-ridge path {
   stroke: none;
-  fill: var(--ridge-color, transparent);
-}
-.sky-ridge--far { --ridge-color: var(--mountain-far); }
-.sky-ridge--mid { --ridge-color: var(--mountain-mid); }
-.sky-ridge--near { --ridge-color: var(--mountain-near); }
-/* 山体裙边。
-   山脉是 fixed 元素、位置由 JS 在 rAF 里更新，天然比随滚动移动的内容晚一帧；
-   快速上滚时这一帧滞后会把山脚"抬高"，露出一条天空色的缝。
-   山体本来就应当一直填到地平线以下（地表线以下由地面盖住），
-   所以这里干脆补一段足够长的同色实心，任何滚动速度下都不会露缝。 */
-.sky-mountains::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 100%;
-  height: 120vh;
-  background: var(--mountain-near);
-  pointer-events: none;
+  fill: var(--ridge-color);
 }
 
-/* 山脚统一成近景山的实色。
-   原来是渐变到 transparent 的"薄雾"，但半透明会让山脚透出后面的远山与云 ——
-   山必须是实心的。这里改成不透明的纯色块，作用仍是让山脚色调统一。 */
-.sky-mountains::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: -1px;
-  height: 15%;
-  background: var(--mountain-near);
-  pointer-events: none;
-}
+.sky-ridge-layer--far { --ridge-color: var(--mountain-far); }
+.sky-ridge-layer--mid { --ridge-color: var(--mountain-mid); }
+.sky-ridge-layer--near { --ridge-color: var(--mountain-near); }
 
 /* ---------- 阵风（大风时才出现） ---------- */
 .sky-gusts {
@@ -402,7 +396,7 @@ body.has-sky .profile-card {
   .sky-cloud-layer,
   .sky-stars-wrap,
   .sky-celestial-ground,
-  .sky-mountains {
+  .sky-ridge-layer {
     transform: none;
   }
   /* 整层 blur 是滚动时最贵的一项，减弱动效偏好下直接省掉 */
