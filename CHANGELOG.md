@@ -14,6 +14,51 @@
 - **修复** —— 缺陷修复
 - **安全** —— 安全相关的改进
 
+## [8.66.0] - 2026-10-25
+
+### 修复
+
+- **移动端整页横向溢出**
+  - 实测：手机 390px 下 `documentElement.scrollWidth` 达 **651**（多出 261px）、
+    安卓 360px 下 651、平板 768px 下 `/about/` 达 798
+  - `body { overflow-x: hidden }` 会传播到 viewport，实际是把溢出内容裁掉
+  - 三个真正的成因，逐个定位（隐藏 DOM 子树二分）：
+    1. 页脚 `.footer-grid` 的 `1.2fr 1fr 1.6fr`
+       —— 裸 `fr` 等价 `minmax(auto, 1fr)`，最小尺寸是 min-content，
+       被列内长链接撑到 **444px**
+    2. 页脚统计气泡 `.stats-popover-chart`：≤480px 断点里被写成 `left: 0`
+       （本意"小屏防溢出"），但它相对 1/3 宽的**格子**定位，
+       落在最右列时 right 顶到 **541px** —— 防溢出的代码反而造了溢出
+    3. `/about/` 里程碑轨道在平板下把容器撑宽 30px
+  - **全站 29 处 `grid-template-columns` 的裸 fr 已批量改为 `minmax(0, Nfr)`**
+    （comments / footer / layout / about / article / friends / home / stats），
+    这条规则已写进 variables.css 的断点规范注释，避免复发
+  - 气泡在窄屏改为相对视口居中（fixed + translate），触屏（`@media (hover: none)`）
+    直接不渲染 —— 触屏本就没有真正的 hover
+
+- **触控目标过小**
+  - 实测页脚 `license-link` 仅 **17px** 高、`nav-logo` 30px、`social-capsule` 23px
+  - 移动端（<768px）批量补齐到 `min-height: 44px`（iOS HIG / Material 下限）
+  - 用 `min-height + padding` 而非伪元素扩展命中区：这些元素紧密排列，
+    伪元素的负 inset 会与相邻元素重叠，反而点错目标
+  - 这段规则**必须放在 core 合并顺序的末位**（components.css 末尾）——
+    写在 base.css 时会被后面 layout / 组件里更具体的尺寸规则盖掉，实测无效
+  - 正文内联链接不在此列（WCAG 2.5.8 对行内文本链接有豁免，强行撑到 44px 会撕裂行距）
+
+### 新增
+
+- **响应式断点规范**（写在 `core/variables.css` 顶部注释）
+  - 改动前全站有 **30 多种**断点值：480/481/600/640/767/768/900/1024/1120/
+    1200/1280/1400/1600…，甚至 28px/36px 这种；且 JS 只有一个 768，CSS 与 JS 完全脱节
+  - 媒体查询里不能用 CSS 变量，所以只能以**注释形式固定标准档位**：
+    xs(<480) / sm(480) / md(640) / lg(768) / xl(1024) / 2xl(1280)
+  - 明确 **768 是 JS 与 CSS 的唯一契约点**（`CONFIG.BREAKPOINTS.MOBILE`）
+  - 已修正的配对边界：`max-width: 640px` ↔ `min-width: 641` 改为用 639 配对，
+    页脚 900px 断点改为 1023px（与 1024 配对），消除 1px「无人区」
+- **全面屏安全区适配**：`.navbar` 加 `env(safe-area-inset-top)`、
+  页脚加 `inset-bottom`；前提是 viewport meta 含 `viewport-fit=cover`
+  —— 原先 4 个模板/生成器漏了这项（about / contact / 文章页 / 静态镜像），已补齐
+
 ## [8.65.0] - 2026-10-25
 
 ### 变更

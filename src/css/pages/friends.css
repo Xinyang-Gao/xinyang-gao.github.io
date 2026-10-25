@@ -489,7 +489,7 @@ code {
 /* --- 手机横屏 / 小平板 (≤ 768px) --- */
 @media (max-width: 768px) {
     .friends-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
         gap: 20px;
     }
     .friend-card {
@@ -521,7 +521,7 @@ code {
         font-size: 1.4rem;
     }
     .requirements-grid {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
         gap: 16px;
     }
     .requirement-item {
@@ -579,7 +579,7 @@ code {
         padding-left: 14px;
     }
     .requirements-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
         gap: 14px;
     }
     .requirement-item {

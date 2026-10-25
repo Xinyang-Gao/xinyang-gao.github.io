@@ -19,6 +19,7 @@
 | **前端语言** | TypeScript 7.0.2 | 所有交互逻辑、页面管理器、路由、UI 组件均使用 TypeScript 编写，部分传统模块为 JavaScript |
 | **前端构建工具** | Vite 8.3.0 | 编译 + 打包 TypeScript、复制 vendor 库，支持 HMR 开发服务器 |
 | **页面切换** | View Transitions API | 浏览器原生转场（合成器驱动），不支持时降级为直接切换 |
+| **响应式** | 移动优先 + 统一断点 | 标准档位 xs/sm(480)/md(640)/lg(768)/xl(1024)/2xl(1280)，规范见 `core/variables.css` 顶部；768 为 JS 与 CSS 的唯一契约点 |
 | **路由与 SPA** | 原生 History API + 自定义 Router | 无刷新页面切换，支持 `popstate`、滚动位置恢复、内存页面缓存（LRU 清理）、资源动态加载/卸载 |
 | **状态管理** | 单例模式 + 内存缓存 + Service Worker | `DataService` 负责内存缓存与并发去重，持久化缓存由 Service Worker 负责；`storageController` 管理 localStorage 设置、访客记录等 |
 | **样式系统** | 原生 CSS + CSS 变量 | 模块化设计：`core/`（变量、布局、基础）、`components/`（导航、评论、页脚等）、`pages/`（各页面独有样式），支持明暗主题自动切换 |

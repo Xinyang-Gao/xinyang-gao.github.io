@@ -93,7 +93,7 @@
 /* 图表网格 */
 .charts-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 1.8rem;
     margin-bottom: 2.8rem;
 }
@@ -155,7 +155,7 @@
 /* 洞察卡片网格 */
 .insights-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 1.8rem;
     margin-bottom: 2.8rem;
 }
@@ -240,11 +240,11 @@
 /* 响应式 */
 @media (max-width: 900px) {
     .charts-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .insights-grid {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
     }
 }
 
@@ -254,11 +254,11 @@
     }
 
     .stats-cards-grid {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
     .insights-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .stats-footer {
@@ -377,7 +377,7 @@ hr {
 
 @media (max-width: 860px) {
     .charts-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .extra-stats-row {

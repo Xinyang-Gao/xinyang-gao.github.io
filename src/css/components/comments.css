@@ -1828,7 +1828,7 @@
     width: 95%;
   }
   .twikoo .tk-admin-config-item {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 0.25rem;
   }
   .twikoo .tk-admin-config-title {

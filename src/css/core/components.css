@@ -1346,3 +1346,54 @@ i[class*="fa-"] {
 @media (prefers-reduced-motion: reduce) {
   .svg-inline--fa { animation: none; }
 }
+
+/* ============================================================
+   移动端：可点区域补齐到 ≥ 44px
+   ------------------------------------------------------------
+   放在 core 合并顺序的**最后**（components.css 是 core 的末位），
+   否则会被 layout / 组件里更具体的尺寸规则盖掉 —— 实测把这段写在
+   base.css 时 floating-btn 仍是 40px。
+
+   视觉尺寸不动，只撑开命中区。iOS HIG / Material 下限 44×44；
+   改动前页脚 license-link 只有 17px 高、nav-logo 30px 高。
+
+   用 min-height + padding 而非伪元素扩展命中区：这些元素紧密排列，
+   伪元素的负 inset 会与相邻元素重叠，反而点错目标。
+
+   正文里的内联链接（<p> 中的 <a>）不在此列 —— WCAG 2.5.8 对
+   行内文本链接有豁免，强行撑到 44px 会撕裂行距。
+   ============================================================ */
+/* ---------- 移动端：可点区域补齐到 ≥ 44px ----------
+   视觉尺寸不动，只把命中区撑开。iOS HIG / Material 的下限是 44×44；
+   实测改动前页脚 license-link 只有 17px 高、nav-logo 30px 高，手指很难点准。
+
+   这里用 min-height + padding 而不是伪元素扩展命中区：页脚链接与标签按钮
+   都是紧密排列的，伪元素的负 inset 会和相邻元素重叠，反而点错目标。 */
+@media (max-width: 767px) {
+  .license-link,
+  .legal-link,
+  .social-capsule,
+  .version-capsule,
+  .tag-button,
+  .profile-action,
+  .external-link-card,
+  .quote-refresh,
+  .nav-item,
+  .nav-actions a,
+  .nav-actions button,
+  .icon-btn,
+  .floating-btn {
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    padding-block: 6px;
+  }
+  /* 导航区：logo 命中区补齐，文字本身不变大 */
+  .nav-logo,
+  .navbar .brand-logo {
+    min-height: 44px;
+    align-items: center;
+  }
+  /* 胶囊网格纵向留白收紧，避免 44px 撑开后互相贴死 */
+  .social-capsule-grid { gap: 0.35rem 1rem; }
+}

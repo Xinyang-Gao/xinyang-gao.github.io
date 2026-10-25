@@ -17,7 +17,7 @@
   margin: var(--sidebar-sticky-top) auto 60px;
   padding: 0 var(--container-padding);
   display: grid;
-  grid-template-columns: 1fr var(--sidebar-width);
+  grid-template-columns: minmax(0, 1fr) var(--sidebar-width);
   gap: 2.5rem;
   position: relative;
 }
@@ -531,7 +531,7 @@
   }
   
   .article-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     margin-top: calc(var(--nav-height) + 12px);
     padding: 0 1rem;
     gap: 1.25rem;

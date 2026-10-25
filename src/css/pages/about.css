@@ -780,7 +780,7 @@
 
 .about-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 0.9rem;
 }
 /* ---------- 技术栈 / 联系方式（原侧边栏个人信息卡的内容） ----------
@@ -820,7 +820,7 @@
 
 @media (min-width: 640px) {
   .about-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
   .about-footer {
     grid-column: 1 / -1;
@@ -987,7 +987,7 @@
 
 .hobby-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 0.65rem;
 }
 .hobby-item {
@@ -1085,7 +1085,7 @@
   }
 
   .skill-tree {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.7rem;
   }
   .skill-node { padding: 1.25rem 0.7rem 1rem; }
@@ -1099,13 +1099,13 @@
   }
   .skill-pct { font-size: 0.62rem; }
 
-  .hobby-grid { grid-template-columns: 1fr 1fr; }
+  .hobby-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 }
 
 @media (max-width: 480px) {
   .archive-name { font-size: 1.7rem; }
   .archive-meta {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     font-size: 0.7rem;
     gap: 0.45rem;
   }
@@ -1129,7 +1129,7 @@
     top: 56px;
   }
 
-  .skill-tree { grid-template-columns: 1fr; }
+  .skill-tree { grid-template-columns: minmax(0, 1fr); }
   .skill-ring { width: 64px; height: 64px; }
   .skill-ring-icon > i,
   .skill-ring-icon > svg,
@@ -1139,7 +1139,7 @@
     font-size: 24px !important;
   }
 
-  .hobby-grid { grid-template-columns: 1fr; }
+  .hobby-grid { grid-template-columns: minmax(0, 1fr); }
 
   .comment-card { padding: 1rem 0.9rem; }
 }
@@ -1152,7 +1152,7 @@
   .milestone-badge { width: 32px; height: 32px; font-size: 0.8rem; }
   .milestone-note-text { font-size: 0.6rem; max-width: 110px; }
 
-  .skill-tree { grid-template-columns: 1fr 1fr; gap: 0.55rem; }
+  .skill-tree { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0.55rem; }
   .skill-ring { width: 60px; height: 60px; }
   .skill-ring-icon > i,
   .skill-ring-icon > svg,

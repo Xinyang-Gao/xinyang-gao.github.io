@@ -707,7 +707,7 @@ class AggregatedGenerator(OutputGenerator):
 
         html = f'''<!DOCTYPE html>
 <html lang="zh-CN">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>高新炀的小站 · 静态镜像</title>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><title>高新炀的小站 · 静态镜像</title>
 <link rel="stylesheet" href="/css/core.css">
 <style>
 .nojs-alert {{ background: var(--accent-color,#b45b63); color: white; text-align: center; padding: 8px; }}
@@ -771,7 +771,7 @@ class AggregatedGenerator(OutputGenerator):
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="robots" content="noindex, nofollow">
 <title>离线 · 高新炀的小站</title>
 <style>

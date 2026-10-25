@@ -224,6 +224,22 @@ a:hover::after { width: 100%; }
 }
 
 /* ---------- 减少动画偏好 ---------- */
+/* ---------- 全面屏：避开刘海 / Home 指示条 ----------
+   env(safe-area-inset-*) 在非全面屏设备上解析为 0，可无条件使用。
+   需要 viewport meta 含 viewport-fit=cover 才生效（见 base.html）。 */
+@supports (top: env(safe-area-inset-top)) {
+  .navbar { top: calc(8px + env(safe-area-inset-top, 0px)); }
+  @media (min-width: 768px) {
+    .navbar { top: calc(16px + env(safe-area-inset-top, 0px)); }
+  }
+  @media (min-width: 1024px) {
+    .navbar { top: calc(20px + env(safe-area-inset-top, 0px)); }
+  }
+  .global-footer {
+    padding-bottom: calc(1.8rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
