@@ -14,6 +14,31 @@
 - **修复** —— 缺陷修复
 - **安全** —— 安全相关的改进
 
+## [8.59.0] - 2026-10-25
+
+### 修复
+
+- 首页页面管理器创建失败：`TypeError: Cannot set property className of #<SVGElement> which has only a getter`
+  - 根因：Font Awesome Kit 默认开启 `autoReplaceSvg`，会把模板里的 `<i class="fas fa-sun" id="weatherIcon">` 替换成 `<svg>`；而 `SVGElement.className` 是**只读**的 `SVGAnimatedString`，在严格模式（ES module 本身就是）下赋值直接抛 TypeError，`HomeManager` 随之初始化失败
+  - 而且就算改成 `setAttribute` 也换不掉图标 —— `<svg>` 里的图形路径是 FA 写死的，换 class 没用
+  - 现改为**整个元素重建**：新建 `<i>` 后 `replaceWith`，由 FA 的 MutationObserver 转成对应图标；类名一律用 `setAttribute` 写入，即使宿主元素类型再变也不会复现
+  - 实测：预先把 `#weatherIcon` 换成 `<svg>` 复现线上场景，页面无报错且图标正确（小雨 → `fa-cloud-drizzle`）
+
+### 新增
+
+- 背景天气从 7 档扩到 11 档，新增 **雾 / 霾 / 沙尘 / 大风**
+  - **雾**：不降水，但水汽把远景整个吃掉——雾气铺到 88% 高、远山只剩 0.2 可见度。注意 `dim` 不降反升：雾散射光线，天色是"发白的灰"而不是"压暗的灰"
+  - **霾**：与雾的区别是"黄"而不是"白"。新增 `tint` 字段，在抽色+压暗之后再染一层土黄——只靠向中性灰混合表达不出"黄"
+  - **沙尘**：最浑的一档，新增 `dust` 降水形态：沙粒几乎不下落，被风横着推，带上下浮沉；云与天色一并染成沙黄
+  - **大风**：新增 `gust` 倍率。天色变化不大，主要是"看得见风"——即使实测风级不到阵风阈值也刮气流线
+  - 云朵此前不参与染色，会出现"黄天 + 灰白净云"，已一并修掉
+- 天气图标码映射补全到和风全表：雨 300–318、雪 400–410、雾/霾/沙尘 500–515、风 200–213；首位兜底改为 3xx 雨 / 4xx 雪 / 5xx 浊 / 2xx 风
+- 首页天气图标细分雨势：毛毛雨→`cloud-drizzle`、中雨→`cloud-rain`、暴雨→`cloud-showers-heavy`、阵雨→`cloud-sun-rain`、雨夹雪→`cloud-sleet`、冰雹/雷→`cloud-bolt`、霾雾→`smog`、沙尘/大风→`wind`
+
+### 变更
+
+- 天气档位白名单统一到 `sky-backdrop.ts` 导出的 `isSkyWeather` / `isSkyWeatherMode`。此前 `sky-backdrop` 与 `settings` 各存一份，新增档位时漏改一处就会被**静默退回 auto**（这次新增四档时正好踩到）
+
 ## [8.58.1] - 2026-10-25
 
 ### 修复

@@ -18,16 +18,54 @@ import { scrollDispatcher } from '/js/core/scroll-dispatcher.js';
 export type SkyPhase = 'auto' | 'dawn' | 'morning' | 'noon' | 'afternoon' | 'dusk' | 'night';
 
 /** 天气：晴 → 多云 → 阴 → 雨 → 雷暴 → 雪 → 雨夹雪 */
-export type SkyWeather = 'clear' | 'cloudy' | 'overcast' | 'rain' | 'storm' | 'snow' | 'sleet';
+export type SkyWeather =
+  | 'clear'
+  | 'cloudy'
+  | 'overcast'
+  | 'rain'
+  | 'storm'
+  | 'snow'
+  | 'sleet'
+  | 'fog'
+  | 'haze'
+  | 'dust'
+  | 'wind';
 
 /**
  * 降水形态。雨是斜线，雪是飘落的白点，雨夹雪两者混着来。
  * 三者共用同一个粒子池，只是绘制方式不同 —— 切换天气不用重建粒子。
  */
-export type PrecipKind = 'none' | 'rain' | 'snow' | 'sleet';
+export type PrecipKind = 'none' | 'rain' | 'snow' | 'sleet' | 'dust';
 
 /** 天气来源：auto 跟随真实天气（UAPI），其余为手动指定 */
 export type SkyWeatherMode = 'auto' | SkyWeather;
+
+/**
+ * 天气档位的唯一白名单。
+ * 以前 sky-backdrop 与 settings 各存一份，新增档位时漏改一处就会被静默退回 auto
+ * （新增雾/霾/沙尘/大风时就踩了这个坑），所以统一放在这里导出。
+ */
+const SKY_WEATHERS: readonly SkyWeather[] = [
+  'clear',
+  'cloudy',
+  'overcast',
+  'rain',
+  'storm',
+  'snow',
+  'sleet',
+  'fog',
+  'haze',
+  'dust',
+  'wind',
+];
+
+export function isSkyWeather(value: string): value is SkyWeather {
+  return (SKY_WEATHERS as readonly string[]).includes(value);
+}
+
+export function isSkyWeatherMode(value: string): value is SkyWeatherMode {
+  return value === 'auto' || isSkyWeather(value);
+}
 
 /**
  * 一份天气对天空的全部影响。
@@ -60,8 +98,18 @@ interface WeatherProfile {
   star: number;
   /** 地平线雾气浓度倍率 */
   haze: number;
+  /** 地平线雾气的高度（占天空层的百分比）：雾天要铺得很高，晴天只贴地一层 */
+  hazeHeight: number;
   /** 远景山脉的可见度（雨雪天被水汽糊掉，晴天最清楚） */
   mountain: number;
+  /**
+   * 额外染色：在"抽色 + 压暗"之后再向某个色相靠。
+   * 霾偏土黄、沙尘偏沙黄——这两者不是"更灰"，而是"更黄"，
+   * 只靠 OVERCAST_GRAY 混合表达不出来。
+   */
+  tint?: { color: RGB; amount: number };
+  /** 阵风强度倍率：大风天即使实测风级不高也该看得见风 */
+  gust?: number;
 }
 
 const WEATHER_PROFILES: Record<SkyWeather, WeatherProfile> = {
@@ -77,6 +125,7 @@ const WEATHER_PROFILES: Record<SkyWeather, WeatherProfile> = {
     lightning: false,
     celestial: 1,
     star: 1,
+    hazeHeight: 42,
     haze: 1,
     mountain: 1,
   },
@@ -92,6 +141,7 @@ const WEATHER_PROFILES: Record<SkyWeather, WeatherProfile> = {
     lightning: false,
     celestial: 0.55,
     star: 0.4,
+    hazeHeight: 46,
     haze: 1.2,
     mountain: 0.95,
   },
@@ -108,6 +158,7 @@ const WEATHER_PROFILES: Record<SkyWeather, WeatherProfile> = {
     lightning: false,
     celestial: 0.3,
     star: 0.16,
+    hazeHeight: 52,
     haze: 1.4,
     mountain: 0.82,
   },
@@ -123,6 +174,7 @@ const WEATHER_PROFILES: Record<SkyWeather, WeatherProfile> = {
     lightning: false,
     celestial: 0.16,
     star: 0.1,
+    hazeHeight: 58,
     haze: 1.55,
     mountain: 0.72,
   },
@@ -138,6 +190,7 @@ const WEATHER_PROFILES: Record<SkyWeather, WeatherProfile> = {
     lightning: true,
     celestial: 0.06,
     star: 0.03,
+    hazeHeight: 66,
     haze: 1.85,
     mountain: 0.6,
   },
@@ -154,6 +207,7 @@ const WEATHER_PROFILES: Record<SkyWeather, WeatherProfile> = {
     lightning: false,
     celestial: 0.2,
     star: 0.08,
+    hazeHeight: 54,
     haze: 1.5,
     mountain: 0.68,
   },
@@ -170,8 +224,81 @@ const WEATHER_PROFILES: Record<SkyWeather, WeatherProfile> = {
     lightning: false,
     celestial: 0.14,
     star: 0.06,
+    hazeHeight: 56,
     haze: 1.62,
     mountain: 0.7,
+  },
+  // 雾：不降水，但水汽把远景整个吃掉 —— 雾气铺得很高、远山只剩一点轮廓。
+  // 注意 dim 不降反升：雾散射光线，天色是"发白的灰"而不是"压暗的灰"。
+  fog: {
+    label: '雾',
+    overcast: 0.34,
+    dim: 1.0,
+    clouds: 2,
+    cloudDim: 0.04,
+    cloudFill: 1.15,
+    precip: 'none',
+    precipRate: 0,
+    lightning: false,
+    celestial: 0.12,
+    star: 0.02,
+    hazeHeight: 88,
+    haze: 3.4,
+    mountain: 0.2,
+  },
+  // 霾：与雾的区别是"黄"而不是"白" —— 靠 tint 染出土黄色
+  haze: {
+    label: '霾',
+    overcast: 0.3,
+    dim: 0.94,
+    clouds: 2,
+    cloudDim: 0.1,
+    cloudFill: 1.25,
+    precip: 'none',
+    precipRate: 0,
+    lightning: false,
+    celestial: 0.26,
+    star: 0.05,
+    hazeHeight: 70,
+    haze: 2.5,
+    mountain: 0.42,
+    tint: { color: [176, 148, 96], amount: 0.3 },
+  },
+  // 沙尘：最浑的一档。有"降水"（其实是横向乱飞的沙粒），天色偏沙黄
+  dust: {
+    label: '沙尘',
+    overcast: 0.44,
+    dim: 0.9,
+    clouds: 3,
+    cloudDim: 0.3,
+    cloudFill: 1.5,
+    precip: 'dust',
+    precipRate: 0.9,
+    lightning: false,
+    celestial: 0.08,
+    star: 0.03,
+    hazeHeight: 76,
+    haze: 2.8,
+    mountain: 0.28,
+    tint: { color: [198, 164, 108], amount: 0.38 },
+  },
+  // 大风：天色变化不大，主要是"看得见风"——云跑得快、气流线明显
+  wind: {
+    label: '大风',
+    overcast: 0.26,
+    dim: 0.96,
+    clouds: 3,
+    cloudDim: 0.14,
+    cloudFill: 1.35,
+    precip: 'none',
+    precipRate: 0,
+    lightning: false,
+    celestial: 0.6,
+    star: 0.35,
+    hazeHeight: 50,
+    haze: 1.5,
+    mountain: 0.8,
+    gust: 2.4,
   },
 };
 
@@ -596,7 +723,12 @@ function applyWeather(base: ResolvedSky, weather: SkyWeather): ResolvedSky {
   const w = WEATHER_PROFILES[weather];
   const overcast = (c: RGB): RGB => mix(c, OVERCAST_GRAY, w.overcast);
   const dim = (c: RGB, k = w.dim): RGB => [c[0] * k, c[1] * k, c[2] * k];
-  const sky = (c: RGB): RGB => dim(overcast(c));
+  // 霾/沙尘的"黄"抽色表达不出来，tint 放在最后单独染一层。
+  // 云也要染：否则沙尘天会出现"黄天 + 灰白净云"，看着很假。
+  const sky = (c: RGB, k = w.dim): RGB => {
+    const d = dim(overcast(c), k);
+    return w.tint ? mix(d, w.tint.color, w.tint.amount) : d;
+  };
 
   return {
     top: sky(base.top),
@@ -604,7 +736,7 @@ function applyWeather(base: ResolvedSky, weather: SkyWeather): ResolvedSky {
     bottom: sky(base.bottom),
     glow: sky(base.glow),
     // 云比天空更"吃"天气：雨云要明显沉下去，但别沉成纯黑
-    cloud: dim(overcast(base.cloud), 1 - w.cloudDim),
+    cloud: sky(base.cloud, 1 - w.cloudDim),
     cloudFill: Math.min(0.92, base.cloudFill * w.cloudFill),
     cloudStroke: Math.min(1, base.cloudStroke * (1 + w.overcast * 0.5)),
     star: base.star * w.star,
@@ -1115,7 +1247,8 @@ class SkyBackdrop {
     root.style.setProperty('--sky-cloud-fill-opacity', sky.cloudFill.toFixed(3));
     root.style.setProperty('--sky-cloud-stroke-opacity', sky.cloudStroke.toFixed(3));
     // 地平线雾气：阴雨天更浓，把远景糊进天色里
-    root.style.setProperty('--sky-haze-opacity', (0.32 * profile.haze).toFixed(3));
+    root.style.setProperty('--sky-haze-opacity', Math.min(1, 0.32 * profile.haze).toFixed(3));
+    root.style.setProperty('--sky-haze-height', `${profile.hazeHeight}%`);
     root.dataset.phase = this.phase;
     root.dataset.weather = weather;
     root.dataset.theme = theme;
@@ -1217,17 +1350,25 @@ class SkyBackdrop {
     );
 
     const lv = this.windLevel();
-    const gusting = lv !== null && lv >= GUST_WIND_LEVEL && this.enabled && !prefersReducedMotion();
+    // 天气本身也可以刮风（"大风"档）：即使实测风级不到阈值也该看得见气流线
+    const gustBoost = WEATHER_PROFILES[this.effectiveWeather()].gust ?? 1;
+    const gusting =
+      gustBoost > 1 ||
+      (lv !== null && lv >= GUST_WIND_LEVEL && this.enabled && !prefersReducedMotion());
     if (this.gustsEl) {
       this.gustsEl.classList.toggle('is-on', gusting);
       if (gusting) {
         // 6 级刚起风时若隐若现，9 级以上明显到"看得见风"
-        const strength = clamp01((lv - GUST_WIND_LEVEL + 1) / 4);
-        this.gustsEl.style.setProperty('--gust-opacity', (0.25 + strength * 0.55).toFixed(3));
+        const strength =
+          lv === null ? clamp01((gustBoost - 1) / 1.4) : clamp01((lv - GUST_WIND_LEVEL + 1) / 4);
+        this.gustsEl.style.setProperty(
+          '--gust-opacity',
+          Math.min(0.9, (0.25 + strength * 0.55) * gustBoost).toFixed(3),
+        );
         // 风越大，气流线掠过越快
         this.gustsEl.style.setProperty(
           '--gust-speed',
-          (1 / Math.max(0.35, 1.9 - strength * 1.1)).toFixed(3),
+          ((1 / Math.max(0.28, 1.9 - strength * 1.1)) * Math.min(1.6, gustBoost)).toFixed(3),
         );
       }
     }
@@ -1390,6 +1531,7 @@ class SkyBackdrop {
    * - 雨：斜向的短线，落得快
    * - 雪：缓慢飘落的白点，带左右摆动
    * - 雨夹雪：一半画雪片、一半画雨丝（按粒子下标奇偶分），速度取中间值
+   * - 沙尘：几乎不下落，被风横着推的细小沙粒
    *
    * @param dt 本帧经过的秒数（真实经过时间，掉帧时速度不会变慢）
    * @param seconds 累计秒数，用于雪片的摆动相位
@@ -1421,6 +1563,24 @@ class SkyBackdrop {
       const isFlake = kind === 'snow' || (kind === 'sleet' && (i & 1) === 0);
       // 雨夹雪里雪片再慢一档，才看得出"夹"的层次
       const vy = d.speed * fallScale * (kind === 'sleet' && isFlake ? 0.7 : 1);
+
+      if (kind === 'dust') {
+        // 沙尘：几乎不"下落"，主要被风横着推；颗粒细、偏沙黄、带一点上下浮沉
+        const vx = d.speed * 0.22 * (0.7 + slant * 1.7);
+        d.x += vx * dt;
+        d.y += vx * dt * (0.1 + Math.sin(seconds * 1.4 + i) * 0.22);
+        if (d.x > w + 30) {
+          d.x = -30;
+          d.y = Math.random() * h;
+        }
+        if (d.y > h + 20) d.y = -20;
+        if (d.y < -20) d.y = h + 20;
+
+        const da = Math.min(0.72, d.alpha * this.precipAlpha * 1.1);
+        ctx.fillStyle = `rgba(214, 184, 138, ${da.toFixed(3)})`;
+        ctx.fillRect(d.x, d.y, 1.5 + d.len * 0.02, 1.1);
+        continue;
+      }
 
       d.y += vy * dt;
       d.x += vy * dt * slant;
@@ -1596,15 +1756,6 @@ class SkyBackdrop {
   }
 
   private readWeatherMode(): SkyWeatherMode {
-    const isSkyWeather = (v: string): v is SkyWeather =>
-      v === 'clear' ||
-      v === 'cloudy' ||
-      v === 'overcast' ||
-      v === 'rain' ||
-      v === 'snow' ||
-      v === 'sleet' ||
-      v === 'storm';
-
     const raw = storageController.getItem(CONFIG.STORAGE_KEYS.SKY_WEATHER);
     return raw !== null && isSkyWeather(raw) ? raw : 'auto';
   }

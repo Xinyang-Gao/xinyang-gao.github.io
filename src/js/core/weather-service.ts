@@ -228,18 +228,72 @@ export function ensureWeather(force = false): Promise<WeatherInfo | null> {
  * 图标码沿用和风那套（100 晴 / 101 多云 / 104 阴 / 3xx 雨 / 302 雷阵雨 / 4xx 雪 / 5xx 雾霾沙尘）。
  */
 const ICON_WEATHER: Record<string, SkyWeather> = {
+  // ---- 晴 / 云 ----
   '100': 'clear', // 晴
   '150': 'clear', // 晴（夜）
   '102': 'clear', // 少云
   '103': 'clear', // 晴间多云
   '101': 'cloudy', // 多云
   '104': 'overcast', // 阴
-  '404': 'sleet', // 雨夹雪
-  '405': 'sleet', // 雨雪天气
-  '406': 'sleet', // 阵雨夹雪
+  // ---- 雨（3xx）----
+  '300': 'rain', // 阵雨
+  '301': 'rain', // 强阵雨
+  '305': 'rain', // 小雨
+  '306': 'rain', // 中雨
+  '307': 'rain', // 大雨
+  '308': 'rain', // 极端降雨
+  '309': 'rain', // 毛毛雨/细雨
+  '310': 'rain', // 暴雨
+  '311': 'rain', // 大暴雨
+  '312': 'rain', // 特大暴雨
+  '314': 'rain', // 小到中雨
+  '315': 'rain', // 中到大雨
+  '316': 'rain', // 大到暴雨
+  '317': 'rain', // 暴雨到大暴雨
+  '318': 'rain', // 大暴雨到特大暴雨
+  '399': 'rain', // 雨
+  '313': 'sleet', // 冻雨
   '302': 'storm', // 雷阵雨
   '303': 'storm', // 强雷阵雨
   '304': 'storm', // 雷阵雨伴有冰雹
+  // ---- 雪（4xx）----
+  '400': 'snow', // 小雪
+  '401': 'snow', // 中雪
+  '402': 'snow', // 大雪
+  '403': 'snow', // 暴雪
+  '407': 'snow', // 阵雪
+  '408': 'snow', // 小到中雪
+  '409': 'snow', // 中到大雪
+  '410': 'snow', // 大到暴雪
+  '499': 'snow', // 雪
+  '404': 'sleet', // 雨夹雪
+  '405': 'sleet', // 雨雪天气
+  '406': 'sleet', // 阵雨夹雪
+  // ---- 雾 / 霾 / 沙尘（5xx）----
+  '500': 'fog', // 薄雾
+  '501': 'fog', // 雾
+  '509': 'fog', // 浓雾
+  '514': 'fog', // 大雾
+  '502': 'haze', // 霾
+  '510': 'haze', // 强霾
+  '511': 'haze', // 中度霾
+  '512': 'haze', // 重度霾
+  '513': 'haze', // 严重霾
+  '503': 'dust', // 扬沙
+  '504': 'dust', // 浮尘
+  '507': 'dust', // 沙尘暴
+  '508': 'dust', // 强沙尘暴
+  '515': 'dust', // 特强沙尘暴
+  // ---- 风（2xx）----
+  '200': 'wind', // 风
+  '201': 'wind', // 微风
+  '202': 'wind', // 大风
+  '203': 'wind', // 狂风
+  '204': 'wind', // 飓风
+  '205': 'wind', // 龙卷风
+  '206': 'wind', // 强风
+  '207': 'wind', // 疾风
+  '208': 'wind', // 烈风
   '209': 'storm', // 风暴
   '210': 'storm', // 狂爆风
   '211': 'storm', // 飓风
@@ -247,13 +301,16 @@ const ICON_WEATHER: Record<string, SkyWeather> = {
   '213': 'storm', // 热带风暴
 };
 
-/** 按首位数字兜底：3xx 雨、4xx 雪（雨夹雪已由精确表接管）、5xx 雾霾沙尘、2xx 风 */
+/**
+ * 按首位数字兜底：3xx 雨、4xx 雪（雨夹雪已由精确表接管）、
+ * 5xx 雾/霾/沙尘统一按"浑浊"处理、2xx 风。
+ */
 function byIconPrefix(icon: string): SkyWeather | null {
   const head = icon.charAt(0);
   if (head === '3') return 'rain';
   if (head === '4') return 'snow';
-  if (head === '5') return 'cloudy';
-  if (head === '2') return 'cloudy';
+  if (head === '5') return 'haze';
+  if (head === '2') return 'wind';
   return null;
 }
 
@@ -269,15 +326,19 @@ export function mapWeatherToSky(info: WeatherInfo | null): SkyWeather {
   const byPrefix = byIconPrefix(info.icon);
   if (byPrefix) return byPrefix;
 
-  // 文本兜底：注意"雨夹雪"要排在"雪"和"雨"之前，否则会被误判成纯雨
+  // 文本兜底：顺序很重要 ——
+  // "雨夹雪"要排在"雪""雨"之前，"雾霾"要先判"霾"，否则会被误判成纯雨或雾。
   const w = info.weather;
-  if (w.includes('雷')) return 'storm';
-  if (/雨夹雪|雨雪|阵雨夹雪|冻雨/.test(w)) return 'sleet';
-  if (/冰雹/.test(w)) return 'storm';
+  if (/雷|冰雹|飓风|龙卷|台风|热带风暴/.test(w)) return 'storm';
+  if (/雨夹雪|雨雪|冻雨/.test(w)) return 'sleet';
   if (w.includes('雪')) return 'snow';
   if (w.includes('雨')) return 'rain';
-  if (/阴|雾|霾|沙|尘/.test(w)) return 'overcast';
-  if (w.includes('多云')) return 'cloudy';
-  if (w.includes('晴')) return 'clear';
+  if (/沙尘|扬沙|浮尘|沙暴|尘暴/.test(w)) return 'dust';
+  if (/霾/.test(w)) return 'haze';
+  if (/雾/.test(w)) return 'fog';
+  if (/大风|狂风|微风|疾风|烈风/.test(w)) return 'wind';
+  if (/阴/.test(w)) return 'overcast';
+  if (/多云|少云/.test(w)) return 'cloudy';
+  if (/晴/.test(w)) return 'clear';
   return 'clear';
 }

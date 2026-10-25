@@ -24,6 +24,7 @@
   --sky-star-alpha: 0;
   /* 地平线雾气浓度（阴雨天更浓，由 JS 按天气写入） */
   --sky-haze-opacity: 0.32;
+  --sky-haze-height: 42%;
   /* 闪电：横向位置与缩放，每次打闪由 JS 随机化 */
   --bolt-x: 42%;
   --bolt-scale: 1;
@@ -77,10 +78,11 @@ body.has-sky .profile-card {
   left: 0;
   right: 0;
   bottom: 0;
-  height: 42%;
+  /* 高度由天气决定：晴天只贴地一层薄霭，雾天要铺到快占满整屏 */
+  height: var(--sky-haze-height, 42%);
   background: linear-gradient(to top, var(--sky-glow, transparent) 0%, transparent 100%);
   opacity: var(--sky-haze-opacity, 0.32);
-  transition: opacity 0.9s ease;
+  transition: opacity 0.9s ease, height 0.9s ease;
   pointer-events: none;
 }
 

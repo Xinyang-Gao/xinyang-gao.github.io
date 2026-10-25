@@ -297,18 +297,52 @@ export class HomePageManager extends PageBase {
   /* ---------- 真实天气条 ---------- */
 
   /** 天气现象文本 → Font Awesome 图标 */
+  /**
+   * 天气现象 → Font Awesome 图标类名。
+   * 顺序有讲究："雨夹雪"要排在"雨""雪"之前，"雾霾"要排在"雾"之前。
+   */
   private weatherIconClass(info: WeatherInfo): string {
     const w = info.weather;
-    if (w.includes('雷')) return 'fas fa-bolt';
+    if (/雷|冰雹|飓风|龙卷|台风/.test(w)) return 'fas fa-cloud-bolt';
+    if (/雨夹雪|雨雪|冻雨/.test(w)) return 'fas fa-cloud-sleet';
+    if (/暴雪|大雪/.test(w)) return 'fas fa-snowflake';
     if (w.includes('雪')) return 'fas fa-snowflake';
-    if (/大雨|暴雨/.test(w)) return 'fas fa-cloud-showers-heavy';
+    if (/暴雨|大暴雨|特大暴雨|极端降雨|大到暴雨|暴雨到大暴雨|大暴雨到特大暴雨/.test(w)) {
+      return 'fas fa-cloud-showers-heavy';
+    }
+    if (/大雨|中到大雨/.test(w)) return 'fas fa-cloud-showers-heavy';
+    if (/中雨|小到中雨/.test(w)) return 'fas fa-cloud-rain';
+    if (/小雨|毛毛雨|细雨/.test(w)) return 'fas fa-cloud-drizzle';
+    if (/阵雨|强阵雨/.test(w)) return 'fas fa-cloud-sun-rain';
     if (w.includes('雨')) return 'fas fa-cloud-rain';
-    if (/雾|霾/.test(w)) return 'fas fa-smog';
-    if (/沙|尘/.test(w)) return 'fas fa-wind';
+    if (/沙尘|扬沙|浮尘|沙暴|尘暴|大风|狂风/.test(w)) return 'fas fa-wind';
+    if (/霾|雾/.test(w)) return 'fas fa-smog';
     if (w.includes('阴')) return 'fas fa-cloud';
-    if (w.includes('多云')) return 'fas fa-cloud-sun';
+    if (/多云|少云/.test(w)) return 'fas fa-cloud-sun';
     if (w.includes('晴')) return 'fas fa-sun';
     return 'fas fa-cloud-sun';
+  }
+
+  /**
+   * 换天气图标。
+   *
+   * 不能直接 `iconEl.className = ...`：Font Awesome Kit 会把 `<i class="fas fa-*">`
+   * 自动替换成 `<svg>`，而 SVGElement.className 是只读的 SVGAnimatedString，
+   * 赋值会抛 "Cannot set property className of #<SVGElement> which has only a getter"，
+   * 整个页面管理器随之创建失败。
+   * 而且给替换后的 `<svg>` 换 class 也换不掉里面已经写死的图形路径 ——
+   * 所以这里整个元素重建，新建的 `<i>` 由 FA 的 MutationObserver 转成对应图标。
+   */
+  private renderWeatherIcon(cls: string): void {
+    const oldEl = document.getElementById('weatherIcon');
+    if (!oldEl) return;
+    const fresh = document.createElement('i');
+    // 新建的一定是 HTMLElement；用 setAttribute 而不是 .className，
+    // 这样即使将来宿主元素类型变了也不会再踩同一个坑。
+    fresh.setAttribute('class', cls);
+    fresh.id = 'weatherIcon';
+    fresh.setAttribute('aria-hidden', 'true');
+    oldEl.replaceWith(fresh);
   }
 
   /**
@@ -320,7 +354,6 @@ export class HomePageManager extends PageBase {
     if (!box) return;
 
     const chipEl = document.getElementById('weatherChip');
-    const iconEl = document.getElementById('weatherIcon');
     const textEl = document.getElementById('weatherText');
     const tempEl = document.getElementById('weatherTemp');
     const alertEl = document.getElementById('weatherAlert');
@@ -333,7 +366,7 @@ export class HomePageManager extends PageBase {
       }
       box.hidden = false;
 
-      if (iconEl) iconEl.className = `weather-icon ${this.weatherIconClass(info)}`;
+      this.renderWeatherIcon(`weather-icon ${this.weatherIconClass(info)}`);
       if (textEl) textEl.textContent = info.weather;
       if (tempEl) {
         const feels =

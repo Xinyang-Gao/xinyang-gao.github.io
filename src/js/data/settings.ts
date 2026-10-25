@@ -12,6 +12,7 @@ import {
   getSkyWeatherMode,
   getSkyWeatherText,
   isSkyEnabled,
+  isSkyWeatherMode,
   setSkyEnabled,
   setSkyCloudSpeed,
   setSkyPhase,
@@ -196,18 +197,7 @@ function syncSkyHint(): void {
   if (hint) hint.textContent = `当前：${getSkyWeatherText()}`;
 }
 
-function isSkyWeatherMode(value: string): value is SkyWeatherMode {
-  return (
-    value === 'auto' ||
-    value === 'clear' ||
-    value === 'cloudy' ||
-    value === 'overcast' ||
-    value === 'rain' ||
-    value === 'snow' ||
-    value === 'sleet' ||
-    value === 'storm'
-  );
-}
+
 
 function isSkyPhase(value: string): value is SkyPhase {
   return (
@@ -418,7 +408,7 @@ export function showSettingsPanel(): void {
           <div class="setting-info">
             <span class="setting-label"><i class="fas fa-cloud-showers-heavy"></i> 天空天气</span>
             <span class="setting-desc">
-              默认跟随真实天气（UAPI，半小时一更新）；也可手动指定云量、雨势与闪电
+              默认跟随真实天气（UAPI，半小时一更新）；也可手动指定云量、降水、雾气与闪电
             </span>
           </div>
           <select id="skyWeatherSelect" class="setting-select">
@@ -427,6 +417,10 @@ export function showSettingsPanel(): void {
             <option value="cloudy">多云</option>
             <option value="overcast">阴天</option>
             <option value="rain">雨天</option>
+            <option value="fog">雾天</option>
+            <option value="haze">霾天</option>
+            <option value="dust">沙尘</option>
+            <option value="wind">大风</option>
             <option value="snow">雪天</option>
             <option value="sleet">雨夹雪</option>
             <option value="storm">雷暴</option>
