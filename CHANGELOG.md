@@ -14,6 +14,51 @@
 - **修复** —— 缺陷修复
 - **安全** —— 安全相关的改进
 
+## [8.61.0] - 2026-10-25
+
+### 移除
+
+- **回滚前景云层**（8.60.0 引入）：该层需要 `pointer-events: none`（否则正文点不了、选不中、滚不动），
+  于是拿不到 `:hover`，只能靠 `pointermove` + `getBoundingClientRect` 按距离算淡出 ——
+  既增加了常驻监听与每帧计算，视觉收益又有限，性价比不划算。已整体移除：
+  - `sky-backdrop.ts`：`FrontCloudSpec`、`buildFrontClouds`、`applyFrontLayout`、`updateFrontHover`、
+    `invalidateFrontRects`、`setSharedVar` 与指针事件监听
+  - `sky-backdrop.css`：`.sky-front-clouds` 及其 `home` / `edge` 两套布局
+  - `variables.css`：`--z-sky-front`
+  - 云量分档的 CSS 选择器回到只对 `.sky-backdrop` 生效
+  - 8.60.0 中修复的 `toCss()` 通道钳制（雪天 `dim > 1` 会算出 `rgb(270,270,270)`）与文档更新予以保留
+
+### 变更
+
+- **山脉改为不透明**
+  - 原来三层山脊用 `rgba`（alpha 0.55 / 0.72 / 0.88 × 天气可见度）表达"远"和"被雾吃掉"，
+    但半透明意味着**近景山盖不住它后面的远山与云**，层叠关系是错的
+  - 现在"远"改成把山色向天色混合，"被水汽糊掉"改成可见度越低越向天色靠拢 ——
+    视觉上一样是融入天色，物理上仍是实心，遮挡关系正确
+  - 山脚的 `::after` 原来是渐变到 `transparent` 的"薄雾"，同样会让山脚透出后景，改为不透明纯色块
+  - 实测：山体取色 `rgb(119, 91, 90)` 与 `--mountain-near` 完全一致，且山后（far/mid）的云有/无在山体区域不产生差异
+
+### 优化
+
+- 滚动性能
+  - **视差不再写继承型 CSS 变量**：`--sky-scroll` / `--sky-ground` 挂在背景根元素上，改一次会让整棵子树
+    （3 个云层 + 21 朵云 + 星空 + 日月 + 3 条山脊 + 阵风…约 40 个元素）全部重算样式。
+    改为 JS 直接给 5 个消费者元素写 `transform` / `opacity`，失效范围缩到元素本身。
+    同页面微基准（80 次写入 + 强制刷新）：写根变量 1.60ms → 直写 0.80ms
+  - **山脉纵向位置改用 `transform` 而不是 `top`**：`top` 触发布局，`transform` 只走合成
+  - **值没变就不写**：滚动位移与透明度变化小于阈值（0.1px / 0.001）时跳过写入；静止时一次都不写
+  - **`--sky-ground` 量化到 3 位小数**：原来 4 位，几乎每帧都在变，白写样式
+  - **移除每帧写 `--sky-star-alpha`**：它只在 rAF 循环里变化，滚动时写它是纯浪费
+  - **缓存 `prefers-reduced-motion` 结果**：原来每帧调用 `matchMedia`，并不便宜
+  - **避开 `String.toFixed`**：每帧十几次调用有成本，改为 `Math.round` 后直接拼接
+  - **降低 blur 开销**：整层 `filter: blur` 是滚动时最贵的一项（实测占天空开销一半以上）。
+    云层外扩从 `-26%` 收到 `-14%`（层面积 2.25 倍视口 → 1.8 倍），far 层 blur 1.4px → 1px、mid 0.5px → 0.35px，
+    并在 `prefers-reduced-motion` 下直接 `filter: none`
+  - **后台标签页暂停动画**：`.is-paused` 停掉云朵漂移与阵风的 CSS 动画（rAF 循环原本已停，动画没停）
+
+> 说明：端到端滚动指标（RecalcStyle / Script / Layout 总耗时）在沙盒里噪声很大，
+> 新旧版本差值落在波动范围内，无法给出可靠的百分比；上面的收益依据是同页面微基准与各改动的原理。
+
 ## [8.60.0] - 2026-10-25
 
 ### 新增
