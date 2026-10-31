@@ -150,6 +150,25 @@ body.has-sky .profile-card {
   stroke-linejoin: round;
 }
 
+/* ---------- 月相：亮面实心、暗面留一轮极淡的轮廓 ----------
+   月亮的 path 是按农历日实时生成的（见 sky-backdrop.ts 的 moonSvg），
+   这里只管配色。暗面比亮面再淡一档，模拟"地照"—— 新月时月盘其实还在，
+   只是几乎看不见；全透明的话月亮会像凭空消失，看着像画漏了。 */
+.sky-celestial svg .moon-lit {
+  fill: currentColor;
+  fill-opacity: 0.92;
+  stroke: currentColor;
+  stroke-opacity: 0.9;
+  stroke-width: 1.2;
+}
+.sky-celestial svg .moon-dark {
+  fill: currentColor;
+  fill-opacity: 0.07;
+  stroke: currentColor;
+  stroke-opacity: 0.28;
+  stroke-width: 1;
+}
+
 /* ---------- 云朵 ---------- */
 /* 外层层负责视差与"接近地面"的退场，内层负责漂移与配色 —— 分开是为了
    让滚动时的高频更新不撞上配色过渡（transition 只写在内层）。

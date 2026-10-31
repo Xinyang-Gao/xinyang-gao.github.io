@@ -344,18 +344,44 @@
   line-height: 1.5;
 }
 
-/* ---------- 「此刻」文案：地理 / 天气 / 日期 / 季节揉成的一句话 ----------
-   由 site-ambient-text.ts 生成，天气到达或跨小时后单独更新这一个节点。
-   左对齐 + 竖线装饰，与下方的信息列表区分开：它是可读的句子，不是字段。 */
+/* ---------- 「此刻」文案：地理 / 天气 / 农历 / 季节揉成的一段话 ----------
+   由 site-ambient-text.ts 生成三段（景 / 农历 / 应景提醒），
+   site-info-card.ts 各自用 textContent 写入，天气或农历到达后单独更新。
+
+   原先左侧有一根 3px accent 竖线，但它把这段文字钉成了"引用块"，
+   与下方同样是字段的信息列表区分不开层次 —— 改成分段排版。 */
 .site-ambient {
   margin: 0;
-  padding: 14px 20px;
-  font-size: 0.88rem;
-  line-height: 1.7;
-  color: var(--text-color);
-  border-left: 3px solid var(--accent-color);
+  padding: 16px 20px 18px;
   background: var(--surface-color-secondary);
+  font-size: 0.9rem;
+  line-height: 1.85;
+  color: var(--text-color);
+  text-align: justify;
+  /* 长文本在窄屏下按中文习惯断行，避免长串英文把行撑出容器 */
+  overflow-wrap: break-word;
 }
+
+/* 三段的层次：正文 → 次级 → 最弱。靠字色字号分层，不再靠一根竖线。 */
+.site-ambient .ambient-scene {
+  display: block;
+  color: var(--text-color);
+}
+.site-ambient .ambient-lunar {
+  display: block;
+  margin-top: 0.35em;
+  font-size: 0.94em;
+  color: var(--text-secondary);
+}
+.site-ambient .ambient-note {
+  display: block;
+  margin-top: 0.45em;
+  font-size: 0.86em;
+  color: var(--text-secondary);
+  opacity: 0.85;
+}
+/* 该段没有内容时整段收起，不留空行 */
+.site-ambient [hidden] { display: none; }
 
 /* ---------- 主体：信息列表 ---------- */
 .profile-body {

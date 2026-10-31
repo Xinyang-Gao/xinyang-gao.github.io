@@ -79,12 +79,13 @@ export const PRIVACY_HTML = `
       <div class="service-icon"><i class="fas fa-quote-left"></i></div>
       <div class="service-body">
         <span class="service-name">UAPI</span>
-        <span class="service-desc">每日一言 · 真实天气</span>
+        <span class="service-desc">每日一言 · 真实天气 · 农历月相</span>
       </div>
     </div>
   </div>
   <p class="privacy-note">
     天气接口按访问 IP 定位城市，不会上传任何账号信息；结果在本地缓存半小时，到期才重新请求。
+    农历接口只传时区、不传位置，用于显示农历日期与背景里的月相；结果本地缓存一天，跨日才重新请求。
   </p>
 </section>
 

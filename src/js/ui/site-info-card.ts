@@ -11,7 +11,7 @@
 import { CONFIG, Utils } from '/js/core/core.js';
 import { dataService } from '/js/core/data-service.js';
 import { getWeather, subscribeWeather } from '/js/core/weather-service.js';
-import type { WeatherInfo } from '/js/core/weather-service.js';
+import { ensureLunar, getLunar, subscribeLunar } from '/js/core/lunar-service.js';
 import { generateAmbientText } from '/js/ui/site-ambient-text.js';
 
 /** 容器 id：模板与 Python 生成器里的挂载点 */
@@ -31,6 +31,8 @@ const statsCache: { articles: string | null; works: string | null } = {
 
 /** 天气订阅句柄：重复渲染时先解绑，避免叠加出多个监听 */
 let unsubWeather: (() => void) | null = null;
+/** 农历订阅句柄 */
+let unsubLunar: (() => void) | null = null;
 /** 整点重绘的定时器是页面级单例（跨小时都要换文案），只需启动一次 */
 let ambientClockStarted = false;
 
@@ -55,7 +57,7 @@ export function generateSiteInfoCardHTML(): string {
         <p class="profile-bio">写点东西，做点东西</p>
       </div>
 
-      <p class="site-ambient" id="${AMBIENT_ID}">${generateAmbientText(getWeather())}</p>
+      <p class="site-ambient" id="${AMBIENT_ID}">${ambientMarkup()}</p>
 
       <div class="profile-body">
         ${infoItem('fa-clock', `已运行 <b>${age.days}</b> 天`)}
@@ -84,28 +86,69 @@ export function generateSiteInfoCardHTML(): string {
  * 天气走订阅而不是轮询；整点重绘走一个 60s 的检查，且只在文案真的变了
  * 才写 DOM —— 否则每分钟都要触发一次无谓的重排。
  */
+/**
+ * 三段文案的初始标记。
+ *
+ * 只用 textContent 写入，所以这里只搭结构、不填内容 —— 内容全部来自
+ * API（城市名、节日名等外部数据），交给 DOM 文本节点最稳，无需转义。
+ */
+function ambientMarkup(): string {
+  return (
+    '<span class="ambient-scene"></span>' +
+    '<span class="ambient-lunar"></span>' +
+    '<span class="ambient-note"></span>'
+  );
+}
+
+/** 把三段写进对应 span：逐段比较，只有变化的那段才动 DOM */
+function paintAmbient(root: HTMLElement): void {
+  const text = generateAmbientText(getWeather(), getLunar());
+  const parts: Array<[string, string | null]> = [
+    ['.ambient-scene', text.scene],
+    ['.ambient-lunar', text.lunarLine],
+    ['.ambient-note', text.note],
+  ];
+  for (const [sel, value] of parts) {
+    const el = root.querySelector(sel);
+    if (!el) continue;
+    if (value) {
+      if (el.textContent !== value) el.textContent = value;
+      el.removeAttribute('hidden');
+    } else {
+      // 没有这一段（例如不值得提醒）就整段隐藏，不留空行
+      if (el.textContent) el.textContent = '';
+      el.setAttribute('hidden', '');
+    }
+  }
+}
+
+/**
+ * 「此刻」文案随三件事变：天气到达、农历到达（都异步）与跨小时（时段词变了）。
+ *
+ * 天气 / 农历走订阅而不是轮询；整点重绘走一个 60s 的检查，且只在文案真的变了
+ * 才写 DOM —— 否则每分钟都要触发一次无谓的重排。
+ */
 function bindAmbientText(): void {
   const el = document.getElementById(AMBIENT_ID);
   if (!el) return;
 
-  const paint = (weather: WeatherInfo | null): void => {
-    const next = generateAmbientText(weather);
-    if (el.textContent !== next) el.textContent = next;
-  };
+  const paint = (): void => paintAmbient(el);
 
-  paint(getWeather());
+  paint();
 
   unsubWeather?.();
-  unsubWeather = subscribeWeather(paint);
+  unsubWeather = subscribeWeather(() => paint());
+  unsubLunar?.();
+  unsubLunar = subscribeLunar(() => paint());
+  // 农历与天气都是"用到才取"，这里顺手发起一次（幂等，已缓存则直接返回）
+  void ensureLunar();
 
   if (!ambientClockStarted) {
     ambientClockStarted = true;
     setInterval(() => {
       // 节点可能已被 SPA 换掉，重新取一次；取不到就等下次渲染再绑
       const now = document.getElementById(AMBIENT_ID);
-      if (!now) return;
-      const next = generateAmbientText(getWeather());
-      if (now.textContent !== next) now.textContent = next;
+      if (now) paintAmbient(now);
     }, 60_000);
   }
 }
@@ -151,6 +194,9 @@ export function renderSiteInfoCard(): void {
       requestAnimationFrame(() => card.classList.add('visible'));
     }
   } else {
+    // DOM 未变（同一个容器节点）：订阅仍然有效，但农历 / 天气可能刚到，
+    // 重新绑一次并刷一遍文案（内部逐段比较，没变化就不动 DOM）
+    bindAmbientText();
     const card = container.querySelector('.profile-card');
     if (card && !card.classList.contains('visible')) {
       requestAnimationFrame(() => card.classList.add('visible'));

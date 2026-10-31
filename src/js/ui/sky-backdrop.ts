@@ -11,6 +11,7 @@ import {
   type WeatherInfo,
 } from '/js/core/weather-service.js';
 import { scrollDispatcher } from '/js/core/scroll-dispatcher.js';
+import { ensureLunar, getLunar, moonPhase, subscribeLunar } from '/js/core/lunar-service.js';
 
 // ==================== 类型 ====================
 
@@ -671,7 +672,68 @@ const GUST_WIND_LEVEL = 6;
 const LIGHTNING_PATH = 'M32 4 L18 78 L34 76 L14 132 L30 128 L8 196 L26 118 L12 120 L28 66 L14 68 Z';
 
 const SUN_SVG = `<svg viewBox="0 0 40 40" aria-hidden="true"><circle cx="20" cy="20" r="11" /></svg>`;
+/**
+ * 月亮的两种画法：
+ *   - 默认（`moonSvg()`）：经典月牙，用于拿不到农历时（接口失败 / 还没返回）
+ *   - 按相位（`moonSvg(phase)`）：由农历日推算的真实月相
+ */
 const MOON_SVG = `<svg viewBox="0 0 40 40" aria-hidden="true"><path d="M23 5 A16 16 0 1 0 37 21 A13 13 0 1 1 23 5 Z" /></svg>`;
+
+/**
+ * 按月相生成月亮 SVG。
+ *
+ * 画法是「整圆 + 明暗界线」：亮部由一段半圆弧（外缘）加一段椭圆弧（明暗界线）
+ * 围成，椭圆的横半径 = R·|cos(2πp)| —— 蛾眉月时椭圆接近整圆（亮部只剩一牙），
+ * 上弦月时椭圆退化为直径（正好半个亮面），满月时椭圆反向铺满（整个圆都亮）。
+ * 亏月（p > 0.5）是盈月的水平镜像。
+ *
+ * 暗面用一层极淡的同心圆表示（"地照"，新月时能看到月盘轮廓），
+ * 比直接留空更真实，也避免新月时月亮彻底消失、像是没画出来。
+ *
+ * @param phase 0 = 新月，0.5 = 满月，1 = 下一个新月；传 null 用默认月牙
+ */
+function moonSvg(phase: number | null): string {
+  if (phase == null || !Number.isFinite(phase)) return MOON_SVG;
+
+  const R = 15;
+  const cx = 20;
+  const cy = 20;
+  const top = cy - R;
+  const bottom = cy + R;
+
+  // 归一到「盈月半边」再镜像，盈亏共用一套参数
+  const waxing = phase < 0.5;
+  const mirrored = !waxing;
+  // cos 在 p 与 1-p 下相同，可直接用原相位计算椭圆半径
+  const rx = Math.max(0.001, R * Math.abs(Math.cos(2 * Math.PI * phase)));
+  /*
+   * 第二段弧的 sweep 决定亮面是"胖"还是"瘦"：
+   *   sweep2 = 0 → 椭圆弧也走右侧，与半圆弧之间是**细月牙**（亮面 < 半圆）
+   *   sweep2 = 1 → 椭圆弧绕到左侧，围出右半圆加半个椭圆（亮面 > 半圆）
+   * 所以蛾眉月（亮面不足半圆）取 0、盈凸月取 1 —— 写成反的话
+   * "初四"会画成一个几乎全亮的圆盘，"十五"反而是全黑的。
+   */
+  const p2 = waxing ? phase : 1 - phase;
+  const sweep2 = p2 < 0.25 ? 0 : 1;
+
+  const lit =
+    `M${cx} ${top} A${R} ${R} 0 0 1 ${cx} ${bottom} ` +
+    `A${rx.toFixed(3)} ${R} 0 0 ${sweep2} ${cx} ${top} Z`;
+
+  const flip = mirrored ? ` transform="translate(${2 * cx} 0) scale(-1 1)"` : '';
+  return (
+    `<svg viewBox="0 0 40 40" aria-hidden="true">` +
+    `<circle cx="${cx}" cy="${cy}" r="${R}" class="moon-dark" />` +
+    `<g${flip}><path d="${lit}" class="moon-lit" /></g>` +
+    `</svg>`
+  );
+}
+
+/** 当前农历对应的月相；没有农历时返回 null（月亮用默认月牙） */
+function currentMoonPhase(): number | null {
+  const lunar = getLunar();
+  return lunar ? moonPhase(lunar.lunarDay) : null;
+}
 
 // ==================== 小工具 ====================
 
@@ -898,6 +960,10 @@ class SkyBackdrop {
   private stars: Star[] = [];
   private sunEl: HTMLElement | null = null;
   private moonEl: HTMLElement | null = null;
+  /** 当前月亮画的是哪个相位；只在相位真变了时才重建 SVG */
+  private moonPhase: number | null = null;
+  /** 农历订阅句柄（destroy 时解绑） */
+  private unsubLunar: (() => void) | null = null;
   /** 降水（雨 / 雪 / 雨夹雪）：独立 canvas，与星空分开便于各自控制强度 */
   private precipCanvas: HTMLCanvasElement | null = null;
   private precipCtx: CanvasRenderingContext2D | null = null;
@@ -976,6 +1042,11 @@ class SkyBackdrop {
     });
     if (this.weatherMode === 'auto') void ensureWeather();
 
+    // 订阅农历：月相由农历日推算，拿到后重画月亮。
+    // 月亮是纯装饰，拿不到就用默认月牙，不影响其它部分。
+    this.unsubLunar = subscribeLunar(() => this.applyMoonShape());
+    void ensureLunar();
+
     // 天空是纯装饰，晚一帧再淡入，避免和加载遮罩抢首帧
     requestAnimationFrame(() => this.root?.classList.add('is-ready'));
   }
@@ -1050,6 +1121,22 @@ class SkyBackdrop {
   }
 
   /** 释放监听与定时器（一般只在测试或极端场景调用） */
+  /**
+   * 按当前农历重画月亮。
+   *
+   * 只在相位真的变了时才重建 SVG —— 农历一天才变一次，而这个方法会被
+   * subscribeLunar 在每次数据到达时调用（含重复回传同一份数据）。
+   */
+  private applyMoonShape(): void {
+    if (!this.moonEl) return;
+    const next = currentMoonPhase();
+    // 相位差 < 0.5% 视为没变：农历日相同就一定是同一个值，这里只是防浮点抖动
+    if (next != null && this.moonPhase != null && Math.abs(next - this.moonPhase) < 0.005) return;
+    if (next == null && this.moonPhase == null) return;
+    this.moonPhase = next;
+    this.moonEl.innerHTML = moonSvg(next);
+  }
+
   destroy(): void {
     if (this.rafId) cancelAnimationFrame(this.rafId);
     this.rafId = 0;
@@ -1065,6 +1152,8 @@ class SkyBackdrop {
     this.unsubscribeTheme = null;
     this.unsubscribeWeather?.();
     this.unsubscribeWeather = null;
+    this.unsubLunar?.();
+    this.unsubLunar = null;
     this.bodyObserver?.disconnect();
     this.bodyObserver = null;
     window.removeEventListener('resize', this.handleResize);
@@ -1116,7 +1205,10 @@ class SkyBackdrop {
     sun.innerHTML = SUN_SVG;
     const moon = document.createElement('div');
     moon.className = 'sky-celestial sky-celestial--moon';
-    moon.innerHTML = MOON_SVG;
+    // 农历可能已在缓存里（当天取过），直接画出真实月相；否则用默认月牙，
+    // 等 ensureLunar() 回来再换
+    this.moonPhase = currentMoonPhase();
+    moon.innerHTML = moonSvg(this.moonPhase);
     celestialWrap.appendChild(sun);
     celestialWrap.appendChild(moon);
     root.appendChild(celestialWrap);
