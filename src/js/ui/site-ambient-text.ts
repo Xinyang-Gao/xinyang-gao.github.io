@@ -42,19 +42,86 @@ function seedFrom(d: Date): number {
   return d.getFullYear() * 1000000 + (d.getMonth() + 1) * 10000 + d.getDate() * 100 + d.getHours();
 }
 
+/** 时段词 + 它能不能被「地名 + 的」修饰 */
+interface TimePhrase {
+  text: string;
+  /**
+   * 能否被「地名 + 的」修饰。
+   *
+   * 能接"X的"的必须是**名词性成分**，而且那个名词可以是"某个地方的"：
+   *   夜色 / 黄昏 / 晨光 / 灯火 / 日影 / 天 → 可以（"新乡的黄昏"）
+   *
+   * 不行的三种情况：
+   *   - 主语是天体或泛自然物：「日头渐高」「万籁俱静」「万籁都睡了」
+   *     —— 日头、万籁不属于某个城市，"新乡的万籁都睡了"是病句
+   *   - 本身已含"的"：「正午的阳光直直落下来」—— 再加就成"新乡的正午的…"
+   *   - 动词短语 / 固定词组：「入夜了」「更深露重」
+   *
+   * 这些改用「地名，+ 时段词」的话题句式："新乡，万籁都睡了。"
+   */
+  ofPlace: boolean;
+}
+
+/** 名词性、可被"X的"修饰的时段词 */
+function placeable(text: string): TimePhrase {
+  return { text, ofPlace: true };
+}
+
+/** 主谓 / 动词短语，只能用「地名，…」句式 */
+function standalone(text: string): TimePhrase {
+  return { text, ofPlace: false };
+}
+
 /**
  * 时段。与天空背景的配色时段大致对齐 —— 读者抬头看到的和读到的是同一时刻。
  * 给的是画面而不是标签：写"黄昏正一寸寸落下来"而不是"傍晚"。
  */
-function timeOfDay(hour: number, seed: number): string {
-  if (hour < 5) return pick(['夜色沉沉', '万籁俱静', '夜正深'], seed, 1);
-  if (hour < 8) return pick(['晨光初透', '天刚破晓', '晓色微明'], seed, 2);
-  if (hour < 11) return pick(['晨光正好', '日头渐高', '天已大亮'], seed, 3);
-  if (hour < 14) return pick(['日正当空', '正午的阳光直直落下来', '日头正盛'], seed, 4);
-  if (hour < 17) return pick(['日影渐长', '午后斜阳', '阳光斜斜地铺过来'], seed, 5);
-  if (hour < 19) return pick(['黄昏正一寸寸落下来', '暮色渐合', '天光将暮'], seed, 6);
-  if (hour < 22) return pick(['夜色初临', '灯火初上', '入夜了'], seed, 7);
-  return pick(['夜已深', '更深露重', '万籁都睡了'], seed, 8);
+function timeOfDay(hour: number, seed: number): TimePhrase {
+  if (hour < 5) {
+    return pick([placeable('夜色沉沉'), standalone('万籁俱静'), placeable('夜正深')], seed, 1);
+  }
+  if (hour < 8) {
+    return pick([placeable('晨光初透'), placeable('天刚破晓'), placeable('晓色微明')], seed, 2);
+  }
+  if (hour < 11) {
+    return pick([placeable('晨光正好'), standalone('日头渐高'), placeable('天已大亮')], seed, 3);
+  }
+  if (hour < 14) {
+    return pick(
+      [standalone('日正当空'), placeable('正午阳光正好'), standalone('日头正盛')],
+      seed,
+      4,
+    );
+  }
+  if (hour < 17) {
+    return pick(
+      [placeable('日影渐长'), placeable('午后斜阳'), placeable('阳光斜斜地铺过来')],
+      seed,
+      5,
+    );
+  }
+  if (hour < 19) {
+    return pick(
+      [placeable('黄昏正一寸寸落下来'), placeable('暮色渐合'), placeable('天光将暮')],
+      seed,
+      6,
+    );
+  }
+  if (hour < 22) {
+    return pick([placeable('夜色初临'), placeable('灯火初上'), standalone('入夜了')], seed, 7);
+  }
+  return pick([placeable('夜已深'), standalone('更深露重'), standalone('万籁都睡了')], seed, 8);
+}
+
+/**
+ * 把地名接到时段词前面。
+ *
+ * 能接"的"的直接接（"新乡的黄昏"）；不能接的走话题句式，
+ * 地名后用逗号而不是"的"（"新乡，万籁都睡了。"）。
+ */
+function withPlace(place: string, when: TimePhrase): string {
+  if (!place) return when.text;
+  return when.ofPlace ? `${place}的${when.text}` : `${place}，${when.text}`;
 }
 
 /**
@@ -119,7 +186,8 @@ const MOON_PHRASES: Record<MoonPhaseName, readonly string[]> = {
 
 /** 没有天气时的景句：只说时令，不暴露"拿不到数据" */
 const GENERIC_SCENES: readonly string[] = [
-  '这样的天，适合慢下来读点什么',
+  // 不写"这样的天"—— 前面已经说了"秋日里"，再来一个指代会重复
+  '适合慢下来读点什么',
   '一切都刚刚好',
   '安静得很',
   '风很轻',
@@ -168,12 +236,12 @@ export function generateAmbientText(
   let scene: string;
   if (!weather) {
     // 没有天气：只说时令，不暴露"拿不到数据"
-    scene = `${when}。${season(now.getMonth())}里${pick(GENERIC_SCENES, seed, 21)}。`;
+    scene = `${when.text}。${season(now.getMonth())}里${pick(GENERIC_SCENES, seed, 21)}。`;
   } else {
     const sky = mapWeatherToSky(weather);
     const phrase = pick(WEATHER_PHRASES[sky], seed, 22);
-    // 地点只带一个"的"（"新乡的黄昏"）：两个"的"连读很拗口
-    const head = place ? `${place}的${when}` : when;
+    // 地名与时段词的搭配：能接"的"就接，不能接的用逗号（见 withPlace）
+    const head = withPlace(place, when);
     // 体感与实际差得多时用体感
     const shown =
       weather.feelsLike != null && Math.abs(weather.feelsLike - weather.temperature) >= 2
