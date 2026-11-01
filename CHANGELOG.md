@@ -14,11 +14,32 @@
 - **修复** —— 缺陷修复
 - **安全** —— 安全相关的改进
 
-## [8.68.0] - 2026-10-31
+## [8.68.0] - 2026-11-01
 
-### 修复
+### 变更
 
-- 网站信息卡的「此刻」文案可能会有病句
+- **音乐播放器换成改版分支 `Xinyang-Gao/APlayer`（Vue 3 重写）**
+  - 拖拽、缩放、自动折叠、桌面歌词、主题适配全部下沉到 `APlayer.min.js` 内部，
+    不再依赖站点侧的覆盖样式与运行时补丁
+  - `global-music-player.ts` 从 520 行精简到只剩「加载 + 实例化 + 暴露接口」
+    （原 `aplayer-override-style` 覆盖表、拖拽补丁、折叠补丁全部移除）
+  - 播放器直接消费站点 CSS 变量 `--surface-color` / `--accent-color` /
+    `--radius-xl` / `--shadow-md`，浅色与深色主题自动跟随
+
+### 新增
+
+- **播放器双形态**
+  - `widget` 左下角悬浮小卡（默认，空闲自动折叠）
+  - `full` 居中全屏卡片：左侧封面、右侧上方标题作者、右侧下方歌词、底部控件
+  - 两种形态各自记住位置，拖拽后互不干扰
+- **播放器显隐控制**：隐藏时音频继续播放；状态不写入 localStorage，刷新后自动恢复可见
+- **背景外观调节**：悬浮卡与全屏卡各自独立的不透明度（30%~100%）与模糊度（0~24px），
+  玻璃效果由 `::before` 承载，文字与控件不跟着变淡
+- **桌面歌词默认停在屏幕正下方居中**，拖动后可一键复位
+- **外部控制接口 `window.__musicPlayer`**：`mode()` / `visible()` / `style()` /
+  `lyrics()` / `position()` / `lyricsPosition()`，播放器未就绪时调用只告警不抛错
+- `globals.d.ts` 补齐 `APlayerOptions` / `APlayerInstance` / `PlayerAppearance` /
+  `MusicPlayerController` 类型
 
 ## [8.67.0] - 2026-10-31
 
