@@ -24,7 +24,9 @@ declare global {
     /** ui-effects 挂载的滚动揭示实例（settings/router 以 window 形式访问） */
     scrollRevealInstance?: ScrollReveal;
     /** APlayer 由 vendor 脚本以 UMD 全局注入（改版：Vue 3 玻璃拟态悬浮播放器） */
-    APlayer?: new (options: APlayerOptions) => APlayerInstance;
+    APlayer?: new (
+      options: APlayerOptions,
+    ) => APlayerInstance;
     /** 播放器外部控制接口，由 vendor/global-music-player.ts 挂载 */
     __musicPlayer?: MusicPlayerController;
   }
@@ -84,7 +86,9 @@ declare global {
     lyrics(value?: boolean): boolean | void;
     setLyricsVisible(visible: boolean): void;
     getLyricsVisible(): boolean;
-    position(value?: { left: number; top: number } | null): { left: number; top: number } | null | void;
+    position(
+      value?: { left: number; top: number } | null,
+    ): { left: number; top: number } | null | void;
     setPosition(position: { left: number; top: number } | null): void;
     lyricsPosition(value?: Record<string, number | boolean>): void;
     setLyricsPosition(position: Record<string, number | boolean>): void;

@@ -14,6 +14,24 @@
 - **修复** —— 缺陷修复
 - **安全** —— 安全相关的改进
 
+## [8.68.1] - 2026-11-07
+
+### 修复
+
+- **CI `npm run lint` 失败**：`globals.d.ts` 的 `APlayer` 构造签名与 `position()` 签名、
+  `global-music-player.ts` 的 `setLyricsPosition` 超过 Biome `lineWidth: 100`，
+  按 `biome check --write` 的期望格式折行；现 `biome check` / `format` / `lint` 三项均通过
+
+### 变更
+
+- **同步 `Xinyang-Gao/APlayer` 新版 `APlayer.min.js`**
+  - 全屏卡片放大：宽度 560 → 760px，封面 132 → 200px，标题 17 → 22px，作者 13 → 15px，
+    窄屏下封面 96 → 120px；歌词区与控件区随之舒展
+  - 歌词移除「按形态 / 主题切换字体颜色」的条件逻辑与颜色选择器，
+    改为 `mix-blend-mode: difference` 与底板自动反色（浅底深字 / 深底浅字 / 彩色底补色），
+    并加深色描边兜底；设置菜单只保留字号调节
+  - 歌词字号不再按形态缩放，浮层与卡片内完全一致
+
 ## [8.68.0] - 2026-11-01
 
 ### 变更

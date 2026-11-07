@@ -111,7 +111,8 @@ function createController(): MusicPlayerController {
     toggleLyrics: () => call('setLyricsVisible', !call<boolean>('getLyricsVisible')),
     getLyricsVisible: () => call<boolean>('getLyricsVisible'),
     setPosition: (position: { left: number; top: number } | null) => call('setPosition', position),
-    setLyricsPosition: (position: Record<string, number | boolean>) => call('setLyricsPosition', position),
+    setLyricsPosition: (position: Record<string, number | boolean>) =>
+      call('setLyricsPosition', position),
     destroy: () => call('destroy'),
   };
 }
