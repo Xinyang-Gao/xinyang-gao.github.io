@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="description" content="高新炀的小站图库：全屏瀑布流图片集。">
+  <title>图库 · 高新炀的小站</title>
+  <link rel="canonical" href="{{SITE_URL}}/gallery/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="高新炀的小站">
+  <meta property="og:title" content="图库 · 高新炀的小站">
+  <meta property="og:description" content="全屏瀑布流图片集，鼠标移上图片可查看标题、简介与日期。">
+  <meta property="og:url" content="{{SITE_URL}}/gallery/">
+  <meta property="og:image" content="{{SITE_URL}}/assets/avatar.webp">
+  <meta property="og:locale" content="zh_CN">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="图库 · 高新炀的小站">
+  <meta name="twitter:description" content="全屏瀑布流图片集，鼠标移上图片可查看标题、简介与日期。">
+  <meta name="twitter:image" content="{{SITE_URL}}/assets/avatar.webp">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="preload" as="fetch" href="/json/gallery.json" crossorigin="anonymous">
+  <!-- 只引入设计变量与图库样式；刻意不加载 main.js，
+       因此本页不出现导航栏、页脚、侧边栏与音乐播放器。 -->
+  <link rel="stylesheet" href="/css/core.css">
+  <link rel="stylesheet" href="/css/pages/gallery.css">
+  <script type="module" src="/js/pages/gallery.js"></script>
+</head>
+
+<body class="gallery-page">
+
+  <header class="gallery-head">
+    <p class="gallery-head__eyebrow">Gallery · 图库</p>
+    <h1>Personal Gallery</h1>
+    <div class="gallery-head__row">
+      <span class="gallery-head__count" id="gallery-count">— 张</span>
+    </div>
+  </header>
+
+  <main class="gallery-stage">
+    <div class="gallery-status" id="gallery-status" role="status" aria-live="polite" hidden></div>
+    <div class="gallery-grid" id="gallery-grid" aria-label="图库图片列表"></div>
+  </main>
+
+  <noscript>
+    <div class="gallery-status">
+      <span class="gallery-status__title">需要启用 JavaScript</span>
+      <span>图库数据来自 /json/gallery.json，浏览器需开启 JavaScript 才能排列图片。</span>
+    </div>
+  </noscript>
+
+</body>
+
+</html>

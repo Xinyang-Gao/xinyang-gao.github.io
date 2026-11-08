@@ -91,6 +91,8 @@ PAGE_TEMPLATES: dict[str, str] = {
     "timeline.html": "timeline",
     "stats.html": "stats",
     "contact.html": "contact",
+    # 独立图库页：不挂导航栏/页脚，暂时也不进导航配置与 sitemap
+    "gallery.html": "gallery",
 }
 
 #: 全站静态资源规则 —— 新增资源只需在此追加一条，无需改动生成器代码

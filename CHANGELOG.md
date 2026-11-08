@@ -14,6 +14,32 @@
 - **修复** —— 缺陷修复
 - **安全** —— 安全相关的改进
 
+## [8.71.0] - 2026-11-08
+
+### 新增
+
+- **全宽瀑布流图库页 `/gallery/`**（暂不接入导航栏、页脚与 sitemap）
+  - `src/templates/gallery.html` 只引 `core.css` + `pages/gallery.css`，
+    **不加载 `main.js`**，因此没有导航栏、页脚、侧边栏、音乐播放器与加载遮罩，
+    也不被 SPA 路由接管；容器占满视口宽度，不套 `.container` / 两栏布局
+  - `src/js/pages/gallery.ts` 用「最高图优先投进最矮列」（LPT）分配卡片：
+    卡片高度 = 列宽 ÷ 宽高比；随后把较矮列等比放大一点（上限 1.22 倍，
+    cover 只轻微裁切）补齐列底，避免大片空洞。列数按容器宽度分
+    2 / 3 / 4 / 5 / 6 档且不超过 `ceil(图片数 / 2)`，
+    列数不变时只更新高度、复用图片 DOM 不重排
+  - 宽高比优先取 JSON 的 `width` / `height`（零额外请求），缺失时才发一次
+    带 4 秒超时的图片探测；图片用 `aspect-ratio` 提前占位、`loading="lazy"`，
+    加载失败显示占位文案，不会让列高塌陷
+  - hover / 键盘 focus 在图片下半部分渐显标题、简介、日期与标签；
+    触屏（无 hover）时信息常显但精简为标题 + 日期（实测浮层仅占卡片 40% 高）；
+    支持 `prefers-reduced-motion`
+  - 数据来自 `src/assets/gallery.json` → `/json/gallery.json`，字段见 README 7.6；
+    附带 8 张不同比例的示例图 `src/assets/gallery/sample-*.webp`（合计约 53 KB）
+  - 主题通过读同一个 `localStorage` 键 + `prefers-color-scheme` 跟随主站，
+    不 import 任何站点模块，打包体积与主包隔离
+  - `vite.config.mts` 新增独立入口 `js/pages/gallery`；
+    `static_assets.py` 的 `PAGE_TEMPLATES` 新增 `gallery.html` → `gallery/`
+
 ## [8.70.1] - 2026-11-08
 
 ### 变更
@@ -21,6 +47,13 @@
 - **网站信息卡头部换成头像**：`site-info-card.ts` 的 `.profile-header` 原本是
   「高新炀的小站」标题 + 「写点东西，做点东西」简介，现替换为
   `/assets/avatar.webp` 的方形圆角图片
+  - 复用 `core/layout.css` 中已有的 `.profile-avatar-wrapper` / `.profile-avatar`
+    样式：`--radius-md`(10px) 圆角、`--border-color` 边框、`--shadow-sm` 阴影、
+    `object-fit: cover`，以及卡片 hover 时的轻微放大 + accent 光环
+  - 响应式尺寸沿用原有断点（100 / 110 / 120 / 130px），视觉与站点其它卡片一致
+  - `width` / `height` / `alt` / `decoding="async"` 齐备，避免布局抖动；
+    `app-initializer.ts` 已有的头像 preload 正好覆盖这个首屏位置
+  - 移除随之失效的 `.profile-name` / `.profile-bio` 样式与 5 处响应式覆盖
 
 ## [8.70.0] - 2026-11-08
 

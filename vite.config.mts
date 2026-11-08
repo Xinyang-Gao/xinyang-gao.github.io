@@ -74,6 +74,8 @@ export default defineConfig({
         'js/pages/about': r('src/js/pages/about.ts'),
         'js/pages/article': r('src/js/pages/article.ts'),
         'js/pages/timeline': r('src/js/pages/timeline.ts'),
+        // 图库是独立页面：不加载 main.js，需要自己的入口才能产出 /js/pages/gallery.js
+        'js/pages/gallery': r('src/js/pages/gallery.ts'),
         // Service Worker 必须独立：它有自己全局作用域，不能与页面代码共享 chunk
         'js/data/sw': r('src/js/data/sw.js'),
       },

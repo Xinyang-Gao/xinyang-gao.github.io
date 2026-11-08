@@ -1,0 +1,301 @@
+/* ============================================
+   pages/gallery.css
+   全宽瀑布流图库（独立页面，不加载 main.js / 导航 / 页脚 / 侧栏）
+
+   布局由 JS 分三步完成，CSS 只负责列宽与卡片外观：
+     .gallery-grid    -> flex 行，N 个等宽列
+     .gallery-column  -> flex 列，内部纵向排列
+     .gallery-card    -> 高度由 JS 按图片比例算好并写入，列高可精确估算
+   分配用「最高图优先 + 最矮列」，再把较矮列等比放大一点补齐列底。
+
+   想改成无缝拼接：--gallery-gap: 0px; --gallery-radius: 0px;
+   想让容器离屏幕边缘留白：--gallery-gutter: 24px;
+   ============================================ */
+
+:root {
+  --gallery-gap: 8px;
+  --gallery-gutter: 0px;
+  --gallery-radius: var(--radius-sm);
+  --gallery-overlay: rgba(12, 12, 16, 0.88);
+}
+
+/* 页面本体：不套 .container / .two-column-layout，避免它们给导航栏预留的边距 */
+body.gallery-page {
+  min-height: 100vh;
+  background-color: var(--bg-color);
+}
+
+.gallery-head {
+  width: 100%;
+  padding: clamp(28px, 5vw, 64px) clamp(20px, 4vw, 56px) clamp(22px, 3vw, 36px);
+  border-bottom: 1px solid var(--border-light);
+}
+
+.gallery-head__eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent-color);
+  margin-bottom: 10px;
+}
+
+.gallery-head h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  line-height: 1.1;
+  letter-spacing: -1.2px;
+  color: var(--text-color);
+  margin: 0;
+}
+
+.gallery-head__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 12px 24px;
+  margin-top: 14px;
+}
+
+.gallery-head__desc {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.7;
+  max-width: 60ch;
+}
+
+.gallery-head__count {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+/* ---------- 瀑布流容器 ---------- */
+.gallery-stage {
+  width: 100%;
+  padding: var(--gallery-gap) var(--gallery-gutter) 64px;
+}
+
+.gallery-grid {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--gallery-gap);
+  width: 100%;
+}
+
+.gallery-column {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--gallery-gap);
+}
+
+/* ---------- 卡片 ---------- */
+.gallery-card {
+  position: relative;
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--gallery-radius);
+  background-color: var(--surface-color-secondary);
+  box-shadow: var(--shadow-sm);
+  outline: none;
+  /* 让 hover 时轻微抬升，但不改变盒高，避免瀑布流错位 */
+  transition: box-shadow 0.35s ease, filter 0.35s ease;
+}
+
+.gallery-card:hover,
+.gallery-card:focus-visible {
+  box-shadow: var(--shadow-md), var(--shadow-offset);
+  z-index: 2;
+}
+
+.gallery-card:focus-visible {
+  outline: 2px solid var(--accent-color);
+  outline-offset: -2px;
+}
+
+/* 图片容器用 aspect-ratio 提前占好高度：
+   图片尚未加载 / 加载失败时，列高也不会塌陷，瀑布流始终填满 */
+.gallery-card__media {
+  position: relative;
+  display: block;
+  width: 100%;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--surface-color-secondary), var(--surface-color));
+}
+
+.gallery-card__media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.5s ease, transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.gallery-card__media img.is-loaded {
+  opacity: 1;
+}
+
+.gallery-card:hover .gallery-card__media img.is-loaded,
+.gallery-card:focus-visible .gallery-card__media img.is-loaded {
+  transform: scale(1.045);
+}
+
+/* 图片失效时留一个可读的占位，不让卡片变成纯色空洞 */
+.gallery-card.is-broken .gallery-card__media::after {
+  content: '图片暂时无法加载';
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+/* ---------- 信息浮层：贴在图片下半部分 ---------- */
+.gallery-card__overlay {
+  position: absolute;
+  inset: auto 0 0 0;
+  /* 高度由内容决定：信息始终贴在「图片的下部分」，
+     矮卡片也不会被一整块渐变盖满 */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 6px;
+  padding: clamp(24px, 3.2vw, 42px) clamp(14px, 2vw, 24px) clamp(12px, 1.6vw, 20px);
+  color: #fff;
+  background: linear-gradient(
+    to top,
+    var(--gallery-overlay) 0%,
+    rgba(12, 12, 16, 0.9) 58%,
+    rgba(12, 12, 16, 0) 100%
+  );
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
+  transition: opacity 0.32s ease, transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.gallery-card:hover .gallery-card__overlay,
+.gallery-card:focus-visible .gallery-card__overlay {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.gallery-card__title {
+  /* core.css 给 h1~h6 设了 color: var(--text-color) 与 margin-top: 1.2em，
+     这里必须显式覆盖，否则标题在深色浮层上变成深色字、还被顶出可视区 */
+  margin: 0;
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: clamp(0.98rem, 1.35vw, 1.22rem);
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: -0.2px;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.6);
+}
+
+.gallery-card__desc {
+  margin: 0;
+  color: #fff;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.gallery-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin-top: 2px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  letter-spacing: 0.03em;
+  opacity: 0.92;
+}
+
+.gallery-card__tag {
+  padding: 2px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  border-radius: var(--radius-full);
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+/* 无 hover 能力（触屏）时信息常显，否则永远看不到；
+   同时收起两行简介与标签、只留标题 + 日期，避免常显的信息条盖住大半张图片 */
+@media (hover: none) {
+  .gallery-card__overlay {
+    opacity: 1;
+    transform: none;
+    padding-top: clamp(14px, 1.8vw, 20px);
+    gap: 4px;
+  }
+
+  .gallery-card__desc,
+  .gallery-card__tag {
+    display: none;
+  }
+
+  .gallery-card__meta {
+    margin-top: 0;
+    gap: 4px 8px;
+    font-size: 0.68rem;
+  }
+}
+
+/* 高度 < 170px 的卡片由 JS 标上 .is-short：收掉两行简介，避免浮层盖满整张图 */
+.gallery-card.is-short .gallery-card__overlay {
+  padding-top: clamp(18px, 2vw, 26px);
+  gap: 4px;
+}
+
+.gallery-card.is-short .gallery-card__desc {
+  display: none;
+}
+
+.gallery-card.is-short .gallery-card__title {
+  font-size: 0.95rem;
+}
+
+/* ---------- 状态提示 ---------- */
+.gallery-status {
+  padding: 64px 24px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  line-height: 1.8;
+}
+
+.gallery-status[hidden] {
+  display: none;
+}
+
+.gallery-status__title {
+  display: block;
+  margin-bottom: 6px;
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  color: var(--text-color);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gallery-card,
+  .gallery-card__media img,
+  .gallery-card__overlay {
+    transition: none;
+  }
+}

@@ -144,7 +144,10 @@ Website
 │  │  │     └─ 网站的起源.md
 │  │  ├─ avatar.webp
 │  │  ├─ friends.json
-│  │  └─ friend_colors.json
+│  │  ├─ friend_colors.json
+│  │  ├─ gallery.json              # 图库数据（发布为 /json/gallery.json）
+│  │  └─ gallery                   # 图库示例图（换成自己的图片后可删）
+│  │     └─ sample-01.webp … sample-08.webp
 │  ├─ public                      # 原样发布到 dist 根目录（约定式，加文件即可）
 │  │  ├─ .well-known
 │  │  │  └─ vercount-verify-pof0sq1cg39g4rpkl66s6rtf.txt
@@ -175,6 +178,7 @@ Website
 │  │  │  ├─ about.css
 │  │  │  ├─ article.css
 │  │  │  ├─ friends.css
+│  │  │  ├─ gallery.css
 │  │  │  ├─ home.css
 │  │  │  ├─ stats.css
 │  │  │  └─ timeline.css
@@ -200,6 +204,7 @@ Website
 │  │  │  ├─ about.ts
 │  │  │  ├─ article.ts
 │  │  │  ├─ friends-manager.ts
+│  │  │  ├─ gallery.ts             # 图库独立入口（不加载 main.js）
 │  │  │  ├─ home-manager.ts
 │  │  │  ├─ search-render.ts
 │  │  │  ├─ stats-manager.ts
@@ -232,6 +237,7 @@ Website
 │  │  ├─ about.html
 │  │  ├─ contact.html
 │  │  ├─ footer.html
+│  │  ├─ gallery.html
 │  │  ├─ index.html
 │  │  ├─ stats.html
 │  │  └─ timeline.html
@@ -832,6 +838,45 @@ cover: /assets/cover.webp  # 可选，文章列表项的封面/背景图
 
 构建期由 `input_loader.parse_changelog()` 解析成 `dist/json/version.json`（索引）与 `dist/json/version/version-N.json`（正文分片），条目随小节分组后进入时间线与加载覆盖层，类型徽标按 `type` 着色。
 
+### 7.6 图库（`src/assets/gallery.json`）
+
+图库页 `/gallery/` 的数据源。`src/assets/*.json` 会由 `static_assets.py` 同时发布到
+`/assets/gallery.json` 与 `/json/gallery.json`，页面 fetch 的是后者（与其它 `/json/*.json`
+接口保持一致）。
+
+```json
+{
+  "updated": "2026-11-08",
+  "items": [
+    {
+      "id": "sample-01",
+      "url": "/assets/gallery/sample-01.webp",
+      "title": "晨雾里的第一束光",
+      "description": "把清晨的薄雾与暖色一起收进画面。",
+      "date": "2026-11-08",
+      "width": 800,
+      "height": 600,
+      "tags": ["风景", "晨光"]
+    }
+  ]
+}
+```
+
+| 字段 | 必填 | 说明 |
+|------|------|------|
+| `url` | 是 | 图片地址，站内绝对路径或完整 URL 均可；为空的条目会被跳过 |
+| `title` | 否 | 标题，缺失时显示「未命名」；同时作为 `<img>` 的 `alt` |
+| `description` | 否 | 简介，hover 浮层里最多显示两行 |
+| `date` | 否 | 日期，`YYYY-MM-DD` 会渲染成 `YYYY.MM.DD` 并写进 `<time datetime>` |
+| `width` / `height` | 否（强烈建议填） | 图片原始像素尺寸。**填了就能在图片加载前算准卡片高度**，零额外请求、零布局跳动；不填则脚本会探测图片真实比例（4 秒超时后回退 1:1） |
+| `tags` | 否 | 标签数组，浮层里最多显示前 3 个 |
+| `id` | 否 | 写进卡片的 `data-id`，方便自定义样式或脚本定位 |
+
+顶层 `items` 必须是数组；`updated` 只是给人看的备注，页面不消费。仓库里附带的 8 条
+`示例 · …` 与 `src/assets/gallery/sample-*.webp` 只是演示用，替换成自己的图片后删掉即可。
+
+页面行为与可调项见 8.1 的「独立页面」。
+
 ---
 
 ## 8. 开发与扩展指南
@@ -844,6 +889,34 @@ cover: /assets/cover.webp  # 可选，文章列表项的封面/背景图
 4. 在 `src/js/router/router.ts` 的 `registerDefaultPages()` 中使用 `PageManagerRegistry.register(pattern, factory)` 注册该页面管理器。
 5. 在导航栏（`navbar-manager.ts` 的 `NAV_LINKS`）中添加链接项。
 6. 重新运行构建。
+
+#### 独立页面（不走 SPA / 不挂导航与页脚）
+
+图库页 `/gallery/` 是个例外，适合"先做出来、暂不接入站点导航"的场景：
+
+- `src/templates/gallery.html` 只引 `/css/core.css` 与 `/css/pages/gallery.css`，
+  **不加载 `/js/entry/main.js`**，因此不会出现导航栏、页脚、侧边栏、音乐播放器、
+  加载遮罩，也不会被 SPA 路由接管；也不含 `#navbar-placeholder` 等占位节点。
+- 在 `builder/static_assets.py` 的 `PAGE_TEMPLATES` 加一条映射即可输出
+  `dist/gallery/index.html`；数据放 `src/assets/gallery.json`（格式见 7.6）。
+- 页面脚本是**独立 Vite 入口**：`vite.config.mts` 的 `rollupOptions.input` 里
+  声明了 `js/pages/gallery`，产物为 `/js/pages/gallery.js`。不 import 任何站点模块，
+  所以打包体积与主包完全隔离，主题只通过读同一个 `localStorage` 键跟随。
+- 瀑布流用「最高图优先投进最矮列」（LPT）分配：卡片高度 = 列宽 ÷ 宽高比，
+  再把较矮列的卡片等比放大一点（上限 1.22 倍，`object-fit: cover` 只轻微裁切）
+  来补齐列底，避免底部出现大片空白。列数随容器宽度分 2/3/4/5/6 档，
+  且不超过 `ceil(图片数 / 2)`；列数不变时只更新高度、不重排 DOM。
+  图片用 `aspect-ratio` 提前占位，`loading="lazy"`，加载失败会显示占位文案。
+  因为是按高度而非按 JSON 顺序分配，**跨列的先后不保证与数据顺序一致**（列内仍按
+  JSON 顺序），这是换取列底齐平的取舍；不需要轻微拉伸时可把脚本里的
+  `MAX_STRETCH` 设为 `1`。
+- 可调的 CSS 变量在 `src/css/pages/gallery.css` 顶部：`--gallery-gap`（卡片间距，
+  设 `0px` 可无缝拼接）、`--gallery-gutter`（容器左右留白，默认 `0px` 即真·全屏）、
+  `--gallery-radius`（默认站点小圆角）、`--gallery-overlay`（信息浮层底色）。
+- hover / 键盘 focus 时浮出标题、简介、日期与标签；触屏（无 hover）时信息常显，
+  但只留标题 + 日期（收起简介与标签），避免常显的信息条盖住大半张图片。
+- 目前**没有**加入 `NAV_LINKS`、`footer.html` 与 sitemap 的硬编码页面列表，
+  只能直接访问 `/gallery/`；将来要接入时按上面 1–6 步补即可。
 
 ### 8.2 自定义生成器
 
