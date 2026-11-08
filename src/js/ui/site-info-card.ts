@@ -1,9 +1,9 @@
 // /js/ui/site-info-card.ts
 // 网站信息卡渲染器（原「个人信息卡片」）。
 //
-// 定位变了：不再是身份档案，而是**这个站点本身**的一张名片 ——
-// 它叫什么、跑了多久、攒了多少内容，以及此刻（地理 / 天气 / 日期 / 季节）
-// 的一句描述。
+// 定位：不再是身份档案，而是**这个站点本身**的一张名片 ——
+// 顶部是方形圆角头像，下面用一段「此刻」的描述和几项运行数据
+// （跑了多久、攒了多少内容、建站日期）说明这个站是什么。
 //
 // 联系方式与技术栈已迁往 /about/：那些是「我是谁」，不是「这个站是什么」。
 // 完整版留在关于页，这里只留两个出口。
@@ -53,8 +53,16 @@ export function generateSiteInfoCardHTML(): string {
   return `
     <div class="profile-card site-info-card">
       <div class="profile-header">
-        <h2 class="profile-name">高新炀的小站</h2>
-        <p class="profile-bio">写点东西，做点东西</p>
+        <div class="profile-avatar-wrapper">
+          <img
+            class="profile-avatar"
+            src="/assets/avatar.webp"
+            alt="高新炀的小站头像"
+            width="300"
+            height="300"
+            decoding="async"
+          >
+        </div>
       </div>
 
       <p class="site-ambient" id="${AMBIENT_ID}">${ambientMarkup()}</p>

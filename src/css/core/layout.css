@@ -298,7 +298,7 @@
   box-shadow: var(--shadow-md), var(--shadow-offset);
 }
 
-/* ---------- 头部 ---------- */
+/* ---------- 头部：站点头像（方形圆角，宽高随断点放大） ---------- */
 .profile-header {
   text-align: center;
   padding: 28px 20px 18px;
@@ -308,6 +308,8 @@
 .profile-avatar-wrapper {
   position: relative;
   display: inline-block;
+  /* 头部下方已无标题/简介，这 12px 与 .profile-header 的 padding-bottom
+     一起凑出上下近似对称的留白（响应式断点同理），不要改成 0 */
   margin-bottom: 12px;
 }
 
@@ -326,22 +328,6 @@
 .profile-card:hover .profile-avatar {
   transform: scale(1.04);
   box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.15), var(--shadow-md);
-}
-
-.profile-name {
-  font-family: var(--font-display);
-  font-size: 1.45rem;
-  font-weight: 700;
-  margin: 8px 0 4px;
-  color: var(--text-color);
-  letter-spacing: -0.3px;
-}
-
-.profile-bio {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  margin: 0;
-  line-height: 1.5;
 }
 
 /* ---------- 「此刻」文案：地理 / 天气 / 农历 / 季节揉成的一段话 ----------
@@ -735,7 +721,6 @@
   .two-column-layout { padding: 0 16px; gap: 26px; }
   .profile-header { padding: 32px 24px 20px; }
   .profile-avatar { width: 110px; height: 110px; }
-  .profile-name { font-size: 1.6rem; }
   .profile-body { padding: 18px 24px 12px; gap: 10px; }
   .profile-info-item { font-size: 0.9rem; }
   .profile-social { padding: 12px 24px; gap: 8px; }
@@ -787,8 +772,6 @@
   .profile-card { margin-bottom: 24px; }
   .profile-header { padding: 36px 28px 24px; }
   .profile-avatar { width: 120px; height: 120px; }
-  .profile-name { font-size: 1.7rem; }
-  .profile-bio { font-size: 0.95rem; }
   .profile-body { padding: 20px 28px 14px; gap: 10px; }
   .profile-info-item { font-size: 0.92rem; gap: 14px; }
   .profile-info-item i,
@@ -824,7 +807,6 @@
   .profile-card { margin-bottom: 28px; }
   .profile-header { padding: 40px 32px 26px; }
   .profile-avatar { width: 130px; height: 130px; }
-  .profile-name { font-size: 1.8rem; }
   .profile-body { padding: 22px 32px 16px; gap: 12px; }
   .profile-info-item { font-size: 0.95rem; }
   .profile-social { padding: 16px 32px; gap: 8px; }

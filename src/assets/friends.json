@@ -111,19 +111,19 @@
   ],
   "external": [
     {
-      "name": "Travelling",
-      "link": "https://www.travellings.cn/",
-      "desc": "开往 – 友链接力"
+      "name": "Github Pages",
+      "link": "https://github.com/xinyang-Gao/xinyang-gao.github.io",
+      "desc": "网站部署"
+    },
+    {
+      "name": "Twikoo",
+      "link": "https://twikoo.js.org/",
+      "desc": "网站评论系统"
     },
     {
       "name": "路过图床",
       "link": "https://imgchr.com/",
       "desc": "图床服务"
-    },
-    {
-      "name": "Bing.wdbyte.com",
-      "link": "https://bing.wdbyte.com/zh-cn/",
-      "desc": "网站壁纸来源"
     },
     {
       "name": "Font Awesome",
@@ -136,24 +136,9 @@
       "desc": "APlayer 音乐播放器分支（基于 Vue3 的新UI/UX）\n网站的音乐播放器基于此改版"
     },
     {
-      "name": "Vercount",
-      "link": "https://www.busuanzi.cc/",
-      "desc": "网站流量计数器 - 简单、快速、可靠"
-    },
-    {
-      "name": "Twikoo",
-      "link": "https://twikoo.js.org/",
-      "desc": "网站评论系统 - 简洁、安全、免费"
-    },
-    {
-      "name": "github-contrib-graph",
-      "link": "https://www.npmjs.com/package/github-contrib-graph?activeTab=readme",
-      "desc": "GitHub 贡献图小部件 - 轻量、可自定义"
-    },
-    {
-      "name": "Github Pages",
-      "link": "https://github.com/xinyang-Gao/xinyang-gao.github.io",
-      "desc": "网站部署"
+      "name": "UApiPro",
+      "link": "https://uapis.cn/",
+      "desc": "免费公共 API 服务\n本站的随机一言、天气、农历信息均来自此"
     },
     {
       "name": "Netlify",
@@ -166,19 +151,14 @@
       "desc": "Twikoo 数据存储"
     },
     {
-      "name": "Moe ICP",
-      "link": "https://icp.gov.moe/",
-      "desc": "萌国 ICP 备案"
+      "name": "github-contrib-graph",
+      "link": "https://www.npmjs.com/package/github-contrib-graph?activeTab=readme",
+      "desc": "GitHub 贡献图小部件"
     },
     {
-      "name": "UApiPro",
-      "link": "https://uapis.cn/",
-      "desc": "免费公共 API 服务\n本站的随机一言 API 来自此"
-    },
-    {
-      "name": "Fake ICP",
-      "link": "https://fakeicp.top/",
-      "desc": "假 ICP 备案"
+      "name": "Vercount",
+      "link": "https://www.busuanzi.cc/",
+      "desc": "网站流量计数器"
     },
     {
       "name": "Simple Icons",
@@ -186,14 +166,19 @@
       "desc": "站内图标（Java / Python / HTML5 / JavaScript / TypeScript / Git / Vite / Scratch / CSS）的来源"
     },
     {
-      "name": "NeteaseMiniPlayerV2",
-      "link": "https://github.com/numakkiyu/NeteaseMiniPlayer/",
-      "desc": "（曾使用）网易云音乐迷你播放器，因开发新版本现已停止维护"
+      "name": "Moe ICP",
+      "link": "https://icp.gov.moe/",
+      "desc": "萌国 ICP 备案"
     },
     {
-      "name": "Busuanzi",
-      "link": "https://www.busuanzi.cc/",
-      "desc": "（曾使用）极简网站流量计数器"
+      "name": "Fake ICP",
+      "link": "https://fakeicp.top/",
+      "desc": "Fake ICP 备案并提供访问量统计服务"
+    },
+    {
+      "name": "Travelling",
+      "link": "https://www.travellings.cn/",
+      "desc": "开往 – 友链接力"
     }
   ]
 }
