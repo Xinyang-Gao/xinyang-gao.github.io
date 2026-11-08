@@ -20,9 +20,7 @@ class BuildConfig:
     force: bool = False
     #: 构建前清空 dist 目录
     clean: bool = False
-    #: 跳过前端编译（Vite）与前端资源复制，仅做内容侧产物
-    skip_frontend: bool = False
-    #: 前端编译失败时是否中止构建（CI 必须为 True，避免部署半成品）
+    #: 生成失败 / 资源缺失时是否中止构建（CI 必须为 True，避免部署半成品）
     strict: bool = True
     #: 离线模式：跳过一切网络请求（友链头像抓取等）
     offline: bool = False
@@ -43,7 +41,7 @@ class BuildConfig:
 
     @classmethod
     def from_env(cls, *, force: bool = False, clean: bool = False,
-                 skip_frontend: bool = False, offline: bool = False,
+                 offline: bool = False,
                  strict: bool = True, parallel: bool = True,
                  max_workers: int | None = None, dry_run: bool = False,
                  force_overrides: dict[str, bool] | None = None) -> "BuildConfig":
@@ -51,7 +49,6 @@ class BuildConfig:
         return cls(
             force=force,
             clean=clean,
-            skip_frontend=skip_frontend,
             offline=offline or env_flag("SKIP_NETWORK"),
             strict=strict,
             parallel=parallel,
@@ -79,8 +76,6 @@ def describe(config: "BuildConfig") -> str:
         flags.append("force")
     if config.clean:
         flags.append("clean")
-    if config.skip_frontend:
-        flags.append("skip-frontend")
     if config.dry_run:
         flags.append("dry-run")
     if config.ci:

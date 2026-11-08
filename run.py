@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
 
-"""统一构建入口。
+"""内容侧构建入口。
+
+前端（TypeScript 打包、CSS 压缩合并）由 Vite 负责，Python 不再嵌套调用 npm。
+完整构建统一走 `npm run build`（scripts/build.mjs 串起两侧）。
 
 本地开发：
-    python run.py                # 增量构建
-    python run.py --clean        # 清空 dist 后全量构建
-    python run.py --no-frontend  # 只做内容侧产物（跳过 Vite）
+    npm run build          # 完整构建：内容 + 前端（推荐）
+    python run.py          # 只生成内容侧产物（HTML / RSS / sitemap / JSON / 静态资源）
+    python run.py --clean  # 清空 dist 后全量重建
 CI（GitHub Actions）：
-    python run.py --ci           # CI 友好输出 + 严格模式（前端失败即失败）
+    npm run build          # 检测到 CI=true 时自动追加 --ci
+    python run.py --ci     # 仅内容侧：纯文本日志 + 严格模式
 """
 
 import argparse
@@ -42,8 +46,6 @@ def build_parser() -> argparse.ArgumentParser:
                         help="只打印执行计划，不实际生成")
     parser.add_argument("--clean", action="store_true",
                         help="构建前清空 dist 目录（推荐发布前使用）")
-    parser.add_argument("--no-frontend", action="store_true",
-                        help="跳过 Vite 前端编译与 CSS 压缩（静态资源仍会同步），仅生成内容侧产物")
     parser.add_argument("--offline", action="store_true",
                         help="离线模式：跳过所有网络请求（如友链头像抓取）")
     parser.add_argument("--no-strict", action="store_true",
@@ -63,7 +65,6 @@ def make_config(args) -> BuildConfig:
     config = BuildConfig.from_env(
         force=args.force,
         clean=args.clean,
-        skip_frontend=args.no_frontend,
         offline=args.offline,
         strict=not args.no_strict,
         parallel=not args.no_parallel,

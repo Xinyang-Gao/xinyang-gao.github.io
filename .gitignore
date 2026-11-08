@@ -13,3 +13,5 @@ server.bat
 .cache/
 
 docs/审计报告-2026-10-03.md
+
+.ruff_cache/

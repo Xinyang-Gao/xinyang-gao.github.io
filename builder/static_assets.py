@@ -6,8 +6,8 @@
   * **单一声明**：所有“原样复制”的产物都在 :data:`STATIC_ASSET_RULES` 中声明，
     构建流程里不再散落 `shutil.copytree` / `shutil.copy` 调用，也不需要为
     单个文件（如 `friends.json`）手写复制代码；
-  * **约定优先**：新增站点根文件放进 `src/public/`，新增对外 JSON 放进
-    `src/assets/`，均无需改动任何代码即可发布；
+  * **约定优先**：新增站点根文件放进 `src/public/`（含 `js/vendor/` 下的第三方库），
+    新增对外 JSON 放进 `src/assets/`，均无需改动任何代码即可发布；
   * **内容寻址增量复制**：目标文件与源一致时跳过写入，避免无意义的写盘与
     mtime 抖动（CI 与本地产物更稳定）；
   * **占位符渲染**：`.html` / `.txt` / `.xml` 文本产物可写 `{{SITE_URL}}`
@@ -97,7 +97,7 @@ PAGE_TEMPLATES: dict[str, str] = {
 STATIC_ASSET_RULES: tuple[AssetRule, ...] = (
     AssetRule(
         "src/public", ".", required=True,
-        note="站点根文件：favicon / robots / 域名验证文件",
+        note="站点根文件：favicon / robots / 域名验证文件 / js/vendor 第三方库",
     ),
     AssetRule(
         "CHANGELOG.md", "CHANGELOG.md", required=True,

@@ -5,43 +5,26 @@
 """
 
 import json
-import os
-import shutil
-import subprocess
-import threading
-import time
 from collections import Counter
-from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timedelta, timezone
 from html import escape
 from pathlib import Path
 from urllib.parse import quote
 from xml.etree import ElementTree as ET
 
-from rcssmin import cssmin
-
 from ..build_context import BuildContext
 from ..common import (
     ASSETS_DIR,
-    CSS_DIST_DIR,
-    CSS_SRC_DIR,
     DIST_ROOT,
-    JS_SRC_DIR,
     JSON_OUTPUT_DIR,
     PROJECT_ROOT,
     RSS_OUTPUT,
     SITE_URL,
     SITEMAP_OUTPUT,
-    compute_dir_hash,
-    compute_object_hash,
-    ensure_dir,
-    env_int,
     format_date_iso,
     get_current_date_iso,
     get_current_datetime_iso,
     is_known_date,
-    iter_files,
-    load_build_state,
     load_json,
     log_error,
     log_info,
@@ -85,9 +68,6 @@ def rfc822(dt: datetime) -> str:
         f"{dt.hour:02d}:{dt.minute:02d}:{dt.second:02d} "
         f"{sign}{total // 3600:02d}{(total % 3600) // 60:02d}"
     )
-# 前端编译（Vite）相关
-NPM_TIMEOUT_SECONDS = 900
-
 # 输出路径
 ARTICLES_LIST_HTML = DIST_ROOT / "articles" / "index.html"
 WORKS_LIST_HTML = DIST_ROOT / "works" / "index.html"
@@ -110,36 +90,30 @@ class AggregatedGenerator(OutputGenerator):
         + [DIST_ROOT / "friends" / "index.html"]
 
     # ---------- 增量判断增强 ----------
-    def _compute_frontend_hash(self) -> str:
-        """计算所有前端源文件（CSS、JS、模板、静态素材）的组合哈希。
+    def _compute_asset_hash(self) -> str:
+        """静态资源源的组合哈希，用于判断是否需要重新同步 dist。
 
-        静态资源部分直接由 :data:`STATIC_ASSET_RULES` 派生，新增规则自动纳入
-        增量判断，无需在此处维护一份平行清单。
+        直接由 :data:`STATIC_ASSET_RULES` 派生，新增规则自动纳入增量判断。
+        前端源文件（src/js、src/css）不在此列——它们由 Vite 独立构建，
+        变化不该触发内容侧重新生成 HTML / RSS / JSON。
         """
-        hashes = []
-        if CSS_SRC_DIR.exists():
-            hashes.append(compute_dir_hash(CSS_SRC_DIR, patterns=["*.css"]))
-        if JS_SRC_DIR.exists():
-            hashes.append(compute_dir_hash(JS_SRC_DIR, patterns=["*.ts", "*.js"]))
-        hashes.append(static_sources_hash())
-        return compute_object_hash("".join(hashes))
+        return static_sources_hash()
 
     def is_up_to_date(self, context: BuildContext, state: dict) -> bool:
         if not super().is_up_to_date(context, state):
             return False
         old = state.get(self.name, {})
-        frontend_hash = self._compute_frontend_hash()
-        return old.get("frontend_hash") == frontend_hash
+        return old.get("asset_hash") == self._compute_asset_hash()
 
     def build_state_entry(self, context: BuildContext) -> dict:
-        """写入状态文件时额外记录前端哈希（增量判断依赖它）。
+        """写入状态文件时额外记录静态资源哈希（增量判断依赖它）。
 
         注意：必须覆盖基类方法——引擎只调用 build_state_entry，
-        重写 update_state 不会生效，会导致前端未变化时仍重复触发 Vite 编译。
+        重写 update_state 不会生效。
         """
         return {
             "input_hash": self.compute_input_hash(context),
-            "frontend_hash": self._compute_frontend_hash(),
+            "asset_hash": self._compute_asset_hash(),
             "timestamp": datetime.now().isoformat(),
         }
 
@@ -152,21 +126,13 @@ class AggregatedGenerator(OutputGenerator):
         log_info("开始聚合生成...")
         cfg = self.get_config(context)
         try:
-            state = load_build_state()
-            frontend_hash = self._compute_frontend_hash()
-            old_frontend = state.get(self.name, {}).get("frontend_hash")
-            frontend_changed = (force or (old_frontend != frontend_hash)) and not cfg.skip_frontend
-
-            if cfg.skip_frontend:
-                log_info("已启用 --no-frontend：跳过 Vite 编译与 CSS 压缩")
-
             self._build_statistics(context)
             self._generate_rss(context)
             self._generate_sitemap(context)
             self._generate_articles_page(context)
             self._generate_works_page(context)
             self._generate_nojs_index(context)
-            self._sync_static_assets(frontend_changed, cfg)
+            self._sync_static_assets(cfg)
             self._generate_friends_page(context)
             self._generate_code_analysis()
             self._generate_works_json(context)
@@ -809,228 +775,14 @@ class AggregatedGenerator(OutputGenerator):
             f.write(html)
         log_info(f"离线降级页生成: {OFFLINE_HTML}")
 
-    # ---------- CSS 压缩 ----------
-    @staticmethod
-    def _minify_one_css(css_file: Path) -> str:
-        rel_path = css_file.relative_to(CSS_SRC_DIR)
-        with open(css_file, encoding='utf-8') as f:
-            content = f.read()
-        try:
-            minified = cssmin(content)
-        except Exception as e:
-            log_warning(f"压缩 CSS 失败 {rel_path}: {e}，使用原内容")
-            return content
-        dst_file = CSS_DIST_DIR / rel_path
-        ensure_dir(dst_file.parent)
-        # 内容一致则不重写，减少无谓的磁盘 IO 与 mtime 抖动
-        if dst_file.is_file():
-            try:
-                if dst_file.read_text(encoding='utf-8') == minified:
-                    return rel_path.as_posix()
-            except OSError:
-                pass
-        with open(dst_file, 'w', encoding='utf-8', newline='\n') as f:
-            f.write(minified)
-        return rel_path.as_posix()
+    # ---------- 静态资源同步 ----------
+    def _sync_static_assets(self, cfg=None):
+        """同步非构建资源（public / assets / works / 模板页 / 友链 JSON）。
 
-    def _copy_and_minify_css(self) -> None:
-        files = iter_files(CSS_SRC_DIR, patterns=["*.css"])
-        workers = min(4, max(1, len(files)))
-        if workers <= 1:
-            results = [self._minify_one_css(f) for f in files]
-        else:
-            with ThreadPoolExecutor(max_workers=workers) as pool:
-                results = list(pool.map(self._minify_one_css, files))
-        for rel in results:
-            log_info(f"压缩 CSS: {rel}")
-        log_info(f"CSS 压缩完成（{len(results)} 个文件）")
-        self._bundle_core_css()
-
-    #: core 层合并顺序 = 原 <link> 引用顺序；顺序错会破坏层叠（变量必须最先）
-    CORE_CSS_ORDER = (
-        "core/variables.css",
-        "core/base.css",
-        "core/sky-backdrop.css",
-        "core/ground.css",
-        "core/layout.css",
-        "core/components.css",
-    )
-    #: 合并产物：各页面 head 用一个 <link> 替代 4 个（审计 P1-31 首屏 CSS）
-    CORE_CSS_BUNDLE = "core.css"
-
-    def _bundle_core_css(self) -> None:
-        """把 core 四件套按顺序合并为单个 `dist/css/core.css`。
-
-        首屏此前要串行加载 4 个 core CSS 才能开始有意义的渲染；合并后为 1 个，
-        请求数从 7 降到 4（各页面另有 loading-overlay/tooltip/页面级样式）。
-        各单文件仍照常产出——JS 动态注入只依赖 components/navbar 与
-        components/image-viewer，不涉及 core，合并对它们无影响。
+        前端产物（dist/js、dist/css）由 Vite 负责，Python 不再触碰；
+        规则集中在 builder/static_assets.py，新增资源无需改动生成器。
         """
-        parts: list[str] = []
-        for rel in self.CORE_CSS_ORDER:
-            src = CSS_SRC_DIR / rel
-            if not src.is_file():
-                log_warning(f"core 合并跳过缺失文件: {rel}")
-                continue
-            try:
-                parts.append(cssmin(src.read_text(encoding="utf-8")))
-            except Exception as e:  # noqa: BLE001 - 压缩失败不应中断构建
-                log_warning(f"core 合并压缩失败 {rel}: {e}，使用原文")
-                parts.append(src.read_text(encoding="utf-8"))
-
-        if not parts:
-            log_error("core CSS 合并失败：没有任何 core 文件被读取")
-            return
-
-        bundle = "\n".join(parts)
-        dst = CSS_DIST_DIR / self.CORE_CSS_BUNDLE
-        ensure_dir(dst.parent)
-        if dst.is_file():
-            try:
-                if dst.read_text(encoding="utf-8") == bundle:
-                    return
-            except OSError:
-                pass
-        with open(dst, "w", encoding="utf-8", newline="\n") as f:
-            f.write(bundle)
-        log_info(f"core CSS 合并: {self.CORE_CSS_BUNDLE} ({len(bundle):,} 字节)")
-
-    # ---------- 前端编译 ----------
-    @staticmethod
-    def _resolve_npm() -> str:
-        """跨平台解析 npm 可执行文件（Windows 上为 npm.cmd）。"""
-        if os.name == "nt":
-            cmd = shutil.which("npm.cmd") or shutil.which("npm")
-            if cmd:
-                return cmd
-        found = shutil.which("npm")
-        return found or "npm"
-
-    def _run_vite(self, cfg) -> None:
-        """调用 npm run build 编译前端，实时流式输出，失败时按 strict 策略处理。"""
-        npm = self._resolve_npm()
-        if not shutil.which(npm) and npm == "npm":
-            message = "未找到 npm（Node.js 未安装或不在 PATH 中）"
-            if cfg.strict:
-                raise RuntimeError(message)
-            log_error(f"{message}，跳过 TypeScript 编译。")
-            return
-
-        timeout = env_int("VITE_BUILD_TIMEOUT", NPM_TIMEOUT_SECONDS)
-        env = os.environ.copy()
-        env.setdefault("PYTHONIOENCODING", "utf-8")
-        env["NODE_ENV"] = "production"
-        # 关闭子进程彩色输出，避免 CI 日志里出现转义序列
-        env["NO_COLOR"] = "1"
-        env["FORCE_COLOR"] = "0"
-
-        argv = [npm, "run", "build"]
-        use_shell = os.name == "nt"
-        if use_shell:
-            # Windows 下 npm 是 .cmd 脚本，必须经 cmd.exe 执行，
-            # 并用 list2cmdline 正确处理含空格的路径（如 Program Files）
-            argv = subprocess.list2cmdline(argv)
-
-        display = argv if isinstance(argv, str) else " ".join(argv)
-        log_info(f"执行前端编译: {display} (cwd={PROJECT_ROOT})")
-        started = datetime.now()
-
-        # 超时与进程生命周期：
-        #  旧实现 `for line in proc.stdout` 读流永无超时，即便 proc.wait(timeout)
-        #  抛 TimeoutExpired，with Popen 的 __exit__（py3.12 无条件 self.wait()）
-        #  仍会继续阻塞——900s 超时形同虚设，卡死只能靠 CI job 超时兜底。
-        # 现在：读流放独立线程，主线程按 deadline 轮询；超时显式 kill + reap。
-        proc = None
-        reader = None
-        try:
-            proc = subprocess.Popen(
-                argv,
-                cwd=str(PROJECT_ROOT),
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
-                text=True,
-                encoding="utf-8",
-                errors="replace",
-                env=env,
-                shell=use_shell,
-            )
-
-            def _pump(stream) -> None:
-                for line in stream:
-                    line = line.rstrip()
-                    if line:
-                        log_info(f"[vite] {line}")
-
-            assert proc.stdout is not None
-            reader = threading.Thread(target=_pump, args=(proc.stdout,), daemon=True)
-            reader.start()
-
-            deadline = time.monotonic() + timeout
-            while proc.poll() is None:
-                if time.monotonic() >= deadline:
-                    raise subprocess.TimeoutExpired(argv, timeout)
-                time.sleep(0.2)
-            returncode = proc.returncode
-            reader.join(timeout=10)
-        except subprocess.TimeoutExpired:
-            # 必须先 kill 再 wait：只 wait 不 kill 会永远挂起
-            message = f"前端编译超时（>{timeout}s）"
-            if proc is not None and proc.poll() is None:
-                proc.kill()
-                try:
-                    proc.wait(timeout=10)
-                except subprocess.TimeoutExpired:
-                    log_error("kill 后进程仍未退出，放弃回收")
-            if reader is not None:
-                reader.join(timeout=5)
-            if cfg.strict:
-                raise RuntimeError(message) from None
-            log_error(f"{message}，继续执行其余构建步骤。")
-            return
-        except OSError as e:
-            message = f"启动前端编译进程失败: {e}"
-            if cfg.strict:
-                raise RuntimeError(message) from e
-            log_error(message)
-            return
-        finally:
-            if proc is not None and proc.stdout is not None:
-                try:
-                    proc.stdout.close()
-                except OSError:
-                    pass
-
-        elapsed = (datetime.now() - started).total_seconds()
-        if returncode != 0:
-            message = f"Vite 构建失败（返回码 {returncode}，耗时 {elapsed:.1f}s）"
-            if cfg.strict:
-                raise RuntimeError(message)
-            log_error(f"{message}，dist/js 可能不是最新！")
-            return
-        log_info(f"Vite 构建完成 (TypeScript -> JavaScript, {elapsed:.1f}s)")
-
-    # ---------- 前端编译 + 静态资源同步 ----------
-    def _sync_static_assets(self, frontend_changed: bool, cfg=None):
         cfg = cfg or BuildConfig()
-        # 1. Vite 构建 TypeScript
-        if frontend_changed:
-            self._run_vite(cfg)
-        elif cfg.skip_frontend:
-            log_info("跳过 Vite 构建（--no-frontend）")
-        else:
-            log_info("前端源文件未变化，跳过 Vite 构建")
-
-        # 2. 压缩并复制 CSS
-        if CSS_SRC_DIR.exists():
-            if frontend_changed:
-                self._copy_and_minify_css()
-            else:
-                log_info("前端未变化，跳过 CSS 压缩")
-        else:
-            log_warning(f"CSS 源目录不存在: {CSS_SRC_DIR}")
-
-        # 3. 同步非构建资源（public / assets / works / 模板页 / 友链 JSON）
-        #    规则集中在 builder/static_assets.py，新增资源无需改动生成器
         stats = sync_static_assets(parallel=cfg.parallel)
         if not stats.ok and cfg.strict:
             raise RuntimeError(f"静态资源缺失: {stats.failed}")

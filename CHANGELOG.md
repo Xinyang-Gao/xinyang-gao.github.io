@@ -14,6 +14,44 @@
 - **修复** —— 缺陷修复
 - **安全** —— 安全相关的改进
 
+## [8.69.0] - 2026-11-08
+
+### 变更
+
+- **构建编排反转：Python 不再是主进程**
+  - 过去 `python run.py` 内部 spawn `npm run build`，两套运行时互相嵌套；
+    现在新增 `scripts/build.mjs` 作为统一入口，`npm run build` 依次执行
+    `python run.py`（内容侧）→ `vite build`（前端侧），任一步失败即中止
+  - CI 由 `python run.py --ci` 改为 `npm run build`；GitHub Actions 自动注入的
+    `CI=true` 由编排脚本识别并给内容侧追加 `--ci` 严格模式
+  - 新增 `npm run build:content` / `npm run build:frontend` 便于单独调试
+  - 移除已失去意义的 `--no-frontend` CLI 参数与 `BuildConfig.skip_frontend`
+
+- **CSS 构建交给 Vite（Lightning CSS）**
+  - 新增 `scripts/css-pipeline.mts` 插件：压缩 `src/css/**/*.css` 输出 `dist/css/**`，
+    并按层叠顺序合并 6 个 core 文件为 `dist/css/core.css`。产物路径与旧流程完全一致，
+    HTML `<link>` 与 JS 动态注入的 `/css/components/*.css` 无需改动
+  - 删除 Python 侧 `_copy_and_minify_css` / `_bundle_core_css` / `rcssmin` 依赖；
+    `requirements.txt` 与 `pyproject.toml` 同步移除
+  - 增量判断从「前端哈希」改为「静态资源哈希」：只跟踪 `STATIC_ASSET_RULES` 覆盖的
+    原样复制源，`src/js` / `src/css` 的改动不再触发内容侧重新生成 HTML / RSS / JSON
+
+- **移除 `rollup-plugin-copy`**
+  - `src/js/vendor/*.min.js` 迁到 `src/public/js/vendor/`，由
+    `builder/static_assets.py` 既有规则复制到 `dist/js/vendor/`
+  - `vite.config.mts` 设 `publicDir: 'src/public'`（dev 时直接 serve），
+    同时设 `build.copyPublicDir: false`：避免 Vite 用原样文件覆盖 Python 渲染的
+    `robots.txt`（其中的 `{{SITE_URL}}` 必须是绝对地址）
+  - 重新生成 `package-lock.json`：连带移除 `rollup-plugin-copy` 的整条传递依赖
+    （`fs-extra` / `glob` / `array-union` 等），lockfile 包数 118 → 73，`npm ci` 少装 45 个包
+
+- **构建脚本纳入质量门禁**
+  - `scripts/build.mjs` / `scripts/css-pipeline.mts` 加入 Biome 检查范围，
+    `npm run lint` / `format` / `format:check` 同时覆盖 `src/js` 与 `scripts`
+  - `npm run build -- --clean` / `-- --offline` 等参数透传给内容侧，
+    发布前干净全量构建只需一条命令
+  - 清理 `builder/common.py` 中不再使用的 `CSS_SRC_DIR` / `JS_SRC_DIR` 常量
+
 ## [8.68.1] - 2026-11-07
 
 ### 修复

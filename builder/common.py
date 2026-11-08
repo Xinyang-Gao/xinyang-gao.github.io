@@ -34,8 +34,7 @@ ASSETS_SOURCE_DIR = SRC_ROOT / "assets" / "source"   # Markdown 源文件
 ASSETS_DIR = SRC_ROOT / "assets"                     # 全局素材（头像、图片）
 FRIEND_COLORS_JSON = ASSETS_DIR / "friend_colors.json"
 TEMPLATES_DIR = SRC_ROOT / "templates"               # HTML 模板
-CSS_SRC_DIR = SRC_ROOT / "css"                       # 源 CSS
-JS_SRC_DIR = SRC_ROOT / "js"                         # 源 JS
+# src/css/ 与 src/js/ 由 Vite 直接读取，Python 侧不再需要源目录常量
 WORKS_SRC_DIR = SRC_ROOT / "works"                   # 作品元数据源目录
 CHANGELOG_FILE = PROJECT_ROOT / "CHANGELOG.md"       # 更新日志（Keep a Changelog 格式）
 

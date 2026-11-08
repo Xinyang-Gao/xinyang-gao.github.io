@@ -8,6 +8,7 @@
   "files": {
     "includes": [
       "src/js/**",
+      "scripts/**",
       "!src/js/vendor/*.min.js"
     ]
   },

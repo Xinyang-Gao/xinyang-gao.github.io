@@ -14,10 +14,10 @@
 | **Markdown 解析** | `markdown` + `pymdown-extensions` | 支持 Frontmatter、Admonition、任务列表、选项卡、代码高亮、数学公式（KaTeX 前端渲染） |
 | **数据序列化** | `PyYAML`、`json` | 解析文章 Frontmatter、作品元数据、友链 JSON |
 | **颜色提取** | `requests` + `Pillow` | 为友链头像提取主色调，生成 `friend_colors.json` |
-| **CSS 压缩** | `rcssmin` | 构建时压缩 CSS 文件 |
+| **CSS 压缩** | Lightning CSS（Vite 8 插件） | 构建时压缩 CSS 并合并 `core.css`，见 `scripts/css-pipeline.mts` |
 | **日期处理** | `python-dateutil`、`packaging` | 解析多种日期格式，版本号排序 |
 | **前端语言** | TypeScript 7.0.2 | 所有交互逻辑、页面管理器、路由、UI 组件均使用 TypeScript 编写，部分传统模块为 JavaScript |
-| **前端构建工具** | Vite 8.3.0 | 编译 + 打包 TypeScript、复制 vendor 库，支持 HMR 开发服务器 |
+| **前端构建工具** | Vite 8.3.0 | 编译打包 TypeScript、压缩合并 CSS；dev 时 serve `src/public`，支持 HMR |
 | **页面切换** | View Transitions API | 浏览器原生转场（合成器驱动），不支持时降级为直接切换 |
 | **响应式** | 移动优先 + 统一断点 | 标准档位 xs/sm(480)/md(640)/lg(768)/xl(1024)/2xl(1280)，规范见 `core/variables.css` 顶部；768 为 JS 与 CSS 的唯一契约点 |
 | **路由与 SPA** | 原生 History API + 自定义 Router | 无刷新页面切换，支持 `popstate`、滚动位置恢复、内存页面缓存（LRU 清理）、资源动态加载/卸载 |
@@ -52,7 +52,6 @@ markdown               # 核心 Markdown 解析
 pyyaml                 # Frontmatter 解析
 requests               # 友链头像下载
 pillow                 # 图像主色提取
-rcssmin                # CSS 压缩
 python-dateutil        # 日期解析
 packaging              # 版本号排序
 pymdown-extensions     # 扩展 Markdown 语法
@@ -63,10 +62,10 @@ pymdown-extensions     # 扩展 Markdown 语法
 ```json
 {
   "devDependencies": {
+    "@biomejs/biome": "^2.5.15",
+    "lightningcss": "^1.33.0",
     "typescript": "^7.0.2",
-    "vite": "^8.3.0",
-    "rollup-plugin-copy": "^3.5.0",
-    "@biomejs/biome": "^2.5.15"
+    "vite": "^8.3.0"
   }
 }
 ```
@@ -81,14 +80,13 @@ python -m pip install -r requirements.txt
 npm ci                    # 或 npm install
 
 # 2) 开发预览
-npm run dev               # Vite dev server
-python run.py             # 生成 dist（内容侧产物 + 前端编译）
+npm run dev               # Vite dev server（serve src/public + TS 源码）
 
-# 3) 常用构建命令
-python run.py             # 增量构建（默认）
-python run.py --clean     # 清空 dist 后全量构建（发布前推荐）
-python run.py --no-frontend   # 跳过 Vite，仅生成内容侧产物
-python run.py --ci        # CI 模式：纯文本日志 + 前端失败即失败
+# 3) 完整构建（内容 + 前端，唯一发布入口）
+npm run build                 # = python run.py + vite build
+npm run build -- --clean      # 清空 dist 后全量重建（发布前推荐）
+npm run build:content         # 只跑内容侧（HTML / RSS / JSON / 静态资源）
+npm run build:frontend        # 只跑前端（TS 打包 + CSS 压缩合并）
 
 # 4) 质量门禁（CI 每次 push / PR 都会跑，本地建议提交前自查）
 npm run typecheck         # tsc --noEmit（strict，tsconfig.json）
@@ -136,6 +134,11 @@ Website
 │  ├─ public                      # 原样发布到 dist 根目录（约定式，加文件即可）
 │  │  ├─ .well-known
 │  │  │  └─ vercount-verify-pof0sq1cg39g4rpkl66s6rtf.txt
+│  │  ├─ js
+│  │  │  └─ vendor                # 第三方 min.js（APlayer / vercount / browser.global）
+│  │  │     ├─ APlayer.min.js
+│  │  │     ├─ browser.global.min.js
+│  │  │     └─ vercount.min.js
 │  │  ├─ BingSiteAuth.xml
 │  │  ├─ favicon.ico
 │  │  └─ robots.txt
@@ -209,10 +212,7 @@ Website
 │  │  │  ├─ tooltip.ts
 │  │  │  └─ ui-effects.ts
 │  │  └─ vendor
-│  │     ├─ APlayer.min.js
-│  │     ├─ browser.global.min.js
-│  │     ├─ global-music-player.ts
-│  │     └─ vercount.min.js
+│  │     └─ global-music-player.ts   # TS 源文件，由 Vite 编译
 │  ├─ templates
 │  │  ├─ 404.html
 │  │  ├─ about.html
@@ -243,6 +243,9 @@ Website
 ├─ README.md
 ├─ requirements.txt
 ├─ run.py
+├─ scripts
+│  ├─ build.mjs                  # 统一构建编排（内容 + 前端）
+│  └─ css-pipeline.mts           # CSS 压缩合并 Vite 插件
 └─ vite.config.mts
 ```
 
@@ -259,11 +262,11 @@ Website
 | **数据模型** | `build_context.py` | 定义 `Article`、`Work`、`Friend`、`BuildContext` 等数据结构，作为构建上下文在各模块间传递。 |
 | **公共工具** | `common.py` | 提供日志、JSON 读写、哈希计算、日期格式化、路径处理等通用函数。 |
 | **输入加载器** | `input_loader.py` | 扫描 `src/assets/source/` 下的 Markdown 文件、`src/works/` 下的作品元数据、`src/assets/friends.json` 友链以及根目录的 `CHANGELOG.md` 更新日志，解析后填充 `BuildContext`。 |
-| **构建配置** | `config.py` | 定义 `BuildConfig`（force / clean / skip_frontend / offline / strict / parallel / max_workers / dry_run / ci），一次构建的所有开关集中在此，经 `BuildContext.options` 下发给各生成器。 |
+| **构建配置** | `config.py` | 定义 `BuildConfig`（force / clean / offline / strict / parallel / max_workers / dry_run / ci），一次构建的所有开关集中在此，经 `BuildContext.options` 下发给各生成器。 |
 | **构建引擎** | `engine.py` | 管理所有生成器（`OutputGenerator`），协调执行顺序，支持串行/并行运行，并依据 `.build_state.json` 进行增量判断；返回 `BuildReport` 汇总耗时与结果。 |
 | **生成器基类** | `generators/base.py` | 定义生成器抽象接口，包含 `name`、`inputs`、`outputs`、`generate()` 等方法，以及输入哈希计算和状态更新逻辑。 |
 | **静态资源同步** | `static_assets.py` | 声明式管理所有“非构建资源”（`AssetRule`）：统一负责 `src/public/`、`src/assets/`、`src/works/`、模板页与友链 JSON 的发布，并基于内容哈希做增量复制。 |
-| **聚合生成器** | `generators/aggregated.py` | 核心生成器，负责生成绝大部分输出：统计 JSON、RSS、站点地图、文章/作品/友链列表页、无 JS 回退页、复制静态资源（CSS、JS、素材）等。 |
+| **聚合生成器** | `generators/aggregated.py` | 核心生成器，负责生成绝大部分输出：统计 JSON、RSS、站点地图、文章/作品/友链列表页、无 JS 回退页、复制静态资源（素材、模板页、vendor 库）等。 |
 | **友链颜色生成器** | `generators/friend_colors.py` | 独立生成器，通过下载友链头像并提取主色调，生成 `friend_colors.json` 用于前端卡片背景色。 |
 | **入口脚本** | `run.py` | 命令行入口，解析参数，注册生成器，启动构建引擎。 |
 
@@ -272,15 +275,15 @@ Website
 1. **装配配置**：`run.py` 依据命令行 + 环境变量构造 `BuildConfig`，必要时清理 `dist/`（`--clean`）。
 2. **加载输入**：`InputLoader` 读取所有源文件，生成 `BuildContext` 对象（`ctx.options` 携带本次构建配置）。
 3. **生成器注册**：在 `run.py` 中注册 `FriendColorsGenerator` 和 `AggregatedGenerator`。
-4. **增量判断**：引擎检查每个生成器的输出文件是否都存在，并比对输入数据的哈希值（以及前端资源的哈希），若未变化则跳过。
+4. **增量判断**：引擎检查每个生成器的输出文件是否都存在，并比对输入数据的哈希值（以及静态资源哈希），若未变化则跳过。
 5. **执行生成**：按依赖分层，层内并行调用各生成器的 `generate()` 方法，将结果写入 `dist/` 目录。
-6. **更新状态**：成功生成后，将当前输入哈希（及 `AggregatedGenerator` 的前端哈希）与时间戳写入 `.build_state.json`，供下次增量判断使用。
+6. **更新状态**：成功生成后，将当前输入哈希（及 `AggregatedGenerator` 的静态资源哈希）与时间戳写入 `.build_state.json`，供下次增量判断使用。
 
 ### 4.3 增量构建机制
 
-- **状态文件**：`.build_state.json` 存储每个生成器上次运行的“输入哈希”和“前端哈希”，并带 `_version` 字段；格式或哈希算法升级时旧状态自动失效，退化为一次全量构建。
+- **状态文件**：`.build_state.json` 存储每个生成器上次运行的“输入哈希”和“静态资源哈希”，并带 `_version` 字段；格式或哈希算法升级时旧状态自动失效，退化为一次全量构建。
 - **输入哈希**：由生成器声明的依赖（如 `articles`、`works`）的序列化内容计算而得，任一源文件改动都会导致哈希变化。
-- **前端哈希**：`AggregatedGenerator` 额外监控 `src/css/`、`src/js/`，再加上 `static_assets.static_sources_hash()`——它由静态资源规则自动派生（覆盖 `src/public/`、`src/assets/`、`src/works/`、模板页与友链 JSON），新增规则无需同步维护哈希清单；该哈希通过重写 `build_state_entry()` 写入，否则前端未变化也会每次触发 Vite 编译。
+- **静态资源哈希**：`AggregatedGenerator` 用 `static_assets.static_sources_hash()` 监控所有"原样复制"的源（覆盖 `src/public/`、`src/assets/`、`src/works/`、模板页与友链 JSON），由规则自动派生，新增规则无需同步维护清单；该哈希通过重写 `build_state_entry()` 写入。前端源文件（`src/js/`、`src/css/`）不在此列——它们由 Vite 独立构建，改动不该触发内容侧重新生成 HTML / RSS。
 - **哈希算法**：统一使用 BLAKE2b(128bit)。相比 MD5 更快，且在启用 FIPS 的运行环境中不会报错。
 - **产物一致性**：所有由构建系统写出的文本/JSON 统一使用 LF 换行，避免 Windows 本地构建与 CI（Linux）产物出现换行差异。
 - **强制重建**：通过 `--force` 参数可忽略所有增量判断，强制全量构建；`--force-colors` 可单独强制更新友链颜色。
@@ -299,8 +302,8 @@ Website
 - **友链页面**：渲染 `dist/friends/index.html`，包含友链卡片（带主题色）和申请要求说明。
 - **无 JS 回退页**：生成 `dist/nojs.html`，提供完全静态的内容列表，方便搜索引擎或禁用 JavaScript 的用户访问。
 - **子目录页面**：将 `src/templates/` 下的 `about.html`、`timeline.html`、`stats.html`、`contact.html` 复制到对应的 `dist/about/`、`dist/timeline/` 等目录。
-- **前端构建**：跨平台调用 `npm run build`（Windows 自动使用 `npm.cmd` 并做引号转义）编译 TypeScript，实时流式输出 Vite 日志；**默认失败即中止整个构建**（`--no-strict` 可恢复旧的宽容行为）。可用 `--no-frontend` 跳过。
-- **CSS 压缩**：使用 `rcssmin` 压缩 `src/css/` 并输出到 `dist/css/`。
+- **前端构建**：由 `scripts/build.mjs` 统一编排——先 `python run.py` 生成内容侧产物，再 `vite build` 编译 TypeScript；任一步失败即中止。Python 不再嵌套调用 npm，两侧各自只写自己负责的目录。
+- **CSS 压缩**：由 Vite 插件 `scripts/css-pipeline.mts` 用 Lightning CSS 压缩 `src/css/` 并输出 `dist/css/`，同时按层叠顺序合并出 `dist/css/core.css`。
 - **静态资源同步**：调用 `static_assets.sync_static_assets()`，一次同步所有非构建资源，见下节。
 - **代码分析**：生成 `dist/json/code_analysis.json`，记录 `dist/` 目录下各文件类型的数量、大小和行数统计，便于监控构建产物规模。
 
@@ -319,7 +322,7 @@ Website
 
 | 源 | 目标 | 说明 |
 |------|------|------|
-| `src/public/**` | `dist/**` | 站点根文件：`favicon.ico`、`robots.txt`、`BingSiteAuth.xml`、`.well-known/` 验证文件。**新增根文件放进该目录即可发布，无需改代码** |
+| `src/public/**` | `dist/**` | 站点根文件：`favicon.ico`、`robots.txt`、`BingSiteAuth.xml`、`.well-known/` 验证文件，以及 `js/vendor/*.min.js`。**新增文件放进该目录即可发布，无需改代码**；文本产物支持 `{{SITE_URL}}` 占位符 |
 | `CHANGELOG.md` | `dist/CHANGELOG.md` | 网站更新日志（Keep a Changelog 格式），原样发布到站点根 |
 | `src/assets/**` | `dist/assets/**` | 全局素材（头像、图片、数据 JSON），排除 `source/`（Markdown 源） |
 | `src/works/**` | `dist/works/**` | 作品子页面资源，排除 `metadata.json`（仅构建期使用） |
@@ -337,21 +340,27 @@ Website
 - **增量**：目标与源一致（size + mtime 相同，或内容哈希相同）即跳过写入，避免无意义写盘与 mtime 抖动；复制用 `copy2` 保留 mtime，跨平台表现一致；
 - **并行**：文件复制走线程池（`MAX_SYNC_WORKERS`，可用 `cfg.parallel=False` 关闭）；
 - **安全**：默认排除 `.git` / `.github` / `__pycache__` / `.DS_Store` 等元数据（不影响需要发布的 `.well-known/`）；标记 `required=True` 的源缺失会记为错误，并在严格模式（CI 默认）下中止构建；
-- **增量联动**：`static_sources_hash()` 由规则自动派生并计入前端哈希，新增规则无需再维护一份哈希清单。
+- **增量联动**：`static_sources_hash()` 由规则自动派生并计入静态资源哈希，新增规则无需再维护一份哈希清单。
 
 扩展方式：新增一类资源只需追加一条 `AssetRule`，生成器代码保持不变。
 
 ### 4.5 命令行用法
 
 ```bash
-# 增量构建（默认，最快）
+# 完整构建（内容 + 前端，唯一发布入口）
+npm run build
+
+# 发布前干净全量构建（--clean 透传给内容侧，先清空 dist 再完整重建）
+npm run build -- --clean
+
+# 只跑内容侧（增量，最快；写 Markdown / 调 API 时用）
 python run.py
 
 # 全量构建（忽略增量状态）
 python run.py --force
 
 # 清空 dist 目录后全量构建（发布前推荐，避免残留旧文件被发布）
-python run.py --clean
+npm run build -- --clean
 
 # 仅强制更新友链颜色（其他生成器仍按增量判断）
 python run.py --force-colors
@@ -359,16 +368,13 @@ python run.py --force-colors
 # 只运行指定生成器（如只生成友链颜色）
 python run.py --targets friend_colors
 
-# 跳过前端编译，只生成内容侧产物（写 Markdown / 调 API 时最快）
-python run.py --no-frontend
-
 # 离线构建：跳过所有网络请求（友链头像等）
 python run.py --offline
 
 # CI 模式：纯文本日志 + 严格模式（等价于 CI=true python run.py）
 python run.py --ci
 
-# 宽容模式：前端编译失败仍继续构建（默认失败即中止）
+# 宽容模式：生成出错时仍继续构建（默认失败即中止）
 python run.py --no-strict
 
 # 禁用并行执行 / 调整并行线程数（默认自动：CI=4，本地取 CPU 数量且 ≤8）
@@ -393,12 +399,11 @@ python run.py --list
 | `FRIEND_COLOR_WORKERS` | 友链头像并发数 |
 | `FRIEND_AVATAR_CACHE_DIR` | 头像字节缓存目录（默认系统临时目录；CI 中指向 `.cache/friend-avatars` 并配合 `actions/cache`） |
 | `SKIP_NETWORK` | 等价于 `--offline` |
-| `VITE_BUILD_TIMEOUT` | 前端编译超时秒数（默认 900） |
 
 ### 4.6 依赖与环境
 
 - **版本来源**：Python 版本取自 `.python-version`，Node.js 版本取自 `.nvmrc`，CI 与本地共用，避免“我这儿能跑”。
-- **Python 依赖**：见 `requirements.txt`（锁定下限），主要包括 `markdown`、`pyyaml`、`requests`、`pillow`、`rcssmin`、`python-dateutil`、`packaging`、`pymdown-extensions`。
+- **Python 依赖**：见 `requirements.txt`（锁定下限），主要包括 `markdown`、`pyyaml`、`requests`、`pillow`、`python-dateutil`、`packaging`、`pymdown-extensions`。
 - **Node.js 依赖**：用于前端 TypeScript 编译，见 `package.json`，使用 Vite 作为构建工具。
 - **代码规范**：`pyproject.toml` 提供项目元数据与 ruff / black 配置。
 - **安装命令**：
@@ -534,7 +539,8 @@ flowchart TB
 | **`/js/core/weather-service.ts`** | 真实天气查询（UAPI）：30 分钟缓存、并发去重、失败降级为晴天；按天气图标码映射背景天气，覆盖晴/多云/阴/雨/雪/雨夹雪/雷暴/雾/霾/沙尘/大风 |
 | **`/js/core/lunar-service.ts`** | 农历查询（UAPI）：当天缓存（跨日失效）、并发去重、失败降级为无农历；由农历日推算月相供背景月亮与卡片文案使用 |
 | **`/js/core/page-runtime.ts`** | 页面运行时：站点年龄更新、页脚更新时间 |
-| **`/js/vendor/`** | 第三方库封装：<br> • `global-music-player.ts` – 动态加载 APlayer，创建悬浮播放器<br> • `APlayer.min.js` – 音乐播放器核心（含网易云歌单）<br> • `vercount.min.js` – 访问统计（不蒜子风格）<br> • `browser.global.min.js` – GitHub 贡献图组件 |
+| **`src/js/vendor/`** | `global-music-player.ts` – 动态加载 APlayer、创建悬浮播放器的 TS 源文件（由 Vite 编译） |
+| **`src/public/js/vendor/`** | 原样发布的第三方库：`APlayer.min.js`（音乐播放器核心）、`vercount.min.js`（访问统计）、`browser.global.min.js`（GitHub 贡献图组件）。经 Python 静态资源规则复制到 `dist/js/vendor/`，dev 时由 Vite `publicDir` 直接 serve |
 | **`/js/pages/404.ts`** | 404 页面独立逻辑，包含智能路径分析和自定义错误消息 |
 
 ---
@@ -677,11 +683,11 @@ flowchart TB
 
 ```txt
 1. 作者在 src/assets/source/分类/ 下新建 .md 文件（含 frontmatter）
-2. 运行 python run.py
+2. 运行 npm run build（内容侧 + 前端）
 3. input_loader 解析 MD，生成 HTML 到 dist/articles/
 4. 更新 dist/json/articles.json
 5. aggregated 生成统计、RSS、站点地图
-6. 静态资源复制（Vite 构建 JS/CSS）
+6. 前端构建：Vite 编译 TS、Lightning CSS 压缩合并 CSS
 7. 部署 dist/ 到服务器
 ```
 
@@ -851,9 +857,12 @@ engine.register(MyGenerator())
 ### 8.3 修改前端构建（Vite）
 
 - 入口文件：`src/js/entry/main.ts`。
-- Vite 配置：`vite.config.mts` 将 `src/js` 映射为 `/js`，构建输出到 `dist/`（`preserveModules` 保持目录结构），路径基于配置文件自身位置解析，不依赖当前工作目录。
-- `build.emptyOutDir` 必须为 `false`：dist 由 Python 构建系统与 Vite 共同写入，清空会删除其他生成器已写入的 HTML / JSON / RSS；需要干净构建请用 `python run.py --clean`。
-- 生产构建由 Python 构建系统调用 `npm run build` 触发（见 `AggregatedGenerator._run_vite`）。
+- Vite 配置：`vite.config.mts` 将 `src/js` 映射为 `/js`，构建输出到 `dist/`，路径基于配置文件自身位置解析，不依赖当前工作目录。
+- `build.emptyOutDir` 必须为 `false`：dist 由 Python 构建系统与 Vite 共同写入，清空会删除其他生成器已写入的 HTML / JSON / RSS；需要干净构建请用 `npm run build -- --clean`。
+- `build.copyPublicDir` 必须为 `false`：`src/public` 由 Python 的 `static_assets.py` 同步（要渲染 `robots.txt` 里的 `{{SITE_URL}}`），Vite 若也复制一份原样文件会覆盖渲染结果。`publicDir` 本身仍设为 `src/public`，供 dev server serve。
+- CSS 由 `scripts/css-pipeline.mts` 插件处理（Lightning CSS 压缩 + `core.css` 合并），产物路径与 HTML 中的 `<link>` 保持一致。
+- 生产构建统一由 `npm run build` 触发，`scripts/build.mjs` 依次调用 `python run.py` 与 `vite build`；Python 不再嵌套调用 npm。`npm run build -- --clean` / `-- --offline` 等参数会透传给内容侧。
+- `scripts/` 下的构建脚本也纳入 Biome 检查（`npm run lint`），与 `src/js` 共用同一套格式 / 正确性规则。
 
 ### 8.4 调试技巧
 
@@ -874,14 +883,14 @@ engine.register(MyGenerator())
 
 | 作业 | 职责 |
 |------|------|
-| `build` | 检出（含子模块）→ 安装 Python / Node 依赖 → 校验友链主题色缓存 → 恢复头像缓存 → `python run.py --ci` → 上传 `dist` 为 Pages artifact |
+| `build` | 检出（含子模块）→ 安装 Python / Node 依赖 → 校验友链主题色缓存 → 恢复头像缓存 → `npm run build` → 上传 `dist` 为 Pages artifact |
 | `deploy` | `actions/deploy-pages` 发布 artifact 到 GitHub Pages 环境 |
 
 要点：
 
 - **不使用 `--force`**：CI 每次都是全新检出，不存在 `.build_state.json`，本来就等价于全量构建；`--force` 只会额外触发全部友链头像重抓，拖慢构建并增加网络失败概率。
 - **友链主题色缓存**：`src/assets/friend_colors.json` 已提交，构建前会先校验其存在且非空——读得到就只给新增友链抓头像，既省网络又不会因个别站点不稳定而抖动；读取不到则直接失败，避免静默退化成“每次全量抓取”。头像字节另由 `actions/cache` 跨运行复用（`FRIEND_AVATAR_CACHE_DIR`）。
-- **使用 `--ci`**：开启严格模式，前端编译失败直接让工作流失败，避免部署半成品（旧行为会“报错但继续”，容易把缺 JS 的站点发布上线）。
+- **严格模式**：GitHub Actions 自动注入 `CI=true`，`scripts/build.mjs` 据此给内容侧追加 `--ci`；任一步失败即让工作流失败，避免部署半成品。
 - 版本统一由 `.python-version` / `.nvmrc` 提供，依赖分别由 `pip` 与 `npm` 官方缓存加速；构建作业设有 `timeout-minutes`，异常任务不会长期占用 runner。
 
 ### 9.2 手动构建
@@ -889,7 +898,7 @@ engine.register(MyGenerator())
 ```bash
 python -m pip install -r requirements.txt
 npm ci
-python run.py --clean        # 干净全量构建
+npm run build -- --clean     # 干净全量构建：清空 dist + 内容侧 + 前端
 ```
 
 构建产物位于 `dist/` 目录，可直接上传到任意静态托管平台（GitHub Pages、Netlify、Vercel 等）。

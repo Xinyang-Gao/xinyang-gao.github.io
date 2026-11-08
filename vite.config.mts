@@ -1,7 +1,7 @@
 import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'vite';
 import { resolve } from 'node:path';
-import copy from 'rollup-plugin-copy';
+import { cssPipeline } from './scripts/css-pipeline.mts';
 
 /**
  * 以配置文件自身位置为基准解析路径，
@@ -13,6 +13,12 @@ const r = (...parts: string[]) => resolve(root, ...parts);
 export default defineConfig({
   root,
   base: '/',
+  /**
+   * dev 时从这里 serve 站点根文件（含 /js/vendor/*.min.js）。
+   * build 时**不**由 Vite 复制：见下方 build.copyPublicDir。
+   */
+  publicDir: r('src/public'),
+  plugins: [cssPipeline()],
   resolve: {
     alias: {
       '/js': r('src/js'),
@@ -37,6 +43,12 @@ export default defineConfig({
      * 需要干净构建请使用 `python run.py --clean`。
      */
     emptyOutDir: false,
+    /**
+     * src/public 由 Python 的 static_assets.py 负责同步：它会渲染 {{SITE_URL}}
+     * 占位符（robots.txt 的 Sitemap 必须是绝对地址）。若让 Vite 也复制一份，
+     * 原样文件会覆盖渲染结果，所以 build 阶段关掉 publicDir 复制，dev 阶段仍生效。
+     */
+    copyPublicDir: false,
     target: 'es2020',
     assetsDir: 'assets',
     sourcemap: false,
@@ -73,14 +85,6 @@ export default defineConfig({
         chunkFileNames: 'js/chunk/[name].js',
         assetFileNames: '[name].[ext]',
       },
-      plugins: [
-        copy({
-          // 仅在构建阶段生效（serve 时 hook 为 undefined），避免 dev 期重复复制
-          hook: 'writeBundle',
-          targets: [{ src: 'src/js/vendor/*.min.js', dest: 'dist/js/vendor' }],
-          verbose: true,
-        }),
-      ],
     },
   },
   server: {
