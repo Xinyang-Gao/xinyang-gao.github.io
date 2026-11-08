@@ -1,4 +1,6 @@
-# 现代 Python 项目元数据与工具配置（构建本身不依赖本文件，仅供 lint / 编辑器使用）
+# Python 项目元数据与工具配置。
+# 依赖真源在 [project].dependencies + [dependency-groups]，精确版本由 uv.lock 锁定；
+# CI 与本地统一使用 `uv sync --frozen`，不再使用 pip / requirements.txt。
 [project]
 name = "xinyang-gao-website"
 version = "1.0.0"
@@ -13,6 +15,11 @@ dependencies = [
     "packaging>=24.0",
     "pymdown-extensions>=10.9",
 ]
+
+# PEP 735 依赖组：ruff 精确锁版本，避免上游发版让 main 突然变红。
+# `uv sync` 默认包含 dev 组，CI 里 `uv run --no-sync ruff` 即可直接调用。
+[dependency-groups]
+dev = ["ruff==0.17.4"]
 
 [tool.ruff]
 line-length = 120

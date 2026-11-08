@@ -56,7 +56,7 @@ from .seo import json_ld_webpage, seo_head_tags
 try:
     import markdown
 except ImportError:
-    log_error("请安装 markdown 库: pip install markdown")
+    log_error("请安装依赖: uv sync --frozen --all-groups")
     sys.exit(1)
 
 try:
@@ -75,7 +75,7 @@ try:
         raise ImportError("pymdownx not found")
 except ImportError:
     HAS_PYMDOWN = False
-    log_warning("pymdown-extensions 未安装，部分高级语法将不可用。建议: pip install pymdown-extensions")
+    log_warning("pymdown-extensions 未安装，部分高级语法将不可用。建议: uv sync --frozen --all-groups")
 
 # 图片懒加载占位符
 LAZY_PLACEHOLDER = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'%3E%3C/svg%3E"

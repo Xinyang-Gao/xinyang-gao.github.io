@@ -29,27 +29,31 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           # 无需完整历史：仅需工作树 + works 子模块内容
           fetch-depth: 1
           submodules: 'recursive'
 
-      # ---------- Python（内容与聚合生成） ----------
+      # ---------- Python（uv + uv.lock，不再用 pip） ----------
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version-file: '.python-version'
-          cache: 'pip'
-          cache-dependency-path: 'requirements.txt'
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: "0.13.7"
+          enable-cache: true
+          cache-dependency-glob: 'uv.lock'
       - name: Install Python dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install -r requirements.txt
+        # --frozen：严格按 uv.lock 安装，不重新解析、不偷偷升级
+        # --all-groups：一并装上 dev 组里的 ruff（版本已锁定）
+        run: uv sync --frozen --all-groups
 
       # ---------- Node.js（前端 TypeScript 编译） ----------
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version-file: '.nvmrc'
           cache: 'npm'
@@ -57,51 +61,58 @@ jobs:
         run: npm ci
 
       # ---------- 质量门禁：静态检查（在构建前快速失败） ----------
-      # ruff 配置已随 pyproject.toml 入库；typecheck 是 TypeScript 唯一的
+      # ruff 由 uv.lock 锁定版本；typecheck 是 TypeScript 唯一的
       # 类型校验（Vite 只转译不检查）
       - name: Lint Python (ruff)
-        run: |
-          python -m pip install ruff
-          ruff check builder run.py
+        run: uv run --no-sync ruff check builder run.py
       - name: Typecheck TypeScript
         run: npm run typecheck
       - name: Lint TypeScript (biome)
         run: npm run lint
 
-      # ---------- 友链主题色缓存 ----------
-      # src/assets/friend_colors.json 是随仓库提交的持久化缓存：只要能读到，
-      # CI 就只给新增友链抓头像，既避免重复网络请求，也不会因个别站点访问
-      # 不稳定而抖动（抓取失败时会保留历史颜色）。缺失即快速失败，避免静默
-      # 退化成“每次全量抓取”。
+      # ---------- 友链主题色：CI 只读缓存，不联网 ----------
+      # src/assets/friend_colors.json 随代码提交：本地跑一次 npm run build，
+      # 新加友链的颜色就已写进 json。CI 校验缓存覆盖全部友链后进入离线模式，
+      # 既不抓头像、也不会因外部站点超时挂掉部署，更不会静默写入兜底灰。
       - name: 校验友链主题色缓存
         run: |
+          set -euo pipefail
           test -s src/assets/friend_colors.json || {
-            echo "::error::src/assets/friend_colors.json 缺失或为空，构建将重新抓取全部友链头像"
+            echo "::error::src/assets/friend_colors.json 缺失或为空，请在本地运行 npm run build 后一并提交"
             exit 1
           }
-          python -c "import json;d=json.load(open('src/assets/friend_colors.json',encoding='utf-8'));print(f'友链主题色缓存可用：{len(d)} 条（仅新增友链需要联网）')"
+          python - <<'PY'
+          import json, sys
 
-      # 头像字节缓存：与主题色缓存互补，跨运行复用已下载的头像
-      - name: Restore avatar cache
-        uses: actions/cache@v4
-        with:
-          path: .cache/friend-avatars
-          key: friend-avatars-${{ hashFiles('src/assets/friends.json') }}
-          restore-keys: |
-            friend-avatars-
+          friends = json.load(open('src/assets/friends.json', encoding='utf-8'))
+          links = {
+              f['link'].rstrip('/')
+              for f in friends.get('friends', [])
+              if f.get('link') and f.get('avatar')
+          }
+          colors = json.load(open('src/assets/friend_colors.json', encoding='utf-8'))
+          missing = sorted(links - set(colors))
+          if missing:
+              print('::error::以下友链缺少主题色缓存，请在本地运行 npm run build 后提交 src/assets/friend_colors.json：')
+              for link in missing:
+                  print(f'  - {link}')
+              sys.exit(1)
+          print(f'友链主题色缓存完整：{len(links)} 条友链 / {len(colors)} 条缓存，CI 无需联网')
+          PY
 
       # ---------- 构建 ----------
       # 说明：npm run build 由 scripts/build.mjs 串起两侧：
       #       1) python run.py --ci（GitHub Actions 自动注入 CI=true）
       #       2) vite build（TS 打包 + CSS 压缩合并）
+      #       uv run --no-sync 把 .venv/bin 加进 PATH，编排脚本里的 python 才会
+      #       解析到装好依赖的解释器；SKIP_NETWORK 让内容侧彻底离线。
       #       CI 每次都是全新检出，不存在 .build_state.json，天然等价于全量构建，
       #       因此不需要 --force（它会强制重新抓取全部友链头像，拖慢且增加失败率）。
       #       任一步失败即让工作流失败，避免部署半成品。
       - name: Build site
-        run: npm run build
+        run: uv run --no-sync npm run build
         env:
-          # 与上面的 actions/cache 步骤配套：复用已下载的头像字节
-          FRIEND_AVATAR_CACHE_DIR: ${{ github.workspace }}/.cache/friend-avatars
+          SKIP_NETWORK: "true"
 
       # ---------- 质量门禁：产物冒烟检查 ----------
       # 关键产物缺失（生成器静默失败、增量误判）时拒绝部署半成品
@@ -152,13 +163,23 @@ jobs:
             echo "::error::favicon.ico 过大 (${fav_size}B)，疑似未压缩"
             missing=1
           fi
+          # .well-known/ 验证文件：upload-pages-artifact v4 起默认排除隐藏文件，
+          # 下面上传时开了 include-hidden-files，这里守住别让它悄悄丢
+          if [ -z "$(ls -A dist/.well-known 2>/dev/null)" ]; then
+            echo "::error::dist/.well-known 为空，域名验证文件缺失"
+            missing=1
+          fi
           [ "$missing" -eq 0 ] && echo "冒烟检查通过"
           exit "$missing"
 
+      # PR 只验证，不上传 artifact（deploy 作业同样跳过 PR）
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        if: github.event_name != 'pull_request'
+        uses: actions/upload-pages-artifact@v5
         with:
           path: './dist'
+          # v4 起默认排除隐藏文件；v5 才有这个开关，站点有 .well-known/ 验证文件
+          include-hidden-files: true
 
   # ---------- 2. 部署 ----------
   deploy:
@@ -173,7 +194,7 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - name: Setup Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5

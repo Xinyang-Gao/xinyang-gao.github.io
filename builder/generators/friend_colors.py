@@ -9,10 +9,13 @@
   * 内容无变化时跳过写入，避免产生无意义的 diff。
 
 缓存说明：
-  ``src/assets/friend_colors.json`` 是本生成器的**持久化缓存**，已随仓库提交，
-  因此本地与 GitHub Actions 都能直接复用历史颜色，只为新增友链发起网络请求。
-  头像字节缓存默认位于系统临时目录，可用 ``FRIEND_AVATAR_CACHE_DIR`` 覆盖
-  （CI 中可配合 actions/cache 持久化，进一步减少重复下载）。
+  ``src/assets/friend_colors.json`` 是本生成器的**持久化缓存**，已随仓库提交。
+  新增友链时在**本地**跑一次 `npm run build`（或 `python run.py --force-colors`），
+  颜色即写入该 json 并随代码提交；GitHub Actions 读入后完全离线
+  （`SKIP_NETWORK=true`），既不抓头像也不访问外部站点，因此部署不受友链站点
+  可用性影响。CI 在构建前会校验缓存覆盖全部友链，缺一条就快速失败并提示本地补跑。
+  头像字节缓存默认位于系统临时目录，可用 ``FRIEND_AVATAR_CACHE_DIR`` 覆盖，
+  仅在本地需要重新抓色时才有意义。
 """
 
 import colorsys
@@ -40,7 +43,7 @@ from .base import OutputGenerator
 # ---------- 抓取参数 ----------
 TIMEOUT = (5, 15)          # (连接, 读取) 秒
 MAX_RETRIES = 2
-#: 头像字节缓存目录；可用 FRIEND_AVATAR_CACHE_DIR 覆盖（CI 可挂到 actions/cache）
+#: 头像字节缓存目录；可用 FRIEND_AVATAR_CACHE_DIR 覆盖（仅供本地重新抓色时复用）
 CACHE_DIR = Path(env_str("FRIEND_AVATAR_CACHE_DIR") or (Path(tempfile.gettempdir()) / "friend_avatar_cache"))
 DEFAULT_WORKERS = 8
 
@@ -231,8 +234,8 @@ class FriendColorsGenerator(OutputGenerator):
         save_json(new_colors, FRIEND_COLORS_JSON)
         log_info(f"友链主题色已更新至 {FRIEND_COLORS_JSON}（{len(new_colors)} 条）")
         if cfg.ci:
-            log_info("CI 提示：主题色缓存已变更，建议随本次改动一起提交 "
-                     "src/assets/friend_colors.json，后续构建即可直接复用、无需再抓头像")
+            log_info("提示：主题色缓存已变更，请随本次改动一起提交 "
+                     "src/assets/friend_colors.json（CI 离线只读，不会自行抓取）")
         return True
 
     # ---------- 内部实现 ----------

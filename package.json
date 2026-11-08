@@ -21,7 +21,7 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "biome check src/js scripts",
     "lint:fix": "biome check --write --unsafe src/js scripts",
-    "lint:py": "ruff check builder run.py",
+    "lint:py": "uv run ruff check builder run.py",
     "format": "biome format --write src/js scripts",
     "format:check": "biome format src/js scripts",
     "check": "npm run typecheck && npm run lint && npm run format:check && npm run lint:py",

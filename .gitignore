@@ -4,14 +4,13 @@ __pycache__/
 builder/friend_link_reply_building.py
 dist/
 node_modules/
+.venv/
+.ruff_cache/
+.cache/
 
 .build_state.json
 
 test.bat
 server.bat
 
-.cache/
-
 docs/审计报告-2026-10-03.md
-
-.ruff_cache/

@@ -14,6 +14,53 @@
 - **修复** —— 缺陷修复
 - **安全** —— 安全相关的改进
 
+## [8.70.0] - 2026-11-08
+
+### 变更
+
+- **Python 依赖改用 uv + `uv.lock`，删除 `requirements.txt`**
+  - 依赖真源收敛到 `pyproject.toml` 的 `[project].dependencies`，精确版本 /
+    wheel / sha256 由新增的 `uv.lock` 锁定；CI 用 `uv sync --frozen --all-groups`
+    严格还原，不再 `pip install -r requirements.txt`
+  - `astral-sh/setup-uv@v7` 固定 uv `0.13.7` 并开启 `enable-cache`
+    （按 `uv.lock` 做缓存键），`setup-python` 的 pip 缓存配置一并移除
+  - **ruff 固定 `0.17.4`**：放进 PEP 735 dev 依赖组并锁进 `uv.lock`，
+    CI 改用 `uv run --no-sync ruff check builder run.py`，不再每次拉最新版；
+    `npm run lint:py` 同步改为 `uv run ruff check builder run.py`
+  - `uv run --no-sync npm run build` 把 `.venv/bin` 加进 PATH，编排脚本里的
+    `python` 才会解析到装好依赖的解释器
+
+- **CI 主构建彻底离线，友链颜色只在本地生成**
+  - `src/assets/friend_colors.json` 随代码提交：本地跑一次 `npm run build`
+    就会为新增友链抓色并写回；CI 构建前逐条校验缓存覆盖全部友链，
+    缺一条即 `::error::` 快速失败并提示本地补跑
+  - 构建步骤设 `SKIP_NETWORK=true`，内容侧不再抓头像、不访问任何外部站点，
+    部署不受友链站点可用性影响，也不会静默写入兜底灰
+  - 移除 `Restore avatar cache` 步骤与 `FRIEND_AVATAR_CACHE_DIR` 环境变量
+    （CI 不再抓头像，字节缓存已无意义）；`FriendColorsGenerator` 的注释同步更新
+
+- **PR 不再上传 Pages artifact**
+  - `Upload artifact` 加 `if: github.event_name != 'pull_request'`，
+    与已有的 `deploy` 跳过条件对齐
+
+- **GitHub Actions 一次性升级到当前大版本**（2026-11 逐个核实）
+  | Action | 旧 | 新 |
+  |---|---|---|
+  | `actions/checkout` | v4 | v7 |
+  | `actions/setup-python` | v5 | v6 |
+  | `actions/setup-node` | v4 | v6 |
+  | `astral-sh/setup-uv` | — | v7 |
+  | `actions/upload-pages-artifact` | v3 | v5 |
+  | `actions/configure-pages` | v5 | v6 |
+  | `actions/deploy-pages` | v5 | v5（已是最新） |
+  - `setup-python` 去掉 `cache: 'pip'` / `cache-dependency-path`；
+    `setup-node` 保留显式 `cache: 'npm'`
+  - **`upload-pages-artifact` v4 起默认排除隐藏文件**：站点有 `.well-known/`
+    验证文件，上传时显式设 `include-hidden-files: true`，冒烟检查新增
+    `dist/.well-known` 非空断言
+  - `checkout@v7` 的 fork PR 行为变更只作用于 `pull_request_target` /
+    `workflow_run`，本工作流的普通 `pull_request` 不受影响
+
 ## [8.69.0] - 2026-11-08
 
 ### 变更

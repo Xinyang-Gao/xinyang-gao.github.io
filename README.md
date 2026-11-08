@@ -39,14 +39,17 @@
 |------|------|
 | `.python-version` | Python 版本（`setup-python` 的 `python-version-file`） |
 | `.nvmrc` | Node.js 版本（`setup-node` 的 `node-version-file`） |
-| `requirements.txt` | Python 依赖（锁定下限，CI 用 pip 缓存加速） |
-| `package-lock.json` | Node 依赖（CI 用 `npm ci` 精确还原） |
+| `pyproject.toml` | Python 依赖真源：`[project].dependencies` 与 dev 组 |
+| `uv.lock` | Python 依赖精确锁文件（版本 / wheel / sha256），CI 用 `uv sync --frozen` 还原 |
+| `package.json` / `package-lock.json` | Node 依赖（CI 用 `npm ci` 精确还原） |
 
 ---
 
 ### 依赖版本详情
 
-#### Python 依赖（`requirements.txt`）
+#### Python 依赖（`pyproject.toml` + `uv.lock`）
+
+生产依赖：
 ```
 markdown               # 核心 Markdown 解析
 pyyaml                 # Frontmatter 解析
@@ -56,6 +59,14 @@ python-dateutil        # 日期解析
 packaging              # 版本号排序
 pymdown-extensions     # 扩展 Markdown 语法
 ```
+
+dev 组（精确锁版本，避免上游发版让 CI 突然变红）：
+```
+ruff==0.17.4           # lint / format 检查
+```
+
+`uv.lock` 由 `uv lock` 生成，记录每个包的版本、wheel URL 与 sha256；CI 用
+`uv sync --frozen --all-groups` 严格还原，不再使用 pip / `requirements.txt`。
 
 #### Node.js 依赖（`package.json`）
 
@@ -76,22 +87,25 @@ pymdown-extensions     # 扩展 Markdown 语法
 
 ```bash
 # 1) 安装依赖
-python -m pip install -r requirements.txt
-npm ci                    # 或 npm install
+uv sync --frozen --all-groups   # Python：按 uv.lock 精确还原（含 dev 组的 ruff）
+npm ci                          # Node：按 package-lock.json 精确还原
 
-# 2) 开发预览
-npm run dev               # Vite dev server（serve src/public + TS 源码）
+# 2) 激活虚拟环境；之后 python / ruff 都来自 .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
 
-# 3) 完整构建（内容 + 前端，唯一发布入口）
-npm run build                 # = python run.py + vite build
-npm run build -- --clean      # 清空 dist 后全量重建（发布前推荐）
-npm run build:content         # 只跑内容侧（HTML / RSS / JSON / 静态资源）
-npm run build:frontend        # 只跑前端（TS 打包 + CSS 压缩合并）
+# 3) 开发预览
+npm run dev                     # Vite dev server（serve src/public + TS 源码）
 
-# 4) 质量门禁（CI 每次 push / PR 都会跑，本地建议提交前自查）
-npm run typecheck         # tsc --noEmit（strict，tsconfig.json）
-npm run lint              # biome（TS/JS 正确性规则）
-npm run lint:py           # ruff（builder/ 与 run.py）
+# 4) 完整构建（内容 + 前端，唯一发布入口）
+npm run build                   # = python run.py + vite build
+npm run build -- --clean        # 清空 dist 后全量重建（发布前推荐）
+npm run build:content           # 只跑内容侧（HTML / RSS / JSON / 静态资源）
+npm run build:frontend          # 只跑前端（TS 打包 + CSS 压缩合并）
+
+# 5) 质量门禁（CI 每次 push / PR 都会跑，本地建议提交前自查）
+npm run typecheck               # tsc --noEmit（strict，tsconfig.json）
+npm run lint                    # biome（TS/JS 正确性规则）
+npm run lint:py                 # uv run ruff（builder/ 与 run.py）
 ```
 
 四条门禁全部通过才允许部署，另有一组产物冒烟断言（关键文件存在、
@@ -241,8 +255,8 @@ Website
 ├─ package.json
 ├─ pyproject.toml
 ├─ README.md
-├─ requirements.txt
 ├─ run.py
+├─ uv.lock                       # Python 依赖精确锁文件
 ├─ scripts
 │  ├─ build.mjs                  # 统一构建编排（内容 + 前端）
 │  └─ css-pipeline.mts           # CSS 压缩合并 Vite 插件
@@ -313,7 +327,7 @@ Website
 - **缓存**：头像图片会被缓存到临时目录，避免重复下载。
 - **依赖**：需 `requests` 和 `Pillow` 库，若未安装则生成器跳过（但构建不会失败，只会使用默认灰色）。
 - **增量**：默认只处理新增或缺失颜色的友链，使用 `--force-colors` 可强制刷新所有；已删除的友链颜色会被自动清理。
-- **并发与容错**：头像下载使用带重试的连接池 + 线程池并发（默认 8 并发，`FRIEND_COLOR_WORKERS` 可调），结果缓存到 `FRIEND_AVATAR_CACHE_DIR`（默认系统临时目录，CI 中挂在 `actions/cache`）；单个站点失败时**保留已有颜色**，只有从未取到颜色的友链才会落到默认灰色，不会因网络抖动让已缓存的颜色来回变化。`--offline` / `SKIP_NETWORK=1` 可完全跳过网络请求。
+- **并发与容错**：头像下载使用带重试的连接池 + 线程池并发（默认 8 并发，`FRIEND_COLOR_WORKERS` 可调），结果缓存到 `FRIEND_AVATAR_CACHE_DIR`（默认系统临时目录，仅供本地重新抓色时复用；CI 离线不抓头像）；单个站点失败时**保留已有颜色**，只有从未取到颜色的友链才会落到默认灰色，不会因网络抖动让已缓存的颜色来回变化。`--offline` / `SKIP_NETWORK=1` 可完全跳过网络请求。
 - **持久化缓存**：`src/assets/friend_colors.json` 随仓库提交，本地与 GitHub Actions 共用同一份历史颜色，只为新增友链发起请求；该文件缺失时日志会明确告警（CI 中另有校验步骤直接失败，避免静默退化为全量抓取）。
 
 #### 静态资源规则（`builder/static_assets.py`）
@@ -346,6 +360,10 @@ Website
 
 ### 4.5 命令行用法
 
+> 下面的 `python run.py ...` 假定已按快速开始执行 `source .venv/bin/activate`。
+> 不想激活环境时，给命令加 `uv run` 前缀即可（如 `uv run python run.py --clean`），
+> `uv run` 会把 `.venv/bin` 加进 PATH；CI 正是用 `uv run --no-sync npm run build`。
+
 ```bash
 # 完整构建（内容 + 前端，唯一发布入口）
 npm run build
@@ -358,9 +376,6 @@ python run.py
 
 # 全量构建（忽略增量状态）
 python run.py --force
-
-# 清空 dist 目录后全量构建（发布前推荐，避免残留旧文件被发布）
-npm run build -- --clean
 
 # 仅强制更新友链颜色（其他生成器仍按增量判断）
 python run.py --force-colors
@@ -397,19 +412,19 @@ python run.py --list
 | `LOG_LEVEL` | 日志级别（默认 `INFO`，排错可设 `DEBUG`） |
 | `BUILD_WORKERS` | 默认并行线程数 |
 | `FRIEND_COLOR_WORKERS` | 友链头像并发数 |
-| `FRIEND_AVATAR_CACHE_DIR` | 头像字节缓存目录（默认系统临时目录；CI 中指向 `.cache/friend-avatars` 并配合 `actions/cache`） |
-| `SKIP_NETWORK` | 等价于 `--offline` |
+| `FRIEND_AVATAR_CACHE_DIR` | 头像字节缓存目录（默认系统临时目录；仅本地重新抓色时复用，CI 离线不抓头像） |
+| `SKIP_NETWORK` | 等价于 `--offline`；CI 设为 `true`，内容侧完全不联网 |
 
 ### 4.6 依赖与环境
 
 - **版本来源**：Python 版本取自 `.python-version`，Node.js 版本取自 `.nvmrc`，CI 与本地共用，避免“我这儿能跑”。
-- **Python 依赖**：见 `requirements.txt`（锁定下限），主要包括 `markdown`、`pyyaml`、`requests`、`pillow`、`python-dateutil`、`packaging`、`pymdown-extensions`。
+- **Python 依赖**：真源在 `pyproject.toml`，精确版本由 `uv.lock` 锁定；主要包括 `markdown`、`pyyaml`、`requests`、`pillow`、`python-dateutil`、`packaging`、`pymdown-extensions`，dev 组另有固定版本的 `ruff`。
 - **Node.js 依赖**：用于前端 TypeScript 编译，见 `package.json`，使用 Vite 作为构建工具。
-- **代码规范**：`pyproject.toml` 提供项目元数据与 ruff / black 配置。
-- **安装命令**：
+- **代码规范**：`pyproject.toml` 提供项目元数据与 ruff / black 配置；`biome.json` 管 TS/JS 与 `scripts/`。
+- **安装命令**（`uv sync` 会创建 `.venv`；CI 用 `--frozen` 严格按锁文件还原）：
 
 ```bash
-python -m pip install -r requirements.txt
+uv sync --frozen --all-groups
 npm ci
 ```
 
@@ -683,7 +698,7 @@ flowchart TB
 
 ```txt
 1. 作者在 src/assets/source/分类/ 下新建 .md 文件（含 frontmatter）
-2. 运行 npm run build（内容侧 + 前端）
+2. 运行 uv run npm run build（内容侧 + 前端；或激活 .venv 后直接 npm run build）
 3. input_loader 解析 MD，生成 HTML 到 dist/articles/
 4. 更新 dist/json/articles.json
 5. aggregated 生成统计、RSS、站点地图
@@ -883,21 +898,26 @@ engine.register(MyGenerator())
 
 | 作业 | 职责 |
 |------|------|
-| `build` | 检出（含子模块）→ 安装 Python / Node 依赖 → 校验友链主题色缓存 → 恢复头像缓存 → `npm run build` → 上传 `dist` 为 Pages artifact |
-| `deploy` | `actions/deploy-pages` 发布 artifact 到 GitHub Pages 环境 |
+| `build` | 检出（含子模块）→ `uv sync --frozen` / `npm ci` → 三项质量门禁 → 校验友链主题色缓存覆盖 → 离线 `npm run build` → 产物冒烟检查 → 上传 `dist` 为 Pages artifact（PR 跳过上传） |
+| `deploy` | `actions/deploy-pages` 发布 artifact 到 GitHub Pages 环境（PR 跳过） |
 
 要点：
 
+- **uv + 锁文件**：Python 依赖由 `uv sync --frozen --all-groups` 按 `uv.lock` 精确还原，`astral-sh/setup-uv` 的 `enable-cache` 负责缓存；`ruff` 版本锁在 dev 组，不再每次拉最新版。Node 依赖仍由 `setup-node` 的 npm 缓存 + `npm ci` 还原。
+- **CI 完全离线**：`src/assets/friend_colors.json` 随代码提交，本地跑一次 `npm run build` 就会把新增友链的颜色写进 json；CI 构建前逐条校验缓存覆盖全部友链，缺一条就快速失败并提示本地补跑，随后以 `SKIP_NETWORK=true` 运行，既不抓头像也不访问任何外部站点。因此部署不再受友链站点可用性影响，也不会静默写入兜底灰；原先的头像字节 `actions/cache` 步骤已移除。
 - **不使用 `--force`**：CI 每次都是全新检出，不存在 `.build_state.json`，本来就等价于全量构建；`--force` 只会额外触发全部友链头像重抓，拖慢构建并增加网络失败概率。
-- **友链主题色缓存**：`src/assets/friend_colors.json` 已提交，构建前会先校验其存在且非空——读得到就只给新增友链抓头像，既省网络又不会因个别站点不稳定而抖动；读取不到则直接失败，避免静默退化成“每次全量抓取”。头像字节另由 `actions/cache` 跨运行复用（`FRIEND_AVATAR_CACHE_DIR`）。
+- **PR 只验证**：`Upload artifact` 与 `deploy` 作业都加了 `if: github.event_name != 'pull_request'`，PR 不再白白打包上传产物。
+- **隐藏文件**：`upload-pages-artifact` 从 v4 起默认排除点文件，站点有 `.well-known/` 验证文件，因此上传时显式开了 `include-hidden-files: true`，冒烟检查也加了一条 `.well-known` 非空断言。
 - **严格模式**：GitHub Actions 自动注入 `CI=true`，`scripts/build.mjs` 据此给内容侧追加 `--ci`；任一步失败即让工作流失败，避免部署半成品。
-- 版本统一由 `.python-version` / `.nvmrc` 提供，依赖分别由 `pip` 与 `npm` 官方缓存加速；构建作业设有 `timeout-minutes`，异常任务不会长期占用 runner。
+- **Actions 版本**（2026-11 逐个核实后一次性升级）：`checkout@v7`、`setup-python@v6`、`setup-node@v6`、`setup-uv@v7`、`upload-pages-artifact@v5`、`configure-pages@v6`、`deploy-pages@v5`。`checkout@v7` 的行为变更只影响 `pull_request_target` / `workflow_run`，本工作流的普通 `pull_request` 不受影响。
+- 版本统一由 `.python-version` / `.nvmrc` 提供；构建作业设有 `timeout-minutes`，异常任务不会长期占用 runner。
 
 ### 9.2 手动构建
 
 ```bash
-python -m pip install -r requirements.txt
+uv sync --frozen --all-groups
 npm ci
+source .venv/bin/activate
 npm run build -- --clean     # 干净全量构建：清空 dist + 内容侧 + 前端
 ```
 
@@ -920,4 +940,4 @@ npm run build -- --clean     # 干净全量构建：清空 dist + 内容侧 + �
 
 *本文档持续更新，以项目最新代码为准。*  
 *维护者：高新炀*  
-*最后更新：2026-10-04*
+*最后更新：2026-11-08*
